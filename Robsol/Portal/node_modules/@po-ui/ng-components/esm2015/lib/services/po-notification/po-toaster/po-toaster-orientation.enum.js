@@ -1,0 +1,13 @@
+/**
+ * @docsPrivate
+ *
+ * Enums para a orientação da notificação, do componente po-toaster-base.component.
+ */
+export var PoToasterOrientation;
+(function (PoToasterOrientation) {
+    /** Orientção do componente fica no rodapé */
+    PoToasterOrientation[PoToasterOrientation["Bottom"] = 0] = "Bottom";
+    /** Orientção do componente fica no topo */
+    PoToasterOrientation[PoToasterOrientation["Top"] = 1] = "Top";
+})(PoToasterOrientation || (PoToasterOrientation = {}));
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoicG8tdG9hc3Rlci1vcmllbnRhdGlvbi5lbnVtLmpzIiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiLi4vLi4vLi4vLi4vLi4vLi4vLi4vcHJvamVjdHMvdWkvc3JjL2xpYi9zZXJ2aWNlcy9wby1ub3RpZmljYXRpb24vcG8tdG9hc3Rlci9wby10b2FzdGVyLW9yaWVudGF0aW9uLmVudW0udHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUE7Ozs7R0FJRztBQUNILE1BQU0sQ0FBTixJQUFZLG9CQUtYO0FBTEQsV0FBWSxvQkFBb0I7SUFDOUIsNkNBQTZDO0lBQzdDLG1FQUFNLENBQUE7SUFDTiwyQ0FBMkM7SUFDM0MsNkRBQUcsQ0FBQTtBQUNMLENBQUMsRUFMVyxvQkFBb0IsS0FBcEIsb0JBQW9CLFFBSy9CIiwic291cmNlc0NvbnRlbnQiOlsiLyoqXHJcbiAqIEBkb2NzUHJpdmF0ZVxyXG4gKlxyXG4gKiBFbnVtcyBwYXJhIGEgb3JpZW50YcOnw6NvIGRhIG5vdGlmaWNhw6fDo28sIGRvIGNvbXBvbmVudGUgcG8tdG9hc3Rlci1iYXNlLmNvbXBvbmVudC5cclxuICovXHJcbmV4cG9ydCBlbnVtIFBvVG9hc3Rlck9yaWVudGF0aW9uIHtcclxuICAvKiogT3JpZW50w6fDo28gZG8gY29tcG9uZW50ZSBmaWNhIG5vIHJvZGFww6kgKi9cclxuICBCb3R0b20sXHJcbiAgLyoqIE9yaWVudMOnw6NvIGRvIGNvbXBvbmVudGUgZmljYSBubyB0b3BvICovXHJcbiAgVG9wXHJcbn1cclxuIl19

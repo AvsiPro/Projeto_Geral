@@ -1,0 +1,63 @@
+export const poPageDynamicTableLiteralsDefault = {
+    en: {
+        pageAction: 'New',
+        pageActionRemoveAll: 'Delete',
+        tableActionView: 'View',
+        tableActionEdit: 'Edit',
+        tableActionDuplicate: 'Duplicate',
+        tableActionDelete: 'Delete',
+        confirmRemoveTitle: 'Confirm delete',
+        confirmRemoveMessage: 'Are you sure you want to delete this record? You can not undo this action.',
+        confirmRemoveAllTitle: 'Confirm batch deletion',
+        confirmRemoveAllMessage: 'Are you sure you want to delete all these records? You can not undo this action.',
+        loadDataErrorNotification: 'Service not found',
+        removeSuccessNotification: 'Item deleted successfully',
+        removeAllSuccessNotification: 'Items deleted successfully'
+    },
+    es: {
+        pageAction: 'Nuevo',
+        pageActionRemoveAll: 'Borrar',
+        tableActionView: 'Visualizar',
+        tableActionEdit: 'Editar',
+        tableActionDuplicate: 'Duplicar',
+        tableActionDelete: 'Borrar',
+        confirmRemoveTitle: 'Confirmar la exclusión',
+        confirmRemoveMessage: '¿Está seguro de que desea eliminar este registro? No puede deshacer esta acción.',
+        confirmRemoveAllTitle: 'Confirmar la exclusión por lotes',
+        confirmRemoveAllMessage: '¿Está seguro de que desea eliminar todos estos registros? No puede deshacer esta acción.',
+        loadDataErrorNotification: 'Servicio no informado.',
+        removeSuccessNotification: 'Elemento eliminado con éxito',
+        removeAllSuccessNotification: 'Elementos eliminados con éxito'
+    },
+    pt: {
+        pageAction: 'Novo',
+        pageActionRemoveAll: 'Excluir',
+        tableActionView: 'Visualizar',
+        tableActionEdit: 'Editar',
+        tableActionDuplicate: 'Duplicar',
+        tableActionDelete: 'Excluir',
+        confirmRemoveTitle: 'Confirmar exclusão',
+        confirmRemoveMessage: 'Tem certeza de que deseja excluir esse registro? Você não poderá desfazer essa ação.',
+        confirmRemoveAllTitle: 'Confirmar exclusão em lote',
+        confirmRemoveAllMessage: 'Tem certeza de que deseja excluir todos esses registros? Você não poderá desfazer essa ação.',
+        loadDataErrorNotification: 'Serviço não informado.',
+        removeSuccessNotification: 'Item excluido com sucesso',
+        removeAllSuccessNotification: 'Items excluidos com sucesso'
+    },
+    ru: {
+        pageAction: 'Новый',
+        pageActionRemoveAll: 'Удалить',
+        tableActionView: 'Просмотр',
+        tableActionEdit: 'Редактировать',
+        tableActionDuplicate: 'Дублировать',
+        tableActionDelete: 'Удалить',
+        confirmRemoveTitle: 'Подтверждение удаления',
+        confirmRemoveMessage: 'Вы уверены, что хотите удалить эту запись?  Вы не можете отменить это действие.',
+        confirmRemoveAllTitle: 'Подтвердите удаление пакета',
+        confirmRemoveAllMessage: 'Вы уверены, что хотите удалить все эти записи? Вы не можете отменить это действие.',
+        loadDataErrorNotification: 'Сервис не найден',
+        removeSuccessNotification: 'Элемент успешно удален',
+        removeAllSuccessNotification: 'Элементы успешно удалены'
+    }
+};
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoicG8tcGFnZS1keW5hbWljLXRhYmxlLWxpdGVyYWxzLmpzIiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiLi4vLi4vLi4vLi4vLi4vLi4vcHJvamVjdHMvdGVtcGxhdGVzL3NyYy9saWIvY29tcG9uZW50cy9wby1wYWdlLWR5bmFtaWMtdGFibGUvcG8tcGFnZS1keW5hbWljLXRhYmxlLWxpdGVyYWxzLnRzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBLE1BQU0sQ0FBQyxNQUFNLGlDQUFpQyxHQUFHO0lBQy9DLEVBQUUsRUFBRTtRQUNGLFVBQVUsRUFBRSxLQUFLO1FBQ2pCLG1CQUFtQixFQUFFLFFBQVE7UUFDN0IsZUFBZSxFQUFFLE1BQU07UUFDdkIsZUFBZSxFQUFFLE1BQU07UUFDdkIsb0JBQW9CLEVBQUUsV0FBVztRQUNqQyxpQkFBaUIsRUFBRSxRQUFRO1FBQzNCLGtCQUFrQixFQUFFLGdCQUFnQjtRQUNwQyxvQkFBb0IsRUFBRSw0RUFBNEU7UUFDbEcscUJBQXFCLEVBQUUsd0JBQXdCO1FBQy9DLHVCQUF1QixFQUFFLGtGQUFrRjtRQUMzRyx5QkFBeUIsRUFBRSxtQkFBbUI7UUFDOUMseUJBQXlCLEVBQUUsMkJBQTJCO1FBQ3RELDRCQUE0QixFQUFFLDRCQUE0QjtLQUMzRDtJQUNELEVBQUUsRUFBRTtRQUNGLFVBQVUsRUFBRSxPQUFPO1FBQ25CLG1CQUFtQixFQUFFLFFBQVE7UUFDN0IsZUFBZSxFQUFFLFlBQVk7UUFDN0IsZUFBZSxFQUFFLFFBQVE7UUFDekIsb0JBQW9CLEVBQUUsVUFBVTtRQUNoQyxpQkFBaUIsRUFBRSxRQUFRO1FBQzNCLGtCQUFrQixFQUFFLHdCQUF3QjtRQUM1QyxvQkFBb0IsRUFBRSxrRkFBa0Y7UUFDeEcscUJBQXFCLEVBQUUsa0NBQWtDO1FBQ3pELHVCQUF1QixFQUFFLDBGQUEwRjtRQUNuSCx5QkFBeUIsRUFBRSx3QkFBd0I7UUFDbkQseUJBQXlCLEVBQUUsOEJBQThCO1FBQ3pELDRCQUE0QixFQUFFLGdDQUFnQztLQUMvRDtJQUNELEVBQUUsRUFBRTtRQUNGLFVBQVUsRUFBRSxNQUFNO1FBQ2xCLG1CQUFtQixFQUFFLFNBQVM7UUFDOUIsZUFBZSxFQUFFLFlBQVk7UUFDN0IsZUFBZSxFQUFFLFFBQVE7UUFDekIsb0JBQW9CLEVBQUUsVUFBVTtRQUNoQyxpQkFBaUIsRUFBRSxTQUFTO1FBQzVCLGtCQUFrQixFQUFFLG9CQUFvQjtRQUN4QyxvQkFBb0IsRUFBRSxzRkFBc0Y7UUFDNUcscUJBQXFCLEVBQUUsNEJBQTRCO1FBQ25ELHVCQUF1QixFQUNyQiw4RkFBOEY7UUFDaEcseUJBQXlCLEVBQUUsd0JBQXdCO1FBQ25ELHlCQUF5QixFQUFFLDJCQUEyQjtRQUN0RCw0QkFBNEIsRUFBRSw2QkFBNkI7S0FDNUQ7SUFDRCxFQUFFLEVBQUU7UUFDRixVQUFVLEVBQUUsT0FBTztRQUNuQixtQkFBbUIsRUFBRSxTQUFTO1FBQzlCLGVBQWUsRUFBRSxVQUFVO1FBQzNCLGVBQWUsRUFBRSxlQUFlO1FBQ2hDLG9CQUFvQixFQUFFLGFBQWE7UUFDbkMsaUJBQWlCLEVBQUUsU0FBUztRQUM1QixrQkFBa0IsRUFBRSx3QkFBd0I7UUFDNUMsb0JBQW9CLEVBQUUsaUZBQWlGO1FBQ3ZHLHFCQUFxQixFQUFFLDZCQUE2QjtRQUNwRCx1QkFBdUIsRUFBRSxvRkFBb0Y7UUFDN0cseUJBQXlCLEVBQUUsa0JBQWtCO1FBQzdDLHlCQUF5QixFQUFFLHdCQUF3QjtRQUNuRCw0QkFBNEIsRUFBRSwwQkFBMEI7S0FDekQ7Q0FDRixDQUFDIiwic291cmNlc0NvbnRlbnQiOlsiZXhwb3J0IGNvbnN0IHBvUGFnZUR5bmFtaWNUYWJsZUxpdGVyYWxzRGVmYXVsdCA9IHtcclxuICBlbjoge1xyXG4gICAgcGFnZUFjdGlvbjogJ05ldycsXHJcbiAgICBwYWdlQWN0aW9uUmVtb3ZlQWxsOiAnRGVsZXRlJyxcclxuICAgIHRhYmxlQWN0aW9uVmlldzogJ1ZpZXcnLFxyXG4gICAgdGFibGVBY3Rpb25FZGl0OiAnRWRpdCcsXHJcbiAgICB0YWJsZUFjdGlvbkR1cGxpY2F0ZTogJ0R1cGxpY2F0ZScsXHJcbiAgICB0YWJsZUFjdGlvbkRlbGV0ZTogJ0RlbGV0ZScsXHJcbiAgICBjb25maXJtUmVtb3ZlVGl0bGU6ICdDb25maXJtIGRlbGV0ZScsXHJcbiAgICBjb25maXJtUmVtb3ZlTWVzc2FnZTogJ0FyZSB5b3Ugc3VyZSB5b3Ugd2FudCB0byBkZWxldGUgdGhpcyByZWNvcmQ/IFlvdSBjYW4gbm90IHVuZG8gdGhpcyBhY3Rpb24uJyxcclxuICAgIGNvbmZpcm1SZW1vdmVBbGxUaXRsZTogJ0NvbmZpcm0gYmF0Y2ggZGVsZXRpb24nLFxyXG4gICAgY29uZmlybVJlbW92ZUFsbE1lc3NhZ2U6ICdBcmUgeW91IHN1cmUgeW91IHdhbnQgdG8gZGVsZXRlIGFsbCB0aGVzZSByZWNvcmRzPyBZb3UgY2FuIG5vdCB1bmRvIHRoaXMgYWN0aW9uLicsXHJcbiAgICBsb2FkRGF0YUVycm9yTm90aWZpY2F0aW9uOiAnU2VydmljZSBub3QgZm91bmQnLFxyXG4gICAgcmVtb3ZlU3VjY2Vzc05vdGlmaWNhdGlvbjogJ0l0ZW0gZGVsZXRlZCBzdWNjZXNzZnVsbHknLFxyXG4gICAgcmVtb3ZlQWxsU3VjY2Vzc05vdGlmaWNhdGlvbjogJ0l0ZW1zIGRlbGV0ZWQgc3VjY2Vzc2Z1bGx5J1xyXG4gIH0sXHJcbiAgZXM6IHtcclxuICAgIHBhZ2VBY3Rpb246ICdOdWV2bycsXHJcbiAgICBwYWdlQWN0aW9uUmVtb3ZlQWxsOiAnQm9ycmFyJyxcclxuICAgIHRhYmxlQWN0aW9uVmlldzogJ1Zpc3VhbGl6YXInLFxyXG4gICAgdGFibGVBY3Rpb25FZGl0OiAnRWRpdGFyJyxcclxuICAgIHRhYmxlQWN0aW9uRHVwbGljYXRlOiAnRHVwbGljYXInLFxyXG4gICAgdGFibGVBY3Rpb25EZWxldGU6ICdCb3JyYXInLFxyXG4gICAgY29uZmlybVJlbW92ZVRpdGxlOiAnQ29uZmlybWFyIGxhIGV4Y2x1c2nDs24nLFxyXG4gICAgY29uZmlybVJlbW92ZU1lc3NhZ2U6ICfCv0VzdMOhIHNlZ3VybyBkZSBxdWUgZGVzZWEgZWxpbWluYXIgZXN0ZSByZWdpc3Rybz8gTm8gcHVlZGUgZGVzaGFjZXIgZXN0YSBhY2Npw7NuLicsXHJcbiAgICBjb25maXJtUmVtb3ZlQWxsVGl0bGU6ICdDb25maXJtYXIgbGEgZXhjbHVzacOzbiBwb3IgbG90ZXMnLFxyXG4gICAgY29uZmlybVJlbW92ZUFsbE1lc3NhZ2U6ICfCv0VzdMOhIHNlZ3VybyBkZSBxdWUgZGVzZWEgZWxpbWluYXIgdG9kb3MgZXN0b3MgcmVnaXN0cm9zPyBObyBwdWVkZSBkZXNoYWNlciBlc3RhIGFjY2nDs24uJyxcclxuICAgIGxvYWREYXRhRXJyb3JOb3RpZmljYXRpb246ICdTZXJ2aWNpbyBubyBpbmZvcm1hZG8uJyxcclxuICAgIHJlbW92ZVN1Y2Nlc3NOb3RpZmljYXRpb246ICdFbGVtZW50byBlbGltaW5hZG8gY29uIMOpeGl0bycsXHJcbiAgICByZW1vdmVBbGxTdWNjZXNzTm90aWZpY2F0aW9uOiAnRWxlbWVudG9zIGVsaW1pbmFkb3MgY29uIMOpeGl0bydcclxuICB9LFxyXG4gIHB0OiB7XHJcbiAgICBwYWdlQWN0aW9uOiAnTm92bycsXHJcbiAgICBwYWdlQWN0aW9uUmVtb3ZlQWxsOiAnRXhjbHVpcicsXHJcbiAgICB0YWJsZUFjdGlvblZpZXc6ICdWaXN1YWxpemFyJyxcclxuICAgIHRhYmxlQWN0aW9uRWRpdDogJ0VkaXRhcicsXHJcbiAgICB0YWJsZUFjdGlvbkR1cGxpY2F0ZTogJ0R1cGxpY2FyJyxcclxuICAgIHRhYmxlQWN0aW9uRGVsZXRlOiAnRXhjbHVpcicsXHJcbiAgICBjb25maXJtUmVtb3ZlVGl0bGU6ICdDb25maXJtYXIgZXhjbHVzw6NvJyxcclxuICAgIGNvbmZpcm1SZW1vdmVNZXNzYWdlOiAnVGVtIGNlcnRlemEgZGUgcXVlIGRlc2VqYSBleGNsdWlyIGVzc2UgcmVnaXN0cm8/IFZvY8OqIG7Do28gcG9kZXLDoSBkZXNmYXplciBlc3NhIGHDp8Ojby4nLFxyXG4gICAgY29uZmlybVJlbW92ZUFsbFRpdGxlOiAnQ29uZmlybWFyIGV4Y2x1c8OjbyBlbSBsb3RlJyxcclxuICAgIGNvbmZpcm1SZW1vdmVBbGxNZXNzYWdlOlxyXG4gICAgICAnVGVtIGNlcnRlemEgZGUgcXVlIGRlc2VqYSBleGNsdWlyIHRvZG9zIGVzc2VzIHJlZ2lzdHJvcz8gVm9jw6ogbsOjbyBwb2RlcsOhIGRlc2ZhemVyIGVzc2EgYcOnw6NvLicsXHJcbiAgICBsb2FkRGF0YUVycm9yTm90aWZpY2F0aW9uOiAnU2VydmnDp28gbsOjbyBpbmZvcm1hZG8uJyxcclxuICAgIHJlbW92ZVN1Y2Nlc3NOb3RpZmljYXRpb246ICdJdGVtIGV4Y2x1aWRvIGNvbSBzdWNlc3NvJyxcclxuICAgIHJlbW92ZUFsbFN1Y2Nlc3NOb3RpZmljYXRpb246ICdJdGVtcyBleGNsdWlkb3MgY29tIHN1Y2Vzc28nXHJcbiAgfSxcclxuICBydToge1xyXG4gICAgcGFnZUFjdGlvbjogJ9Cd0L7QstGL0LknLFxyXG4gICAgcGFnZUFjdGlvblJlbW92ZUFsbDogJ9Cj0LTQsNC70LjRgtGMJyxcclxuICAgIHRhYmxlQWN0aW9uVmlldzogJ9Cf0YDQvtGB0LzQvtGC0YAnLFxyXG4gICAgdGFibGVBY3Rpb25FZGl0OiAn0KDQtdC00LDQutGC0LjRgNC+0LLQsNGC0YwnLFxyXG4gICAgdGFibGVBY3Rpb25EdXBsaWNhdGU6ICfQlNGD0LHQu9C40YDQvtCy0LDRgtGMJyxcclxuICAgIHRhYmxlQWN0aW9uRGVsZXRlOiAn0KPQtNCw0LvQuNGC0YwnLFxyXG4gICAgY29uZmlybVJlbW92ZVRpdGxlOiAn0J/QvtC00YLQstC10YDQttC00LXQvdC40LUg0YPQtNCw0LvQtdC90LjRjycsXHJcbiAgICBjb25maXJtUmVtb3ZlTWVzc2FnZTogJ9CS0Ysg0YPQstC10YDQtdC90YssINGH0YLQviDRhdC+0YLQuNGC0LUg0YPQtNCw0LvQuNGC0Ywg0Y3RgtGDINC30LDQv9C40YHRjD8gINCS0Ysg0L3QtSDQvNC+0LbQtdGC0LUg0L7RgtC80LXQvdC40YLRjCDRjdGC0L4g0LTQtdC50YHRgtCy0LjQtS4nLFxyXG4gICAgY29uZmlybVJlbW92ZUFsbFRpdGxlOiAn0J/QvtC00YLQstC10YDQtNC40YLQtSDRg9C00LDQu9C10L3QuNC1INC/0LDQutC10YLQsCcsXHJcbiAgICBjb25maXJtUmVtb3ZlQWxsTWVzc2FnZTogJ9CS0Ysg0YPQstC10YDQtdC90YssINGH0YLQviDRhdC+0YLQuNGC0LUg0YPQtNCw0LvQuNGC0Ywg0LLRgdC1INGN0YLQuCDQt9Cw0L/QuNGB0Lg/INCS0Ysg0L3QtSDQvNC+0LbQtdGC0LUg0L7RgtC80LXQvdC40YLRjCDRjdGC0L4g0LTQtdC50YHRgtCy0LjQtS4nLFxyXG4gICAgbG9hZERhdGFFcnJvck5vdGlmaWNhdGlvbjogJ9Ch0LXRgNCy0LjRgSDQvdC1INC90LDQudC00LXQvScsXHJcbiAgICByZW1vdmVTdWNjZXNzTm90aWZpY2F0aW9uOiAn0K3Qu9C10LzQtdC90YIg0YPRgdC/0LXRiNC90L4g0YPQtNCw0LvQtdC9JyxcclxuICAgIHJlbW92ZUFsbFN1Y2Nlc3NOb3RpZmljYXRpb246ICfQrdC70LXQvNC10L3RgtGLINGD0YHQv9C10YjQvdC+INGD0LTQsNC70LXQvdGLJ1xyXG4gIH1cclxufTtcclxuIl19

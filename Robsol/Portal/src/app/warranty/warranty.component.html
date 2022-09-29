@@ -1,0 +1,13 @@
+<po-page-default p-title="Garantia" [p-actions]="actions" [p-breadcrumb]="breadcrumb">
+
+    <po-page-dynamic-table
+        [p-auto-router]='true'
+        [p-concat-filters]='true'
+        [p-keep-filters]='true'
+        p-title="Meus Chamados"
+        [p-quick-search-width]="quickSearchWidth"
+        [p-service-api]="serviceApi"
+        [p-load]="onLoad.bind(this)"
+    ></po-page-dynamic-table>
+
+</po-page-default>

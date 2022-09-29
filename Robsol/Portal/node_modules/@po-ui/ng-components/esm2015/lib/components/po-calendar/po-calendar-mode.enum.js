@@ -1,0 +1,13 @@
+/**
+ * @usedBy PoCalendarComponent
+ *
+ * @description
+ *
+ * *Enum* `PoCalendarMode` para especificar os modos de visualização do calendário.
+ */
+export var PoCalendarMode;
+(function (PoCalendarMode) {
+    /** Define que o calendário será exibido em modo faixa de seleção. */
+    PoCalendarMode["Range"] = "range";
+})(PoCalendarMode || (PoCalendarMode = {}));
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoicG8tY2FsZW5kYXItbW9kZS5lbnVtLmpzIiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiLi4vLi4vLi4vLi4vLi4vLi4vcHJvamVjdHMvdWkvc3JjL2xpYi9jb21wb25lbnRzL3BvLWNhbGVuZGFyL3BvLWNhbGVuZGFyLW1vZGUuZW51bS50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQTs7Ozs7O0dBTUc7QUFDSCxNQUFNLENBQU4sSUFBWSxjQUdYO0FBSEQsV0FBWSxjQUFjO0lBQ3hCLHFFQUFxRTtJQUNyRSxpQ0FBZSxDQUFBO0FBQ2pCLENBQUMsRUFIVyxjQUFjLEtBQWQsY0FBYyxRQUd6QiIsInNvdXJjZXNDb250ZW50IjpbIi8qKlxyXG4gKiBAdXNlZEJ5IFBvQ2FsZW5kYXJDb21wb25lbnRcclxuICpcclxuICogQGRlc2NyaXB0aW9uXHJcbiAqXHJcbiAqICpFbnVtKiBgUG9DYWxlbmRhck1vZGVgIHBhcmEgZXNwZWNpZmljYXIgb3MgbW9kb3MgZGUgdmlzdWFsaXphw6fDo28gZG8gY2FsZW5kw6FyaW8uXHJcbiAqL1xyXG5leHBvcnQgZW51bSBQb0NhbGVuZGFyTW9kZSB7XHJcbiAgLyoqIERlZmluZSBxdWUgbyBjYWxlbmTDoXJpbyBzZXLDoSBleGliaWRvIGVtIG1vZG8gZmFpeGEgZGUgc2VsZcOnw6NvLiAqL1xyXG4gIFJhbmdlID0gJ3JhbmdlJ1xyXG59XHJcbiJdfQ==
