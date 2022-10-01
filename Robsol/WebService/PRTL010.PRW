@@ -118,7 +118,7 @@ WsMethod GET WsReceive CODIGO,PAGE,pageSize,DESCRICAO,MARCA,GENERO,LINHA,MATERIA
 			DbSetOrder(1)
 			DbSeek('0103'+SB1->B1_COD+SB1->B1_LOCPAD)
 				
-			::SetResponse('"saldo":"'+If(SaldoSB2(.T.)>0,'Disponivel','Indisponivel')+'",')
+			::SetResponse('"saldo":"'+If(SaldoSB2(.T.) >= 10,'Disponivel','Indisponivel')+'",')
 			::SetResponse('"ncm":"'+SB1->B1_POSIPI+'",')
 			::SetResponse('"ean":"'+SB1->B1_CODBAR+'",')
 			::SetResponse('"imagem":"'+ALLTRIM(SB1->B1_XURLIMG)+'",')
