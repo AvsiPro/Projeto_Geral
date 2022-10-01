@@ -64,7 +64,6 @@ export default function SalePrd({route,navigation}){
 
     const authBasic = 'YWRtaW46QVZTSTIwMjI';
 
-
     useEffect(()=> {askForCameraPermission()},[])
     
     const askForCameraPermission = () =>{
@@ -90,9 +89,14 @@ export default function SalePrd({route,navigation}){
         const item = response.data["items"][0]
 
         if (item.length !== 0){ 
-            addProductToCart(item,false,false);
-            setTextScan(data+' adicionado ao carrinho!');
-            setScanned(true);
+            if(item.saldo.toLowerCase() !== 'indisponivel'){
+                addProductToCart(item,false,false);
+                setTextScan(data+' adicionado ao carrinho!');
+                setScanned(true);
+            }else{
+                setTextScan('Saldo Indisponível');
+                setScanned(true);
+            }
         } 
     };
 
