@@ -209,7 +209,7 @@ WsMethod GET WsReceive CODIGO,PAGE,pageSize,DESCRICAO,MARCA,GENERO,LINHA,MATERIA
 
 		cQuery += " ORDER BY B1_COD desc"
 
-		conout(cquery)
+		//conout(cquery)
 
 		If Select('TRB') > 0
 			dbSelectArea('TRB')
@@ -224,13 +224,16 @@ WsMethod GET WsReceive CODIGO,PAGE,pageSize,DESCRICAO,MARCA,GENERO,LINHA,MATERIA
 
 			//Else
 			nTextSld := ''
-			conout('Filial '+TRB->B2_FILIAL +" Saldo "+cvaltochar(TRB->SALDO)+" Armazem "+TRB->B2_LOCAL)
-			If TRB->SALDO > 10
+			//conout('Filial '+TRB->B2_FILIAL +" Saldo "+cvaltochar(TRB->SALDO)+" Armazem "+TRB->B2_LOCAL)
+			
+			/*If TRB->SALDO > 10
 				nTextSld := 'Disponivel'
 			Else
 				nTextSld := If(TRB->SALDO>0,Cvaltochar(TRB->SALDO),'Indisponivel')
-			EndIf
-				
+			EndIf*/
+			
+			nTextSld := If(TRB->SALDO >= 10,'Disponivel','Indisponivel')
+
 				Aadd(aAux,{	TRB->B1_COD,Alltrim(TRB->B1_DESC)+' / Saldo '+nTextSld,TRB->Z03_DESGRI,;
 							TRB->Z04_DESGEN,TRB->Z05_DESLIN,;
 							TRB->Z06_DESMAT,TRB->B1_XCORES,;
@@ -378,7 +381,7 @@ cQuery += " AND Z03_CODGRI IN('"+cMalasV+"')"
 cQuery += " WHERE DA1.D_E_L_E_T_=' '"
 cQuery += " ORDER BY DA1_CODPRO,DA1_CODTAB DESC"
 
-CONOUT(cQuery)
+//CONOUT(cQuery)
 
 If Select('TRB') > 0
 	dbSelectArea('TRB')
