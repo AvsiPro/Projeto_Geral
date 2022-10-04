@@ -319,7 +319,7 @@ cQuery += "F2_VALMERC,C5_CONDPAG,D2_DESC,D2_QUANT,D2_TOTAL,A3_NOME,A3_GEREN,"
 cQuery += " (SELECT SUM(C6_VALOR) FROM "+RetSQLName("SC6")+" WHERE C6_FILIAL=D2_FILIAL AND C6_NUM=D2_PEDIDO  AND D_E_L_E_T_=' ') AS VALORPEDIDO"
 */
 cQuery := "SELECT DISTINCT F4_CODIGO,D2_ITEM,D2_COD,D2_PEDIDO,D2_DESC,D2_TOTAL, D2_QUANT,"
-cQuery += " B1_GRUPO,BM_GRUPO,E1_PARCELA,"
+cQuery += " B1_GRUPO,BM_GRUPO,"
 cQuery += " F2_VEND1,F2_VEND2,F2_VEND2,F2_DOC,F2_SERIE,F2_CLIENTE,F2_LOJA,F2_EMISSAO,F2_VALMERC,"
 cQuery += " C5_EMISSAO,C5_CONDPAG,C5_XCLASPV,"
 cQuery += " ( SELECT E4_DESCRI FROM SE4010 WHERE E4_CODIGO = C5_CONDPAG ) AS DESCRIPAGTO,"
@@ -409,8 +409,7 @@ While !EOF()
                     TRB->Z01_DESBAN,;                   //29
                     TRB->Z01_DSCESP,;                   //30
                     TRB->DESCRIPAGTO,;                  //31                  
-                    TRB->Z01_CODBAN,;                   //32                  
-                    TRB->E1_PARCELA})                   //33                  
+                    TRB->Z01_CODBAN})                   //32                                    
     Else 
         aRet[nPos,14] += TRB->D2_QUANT
         aRet[nPos,15] += TRB->D2_TOTAL        
@@ -461,8 +460,7 @@ While !EOF()
                         TRB->Z01_DESBAN,;                   //29
                         TRB->Z01_DSCESP,;                   //30  
                         TRB->DESCRIPAGTO,;                  //31                  
-                        TRB->Z01_CODBAN,;                   //32                  
-                        TRB->E1_PARCELA})                   //33   
+                        TRB->Z01_CODBAN})                   //32
         Else 
             aRet[nPos,14] += TRB->D2_QUANT
             aRet[nPos,15] += TRB->D2_TOTAL        
@@ -550,8 +548,7 @@ While !EOF()
                 TRB->Z01_DESBAN,;                   //29
                 '',;                                //30 
                 '',;                                //31 
-                TRB->Z01_CODBAN,;                   //32
-                TRB->E1_PARCELA})                   //33
+                TRB->Z01_CODBAN})                   //32
     Dbskip()
 EndDo 
 
@@ -976,7 +973,6 @@ oExcel:AddColumn("Conferencia","Representantes","Marca",1,1)           //03
 oExcel:AddColumn("Conferencia","Representantes","Qtd_Peças",1,1)       //16
 oExcel:AddColumn("Conferencia","Representantes","CondPagto",1,1)       //14
 oExcel:AddColumn("Conferencia","Representantes","DescriPagto",1,1)     //31
-oExcel:AddColumn("Conferencia","Representantes","PARCELA",1,1)         //33
 oExcel:AddColumn("Conferencia","Representantes","Desconto",1,1)        //15
 oExcel:AddColumn("Conferencia","Representantes","Valor_Peças",1,1)     //17
 oExcel:AddColumn("Conferencia","Representantes","%_Comissao",1,1)      //20
@@ -1010,7 +1006,6 @@ For nX := 1 to len(aList2B)
                                                         "",;
                                                         "",;
                                                         "",;
-                                                        "",;
                                                         "",; 
                                                         "",;
                                                         "",;
@@ -1018,7 +1013,6 @@ For nX := 1 to len(aList2B)
                                                         ""})
 
         oExcel:AddRow("Conferencia","Representantes",{  "",;
-                                                        "",;
                                                         "",;
                                                         "",;
 														"",;
@@ -1062,7 +1056,6 @@ For nX := 1 to len(aList2B)
                                                     aList2B[nX,14],;
                                                     aList2B[nX,12],;	
                                                     aList2B[nX,31],;
-                                                    aList2B[nX,33],;
                                                     aList2B[nX,13],;
                                                     aList2B[nX,15],;
                                                     aList2B[nX,19],;
@@ -1072,7 +1065,6 @@ For nX := 1 to len(aList2B)
 Next nX
 
 oExcel:AddRow("Conferencia","Representantes",{  "",;
-                                                "",;
                                                 "",;
                                                 "",;
                                                 "",;
@@ -2007,7 +1999,7 @@ Return(aAux)
 Static Function BonusClc(aRet,aPeriod)
 
 Local aArea :=  GetArea()
-Local aAuxP     :=  {}
+// Local aAuxP     :=  {}
 Local oExcel 	:= FWMSEXCEL():New()
 Local cDir 		:= ""
 Local nX 
