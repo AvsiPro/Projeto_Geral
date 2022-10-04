@@ -1,0 +1,14 @@
+/**
+ * @usedBy PoTableComponent
+ *
+ * @description
+ * Tipos de ordenação das colunas da tabela.
+ */
+export var PoTableColumnSortType;
+(function (PoTableColumnSortType) {
+    /** Ordenação ascendente */
+    PoTableColumnSortType["Ascending"] = "ascending";
+    /** Ordenação descendente */
+    PoTableColumnSortType["Descending"] = "descending";
+})(PoTableColumnSortType || (PoTableColumnSortType = {}));
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoicG8tdGFibGUtY29sdW1uLXNvcnQtdHlwZS5lbnVtLmpzIiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiLi4vLi4vLi4vLi4vLi4vLi4vLi4vcHJvamVjdHMvdWkvc3JjL2xpYi9jb21wb25lbnRzL3BvLXRhYmxlL2VudW1zL3BvLXRhYmxlLWNvbHVtbi1zb3J0LXR5cGUuZW51bS50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQTs7Ozs7R0FLRztBQUNILE1BQU0sQ0FBTixJQUFZLHFCQU1YO0FBTkQsV0FBWSxxQkFBcUI7SUFDL0IsMkJBQTJCO0lBQzNCLGdEQUF1QixDQUFBO0lBRXZCLDRCQUE0QjtJQUM1QixrREFBeUIsQ0FBQTtBQUMzQixDQUFDLEVBTlcscUJBQXFCLEtBQXJCLHFCQUFxQixRQU1oQyIsInNvdXJjZXNDb250ZW50IjpbIi8qKlxyXG4gKiBAdXNlZEJ5IFBvVGFibGVDb21wb25lbnRcclxuICpcclxuICogQGRlc2NyaXB0aW9uXHJcbiAqIFRpcG9zIGRlIG9yZGVuYcOnw6NvIGRhcyBjb2x1bmFzIGRhIHRhYmVsYS5cclxuICovXHJcbmV4cG9ydCBlbnVtIFBvVGFibGVDb2x1bW5Tb3J0VHlwZSB7XHJcbiAgLyoqIE9yZGVuYcOnw6NvIGFzY2VuZGVudGUgKi9cclxuICBBc2NlbmRpbmcgPSAnYXNjZW5kaW5nJyxcclxuXHJcbiAgLyoqIE9yZGVuYcOnw6NvIGRlc2NlbmRlbnRlICovXHJcbiAgRGVzY2VuZGluZyA9ICdkZXNjZW5kaW5nJ1xyXG59XHJcbiJdfQ==

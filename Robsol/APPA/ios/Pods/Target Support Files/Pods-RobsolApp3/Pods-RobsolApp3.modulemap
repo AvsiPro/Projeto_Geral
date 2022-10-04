@@ -1,0 +1,6 @@
+module Pods_RobsolApp3 {
+  umbrella header "Pods-RobsolApp3-umbrella.h"
+
+  export *
+  module * { export * }
+}

@@ -1,0 +1,17 @@
+/**
+ * @docsPrivate
+ *
+ * @description
+ *
+ * Enum para definição do tipo de conteúdo exibido na modal.
+ */
+export var PoModalPasswordRecoveryModalContent;
+(function (PoModalPasswordRecoveryModalContent) {
+    /** Exibição de modal contendo campo para preenchimento de email ou número de telefone */
+    PoModalPasswordRecoveryModalContent["Email"] = "email";
+    /** Exibição de modal contendo campo para inserção de código enviado por SMS */
+    PoModalPasswordRecoveryModalContent["SMSCode"] = "smsCode";
+    /** Exibição de modal de confirmação de envio */
+    PoModalPasswordRecoveryModalContent["Confirmation"] = "confirmation";
+})(PoModalPasswordRecoveryModalContent || (PoModalPasswordRecoveryModalContent = {}));
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoicG8tbW9kYWwtcGFzc3dvcmQtcmVjb3ZlcnktbW9kYWwtY29udGVudC5lbnVtLmpzIiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiLi4vLi4vLi4vLi4vLi4vLi4vLi4vcHJvamVjdHMvdGVtcGxhdGVzL3NyYy9saWIvY29tcG9uZW50cy9wby1tb2RhbC1wYXNzd29yZC1yZWNvdmVyeS9lbnVtcy9wby1tb2RhbC1wYXNzd29yZC1yZWNvdmVyeS1tb2RhbC1jb250ZW50LmVudW0udHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUE7Ozs7OztHQU1HO0FBQ0gsTUFBTSxDQUFOLElBQVksbUNBU1g7QUFURCxXQUFZLG1DQUFtQztJQUM3Qyx5RkFBeUY7SUFDekYsc0RBQWUsQ0FBQTtJQUVmLCtFQUErRTtJQUMvRSwwREFBbUIsQ0FBQTtJQUVuQixnREFBZ0Q7SUFDaEQsb0VBQTZCLENBQUE7QUFDL0IsQ0FBQyxFQVRXLG1DQUFtQyxLQUFuQyxtQ0FBbUMsUUFTOUMiLCJzb3VyY2VzQ29udGVudCI6WyIvKipcclxuICogQGRvY3NQcml2YXRlXHJcbiAqXHJcbiAqIEBkZXNjcmlwdGlvblxyXG4gKlxyXG4gKiBFbnVtIHBhcmEgZGVmaW5pw6fDo28gZG8gdGlwbyBkZSBjb250ZcO6ZG8gZXhpYmlkbyBuYSBtb2RhbC5cclxuICovXHJcbmV4cG9ydCBlbnVtIFBvTW9kYWxQYXNzd29yZFJlY292ZXJ5TW9kYWxDb250ZW50IHtcclxuICAvKiogRXhpYmnDp8OjbyBkZSBtb2RhbCBjb250ZW5kbyBjYW1wbyBwYXJhIHByZWVuY2hpbWVudG8gZGUgZW1haWwgb3UgbsO6bWVybyBkZSB0ZWxlZm9uZSAqL1xyXG4gIEVtYWlsID0gJ2VtYWlsJyxcclxuXHJcbiAgLyoqIEV4aWJpw6fDo28gZGUgbW9kYWwgY29udGVuZG8gY2FtcG8gcGFyYSBpbnNlcsOnw6NvIGRlIGPDs2RpZ28gZW52aWFkbyBwb3IgU01TICovXHJcbiAgU01TQ29kZSA9ICdzbXNDb2RlJyxcclxuXHJcbiAgLyoqIEV4aWJpw6fDo28gZGUgbW9kYWwgZGUgY29uZmlybWHDp8OjbyBkZSBlbnZpbyAqL1xyXG4gIENvbmZpcm1hdGlvbiA9ICdjb25maXJtYXRpb24nXHJcbn1cclxuIl19

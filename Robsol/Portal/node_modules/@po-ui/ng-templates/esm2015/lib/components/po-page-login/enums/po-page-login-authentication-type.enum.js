@@ -1,0 +1,15 @@
+/**
+ * @usedBy PoPageLoginComponent
+ *
+ * @description
+ *
+ * *Enum* para definição do tipo de autenticação.
+ */
+export var PoPageLoginAuthenticationType;
+(function (PoPageLoginAuthenticationType) {
+    /** Autenticação Basic */
+    PoPageLoginAuthenticationType["Basic"] = "Basic";
+    /** Autenticação Bearer */
+    PoPageLoginAuthenticationType["Bearer"] = "Bearer";
+})(PoPageLoginAuthenticationType || (PoPageLoginAuthenticationType = {}));
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoicG8tcGFnZS1sb2dpbi1hdXRoZW50aWNhdGlvbi10eXBlLmVudW0uanMiLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIuLi8uLi8uLi8uLi8uLi8uLi8uLi9wcm9qZWN0cy90ZW1wbGF0ZXMvc3JjL2xpYi9jb21wb25lbnRzL3BvLXBhZ2UtbG9naW4vZW51bXMvcG8tcGFnZS1sb2dpbi1hdXRoZW50aWNhdGlvbi10eXBlLmVudW0udHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUE7Ozs7OztHQU1HO0FBQ0gsTUFBTSxDQUFOLElBQVksNkJBTVg7QUFORCxXQUFZLDZCQUE2QjtJQUN2Qyx5QkFBeUI7SUFDekIsZ0RBQWUsQ0FBQTtJQUVmLDBCQUEwQjtJQUMxQixrREFBaUIsQ0FBQTtBQUNuQixDQUFDLEVBTlcsNkJBQTZCLEtBQTdCLDZCQUE2QixRQU14QyIsInNvdXJjZXNDb250ZW50IjpbIi8qKlxyXG4gKiBAdXNlZEJ5IFBvUGFnZUxvZ2luQ29tcG9uZW50XHJcbiAqXHJcbiAqIEBkZXNjcmlwdGlvblxyXG4gKlxyXG4gKiAqRW51bSogcGFyYSBkZWZpbmnDp8OjbyBkbyB0aXBvIGRlIGF1dGVudGljYcOnw6NvLlxyXG4gKi9cclxuZXhwb3J0IGVudW0gUG9QYWdlTG9naW5BdXRoZW50aWNhdGlvblR5cGUge1xyXG4gIC8qKiBBdXRlbnRpY2HDp8OjbyBCYXNpYyAqL1xyXG4gIEJhc2ljID0gJ0Jhc2ljJyxcclxuXHJcbiAgLyoqIEF1dGVudGljYcOnw6NvIEJlYXJlciAqL1xyXG4gIEJlYXJlciA9ICdCZWFyZXInXHJcbn1cclxuIl19

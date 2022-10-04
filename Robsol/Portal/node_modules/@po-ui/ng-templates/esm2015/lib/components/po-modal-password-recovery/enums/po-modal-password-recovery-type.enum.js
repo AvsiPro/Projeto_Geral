@@ -1,0 +1,17 @@
+/**
+ * @usedBy PoModalPasswordRecoveryComponent
+ *
+ * @description
+ *
+ * *Enum* para especificação do tipo de recuperação de senha.
+ */
+export var PoModalPasswordRecoveryType;
+(function (PoModalPasswordRecoveryType) {
+    /** Possibilita ao usuário optar por envio via email ou SMS */
+    PoModalPasswordRecoveryType["All"] = "all";
+    /** Definição para recuperação apenas por email */
+    PoModalPasswordRecoveryType["Email"] = "email";
+    /** Definição para recuperação apenas por SMS */
+    PoModalPasswordRecoveryType["SMS"] = "sms";
+})(PoModalPasswordRecoveryType || (PoModalPasswordRecoveryType = {}));
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoicG8tbW9kYWwtcGFzc3dvcmQtcmVjb3ZlcnktdHlwZS5lbnVtLmpzIiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiLi4vLi4vLi4vLi4vLi4vLi4vLi4vcHJvamVjdHMvdGVtcGxhdGVzL3NyYy9saWIvY29tcG9uZW50cy9wby1tb2RhbC1wYXNzd29yZC1yZWNvdmVyeS9lbnVtcy9wby1tb2RhbC1wYXNzd29yZC1yZWNvdmVyeS10eXBlLmVudW0udHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUE7Ozs7OztHQU1HO0FBQ0gsTUFBTSxDQUFOLElBQVksMkJBU1g7QUFURCxXQUFZLDJCQUEyQjtJQUNyQyw4REFBOEQ7SUFDOUQsMENBQVcsQ0FBQTtJQUVYLGtEQUFrRDtJQUNsRCw4Q0FBZSxDQUFBO0lBRWYsZ0RBQWdEO0lBQ2hELDBDQUFXLENBQUE7QUFDYixDQUFDLEVBVFcsMkJBQTJCLEtBQTNCLDJCQUEyQixRQVN0QyIsInNvdXJjZXNDb250ZW50IjpbIi8qKlxyXG4gKiBAdXNlZEJ5IFBvTW9kYWxQYXNzd29yZFJlY292ZXJ5Q29tcG9uZW50XHJcbiAqXHJcbiAqIEBkZXNjcmlwdGlvblxyXG4gKlxyXG4gKiAqRW51bSogcGFyYSBlc3BlY2lmaWNhw6fDo28gZG8gdGlwbyBkZSByZWN1cGVyYcOnw6NvIGRlIHNlbmhhLlxyXG4gKi9cclxuZXhwb3J0IGVudW0gUG9Nb2RhbFBhc3N3b3JkUmVjb3ZlcnlUeXBlIHtcclxuICAvKiogUG9zc2liaWxpdGEgYW8gdXN1w6FyaW8gb3B0YXIgcG9yIGVudmlvIHZpYSBlbWFpbCBvdSBTTVMgKi9cclxuICBBbGwgPSAnYWxsJyxcclxuXHJcbiAgLyoqIERlZmluacOnw6NvIHBhcmEgcmVjdXBlcmHDp8OjbyBhcGVuYXMgcG9yIGVtYWlsICovXHJcbiAgRW1haWwgPSAnZW1haWwnLFxyXG5cclxuICAvKiogRGVmaW5pw6fDo28gcGFyYSByZWN1cGVyYcOnw6NvIGFwZW5hcyBwb3IgU01TICovXHJcbiAgU01TID0gJ3NtcydcclxufVxyXG4iXX0=
