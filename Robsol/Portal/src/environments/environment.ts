@@ -4,7 +4,7 @@
 
 export const environment = {
   production: false,
-  api: 'http://200.98.81.201:40191/rest/'//'http://200.98.81.201:40160/rest/'
+  api: 'http://200.98.81.201:40160/rest/'
 };
 
 /*
