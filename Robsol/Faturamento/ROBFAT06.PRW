@@ -11,7 +11,6 @@
     @since 23/08/2022
     @version 1
 /*/
-
 User Function ROBFAT06()
 
 Local aList0    := {}
@@ -21,9 +20,15 @@ Local cAliasSQL := GetNextAlias()
 Local aStatus   := {'Aberto','Atendido','Negado'}
 
 Private cMsgNew   := space(1024)
+Private cVend1    := ''
 
 SetPrvt("oDlg1","oGrp1","oGrp2","oFld1","oBtn1","oBtn2","oList0","oList1","oCombo1")
 SetPrvt("oSay1","oSay2","oSay3","oSay4","oSay5","oSay6","oSay7","oSay8","oSay9","oSay10","oSay11","oSay12","oSay13","oSay14","oSay16","oSay17")
+
+    If Z50->Z50_STATUS == '4'
+        MsgAlert('Não é possível atender um pedido finalizado.')
+        Return
+    EndIf
 
     cQuery := " SELECT TOP 1 * FROM "+RetSqlName('Z50')+" Z50 "
     cQuery += " INNER JOIN "+RetSqlName('SF2')+" SF2 "
@@ -52,6 +57,10 @@ SetPrvt("oSay1","oSay2","oSay3","oSay4","oSay5","oSay6","oSay7","oSay8","oSay9",
 	MPSysOpenQuery(cQuery,cAliasSQL)
 
     While (cAliasSQL)->(!EoF())
+
+        If Empty(cVend1)
+            cVend1 := Alltrim((cAliasSQL)->C5_VEND1)
+        EndIf
 
         Aadd(aList0,{;
             Alltrim((cAliasSQL)->Z50_CODIGO),;
@@ -168,10 +177,17 @@ SetPrvt("oSay1","oSay2","oSay3","oSay4","oSay5","oSay6","oSay7","oSay8","oSay9",
 Return
 
 
+/*/{Protheus.doc} fGrvStatus
+    @description Realiza a gravaçao dos Status ao atender um chamado
+    @type User Function
+    @author Felipe Mayer
+    @since 30/09/2022
+/*/
 Static Function fGrvStatus(nStatus)
 
 Default nStatus := 1
 
+Local lAtStat:= .F.
 Local aStatus:= {'1=Aberto','2=Atendido','3=Negado'}
 Local cProd  := Space(TamSX3('B1_COD')[01])
 Local aParam := {{ 2, "Status Chamado",nStatus,aStatus,60,, .T. },;
@@ -204,17 +220,23 @@ Local aParam := {{ 2, "Status Chamado",nStatus,aStatus,60,, .T. },;
                 cMsgGrv += 'Status selecionado '+aStatus[cPar1]+CRLF
                 cMsgGrv += 'Observações anotadas '+cMsgNew
 
-                RecLock('Z50', .F.)
-                    Z50->Z50_STATUS := cValToChar(cPar1)
-                    Z50->Z50_OBSATD := cObsOld + CRLF + Alltrim(cMsgGrv)
-                Z50->(MsUnlock())
-
                 If cPar1 == 2
-                    Processa({|| fGeraPV()}, "Gerando Pedido de Vendas...")
+                    Processa({|| lAtStat := fGeraPV(cPar2)}, "Gerando Pedido de Vendas...")
+
                 ElseIf cPar1 == 3
                     MsgInfo('Atendimento Negado pelo atendente!')
+                    lAtStat := .T.
+
                 ElseIf cPar1 == 1
                     MsgInfo('Atendimento em aberto!')
+                    lAtStat := .T.
+                EndIf
+                
+                If lAtStat
+                    RecLock('Z50', .F.)
+                        Z50->Z50_STATUS := cValToChar(cPar1)
+                        Z50->Z50_OBSATD := cObsOld + CRLF + Alltrim(cMsgGrv)
+                    Z50->(MsUnlock())
                 EndIf
 
                 oDlg1:end()
@@ -225,12 +247,210 @@ Local aParam := {{ 2, "Status Chamado",nStatus,aStatus,60,, .T. },;
 Return
 
 
-Static Function fGeraPV()
+/*/{Protheus.doc} ENCERCHM
+    @description Responsavel por finalizar o chamado
+    @type User Function
+    @author Felipe Mayer
+    @since 30/09/2022
+/*/
+User Function ENCERCHM()
 
+Local lEncerra:= .F.
+Local aStatus := {'1=Aberto','2=Atendido','3=Negado'}
+Local cStatus := ''
+Local cMsgGrv := ''
+Local cObsOld := ''
+
+Local cMultG := ""
+Local oTMultiget,oTButton1,oSay1,oSay2,oSay3,oSay4
+Local cMsgFin := 'Os produtos enviados via chamado, realmente possuem defeito de fabricação?'
+Local cMsgFin2:= 'Caso não atendam a política de garantia, será gerado um título financeiro para o cliente.'
+Local aItems:= {'Atende','Não atende'}
+
+    cStatus := Z50->Z50_STATUS
+
+    If cStatus == '4'
+        MsgAlert('Pedido já foi finalizado.')
+        Return
+    EndIf
+
+    cObsOld := Alltrim(Z50->Z50_OBSATD)+CRLF+'-------------'
+
+    cMsgGrv := 'Data: '+cvaltochar(dDatabase)+' Hora '+cvaltochar(time())+CRLF
+    cMsgGrv += 'Usuário: '+cUserName+CRLF
+    cMsgGrv += 'Ultimo Status: '+ aStatus[Val(cStatus)]+CRLF
+
+    If cStatus == '2'
+
+        DEFINE DIALOG oDlg TITLE "Finalizar Atendimento" FROM 180, 180 TO 520, 750 PIXEL
+
+            oSay1 := TSay():New(006, 003, {|| cMsgFin },oDlg,"",TFont():New("Arial",,-16),,,,.T.,RGB(031,073,125),,300,30,,,,,,.F.,,)
+            oSay2 := TSay():New(024, 003, {|| cMsgFin2},oDlg,"",TFont():New("Arial",,-16),,,,.T.,RGB(031,073,125),,300,30,,,,,,.F.,,)
+            oSay3 := TSay():New(060, 003, {|| 'Escreva a justificativa:'},oDlg,"",TFont():New("Arial",,-18,,.T.),,,,.T.,RGB(031,073,125),,200,30,,,,,,.F.,,)
+            oSay4 := TSay():New(153, 053, {|| 'política de garantia'},oDlg,"",TFont():New("Arial",,-12,,.T.),,,,.T.,RGB(031,073,125),,200,30,,,,,,.F.,,)
+
+            oTMultiget := TMultiget():Create(oDlg,{|u|if(pCount()>0,cMultG:=u,cMultG)},72,03,280,72,,,,,,.T.)
+
+            cCombo1 := aItems[1]    
+            oCombo1 := TComboBox():New(150,03,{|u|if(PCount()>0,cCombo1:=u,cCombo1)}, aItems,48,20,oDlg,,{|| },,RGB(031, 073, 125),,.T.,TFont():New("Arial",,-12,,.T.),,,,,,,,'cCombo1')
+            
+            oTButton1 := TButton():New(150,242,"Confirmar",oDlg,{||oDlg:end()},40,15,,TFont():New("Arial",,-12,,.T.),.F.,.T.,.F.,,.F.,,,.F.)
+        
+        ACTIVATE DIALOG oDlg CENTERED
+
+        If !Empty(cMultG)
+            If cCombo1 == 'Atende'
+                lEncerra := .T.
+            Else
+                Processa({|| lEncerra := fGeraTit()}, "Gerando Titulo no Financeiro...")
+            EndIf
+
+            If lEncerra
+                cMsgGrv += 'Justificativa: '+cMultG+CRLF
+            EndIf
+        Else
+            MsgAlert('Obrigatório inserir a justificativa', 'ENCERCHM')
+        EndIf
+
+    ElseIf cStatus == '3'
+        If MsgYesNo('Esse chamado foi negado anteriormente, deseja mesmo encerrar?', 'ENCERCHM')
+            lEncerra := .T.
+        EndIf
+
+    Else
+        MsgAlert('Não é possível finalizar um chamado em aberto. Por favor, verifique as etapas de atendimento.')
+    EndIf
+
+    If lEncerra
+        MsgInfo('Chamado Finalizado!')
+
+        cMsgGrv += 'Chamado Finalizado'
+
+        RecLock('Z50', .F.)
+            Z50->Z50_STATUS := '4'
+            Z50->Z50_OBSATD := cObsOld + CRLF + Alltrim(cMsgGrv)
+        Z50->(MsUnlock())
+    Else
+        MsgAlert('Operação Cancelada!')
+    EndIf
 
 Return
 
 
+
+/*/{Protheus.doc} fGeraPV
+    @description Gera Pedido de Vendas
+    @type Static Function
+    @author Felipe Mayer
+    @since 01/10/2022
+/*/
+Static Function fGeraPV(cProd)
+
+Local cDoc       := GetSxeNum("SC5", "C5_NUM")
+Local cA1Cod     := PadR(Z50->Z50_CODCLI,TamSX3("C5_CLIENTE")[1])   // Código do Cliente
+Local cA1Loja    := PadR(Z50->Z50_LOJCLI,TamSX3("C5_LOJACLI")[1])   // Loja do Cliente
+Local cB1Cod     := PadR(cProd,TamSX3("B1_COD")[1])                 // Código do Produto
+Local cF4TES     := SuperGetMV('MV_TESGAR',.F.,"501")               // Código do TES
+Local cE4Codigo  := SuperGetMV('MV_CNDGAR',.F.,"001")               // Código da Condição de Pagamento
+Local cNaturez   := SuperGetMV('MV_NATPGAR',.F.,"11010001")
+Local aCabec     := {}
+Local aItens     := {}
+Local aLinha     := {}
+Local lRet       := .T. 
+
+Private lMsErroAuto    := .F.
+Private lAutoErrNoFile := .F.
+ 
+aadd(aCabec, {"C5_NUM",     cDoc,      Nil})
+aadd(aCabec, {"C5_TIPO",    "N",       Nil})
+aadd(aCabec, {"C5_XCLASPV", "2",       Nil})
+aadd(aCabec, {"C5_CLIENTE", cA1Cod,    Nil})
+aadd(aCabec, {"C5_LOJACLI", cA1Loja,   Nil})
+aadd(aCabec, {"C5_LOJAENT", cA1Loja,   Nil})
+aadd(aCabec, {"C5_CONDPAG", cE4Codigo, Nil})
+aadd(aCabec, {"C5_TIPOCLI", "F",       Nil})
+aadd(aCabec, {"C5_NATUREZ", PadR(cNaturez,TamSX3("C5_NATUREZ")[1]),Nil})
+aadd(aCabec, {"C5_VEND1",   PadR(cVend1,TamSX3("C5_VEND1")[1]),Nil})
+
+aadd(aLinha,{"C6_ITEM",   '01',           Nil})
+aadd(aLinha,{"C6_PRODUTO",cB1Cod,         Nil})
+aadd(aLinha,{"C6_QTDVEN", 1,              Nil})
+aadd(aLinha,{"C6_PRCVEN", Z50->Z50_PRECO, Nil})
+aadd(aLinha,{"C6_PRUNIT", Z50->Z50_PRECO, Nil})
+aadd(aLinha,{"C6_VALOR",  Z50->Z50_PRECO, Nil})
+aadd(aLinha,{"C6_TES",    cF4TES,         Nil})
+aadd(aItens, aLinha)
+
+MSExecAuto({|a, b, c, d| MATA410(a, b, c, d)}, aCabec, aItens, 3, .F.)
+
+If !lMsErroAuto
+    MsgInfo("Pedido de Vendas gerado com sucesso! <b>" + cDoc + "</b>")
+    ConfirmSX8()
+Else
+    lRet := .F.
+    RollbackSX8()
+    If MsgYesNo('Erro ao gerar o pedido de vendas, deseja visualizar?')
+        MostraErro()
+    EndIf
+EndIf
+
+
+Return lRet
+
+
+
+/*/{Protheus.doc} fGeraTit
+    @description Gera titulo no financeiro Contas a Receber
+    @type Static Function
+    @author Felipe Mayer
+    @since 01/10/2022
+/*/
+Static Function fGeraTit()
+
+Local aVetSE1 := {}
+Local lRet    := .T.
+Local cHist   := SuperGetMV('MV_HSTGAR',.F.,'Fora da politica de garantia')
+Local nVenc   := SuperGetMV('MV_VNCGAR',.F.,10)
+Local cTipo   := SuperGetMV('MV_TIPGAR',.F.,'BOL')
+Local cNatu   := SuperGetMV('MV_NATGAR',.F.,'OUTROS')
+
+    aAdd(aVetSE1, {"E1_FILIAL",  FWxFilial("SE1")                             , Nil})
+    aAdd(aVetSE1, {"E1_NUM",     PadR(Z50->Z50_NOTA,TamSX3("E1_NUM")[1])      , Nil})
+    aAdd(aVetSE1, {"E1_PREFIXO", 'GAR'                                        , Nil})
+    aAdd(aVetSE1, {"E1_TIPO",    PadR(cTipo,TamSX3("E1_TIPO")[1])             , Nil})
+    aAdd(aVetSE1, {"E1_NATUREZ", PadR(cNatu,TamSX3("E1_NATUREZ")[1])          , Nil})
+    aAdd(aVetSE1, {"E1_CLIENTE", PadR(Z50->Z50_CODCLI,TamSX3("E1_CLIENTE")[1]), Nil})
+    aAdd(aVetSE1, {"E1_LOJA",    PadR(Z50->Z50_LOJCLI,TamSX3("E1_LOJA")[1])   , Nil})
+    aAdd(aVetSE1, {"E1_EMISSAO", dDataBase                                    , Nil})
+    aAdd(aVetSE1, {"E1_VENCTO",  dDataBase+nVenc                              , Nil})
+    aAdd(aVetSE1, {"E1_VENCREA", dDataBase+nVenc                              , Nil})
+    aAdd(aVetSE1, {"E1_VALOR",   Z50->Z50_PRECO                               , Nil})
+    aAdd(aVetSE1, {"E1_HIST",    cHist                                        , Nil})
+    aAdd(aVetSE1, {"E1_MOEDA",   1                                            , Nil})
+    
+    Begin Transaction
+        lMsErroAuto := .F.
+        MSExecAuto({|x,y| FINA040(x,y)}, aVetSE1, 3)
+        
+        If lMsErroAuto
+            lRet := .F.
+            DisarmTransaction()
+
+            If MsgYesNo('Erro ao gerar titulo financeiro, deseja visualizar?')
+                MostraErro()
+            EndIf
+        EndIf
+    End Transaction
+
+Return lRet
+
+
+/*/{Protheus.doc} RobToDef
+    @description Controle de Legendas de Tipo de Defeito
+    @type Static Function
+    @author Felipe Mayer
+    @since 01/10/2022
+/*/
 Static Function RobToDef(nIndex,cProp)
 
 Local cRet := ''
