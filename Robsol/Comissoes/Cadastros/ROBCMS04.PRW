@@ -310,7 +310,7 @@ Local aArea :=  GetArea()
 Local aRet  :=  {}
 Local cQuery:=  ""
 Local cMesAn:=  substr(strtran(cvaltochar(DtAt),"/"),3)
-Local cAuxM :=  " 0822" //BuscaMes(cMesAn)
+Local cAuxM :=  BuscaMes(cMesAn)
 /*
 cQuery := "SELECT D2_ITEM,D2_COD,B1_GRUPO,BM_GRUPO,F2_VEND1,BM_XMODELO,"
 cQuery += "Z03_DESGRI,D2_PEDIDO,F2_DOC,F2_SERIE,F2_CLIENTE,F2_LOJA,"
@@ -322,7 +322,7 @@ cQuery := "SELECT DISTINCT F4_CODIGO,D2_ITEM,D2_COD,D2_PEDIDO,D2_DESC,D2_TOTAL, 
 cQuery += " B1_GRUPO,BM_GRUPO,"
 cQuery += " F2_VEND1,F2_VEND2,F2_VEND2,F2_DOC,F2_SERIE,F2_CLIENTE,F2_LOJA,F2_EMISSAO,F2_VALMERC,"
 cQuery += " C5_EMISSAO,C5_CONDPAG,C5_XCLASPV,"
-cQuery += " ( SELECT E4_DESCRI FROM SE4010 WHERE E4_CODIGO = C5_CONDPAG ) AS DESCRIPAGTO,"
+cQuery += " ( SELECT E4_DESCRI FROM "+RetSQLName("SE4")+" WHERE E4_CODIGO = C5_CONDPAG ) AS DESCRIPAGTO,"
 cQuery += " Z43_DESCRI,"
 cQuery += " BM_XMODELO,"
 cQuery += " Z03_DESGRI,Z03_CODGRI,"

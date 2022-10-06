@@ -507,6 +507,7 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
 				aadd(aCabec, {"C5_X_OBS"    , cObsApp		,Nil})
 				aadd(aCabec, {"C5_ZZSTATU"  , 'X'			,Nil})
 
+				cItem := '01'
 
 				FOR nX := 1 to len(aItensCad)  
 					aLinha := {}
@@ -520,12 +521,14 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
 					else
 						nQtd := aItensCad[nX]:QUANTIDADE
 					EndIf 
-					aadd(aLinha,{"C6_ITEM"		, STRZERO(nX,2)					, Nil})
+					aadd(aLinha,{"C6_ITEM"		, cItem				, Nil}) //STRZERO(nX,2)	
 					aadd(aLinha,{"C6_PRODUTO"	, aItensCad[nX]:PRODUTO			, Nil})
 					aadd(aLinha,{"C6_QTDVEN"	, nQtd							, Nil})
 					aadd(aLinha,{"C6_PRCVEN"	, val(STRTRAN(aItensCad[nX]:VALOR,",","."))	, Nil})
 					aadd(aLinha,{"C6_PRUNIT"	, val(STRTRAN(aItensCad[nX]:VALOR,",","."))	, Nil})
 					aadd(aLinha,{"C6_VALOR"		, val(STRTRAN(aItensCad[nX]:VALOR,",",".")) * nQtd	, Nil})
+
+					cItem := Soma1(cItem)
 					
 					If aItensCad[nX]:GetJsonObject("BENEF") <> Nil
 						If aItensCad[nX]:BENEF == "B"
