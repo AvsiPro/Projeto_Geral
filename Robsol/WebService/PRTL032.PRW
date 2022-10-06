@@ -88,7 +88,7 @@ WsMethod GET WsReceive CODIGO,COD_CLIENTE,LOJA_CLIENTE WsService FieldService
 	cQuery += " INNER JOIN SYS_COMPANY M0 ON M0_CODIGO='01' AND M0_CODFIL=D2_FILIAL AND M0.D_E_L_E_T_=' '"
 	cQuery += " WHERE D2_FILIAL BETWEEN ' ' AND 'ZZ'"
 	cQuery += " AND D2_COD='"+cCode+"'"
-	//cQuery += " AND D2_CLIENTE='"+cCliente+"' AND D2_LOJA='"+cLojCli+"'"
+	cQuery += " AND D2_CLIENTE='"+cCliente+"' AND D2_LOJA='"+cLojCli+"'"
 	//cQuery += " AND D2_CLIENTE = '44667313'" //05290313
 	cQuery += " AND D2.D_E_L_E_T_=' '"
 
