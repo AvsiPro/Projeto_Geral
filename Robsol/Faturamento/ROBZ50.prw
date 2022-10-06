@@ -22,21 +22,23 @@ User Function ROBZ50()
     oBrowseZ50:SetDescription(cTitulo)
 
     oBrowseZ50:AddLegend( "Z50->Z50_STATUS == '1'", "YELLOW", "Chamado Aberto" )
-    oBrowseZ50:AddLegend( "Z50->Z50_STATUS == '2'", "GREEN",  "Chamado Atendido" )
-    oBrowseZ50:AddLegend( "Z50->Z50_STATUS == '3'", "RED",    "Chamado Negado" )
+    oBrowseZ50:AddLegend( "Z50->Z50_STATUS == '2'", "BLUE",   "Chamado Atendido")
+    oBrowseZ50:AddLegend( "Z50->Z50_STATUS == '3'", "RED",    "Chamado Negado")
+    oBrowseZ50:AddLegend( "Z50->Z50_STATUS == '4'", "GREEN",  "Chamado Finalizado")
 
     oBrowseZ50:Activate()
     
 Return NIL
 
-
+ 
 Static Function MenuDef()
 
 Local aRot := {}
 
-    ADD OPTION aRot TITLE 'Visualizar'      ACTION 'VIEWDEF.ROBZ50'  OPERATION MODEL_OPERATION_VIEW  ACCESS 0
-    ADD OPTION aRot TITLE 'Atender Chamado' ACTION 'u_ROBFAT06'      OPERATION 3                     ACCESS 0
-    ADD OPTION aRot TITLE 'Legenda'         ACTION 'u_ROBTLEG'       OPERATION 6                     ACCESS 0
+    ADD OPTION aRot TITLE 'Visualizar'        ACTION 'VIEWDEF.ROBZ50'  OPERATION MODEL_OPERATION_VIEW  ACCESS 0
+    ADD OPTION aRot TITLE 'Atender Chamado'   ACTION 'u_ROBFAT06'      OPERATION 3                     ACCESS 0
+    ADD OPTION aRot TITLE 'Finalizar Chamado' ACTION 'u_ENCERCHM'      OPERATION 6                     ACCESS 0
+    ADD OPTION aRot TITLE 'Legenda'           ACTION 'u_ROBTLEG'       OPERATION 7                     ACCESS 0
 
 Return aRot
 
@@ -78,9 +80,10 @@ User Function ROBTLEG()
 
 Local aLegenda := {}
      
-    AADD(aLegenda,{"BR_VERDE",       "Chamado Atendido"  })
-    AADD(aLegenda,{"BR_AMARELO",     "Chamado Aberto"    })
-    AADD(aLegenda,{"BR_VERMELHO",    "Chamado Negado"    })
+    AADD(aLegenda,{"BR_AZUL",        "Chamado Atendido"   })
+    AADD(aLegenda,{"BR_AMARELO",     "Chamado Aberto"     })
+    AADD(aLegenda,{"BR_VERMELHO",    "Chamado Negado"     })
+    AADD(aLegenda,{"BR_VERDE",       "Chamado Finalizado" })
      
     BrwLegenda(cTitulo, "Status", aLegenda)
 Return
