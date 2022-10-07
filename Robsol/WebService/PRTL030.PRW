@@ -95,9 +95,9 @@ WsMethod GET WsReceive CODIGO,VENDEDOR,PAGINA,STATUS,EMISSAO,CLIENTE,CNPJ,FILTRO
 	If !Empty(cCode) .AND. Empty(cFilter)
 		cFilpsq := ''
 
-		If SC5->(DBSeek(xFilial("SC5")+cCode))
+		If SC5->(DBSeek(cCode)) //xFilial("SC5")+cCode
 			cFilpsq := xFilial("SC5")
-		ElseIf SC5->(DBSeek('0103'+cCode))
+		ElseIf SC5->(DBSeek(cCode)) //'0103'+cCode
 			cFilpsq := '0103'
 		Endif 
 		If SC5->(DBSeek(cFilpsq+cCode))
@@ -206,7 +206,7 @@ WsMethod GET WsReceive CODIGO,VENDEDOR,PAGINA,STATUS,EMISSAO,CLIENTE,CNPJ,FILTRO
 			EndIf 
 
 			::SetResponse(cVirg+'{')
-			::SetResponse('"codigo":"'+aAux[nCont,01]+'",')
+			::SetResponse('"codigo":"'+aAux[nCont,11]+aAux[nCont,01]+'",')
 			::SetResponse('"status":"'+If(!Empty(aAux[nCont,06]),'Faturado em '+cvaltochar(cDtFat),(If(aAux[nCont,08]=="3","Pendencias","Em Aberto")))+'",')
 			::SetResponse('"emissao":"'+cvaltochar(stod(aAux[nCont,05]))+'",')
 			::SetResponse('"razao_social":"'+Alltrim(aAux[nCont,03])+'",')

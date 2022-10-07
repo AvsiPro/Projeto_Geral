@@ -336,6 +336,10 @@ EndIf
 If !Empty(cValido)
     MsgAlert(cValido)
 Else
+    If SM0->M0_CODFIL <> SC5->C5_FILIAL 
+        cFilant := SC5->C5_FILIAL 
+    EndIf 
+    
     nVlrPed := PegaVlrC6(SC5->C5_FILIAL,SC5->C5_NUM)
     cJson := '{'
     cJson += '"cnpjRemetente": "'+SM0->M0_CGC+'",'
