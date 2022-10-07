@@ -408,7 +408,7 @@ Static Function ImpEtiq(aItens)
                 cEndE      := SA1->A1_ENDENT
                 cBairroE   := SA1->A1_BAIRROE
                 cCepE      := SA1->A1_CEPE
-                cMunE      := SA1->A1_CODMUNE
+                cMunE      := SA1->A1_MUNE
                 cEstE      := SA1->A1_ESTE
             ELSE
                 cEndE      := SA1->A1_END
