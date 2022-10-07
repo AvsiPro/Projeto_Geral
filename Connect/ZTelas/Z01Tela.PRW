@@ -6,6 +6,7 @@
 STATIC cTitulo    :=    "Cadastro de Tipo"
  
 USER FUNCTION Z01Tela()
+
     LOCAL aArea      :=    GetArea()
     LOCAL oBrowse
     LOCAL cFunBkp    :=    FunName()
@@ -22,8 +23,8 @@ USER FUNCTION Z01Tela()
     oBrowse:SetDescription(cTitulo)
      
     //Legendas
-    oBrowse:AddLegend( "Z01->Z01_MSBLQL = '2'", "GREEN",    "Não bloqueado" )
-    oBrowse:AddLegend( "Z01->Z01_MSBLQL =  '1'", "RED",    "Bloqueado" )
+    oBrowse:AddLegend( "Z01->Z01_MSBLQL = '2'", "GREEN", "Não bloqueado" )
+    oBrowse:AddLegend( "Z01->Z01_MSBLQL = '1'", "RED",   "Bloqueado" )
      
     //Filtrando
     //oBrowse:SetFilterDefault("Z01->Z01_CODIGO >= '000000' .And. Z01->Z01_CODIGO <= 'ZZZZZZ'")

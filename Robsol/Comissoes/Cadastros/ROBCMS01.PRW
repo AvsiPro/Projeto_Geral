@@ -196,6 +196,11 @@ Private oVd     := LoadBitmap(GetResources(),'BR_VERDE')
 Private oVm     := LoadBitmap(GetResources(),'BR_VERMELHO')
 Private oAm     := LoadBitmap(GetResources(),'BR_AMARELO')
 
+IF Select("SM0") == 0
+    RpcSetType(3)
+    RPCSetEnv("01","0101")
+ENDIF
+
 //Busca itens a exibir na tela equipe comercial
 Busca()
 

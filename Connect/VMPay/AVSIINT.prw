@@ -63,16 +63,16 @@ DEFAULT contrato   := ''
 
 //PREPARE ENVIRONMENT EMPRESA "02" FILIAL "01" //MODULO "FAT" TABLES "SA1"        
 
-//Aadd(aList,{.T.,'','','','','','','','','','','','','','','','','',''})
-//Aadd(aList1,{.T.,'','','','','','','','','','','','','','','','','',''})
-//Aadd(aList2,{.T.,'','','','','','','','','','','','','','','','','',''})
-//Aadd(aList3,{.T.,'','','','','','','','','','','','','','','','','',''})
-//Aadd(aList4,{.T.,'','','','','','','','','','','','','','','','','',''})
+Aadd(aList,{.T.,'','','','','','','','','','','','','','','','','',''})
+Aadd(aList1,{.T.,'','','','','','','','','','','','','','','','','',''})
+Aadd(aList2,{.T.,'','','','','','','','','','','','','','','','','',''})
+Aadd(aList3,{.T.,'','','','','','','','','','','','','','','','','',''})
+Aadd(aList4,{.T.,'','','','','','','','','','','','','','','','','',''})
 Aadd(aList5,{.T.,'','','','','','','','','','','','','','','','','',''})
 Aadd(aList6,{.T.,'','','','','','','','','','','','','','','','','',''})
 Aadd(aList7,{.T.,'','','','','','','','','','','','','','','','','',''})
-//Aadd(aList8,{.T.,'','','','','','','','','','','','','','','','','',''})
-//Aadd(aList9,{.T.,'','','','','','','','','','','','','','','','','',''})
+Aadd(aList8,{.T.,'','','','','','','','','','','','','','','','','',''})
+Aadd(aList9,{.T.,'','','','','','','','','','','','','','','','','',''})
 Aadd(aList10,{.T.,'','','','','','','','','','','','','','','','','',''})
 
 DbSelectArea("SBM")
@@ -82,7 +82,7 @@ WHILE !EOF()
     Dbskip()         
 ENDDO
 
-Processa({|| Busca1(contrato),"Aguarde, buscando ativos"})
+// Processa({|| Busca1(contrato),"Aguarde, buscando ativos"})
 
 WHILE !empty(procname(nCont))
     IF alltrim(UPPER(procname(nCont))) $ "TECA201"
@@ -273,7 +273,7 @@ oDlg1    := MSDialog():New( 017,058,628,1344,"Pick-List",,,.F.,,,,,,.T.,,,.T. )
         
         ENDMENU                                                                           
     
-        oList3:bRClicked := { |oObject,nX,nY| oMenuP:Activate( nX, (nY-10), oObject ) }
+        // oList3:bRClicked := { |oObject,nX,nY| oMenuP:Activate( nX, (nY-10), oObject ) }
     ENDIF                                                                               
 
     // Menu popup grid 2
@@ -282,7 +282,7 @@ oDlg1    := MSDialog():New( 017,058,628,1344,"Pick-List",,,.F.,,,,,,.T.,,,.T. )
     
     ENDMENU                                                                           
 
-    oList8:bRClicked := { |oObject,nX,nY| oMenu8:Activate( nX, (nY-10), oObject ) }
+    // oList8:bRClicked := { |oObject,nX,nY| oMenu8:Activate( nX, (nY-10), oObject ) }
     
 oDlg1:Activate(,,,.T.)
 
