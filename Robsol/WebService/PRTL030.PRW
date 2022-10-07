@@ -68,7 +68,7 @@ WsMethod GET WsReceive CODIGO,VENDEDOR,PAGINA,STATUS,EMISSAO,CLIENTE,CNPJ,FILTRO
 	::SetContentType("application/json")
 	
 	RpcSetType(3)
-	RPCSetEnv("01","0101")
+	RPCSetEnv("01",'0103')
 	
 	conout("chegou aqui PRTL030")
 
@@ -83,7 +83,7 @@ WsMethod GET WsReceive CODIGO,VENDEDOR,PAGINA,STATUS,EMISSAO,CLIENTE,CNPJ,FILTRO
 	conout(cStatus)
 	conout(cEmissao)
 	conout(cCliente)
-	conout(cCode)
+	conout('Pedido ' +If(cCode<>nil,cCode,''))
 	conout(cFilter)
 	conout(cRazao)
 	conout('Vendedor '+CodVend)
@@ -95,12 +95,12 @@ WsMethod GET WsReceive CODIGO,VENDEDOR,PAGINA,STATUS,EMISSAO,CLIENTE,CNPJ,FILTRO
 	If !Empty(cCode) .AND. Empty(cFilter)
 		cFilpsq := ''
 
-		If SC5->(DBSeek(cCode)) //xFilial("SC5")+cCode
+		/*If SC5->(DBSeek(cCode)) //xFilial("SC5")+cCode
 			cFilpsq := xFilial("SC5")
 		ElseIf SC5->(DBSeek(cCode)) //'0103'+cCode
 			cFilpsq := '0103'
-		Endif 
-		If SC5->(DBSeek(cFilpsq+cCode))
+		Endif */
+		If SC5->(DBSeek(cCode))
 			
 			::SetResponse('{')
 			::SetResponse('"items" : [')
