@@ -3,7 +3,7 @@
 #INCLUDE 'FWMVCDef.ch'
  
 //Variáveis Estáticas
-STATIC cTitulo    :=    "Cadastro de Tipo"
+STATIC cTitulo    :=    "Cadastro de Sub-tipo"
  
 USER FUNCTION Z03Tela()
 
