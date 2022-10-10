@@ -1,13 +1,13 @@
-#INCLUDE 'PROTHEUS.CH'
-#INCLUDE 'RWMAKE.CH'
-#INCLUDE 'FONT.CH'
-#INCLUDE 'COLORS.CH'
-#INCLUDE "topconn.ch"
-#INCLUDE "tbiconn.ch"
+#INCLUDE "PROTHEUS.CH"
+#INCLUDE "RWMAKE.CH"
+#INCLUDE "FONT.CH"
+#INCLUDE "COLORS.CH"
+#INCLUDE "TOPCONN.CH"
+#INCLUDE "TBICONN.CH"
 
 /*
 ฑฑรฤฤฤฤฤฤฤฤฤฤลฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤดฑฑ
-ฑฑ Fonte     ณฑฑ AVSIINT                                                   ฑฑ    
+ฑฑ Fonte     ณฑฑ CONFATC01                                                   ฑฑ    
 ฑฑรฤฤฤฤฤฤฤฤฤฤลฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤดฑฑ
 ฑฑณUso       ณ  Integracao Protheus X VMPay                               ณฑฑ
 ฑฑรฤฤฤฤฤฤฤฤฤฤมฤฤฤยฤฤฤฤฤฤฤฤยฤฤฤฤฤฤยฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤดฑฑ
@@ -19,7 +19,7 @@
 ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
 ฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿*/
 
-USER FUNCTION AVSIINT(contrato)
+USER FUNCTION CONFATC01(contrato)
 
 LOCAL   nCont      :=    0
 LOCAL   lTeca      :=    .F.
@@ -48,8 +48,8 @@ PRIVATE aList6     :=    {}
 PRIVATE aList7     :=    {}
 PRIVATE aList8B    :=    {}
 PRIVATE aList8     :=    {}
-PRIVATE aList9B    :=    {}
-PRIVATE aList9     :=    {}
+// PRIVATE aList9B    :=    {}
+// PRIVATE aList9     :=    {}
 PRIVATE aList10    :=    {}
 PRIVATE oOk        :=    LoadBitmap(GetResources(),'br_verde')  //Controla se o pedido foi alterado ou nao no grid.
 PRIVATE oNo        :=    LoadBitmap(GetResources(),'br_vermelho')
@@ -61,8 +61,6 @@ DEFAULT contrato   := ''
         RPCSetEnv("01","0101")
     ENDIF
 
-//PREPARE ENVIRONMENT EMPRESA "02" FILIAL "01" //MODULO "FAT" TABLES "SA1"        
-
 Aadd(aList,{.T.,'','','','','','','','','','','','','','','','','',''})
 Aadd(aList1,{.T.,'','','','','','','','','','','','','','','','','',''})
 Aadd(aList2,{.T.,'','','','','','','','','','','','','','','','','',''})
@@ -72,7 +70,7 @@ Aadd(aList5,{.T.,'','','','','','','','','','','','','','','','','',''})
 Aadd(aList6,{.T.,'','','','','','','','','','','','','','','','','',''})
 Aadd(aList7,{.T.,'','','','','','','','','','','','','','','','','',''})
 Aadd(aList8,{.T.,'','','','','','','','','','','','','','','','','',''})
-Aadd(aList9,{.T.,'','','','','','','','','','','','','','','','','',''})
+// Aadd(aList9,{.T.,'','','','','','','','','','','','','','','','','',''})
 Aadd(aList10,{.T.,'','','','','','','','','','','','','','','','','',''})
 
 DbSelectArea("SBM")
@@ -210,7 +208,7 @@ oDlg1    := MSDialog():New( 017,058,628,1344,"Pick-List",,,.F.,,,,,,.T.,,,.T. )
 
     oGrp2    := TGroup():New( 152,284,198,424,"",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
 
-        oBmp1    := TBitmap():New( 159,288,044,034,,"\system\lgrl01.bmp",.F.,oGrp2,,,.F.,.T.,,"",.T.,,.T.,,.F. )
+        oBmp1    := TBitmap():New( 159,288,044,034,,"C:\Users\digog\OneDrive\Imagens\Saved Pictures\connect-vending-logo.png",.F.,oGrp2,,,.F.,.T.,,"",.T.,,.T.,,.F. )
         oBmp2    := TBitmap():New( 159,339,044,034,,"\system\lgvmp.bmp",.F.,oGrp2,,,.F.,.T.,,"",.T.,,.T.,,.F. )
         oSay1    := TSay():New( 160,386,{||"Pick List V. 2.0"},oGrp2,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,037,008)
         oSay2    := TSay():New( 178,386,{||"developed by"},oGrp2,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,035,008)
@@ -292,7 +290,7 @@ RETURN
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
 ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัอออออออออออออปฑฑ
-ฑฑบPrograma  ณAVSIINT   บAutor  ณMicrosiga           บ Data ณ  04/11/17   บฑฑ
+ฑฑบPrograma  ณCONFATC01   บAutor  ณMicrosiga           บ Data ณ  04/11/17   บฑฑ
 ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
 ฑฑบDesc.     ณ   Buscan inicial;                                          บฑฑ
 ฑฑบ          ณ                                                            บฑฑ
@@ -332,7 +330,7 @@ IF Select('TRB') > 0
     dbCloseArea()
 ENDIF
 
-MemoWrite("AVSIINT.SQL",cQuery)
+MemoWrite("CONFATC01.SQL",cQuery)
 DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
 
 DbSelectArea("TRB")  
@@ -369,7 +367,7 @@ IF Select('TRB') > 0
     dbCloseArea()
 ENDIF
 
-MemoWrite("AVSIINT.SQL",cQuery)
+MemoWrite("CONFATC01.SQL",cQuery)
 DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
     
 DbSelectArea("TRB")  
@@ -404,7 +402,7 @@ IF Select('TRB') > 0
     dbCloseArea()
 ENDIF
 
-MemoWrite("AVSIINT.SQL",cQuery)
+MemoWrite("CONFATC01.SQL",cQuery)
 DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
 
 DbSelectArea("TRB")  
@@ -424,7 +422,7 @@ IF Select('TRB') > 0
     dbCloseArea()
 ENDIF
 
-MemoWrite("AVSIINT.SQL",cQuery)
+MemoWrite("CONFATC01.SQL",cQuery)
 DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
     
 DbSelectArea("TRB")  
@@ -441,7 +439,7 @@ RETURN
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
 ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัอออออออออออออปฑฑ
-ฑฑบPrograma  ณAVSIINT   บAutor  ณMicrosiga           บ Data ณ  04/12/17   บฑฑ
+ฑฑบPrograma  ณCONFATC01   บAutor  ณMicrosiga           บ Data ณ  04/12/17   บฑฑ
 ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
 ฑฑบDesc.     ณ   Pesquisas                                                บฑฑ
 ฑฑบ          ณ                                                            บฑฑ
@@ -626,7 +624,7 @@ ElseIf cCombo1 == "6"
     
     IF len(aList) < 1
         IF !Empty(cBusca)
-            MsgAlert("Nใo encontrado Ativos com a Linha pesquisada.","busca2 - AVSIINT")
+            MsgAlert("Nใo encontrado Ativos com a Linha pesquisada.","busca2 - CONFATC01")
         ENDIF
         FOR nX := 1 TO len(aListB)
             Aadd(aList,aListB[nX])
@@ -644,7 +642,7 @@ ElseIf cCombo1 == "6"
     //oDlg1:refresh()
 ENDIF
 
-Fhelp()
+// Fhelp()
 
 RETURN
 
@@ -652,7 +650,7 @@ RETURN
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
 ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัอออออออออออออปฑฑ
-ฑฑบPrograma  ณAVSIINT   บAutor  ณMicrosiga           บ Data ณ  04/12/17   บฑฑ
+ฑฑบPrograma  ณCONFATC01   บAutor  ณMicrosiga           บ Data ณ  04/12/17   บฑฑ
 ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
 ฑฑบDesc.     ณ  Atualizacao dos itens conforme ativo selecionado          บฑฑ
 ฑฑบ          ณ                                                            บฑฑ
@@ -681,7 +679,7 @@ aList3 := {}
 aList4 := {}  
 aList6 := {}  
 aList8 := {} 
-aList9 := {}
+// aList9 := {}
 
 FOR nX := 1 TO len(aList3B)
     IF Alltrim(aList[oList:nAt,02]) == Alltrim(aList3B[nX,02])
@@ -768,20 +766,20 @@ oList8:nAt := 1
 oList8:SetArray(aList8)
 oList8:bLine := {||{aList8[oList8:nAt,01],;
                     aList8[oList8:nAt,02],; 
-                     aList8[oList8:nAt,03],;
-                     aList8[oList8:nAt,04],;
-                     aList8[oList8:nAt,05],;
-                     aList8[oList8:nAt,08]}} 
+                    aList8[oList8:nAt,03],;
+                    aList8[oList8:nAt,04],;
+                    aList8[oList8:nAt,05],;
+                    aList8[oList8:nAt,08]}} 
                      
-FOR nX := 1 TO len(aList9B)
-    IF Alltrim(aList9B[nX,04]) == Alltrim(aList[oList:nAt,02])
-        Aadd(aList9,aList9B[nX])
-    ENDIF
-NEXT nX
+// FOR nX := 1 TO len(aList9B)
+//     IF Alltrim(aList9B[nX,04]) == Alltrim(aList[oList:nAt,02])
+//         Aadd(aList9,aList9B[nX])
+//     ENDIF
+// NEXT nX
          
-IF len(aList9) < 1
-    Aadd(aList9,{'','','','','','','','','','','','','','','','','','',''})
-ENDIF
+// IF len(aList9) < 1
+//     Aadd(aList9,{'','','','','','','','','','','','','','','','','','',''})
+// ENDIF
 
 // oList9:nAt := 1
 // oList9:SetArray(aList9)
@@ -819,7 +817,7 @@ RETURN
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
 ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัอออออออออออออปฑฑ
-ฑฑบPrograma  ณAVSIINT   บAutor  ณMicrosiga           บ Data ณ  04/13/17   บฑฑ
+ฑฑบPrograma  ณCONFATC01   บAutor  ณMicrosiga           บ Data ณ  04/13/17   บฑฑ
 ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
 ฑฑบDesc.     ณ  Buscar Pick-Lists pendentes                               บฑฑ
 ฑฑบ          ณ                                                            บฑฑ
@@ -840,7 +838,7 @@ LOCAL lFlag    :=    .f.
 // LOCAL aAuxL    :=    {}
 LOCAL nX
                   
-aRet := U_PRTWS02()
+aRet := U_CONWSC02()
 
 //'','Mola','Produto','Descri็ใo','Quant.','Conf','Nivel Par','Saldo'
 FOR nX := 1 TO len(aRet)
@@ -913,7 +911,7 @@ oList1:bLine := {||{IF(aList1[oList1:nAt,01],oOk,oNo),;
 oList1:refresh()    
 oDlg1:refresh()     
 
-IF MsgYesNo("Filtrar somente ativos com Pick-List pendentes?","VMPay - AVSIINT")
+IF MsgYesNo("Filtrar somente ativos com Pick-List pendentes?","VMPay - CONFATC01")
     cCombo1 := "5"
     Busca2(1)    
 ENDIF
@@ -926,7 +924,7 @@ RETURN
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
 ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัอออออออออออออปฑฑ
-ฑฑบPrograma  ณAVSIINT   บAutor  ณMicrosiga           บ Data ณ  04/13/17   บฑฑ
+ฑฑบPrograma  ณCONFATC01   บAutor  ณMicrosiga           บ Data ณ  04/13/17   บฑฑ
 ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
 ฑฑบDesc.     ณ Edita a coluna de saldo do item do picklist                บฑฑ
 ฑฑบ          ณ                                                            บฑฑ
@@ -971,7 +969,7 @@ RETURN
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
 ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัอออออออออออออปฑฑ
-ฑฑบPrograma  ณAVSIINT   บAutor  ณMicrosiga           บ Data ณ  04/13/17   บฑฑ
+ฑฑบPrograma  ณCONFATC01   บAutor  ณMicrosiga           บ Data ณ  04/13/17   บฑฑ
 ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
 ฑฑบDesc.     ณ                                                            บฑฑ
 ฑฑบ          ณ                                                            บฑฑ
@@ -1017,7 +1015,7 @@ RETURN
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
 ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัอออออออออออออปฑฑ
-ฑฑบPrograma  ณAVSIINT  บAutor  ณMicrosiga           บ Data ณ  03/07/17   บฑฑ
+ฑฑบPrograma  ณCONFATC01  บAutor  ณMicrosiga           บ Data ณ  03/07/17   บฑฑ
 ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
 ฑฑบDesc.     ณ   Tela com saldo por item para administracao               บฑฑ
 ฑฑบ          ณ                                                            บฑฑ
@@ -1098,7 +1096,7 @@ RETURN
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
 ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัอออออออออออออปฑฑ
-ฑฑบPrograma  ณAVSIINT   บAutor  ณMicrosiga           บ Data ณ  08/13/18   บฑฑ
+ฑฑบPrograma  ณCONFATC01   บAutor  ณMicrosiga           บ Data ณ  08/13/18   บฑฑ
 ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
 ฑฑบDesc.     ณ                                                            บฑฑ
 ฑฑบ          ณ                                                            บฑฑ
@@ -1125,7 +1123,7 @@ oList1:refresh()
 oDlg1:refresh()
 oSaldo:end()                                
 
-Fhelp()
+// Fhelp()
 
 RETURN
 
@@ -1133,7 +1131,7 @@ RETURN
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
 ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัอออออออออออออปฑฑ
-ฑฑบPrograma  ณAVSIINT   บAutor  ณMicrosiga           บ Data ณ  03/07/17   บฑฑ
+ฑฑบPrograma  ณCONFATC01   บAutor  ณMicrosiga           บ Data ณ  03/07/17   บฑฑ
 ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
 ฑฑบDesc.     ณ                                                            บฑฑ
 ฑฑบ          ณ                                                            บฑฑ
@@ -1186,7 +1184,7 @@ RETURN
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
 ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัอออออออออออออปฑฑ
-ฑฑบPrograma  ณAVSIINT   บAutor  ณMicrosiga           บ Data ณ  08/13/18   บฑฑ
+ฑฑบPrograma  ณCONFATC01   บAutor  ณMicrosiga           บ Data ณ  08/13/18   บฑฑ
 ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
 ฑฑบDesc.     ณ                                                            บฑฑ
 ฑฑบ          ณ                                                            บฑฑ
@@ -1235,7 +1233,7 @@ RETURN
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
 ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัอออออออออออออปฑฑ
-ฑฑบPrograma  ณAVSIINT   บAutor  ณMicrosiga           บ Data ณ  04/13/17   บฑฑ
+ฑฑบPrograma  ณCONFATC01   บAutor  ณMicrosiga           บ Data ณ  04/13/17   บฑฑ
 ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
 ฑฑบDesc.     ณ  Inverte marcacao do alist com os ativos para geracao do   บฑฑ
 ฑฑบ          ณpedido                                                      บฑฑ
@@ -1272,7 +1270,7 @@ RETURN
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
 ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัอออออออออออออปฑฑ
-ฑฑบPrograma  ณAVSIINT   บAutor  ณMicrosiga           บ Data ณ  02/22/17   บฑฑ
+ฑฑบPrograma  ณCONFATC01   บAutor  ณMicrosiga           บ Data ณ  02/22/17   บฑฑ
 ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
 ฑฑบDesc.     ณ   Linha do primeiro grid                                   บฑฑ
 ฑฑบ          ณ                                                            บฑฑ
@@ -1304,7 +1302,7 @@ RETURN
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
 ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัอออออออออออออปฑฑ
-ฑฑบPrograma  ณAVSIINT   บAutor  ณMicrosiga           บ Data ณ  04/13/17   บฑฑ
+ฑฑบPrograma  ณCONFATC01   บAutor  ณMicrosiga           บ Data ณ  04/13/17   บฑฑ
 ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
 ฑฑบDesc.     ณ  Geracao do pedido de venda                                บฑฑ
 ฑฑบ          ณ                                                            บฑฑ
@@ -1335,12 +1333,12 @@ ENDIF
 
 FOR nContJ := 1 TO len(aList)
     IF aList[nContJ,01] .And. aList[nContJ,16]    
-           aPergs     := {}
-           aRet     := {}               
-           cAbast    :=    space(6)   
-           cMsgNf    :=    'Pedido Gerado pelo Pick-List do Ativo '+aList[nContJ,02]+space(095)
-        aAdd(aPergs ,{1,"Abastecedor",cAbast,"","","SA4","",040,.T.})
-        aAdd(aPergs ,{1,"Mensagem para nota",cMsgNf,"","","","",240,.T.})    
+        aPergs    :=    {}
+        aRet      :=    {}               
+        cAbast    :=    space(6)   
+        cMsgNf    :=    'Pedido Gerado pelo Pick-List do Ativo '+aList[nContJ,02]+space(095)
+        aAdd(aPergs ,{1, "Abastecedor"       , cAbast, "", "", "SA4", "", 040, .T.})
+        aAdd(aPergs ,{1, "Mensagem para nota", cMsgNf, "", "",    "", "", 240, .T.})    
         
         IF ParamBox(aPergs ,"Informe Abastec e Msg Nf Ativo "+aList[nContJ,02],@aRet)
             cAbast := aRet[1]
@@ -1350,26 +1348,26 @@ FOR nContJ := 1 TO len(aList)
         aCabec := {} 
         aItens := {}    
         lPick  := .F.
-        aAdd( aCabec , { "C5_FILIAL"     , xFilial("SC5")                    , Nil } ) 
-        aAdd( aCabec , { "C5_LOCADO"     , 'DOA'                                , Nil } )
-        aAdd( aCabec , { "C5_TIPO"         , 'N'                                , Nil } )
-        aAdd( aCabec , { "C5_CLIENTE"    , '036659'                              , Nil } )
-        aAdd( aCabec , { "C5_LOJACLI"    , '01'                                   , Nil } )
-        aAdd( aCabec , { "C5_CLIOS"        , aList[nContJ,17]                      , Nil } )
-        aAdd( aCabec , { "C5_LOJAOS"    , aList[nContJ,18]                       , Nil } ) 
-        aAdd( aCabec , { "C5_TRANSP"    , cAbast                               , Nil } ) 
-        Aadd( aCabec , { "C5_MENNOTA"    , cMsgNf                            , Nil } )
-        aAdd( aCabec , { "C5_CONDPAG"    , '999'                                , Nil } )    
+        aAdd( aCabec , { "C5_FILIAL"    , xFilial("SC5")      , Nil } ) 
+        aAdd( aCabec , { "C5_LOCADO"    , 'DOA'               , Nil } )
+        aAdd( aCabec , { "C5_TIPO"      , 'N'                 , Nil } )
+        aAdd( aCabec , { "C5_CLIENTE"   , '036659'            , Nil } )
+        aAdd( aCabec , { "C5_LOJACLI"   , '01'                , Nil } )
+        aAdd( aCabec , { "C5_CLIOS"     , aList[nContJ,17]    , Nil } )
+        aAdd( aCabec , { "C5_LOJAOS"    , aList[nContJ,18]    , Nil } ) 
+        aAdd( aCabec , { "C5_TRANSP"    , cAbast              , Nil } ) 
+        Aadd( aCabec , { "C5_MENNOTA"   , cMsgNf              , Nil } )
+        aAdd( aCabec , { "C5_CONDPAG"   , '999'               , Nil } )    
         
         IF cempant == "01"
-            aAdd( aCabec , { "C5_ICROTA", '999999'                            , Nil } )
+            aAdd( aCabec , { "C5_ICROTA", '999999'            , Nil } )
         ENDIF
         
-        aAdd( aCabec , { "C5_ICBCN"        , 'VDG'                                , Nil } )
-        aAdd( aCabec , { "C5_EMP"         , '6'                                , Nil } )
-        aAdd( aCabec , { "C5_ICBVBC"    , 1                                    , Nil } )
+        aAdd( aCabec , { "C5_ICBCN"     , 'VDG'               , Nil } )
+        aAdd( aCabec , { "C5_EMP"       , '6'                 , Nil } )
+        aAdd( aCabec , { "C5_ICBVBC"    , 1                   , Nil } )
         
-        aAdd( aCabec , { "C5_TABELA"    , '200'                                , Nil } )    
+        aAdd( aCabec , { "C5_TABELA"    , '200'               , Nil } )    
         nItem := 1
         FOR nJ := 1 TO len(aList1B)
             IF Alltrim(aList[nContJ,02]) == Alltrim(aList1B[nJ,08]) 
@@ -1398,14 +1396,14 @@ FOR nContJ := 1 TO len(aList)
                     cTesut := "557"
                 ENDIF
                 
-                aAdd( aLinha , { "C6_FILIAL"    , xFilial("SC6")                                     , Nil })
-                aAdd( aLinha , { "C6_ITEM"        , StrZero(nItem,TamSX3("C6_ITEM")[1])                , Nil })
-                aAdd( aLinha , { "C6_PRODUTO"    , aList1B[nJ,03]                                     , Nil })
-                aAdd( aLinha , { "C6_QTDVEN"    , aList1B[nJ,06]                                    , Nil })
-                aAdd( aLinha , { "C6_PRCVEN"    , nPreco                                            , Nil })
-//                aAdd( aLinha , { "C6_OPER"        , '03'                                                 , Nil })  
-                aAdd( aLinha , { "C6_TES"        , cTesut                                             , Nil })  
-                aAdd( aLinha , { "C6_QTDLIB"    , aList1B[nJ,06]                                    , Nil })
+                aAdd( aLinha , { "C6_FILIAL"     , xFilial("SC6")                         , Nil })
+                aAdd( aLinha , { "C6_ITEM"       , StrZero(nItem,TamSX3("C6_ITEM")[1])    , Nil })
+                aAdd( aLinha , { "C6_PRODUTO"    , aList1B[nJ,03]                         , Nil })
+                aAdd( aLinha , { "C6_QTDVEN"     , aList1B[nJ,06]                         , Nil })
+                aAdd( aLinha , { "C6_PRCVEN"     , nPreco                                 , Nil })
+                // aAdd( aLinha , { "C6_OPER"       , '03'                                   , Nil })  
+                aAdd( aLinha , { "C6_TES"        , cTesut                                 , Nil })  
+                aAdd( aLinha , { "C6_QTDLIB"     , aList1B[nJ,06]                         , Nil })
                 aAdd( aItens , aLinha ) 
                 nItem++
             ENDIF
@@ -1426,7 +1424,7 @@ FOR nContJ := 1 TO len(aList)
     ENDIF
 NEXT nContJ         
 
-MsgAlert("Pedido(s) Gerado(s) "+cMsgPed,"AVSIINT")
+MsgAlert("Pedido(s) Gerado(s) "+cMsgPed,"CONFATC01")
 oDlg1:end()
 
 RestArea(aArea)
@@ -1437,7 +1435,7 @@ RETURN
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
 ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัอออออออออออออปฑฑ
-ฑฑบPrograma  ณAVSIINT   บAutor  ณMicrosiga           บ Data ณ  04/13/17   บฑฑ
+ฑฑบPrograma  ณCONFATC01   บAutor  ณMicrosiga           บ Data ณ  04/13/17   บฑฑ
 ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
 ฑฑบDesc.     ณ  Alterar quantidade de itens modificados na rotina no VMPayบฑฑ
 ฑฑบ          ณ                                                            บฑฑ
@@ -1460,10 +1458,10 @@ LOCAL cVarVM         :=    ''
 LOCAL aAuxRet        :=    {}
 LOCAL aAuxR2         :=    {}
 LOCAL oRestClient    :=    FWRest():New("http://vmpay.vertitecnologia.com.br")
-//LOCAL oRestClient    :=    FWRest():New("http://demo.vmpay.vertitecnologia.com.br")
+// LOCAL oRestClient    :=    FWRest():New("http://demo.vmpay.vertitecnologia.com.br")
 LOCAL aHeader        :=    {}        
 LOCAL nPikid         :=    199090      
-// LOCAL cChavH    :=    "?access_token=JKRwU4xyVkMFwLY4zP5wmMOSfUAJ0YD1UfgqEMU7"
+// LOCAL cChavH         :=    "?access_token=JKRwU4xyVkMFwLY4Z085wmMOSfUAJ0YD1UfgqEMU7"
 LOCAL cChavP         :=    "?access_token=tH3FkJ7cB2P0GwwOGbmMpJvoHsQJtMZD2nX1Ihmj"  
 LOCAL nX
 
@@ -1499,9 +1497,9 @@ FOR nX := 5 TO len(aAuxAr)
     ENDIF
 NEXT nX
 
-cVarVM +=     '    {'+CRLF
-cVarVM +=     '    "pick_list": {'+CRLF             
-cVarVM +=     '        "items_attributes"    : ['+CRLF
+cVarVM    +=    '    {'+CRLF
+cVarVM    +=    '    "pick_list": {'+CRLF             
+cVarVM    +=    '        "items_attributes"    : ['+CRLF
 
 //IF nPos3 > 0
     //cVarVM += '"'+substr(aAuxAr[1],1,2)+'"'+substr(aAuxAr[1],3)
@@ -1526,22 +1524,22 @@ cVarVM +=     '        "items_attributes"    : ['+CRLF
     Aadd(aAuxRet,"items:")
     
     //FOR nPos3 := 5 TO len(aAuxAr)
-        aAuxR2 := {}
+        aAuxR2    :=    {}
         //cVarVM += '"'+substr(aAuxAr[nPos3,1],1,2)+'"'+substr(aAuxAr[nPos3,1],3)
         //Aadd(aAuxR2,'"'+substr(aAuxAr[nPos3,1],1,2)+'"'+substr(aAuxAr[nPos3,1],3))
         //Aadd(aAuxR2,aAuxAr[nPos3,01])
-        cVarVM += '{'+CRLF
-        cVarVM += '"'+substr(aAuxAr[nPos3,1],1,2)+'"'+substr(aAuxAr[nPos3,1],3)+','+CRLF
+        cVarVM    +=    '{'+CRLF
+        cVarVM    +=    '"'+substr(aAuxAr[nPos3,1],1,2)+'"'+substr(aAuxAr[nPos3,1],3)+','+CRLF
         
         
-        aAuxP    :=    strtokarr(aAuxAr[nPos3,2],":")
-        cVarVM += '"'+aAuxP[1]+'":'+aAuxP[2]+','+CRLF
+        aAuxP     :=    strtokarr(aAuxAr[nPos3,2],":")
+        cVarVM    +=    '"'+aAuxP[1]+'":'+aAuxP[2]+','+CRLF
         //Aadd(aAuxR2,'"'+aAuxP[1]+'":'+aAuxP[2])
         Aadd(aAuxR2,aAuxAr[nPos3,02])
         
-        aAuxP    :=    strtokarr(aAuxAr[nPos3,3],":")
-        cVarVM += '"'+aAuxP[1]+'":'+cvaltochar(aList1B[nJ,06])+CRLF
-        cVarVM += ' }'+CRLF
+        aAuxP     :=    strtokarr(aAuxAr[nPos3,3],":")
+        cVarVM    +=    '"'+aAuxP[1]+'":'+cvaltochar(aList1B[nJ,06])+CRLF
+        cVarVM    +=    ' }'+CRLF
         //Aadd(aAuxR2,'"'+aAuxP[1]+'":'+aAuxP[2])
         Aadd(aAuxR2,aAuxAr[nPos3,03])
         
@@ -1588,7 +1586,7 @@ RETURN
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
 ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัอออออออออออออปฑฑ
-ฑฑบPrograma  ณAVSIINT   บAutor  ณMicrosiga           บ Data ณ  04/15/17   บฑฑ
+ฑฑบPrograma  ณCONFATC01   บAutor  ณMicrosiga           บ Data ณ  04/15/17   บฑฑ
 ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
 ฑฑบDesc.     ณ Validar o planograma da maquina no vmpay                   บฑฑ
 ฑฑบ          ณ                                                            บฑฑ
@@ -1603,7 +1601,7 @@ STATIC FUNCTION ValidPlan()
 
 LOCAL aArea    :=    GetArea()
       
-U_PRTWS03(aList[oList:nAt,02],1)
+U_CONWSC03(aList[oList:nAt,02],1)
 
 RestArea(aArea)
 
@@ -1613,7 +1611,7 @@ RETURN
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
 ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัอออออออออออออปฑฑ
-ฑฑบPrograma  ณAVSIINT   บAutor  ณMicrosiga           บ Data ณ  04/15/17   บฑฑ
+ฑฑบPrograma  ณCONFATC01   บAutor  ณMicrosiga           บ Data ณ  04/15/17   บฑฑ
 ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
 ฑฑบDesc.     ณ  Salvar o planograma de acordo com o contido no vmpay      บฑฑ
 ฑฑบ          ณ                                                            บฑฑ
@@ -1627,7 +1625,7 @@ RETURN
 STATIC FUNCTION Saveplan()
 
 LOCAL aArea    :=    GetArea()
-// LOCAL aCabec:=    {"ZH_CLIENTE","ZH_LOJA","ZH_CHAPA","ZH_CODMAQ","ZH_CODPROD","ZH_MOLA","ZH_QUANT","ZH_NIVPAR","ZH_NIVALE","ZH_VALOR"}
+// LOCAL aCabec:=    {"Z07_CLIENTE","Z07_LOJA","Z07_CHAPA","Z07_CODMAQ","Z07_CODPROD","Z07_MOLA","Z07_QUANT","Z07_NIVPAR","Z07_NIVALE","Z07_VALOR"}
 // LOCAL nPosB    :=    Ascan(aList3B,{|x| Alltrim(x[2]) == Alltrim(aList3[oList3:nAt,02])}) 
 LOCAL lAlt     :=    .F. 
 LOCAL lMolD    :=    .F.
@@ -1636,11 +1634,11 @@ LOCAL nPing
 LOCAL nX
 LOCAL nJ
 
- //ZH_CLIENTE, ZH_LOJA, ZH_CHAPA, ZH_CODMAQ, ZH_CODPROD, ZH_MOLA, 
+ //Z07_CLIENTE, Z07_LOJA, Z07_CHAPA, Z07_CODMAQ, Z07_CODPROD, Z07_MOLA, 
 //FILIAL+CHAPA+SELECAO+CODCLI
 FOR nX := 1 TO len(aList3)
     IF !aList3[nX,01] 
-        DbSelectArea("SZH")     
+        DbSelectArea("Z07")     
         DbSetOrder(2)
 
         IF "," $ aList3[nX,03] 
@@ -1648,61 +1646,61 @@ FOR nX := 1 TO len(aList3)
                lMolD := .T.
                
                FOR nPing := 1 TO len(aAuxD)  
-                    DbSelectArea("SZH")     
+                    DbSelectArea("Z07")     
                     DbSetOrder(2)
-                ////ZH_CLIENTE, ZH_LOJA, ZH_CHAPA, ZH_CODMAQ, ZH_CODPROD, ZH_MOLA,
-                   IF !DbSeek(xFilial("SZH")+aList3[nX,02]+aList[oList:nAt,17]+aList[oList:nAt,18]+Avkey(aAuxD[nPing],"ZH_MOLA"))
-                       Reclock("SZH",.T.)
-                    SZH->ZH_CLIENTE    :=    aList[oList:nAt,17]
-                    SZH->ZH_LOJA    :=    aList[oList:nAt,18]
-                    SZH->ZH_CHAPA    :=    aList3[nX,02]
-                    SZH->ZH_CODMAQ    :=    Posicione("AA3",7,xFilial("AA3")+aList3[nX,02],"AA3_CODPRO")
-                    SZH->ZH_CODPROD    :=    aList3[nX,04]
-                    SZH->ZH_MOLA    :=    aAuxD[nPing]     
-                    SZH->ZH_DINICIO    :=    dDataBase
-                    SZH->ZH_QUANT    :=    aList3[nX,06]
-                    SZH->(Msunlock()) 
+                ////Z07_CLIENTE, Z07_LOJA, Z07_CHAPA, Z07_CODMAQ, Z07_CODPROD, Z07_MOLA,
+                   IF !DbSeek(xFilial("Z07")+aList3[nX,02]+aList[oList:nAt,17]+aList[oList:nAt,18]+Avkey(aAuxD[nPing],"Z07_MOLA"))
+                       Reclock("Z07",.T.)
+                    Z07->Z07_CLIENTE    :=    aList[oList:nAt,17]
+                    Z07->Z07_LOJA       :=    aList[oList:nAt,18]
+                    Z07->Z07_CHAPA      :=    aList3[nX,02]
+                    Z07->Z07_CODMAQ     :=    Posicione("AA3",7,xFilial("AA3")+aList3[nX,02],"AA3_CODPRO")
+                    Z07->Z07_CODPROD    :=    aList3[nX,04]
+                    Z07->Z07_MOLA       :=    aAuxD[nPing]     
+                    Z07->Z07_DINICIO    :=    dDataBase
+                    Z07->Z07_QUANT      :=    aList3[nX,06]
+                    Z07->(Msunlock()) 
                 ELSE
-                    IF SZH->ZH_CODPROD <> aList3[nX,04]
+                    IF Z07->Z07_CODPROD <> aList3[nX,04]
                         //Na sequencia cria um novo
-                        Reclock("SZH",.T.)
-                        SZH->ZH_CLIENTE    :=    aList[oList:nAt,17]
-                        SZH->ZH_LOJA    :=    aList[oList:nAt,18]
-                        SZH->ZH_CHAPA    :=    aList3[nX,02]
-                        SZH->ZH_CODMAQ    :=    Posicione("AA3",7,xFilial("AA3")+aList3[nX,02],"AA3_CODPRO")
-                        SZH->ZH_CODPROD    :=    aList3[nX,04]
-                        SZH->ZH_MOLA    :=    aList3[nX,03]
-                        SZH->ZH_DINICIO :=    dDataBase
-                        SZH->Z4_QUANT    :=    aList3[nX,06]
-                        SZH->(Msunlock())
+                        Reclock("Z07",.T.)
+                        Z07->Z07_CLIENTE    :=    aList[oList:nAt,17]
+                        Z07->Z07_LOJA       :=    aList[oList:nAt,18]
+                        Z07->Z07_CHAPA      :=    aList3[nX,02]
+                        Z07->Z07_CODMAQ     :=    Posicione("AA3",7,xFilial("AA3")+aList3[nX,02],"AA3_CODPRO")
+                        Z07->Z07_CODPROD    :=    aList3[nX,04]
+                        Z07->Z07_MOLA       :=    aList3[nX,03]
+                        Z07->Z07_DINICIO    :=    dDataBase
+                        Z07->Z07_QUANT      :=    aList3[nX,06]
+                        Z07->(Msunlock())
                     ENDIF
                 ENDIF
             NEXT nPing
         ELSE
-               IF !DbSeek(xFilial("SZH")+aList3[nX,02]+aList[oList:nAt,17]+aList[oList:nAt,18]+Avkey(aList3[nX,03],"ZH_MOLA"))
-    //        IF !DbSeek(xFilial("SZ4")+aList3[nX,02]+Avkey(aList3[nX,03],"Z4_SELECAO")+aList[oList:nAt,17])    
-                    Reclock("SZH",.T.)
-                    SZH->ZH_CLIENTE    :=    aList[oList:nAt,17]
-                    SZH->ZH_LOJA    :=    aList[oList:nAt,18]
-                    SZH->ZH_CHAPA    :=    aList3[nX,02]
-                    SZH->ZH_CODMAQ    :=    Posicione("AA3",7,xFilial("AA3")+aList3[nX,02],"AA3_CODPRO")
-                    SZH->ZH_CODPROD    :=    aList3[nX,04]
-                    SZH->ZH_MOLA    :=    aList3[nX,03]
-                    SZH->ZH_DINICIO    :=    dDataBase
-                    SZH->ZH_QUANT    :=    IF(Valtype(aList3[nX,06])<>"N",val(aList3[nX,06]),aList3[nX,06])
-                    SZH->(Msunlock())
+               IF !DbSeek(xFilial("Z07")+aList3[nX,02]+aList[oList:nAt,17]+aList[oList:nAt,18]+Avkey(aList3[nX,03],"Z07_MOLA"))
+    //        IF !DbSeek(xFilial("Z06")+aList3[nX,02]+Avkey(aList3[nX,03],"Z06_SELECAO")+aList[oList:nAt,17])    
+                    Reclock("Z07",.T.)
+                    Z07->Z07_CLIENTE    :=    aList[oList:nAt,17]
+                    Z07->Z07_LOJA       :=    aList[oList:nAt,18]
+                    Z07->Z07_CHAPA      :=    aList3[nX,02]
+                    Z07->Z07_CODMAQ     :=    Posicione("AA3",7,xFilial("AA3")+aList3[nX,02],"AA3_CODPRO")
+                    Z07->Z07_CODPROD    :=    aList3[nX,04]
+                    Z07->Z07_MOLA       :=    aList3[nX,03]
+                    Z07->Z07_DINICIO    :=    dDataBase
+                    Z07->Z07_QUANT      :=    IF(Valtype(aList3[nX,06])<>"N",val(aList3[nX,06]),aList3[nX,06])
+                    Z07->(Msunlock())
             ELSE
-                IF SZ4->Z4_CODPRO <> aList3[nX,04]
+                IF Z06->Z06_CODPRO <> aList3[nX,04]
                     //Na sequencia cria um novo
-                    Reclock("SZH",.T.)
-                    SZH->ZH_CLIENTE    :=    aList[oList:nAt,17]
-                    SZH->ZH_LOJA    :=    aList[oList:nAt,18]
-                    SZH->ZH_CHAPA    :=    aList3[nX,02]
-                    SZH->ZH_CODMAQ    :=    Posicione("AA3",7,xFilial("AA3")+aList3[nX,02],"AA3_CODPRO")
-                    SZH->ZH_CODPROD    :=    aList3[nX,04]
-                    SZH->ZH_MOLA    :=    aList3[nX,03]
-                    SZH->ZH_QUANT    :=    aList3[nX,06]
-                    SZH->(Msunlock())
+                    Reclock("Z07",.T.)
+                    Z07->Z07_CLIENTE    :=    aList[oList:nAt,17]
+                    Z07->Z07_LOJA       :=    aList[oList:nAt,18]
+                    Z07->Z07_CHAPA      :=    aList3[nX,02]
+                    Z07->Z07_CODMAQ     :=    Posicione("AA3",7,xFilial("AA3")+aList3[nX,02],"AA3_CODPRO")
+                    Z07->Z07_CODPROD    :=    aList3[nX,04]
+                    Z07->Z07_MOLA       :=    aList3[nX,03]
+                    Z07->Z07_QUANT      :=    aList3[nX,06]
+                    Z07->(Msunlock())
                 ENDIF
             ENDIF 
         ENDIF
@@ -1735,7 +1733,7 @@ RETURN
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
 ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัอออออออออออออปฑฑ
-ฑฑบPrograma  ณAVSIINT   บAutor  ณMicrosiga           บ Data ณ  04/29/17   บฑฑ
+ฑฑบPrograma  ณCONFATC01   บAutor  ณMicrosiga           บ Data ณ  04/29/17   บฑฑ
 ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
 ฑฑบDesc.     ณ  iNCLUIR PLANOGRAMAS                                       บฑฑ
 ฑฑบ          ณ                                                            บฑฑ
@@ -1804,63 +1802,63 @@ oPlan1:Activate(,,,.T.)
 RestArea(aArea)
 
 IF nOpcao == 1                 
-    DbSelectArea("SZ4")     
+    DbSelectArea("Z06")     
     DbSetOrder(2)
     //FILIAL+CHAPA+SELECAO+CODCLI
     FOR nX := 1 TO len(aPlanog)
-        IF !DbSeek(xFilial("SZ4")+aPlanog[nX,38]+aPlanog[nX,02]+aPlanog[nX,36])    
-            Reclock("SZ4",.T.)
-            SZ4->Z4_CODCLI     :=    aPlanog[nX,36]
-            SZ4->Z4_LOJCLI    :=    aPlanog[nX,37]
-            SZ4->Z4_CHAPA    :=    aPlanog[nX,38]
-            SZ4->Z4_CODMAQ    :=    aPlanog[nX,40]
-            SZ4->Z4_CODPRO    :=    aPlanog[nX,03]
-            SZ4->Z4_SELECAO    :=    aPlanog[nX,02]
+        IF !DbSeek(xFilial("Z06")+aPlanog[nX,38]+aPlanog[nX,02]+aPlanog[nX,36])    
+            Reclock("Z06",.T.)
+            Z06->Z06_CODCLI     :=    aPlanog[nX,36]
+            Z06->Z06_LOJCLI    :=    aPlanog[nX,37]
+            Z06->Z06_CHAPA    :=    aPlanog[nX,38]
+            Z06->Z06_CODMAQ    :=    aPlanog[nX,40]
+            Z06->Z06_CODPRO    :=    aPlanog[nX,03]
+            Z06->Z06_SELECAO    :=    aPlanog[nX,02]
             //Insumos
-            SZ4->Z4_INSUM1     :=     aPlanog[nX,08]
-            SZ4->Z4_MEDID1    :=    aPlanog[nX,09]
-            SZ4->Z4_INSUM2     :=    aPlanog[nX,10]
-            SZ4->Z4_MEDID2    :=    aPlanog[nX,11]
-            SZ4->Z4_INSUM3     :=    aPlanog[nX,12]
-            SZ4->Z4_MEDID3    :=    aPlanog[nX,13]
-            SZ4->Z4_INSUM4     :=    aPlanog[nX,14]
-            SZ4->Z4_MEDID4    :=    aPlanog[nX,15]               
-            SZ4->Z4_INSUM5     :=    aPlanog[nX,16]
-            SZ4->Z4_MEDID5    :=    aPlanog[nX,17]
-            SZ4->Z4_INSUM6     :=    aPlanog[nX,18]
-            SZ4->Z4_MEDID6    :=    aPlanog[nX,19]
-            SZ4->Z4_INSUM7     :=    aPlanog[nX,20]
-            SZ4->Z4_MEDID7    :=    aPlanog[nX,21]
+            Z06->Z06_INSUM1     :=     aPlanog[nX,08]
+            Z06->Z06_MEDID1    :=    aPlanog[nX,09]
+            Z06->Z06_INSUM2     :=    aPlanog[nX,10]
+            Z06->Z06_MEDID2    :=    aPlanog[nX,11]
+            Z06->Z06_INSUM3     :=    aPlanog[nX,12]
+            Z06->Z06_MEDID3    :=    aPlanog[nX,13]
+            Z06->Z06_INSUM4     :=    aPlanog[nX,14]
+            Z06->Z06_MEDID4    :=    aPlanog[nX,15]               
+            Z06->Z06_INSUM5     :=    aPlanog[nX,16]
+            Z06->Z06_MEDID5    :=    aPlanog[nX,17]
+            Z06->Z06_INSUM6     :=    aPlanog[nX,18]
+            Z06->Z06_MEDID6    :=    aPlanog[nX,19]
+            Z06->Z06_INSUM7     :=    aPlanog[nX,20]
+            Z06->Z06_MEDID7    :=    aPlanog[nX,21]
             
-            SZ4->(Msunlock())        
+            Z06->(Msunlock())        
             Aadd(aList3B,{.T.,aPlanog[nX,38],aPlanog[nX,02],aPlanog[nX,03],aPlanog[nX,04],aPlanog[nX,05],aPlanog[nX,06],'',;
                             0,aPlanog[nX,36],aPlanog[nX,37]})
             
         ELSE
-            Reclock("SZ4",.F.)
-            SZ4->Z4_CODCLI     :=    aPlanog[nX,36]
-            SZ4->Z4_LOJCLI    :=    aPlanog[nX,37]
-            SZ4->Z4_CHAPA    :=    aPlanog[nX,38]
-            SZ4->Z4_CODMAQ    :=    aPlanog[nX,40]
-            SZ4->Z4_CODPRO    :=    aPlanog[nX,03]
-            SZ4->Z4_SELECAO    :=    aPlanog[nX,02]
+            Reclock("Z06",.F.)
+            Z06->Z06_CODCLI     :=    aPlanog[nX,36]
+            Z06->Z06_LOJCLI    :=    aPlanog[nX,37]
+            Z06->Z06_CHAPA    :=    aPlanog[nX,38]
+            Z06->Z06_CODMAQ    :=    aPlanog[nX,40]
+            Z06->Z06_CODPRO    :=    aPlanog[nX,03]
+            Z06->Z06_SELECAO    :=    aPlanog[nX,02]
             //Insumos
-            SZ4->Z4_INSUM1     :=     aPlanog[nX,08]
-            SZ4->Z4_MEDID1    :=    aPlanog[nX,09]
-            SZ4->Z4_INSUM2     :=    aPlanog[nX,10]
-            SZ4->Z4_MEDID2    :=    aPlanog[nX,11]
-            SZ4->Z4_INSUM3     :=    aPlanog[nX,12]
-            SZ4->Z4_MEDID3    :=    aPlanog[nX,13]
-            SZ4->Z4_INSUM4     :=    aPlanog[nX,14]
-            SZ4->Z4_MEDID4    :=    aPlanog[nX,15]               
-            SZ4->Z4_INSUM5     :=    aPlanog[nX,16]
-            SZ4->Z4_MEDID5    :=    aPlanog[nX,17]
-            SZ4->Z4_INSUM6     :=    aPlanog[nX,18]
-            SZ4->Z4_MEDID6    :=    aPlanog[nX,19]
-            SZ4->Z4_INSUM7     :=    aPlanog[nX,20]
-            SZ4->Z4_MEDID7    :=    aPlanog[nX,21]
+            Z06->Z06_INSUM1     :=     aPlanog[nX,08]
+            Z06->Z06_MEDID1    :=    aPlanog[nX,09]
+            Z06->Z06_INSUM2     :=    aPlanog[nX,10]
+            Z06->Z06_MEDID2    :=    aPlanog[nX,11]
+            Z06->Z06_INSUM3     :=    aPlanog[nX,12]
+            Z06->Z06_MEDID3    :=    aPlanog[nX,13]
+            Z06->Z06_INSUM4     :=    aPlanog[nX,14]
+            Z06->Z06_MEDID4    :=    aPlanog[nX,15]               
+            Z06->Z06_INSUM5     :=    aPlanog[nX,16]
+            Z06->Z06_MEDID5    :=    aPlanog[nX,17]
+            Z06->Z06_INSUM6     :=    aPlanog[nX,18]
+            Z06->Z06_MEDID6    :=    aPlanog[nX,19]
+            Z06->Z06_INSUM7     :=    aPlanog[nX,20]
+            Z06->Z06_MEDID7    :=    aPlanog[nX,21]
             
-            SZ4->(Msunlock())        
+            Z06->(Msunlock())        
         
         ENDIF
     NEXT nX
@@ -1872,7 +1870,7 @@ RETURN
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
 ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัอออออออออออออปฑฑ
-ฑฑบPrograma  ณAVSIINT   บAutor  ณMicrosiga           บ Data ณ  04/29/17   บฑฑ
+ฑฑบPrograma  ณCONFATC01   บAutor  ณMicrosiga           บ Data ณ  04/29/17   บฑฑ
 ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
 ฑฑบDesc.     ณ  Incluir linha no planograma                               บฑฑ
 ฑฑบ          ณ                                                            บฑฑ
@@ -1891,12 +1889,12 @@ IF nOpc == 1
     aadd(aPlanog,{.F.,space(2),'','','','','','',0.0000,'',0.0000,'',0.0000,'',0.0000,'',0.0000,'',0.0000,'',0.0000,'',0.0000,;
                 '',0.0000,'',0.0000,'',0.0000,'',0.0000,'',0.0000,'',0.0000,aList[oList:nAt,17],aList[oList:nAt,18],aList[oList:nAt,02],,aList[oList:nAt,21]})
 ELSE
-    DbSelectArea("SZ4")
+    DbSelectArea("Z06")
     DbSetOrder(2)
-    IF Dbseek(xFilial("SZ4")+aPlanog[oPlanog:nAt,38]+aPlanog[oPlanog:nAt,02]+aPlanog[oPlanog:nAt,36])
-        Reclock("SZ4",.F.)
+    IF Dbseek(xFilial("Z06")+aPlanog[oPlanog:nAt,38]+aPlanog[oPlanog:nAt,02]+aPlanog[oPlanog:nAt,36])
+        Reclock("Z06",.F.)
         DbDelete()
-        SZ4->(Msunlock())
+        Z06->(Msunlock())
     ENDIF
     
     IF Ascan(aList3,{|x| Alltrim(x[2]) == Alltrim(aPlanog[oPlanog:nAt,03]) }) > 0
@@ -1945,7 +1943,7 @@ RETURN
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
 ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัอออออออออออออปฑฑ
-ฑฑบPrograma  ณAVSIINT   บAutor  ณMicrosiga           บ Data ณ  04/29/17   บฑฑ
+ฑฑบPrograma  ณCONFATC01   บAutor  ณMicrosiga           บ Data ณ  04/29/17   บฑฑ
 ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
 ฑฑบDesc.     ณ  Edita linhas do planograma                                บฑฑ
 ฑฑบ          ณ                                                            บฑฑ
@@ -2116,7 +2114,7 @@ RETURN
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
 ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัอออออออออออออปฑฑ
-ฑฑบPrograma  ณAVSIINT   บAutor  ณMicrosiga           บ Data ณ  05/31/17   บฑฑ
+ฑฑบPrograma  ณCONFATC01   บAutor  ณMicrosiga           บ Data ณ  05/31/17   บฑฑ
 ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
 ฑฑบDesc.     ณ Exclui planograma                                          บฑฑ
 ฑฑบ          ณ                                                            บฑฑ
@@ -2132,14 +2130,14 @@ STATIC FUNCTION excplan()
 LOCAL aArea    :=    GetArea()
 LOCAL nCont    :=    len(aList3)
  
-DbSelectArea("SZ4")     
+DbSelectArea("Z06")     
 DbSetOrder(2)
 //FILIAL+CHAPA+SELECAO+CODCLI
-IF DbSeek(xFilial("SZ4")+ALIST[oList:nAt,02])
-       WHILE !EOF() .And. SZ4->Z4_CHAPA == ALIST[oList:nAt,02]
-           Reclock("SZ4",.F.)
+IF DbSeek(xFilial("Z06")+ALIST[oList:nAt,02])
+       WHILE !EOF() .And. Z06->Z06_CHAPA == ALIST[oList:nAt,02]
+           Reclock("Z06",.F.)
            DbDelete()
-           SZ4->(Msunlock())
+           Z06->(Msunlock())
            Dbskip()
        ENDDO
 ENDIF
@@ -2166,7 +2164,7 @@ RETURN
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
 ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัอออออออออออออปฑฑ
-ฑฑบPrograma  ณAVSIINT   บAutor  ณMicrosiga           บ Data ณ  05/10/17   บฑฑ
+ฑฑบPrograma  ณCONFATC01   บAutor  ณMicrosiga           บ Data ณ  05/10/17   บฑฑ
 ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
 ฑฑบDesc.     ณ   remessas enviadas para os pontos de venda                บฑฑ
 ฑฑบ          ณ                                                            บฑฑ
@@ -2218,7 +2216,7 @@ IF ParamBox(aPergs ,"Motivo da Despesa",@aRet)
         dbCloseArea()
     ENDIF
     
-    MemoWrite("AVSIINT.SQL",cQuery)
+    MemoWrite("CONFATC01.SQL",cQuery)
     DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
     
     DbSelectArea("TRB")  
@@ -2281,7 +2279,7 @@ RETURN
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
 ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัอออออออออออออปฑฑ
-ฑฑบPrograma  ณAVSIINT   บAutor  ณMicrosiga           บ Data ณ  05/31/17   บฑฑ
+ฑฑบPrograma  ณCONFATC01   บAutor  ณMicrosiga           บ Data ณ  05/31/17   บฑฑ
 ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
 ฑฑบDesc.     ณ    Busca planograma                                        บฑฑ
 ฑฑบ          ณ                                                            บฑฑ
@@ -2298,26 +2296,26 @@ LOCAL aArea    :=    GetArea()
 LOCAL cQuery
 LOCAL aRet     :=    {}
 
-cQuery := "SELECT Z4.*,B1_DESC FROM "+RetSQLName("SZ4")+" Z4"
-cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_COD=Z4_CODPRO AND B1.D_E_L_E_T_=''
-cQuery += " WHERE Z4_CHAPA='"+aList[oList:nAt,02]+"' AND Z4_CODCLI='"+aList[oList:nAt,17]+"' AND Z4.D_E_L_E_T_=''"
+cQuery := "SELECT Z06.*,B1_DESC FROM "+RetSQLName("Z06")+" Z06"
+cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_COD=Z06_CODPRO AND B1.D_E_L_E_T_=''
+cQuery += " WHERE Z06_CHAPA='"+aList[oList:nAt,02]+"' AND Z06_CODCLI='"+aList[oList:nAt,17]+"' AND Z06.D_E_L_E_T_=''"
 
 IF Select('TRB') > 0
     dbSelectArea('TRB')
     dbCloseArea()
 ENDIF
 
-MemoWrite("AVSIINT.SQL",cQuery)
+MemoWrite("CONFATC01.SQL",cQuery)
 DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
 
 DbSelectArea("TRB")  
 
 //'','Mola','Produto','Descri็ใo','Quant.','Conf','Nivel Par','Insumo1','Dosagem1','Insumo2','Dosagem2','Insumo3','Dosagem3','Insumo4','Dosagem4','Insumo5','Dosagem5','Insumo6','Dosagem6','Insumo7','Dosagem7'
 WHILE !EOF() 
-    Aadd(aRet,{.F.,TRB->Z4_SELECAO,TRB->Z4_CODPRO,Alltrim(TRB->B1_DESC),;
-                TRB->Z4_CAPACID,TRB->Z4_NIVALE,TRB->Z4_NIVPAR,TRB->Z4_INSUM1,TRB->Z4_MEDID1,TRB->Z4_INSUM2,TRB->Z4_MEDID2,;
-                TRB->Z4_INSUM3,TRB->Z4_MEDID3,TRB->Z4_INSUM4,TRB->Z4_MEDID4,TRB->Z4_INSUM5,TRB->Z4_MEDID5,TRB->Z4_INSUM6,;
-                TRB->Z4_MEDID6,TRB->Z4_INSUM7,TRB->Z4_MEDID7,;
+    Aadd(aRet,{.F.,TRB->Z06_SELECAO,TRB->Z06_CODPRO,Alltrim(TRB->B1_DESC),;
+                TRB->Z06_CAPACID,TRB->Z06_NIVALE,TRB->Z06_NIVPAR,TRB->Z06_INSUM1,TRB->Z06_MEDID1,TRB->Z06_INSUM2,TRB->Z06_MEDID2,;
+                TRB->Z06_INSUM3,TRB->Z06_MEDID3,TRB->Z06_INSUM4,TRB->Z06_MEDID4,TRB->Z06_INSUM5,TRB->Z06_MEDID5,TRB->Z06_INSUM6,;
+                TRB->Z06_MEDID6,TRB->Z06_INSUM7,TRB->Z06_MEDID7,;
                 '',0.0000,'',0.0000,'',0.0000,'',0.0000,'',0.0000,'',0.0000,'',0.0000,aList[oList:nAt,17],aList[oList:nAt,18],aList[oList:nAt,02],,aList[oList:nAt,21]})
     Dbskip()
 ENDDO
@@ -2335,7 +2333,7 @@ RETURN(aRet)
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
 ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัอออออออออออออปฑฑ
-ฑฑบPrograma  ณAVSIINT   บAutor  ณMicrosiga           บ Data ณ  05/31/17   บฑฑ
+ฑฑบPrograma  ณCONFATC01   บAutor  ณMicrosiga           บ Data ณ  05/31/17   บฑฑ
 ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
 ฑฑบDesc.     ณ Busca as vendas do Vmpay                                   บฑฑ
 ฑฑบ          ณ                                                            บฑฑ
@@ -2365,7 +2363,7 @@ aAdd(aPergs ,{1,"Hora Inicial?",cHri,"","","","",070,.T.})
 aAdd(aPergs ,{1,"Hora Final?",cHri,"","","","",070,.T.})    
       
 IF ParamBox(aPergs ,"Periodo de vendas",@aRet)
-    aVendas := U_PRTWS03(aList[oList:nAt,02],2,aRet[1],aRet[2],aRet[3],aRet[4])
+    aVendas := U_CONWSC03(aList[oList:nAt,02],2,aRet[1],aRet[2],aRet[3],aRet[4])
     IF len(aVendas) > 0
         aList8 := {}
     //'Data','Sele็ใo','Produto','Descri็ใo','Quant. Apont.',chapa,codigo cliente
@@ -2414,7 +2412,7 @@ RETURN
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
 ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัอออออออออออออปฑฑ
-ฑฑบPrograma  ณAVSIINT   บAutor  ณMicrosiga           บ Data ณ  06/08/17   บฑฑ
+ฑฑบPrograma  ณCONFATC01   บAutor  ณMicrosiga           บ Data ณ  06/08/17   บฑฑ
 ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
 ฑฑบDesc.     ณ                                                            บฑฑ
 ฑฑบ          ณ                                                            บฑฑ
@@ -2436,55 +2434,55 @@ LOCAL nX
 LOCAL nJ
          
 cContrato := POSICIONE("AAN",3,XFILIAL("AAN")+aList[oList:nAt,2],"AAN_CONTRT")
-//cLeitura  := STRZERO(VAL(GetSX8NUM("SZP","ZP_COD"))+1,6)
+//cLeitura  := STRZERO(VAL(GetSX8NUM("Z08","Z08_COD"))+1,6)
 //ConfirmSX8() 
-cLeitura  :=  GetMV("MV_XNRCONT")  //GetSx8Num("SZP","ZP_COD")
+cLeitura  :=  GetMV("MV_XNRCONT")  //GetSx8Num("Z08","Z08_COD")
 cPrx := Strzero(val(cLeitura)+1,6)
 PUTMV("MV_XNRCONT",cPrx)
 
 cItem      := POSICIONE("AAN",3,XFILIAL("AAN")+aList[oList:nAt,2],"AAN_ITEM")
 cModPg      := POSICIONE("AAN",3,XFILIAL("AAN")+aList[oList:nAt,2],"AAN_XMODPG")
 
-Aadd(aGravarP,{"ZP_FILIAL"    , xFilial("SZP")}) 
-Aadd(aGravarP,{"ZP_COD"        , cLeitura}) 
-Aadd(aGravarP,{"ZP_NUMSER"    , aList[oList:nAt,2]}) 
-Aadd(aGravarP,{"ZP_DTDIGIT"    , dDataBase}) 
-Aadd(aGravarP,{"ZP_CONTRT"    , cContrato}) 
-Aadd(aGravarP,{"ZP_ITEM"    , cItem}) 
-Aadd(aGravarP,{"ZP_DATA"    , ctod(aList8[1,1])}) 
-Aadd(aGravarP,{"ZP_PERIODO" , cMesAno })     //strzero(month(ctod(alist8[1,1])),2)+"/"+cvaltochar(year(ctod(alist8[1,1])))
-Aadd(aGravarP,{"ZP_MAQUINA"    , aList[oList:nAt,21]}) 
-Aadd(aGravarP,{"ZP_CODTEC"    , ""}) 
-Aadd(aGravarP,{"ZP_TECNICO"    , ""}) 
-Aadd(aGravarP,{"ZP_CODCLI"    , aList[oList:nAt,17]+aList[oList:nAt,18]})  
-Aadd(aGravarP,{"ZP_CLIPAG"    , aList[oList:nAt,17]+aList[oList:nAt,18]})  
-Aadd(aGravarP,{"ZP_TIPOCON"    , "COM"})  
-Aadd(aGravarP,{"ZP_GRPCLI"  , Posicione("SZM",1,xFilial("SZM")+cContrato,"ZM_GRPCLI")})  
-Aadd(aGravarP,{"ZP_FILRESP"    , Strzero(val(xFilial("SC5")),6)})  
+Aadd(aGravarP,{"Z08_FILIAL"   , xFilial("Z08")}) 
+Aadd(aGravarP,{"Z08_COD"      , cLeitura}) 
+Aadd(aGravarP,{"Z08_NUMSER"   , aList[oList:nAt,2]}) 
+Aadd(aGravarP,{"Z08_DTDIGIT"  , dDataBase}) 
+Aadd(aGravarP,{"Z08_CONTRT"   , cContrato}) 
+Aadd(aGravarP,{"Z08_ITEM"     , cItem}) 
+Aadd(aGravarP,{"Z08_DATA"     , ctod(aList8[1,1])}) 
+Aadd(aGravarP,{"Z08_PERIODO"  , cMesAno })     //strzero(month(ctod(alist8[1,1])),2)+"/"+cvaltochar(year(ctod(alist8[1,1])))
+Aadd(aGravarP,{"Z08_MAQUINA"  , aList[oList:nAt,21]}) 
+Aadd(aGravarP,{"Z08_CODTEC"   , ""}) 
+Aadd(aGravarP,{"Z08_TECNICO"  , ""}) 
+Aadd(aGravarP,{"Z08_CODCLI"   , aList[oList:nAt,17]+aList[oList:nAt,18]})  
+Aadd(aGravarP,{"Z08_CLIPAG"   , aList[oList:nAt,17]+aList[oList:nAt,18]})  
+Aadd(aGravarP,{"Z08_TIPOCON"  , "COM"})  
+Aadd(aGravarP,{"Z08_GRPCLI"   , Posicione("SZM",1,xFilial("SZM")+cContrato,"ZM_GRPCLI")})  
+Aadd(aGravarP,{"Z08_FILRESP"  , Strzero(val(xFilial("SC5")),6)})  
                 
 FOR nX := 1 TO len(aList8)
-    Aadd(aGravarS,{"ZS_COD"        , cLeitura})
-    Aadd(aGravarS,{"ZS_CONTRT"    , cContrato})
-    Aadd(aGravarS,{"ZS_ITEM"    , cItem})
-    Aadd(aGravarS,{"ZS_SEQUEN"    , aList8[nX,02]})
+    Aadd(aGravarS,{"ZS_COD"         , cLeitura})
+    Aadd(aGravarS,{"ZS_CONTRT"      , cContrato})
+    Aadd(aGravarS,{"ZS_ITEM"        , cItem})
+    Aadd(aGravarS,{"ZS_SEQUEN"      , aList8[nX,02]})
     IF !Empty(cModPg)
-        Aadd(aGravarS,{"ZS_DOSESG"    , aList8[nX,05]})        
+        Aadd(aGravarS,{"ZS_DOSESG"  , aList8[nX,05]})        
     ELSE
-        Aadd(aGravarS,{"ZS_DOSESP"    , aList8[nX,05]})
+        Aadd(aGravarS,{"ZS_DOSESP"  , aList8[nX,05]})
     ENDIF
     
-    Aadd(aGravarS,{"ZS_BEBIDA"    , aList8[nX,03]})
+    Aadd(aGravarS,{"ZS_BEBIDA"      , aList8[nX,03]})
     Aadd(aGravar,aGravarS)
     aGravarS := {}
 NEXT nX
 
 IF len(aGravarP) > 0
-    DbSelectArea("SZP") 
-    Reclock("SZP",.T.)
+    DbSelectArea("Z08") 
+    Reclock("Z08",.T.)
     FOR nX := 1 TO len(aGravarP)
-        &("SZP->"+aGravarP[nX,01]) := aGravarP[nX,02]
+        &("Z08->"+aGravarP[nX,01]) := aGravarP[nX,02]
     NEXT nX
-    SZP->(Msunlock())
+    Z08->(Msunlock())
     
     DbSelectArea("SZS")
     
@@ -2508,7 +2506,7 @@ RETURN
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
 ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัอออออออออออออปฑฑ
-ฑฑบPrograma  ณAVSIINT   บAutor  ณMicrosiga           บ Data ณ  05/08/19   บฑฑ
+ฑฑบPrograma  ณCONFATC01   บAutor  ณMicrosiga           บ Data ณ  05/08/19   บฑฑ
 ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
 ฑฑบDesc.     ณ                                                            บฑฑ
 ฑฑบ          ณ                                                            บฑฑ
@@ -2581,7 +2579,7 @@ RETURN(cRet)
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
 ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัอออออออออออออปฑฑ
-ฑฑบPrograma  ณAVSIINT   บAutor  ณMicrosiga           บ Data ณ  07/19/17   บฑฑ
+ฑฑบPrograma  ณCONFATC01   บAutor  ณMicrosiga           บ Data ณ  07/19/17   บฑฑ
 ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
 ฑฑบDesc.     ณ  Replicar Planograma para outro ativo.                     บฑฑ
 ฑฑบ          ณ                                                            บฑฑ
@@ -2638,7 +2636,7 @@ oRepPl     := MSDialog():New( 092,232,437,876,"Replicar MAPA",,,.F.,,,,,,.T.,,,.
 oRepPl:Activate(,,,.T.)
 
 IF nOpc == 1
-    IF MsgYesNo("Confirma a c๓pia do MAPA atual para as maquinas selecionadas?","repplan - AVSIINT")
+    IF MsgYesNo("Confirma a c๓pia do MAPA atual para as maquinas selecionadas?","repplan - CONFATC01")
         FOR nX := 1 TO len(aAteq)
             IF aAteq[nX,01]
                 //Aadd(aGrav,aAteq[nX])
@@ -2651,34 +2649,34 @@ IF nOpc == 1
             ENDIF
         NEXT nX  
         
-        DbSelectArea("SZ4")
+        DbSelectArea("Z06")
         FOR nX := 1 TO len(aGrav)
-            Reclock("SZ4",.T.)
-            SZ4->Z4_CODCLI     :=    aGrav[nX,10]
-            SZ4->Z4_LOJCLI     :=    aGrav[nX,11]
-            SZ4->Z4_CHAPA      :=    aGrav[nX,02]
-            SZ4->Z4_CODMAQ     :=    aGrav[nX,12]
-            SZ4->Z4_CODPRO     :=    aGrav[nX,04]
-            SZ4->Z4_SELECAO    :=    aGrav[nX,03]
-            SZ4->Z4_CAPACID    :=    aGrav[nX,06]
-            SZ4->Z4_NIVPAR     :=    aGrav[nX,07]
-            SZ4->Z4_NIVALE     :=    aGrav[nX,08]
-            SZ4->Z4_VALOR      :=    aGrav[nX,09]
-            SZ4->Z4_INSUM1     :=    aGrav[nX,13]
-            SZ4->Z4_MEDID1     :=    aGrav[nX,14]
-            SZ4->Z4_INSUM2     :=    aGrav[nX,15]
-            SZ4->Z4_MEDID2     :=    aGrav[nX,16]
-            SZ4->Z4_INSUM3     :=    aGrav[nX,17]
-            SZ4->Z4_MEDID3     :=    aGrav[nX,18]
-            SZ4->Z4_INSUM4     :=    aGrav[nX,19]
-            SZ4->Z4_MEDID4     :=    aGrav[nX,20]
-            SZ4->Z4_INSUM5     :=    aGrav[nX,21]
-            SZ4->Z4_MEDID5     :=    aGrav[nX,22]
-            SZ4->Z4_INSUM6     :=    aGrav[nX,23]
-            SZ4->Z4_MEDID6     :=    aGrav[nX,24]
-            SZ4->Z4_INSUM7     :=    aGrav[nX,25]
-            SZ4->Z4_MEDID7     :=    aGrav[nX,26]
-            SZ4->(Msunlock())
+            Reclock("Z06",.T.)
+            Z06->Z06_CODCLI     :=    aGrav[nX,10]
+            Z06->Z06_LOJCLI     :=    aGrav[nX,11]
+            Z06->Z06_CHAPA      :=    aGrav[nX,02]
+            Z06->Z06_CODMAQ     :=    aGrav[nX,12]
+            Z06->Z06_CODPRO     :=    aGrav[nX,04]
+            Z06->Z06_SELECAO    :=    aGrav[nX,03]
+            Z06->Z06_CAPACID    :=    aGrav[nX,06]
+            Z06->Z06_NIVPAR     :=    aGrav[nX,07]
+            Z06->Z06_NIVALE     :=    aGrav[nX,08]
+            Z06->Z06_VALOR      :=    aGrav[nX,09]
+            Z06->Z06_INSUM1     :=    aGrav[nX,13]
+            Z06->Z06_MEDID1     :=    aGrav[nX,14]
+            Z06->Z06_INSUM2     :=    aGrav[nX,15]
+            Z06->Z06_MEDID2     :=    aGrav[nX,16]
+            Z06->Z06_INSUM3     :=    aGrav[nX,17]
+            Z06->Z06_MEDID3     :=    aGrav[nX,18]
+            Z06->Z06_INSUM4     :=    aGrav[nX,19]
+            Z06->Z06_MEDID4     :=    aGrav[nX,20]
+            Z06->Z06_INSUM5     :=    aGrav[nX,21]
+            Z06->Z06_MEDID5     :=    aGrav[nX,22]
+            Z06->Z06_INSUM6     :=    aGrav[nX,23]
+            Z06->Z06_MEDID6     :=    aGrav[nX,24]
+            Z06->Z06_INSUM7     :=    aGrav[nX,25]
+            Z06->Z06_MEDID7     :=    aGrav[nX,26]
+            Z06->(Msunlock())
         NEXT nX  
         
         MsgAlert("MAPAS salvos, saia da rotina e abra novamente para atualiza็ใo.")
@@ -2693,7 +2691,7 @@ RETURN
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
 ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัอออออออออออออปฑฑ
-ฑฑบPrograma  ณAVSIINT   บAutor  ณMicrosiga           บ Data ณ  07/19/17   บฑฑ
+ฑฑบPrograma  ณCONFATC01   บAutor  ณMicrosiga           บ Data ณ  07/19/17   บฑฑ
 ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
 ฑฑบDesc.     ณ                                                            บฑฑ
 ฑฑบ          ณ                                                            บฑฑ
