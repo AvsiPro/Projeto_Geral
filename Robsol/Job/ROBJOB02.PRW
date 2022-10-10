@@ -23,8 +23,8 @@ EndIf
 cQuery := "SELECT F2_FILIAL,F2_DOC,F2_SERIE,A1_CGC"
 cQuery += " FROM "+RetSQLName("SF2")+" F2"
 cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='01' AND A1_COD=F2_CLIENTE AND A1_LOJA=F2_LOJA AND A1.D_E_L_E_T_=' '"
-cQuery += " WHERE F2_FILIAL BETWEEN '0101' AND 'ZZZ'"
-cQuery += " AND F2_EMISSAO BETWEEN '"+dtos(firstday(ddatabase-30))+"' AND '"+dtos(ddatabase)+"'"
+cQuery += " WHERE F2_FILIAL BETWEEN '  ' AND 'ZZZ'"
+cQuery += " AND F2_EMISSAO BETWEEN '"+dtos(firstday(ddatabase-90))+"' AND '"+dtos(ddatabase)+"'"
 cQuery += " AND F2.D_E_L_E_T_=' '"
 cQuery += " AND F2_CHVNFE<>' '"
 cQuery += " AND F2_DUPL<>' '"
@@ -61,7 +61,14 @@ For nX := 1 to len(aAux)
     DbSelectArea("SE1")
     DbSetOrder(1)
     If DbSeek(xFilial("SE1")+Avkey(MV_PAR01,"E1_PREFIXO")+Avkey(MV_PAR02,"E1_NUM"))
-        U_ROBBOL(.T.,cPasta+alltrim(aAux[nX,03])+'\')
+        
+
+        Do While !EOF() .and. E1_PREFIXO+E1_NUM == Avkey(MV_PAR01,"E1_PREFIXO")+Avkey(MV_PAR02,"E1_NUM")
+            If SE1->E1_SALDO > 0
+                U_ROBBOL(.T.,cPasta+alltrim(aAux[nX,03])+'\',cfilorig,SE1->E1_PARCELA)
+            ENDIF
+            DBSkip()
+        ENDDO
     EndIf
 
     //cfilant := cBkpFil

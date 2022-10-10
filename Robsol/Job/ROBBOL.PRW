@@ -34,7 +34,7 @@
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
 ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
 */
-user function ROBBOL(lAutomat,cPasta)
+user function ROBBOL(lAutomat,cPasta,cfilorig,cParcela)
 
 //
 PRIVATE Exec    := .F.  
@@ -50,8 +50,8 @@ Private nCBAltura	:= GETMV("PV_BOL_ALT",,1.4)
 //AQUIPrivate aDaBnk	:= 	DadBnk()
 Private _Bco 	:=	'001' //Avkey(aDaBnk[ascan(aDaBnk,{|x| x[1] == "PI_BCOBOL"}),2],"A6_COD") //GetMV("PI_BCOBOL",,"341  ")
 Private _Age 	:=	'1511 ' //Avkey(aDaBnk[ascan(aDaBnk,{|x| x[1] == "PI_AGEBOL"}),2],"A6_AGENCIA") //GetMV("PI_AGEBOL",,"2938 ")
-Private _Cta 	:=	'11        ' //Avkey(aDaBnk[ascan(aDaBnk,{|x| x[1] == "PI_CTABOL"}),2],"A6_NUMCON") //GetMV("PI_CTABOL",,"21899     ")
-Private _DiV 	:=	'6' //Avkey(aDaBnk[ascan(aDaBnk,{|x| x[1] == "PI_DIGBOL"}),2],"A6_DVCTA") //GetMV("PI_DIGBOL",,"3")
+Private _Cta 	:=	If(cfilorig=="0101",'11        ','101       ') //Avkey(aDaBnk[ascan(aDaBnk,{|x| x[1] == "PI_CTABOL"}),2],"A6_NUMCON") //GetMV("PI_CTABOL",,"21899     ")
+Private _DiV 	:=	If(cfilorig=="0101",'6','5') //Avkey(aDaBnk[ascan(aDaBnk,{|x| x[1] == "PI_DIGBOL"}),2],"A6_DVCTA") //GetMV("PI_DIGBOL",,"3")
 Private _Car	:=	'17' //Avkey(aDaBnk[ascan(aDaBnk,{|x| x[1] == "PI_CARBOL"}),2],"EE_CODCART") //GetMV("PI_CARBOL",,"109")
 Private _SubCta	:=	'001' //Avkey(aDaBnk[ascan(aDaBnk,{|x| x[1] == "PI_SUBCTA"}),2],"EE_SUBCTA") 
 Private _cNossoNum
@@ -64,7 +64,7 @@ Default lAutomat	:=	.T.
 DbselectArea("SE1")
 DbSetOrder(1)
 
-Processa({|lEnd|MontaRel(cPasta)})
+Processa({|lEnd|MontaRel(cPasta,cParcela)})
 
 Return Nil
 /*/
@@ -77,7 +77,7 @@ Return Nil
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
 ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
 /*/
-Static Function MontaRel(cPasta)
+Static Function MontaRel(cPasta,cParcela)
 LOCAL   oPrint
 LOCAL   n := 0
 Local aBitmap      := {"" ,;                             //Banner publicitário         
@@ -111,50 +111,56 @@ LOCAL aBolText     := {"",;
 LOCAL i            := 1
 LOCAL CB_RN_NN     := {}
 LOCAL _nVlrAbat    := 0
-LOCAL cParcela	   := ""
+//LOCAL cParcela	   := ""
 Local lAdjustToLegacy := .F. 
 Local lDisableSetup  := .T.
 
-oPrint 	:= FWMSPrinter():New("Boleto_"+strzero(VAL(MV_PAR02),9)+".rel",  IMP_PDF, lAdjustToLegacy, cPasta, lDisableSetup,,,,.F.,,,.F.)
 
-oPrint:SetResolution(78) //Tamanho estipulado para a Danfe
-oPrint:SetPortrait()
-oPrint:SetPaperSize(DMPAPER_A4)
-oPrint:StartPage()   	// Inicia uma nova página
-oPrint:SetMargin(60,60,60,60)
-oPrint:cPathPDF := cPasta //ctemp
-
-DBSEEK(xFilial("SE1")+Avkey(MV_PAR01,"E1_PREFIXO")+Avkey(MV_PAR02,"E1_NUM"))
+If DBSEEK(xFilial("SE1")+Avkey(MV_PAR01,"E1_PREFIXO")+Avkey(MV_PAR02,"E1_NUM")+Avkey(cParcela,"E1_PARCELA"))
 //
-Do While !EOF() .and. E1_PREFIXO+E1_NUM == Avkey(MV_PAR01,"E1_PREFIXO")+Avkey(MV_PAR02,"E1_NUM")
+//Do While !EOF() .and. E1_PREFIXO+E1_NUM == Avkey(MV_PAR01,"E1_PREFIXO")+Avkey(MV_PAR02,"E1_NUM")
+	
+	
 	//Posiciona o SA6 (Bancos)
 	DbSelectArea("SA6")
 	DbSetOrder(1)
 	DbSeek(xFilial("SA6")+_Bco+_Age+_Cta)
 	//DbSeek(xFilial("SA6")+_Bco+_Age+_Cta)
 	//
+	
 	DO CASE
-		CASE SE1->E1_PARCELA == "A"
+		CASE Alltrim(SE1->E1_PARCELA) == "A"
 			cParcela := "1"
-		CASE SE1->E1_PARCELA == "B"
+		CASE Alltrim(SE1->E1_PARCELA) == "B"
 			cParcela := "2"
-		CASE SE1->E1_PARCELA == "C"
+		CASE Alltrim(SE1->E1_PARCELA) == "C"
 			cParcela := "3"
-		CASE SE1->E1_PARCELA == "D"
+		CASE Alltrim(SE1->E1_PARCELA) == "D"
 			cParcela := "4"
-		CASE SE1->E1_PARCELA == "E"
+		CASE Alltrim(SE1->E1_PARCELA) == "E"
 			cParcela := "5"
-		CASE SE1->E1_PARCELA == "F"
+		CASE Alltrim(SE1->E1_PARCELA) == "F"
 			cParcela := "6"
-		CASE SE1->E1_PARCELA == "G"
+		CASE Alltrim(SE1->E1_PARCELA) == "G"
 			cParcela := "7"
-		CASE SE1->E1_PARCELA == "H"
+		CASE Alltrim(SE1->E1_PARCELA) == "H"
 			cParcela := "8"
-		CASE SE1->E1_PARCELA == "I"
+		CASE Alltrim(SE1->E1_PARCELA) == "I"
 			cParcela := "9"
 		OTHERWISE
 			cParcela := "0"
 	ENDCASE
+	
+	oPrint 	:= FWMSPrinter():New("Boleto_"+strzero(VAL(MV_PAR02),9)+"_"+Alltrim(SE1->E1_PARCELA)+".rel",  IMP_PDF, lAdjustToLegacy, cPasta, lDisableSetup,,,,.F.,,,.F.)
+
+	oPrint:SetResolution(78) //Tamanho estipulado para a Danfe
+	oPrint:SetPortrait()
+	oPrint:SetPaperSize(DMPAPER_A4)
+	oPrint:StartPage()   	// Inicia uma nova página
+	oPrint:SetMargin(60,60,60,60)
+	oPrint:cPathPDF := cPasta //ctemp
+	
+	
 
 	If !Empty(SE1->E1_NUMBCO)
 		_cNossoNum	:= SE1->E1_NUMBCO
@@ -225,16 +231,18 @@ Do While !EOF() .and. E1_PREFIXO+E1_NUM == Avkey(MV_PAR01,"E1_PREFIXO")+Avkey(MV
     cInst3:= ""
 
     If nPag > 1
+		oPrint:endpage()
         oPrint:StartPage()
     endif
 	Impress(oPrint,aBitmap,aDadosEmp,aDadosTit,aDadosBanco,aDatSacado,aBolText,CB_RN_NN)
 	n := n + 1
 	
-	dbSkip()
+	//dbSkip()
 	IncProc()
 	i := i + 1
     nPag++
-EndDo
+EndIf 
+//EndDo
 //            
 
 oPrint:EndPage()     // Finaliza a página
