@@ -41,8 +41,9 @@
       </div>
       <div class="list">
         <ul><div [innerHTML]="inputImg"></div></ul>
+        <po-button class="mt-15" *ngIf="!!inputImg" p-label='Limpar Imagens' (p-click)="clearImg()"></po-button>
       </div>
-
+      
       <input type="file" id="file" accept="image/*" hidden multiple (change)="onSelectNewFile($any($event.target).files)">
       
     </div>

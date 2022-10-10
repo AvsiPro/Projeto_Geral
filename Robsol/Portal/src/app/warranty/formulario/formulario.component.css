@@ -15,5 +15,9 @@
 .list{
     margin: 5px;
     margin-left: 20px;
-    margin-bottom: 15px;
+    margin-bottom: 40px;
+}
+
+.mt-15{
+    margin-top: 15px
 }
