@@ -20,7 +20,7 @@ export class WarrantyComponent implements OnInit {
   serviceApi =  environment.api + `EnvChamdo/?cod_cliente=${localStorage.getItem('cod_cliente')}&loja_cliente=${localStorage.getItem('loja_cliente')}`;
 
   public readonly actions: Array<PoPageAction> = [
-    { label: 'Formulário', url: '/FORMULARIO', icon: 'po-icon po-icon-cart' },
+    { label: 'Incluir Chamado', url: '/FORMULARIO', icon: 'po-icon po-icon-cart' },
   ];
   public readonly breadcrumb: PoBreadcrumb = {
     items: [{ label: 'Home', link: '/' }, { label: 'Garantia' }]
@@ -51,9 +51,30 @@ export class WarrantyComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.getChamadosAbertos()
   } 
   modalOpen() {
     this.poModal.open();
+  }
+
+
+  getChamadosAbertos(){
+    let url = environment.api + `EnvChamdo/?cod_cliente=${localStorage.getItem('cod_cliente')}&loja_cliente=${localStorage.getItem('loja_cliente')}`
+    let items: any = []
+    
+    this.http.get(url).subscribe((response: any) =>{
+      response['items'].forEach((element: any) =>{
+        items.push({
+          chamado: element.chamado,
+          nota: element.nota,
+          produto: element.produto,
+        })
+      })
+
+      const setChamado = items.length > 0 ? JSON.stringify(items) : JSON.stringify([])
+      localStorage.setItem('chamados', setChamado)
+
+    })
   }
 
 }
