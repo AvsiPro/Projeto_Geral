@@ -63,16 +63,16 @@ DEFAULT contrato   := ''
 
 //PREPARE ENVIRONMENT EMPRESA "02" FILIAL "01" //MODULO "FAT" TABLES "SA1"        
 
-//Aadd(aList,{.T.,'','','','','','','','','','','','','','','','','',''})
-//Aadd(aList1,{.T.,'','','','','','','','','','','','','','','','','',''})
-//Aadd(aList2,{.T.,'','','','','','','','','','','','','','','','','',''})
-//Aadd(aList3,{.T.,'','','','','','','','','','','','','','','','','',''})
-//Aadd(aList4,{.T.,'','','','','','','','','','','','','','','','','',''})
+Aadd(aList,{.T.,'','','','','','','','','','','','','','','','','',''})
+Aadd(aList1,{.T.,'','','','','','','','','','','','','','','','','',''})
+Aadd(aList2,{.T.,'','','','','','','','','','','','','','','','','',''})
+Aadd(aList3,{.T.,'','','','','','','','','','','','','','','','','',''})
+Aadd(aList4,{.T.,'','','','','','','','','','','','','','','','','',''})
 Aadd(aList5,{.T.,'','','','','','','','','','','','','','','','','',''})
 Aadd(aList6,{.T.,'','','','','','','','','','','','','','','','','',''})
 Aadd(aList7,{.T.,'','','','','','','','','','','','','','','','','',''})
-//Aadd(aList8,{.T.,'','','','','','','','','','','','','','','','','',''})
-//Aadd(aList9,{.T.,'','','','','','','','','','','','','','','','','',''})
+Aadd(aList8,{.T.,'','','','','','','','','','','','','','','','','',''})
+Aadd(aList9,{.T.,'','','','','','','','','','','','','','','','','',''})
 Aadd(aList10,{.T.,'','','','','','','','','','','','','','','','','',''})
 
 DbSelectArea("SBM")
@@ -82,7 +82,7 @@ WHILE !EOF()
     Dbskip()         
 ENDDO
 
-Processa({|| Busca1(contrato),"Aguarde, buscando ativos"})
+// Processa({|| Busca1(contrato),"Aguarde, buscando ativos"})
 
 WHILE !empty(procname(nCont))
     IF alltrim(UPPER(procname(nCont))) $ "TECA201"
@@ -105,8 +105,8 @@ oDlg1    := MSDialog():New( 017,058,628,1344,"Pick-List",,,.F.,,,,,,.T.,,,.T. )
                               aList[oList:nAt,03],;
                               aList[oList:nAt,04],;
                               aList[oList:nAt,19]}}
-                                                                               //,"Inventários"
-    oFld1    := TFolder():New( 000,284,{"Pick-List","Leituras","Sangrias"},{},oDlg1,,,,.T.,.F.,348,148,) 
+                                                            //,"Sangrias"    //,"Inventários"
+    oFld1    := TFolder():New( 000,284,{"Pick-List","Leituras"},{},oDlg1,,,,.T.,.F.,348,148,) 
 
         //oBrw4      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{000,000,132,344},,, oFld1:aDialogs[3] ) 
         oList1    := TCBrowse():New(000,001,344,135,, {'','Mola','Produto','Descrição','Quant.','Conf','Nivel Par','Saldo'},{5,20,20,90,20,20,20},;
@@ -135,17 +135,17 @@ oDlg1    := MSDialog():New( 017,058,628,1344,"Pick-List",,,.F.,,,,,,.T.,,,.T. )
                             aList8[oList8:nAt,08]}}
 
         //oBrw2      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{000,000,132,344},,, oFld1:aDialogs[1] ) 
-        oList9    := TCBrowse():New(000,001,344,135,, {'Data','Audit','Valor'},{30,40,40},;
-                            oFld1:aDialogs[3],,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList2:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
+        // oList9    := TCBrowse():New(000,001,344,135,, {'Data','Audit','Valor'},{30,40,40},;
+        //                     oFld1:aDialogs[3],,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList2:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
 
-        oList9:SetArray(aList9)
-        oList9:bLine := {||{aList9[oList9:nAt,01],;
-                            aList9[oList9:nAt,02],; 
-                            aList9[oList9:nAt,03]}}
+        // oList9:SetArray(aList9)
+        // oList9:bLine := {||{aList9[oList9:nAt,01],;
+        //                     aList9[oList9:nAt,02],; 
+        //                     aList9[oList9:nAt,03]}}
                              
         //oBrw5      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{000,000,132,344},,, oFld1:aDialogs[4] ) 
-
-    oFld2    := TFolder():New( 152,004,{"Produtos","Planogramas","Locais Inst.","Rotas","Cânisteres","oaDialogs10"},{},oDlg1,,,,.T.,.F.,276,132,) 
+                                                                                                   //,"oaDialogs10"
+    oFld2    := TFolder():New( 152,004,{"Produtos","MAPAS","Locais Inst.","Rotas","Cânisteres"},{},oDlg1,,,,.T.,.F.,276,132,) 
 
         //oBrw6      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{000,000,116,272},,, oFld2:aDialogs[1] ) 
         oList2    := TCBrowse():New(000,001,274,110,, {'','Código','Descrição','Saldo'},{10,30,40,20},;
@@ -200,13 +200,13 @@ oDlg1    := MSDialog():New( 017,058,628,1344,"Pick-List",,,.F.,,,,,,.T.,,,.T. )
                                 aList6[oList6:nAt,07]}}   
                                
         //oBrw11     := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{000,000,116,272},,, oFld2:aDialogs[6] ) 
-        oList7    := TCBrowse():New(000,001,274,110,, {'','Ativo','Modelo','Pick-List'},{10,30,40,20},;
-                        oFld2:aDialogs[6],,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
-        oList7:SetArray(aList7)
-        oList7:bLine := {||{ IF(aList7[oList7:nAt,01],oOk,oNo),; 
-                                Alltrim(aList7[oList7:nAt,02]),;
-                                aList7[oList7:nAt,03],;
-                                aList7[oList7:nAt,04]}}    
+        // oList7    := TCBrowse():New(000,001,274,110,, {'','Ativo','Modelo','Pick-List'},{10,30,40,20},;
+        //                 oFld2:aDialogs[6],,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
+        // oList7:SetArray(aList7)
+        // oList7:bLine := {||{ IF(aList7[oList7:nAt,01],oOk,oNo),; 
+        //                         Alltrim(aList7[oList7:nAt,02]),;
+        //                         aList7[oList7:nAt,03],;
+        //                         aList7[oList7:nAt,04]}}    
 
     oGrp2    := TGroup():New( 152,284,198,424,"",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
 
@@ -242,7 +242,7 @@ oDlg1    := MSDialog():New( 017,058,628,1344,"Pick-List",,,.F.,,,,,,.T.,,,.T. )
     oTMenuIte7   := TMenuItem():New(oDlg1,"Vendas Vmpay",,,,{|| Processa({|| Vendaspay(),"Buscando informações"})},,,,,,,,,.T.)
     oTMenuIte2   := TMenuItem():New(oDlg1,"Validar Saldo",,,,{|| Processa({||saldos(),"Aguarde..."})},,,,,,,,,.T.)   
     oTMenuIte3   := TMenuItem():New(oDlg1,"Inverter",,,,{|| Processa({||inverte(),"Aguarde..."})},,,,,,,,,.T.) 
-    oTMenuIte4   := TMenuItem():New(oDlg1,"Validar Planograma",,,,{|| Processa({|| ValidPlan(),"Aguarde..."})},,,,,,,,,.T.) 
+    oTMenuIte4   := TMenuItem():New(oDlg1,"Validar MAPA",,,,{|| Processa({|| ValidPlan(),"Aguarde..."})},,,,,,,,,.T.) 
     oTMenuIte5   := TMenuItem():New(oDlg1,"Gerar PV",,,,{|| Processa({||pedido(),"Aguarde..."})},,,,,,,,,.T.) 
     //oTMenuIte6 := TMenuItem():New(oDlg1,"Exportar Remessas",,,,{|| Processa({||Remessas(),"Aguarde..."})},,,,,,,,,.T.) 
     IF !lTeca
@@ -265,15 +265,15 @@ oDlg1    := MSDialog():New( 017,058,628,1344,"Pick-List",,,.F.,,,,,,.T.,,,.T. )
     IF !lTeca
         // Menu popup grid 3
         MENU oMenuP POPUP 
-        MENUITEM "Salvar Planograma" ACTION ( saveplan())
-        MENUITEM "Incluir Planograma" ACTION ( incplan(1))
-        MENUITEM "Alterar Planograma" ACTION ( incplan(2))
-        MENUITEM "Excluir Planograma" ACTION ( excplan())
-        MENUITEM "Replicar Planograma" ACTION ( repplan())
+        MENUITEM "Salvar MAPA" ACTION ( saveplan())
+        MENUITEM "Incluir MAPA" ACTION ( incplan(1))
+        MENUITEM "Alterar MAPA" ACTION ( incplan(2))
+        MENUITEM "Excluir MAPA" ACTION ( excplan())
+        MENUITEM "Replicar MAPA" ACTION ( repplan())
         
         ENDMENU                                                                           
     
-        oList3:bRClicked := { |oObject,nX,nY| oMenuP:Activate( nX, (nY-10), oObject ) }
+        // oList3:bRClicked := { |oObject,nX,nY| oMenuP:Activate( nX, (nY-10), oObject ) }
     ENDIF                                                                               
 
     // Menu popup grid 2
@@ -282,7 +282,7 @@ oDlg1    := MSDialog():New( 017,058,628,1344,"Pick-List",,,.F.,,,,,,.T.,,,.T. )
     
     ENDMENU                                                                           
 
-    oList8:bRClicked := { |oObject,nX,nY| oMenu8:Activate( nX, (nY-10), oObject ) }
+    // oList8:bRClicked := { |oObject,nX,nY| oMenu8:Activate( nX, (nY-10), oObject ) }
     
 oDlg1:Activate(,,,.T.)
 
@@ -783,11 +783,11 @@ IF len(aList9) < 1
     Aadd(aList9,{'','','','','','','','','','','','','','','','','','',''})
 ENDIF
 
-oList9:nAt := 1
-oList9:SetArray(aList9)
-oList9:bLine := {||{aList9[oList9:nAt,01],;
-                    aList9[oList9:nAt,02],; 
-                     aList9[oList9:nAt,03]}}       
+// oList9:nAt := 1
+// oList9:SetArray(aList9)
+// oList9:bLine := {||{aList9[oList9:nAt,01],;
+//                     aList9[oList9:nAt,02],; 
+//                      aList9[oList9:nAt,03]}}       
 
 IF len(aList6) < 1
     Aadd(aList6,{.F.,'','','','','','','','','','','','','','','','','','',''})
@@ -808,7 +808,7 @@ oList3:refresh()
 oList4:refresh()
 oList6:refresh()
 oList8:refresh()
-oList9:refresh()
+// oList9:refresh()
 oList:refresh()
 
 oDlg1:refresh()
@@ -1763,7 +1763,7 @@ ELSE
     aPlanog := BuscPlan()
 ENDIF
 
-oPlan1     := MSDialog():New( 092,232,577,1480,"Incluir Planograma",,,.F.,,,,,,.T.,,,.T. )
+oPlan1     := MSDialog():New( 092,232,577,1480,"Incluir MAPA",,,.F.,,,,,,.T.,,,.T. )
 
     oGrPlan    := TGroup():New( 000,004,212,619,"Produtos",oPlan1,CLR_BLACK,CLR_WHITE,.T.,.F. )
     //oBrw1      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{008,008,208,340},,, oGrPlan ) 
@@ -2618,7 +2618,7 @@ FOR nX := 1 TO len(aListB)
     ENDIF
 NEXT nX       
 
-oRepPl     := MSDialog():New( 092,232,437,876,"Replicar Planograma",,,.F.,,,,,,.T.,,,.T. )
+oRepPl     := MSDialog():New( 092,232,437,876,"Replicar MAPA",,,.F.,,,,,,.T.,,,.T. )
 
     oGrp1      := TGroup():New( 004,008,148,308,"Ativos",oRepPl,CLR_BLACK,CLR_WHITE,.T.,.F. )
     //oBrw1      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{012,012,144,304},,, oGrp1 ) 
@@ -2638,7 +2638,7 @@ oRepPl     := MSDialog():New( 092,232,437,876,"Replicar Planograma",,,.F.,,,,,,.
 oRepPl:Activate(,,,.T.)
 
 IF nOpc == 1
-    IF MsgYesNo("Confirma a cópia do planograma atual para as maquinas selecionadas?","repplan - AVSIINT")
+    IF MsgYesNo("Confirma a cópia do MAPA atual para as maquinas selecionadas?","repplan - AVSIINT")
         FOR nX := 1 TO len(aAteq)
             IF aAteq[nX,01]
                 //Aadd(aGrav,aAteq[nX])
@@ -2681,7 +2681,7 @@ IF nOpc == 1
             SZ4->(Msunlock())
         NEXT nX  
         
-        MsgAlert("Planogramas salvos, saia da rotina e abra novamente para atualização.")
+        MsgAlert("MAPAS salvos, saia da rotina e abra novamente para atualização.")
     ENDIF
 ENDIF
 
