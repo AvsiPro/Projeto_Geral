@@ -65,7 +65,9 @@ For nX := 1 to len(aAux)
 
         Do While !EOF() .and. E1_PREFIXO+E1_NUM == Avkey(MV_PAR01,"E1_PREFIXO")+Avkey(MV_PAR02,"E1_NUM")
             If SE1->E1_SALDO > 0
-                U_ROBBOL(.T.,cPasta+alltrim(aAux[nX,03])+'\',cfilorig,SE1->E1_PARCELA)
+                If !File(cPasta+alltrim(aAux[nX,03])+'\boleto_'+MV_PAR02+"_"+Alltrim(SE1->E1_PARCELA)+".pdf")
+                    U_ROBBOL(.T.,cPasta+alltrim(aAux[nX,03])+'\',cfilorig,SE1->E1_PARCELA)
+                EndIF
             ENDIF
             DBSkip()
         ENDDO
