@@ -317,18 +317,46 @@ export class FormularioComponent implements OnInit {
   }
 
   onClickUserDetail() {
-    let url = environment.api + `FieldService/?codigo=${this.input}&cod_cliente=${localStorage.getItem('cod_cliente')}&loja_cliente=${localStorage.getItem('loja_cliente')}`
+
+    let itmChamado: any = []
+    let lOk = true
+
+    itmChamado = JSON.parse(localStorage.getItem('chamados') as string)
+    
+    const  url = environment.api + `FieldService/?codigo=${this.input}&cod_cliente=${localStorage.getItem('cod_cliente')}&loja_cliente=${localStorage.getItem('loja_cliente')}`
     this.http.get(url).subscribe((response: any) =>{
-      response['items'].forEach((element: any) =>{
-        this.items.push({
-          nota: element['nota'],
-          item: element['item'],
-          cod_produto: element['cod_produto'],
-          quantidade: element['quantidade'],
-          preco: element['preco'],
-          emissao: element['emissao']
+
+      if(itmChamado.length > 0){
+          response['items'].forEach((element: any) =>{
+            lOk = true
+
+            itmChamado.filter((event: any)=>{
+              if(event.produto.trim()+event.nota.trim() === element.cod_produto.trim()+element.nota.trim() && lOk){
+                lOk = false
+              }
+            })
+
+            if(lOk){
+              this.insertItem(element)
+            }
+          })
+        
+      }else{
+        response['items'].forEach((element: any) =>{
+          this.insertItem(element)
         })
-      })
+      }
+    })
+  }
+
+  insertItem(element: any){
+    this.items.push({
+      nota: element['nota'],
+      item: element['item'],
+      cod_produto: element['cod_produto'],
+      quantidade: element['quantidade'],
+      preco: element['preco'],
+      emissao: element['emissao']
     })
   }
 
@@ -392,9 +420,10 @@ export class FormularioComponent implements OnInit {
 
     var filesStr = "";
 
-    for (let i = 0; i < files.length; i++){
+    console.log(files)
 
-      filesStr += "<li>" + files[i].name + "</li>";
+    for (let i = 0; i < files.length; i++){
+      filesStr += '<li>' + files[i].name + " <input type='button' onclick='teste()' value='Apagar'/> </li>"
 
       this.fileSelected = files[i]
       this.imageUrl = this.sant.bypassSecurityTrustUrl(window.URL.createObjectURL(this.fileSelected)) as string
@@ -410,7 +439,13 @@ export class FormularioComponent implements OnInit {
       
     }
     this.inputImg += filesStr;
-    
+  }
+
+  clearImg(){
+    this.imagesConv = []
+    this.inputImg = ''
+    this.imageUrl = ''
+    this.base64 = ''
   }
 
   fGrvImage(chamado: string){
