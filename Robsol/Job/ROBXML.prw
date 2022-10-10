@@ -21,7 +21,7 @@ User Function ROBXML(cDocumento, cSerie, cArqXML, lMostra)
     Local aArea        := GetArea()
     Local cURLTss      := PadR(GetNewPar("MV_SPEDURL","http://"),250)  
     Local oWebServ
-    Local cIdEnt       := StaticCall(SPEDNFE, GetIdEnt)
+    Local cIdEnt       := GetIdEnt()
     Local cTextoXML    := ""
     Default cDocumento := ""
     Default cSerie     := ""
@@ -87,3 +87,30 @@ User Function ROBXML(cDocumento, cSerie, cArqXML, lMostra)
     EndIf
     RestArea(aArea)
 Return
+
+
+Static Function GetIdEnt(lUsaColab)
+
+local cIdEnt := ""
+local cError := ""
+
+Default lUsaColab := .F.
+
+If !lUsaColab
+
+	cIdEnt := getCfgEntidade(@cError)
+
+	if(empty(cIdEnt))
+		Aviso("SPED", cError, {"ok"}, 3)
+
+	endif
+
+else
+	if !( ColCheckUpd() )
+		Aviso("SPED", "UPDATE do TOTVS Colaboração 2.0 não aplicado. Desativado o uso do TOTVS Colaboração 2.0",{"ok"},3)
+	else
+		cIdEnt := "000000"
+	endif
+endIf
+
+Return(cIdEnt)
