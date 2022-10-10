@@ -1,14 +1,14 @@
-#INCLUDE 'protheus.ch'
-#INCLUDE 'parmtype.ch'
+#INCLUDE "protheus.ch"
+#INCLUDE "parmtype.ch"
 #INCLUDE "totvs.ch"
 #INCLUDE "fileio.ch"
-#INCLUDE  'TBICONN.CH'
+#INCLUDE "TBICONN.CH"
 
 /*
 ‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
 ±±…ÕÕÕÕÕÕÕÕÕÕ—ÕÕÕÕÕÕÕÕÕÕÀÕÕÕÕÕÕÕ—ÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÀÕÕÕÕÕÕ—ÕÕÕÕÕÕÕÕÕÕÕÕÕª±±
-±±∫Programa  ≥PRTWS02   ∫Autor  ≥Microsiga           ∫ Data ≥  01/25/17   ∫±±
+±±∫Programa  ≥CONWSC02   ∫Autor  ≥Microsiga           ∫ Data ≥  01/25/17   ∫±±
 ±±ÃÕÕÕÕÕÕÕÕÕÕÿÕÕÕÕÕÕÕÕÕÕ ÕÕÕÕÕÕÕœÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕ ÕÕÕÕÕÕœÕÕÕÕÕÕÕÕÕÕÕÕÕπ±±
 ±±∫Desc.     ≥   Funcao que gera os pedidos de venda pelo pick list.      ∫±±
 ±±∫          ≥                                                            ∫±±
@@ -19,18 +19,18 @@
 ﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂ
 */
 
-USER FUNCTION PRTWS02()
+USER FUNCTION CONWSC02()
  
 LOCAL oRestClient    :=    FWRest():New("http://vmpay.vertitecnologia.com.br")
 LOCAL aHeader        :=    {} //{"tenantId: 99,01"}
-LOCAL cValor         :=    ''
+LOCAL cValor         :=    ""
 LOCAL nHandle        :=    fcreate('c:\temp\vmpay.txt' , FO_READWRITE + FO_SHARED )
 LOCAL nHandle2       :=    fcreate('c:\temp\vmpay2.txt' , FO_READWRITE + FO_SHARED )     
 LOCAL nHandle3       :=    fcreate('c:\temp\vmpay3.txt' , FO_READWRITE + FO_SHARED )     
 LOCAL nHandle4       :=    fcreate('c:\temp\vmpay4.txt' , FO_READWRITE + FO_SHARED )     
-//LOCAL aLinhas        :=    {}
+// LOCAL aLinhas        :=    {}
 LOCAL n              :=    0
-// LOCAL j             :=    0
+// LOCAL j              :=    0
 LOCAL aItens         :=    {}         
 LOCAL aProdutos      :=    {}    
 LOCAL aArray1        :=    {}  
@@ -41,16 +41,14 @@ LOCAL aMolas         :=    {}
 LOCAL aAux           :=    {}
 LOCAL cId,cPlanId,cPending,nQtd,cGoodId,cProduto,cCodProt,cCodCl,cClProt,cLjProt,cNoCl,cNoFa,cEndCl,cIdP,cPlaItd := ''
 LOCAL cDataP         :=    ctod(" / / ")
-LOCAL cHoraP         :=    ''                 
+LOCAL cHoraP         :=    ""             
 LOCAL cToken         :=    "tH3FkJ7cB2P0GwwOGbmMpJvoHsQJtMZD2nX1Ihmj" //    "IwhyqNsJNpP1wAhSBwG4YJNmcleFIXOFkTQn1j0h"
 LOCAL nX
 LOCAL nMol
 LOCAL nTora
 // inclui o campo Authorization no formato <usuario>:<senha> na base64
-//Aadd(aHeader, "Authorization: Basic " + Encode64("admin:AkH1cWGwYdvUy3KfKwHdTQaegWcD9SVCsGQ03trB"))
-//PREPARE ENVIRONMENT EMPRESA "00" FILIAL "01" MODULO "FAT" TABLES "SA1"        
+//Aadd(aHeader, "Authorization: Basic " + Encode64("admin:AkH1cWGwYdvUy3KfKwHdTQaegWcD9SVCsGQ03trB"))   
 
-  
 // chamada da classe exemplo de REST com retorno de lista
 FWrite(nHandle,chr(13)+chr(10)+'Pick Lists '+chr(13)+chr(10)+chr(13)+chr(10),1000)
 //Data de corte
@@ -70,9 +68,9 @@ IF oRestClient:Get(aHeader)
     cValor := oRestClient:GetResult("GET") 
     oObj := nil
     FWJsonDeserialize(cValor,@oObj)
-     FOR nX := 1 TO len(oObj)
-         Aadd(aItens,{substr(oObj[nX]:URL,36),oObj[nX]:INSTALLATION_ID,oObj[nX]:MACHINE_ID,oObj[nX]:ID}) // (PickList)
-     NEXT nX
+    FOR nX := 1 TO len(oObj)
+        Aadd(aItens,{substr(oObj[nX]:URL,36),oObj[nX]:INSTALLATION_ID,oObj[nX]:MACHINE_ID,oObj[nX]:ID}) // (PickList)
+    NEXT nX
    
     FOR n := 1 TO len(aItens)      
         cClProt := ''
@@ -80,22 +78,6 @@ IF oRestClient:Get(aHeader)
         //Buscando o codigo do cliente                                                                             
         oRestClient:setPath(SUBSTR(aItens[n,1],1,at("PICK",UPPER(Alltrim(aItens[n,1])))-2)+"?access_token="+cToken)
         IF oRestClient:Get(aHeader)
-            /*cCliente := ''
-            cCliente := cvaltochar(oRestClient:GetResult("GET"))
-            oObj := nil  
-            FWrite(nHandle2,SUBSTR(aItens[n,1],1,at("PICK",UPPER(Alltrim(aItens[n,1])))-2)+"?access_token="+cToken+chr(13)+chr(10),1000)
-            FWrite(nHandle2,cCliente+chr(13)+chr(10),100000)
-            IF !FWJsonDeserialize(cCliente,@oObj)
-                //FWJsonDeserialize(cCliente,@oObj)
-                loop
-            ENDIF
-            aMolAx := oObj:CURRENT_PLANOGRAM:ITEMS 
-            aMolas := {}
-            FOR nMol := 1 TO len(aMolAx)
-                Aadd(aMolas,{aMolAx[nMol]:GOOD_ID,aMolAx[nMol]:NAME,cvaltochar(aMolAx[nMol]:CAPACITY),cvaltochar(aMolAx[nMol]:PAR_LEVEL),;
-                                aMolAx[nMol]:ID,aMolAx[nMol]:DESIRED_PRICE}) 
-            NEXT nMol
-            */
             cCliente := oRestClient:GetResult("GET")
             cCliente := strtran(cCliente,"[")
             cCliente := strtran(cCliente,"]")
@@ -127,43 +109,7 @@ IF oRestClient:Get(aHeader)
                     //Separando os dados para pegar o codigo do cliente do AMLabs
                     aArray4 := strtokarr(cCliente,",")
                     nPos := Ascan(aArray4,{|x| substr(upper(x),1,9) == "CLIENT_ID"})
-                /*oRestClient:setPath("/api/v1/locations/"+cLocId+"?access_token="+cToken)
-                IF oRestClient:Get(aHeader)
-                    cCliente := ''
-                    cCliente := oRestClient:GetResult("GET")
-                    oObj := nil                     
-                    IF !FWJsonDeserialize(cCliente,@oObj)
-                        FWJsonDeserialize(cCliente,@oObj)
-                    ENDIF
-                    cCodCl := ''
-                    cCodCl := cvaltochar(oObj:CLIENT_ID)  
-                    IF !Empty(cCodCl)
-                        oRestClient:setPath("/api/v1/clients/"+cCodCl+"?access_token="+cToken) 
-                        IF oRestClient:Get(aHeader)
-                            cCliente := ''
-                            cCliente := oRestClient:GetResult("GET")
-                            oObj := nil                      
-                            IF !FWJsonDeserialize(cCliente,@oObj)
-                                FWJsonDeserialize(cCliente,@oObj)
-                            ENDIF
-                            cCodCl := ''
-                            cCodCl := oObj:CNPJ
-                            IF !Empty(cCodCl)
-                                DbSelectArea("SA1")
-                                DbSetOrder(3)
-                                IF DbSeek(xFilial("SA1")+cCodCl)
-                                    cClProt := SA1->A1_COD      
-                                    cLjProt    := SA1->A1_LOJA  
-                                    cNoCl    := SA1->A1_NOME
-                                    cNoFa    := SA1->A1_NREDUZ
-                                    cEndCl    := Alltrim(SA1->A1_END)+" - "+Alltrim(SA1->A1_BAIRRO)+" - "+Alltrim(SA1->A1_MUN)+" - "+Alltrim(SA1->A1_EST)
-                                ENDIF
-                            ENDIF
-                        ENDIF
-                    ENDIF
-                ENDIF
-            ENDIF
-        ENDIF                */
+                
                     IF nPos > 0 
                         cCodCl := substr(aArray4[nPos],At(":",aArray4[nPos])+1)   
                         oRestClient:setPath("/api/v1/clients/"+cCodCl+"?access_token=OrJ305kN0AtGIZ2YHCmiqg2atfOqVli8keGEN61y") 
@@ -213,26 +159,26 @@ IF oRestClient:Get(aHeader)
             cPatrim := oObj:ASSET_NUMBER
         ENDIF
         
-           //Buscando o Pick-List por maquina
+        //Buscando o Pick-List por maquina
         oRestClient:setPath(Alltrim(aItens[n,1])+"?access_token="+cToken) 
         
         IF oRestClient:Get(aHeader)
-            cValor := ''
-            cValor := oRestClient:GetResult("GET")
-            oObj := nil                    
+            cValor    :=    ''
+            cValor    :=    oRestClient:GetResult("GET")
+            oObj      :=    nil                    
             IF !FWJsonDeserialize(cValor,@oObj)
                 FWJsonDeserialize(cValor,@oObj)
             ENDIF
 
-            cIdP    :=    ''
-            cIdP    :=    cvaltochar(oObj:PLANOGRAM_ID)
+            cIdP       :=    ''
+            cIdP       :=    cvaltochar(oObj:PLANOGRAM_ID)
             
-            cValor := strtran(cValor,"[")
-            cValor := strtran(cValor,"]")
-            cValor := strtran(cValor,'"')
-            cValor := strtran(cValor,'{')
-            cValor := strtran(cValor,'}')
-            aArray1 := strtokarr(cValor,",") 
+            cValor     :=    strtran(cValor,"[")
+            cValor     :=    strtran(cValor,"]")
+            cValor     :=    strtran(cValor,'"')
+            cValor     :=    strtran(cValor,'{')
+            cValor     :=    strtran(cValor,'}')
+            aArray1    :=    strtokarr(cValor,",") 
             Aadd(aPick,{cPatrim,cValor,Alltrim(aItens[n])})    
 
             FWrite(nHandle, cValor + chr(13)+chr(10),10000)
@@ -246,27 +192,27 @@ IF oRestClient:Get(aHeader)
             aPrdI := oObj:ITEMS
             
             FOR nTora := 1 TO len(aPrdI)
-                cId            :=    cvaltochar(aPrdI[nTora]:ID) 
-                cPlanId        :=    oObj:PLANOGRAM_ID
+                cId         :=    cvaltochar(aPrdI[nTora]:ID) 
+                cPlanId     :=    oObj:PLANOGRAM_ID
                 cPlaItd     :=    cvaltochar(aPrdI[nTora]:PLANOGRAM_ITEM_ID)
                 cPending    :=    IF(oObj:PENDING,'true','false')
                 nQtd        :=    cvaltochar(aPrdI[nTora]:QUANTITY) 
-                cDataP        :=    Substr(oObj:CREATED_AT,1,10)           
-                   cDataP        :=    stod(strtran(cDataP,"-"))
-                   cHoraP        :=    Substr(oObj:CREATED_AT,12,5)
-                cGoodId        :=    cvaltochar(aPrdI[nTora]:GOOD_ID)
-                nInd         :=    Ascan(aMolas,{|x| cvaltochar(x[5]) == Alltrim(cPlaItd)}) 
+                cDataP      :=    Substr(oObj:CREATED_AT,1,10)           
+                cDataP      :=    stod(strtran(cDataP,"-"))
+                cHoraP      :=    Substr(oObj:CREATED_AT,12,5)
+                cGoodId     :=    cvaltochar(aPrdI[nTora]:GOOD_ID)
+                nInd        :=    Ascan(aMolas,{|x| cvaltochar(x[5]) == Alltrim(cPlaItd)}) 
                 IF nInd > 0
-                    cMola       :=    aMolas[nInd,02]
-                    cCapacid    :=    aMolas[nInd,03]
+                    cMola        :=    aMolas[nInd,02]
+                    cCapacid     :=    aMolas[nInd,03]
                     cNivelPar    :=    aMolas[nInd,04]
                 ENDIF
                 //cProduto          
                 oRestClient:setPath("/api/v1/products/"+Alltrim(cGoodId)+"?access_token="+cToken) 
-                   cValor2 := ''
-                      IF oRestClient:Get(aHeader)
-                       cValor2 := oRestClient:GetResult("GET")  
-                       oObj2 := nil
+                cValor2 := ''
+                IF oRestClient:Get(aHeader)
+                    cValor2 := oRestClient:GetResult("GET")  
+                    oObj2 := nil
                     IF !FWJsonDeserialize(cValor2,@oObj2) 
                         FWJsonDeserialize(cValor2,@oObj2) 
                     ENDIF
@@ -274,101 +220,15 @@ IF oRestClient:Get(aHeader)
                     cProduto := Alltrim(oObj2:UPC_CODE)
                     cCodProt := cProduto
                     cUndMed  := Posicione("SB1",1,xFilial("SB1")+cProduto,"B1_UM")
-                    
+                        
                     IF cUndMed <> "UN"
                         nSgUn := Posicione("SB1",1,xFilial("SB1")+cProduto,"B1_CONV")
-                        
+                            
                         nQtd := cvaltochar(Round(val(nQtd) / nSgUn,2))
                     ENDIF
                     Aadd(aProdutos,{cPatrim,cId,cPlanId,cPending,nQtd,cGoodId,cProduto,cCodProt,cCodCl,cClProt,cLjProt,cNoCl,cNoFa,cEndCl,cMola,cIdP,cPlaItd,cDataP,cHoraP,cCapacid,cNivelPar})
-                ENDIF
-                            
+                ENDIF      
             NEXT nTora
-            /*
-            nPos2:= Ascan(aArray1,{|x| substr(upper(x),1,8) == "ITEMS:ID"})
-            IF nPos2 > 0
-                cId := substr(aArray1[nPos2],at("id:",aArray1[nPos2])+3)
-
-                FOR nJ := 2 TO len(aArray1)
-                    IF cId != aArray1[nJ] .And. Substr(upper(aArray1[nJ]),1,3) == "ID:"
-                        cCodProt := ''
-                        cCapacid := ''
-                        cNivelPar := ''
-                        //Buscando a mola e o codigo do produto no Protheus pelo codigo antigo
-                        IF Ascan(aMolas,{|x| Alltrim(x[1]) == Alltrim(cGoodId)}) > 0
-                            cMola := aMolas[Ascan(aMolas,{|x| Alltrim(x[1]) == Alltrim(cGoodId)}),02]
-                            cCapacid := aMolas[Ascan(aMolas,{|x| Alltrim(x[1]) == Alltrim(cGoodId)}),03]
-                            cNivelPar := aMolas[Ascan(aMolas,{|x| Alltrim(x[1]) == Alltrim(cGoodId)}),04]
-                        ELSE
-                            cMola := ''
-                        ENDIF
-
-                        cCodProt := cProduto
-                        cUndMed  := Posicione("SB1",1,xFilial("SB1")+cProduto,"B1_UM")
-                        
-                        IF cUndMed <> "UN"
-                            nSgUn := Posicione("SB1",1,xFilial("SB1")+cProduto,"B1_CONV")
-                            
-                            nQtd := cvaltochar(Round(val(nQtd) / nSgUn,2))
-                        ENDIF
-                        
-                        Aadd(aProdutos,{cPatrim,cId,cPlanId,cPending,nQtd,cGoodId,cProduto,cCodProt,cCodCl,cClProt,cLjProt,cNoCl,cNoFa,cEndCl,cMola,cIdP,cPlaItd,cDataP,cHoraP,cCapacid,cNivelPar})
-                        cId := substr(aArray1[nJ],4)
-                        nQtd    := ''
-                        cGoodId := ''
-                        cProduto := ''
-                        cCodProt := ''   
-                               
-                    ENDIF
-                           
-                       IF Substr(upper(aArray1[nJ]),1,13) == "PLANOGRAM_ID:"
-                           cPlanId := Substr(aArray1[nJ],14)
-                       ELSEIF Substr(upper(aArray1[nJ]),1,18) == "PLANOGRAM_ITEM_ID:"
-                           cPlaItd := Substr(aArray1[nJ],19)
-                       ELSEIF Substr(upper(aArray1[nJ]),1,8) == "PENDING:"
-                           cPending := Substr(aArray1[nJ],9)
-                       ELSEIF Substr(upper(aArray1[nJ]),1,9) == "QUANTITY:" 
-                           nQtd    :=    Substr(aArray1[nJ],10)           
-                       ELSEIF Substr(upper(aArray1[nJ]),1,7) == "CREATED"
-                           cDataP    :=    Substr(aArray1[nJ],12,10)           
-                           cDataP    :=    stod(strtran(cDataP,"-"))
-                           cHoraP    :=    Substr(aArray1[nJ],23,5)
-                       ELSEIF Substr(upper(aArray1[nJ]),1,8) == "GOOD_ID:"     
-                          cGoodId := Substr(aArray1[nJ],9)   
-                          //Buscando o cÛdigo do produto pelo good_id
-                          oRestClient:setPath("/api/v1/products/"+Alltrim(cGoodId)+"?access_token="+cToken) 
-                          
-                          oRestClient:Get(aHeader)
-                        cValor2 := oRestClient:GetResult("GET")
-                        cValor2 := strtran(cValor2,"[")
-                        cValor2 := strtran(cValor2,"]")
-                        cValor2 := strtran(cValor2,'"')
-                        cValor2 := strtran(cValor2,'{')
-                        cValor2 := strtran(cValor2,'}')  
-                        aArray2:= strtokarr(cValor2,",")
-                        nPos := Ascan(aArray2,{|x| substr(upper(x),1,9) == "UPC_CODE:"})
-                        IF nPos > 0
-                            aArray3 := strtokarr(aArray2[nPos],":")
-                               IF len(aArray3) == 2
-                               FWrite(nHandle4, aArray3[2] + chr(13)+chr(10),10000)  
-                               cProduto := aArray3[2]
-                            ENDIF
-                        ENDIF  
-                        ENDIF
-                NEXT nJ
-    
-                cCodProt := cProduto
-                
-                IF Ascan(aMolas,{|x| Alltrim(x[1]) == Alltrim(cGoodId)}) > 0
-                    cMola := aMolas[Ascan(aMolas,{|x| Alltrim(x[1]) == Alltrim(cGoodId)}),02]
-                    cCapacid := aMolas[Ascan(aMolas,{|x| Alltrim(x[1]) == Alltrim(cGoodId)}),03]
-                    cNivelPar := aMolas[Ascan(aMolas,{|x| Alltrim(x[1]) == Alltrim(cGoodId)}),04]
-                ELSE
-                    cMola := ''
-                ENDIF
-                Aadd(aProdutos,{cPatrim,cId,cPlanId,cPending,nQtd,cGoodId,cProduto,cCodProt,cCodCl,cClProt,cLjProt,cNoCl,cNoFa,cEndCl,cMola,cIdP,cPlaItd,cvaltochar(cDataP),cHoraP,cCapacid,cNivelPar})
-   
-            ENDIF*/
         ENDIF 
     NEXT n
 ELSE
