@@ -1,10 +1,10 @@
 import { TitulosService } from './titulos.service';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { environment } from 'src/environments/environment';
 import { Component, OnInit, ViewChild } from '@angular/core';
 import {  PoPageDynamicTableCustomTableAction, PoPageDynamicTableOptions } from '@po-ui/ng-templates';
-import { PoBreadcrumb, PoDynamicViewField, PoModalComponent, PoSelectOption } from '@po-ui/ng-components';
+import { PoBreadcrumb, PoDynamicViewField, PoModalComponent, PoNotificationService, PoSelectOption } from '@po-ui/ng-components';
 
 
 @Component({
@@ -35,9 +35,16 @@ export class TitulosComponent implements OnInit {
     items: [{ label: 'Home', link: '/' }, { label: 'Titulos'}]
   };
 
+  private headers: HttpHeaders | undefined;
+
   tableCustomActions: Array<PoPageDynamicTableCustomTableAction> = [];
 
-  constructor(private http: HttpClient, public titulosServices: TitulosService, private route: ActivatedRoute) {}
+  constructor(
+    private http: HttpClient, 
+    public titulosServices: TitulosService, 
+    private route: ActivatedRoute,
+    private poNotification: PoNotificationService,
+    ) {}
 
   ngOnInit(): void {
     console.log(this.serviceApi)
@@ -95,7 +102,47 @@ onLoad(): PoPageDynamicTableOptions {
   }
 
   private onClickUploadBoleto(user: { [x: string]: any; }){
-    console.log(user)
+    //console.log(user)
+
+    /*
+    let body: any;
+
+    this.headers = new HttpHeaders({
+      Authorization: 'Basic UjJhbHJFZDRoQWh1MmZSMFRPQnVCTlpxdFM0YTpsUDBUYktKUDdmQ245WGJDUktkM2pYZDFYRW9hIA' });
+
+    body = {
+      PREFIXO : user.prefixo, 
+      NUMERO : user.titulo,
+      PARCELA : user.parcela,
+      CNPJ : user.cnpj
+    };
+
+    this.http.post('http://200.98.81.201:40191/PRTL047', body, {headers: this.headers}).subscribe((res: any) => {
+      const result: any = res['statusrequest'];
+
+      if (result[0].code == '#200') {
+        this.poNotification.success(result[0].message);
+
+        const exportFileDefaultName = result[0].link;
+        const linkElement = document.createElement('a');
+
+        linkElement.setAttribute('href', result[0].link);
+        linkElement.setAttribute('download', exportFileDefaultName);
+        linkElement.setAttribute('target', '_blank');
+        linkElement.click();
+
+      } else{
+        this.poNotification.error(result[0].message);
+      }
+    }, (error) => {
+      if (error.hasOwnProperty('message')){
+        console.log(error)
+        this.poNotification.error('Falha na comunicaçao com servidor');
+      }
+    });
+
+    */
+
     const exportFileDefaultName = user.boleto;
     const linkElement = document.createElement('a');
     linkElement.setAttribute('href', user.boleto);
