@@ -363,7 +363,7 @@ Private lAutoErrNoFile := .F.
  
 aadd(aCabec, {"C5_NUM",     cDoc,      Nil})
 aadd(aCabec, {"C5_TIPO",    "N",       Nil})
-aadd(aCabec, {"C5_XCLASPV", "2",       Nil})
+aadd(aCabec, {"C5_XCLASPV", "P",       Nil})
 aadd(aCabec, {"C5_CLIENTE", cA1Cod,    Nil})
 aadd(aCabec, {"C5_LOJACLI", cA1Loja,   Nil})
 aadd(aCabec, {"C5_LOJAENT", cA1Loja,   Nil})
