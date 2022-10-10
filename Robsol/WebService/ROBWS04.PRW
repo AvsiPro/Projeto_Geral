@@ -76,13 +76,8 @@ Default aMedidas := {}
 
         If Empty(cError) .And. !Empty(cRespost)
             If At("<soap:Fault>",  cRespost) > 0
-
-                nPosErrIn := At("<faultstring>",  cRespost) + Len('<faultstring>')
-                nPosErrFn := At("</faultstring>",  cRespost) + Len('</faultstring>')
-                nLeitura := nPosErrFn - nPosErrIn
-                cError := SubStr(cRespost, nPosErrIn, nLeitura)
-                
-                conout(cError)
+                MsgAlert(oWS01:cFaultString, "Erro!")
+                RETURN .F.
             Else
                 aAuxId := oXML:_SOAP_ENVELOPE:_SOAP_BODY:_NS2_BUSCACLIENTERESPONSE:_RETURN:_CONTRATOS:_CARTOESPOSTAGEM:_SERVICOS
                 cCNPJ  := oXML:_SOAP_ENVELOPE:_SOAP_BODY:_NS2_BUSCACLIENTERESPONSE:_RETURN:_CNPJ:TEXT

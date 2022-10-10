@@ -43,6 +43,9 @@ User Function ROBEST04(lDnfB)
             //MV_PAR02 := '000001101'
             //MV_PAR03 := '1'
             Processa({|| aItens := buscanf()},"Aguarde, buscando Notas")
+            IF aItens == .F.
+                RETURN
+            ENDIF
             IF len(aItens) > 0
                 Processa({|| ImpEtiq(aItens)},"Impressao de etiqueta","Aguarde...")
             ENDIF
@@ -153,6 +156,9 @@ FOR nCont := 1 TO len(aRet)
 
         IF len(aMedidas) > 0
             Processa({|| aEtiqueta := U_ROBWS04(aRet[nCont,03], aRet[nCont,01], aRet[nCont,06], cTpFrete, aMedidas )},"Aguarde..."+CRLF+"Gerando Etiqueta")
+            IF aEtiqueta == .F.
+                RETURN .F.
+            ENDIF
         ENDIF
         cVirg := ''
         cEtiqueta := ''
@@ -230,7 +236,7 @@ Static Function ImpEtiq(aItens)
             SA1->(DbSeek(xFilial('SA1')+SF2->(F2_CLIENTE+F2_LOJA)))
             
             //oPrinter := FWMSPrinter():New("produto"+Alltrim(__cUserID)+".etq",IMP_SPOOL,lAdjustToLegacy,"/spool/",lDisableSetup,,,Alltrim(cImpress) /*parametro que recebe a impressora*/)
-            oPrinter := FWMSPrinter():New("produto"+Alltrim(__cUserID)+".etq",IMP_SPOOL,lAdjustToLegacy,"/spool/",lDisableSetup,,,Alltrim(cImpress) /*parametro que recebe a impressora*/)
+            oPrinter := FWMSPrinter():New("produto"+Alltrim(__cUserID)+".etq",IMP_PDF,lAdjustToLegacy,"/spool/",lDisableSetup,,,Alltrim(cImpress) /*parametro que recebe a impressora*/)
             
             oPrinter:StartPage()
             oPrinter:SetMargin(000,000,000,000)
