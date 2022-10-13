@@ -157,6 +157,7 @@ FOR nCont := 1 TO len(aRet)
         IF len(aMedidas) > 0
             Processa({|| aEtiqueta := U_ROBWS04(aRet[nCont,03], aRet[nCont,01], aRet[nCont,06], cTpFrete, aMedidas )},"Aguarde..."+CRLF+"Gerando Etiqueta")
             IF len(aEtiqueta) < 1 // == .F.
+                MsgAlert("Não foi possível gerar as etiquetas, falta de retorno do correio")
                 RETURN .F.
             ENDIF
         ENDIF
