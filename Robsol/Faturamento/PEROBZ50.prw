@@ -21,7 +21,7 @@ If aParam <> NIL
     If cIdPonto == 'BUTTONBAR'
         xRet := {}
 
-        aAdd(xRet, {"Imagens Enviadas", "", {|| fAbreImg() }, "Tooltip 1"})
+        aAdd(xRet, {"Imagens Enviadas", "", {|| Processa( {||  U_fAbreImg() }, "Processando Imagens..." ) }, "Tooltip 1"})
     EndIf
 EndIf
 
@@ -30,20 +30,33 @@ Return xRet
 
 /*/{Protheus.doc} fAbreImg
     @description Abrir imagens enviadas via chamado
-    @type Static Function
+    @type User Function
     @author Felipe Mayer
     @since 04/10/2022
 /*/
-Static Function fAbreImg()
+User Function fAbreImg(cCodigo)
 
 Local nX         := 0
-Local oModelx    := FWModelActive()
-Local oModelxDet := oModelx:GetModel('FORMZ50')
-Local cChamado   := 'chamado_'+oModelxDet:getValue('Z50_CODIGO')
+Local oModelx    := nil
+Local oModelxDet := nil
+Local cChamado   := ''
 Local cDir       := '\updchamados\'
-Local aFiles     := Directory(cDir+cChamado+"\*.*", "D")
+Local aFiles     := {}
 Local cTemp      := GetTempPath()
-Local nCount     := Len(aFiles)
+Local nCount     := 0
+
+Default cCodigo  := ''
+
+    If Empty(cCodigo)
+        oModelx    := FWModelActive()
+        oModelxDet := oModelx:GetModel('FORMZ50')
+        cChamado   := 'chamado_'+oModelxDet:getValue('Z50_CODIGO')
+    Else
+        cChamado := 'chamado_'+cCodigo
+    EndIf
+
+    aFiles     := Directory(cDir+cChamado+"\*.*", "D")
+    nCount     := Len(aFiles)
 
     For nX := 1 to nCount
         If aFiles[nX,2] > 0
