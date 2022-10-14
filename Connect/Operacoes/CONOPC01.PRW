@@ -67,8 +67,8 @@ Next nX
 
 //Prepare Environment Empresa "01" Filial "01" Tables "SD3" 
 
-//Processa({ || PreAcols()},"Aguarde","Carregando patrimônios..")
-Aadd(aList1,{'','','','','','','','','','','','','','','','','','','','','','','','','','','','','',''})
+Processa({ || PreAcols()},"Aguarde","Carregando patrimônios..")
+//Aadd(aList1,{'','','','','','','','','','','','','','','','','','','','','','','','','','','','','',''})
 
 Define MsDialog oDlg1 From 091,232 To 656,1164 Title "Estrutura Operacional" Pixel Style 128
 
@@ -135,8 +135,9 @@ Define MsDialog oDlg1 From 091,232 To 656,1164 Title "Estrutura Operacional" Pix
 			oBtSim:disable()
 			oBtn7:disable()
 		EndIf
+
 ACTIVATE DIALOG oDlg1 CENTERED
-//Reset Environment
+
                                                                      
 Return                 
 
@@ -181,14 +182,14 @@ EndIf
 cQuery := "SELECT N1_CHAPA,B1_DESC,'' AS N1_XCLIENT,'' AS N1_XLOJA,'' AS N1_XLOCINS,"
 cQuery += "A1_NREDUZ,A1_END,A1_COMPLEM,A1_BAIRRO,A1_MUN,'' AS N1_XTPSERV,"
 cQuery += "A1_EST,NL_DESCRIC,'' AS N1_XSTATTT, "
-cQuery += "ZE_MENSAL,ZE_ROTA,ZE_FREQUEN,ZE_FECHAME,ZZ1_DESCRI,"
+cQuery += "ZE_MENSAL,ZE_ROTA,ZE_FREQUEN,'' AS ZE_FECHAME,'' AS ZZ1_DESCRI,"
 cQuery += "'' AS N1_XPLANTR,'' AS N1_XSISPG,ZE_TIPOPLA,ZE.R_E_C_N_O_ AS RECZE,"
 cQuery += " ZE_SEQ, ZE_ROTAAUX, ZE_SEQAUX,'' AS N1_XPA,ZE_FRMLEIT, ZE_FRMSANG "
 cQuery += " FROM "+RetSQLName("SN1")+" N1"
-cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_COD=N1_PRODUTO AND B1.D_E_L_E_T_='' AND B1_XSECAO='026' "
+cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_COD=N1_PRODUTO AND B1.D_E_L_E_T_=''" // AND B1_XSECAO='026' "
 cQuery += " LEFT JOIN "+RetSQLName("SA1")+" A1 ON A1_COD=N1_XCLIENT AND A1_LOJA=N1_XLOJA AND A1.D_E_L_E_T_='' " 
 cQuery += " LEFT JOIN "+RetSQLName("SZE")+" ZE ON ZE_CHAPA=N1_CHAPA AND ZE.D_E_L_E_T_='' AND SUBSTRING(ZE_MENSAL,1,6)='"+substr(dtos(dDataBase),1,6)+"' "
-cQuery += " LEFT JOIN "+RetSQLName("ZZ1")+" Z1 ON ZZ1_COD=ZE_ROTA AND ZZ1_MSBLQL<>'1' AND Z1.D_E_L_E_T_=''"
+//cQuery += " LEFT JOIN "+RetSQLName("ZZ1")+" Z1 ON ZZ1_COD=ZE_ROTA AND ZZ1_MSBLQL<>'1' AND Z1.D_E_L_E_T_=''"
 cQuery += " LEFT JOIN "+RetSQLName("SNL")+" NL ON NL_FILIAL='"+xFilial("SNL")+"' AND NL_CODIGO=N1_LOCAL AND NL.D_E_L_E_T_=''"
 cQuery += " WHERE N1_XSTATTT IN ('2','3','5','6') AND N1.D_E_L_E_T_='' AND N1_BAIXA = '' "
  
@@ -197,7 +198,7 @@ If Select("TRB") > 0
 	dbCloseArea()
 EndIf
   
-MemoWrite("TTATFC07.SQL",cQuery)
+MemoWrite("CONOPC01.SQL",cQuery)
 
 cQuery:= ChangeQuery(cQuery)
 
@@ -215,12 +216,32 @@ dbgoTop()
 While !EOF()
 	Incproc()
     If Ascan(aList1,{|x| Alltrim(x[1]) == Alltrim(TRB->N1_CHAPA)}) == 0
-	    Aadd(aList1,{TRB->N1_CHAPA,TRB->B1_DESC,If(TRB->N1_XSTATTT=="2","PATRIMONIO EM TRANSITO",TRB->N1_XCLIENT),TRB->N1_XLOJA,TRB->N1_XLOCINS,TRB->A1_NREDUZ,;
-	    			 If(!Empty(TRB->NL_DESCRIC),TRB->NL_DESCRIC,TRB->A1_END),If(!Empty(TRB->NL_DESCRIC),'',TRB->A1_COMPLEM),;
-	    			 If(!Empty(TRB->NL_DESCRIC),'',TRB->A1_BAIRRO),If(!Empty(TRB->NL_DESCRIC),'',TRB->A1_MUN),;
-	    			 TRB->N1_XTPSERV,TRB->ZE_MENSAL,;
-	    			 TRB->ZE_ROTA,TRB->ZE_FREQUEN,TRB->ZE_FECHAME,TRB->ZZ1_DESCRI,.T.,.F.,TRB->N1_XPLANTR,TRB->N1_XSISPG,TRB->ZE_SEQ,TRB->ZE_TIPOPLA,"",;
-	    			 TRB->A1_EST,TRB->N1_XPA+" - "+Posicione("ZZ1",1,xFilial("ZZ1")+TRB->N1_XPA,"ZZ1_DESCRI")})
+	    Aadd(aList1,{	TRB->N1_CHAPA,;
+						TRB->B1_DESC,;
+						If(TRB->N1_XSTATTT=="2","PATRIMONIO EM TRANSITO",TRB->N1_XCLIENT),;
+						TRB->N1_XLOJA,;
+						'TRB->N1_XLOCINS',;
+						TRB->A1_NREDUZ,;
+	    			 	If(!Empty(TRB->NL_DESCRIC),TRB->NL_DESCRIC,TRB->A1_END),;
+						If(!Empty(TRB->NL_DESCRIC),'',TRB->A1_COMPLEM),;
+	    			 	If(!Empty(TRB->NL_DESCRIC),'',TRB->A1_BAIRRO),;
+						If(!Empty(TRB->NL_DESCRIC),'',TRB->A1_MUN),;
+	    			 	'TRB->N1_XTPSERV',;
+						TRB->ZE_MENSAL,;
+	    			 	TRB->ZE_ROTA,;
+						TRB->ZE_FREQUEN,;
+						'TRB->ZE_FECHAME',;
+						TRB->ZZ1_DESCRI,;
+						.T.,;
+						.F.,;
+						'TRB->N1_XPLANTR',;
+						'TRB->N1_XSISPG',;
+						TRB->ZE_SEQ,;
+						TRB->ZE_TIPOPLA,;
+						"",;
+	    			 	TRB->A1_EST,;
+						'TRB->N1_XPA'+" - "})
+					 //Posicione("ZZ1",1,xFilial("ZZ1")+TRB->N1_XPA,"ZZ1_DESCRI")
 	Else
 		cAux := aList1[Ascan(aList1,{|x| Alltrim(x[1]) == Alltrim(TRB->N1_CHAPA)}),12]
 		For nTz := 9 to len(Alltrim(cAux))
@@ -234,7 +255,18 @@ While !EOF()
     Aadd(alistb,{TRB->N1_CHAPA,TRB->ZE_TIPOPLA})
     
     For nPP := 1 to len(aList2)
-    	Aadd(aListb[len(alistb)],{aList2[nPP,01],aList2[nPP,02],aList2[nPP,03],aList2[nPP,04],aList2[nPP,05],aList2[nPP,06],aList2[nPP,07],aList2[nPP,08],TRB->ZE_MENSAL,TRB->ZE_SEQ,TRB->ZE_FECHAME,TRB->ZE_FREQUEN })
+    	Aadd(aListb[len(alistb)],{aList2[nPP,01],;
+									aList2[nPP,02],;
+									aList2[nPP,03],;
+									aList2[nPP,04],;
+									aList2[nPP,05],;
+									aList2[nPP,06],;
+									aList2[nPP,07],;
+									aList2[nPP,08],;
+									TRB->ZE_MENSAL,;
+									TRB->ZE_SEQ,;
+									'TRB->ZE_FECHAME',;
+									TRB->ZE_FREQUEN })
     Next nPP  
     
     Aadd( aListb[len(alistb)],TRB->RECZE )
@@ -473,7 +505,8 @@ oSay12:setText("")
 
 For nX := 2 to 7
 	If !Empty(aList2[nLinha,nX])
-		cAux += cBarra + aList2[nLinha,nX] +" "+ Posicione("ZZ1",1,xFilial("ZZ1")+aList2[nLinha,nX],"ZZ1_DESCRI")
+		cAux += cBarra + aList2[nLinha,nX] +" "
+		//+ Posicione("ZZ1",1,xFilial("ZZ1")+aList2[nLinha,nX],"ZZ1_DESCRI")
 		cBarra := "/"
 	EndIF
 Next nX
@@ -565,8 +598,8 @@ Local nX
 aList1 := {}
 
 If nSel == 1            
-	aAdd(aPergs ,{1,"Rota De"	,space(TamSx3("ZZ1_COD")[1]),"@!",".T.","ZZ1",".T.",60,.F.})
-	aAdd(aPergs ,{1,"Rota Até"	,space(TamSx3("ZZ1_COD")[1]),"@!",".T.","ZZ1",".T.",60,.F.})
+	//aAdd(aPergs ,{1,"Rota De"	,space(TamSx3("ZZ1_COD")[1]),"@!",".T.","ZZ1",".T.",60,.F.})
+	//aAdd(aPergs ,{1,"Rota Até"	,space(TamSx3("ZZ1_COD")[1]),"@!",".T.","ZZ1",".T.",60,.F.})
 	aAdd(aPergs ,{2,"Dia Semana","0", {"0=Todos","1=Segunda","2=Terça","3=Quarta","4=Quinta","5=Sexta"},50,'',.T.}) 
 	aAdd(aPergs ,{1,"Data Especifica",dDataE,"99/99/99","","","",0,.F.})
 	aAdd(aPergs ,{1,"Cliente"	,space(TamSx3("A1_COD")[1]),"@!",".T.","SA1",".T.",60,.F.})
@@ -850,7 +883,8 @@ If cOp == 1
 			RestArea(aArea)
 			Return
 		Else
-			aAdd(aPergs ,{1,"Informe a nova Rota"	,space(TamSx3("ZZ1_COD")[1]),"@!",".T.","ZZ1",".T.",100,.F.})
+			//aAdd(aPergs ,{1,"Informe a nova Rota"	,space(TamSx3("ZZ1_COD")[1]),"@!",".T.","ZZ1",".T.",100,.F.})
+			aAdd(aPergs ,{1,"Informe a nova Rota"	,space(TamSx3("NNR_CODIGO")[1]),"@!",".T.","NNR",".T.",100,.F.})
 			If ParamBox(aPergs ,"Cadastro de Rotas",@aRet)
 				If !Empty(aRet[1])
 					DbSelectArea("SZE")
@@ -872,7 +906,7 @@ If cOp == 1
 			EndIf
 		EndIf
 	Else
-		aAdd(aPergs ,{1,"Informe a Rota"	,space(TamSx3("ZZ1_COD")[1]),"@!",".T.","ZZ1",".T.",100,.F.})
+		//aAdd(aPergs ,{1,"Informe a Rota"	,space(TamSx3("ZZ1_COD")[1]),"@!",".T.","ZZ1",".T.",100,.F.})
 		aAdd(aPergs ,{1,"Informe a Frequencia"	,space(TamSx3("ZE_FREQUEN")[1]),"@!",".T.","",".T.",100,.F.})
 		aAdd(aPergs ,{1,"Informe o Fechamento"	,space(TamSx3("ZE_FECHAME")[1]),"@!",".T.","",".T.",100,.F.})
 		If ParamBox(aPergs ,"Cadastro de Rotas",@aRet)
@@ -889,7 +923,7 @@ If cOp == 1
 					SZE->ZE_ROTA 	:= 	aRet[1]
 					SZE->(Msunlock())
 					aList1[nLinha,13] := aRet[1]
-					aList1[nLinha,16] := Posicione("ZZ1",1,xFilial("ZZ1")+aRet[1],"ZZ1_DESCRI")
+					aList1[nLinha,16] := '' //Posicione("ZZ1",1,xFilial("ZZ1")+aRet[1],"ZZ1_DESCRI")
 					aBkpL1[Ascan(aBkpL1,{|x| x[1] == aList1[nLinha,01]}),13] := aRet[1]
 					aBkpL1[Ascan(aBkpL1,{|x| x[1] == aList1[nLinha,01]}),13] := aList1[nLinha,16]
 				EndIf
@@ -1112,11 +1146,12 @@ oDlg2	:= MSDialog():New( 088,232,410,635,"Abastecimento",,,.F.,,,,,,.T.,,,.T. )
 		
 	oSay1	:= TSay():New( 010,005,{||"Executor"},oGrp,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,024,008)
 	//oGetRota1	:= TGet():New( 010,037,{|u| If(PCount()>0,cRota:=u,cRota)},oGrp,044,008,'@!', { || VldRota( nColP,cRota,__readvar )}, CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"ZZ1",cRota,,)
-	@ 010,037 MSGET oGetRota1 VAR cRota	F3 "ZZ1"	PICTURE "@!"	OF oGrp SIZE 044,008 VALID VldRota( nColP,cRota ) PIXEL HASBUTTON
-	                                                                                                                                 
+	@ 010,037 MSGET oGetRota1 VAR cRota	F3 "NNR"	PICTURE "@!"	OF oGrp SIZE 044,008 VALID VldRota( nColP,cRota ) PIXEL HASBUTTON
+	                                   //"ZZ1"                                                                                              
 	// Segundo executor
 	//oGetRota2 := TGet():New( 010,089,{|u| If(PCount()>0,cRota2:=u,cRota2)},oGrp,044,008,'@!', { || VldRota( nColP,cRota2 )}, CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"ZZ1",cRota2,,)
-	@ 010,089 MSGET oGetRota2 VAR cRota2	F3 "ZZ1"	PICTURE "@!"	OF oGrp SIZE 044,008 VALID VldRota( nColP,cRota2 ) PIXEL HASBUTTON
+	@ 010,089 MSGET oGetRota2 VAR cRota2 F3 "NNR"	PICTURE "@!"	OF oGrp SIZE 044,008 VALID VldRota( nColP,cRota2 ) PIXEL HASBUTTON
+										//"ZZ1"
 	oGetRota2:Hide()
 	If cFreq $ "2D|3D" .And. !Empty(cRota2)
 		oGetRota2:Show()
@@ -1124,7 +1159,8 @@ oDlg2	:= MSDialog():New( 088,232,410,635,"Abastecimento",,,.F.,,,,,,.T.,,,.T. )
 	
 	// Terceiro executor
 	//oGetRota3 := TGet():New( 010,136,{|u| If(PCount()>0,cRota3:=u,cRota3)},oGrp,044,008,'@!', { || VldRota( nColP,cRota3 )}, CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"ZZ1",cRota3,,)
-	@ 010,136 MSGET oGetRota3 VAR cRota3	F3 "ZZ1"	PICTURE "@!"	OF oGrp SIZE 044,008 VALID VldRota( nColP,cRota3 ) PIXEL HASBUTTON
+	@ 010,136 MSGET oGetRota3 VAR cRota3	F3 "NNR"	PICTURE "@!"	OF oGrp SIZE 044,008 VALID VldRota( nColP,cRota3 ) PIXEL HASBUTTON
+												//"ZZ1"
 	oGetRota3:Hide()                  
 	If cFreq $ "2D|3D" .And. !Empty(cRota3)
 		oGetRota3:Show()
@@ -2100,8 +2136,8 @@ If nOpca == 2
 	Return
 EndIf
 
-aAdd(aPergs ,{1,"Rota De"	,space(TamSx3("ZZ1_COD")[1]),"@!",".T.","ZZ1",".T.",60,.F.})
-aAdd(aPergs ,{1,"Rota Até"	,space(TamSx3("ZZ1_COD")[1]),"@!",".T.","ZZ1",".T.",60,.F.})
+//aAdd(aPergs ,{1,"Rota De"	,space(TamSx3("ZZ1_COD")[1]),"@!",".T.","ZZ1",".T.",60,.F.})
+//aAdd(aPergs ,{1,"Rota Até"	,space(TamSx3("ZZ1_COD")[1]),"@!",".T.","ZZ1",".T.",60,.F.})
 aAdd(aPergs ,{4,"Todas",.F.,"",90,"",.F.})
 
 If !ParamBox(aPergs ,"Escolha de Rota",@aRet)
@@ -2696,8 +2732,8 @@ If nOpca == 2
 	Return
 EndIf
 
-aAdd(aPergs ,{1,"Rota De"	,space(TamSx3("ZZ1_COD")[1]),"@!",".T.","ZZ1",".T.",60,.F.})
-aAdd(aPergs ,{1,"Rota Até"	,space(TamSx3("ZZ1_COD")[1]),"@!",".T.","ZZ1",".T.",60,.F.})
+//aAdd(aPergs ,{1,"Rota De"	,space(TamSx3("ZZ1_COD")[1]),"@!",".T.","ZZ1",".T.",60,.F.})
+//aAdd(aPergs ,{1,"Rota Até"	,space(TamSx3("ZZ1_COD")[1]),"@!",".T.","ZZ1",".T.",60,.F.})
 aAdd(aPergs ,{4,"Todas",.F.,"",90,"",.F.})
 
 If !ParamBox(aPergs ,"Escolha de Rota",@aRet)
@@ -3534,7 +3570,8 @@ Local aPergs := {}
 Local aRet := {}
 
 
-AAdd(aPergs ,{1,"Rota"	,space(TamSx3("ZZ1_COD")[1]),"@!",".T.","ZZ1",".T.",60,.F.})
+//AAdd(aPergs ,{1,"Rota"	,space(TamSx3("ZZ1_COD")[1]),"@!",".T.","ZZ1",".T.",60,.F.})
+AAdd(aPergs ,{1,"Rota"	,space(TamSx3("NNR_CODIGO")[1]),"@!",".T.","NNR",".T.",60,.F.})
 If !ParamBox(aPergs ,"Horarios da Rota",@aRet)
 	Return                                     
 Else
@@ -3575,7 +3612,8 @@ Local cRota := ""
 Local aPergs := {}
 Local aRet := {}
 
-AAdd(aPergs ,{1,"Rota"	,space(TamSx3("ZZ1_COD")[1]),"@!",".T.","ZZ1",".T.",60,.F.})
+//AAdd(aPergs ,{1,"Rota"	,space(TamSx3("ZZ1_COD")[1]),"@!",".T.","ZZ1",".T.",60,.F.})
+AAdd(aPergs ,{1,"Rota"	,space(TamSx3("NNR_CODIGO")[1]),"@!",".T.","NNR",".T.",60,.F.})
 If !ParamBox(aPergs ,"Simulação",@aRet)
 	Return                                     
 Else
