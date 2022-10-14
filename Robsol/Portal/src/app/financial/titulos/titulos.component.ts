@@ -102,50 +102,12 @@ onLoad(): PoPageDynamicTableOptions {
   }
 
   private onClickUploadBoleto(user: { [x: string]: any; }){
-    //console.log(user)
 
-    /*
-    let body: any;
+    let arquivo = 'http://portal.robsol.com.br/'+user.cnpj+'/boleto_'+user.titulo+'_'+user.parcela+'.pdf'
 
-    this.headers = new HttpHeaders({
-      Authorization: 'Basic UjJhbHJFZDRoQWh1MmZSMFRPQnVCTlpxdFM0YTpsUDBUYktKUDdmQ245WGJDUktkM2pYZDFYRW9hIA' });
-
-    body = {
-      PREFIXO : user.prefixo, 
-      NUMERO : user.titulo,
-      PARCELA : user.parcela,
-      CNPJ : user.cnpj
-    };
-
-    this.http.post('http://200.98.81.201:40191/PRTL047', body, {headers: this.headers}).subscribe((res: any) => {
-      const result: any = res['statusrequest'];
-
-      if (result[0].code == '#200') {
-        this.poNotification.success(result[0].message);
-
-        const exportFileDefaultName = result[0].link;
-        const linkElement = document.createElement('a');
-
-        linkElement.setAttribute('href', result[0].link);
-        linkElement.setAttribute('download', exportFileDefaultName);
-        linkElement.setAttribute('target', '_blank');
-        linkElement.click();
-
-      } else{
-        this.poNotification.error(result[0].message);
-      }
-    }, (error) => {
-      if (error.hasOwnProperty('message')){
-        console.log(error)
-        this.poNotification.error('Falha na comunicaçao com servidor');
-      }
-    });
-
-    */
-
-    const exportFileDefaultName = user.boleto;
+    const exportFileDefaultName = arquivo
     const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', user.boleto);
+    linkElement.setAttribute('href', arquivo);
     linkElement.setAttribute('download', exportFileDefaultName);
     linkElement.setAttribute('target', '_blank');
     linkElement.click();
