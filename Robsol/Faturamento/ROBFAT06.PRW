@@ -14,7 +14,6 @@
 User Function ROBFAT06()
 
 Local aList0    := {}
-Local aList1    := {}
 Local cQuery    := ''
 Local cAliasSQL := GetNextAlias()
 Local aStatus   := {'Aberto','Atendido','Negado'}
@@ -96,12 +95,8 @@ SetPrvt("oSay1","oSay2","oSay3","oSay4","oSay5","oSay6","oSay7","oSay8","oSay9",
         SC6->(DbSetOrder(1))
         SC6->(DbSeek((cAliasSQL)->C5_FILIAL+(cAliasSQL)->C5_NUM))
 
-        While SC6->(!EoF() .And. (cAliasSQL)->C5_FILIAL == SC6->C6_FILIAL .AND. (cAliasSQL)->C5_NUM == SC6->C6_NUM)
-            Aadd(aList1,{SC6->C6_ITEM,SC6->C6_PRODUTO,SC6->C6_DESCRI,SC6->C6_QTDVEN,SC6->C6_PRCVEN,SC6->C6_VALOR,SC6->C6_DESCONT})
-            SC6->(DbSkip())
-        EndDo
 
-        If Len(aList1) > 0
+        If Len(aList0) > 0
 
             oDlg1  := MSDialog():New( 086,213,756,1508,"Atender Chamados de Garantia",,,.F.,,,,,,.T.,,,.T. )
             oGrp1  := TGroup():New( 004,008,120,632,"Observações para atendimento",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
@@ -110,7 +105,7 @@ SetPrvt("oSay1","oSay2","oSay3","oSay4","oSay5","oSay6","oSay7","oSay8","oSay9",
             oMGet2 := TMultiGet():New( 012,332,{|u| If(PCount()>0,cMsgNew:=u,cMsgNew) },oGrp1,292,100,,,CLR_BLACK,CLR_WHITE,,.T.,"",,,.F.,.F.,.F.,,,.F.,,  )
 
             oGrp2  := TGroup():New( 124,008,308,632,"Dados Pedido x Dados do Cliente",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
-            oFld1  := TFolder():New( 132,012,{"Dados do Chamado","Informações cadastrais","Itens Pedido"},{},oGrp2,,,,.T.,.F.,616,172,)
+            oFld1  := TFolder():New( 132,012,{"Dados do Chamado","Informações cadastrais"},{},oGrp2,,,,.T.,.F.,616,172,)
 
             oList0 := TCBrowse():New(004,004,600,143,,;
             {'Chamado','Data Chamado','Hora Chamado','Status','Nota','Emissao Nota','Cod Cliente','Loja Cliente',;
@@ -153,22 +148,9 @@ SetPrvt("oSay1","oSay2","oSay3","oSay4","oSay5","oSay6","oSay7","oSay8","oSay9",
             oSay14 := TSay():New( 076,088,{||SA1->A1_ENDENT},oFld1:aDialogs[2],,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,260,008)
             oSay15 := TSay():New( 076,348,{||SA1->A1_BAIRROE+SA1->A1_MUNE},oFld1:aDialogs[2],,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,256,008)
 
-            oList1 := TCBrowse():New(004,004,600,143,,{'Item','Codigo','Descricao','Qtd','Vlr Unit.','Valor Total','Desconto %'},;
-                        {20,60,230,35,35,35,30},oFld1:aDialogs[3],,,,{|| },{|| },,,,,,,.F.,,.T.,,.F.,,,)
-            
-            oList1:SetArray(aList1)
-            oList1:bLine := {||{;
-                aList1[oList1:nAt,01],;
-                aList1[oList1:nAt,02],;
-                aList1[oList1:nAt,03],;
-                aList1[oList1:nAt,04],;
-                Transform(aList1[oList1:nAt,05],"@E 999,999,999.99"),;
-                Transform(aList1[oList1:nAt,06],"@E 999,999,999.99"),;
-                aList1[oList1:nAt,07];
-            }}
-
             oBtn1 := TButton():New( 312,212,"Atender",oDlg1,{|| fGrvStatus(Val((cAliasSQL)->Z50_STATUS))},037,012,,,,.T.,,"",,,,.F. )
             oBtn2 := TButton():New( 312,296,"Cancelar",oDlg1,{|| oDlg1:end()},037,012,,,,.T.,,"",,,,.F. )
+            oBtn3 := TButton():New( 312,380,"Imagens Enviadas",oDlg1,{|| Processa( {||  U_fAbreImg(Z50->Z50_CODIGO) }, "Processando Imagens..." )},050,012,,,,.T.,,"",,,,.F. )
 
             oDlg1:Activate(,,,.T.)
         EndIf
@@ -188,6 +170,7 @@ Static Function fGrvStatus(nStatus)
 Default nStatus := 1
 
 Local lAtStat:= .F.
+Local aRetPed:= {}
 Local aStatus:= {'1=Aberto','2=Atendido','3=Negado'}
 Local cProd  := Space(TamSX3('B1_COD')[01])
 Local aParam := {{ 2, "Status Chamado",nStatus,aStatus,60,, .T. },;
@@ -221,7 +204,8 @@ Local aParam := {{ 2, "Status Chamado",nStatus,aStatus,60,, .T. },;
                 cMsgGrv += 'Observações anotadas '+cMsgNew
 
                 If cPar1 == 2
-                    Processa({|| lAtStat := fGeraPV(cPar2)}, "Gerando Pedido de Vendas...")
+                    Processa({|| aRetPed := fGeraPV(cPar2)}, "Gerando Pedido de Vendas...")
+                    lAtStat := aRetPed[1]
 
                 ElseIf cPar1 == 3
                     MsgInfo('Atendimento Negado pelo atendente!')
@@ -236,6 +220,10 @@ Local aParam := {{ 2, "Status Chamado",nStatus,aStatus,60,, .T. },;
                     RecLock('Z50', .F.)
                         Z50->Z50_STATUS := cValToChar(cPar1)
                         Z50->Z50_OBSATD := cObsOld + CRLF + Alltrim(cMsgGrv)
+
+                        If cPar1 == 2
+                            Z50->Z50_PEDVEN := aRetPed[2]
+                        EndIf
                     Z50->(MsUnlock())
                 EndIf
 
@@ -363,6 +351,7 @@ Private lAutoErrNoFile := .F.
  
 aadd(aCabec, {"C5_NUM",     cDoc,      Nil})
 aadd(aCabec, {"C5_TIPO",    "N",       Nil})
+aadd(aCabec, {"C5_XCHAMAD", Z50->Z50_CODIGO,Nil})
 aadd(aCabec, {"C5_XCLASPV", "P",       Nil})
 aadd(aCabec, {"C5_CLIENTE", cA1Cod,    Nil})
 aadd(aCabec, {"C5_LOJACLI", cA1Loja,   Nil})
@@ -388,6 +377,8 @@ If !lMsErroAuto
     ConfirmSX8()
 Else
     lRet := .F.
+    cDoc := '''
+
     RollbackSX8()
     If MsgYesNo('Erro ao gerar o pedido de vendas, deseja visualizar?')
         MostraErro()
@@ -395,7 +386,7 @@ Else
 EndIf
 
 
-Return lRet
+Return {lRet,cDoc}
 
 
 

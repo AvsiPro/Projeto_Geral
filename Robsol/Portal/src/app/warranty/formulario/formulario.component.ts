@@ -423,7 +423,7 @@ export class FormularioComponent implements OnInit {
     console.log(files)
 
     for (let i = 0; i < files.length; i++){
-      filesStr += '<li>' + files[i].name + " <input type='button' onclick='teste()' value='Apagar'/> </li>"
+      filesStr += '<li>' + files[i].name + ' </li> '
 
       this.fileSelected = files[i]
       this.imageUrl = this.sant.bypassSecurityTrustUrl(window.URL.createObjectURL(this.fileSelected)) as string
@@ -436,7 +436,6 @@ export class FormularioComponent implements OnInit {
           this.imagesConv.push({image: this.base64, name: files[i].name})
         }
       }
-      
     }
     this.inputImg += filesStr;
   }

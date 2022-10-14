@@ -5,9 +5,47 @@
         [p-concat-filters]='true'
         [p-keep-filters]='true'
         p-title="Meus Chamados"
+        [p-table-custom-actions]="tableCustomActions"
         [p-quick-search-width]="quickSearchWidth"
         [p-service-api]="serviceApi"
         [p-load]="onLoad.bind(this)"
     ></po-page-dynamic-table>
+
+    <po-modal #poModal p-title="Detalhes do Chamado">
+        <po-dynamic-view [p-fields]="fields" [p-value]="employee"></po-dynamic-view>
+        
+        <div class="mt-15">
+            <po-textarea
+                [p-disabled]="true" 
+                [(ngModel)]="obsatendente" 
+                name="obsatendente" 
+                p-label="Histórico de atendimento">
+            </po-textarea>
+
+            <po-textarea 
+                [p-disabled]="false" 
+                [(ngModel)]="obscliente" 
+                name="obscliente" 
+                p-label="Interagir com atendente">
+            </po-textarea>
+        </div>
+
+        <form class="mt-15" enctype="multipart/data">
+            <div class="btnSelec">
+              <label for="file">Enviar outras imagens</label>
+            </div>
+            <div class="list">
+              <ul><div [innerHTML]="inputImg"></div></ul>
+              <po-button class="mt-15" *ngIf="!!inputImg" p-label='Limpar Imagens' (p-click)="clearImg()"></po-button>
+            </div>
+            
+            <input type="file" id="file" accept="image/*" hidden multiple (change)="onSelectNewFile($any($event.target).files)">
+        </form>
+
+        <po-modal-footer>
+            <po-button p-label="Fechar" (p-click)="poModal.close()"></po-button>
+            <po-button [p-disable]="!obscliente" p-label="Interagir" p-kind="primary" (p-click)="interageCliente()"></po-button>
+          </po-modal-footer>
+    </po-modal>
 
 </po-page-default>
