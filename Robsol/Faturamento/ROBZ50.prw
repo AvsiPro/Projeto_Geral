@@ -72,6 +72,8 @@ Local oView := Nil
     oView:EnableTitleView('VIEW_Z50', 'Dados - '+cTitulo )  
     oView:SetCloseOnOk({||.T.})
     oView:SetOwnerView("VIEW_Z50","TELA")
+
+    oStZ50:RemoveField('Z50_NOTA')
      
 Return oView
 
