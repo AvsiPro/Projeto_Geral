@@ -179,8 +179,8 @@ If DbSeek(xFilial("SX5")+AvKey("ZW","X5_TABELA"))
 	EndDo
 EndIf
 
-cQuery := "SELECT N1_CHAPA,B1_DESC,'' AS N1_XCLIENT,'' AS N1_XLOJA,'' AS N1_XLOCINS,"
-cQuery += "A1_NREDUZ,A1_END,A1_COMPLEM,A1_BAIRRO,A1_MUN,'' AS N1_XTPSERV,"
+cQuery := "SELECT N1_CHAPA,B1_DESC,N1_XCLIENT,N1_XLOJA,'' AS N1_XLOCINS,"
+cQuery += "A1_NREDUZ,A1_END,A1_COMPLEM,A1_BAIRRO,A1_MUN,'2' AS N1_XTPSERV,"
 cQuery += "A1_EST,NL_DESCRIC,'' AS N1_XSTATTT, "
 cQuery += "ZE_MENSAL,ZE_ROTA,ZE_FREQUEN,'' AS ZE_FECHAME,'' AS ZZ1_DESCRI,"
 cQuery += "'' AS N1_XPLANTR,'' AS N1_XSISPG,ZE_TIPOPLA,ZE.R_E_C_N_O_ AS RECZE,"
@@ -191,8 +191,9 @@ cQuery += " LEFT JOIN "+RetSQLName("SA1")+" A1 ON A1_COD=N1_XCLIENT AND A1_LOJA=
 cQuery += " LEFT JOIN "+RetSQLName("SZE")+" ZE ON ZE_CHAPA=N1_CHAPA AND ZE.D_E_L_E_T_='' AND SUBSTRING(ZE_MENSAL,1,6)='"+substr(dtos(dDataBase),1,6)+"' "
 //cQuery += " LEFT JOIN "+RetSQLName("ZZ1")+" Z1 ON ZZ1_COD=ZE_ROTA AND ZZ1_MSBLQL<>'1' AND Z1.D_E_L_E_T_=''"
 cQuery += " LEFT JOIN "+RetSQLName("SNL")+" NL ON NL_FILIAL='"+xFilial("SNL")+"' AND NL_CODIGO=N1_LOCAL AND NL.D_E_L_E_T_=''"
-cQuery += " WHERE N1_XSTATTT IN ('2','3','5','6') AND N1.D_E_L_E_T_='' AND N1_BAIXA = '' "
- 
+//cQuery += " WHERE N1_XSTATTT IN ('2','3','5','6') AND N1.D_E_L_E_T_='' AND N1_BAIXA = '' "
+cQuery += " WHERE N1.D_E_L_E_T_=' ' AND N1_BAIXA = ' ' "
+
 If Select("TRB") > 0
 	dbSelectArea("TRB")
 	dbCloseArea()
@@ -226,7 +227,7 @@ While !EOF()
 						If(!Empty(TRB->NL_DESCRIC),'',TRB->A1_COMPLEM),;
 	    			 	If(!Empty(TRB->NL_DESCRIC),'',TRB->A1_BAIRRO),;
 						If(!Empty(TRB->NL_DESCRIC),'',TRB->A1_MUN),;
-	    			 	'TRB->N1_XTPSERV',;
+	    			 	TRB->N1_XTPSERV,;
 						TRB->ZE_MENSAL,;
 	    			 	TRB->ZE_ROTA,;
 						TRB->ZE_FREQUEN,;
@@ -373,12 +374,10 @@ Static Function FHelp(nLinha)
 Local aArea	 := GetArea()        
 Local nPosd	 := 0
 Local cAux	 := ''
-Local aAux	 := {}
 Local aSepS	 := {}
 Local aSisP	 := { "CE=Cedula","MC=Moedeiro c/Troco","MS=Moedeiro Sem Troco","VR=VR","SM=Smart","PO=POS","CI=Cartão Indutivo","CA=Caneta" }
 Local cSisP	 := ''  
 Local cBarra := ''
-Local cTpPla := ""
 Local nX 
 Local nT 
 Local nP
@@ -1047,7 +1046,7 @@ Local nOpcao	:=	0
 Local nPosAr	:=	0
 Local dDtFecmto := ctod("")
 Local lFecmto	:= .F.
-Local cAuxFreq	:= GetMV("MV_XOPE001") 	//{"1D","2D","S","Q","M"}
+Local cAuxFreq	:= SuperGetMV("MV_XOPE001",.F.,"1D#2D#S#Q#M")
 Local cAdicF	:= ""
 Local cSeq		:= SPACE(3) //If( !Empty(aList1[oList1:nAt,21]),aList1[oList1:nAt,21],space(2) )
 Local cSeq2		:= SPACE(3)
@@ -1065,7 +1064,7 @@ Private nPosServ	:= nLinP+2
 Private oMsCalend2
                 
 // frequencias
-If(Empty(cAuxFreq),cAuxFreq:="1D#2D#S#Q#M",)
+//If(Empty(cAuxFreq),cAuxFreq:="1D#2D#S#Q#M",)
 aFreq := StrToKarr(cAuxFreq,"#")
 
 //Zerando o Array com os dias marcados durante a edicao da linha
@@ -1559,7 +1558,7 @@ Acopy(aAux,aAuxBkp)
 Ordenar(@aAux)
 
 // tela para ajuste de sequencias dos patrimonios na Rota
-aRet := U_TTOPSEQ01(cRota,aAux)
+aRet := U_CONOPS01(cRota,aAux)
 
 // Trabalha o retorno
 If Valtype(aRet) == "A"
@@ -3349,7 +3348,7 @@ Local nPos,nPosAx, nI, nJ, nK
 Local aAux := {}
 Local aAuxX := {}
 Local aSeqs := {}    
-Local cDescSB1,cCodCli,cLjCli,cEndCli,cCidade,cUF,cLocFis,cFrequen, cSeq2, cSeq3
+Local cCodCli,cLjCli,cEndCli,cCidade,cUF,cLocFis,cFrequen, cSeq2, cSeq3
 Local nQtdAtend := 1
 Local nX 
 
