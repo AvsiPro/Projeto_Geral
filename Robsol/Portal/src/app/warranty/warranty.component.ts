@@ -21,7 +21,7 @@ export class WarrantyComponent implements OnInit {
   serviceApi =  environment.api + `EnvChamdo/?cod_cliente=${localStorage.getItem('cod_cliente')}&loja_cliente=${localStorage.getItem('loja_cliente')}`;
 
   public readonly actions: Array<PoPageAction> = [
-    { label: 'Incluir Chamado', url: '/FORMULARIO', icon: 'po-icon po-icon-cart' },
+    { label: 'Incluir Chamado', url: '/FORMULARIO', icon: 'po-icon po-icon-plus' },
   ];
   public readonly breadcrumb: PoBreadcrumb = {
     items: [{ label: 'Home', link: '/' }, { label: 'Garantia' }]
@@ -70,9 +70,10 @@ export class WarrantyComponent implements OnInit {
         { property: 'defeito', label: 'Defeito', gridLgColumns: 4, filter: true },
         { property: 'tipodefeito', label: 'Tipo Defeito', gridLgColumns: 4, filter: true },
         { property: 'status', type: 'label', labels:[
-          { value: '2', color: 'color-11', label: 'Atendido' },
+          { value: '2', color: 'color-02', label: 'Atendido' },
           { value: '1', color: 'color-08', label: 'Em Aberto' },
           { value: '3', color: 'color-07', label: 'Negado' },
+          { value: '4', color: 'color-11', label: 'Finalizado' },
         ], gridLgColumns: 4, filter: true },
       ]
     };
