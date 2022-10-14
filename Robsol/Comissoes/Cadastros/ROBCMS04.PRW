@@ -333,6 +333,7 @@ cQuery += " (SELECT SUM(C6_VALOR) FROM "+RetSQLName("SC6")+" WHERE C6_FILIAL=D2_
 
 cQuery += " FROM "+RetSQLName("SD2")+" D2"
 cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD=D2_COD AND B1.D_E_L_E_T_= ' '"
+cQuery += " AND SUBSTRING(B1_GRUPO,1,2) NOT IN('19','99') "
 cQuery += " INNER JOIN "+RetSQLName("SF2")+" F2 ON F2_FILIAL=D2_FILIAL AND F2_DOC=D2_DOC AND F2_SERIE=D2_SERIE AND F2_CLIENTE=D2_CLIENTE AND F2_LOJA=D2_LOJA AND F2.D_E_L_E_T_=' '"
 cQuery += "             AND F2_EMISSAO BETWEEN '"+dtos(DtDe)+"' AND '"+dtos(DtAt)+"'" 
 cQuery += "             AND F2_VEND1 BETWEEN '"+Vend1+"' AND '"+Vend2+"'"
