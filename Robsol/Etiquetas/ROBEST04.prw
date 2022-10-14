@@ -43,7 +43,7 @@ User Function ROBEST04(lDnfB)
             //MV_PAR02 := '000001101'
             //MV_PAR03 := '1'
             Processa({|| aItens := buscanf()},"Aguarde, buscando Notas")
-            IF aItens == .F.
+            IF len(aItens) < 1 // == .F.
                 RETURN
             ENDIF
             IF len(aItens) > 0
@@ -158,7 +158,7 @@ FOR nCont := 1 TO len(aRet)
             Processa({|| aEtiqueta := U_ROBWS04(aRet[nCont,03], aRet[nCont,01], aRet[nCont,06], cTpFrete, aMedidas )},"Aguarde..."+CRLF+"Gerando Etiqueta")
             IF len(aEtiqueta) < 1 // == .F.
                 MsgAlert("Não foi possível gerar as etiquetas, falta de retorno do correio")
-                RETURN .F.
+                RETURN({})
             ENDIF
         ENDIF
         cVirg := ''
