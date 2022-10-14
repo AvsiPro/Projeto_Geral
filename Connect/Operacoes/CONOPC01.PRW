@@ -539,7 +539,6 @@ Return
 
 Static Function Pesqlb(cPatrimonio,cRota1,cRota2)
 
-Local lRet :=	.F.
 Local nPos :=	1 //Ascan(aListb,{|x| Alltrim(x[1]) == Alltrim(cPatrimonio)})
 Local aRet	:=	{}
 Local nT 
@@ -585,7 +584,6 @@ Static Function filtro(nSel)
 Local aArea		:=	GetArea()
 Local aPergs	:= 	{} 
 Local aRet		:= 	{} 
-Local aAux		:=	{}
 Local aCop		:=	aClone(aBkpL1)
 Local cAux		:=	'' 
 Local nPosd		:=	0
@@ -1037,28 +1035,19 @@ Static Function editcol2(nLinha)
 Local aArea	:=	GetArea()
 Local nColP	:=	oList2:colpos 
 Local nLinP	:=	oList2:nAt //Ascan(alistb,{|x| Alltrim(x[1]) == Alltrim(aList1[oList1:nAt,01])})
-Local aAux	:=	{}
-Local nPosicao	:=	0 
 Local cAux		:=	''
-Local cPatrim	:= 	''  
 Local cRota		:=	SPACE(6) //If(!Empty(aList2[nLinP,nColP]),aList2[nLinP,nColP],Space(6))
 Local cRota2	:=	SPACE(6)
 Local cRota3	:=	SPACE(6)
-//Local cRota4	:=	SPACE(6)
-Local lPExc		:=	If(!Empty(aList2[nLinP,nColP]),.T.,.F.)
 Local cDias		:= 	'' 
-Local aRet		:= 	{} 
 Local ninicio	:=	9 
 Local cRetPlan	:=	''
-Local cBkExcP	:=	''
-Local oSay1,oSay2,oBtn1,oBtn2,oBtn3,oSay3,oGet2   
+Local oSay1,oBtn1,oBtn2,oBtn3,oSay3,oGet2   
 Local nOpcao	:=	0
 Local nPosAr	:=	0
 Local dDtFecmto := ctod("")
-Local nCol		:= 0 
 Local lFecmto	:= .F.
 Local cAuxFreq	:= GetMV("MV_XOPE001") 	//{"1D","2D","S","Q","M"}
-Local cCombo	:= ""
 Local cAdicF	:= ""
 Local cSeq		:= SPACE(3) //If( !Empty(aList1[oList1:nAt,21]),aList1[oList1:nAt,21],space(2) )
 Local cSeq2		:= SPACE(3)
@@ -1078,15 +1067,6 @@ Private oMsCalend2
 // frequencias
 If(Empty(cAuxFreq),cAuxFreq:="1D#2D#S#Q#M",)
 aFreq := StrToKarr(cAuxFreq,"#")
-
-// Verifica se ja existe Rota nesse tipo de servico                                                                                               
-/*
-nPosAr := Ascan( alistb,{|x| x[1] == aList1[oList1:nAt,01] .And. Val( SubStr(x[2],1,1) ) == nLinP .And. Val( SubStr(x[2],2,1) ) <> nColP  } ) 
-If nPosAr > 0
-	MsgAlert( "Já existe rota cadastrada para esse tipo de serviço." +CRLF +"Para prosseguir, exclua a rota já existente." )
-	Return
-EndIf
-*/
 
 //Zerando o Array com os dias marcados durante a edicao da linha
 aDiasM2	:=	{}
@@ -1244,7 +1224,7 @@ oDlg2	:= MSDialog():New( 088,232,410,635,"Abastecimento",,,.F.,,,,,,.T.,,,.T. )
              
 	
 	
-	oBtFchmto	:= TButton():New( 140,010,"Fechamento",oDlg2,{ || IF( !lFecmto, lFecmto := .T.,), IF( lFecmto,MsgInfo("Escolha o dia do fechamento"),)  },037,012,,,,.T.,,"",,,,.F. )
+	oBtFchmto	:= TButton():New( 140,010,"Fechamento",oDlg2,{ || IF( !lFecmto, lFecmto := .T.,lFecmto := .F.), IF( lFecmto,MsgInfo("Escolha o dia do fechamento"),)  },037,012,,,,.T.,,"",,,,.F. )
 	oBtn2		:= TButton():New( 140,056,"Excluir",oDlg2,{||oDlg2:end(nOpcao:=2)},032,012,,,,.T.,,"",,,,.F. )
 	oBtn2:Disable()
 	
@@ -1548,7 +1528,6 @@ Static Function TelaSeq(cRota,cMensal)
 
 Local aAux := {}
 Local aRet := {}
-Local nPos := 0
 Local aAuxPos := {}
 Local aAuxP := {}
 Local nPos1 := 0
@@ -1760,7 +1739,6 @@ Return lRet
 Static Function markd2(ddia,cDias,lFecmto,lSangria,dDtFecmto,nPosAr)
 
 Local aArea	:=	GetArea()
-Local nPosD	:=	9
 Local nCont	:=	0
 Local dDiaAux := dDia
 Local lFeriado := .F.
@@ -2104,14 +2082,12 @@ Local lTodas := .F.
 Local cRotaIni := ""
 Local cRotaAte := ""
 Local cSql := ""
-Local aDias := { {},{},{},{},{},{} } 
 Local aMapaMes := { {},{},{},{},{},{} }
 Local aMapaMes2 := { {},{},{},{},{},{} } 
 Local aMap := {}
 Local nSemana := 1
 Local aSemInc := {}
 Local aAuxSem := {}
-Local aAuxInf := {}
 Local nUltDia := 0 
 Local nPos := 0 
 Local cAno :=  SubStr( DtoS(dDatabase),1,4)                   
