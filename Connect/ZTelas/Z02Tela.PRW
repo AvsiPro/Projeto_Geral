@@ -3,7 +3,7 @@
 #INCLUDE 'FWMVCDef.ch'
  
 //Variáveis Estáticas
-STATIC cTitulo    :=    "Cadastro de Marca"
+STATIC cTitulo    :=    "Cadastro de Marca Connect"
  
 USER FUNCTION Z02Tela()
 
