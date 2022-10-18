@@ -24,10 +24,10 @@ cQuery := "SELECT F2_FILIAL,F2_DOC,F2_SERIE,A1_CGC"
 cQuery += " FROM "+RetSQLName("SF2")+" F2"
 cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='01' AND A1_COD=F2_CLIENTE AND A1_LOJA=F2_LOJA AND A1.D_E_L_E_T_=' '"
 cQuery += " WHERE F2_FILIAL BETWEEN '  ' AND 'ZZZ'"
-cQuery += " AND F2_EMISSAO BETWEEN '"+dtos(firstday(ddatabase-90))+"' AND '"+dtos(ddatabase)+"'"
+cQuery += " AND F2_EMISSAO BETWEEN '"+dtos(firstday(ddatabase-120))+"' AND '"+dtos(ddatabase)+"'"
 cQuery += " AND F2.D_E_L_E_T_=' '"
 cQuery += " AND F2_CHVNFE<>' '"
-cQuery += " AND F2_DUPL<>' '"
+//cQuery += " AND F2_DUPL<>' '"
 
 If Select('QUERY') > 0
     dbSelectArea('QUERY')
