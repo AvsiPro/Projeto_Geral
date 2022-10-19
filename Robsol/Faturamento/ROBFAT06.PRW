@@ -16,7 +16,7 @@ User Function ROBFAT06()
 Local aList0    := {}
 Local cQuery    := ''
 Local cAliasSQL := GetNextAlias()
-Local aStatus   := {'Aberto','Atendido','Negado'}
+Local aStatus   := {'Aberto','Atendido','Negado','Aguardando Cliente'}
 
 Private cMsgNew   := space(1024)
 Private cVend1    := ''
@@ -29,7 +29,8 @@ SetPrvt("oSay1","oSay2","oSay3","oSay4","oSay5","oSay6","oSay7","oSay8","oSay9",
         Return
     EndIf
 
-    cQuery := " SELECT TOP 1 * FROM "+RetSqlName('Z50')+" Z50 "
+    cQuery := " SELECT TOP 1 ISNULL(CAST(CAST(Z50_OBSATD AS VARBINARY(8000)) AS VARCHAR(8000)),'') AS Z50_OBSATD"
+    cQuery += " ,Z50.*,SF2.*,SC5.* FROM "+RetSqlName('Z50')+" Z50 "
     cQuery += " INNER JOIN "+RetSqlName('SF2')+" SF2 "
     cQuery += "     ON F2_DOC=Z50_NOTA "
     cQuery += "     AND F2_CLIENTE=Z50_CODCLI "
@@ -78,12 +79,13 @@ SetPrvt("oSay1","oSay2","oSay3","oSay4","oSay5","oSay6","oSay7","oSay8","oSay9",
             RobToDef(3,(cAliasSQL)->Z50_OPCTRC),;
             RobToDef(1,(cAliasSQL)->Z50_DEFEIT),;
             RobToDef(2,(cAliasSQL)->Z50_TPDEFE),;
+            (cAliasSQL)->Z50_OBSATD,;
         })
         (cAliasSQL)->(DbSkip())
     EndDo
 
     DbSelectArea((cAliasSQL))
-    DbGoTop()
+    //DbGoTop()
 
     If Len(aList0) > 0
 
@@ -101,7 +103,7 @@ SetPrvt("oSay1","oSay2","oSay3","oSay4","oSay5","oSay6","oSay7","oSay8","oSay9",
             oDlg1  := MSDialog():New( 086,213,756,1508,"Atender Chamados de Garantia",,,.F.,,,,,,.T.,,,.T. )
             oGrp1  := TGroup():New( 004,008,120,632,"Observações para atendimento",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
 
-            oMGet1 := TMultiGet():New( 012,012,{|u| Alltrim((cAliasSQL)->Z50_OBS) },oGrp1,316,100,,,CLR_BLACK,CLR_WHITE,,.T.,"",,,.F.,.F.,.T.,,,.F.,,  )
+            oMGet1 := TMultiGet():New( 012,012,{|u| Alltrim(aList0[1,17]) },oGrp1,316,100,,,CLR_BLACK,CLR_WHITE,,.T.,"",,,.F.,.F.,.T.,,,.F.,,  )
             oMGet2 := TMultiGet():New( 012,332,{|u| If(PCount()>0,cMsgNew:=u,cMsgNew) },oGrp1,292,100,,,CLR_BLACK,CLR_WHITE,,.T.,"",,,.F.,.F.,.F.,,,.F.,,  )
 
             oGrp2  := TGroup():New( 124,008,308,632,"Dados Pedido x Dados do Cliente",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
@@ -171,7 +173,7 @@ Default nStatus := 1
 
 Local lAtStat:= .F.
 Local aRetPed:= {}
-Local aStatus:= {'1=Aberto','2=Atendido','3=Negado'}
+Local aStatus:= {'1=Aberto','2=Atendido','3=Negado','4=Dados incompletos'}
 Local cProd  := Space(TamSX3('B1_COD')[01])
 Local aParam := {{ 2, "Status Chamado",nStatus,aStatus,60,, .T. },;
                  { 1, "Produto Troca",  cProd,  "", ".T.", "SB1", ".T.", 80,  .F.}}
@@ -211,14 +213,14 @@ Local aParam := {{ 2, "Status Chamado",nStatus,aStatus,60,, .T. },;
                     MsgInfo('Atendimento Negado pelo atendente!')
                     lAtStat := .T.
 
-                ElseIf cPar1 == 1
+                ElseIf cPar1 == 1 .or. cPar1 == 4
                     MsgInfo('Atendimento em aberto!')
                     lAtStat := .T.
                 EndIf
                 
                 If lAtStat
                     RecLock('Z50', .F.)
-                        Z50->Z50_STATUS := cValToChar(cPar1)
+                        Z50->Z50_STATUS := If(cPar1 == 4,'1',cValToChar(cPar1))
                         Z50->Z50_OBSATD := cObsOld + CRLF + Alltrim(cMsgGrv)
 
                         If cPar1 == 2
@@ -244,7 +246,7 @@ Return
 User Function ENCERCHM()
 
 Local lEncerra:= .F.
-Local aStatus := {'1=Aberto','2=Atendido','3=Negado'}
+Local aStatus := {'1=Aberto','2=Atendido','3=Negado','4=Dados Incompletos'}
 Local cStatus := ''
 Local cMsgGrv := ''
 Local cObsOld := ''
