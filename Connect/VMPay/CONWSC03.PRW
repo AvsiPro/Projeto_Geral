@@ -1,7 +1,7 @@
-#INCLUDE "protheus.ch"
-#INCLUDE "parmtype.ch"
-#INCLUDE "totvs.ch"
-#INCLUDE "fileio.ch"
+#INCLUDE "PROTHEUS.CH"
+#INCLUDE "PARMTYPE.CH"
+#INCLUDE "TOTVS.CH"
+#INCLUDE "FILEIO.CH"
 #INCLUDE "TBICONN.CH"
 
 /*
@@ -24,7 +24,7 @@ USER FUNCTION CONWSC03(cAtivo,nChamada,dDtini,dDtfim,cHori,cHorf)
 LOCAL aAuxP            :=    {}              
 LOCAL nJ
 LOCAL nK
-PRIVATE cToken         :=    "tH3FkJ7cB2P0GwwOGbmMpJvoHsQJtMZD2nX1Ihmj" //    "IwhyqNsJNpP1wAhSBwG4YJNmcleFIXOFkTQn1j0h"
+PRIVATE cToken         :=    "yVXxnxgOExcIaBQOQ9CFgK0cLgX22dJct7y85WXW" //Token Connect Vending
 PRIVATE oRestClient    :=    FWRest():New("http://vmpay.vertitecnologia.com.br")
 PRIVATE aHeader        :=    {}
 PRIVATE aLinhas        :=    {}
@@ -32,13 +32,9 @@ PRIVATE aRetorno       :=    {}
 PRIVATE aCanister      :=    {}
 PRIVATE nCanister      :=    0
 
-IF AAM->AAM_XFILRS == "000002"
-    cToken := "PwpBzu8oZBrtWDx1ZbgDI76lePh1Ui1vqSPQLl9H"
-ENDIF
-
 //Buscar Maquinas                         
 Maquinas()
-nPosMaq := Ascan(aHeader,{|x| Alltrim(x[2]) == cvaltochar(val(cAtivo))})
+nPosMaq := Ascan(aHeader,{|x| Alltrim(x[2]) == alltrim(cAtivo)})
 
 IF nPosMaq > 0 
     IF nChamada == 1
@@ -57,9 +53,6 @@ IF nPosMaq > 0
             IF nJ+10 > len(aRetorno[4])
                 EXIT
             ENDIF
-            /*IF nJ + 3 > nCanister
-                Aadd(aAuxP,{.F.,cAtivo,aRetorno[4,nJ+4],aRetorno[4,nJ+5],aRetorno[4,nJ+6],aRetorno[4,nJ+7],aRetorno[4,nJ+8],aRetorno[4,nJ+9]})
-            ELSE*/
                 Aadd(aAuxP,{.F.,cAtivo,aRetorno[4,nJ+3],aRetorno[4,nJ+4],aRetorno[4,nJ+5],aRetorno[4,nJ+6],aRetorno[4,nJ+7],aRetorno[4,nJ+10]})
             //ENDIF
         NEXT nJ 
