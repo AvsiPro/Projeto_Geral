@@ -338,9 +338,9 @@ Static Function ImpEtiq(aItens)
             
             nCl1 := 5
             nLl1 := 65
-            
-            oPrinter:QRCode(nLl1,nCl1,cCodigo,60) //60
-            
+            If !lTransp
+                oPrinter:QRCode(nLl1,nCl1,cCodigo,60) //60
+            endif
             //nCl1 := IF(nEtiq == 1 .or. nEtiq == 3,3.5,28.5)
             nCl1 := 1 
             nCl2 := 0.7 
@@ -349,7 +349,7 @@ Static Function ImpEtiq(aItens)
             nLl1 := 6.8 
             nLl2 := 22 
 
-            IF AllTrim(aItens[nZ,2,nR]) != ""
+            IF AllTrim(aItens[nZ,2,nR]) != "" .and. !lTransp
                 oPrinter:FwMSBAR("CODE128",nLl1,nCl2,aItens[nZ,2,nR],oPrinter,.F.,Nil,Nil,0.045,0.7,Nil,Nil,"A",.F.)
             ENDIF
 
@@ -388,8 +388,9 @@ Static Function ImpEtiq(aItens)
             //oPrinter:Say(nLin + 30,nCol,"PP: 561374",oFont8)
             
             //oPrinter:Say(nLin + IF(Mod(nR,4) == 1 .or. Mod(nR,4) ==2,38,46),IF(nEtiq == 1 .or. nEtiq == 3,nCol+100,nCol+400),aItens[nR,2,nR],oFont8n)
-            oPrinter:Say(nLin +29, nCol+40,aItens[nZ,2,nR],oFont10)
-
+            if !lTransp
+                oPrinter:Say(nLin +29, nCol+40,aItens[nZ,2,nR],oFont10)
+            ENDIF
             nLin += 65
             nCol := 5
 
