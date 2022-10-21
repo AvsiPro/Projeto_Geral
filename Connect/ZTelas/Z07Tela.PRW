@@ -23,10 +23,6 @@ User Function Z07Tela()
 Local oBrowse
 Private cCadastro := "Mapa de máquina"
 
-If cEmpAnt <> "01"
-    Return
-EndIf
-
 oBrowse := FWMBrowse():New()
 oBrowse:SetAlias("Z07")
 oBrowse:SetDescription(cCadastro)

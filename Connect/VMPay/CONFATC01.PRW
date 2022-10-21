@@ -91,199 +91,203 @@ WHILE !empty(procname(nCont))
     nCont++
 ENDDO
 
-oDlg1    := MSDialog():New( 017,058,628,1344,"Pick-List",,,.F.,,,,,,.T.,,,.T. )
+If len(aList) > 0
+    oDlg1    := MSDialog():New( 017,058,628,1344,"Pick-List",,,.F.,,,,,,.T.,,,.T. )
 
-    oGrp1    := TGroup():New( 000,004,148,280,"Ativos",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
+        oGrp1    := TGroup():New( 000,004,148,280,"Ativos",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
 
-        //oBrw1    := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{008,008,144,276},,, oGrp1 ) 
-        oList    := TCBrowse():New(008,008,270,137,, {'','Ativo','Modelo','Num. Série','Linha'},{10,30,40,20},;
-                                    oGrp1,,,,{|| FHelp()},{|| editped(oList:nAt)},, ,,,  ,,.F.,,.T.,,.F.,,,)
-        oList:SetArray(aList)
-        oList:bLine := {||{ IF(aList[oList:nAt,01],oOk,oNo),; 
-                               Alltrim(aList[oList:nAt,02]),;
-                               aList[oList:nAt,03],;
-                               aList[oList:nAt,04],;
-                               aList[oList:nAt,19]}}
-                                                            //,"Sangrias"    //,"Inventários"
-    oFld1    := TFolder():New( 000,284,{"Pick-List","Leituras"},{},oDlg1,,,,.T.,.F.,348,148,) 
+            //oBrw1    := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{008,008,144,276},,, oGrp1 ) 
+            oList    := TCBrowse():New(008,008,270,137,, {'','Ativo','Modelo','Num. Série','Linha'},{10,30,40,20},;
+                                        oGrp1,,,,{|| FHelp()},{|| editped(oList:nAt)},, ,,,  ,,.F.,,.T.,,.F.,,,)
+            oList:SetArray(aList)
+            oList:bLine := {||{ IF(aList[oList:nAt,01],oOk,oNo),; 
+                                Alltrim(aList[oList:nAt,02]),;
+                                aList[oList:nAt,03],;
+                                aList[oList:nAt,04],;
+                                aList[oList:nAt,19]}}
+                                                                //,"Sangrias"    //,"Inventários"
+        oFld1    := TFolder():New( 000,284,{"Pick-List","Leituras"},{},oDlg1,,,,.T.,.F.,348,148,) 
 
-        //oBrw4      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{000,000,132,344},,, oFld1:aDialogs[3] ) 
-        oList1    := TCBrowse():New(000,001,344,135,, {'','Mola','Produto','Descrição','Quant.','Conf','Nivel Par','Saldo'},{5,20,20,90,20,20,20},;
-                           oFld1:aDialogs[1],,,,{|| /*FHelp(oList:nAt)*/},{|| editcol(oList1:nAt)},, ,,,  ,,.F.,,.T.,,.F.,,,)
+            //oBrw4      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{000,000,132,344},,, oFld1:aDialogs[3] ) 
+            oList1    := TCBrowse():New(000,001,344,135,, {'','Mola','Produto','Descrição','Quant.','Conf','Nivel Par','Saldo'},{5,20,20,90,20,20,20},;
+                            oFld1:aDialogs[1],,,,{|| /*FHelp(oList:nAt)*/},{|| editcol(oList1:nAt)},, ,,,  ,,.F.,,.T.,,.F.,,,)
 
-        oList1:SetArray(aList1)
-        oList1:bLine := {||{IF(aList1[oList1:nAt,01],oOk,oNo),;
-                                        aList1[oList1:nAt,02],; 
-                                        aList1[oList1:nAt,03],;
-                                        aList1[oList1:nAt,04],;
-                                        aList1[oList1:nAt,05],;
-                                        aList1[oList1:nAt,06],;  
-                                        aList1[oList1:nAt,16],;  
-                                        aList1[oList1:nAt,07]}}
-                             
-        //oBrw3      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{000,000,132,344},,, oFld1:aDialogs[2] ) 
-        oList8    := TCBrowse():New(000,001,344,135,, {'Data','Seleção','Produto','Descrição','Quant. Apont.','Valor'},{30,30,50,120,30,30},;
-                           oFld1:aDialogs[2],,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList2:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
+            oList1:SetArray(aList1)
+            oList1:bLine := {||{IF(aList1[oList1:nAt,01],oOk,oNo),;
+                                            aList1[oList1:nAt,02],; 
+                                            aList1[oList1:nAt,03],;
+                                            aList1[oList1:nAt,04],;
+                                            aList1[oList1:nAt,05],;
+                                            aList1[oList1:nAt,06],;  
+                                            aList1[oList1:nAt,16],;  
+                                            aList1[oList1:nAt,07]}}
+                                
+            //oBrw3      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{000,000,132,344},,, oFld1:aDialogs[2] ) 
+            oList8    := TCBrowse():New(000,001,344,135,, {'Data','Seleção','Produto','Descrição','Quant. Apont.','Valor'},{30,30,50,120,30,30},;
+                            oFld1:aDialogs[2],,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList2:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
 
-        oList8:SetArray(aList8)
-        oList8:bLine := {||{aList8[oList8:nAt,01],;
-                            aList8[oList8:nAt,02],; 
-                            aList8[oList8:nAt,03],;
-                            aList8[oList8:nAt,04],;
-                            aList8[oList8:nAt,05],;
-                            aList8[oList8:nAt,08]}}
+            oList8:SetArray(aList8)
+            oList8:bLine := {||{aList8[oList8:nAt,01],;
+                                aList8[oList8:nAt,02],; 
+                                aList8[oList8:nAt,03],;
+                                aList8[oList8:nAt,04],;
+                                aList8[oList8:nAt,05],;
+                                aList8[oList8:nAt,08]}}
 
-        //oBrw2      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{000,000,132,344},,, oFld1:aDialogs[1] ) 
-        // oList9    := TCBrowse():New(000,001,344,135,, {'Data','Audit','Valor'},{30,40,40},;
-        //                     oFld1:aDialogs[3],,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList2:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
+            //oBrw2      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{000,000,132,344},,, oFld1:aDialogs[1] ) 
+            // oList9    := TCBrowse():New(000,001,344,135,, {'Data','Audit','Valor'},{30,40,40},;
+            //                     oFld1:aDialogs[3],,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList2:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
 
-        // oList9:SetArray(aList9)
-        // oList9:bLine := {||{aList9[oList9:nAt,01],;
-        //                     aList9[oList9:nAt,02],; 
-        //                     aList9[oList9:nAt,03]}}
-                             
-        //oBrw5      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{000,000,132,344},,, oFld1:aDialogs[4] ) 
-                                                                                    //,"Cânisteres" //,"oaDialogs10"
-    oFld2    := TFolder():New( 152,004,{"Produtos","Layouts","Locais Inst.","Rotas"},{},oDlg1,,,,.T.,.F.,276,132,) 
+            // oList9:SetArray(aList9)
+            // oList9:bLine := {||{aList9[oList9:nAt,01],;
+            //                     aList9[oList9:nAt,02],; 
+            //                     aList9[oList9:nAt,03]}}
+                                
+            //oBrw5      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{000,000,132,344},,, oFld1:aDialogs[4] ) 
+                                                                                        //,"Cânisteres" //,"oaDialogs10"
+        oFld2    := TFolder():New( 152,004,{"Produtos","Layouts","Locais Inst.","Rotas"},{},oDlg1,,,,.T.,.F.,276,132,) 
 
-        //oBrw6      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{000,000,116,272},,, oFld2:aDialogs[1] ) 
-        oList2    := TCBrowse():New(000,001,274,110,, {'','Código','Descrição','Saldo'},{10,30,40,20},;
-                                    oFld2:aDialogs[1],,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
-        oList2:SetArray(aList2)
-        oList2:bLine := {||{ IF(aList2[oList2:nAt,01],oOk,oNo),; 
-                                Alltrim(aList2[oList2:nAt,02]),;
-                                aList2[oList2:nAt,03],;
-                                aList2[oList2:nAt,04]}}    
-                              
-        //oBrw7      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{000,000,116,272},,, oFld2:aDialogs[2] ) 
-        oList3    := TCBrowse():New(000,001,274,110,, {'','Ativo','Selecao','Produto','Descrição','Capacidade','Nivel Par','Nivel Alerta','Valor'},{10,30,30,40,30,30,30,30,30},;
-                                    oFld2:aDialogs[2],,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
-        oList3:SetArray(aList3)
-        oList3:bLine := {||{ IF(aList3[oList3:nAt,01],oOk,oNo),; 
-                                Alltrim(aList3[oList3:nAt,02]),;
-                                Strzero(val(aList3[oList3:nAt,03]),2),;
-                                aList3[oList3:nAt,04],;
-                                aList3[oList3:nAt,05],;
-                                aList3[oList3:nAt,06],;
-                                aList3[oList3:nAt,07],;
-                                aList3[oList3:nAt,08],;
-                                Transform(aList3[oList3:nAt,09],"@E 999,999.99")}}    
+            //oBrw6      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{000,000,116,272},,, oFld2:aDialogs[1] ) 
+            oList2    := TCBrowse():New(000,001,274,110,, {'','Código','Descrição','Saldo'},{10,30,40,20},;
+                                        oFld2:aDialogs[1],,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
+            oList2:SetArray(aList2)
+            oList2:bLine := {||{ IF(aList2[oList2:nAt,01],oOk,oNo),; 
+                                    Alltrim(aList2[oList2:nAt,02]),;
+                                    aList2[oList2:nAt,03],;
+                                    aList2[oList2:nAt,04]}}    
+                                
+            //oBrw7      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{000,000,116,272},,, oFld2:aDialogs[2] ) 
+            oList3    := TCBrowse():New(000,001,274,110,, {'','Ativo','Selecao','Produto','Descrição','Capacidade','Nivel Par','Nivel Alerta','Valor'},{10,30,30,40,30,30,30,30,30},;
+                                        oFld2:aDialogs[2],,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
+            oList3:SetArray(aList3)
+            oList3:bLine := {||{ IF(aList3[oList3:nAt,01],oOk,oNo),; 
+                                    Alltrim(aList3[oList3:nAt,02]),;
+                                    Strzero(val(aList3[oList3:nAt,03]),2),;
+                                    aList3[oList3:nAt,04],;
+                                    aList3[oList3:nAt,05],;
+                                    aList3[oList3:nAt,06],;
+                                    aList3[oList3:nAt,07],;
+                                    aList3[oList3:nAt,08],;
+                                    Transform(aList3[oList3:nAt,09],"@E 999,999.99")}}    
 
-        //oBrw8      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{000,000,116,272},,, oFld2:aDialogs[3] ) 
-        oList4    := TCBrowse():New(000,001,274,110,, {'','Cod. LOCAL','Descricao'},{10,30,40},;
-                                    oFld2:aDialogs[3],,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
-        oList4:SetArray(aList4)             
-        oList4:bLine := {||{ IF(aList4[oList4:nAt,01],oOk,oNo),; 
-                                         aList4[oList4:nAt,02],;
-                                         aList4[oList4:nAt,03],;
-                                         aList4[oList4:nAt,04]}}   
-                               
-        //oBrw9      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{000,000,116,272},,, oFld2:aDialogs[4] ) 
-        oList5    := TCBrowse():New(000,001,274,110,, {'','Codigo','Descricao'},{10,30,40},;
-                                    oFld2:aDialogs[4],,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
-        oList5:SetArray(aList5)
-        oList5:bLine := {||{ IF(aList5[oList5:nAt,01],oOk,oNo),; 
-                                Alltrim(aList5[oList5:nAt,02]),;
-                                aList5[oList5:nAt,03]}}   
-                               
-        //oBrw10     := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{000,000,116,272},,, oFld2:aDialogs[5] ) 
-        // oList6    := TCBrowse():New(000,001,274,110,, {'','Insumo','Capacidade','Nivel Par','Nivel Alerta','Disponível','Utilizado'},{10,80,30,30,30,30,30},;
-        //                             oFld2:aDialogs[5],,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
-        // oList6:SetArray(aList6)
-        // oList6:bLine := {||{ IF(aList6[oList6:nAt,01],oOk,oNo),; 
-        //                         Alltrim(aList6[oList6:nAt,02]),;
-        //                         aList6[oList6:nAt,03],;
-        //                         aList6[oList6:nAt,04],;
-        //                         aList6[oList6:nAt,05],;
-        //                         aList6[oList6:nAt,06],;
-        //                         aList6[oList6:nAt,07]}}   
-                               
-        // oBrw11     := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{000,000,116,272},,, oFld2:aDialogs[6] ) 
-        // oList7    := TCBrowse():New(000,001,274,110,, {'','Ativo','Modelo','Pick-List'},{10,30,40,20},;
-        //                 oFld2:aDialogs[6],,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
-        // oList7:SetArray(aList7)
-        // oList7:bLine := {||{ IF(aList7[oList7:nAt,01],oOk,oNo),; 
-        //                         Alltrim(aList7[oList7:nAt,02]),;
-        //                         aList7[oList7:nAt,03],;
-        //                         aList7[oList7:nAt,04]}}    
+            //oBrw8      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{000,000,116,272},,, oFld2:aDialogs[3] ) 
+            oList4    := TCBrowse():New(000,001,274,110,, {'','Cod. LOCAL','Descricao'},{10,30,40},;
+                                        oFld2:aDialogs[3],,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
+            oList4:SetArray(aList4)             
+            oList4:bLine := {||{ IF(aList4[oList4:nAt,01],oOk,oNo),; 
+                                            aList4[oList4:nAt,02],;
+                                            aList4[oList4:nAt,03],;
+                                            aList4[oList4:nAt,04]}}   
+                                
+            //oBrw9      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{000,000,116,272},,, oFld2:aDialogs[4] ) 
+            oList5    := TCBrowse():New(000,001,274,110,, {'','Codigo','Descricao'},{10,30,40},;
+                                        oFld2:aDialogs[4],,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
+            oList5:SetArray(aList5)
+            oList5:bLine := {||{ IF(aList5[oList5:nAt,01],oOk,oNo),; 
+                                    Alltrim(aList5[oList5:nAt,02]),;
+                                    aList5[oList5:nAt,03]}}   
+                                
+            //oBrw10     := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{000,000,116,272},,, oFld2:aDialogs[5] ) 
+            // oList6    := TCBrowse():New(000,001,274,110,, {'','Insumo','Capacidade','Nivel Par','Nivel Alerta','Disponível','Utilizado'},{10,80,30,30,30,30,30},;
+            //                             oFld2:aDialogs[5],,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
+            // oList6:SetArray(aList6)
+            // oList6:bLine := {||{ IF(aList6[oList6:nAt,01],oOk,oNo),; 
+            //                         Alltrim(aList6[oList6:nAt,02]),;
+            //                         aList6[oList6:nAt,03],;
+            //                         aList6[oList6:nAt,04],;
+            //                         aList6[oList6:nAt,05],;
+            //                         aList6[oList6:nAt,06],;
+            //                         aList6[oList6:nAt,07]}}   
+                                
+            // oBrw11     := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{000,000,116,272},,, oFld2:aDialogs[6] ) 
+            // oList7    := TCBrowse():New(000,001,274,110,, {'','Ativo','Modelo','Pick-List'},{10,30,40,20},;
+            //                 oFld2:aDialogs[6],,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
+            // oList7:SetArray(aList7)
+            // oList7:bLine := {||{ IF(aList7[oList7:nAt,01],oOk,oNo),; 
+            //                         Alltrim(aList7[oList7:nAt,02]),;
+            //                         aList7[oList7:nAt,03],;
+            //                         aList7[oList7:nAt,04]}}    
 
-    oGrp2    := TGroup():New( 152,284,198,424,"",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
+        oGrp2    := TGroup():New( 152,284,198,424,"",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
 
-        oBmp1    := TBitmap():New( 159,288,044,034,,"C:\Users\digog\OneDrive\Imagens\Saved Pictures\connect-vending-logo.png",.F.,oGrp2,,,.F.,.T.,,"",.T.,,.T.,,.F. )
-        oBmp2    := TBitmap():New( 159,339,044,034,,"\system\lgvmp.bmp",.F.,oGrp2,,,.F.,.T.,,"",.T.,,.T.,,.F. )
-        oSay1    := TSay():New( 160,386,{||"Pick List V. 2.0"},oGrp2,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,037,008)
-        oSay2    := TSay():New( 178,386,{||"developed by"},oGrp2,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,035,008)
-        oSay3    := TSay():New( 186,387,{||"AVSI Pro"},oGrp2,,,.F.,.F.,.F.,.T.,CLR_BLUE,CLR_WHITE,032,008)
+            oBmp1    := TBitmap():New( 159,288,044,034,,"C:\Users\digog\OneDrive\Imagens\Saved Pictures\connect-vending-logo.png",.F.,oGrp2,,,.F.,.T.,,"",.T.,,.T.,,.F. )
+            oBmp2    := TBitmap():New( 159,339,044,034,,"\system\lgvmp.bmp",.F.,oGrp2,,,.F.,.T.,,"",.T.,,.T.,,.F. )
+            oSay1    := TSay():New( 160,386,{||"Pick List V. 2.0"},oGrp2,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,037,008)
+            oSay2    := TSay():New( 178,386,{||"developed by"},oGrp2,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,035,008)
+            oSay3    := TSay():New( 186,387,{||"AVSI Pro"},oGrp2,,,.F.,.F.,.F.,.T.,CLR_BLUE,CLR_WHITE,032,008)
 
-    oGrp3    := TGroup():New( 209,284,285,632,"Informações do Cliente",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
+        oGrp3    := TGroup():New( 209,284,285,632,"Informações do Cliente",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
+            
+            oSay4    := TSay():New( 221,288,{||"oSay4"},oGrp3,,,.F.,.F.,.F.,.T.,CLR_BLUE,CLR_WHITE,432,008)
+            oSay5    := TSay():New( 233,288,{||"oSay5"},oGrp3,,,.F.,.F.,.F.,.T.,CLR_BLUE,CLR_WHITE,432,008)
+            oSay6    := TSay():New( 245,288,{||"oSay6"},oGrp3,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,432,008)
+            oSay7    := TSay():New( 257,288,{||"oSay7"},oGrp3,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,432,008)
+            oSay8    := TSay():New( 269,288,{||"oSay8"},oGrp3,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,432,008)
         
-        oSay4    := TSay():New( 221,288,{||"oSay4"},oGrp3,,,.F.,.F.,.F.,.T.,CLR_BLUE,CLR_WHITE,432,008)
-        oSay5    := TSay():New( 233,288,{||"oSay5"},oGrp3,,,.F.,.F.,.F.,.T.,CLR_BLUE,CLR_WHITE,432,008)
-        oSay6    := TSay():New( 245,288,{||"oSay6"},oGrp3,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,432,008)
-        oSay7    := TSay():New( 257,288,{||"oSay7"},oGrp3,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,432,008)
-        oSay8    := TSay():New( 269,288,{||"oSay8"},oGrp3,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,432,008)
-    
-    oGrp4    := TGroup():New( 151,428,208,548,"Busca",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
+        oGrp4    := TGroup():New( 151,428,208,548,"Busca",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
 
-        oSay9    := TSay():New( 179,432,{||"Procurar por"},oGrp4,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
-        oCBox1   := TComboBox():New( 163,432,{|u|IF(PCount()>0,cCombo1:=u,cCombo1)},aItens,108,010,oGrp4,,,,CLR_BLACK,CLR_WHITE,.T.,,"",,,,,,, )
-        oGet1    := TGet():New( 179,480,{|u|IF(PCount()>0,cBusca:=u,cBusca)},oGrp4,060,008,'',,CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"","",,)
-        oBtn3    := TButton():New( 195,438,"Procurar",oGrp4,{||Busca2(1)},037,008,,,,.T.,,"",,,,.F. )
-        oBtn4    := TButton():New( 195,495,"Filtrar",oGrp4,{||Busca2(2)},037,008,,,,.T.,,"",,,,.F. )
-    
+            oSay9    := TSay():New( 179,432,{||"Procurar por"},oGrp4,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
+            oCBox1   := TComboBox():New( 163,432,{|u|IF(PCount()>0,cCombo1:=u,cCombo1)},aItens,108,010,oGrp4,,,,CLR_BLACK,CLR_WHITE,.T.,,"",,,,,,, )
+            oGet1    := TGet():New( 179,480,{|u|IF(PCount()>0,cBusca:=u,cBusca)},oGrp4,060,008,'',,CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"","",,)
+            oBtn3    := TButton():New( 195,438,"Procurar",oGrp4,{||Busca2(1)},037,008,,,,.T.,,"",,,,.F. )
+            oBtn4    := TButton():New( 195,495,"Filtrar",oGrp4,{||Busca2(2)},037,008,,,,.T.,,"",,,,.F. )
+        
 
-    oBtn2    := TButton():New( 180,588,"Sair",oDlg1,{||oDlg1:end()},037,012,,,,.T.,,"",,,,.F. )
-     
-     //Botao de faturamento
-    oMenu := TMenu():New(0,0,0,0,.T.)
-    // Adiciona itens no Menu
-    oTMenuIte1   := TMenuItem():New(oDlg1,"Pick-List Vmpay",,,,{|| Processa({|| Vmpay(),"Buscando informações"})},,,,,,,,,.T.)
-    oTMenuIte7   := TMenuItem():New(oDlg1,"Vendas Vmpay",,,,{|| Processa({|| Vendaspay(),"Buscando informações"})},,,,,,,,,.T.)
-    oTMenuIte2   := TMenuItem():New(oDlg1,"Validar Saldo",,,,{|| Processa({||saldos(),"Aguarde..."})},,,,,,,,,.T.)   
-    oTMenuIte3   := TMenuItem():New(oDlg1,"Inverter",,,,{|| Processa({||inverte(),"Aguarde..."})},,,,,,,,,.T.) 
-    oTMenuIte4   := TMenuItem():New(oDlg1,"Validar LAYOUT",,,,{|| Processa({|| ValidPlan(),"Aguarde..."})},,,,,,,,,.T.) 
-    oTMenuIte5   := TMenuItem():New(oDlg1,"Gerar PV",,,,{|| Processa({||pedido(),"Aguarde..."})},,,,,,,,,.T.) 
-    //oTMenuIte6 := TMenuItem():New(oDlg1,"Exportar Remessas",,,,{|| Processa({||Remessas(),"Aguarde..."})},,,,,,,,,.T.) 
-    IF !lTeca
-        oMenu:Add(oTMenuIte1)
-        oMenu:Add(oTMenuIte7)
-        oMenu:Add(oTMenuIte2)
-        oMenu:Add(oTMenuIte3)
-        oMenu:Add(oTMenuIte4)
-        oMenu:Add(oTMenuIte5) 
-    ELSE
-        oMenu:Add(oTMenuIte7)
-    ENDIF
-    //oMenu:Add(oTMenuIte6)
-    //oBtn1      := TButton():New( 160,588,"oBtn1",oDlg1,,037,012,,,,.T.,,"",,,,.F. )
-    // Cria botão que sera usado no Menu
-    oTButton1 := TButton():New( 160, 588, "Opções",oDlg1,{||},037,12,,,.F.,.T.,.F.,,.F.,,,.F. )
-    // Define botão no Menu
-    oTButton1:SetPopupMenu(oMenu)     
-    
-    IF !lTeca
-        // Menu popup grid 3
-        MENU oMenuP POPUP 
-        MENUITEM "Salvar LAYOUT"   ACTION (saveplan())
-        MENUITEM "Incluir LAYOUT"  ACTION (incplan(1))
-        MENUITEM "Alterar LAYOUT"  ACTION (incplan(2))
-        MENUITEM "Excluir LAYOUT"  ACTION (excplan())
-        MENUITEM "Replicar LAYOUT" ACTION (repplan())
+        oBtn2    := TButton():New( 180,588,"Sair",oDlg1,{||oDlg1:end()},037,012,,,,.T.,,"",,,,.F. )
+        
+        //Botao de faturamento
+        oMenu := TMenu():New(0,0,0,0,.T.)
+        // Adiciona itens no Menu
+        oTMenuIte1   := TMenuItem():New(oDlg1,"Pick-List Vmpay",,,,{|| Processa({|| Vmpay(),"Buscando informações"})},,,,,,,,,.T.)
+        oTMenuIte7   := TMenuItem():New(oDlg1,"Vendas Vmpay",,,,{|| Processa({|| Vendaspay(),"Buscando informações"})},,,,,,,,,.T.)
+        oTMenuIte2   := TMenuItem():New(oDlg1,"Validar Saldo",,,,{|| Processa({||saldos(),"Aguarde..."})},,,,,,,,,.T.)   
+        oTMenuIte3   := TMenuItem():New(oDlg1,"Inverter",,,,{|| Processa({||inverte(),"Aguarde..."})},,,,,,,,,.T.) 
+        oTMenuIte4   := TMenuItem():New(oDlg1,"Validar LAYOUT",,,,{|| Processa({|| ValidPlan(),"Aguarde..."})},,,,,,,,,.T.) 
+        oTMenuIte5   := TMenuItem():New(oDlg1,"Gerar PV",,,,{|| Processa({||pedido(),"Aguarde..."})},,,,,,,,,.T.) 
+        //oTMenuIte6 := TMenuItem():New(oDlg1,"Exportar Remessas",,,,{|| Processa({||Remessas(),"Aguarde..."})},,,,,,,,,.T.) 
+        IF !lTeca
+            oMenu:Add(oTMenuIte1)
+            oMenu:Add(oTMenuIte7)
+            oMenu:Add(oTMenuIte2)
+            oMenu:Add(oTMenuIte3)
+            oMenu:Add(oTMenuIte4)
+            oMenu:Add(oTMenuIte5) 
+        ELSE
+            oMenu:Add(oTMenuIte7)
+        ENDIF
+        //oMenu:Add(oTMenuIte6)
+        //oBtn1      := TButton():New( 160,588,"oBtn1",oDlg1,,037,012,,,,.T.,,"",,,,.F. )
+        // Cria botão que sera usado no Menu
+        oTButton1 := TButton():New( 160, 588, "Opções",oDlg1,{||},037,12,,,.F.,.T.,.F.,,.F.,,,.F. )
+        // Define botão no Menu
+        oTButton1:SetPopupMenu(oMenu)     
+        
+        IF !lTeca
+            // Menu popup grid 3
+            MENU oMenuP POPUP 
+            MENUITEM "Salvar LAYOUT"   ACTION (saveplan())
+            MENUITEM "Incluir LAYOUT"  ACTION (incplan(1))
+            MENUITEM "Alterar LAYOUT"  ACTION (incplan(2))
+            MENUITEM "Excluir LAYOUT"  ACTION (excplan())
+            MENUITEM "Replicar LAYOUT" ACTION (repplan())
+            
+            ENDMENU                                                                           
+        
+            // oList3:bRClicked := { |oObject,nX,nY| oMenuP:Activate( nX, (nY-10), oObject ) }
+        ENDIF                                                                               
+
+        // Menu popup grid 2
+        MENU oMenu8 POPUP 
+        MENUITEM "Salvar Venda" ACTION (savevend())
         
         ENDMENU                                                                           
-    
-        // oList3:bRClicked := { |oObject,nX,nY| oMenuP:Activate( nX, (nY-10), oObject ) }
-    ENDIF                                                                               
 
-    // Menu popup grid 2
-    MENU oMenu8 POPUP 
-    MENUITEM "Salvar Venda" ACTION (savevend())
-    
-    ENDMENU                                                                           
-
-    oList8:bRClicked := { |oObject,nX,nY| oMenu8:Activate( nX, (nY-10), oObject ) }
-    
-oDlg1:Activate(,,,.T.)
+        oList8:bRClicked := { |oObject,nX,nY| oMenu8:Activate( nX, (nY-10), oObject ) }
+        
+    oDlg1:Activate(,,,.T.)
+else
+    MsgAlert("Não há dados a serem exibidos")
+EndIf
 
 RETURN
 

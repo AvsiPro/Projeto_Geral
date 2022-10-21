@@ -79,14 +79,8 @@ IF nPosMaq > 0
                 lValor := IF(aAux1[1]$"desired_price/capacity/par_level/alert_level",.T.,.F.)
                 Aadd(aAux2,IF(lValor,val(aAux1[2]),aAux1[2]))
                 IF nK == 3 
-                    //cCodProt := Posicione("SB1",12,xFilial("SB1")+aAux3[1],"B1_COD")       
-                       //cCodProt := ''
-                    //IF Empty(cCodProt)
-                    cCodProt := cvaltochar(val(Alltrim(aAux3[1])))
+                    cCodProt := Alltrim(aAux3[1]) //cvaltochar(val(Alltrim(aAux3[1])))
                     cDesc     := Alltrim(Posicione("SB1",1,xFilial("SB1")+cCodProt,"B1_DESC"))
-                    /*ELSE
-                        cDesc     := Alltrim(Posicione("SB1",12,xFilial("SB1")+aAux3[1],"B1_DESC"))
-                    ENDIF*/
                     Aadd(aAux2,cCodProt)
                     Aadd(aAux2,cDesc)
                 ENDIF
@@ -134,17 +128,17 @@ IF nPosMaq > 0
                               aList3[oList3:nAt,08],;
                               Transform(aList3[oList3:nAt,09],"@E 999,999.99")}}   
         
-        oList6:SetArray(aList6)
-        oList6:bLine := {||{ IF(aList6[oList6:nAt,01],oOk,oNo),; 
-                                 Alltrim(aList6[oList6:nAt,02]),;
-                                 aList6[oList6:nAt,03],;
-                                 aList6[oList6:nAt,04],;
-                                 aList6[oList6:nAt,05],;
-                                 aList6[oList6:nAt,06],;
-                                 aList6[oList6:nAt,07]}} 
+        // oList6:SetArray(aList6)
+        // oList6:bLine := {||{ IF(aList6[oList6:nAt,01],oOk,oNo),; 
+        //                          Alltrim(aList6[oList6:nAt,02]),;
+        //                          aList6[oList6:nAt,03],;
+        //                          aList6[oList6:nAt,04],;
+        //                          aList6[oList6:nAt,05],;
+        //                          aList6[oList6:nAt,06],;
+        //                          aList6[oList6:nAt,07]}} 
                               
         oList3:refresh()
-        oList6:refresh()
+        // oList6:refresh()
         oDlg1:refresh()
     ELSE
         
@@ -267,12 +261,25 @@ RETURN
 STATIC FUNCTION Planograma(cMaq,cInst,nPos)
 
 LOCAL nJ
+Local oJson
 
  ///planograms
 oRestClient:setPath("/api/v1/machines/"+Alltrim(cMaq)+"/installations/"+cInst+"?access_token="+cToken) 
         
 IF oRestClient:Get(aHeader)
     cValor    :=    oRestClient:GetResult("GET")
+    cValor := DecodeUTF8(cValor, "cp1252")
+    oJson := JsonObject():New()
+    oJson2:= JsonObject():New()
+    oJson3:= JsonObject():New()
+
+    ret := oJson:FromJson(cValor)
+    
+    //lret := oJson:GetJsonValue("current_planogram", @keyVal,  @keyType)
+    ret := oJson2:FromJson(oJson:GetJsonText("current_planogram"))
+
+    ret := oJson3:FromJson(oJson2:GetJsonText("items"))
+
     cValor    :=    strtran(cValor,"[")
     cValor    :=    strtran(cValor,"]")
     cValor    :=    strtran(cValor,'"')
