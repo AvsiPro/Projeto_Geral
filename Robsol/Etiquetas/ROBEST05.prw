@@ -81,7 +81,7 @@ Local aMedidas := {}
 
 cQuery := " SELECT SF2.R_E_C_N_O_ AS REGF2,C5_XETIQUE,C5_PESOL,"
 cQuery += " C5_VOLUME1,SC5.R_E_C_N_O_ AS REGC5,F2_DOC, C5_XOBS002,"
-cQuery += " C5_NUM,F2_SERIE"
+cQuery += " C5_NUM,F2_SERIE,C5_TRANSP"
 cQuery += " FROM "+RetSQLName("SF2")+" SF2 "
 cQuery += " INNER JOIN "+RetSQLName("SC5")+" SC5 
 cQuery += " ON C5_FILIAL = F2_FILIAL
@@ -117,7 +117,8 @@ WHILE !EOF()
                 TRB->F2_DOC,;
                 TRB->C5_PESOL,;
                 TRB->C5_XOBS002,;
-                TRB->F2_SERIE})
+                TRB->F2_SERIE,;
+                AllTrim(TRB->C5_TRANSP)})
     Dbskip()
 ENDDO
 
@@ -204,6 +205,7 @@ Static Function ImpEtiq(aItens)
     Local oFont8           := TFont():New('Arial',5,5,,.F.,,,,.F.,.F.,.F.)
     Local oFont8N          := TFont():New('Arial',8,8,,.F.,,,,.T.,.F.,.F.)
     Local oFont10          := TFont():New('Arial',8,8,,.F.,,,,.F.,.F.,.F.)
+    Local oFontBras        := TFont():New('Arial',15,15,,.F.,,,,.F.,.F.,.F.)
     Local lAdjustToLegacy  := .F.
     Local lDisableSetup    := .T.
     Local nLin             := 0
@@ -228,6 +230,13 @@ Static Function ImpEtiq(aItens)
 
     FOR nZ := 1 TO len(aItens)
         FOR nR := 1 TO len(aItens[nZ,2])
+
+            if aItens[nZ,9] == 'T1'
+                lTransp := .T.
+            else
+                lTransp := .F.
+            endif
+
             DbSelectArea('SF2')
             DbGotop()
             DbGoto(aItens[nZ,1])
@@ -258,7 +267,7 @@ Static Function ImpEtiq(aItens)
             cTel    := StrTran(Alltrim(SA1->A1_DDD)+Alltrim(SA1->A1_TEL),'-','')
             cCodigo := ''
             
-            IF len(aItens[nZ,2]) >= 1 .AND. len(aItens[nZ,9]) >= 1
+            IF len(aItens[nZ,2]) >= 1 .AND. len(aItens[nZ,10]) >= 1
                 cCodigo := SA1->A1_CEP+;        //cep destino
                 '00000'+;                   //complemento cep
                 SM0->M0_CEPENT+;            //cep remetente
@@ -269,7 +278,7 @@ Static Function ImpEtiq(aItens)
                 '00'+;                      //Serviços Adicionais (AR, MP, DD, VD) 
                 aCont[2]+;                  //cartao postagem
                 cTpFrete+;                   //codigo do servico
-                aItens[nZ,9,nR]+;           //Informação de Agrupamento
+                aItens[nZ,10,nR]+;           //Informação de Agrupamento
                 cNumEnd+;                   //numero do logradouro
                 Alltrim(SA1->A1_COMPENT)+;  //complemento
                 '0'+;                       //valor declarado
@@ -291,8 +300,13 @@ Static Function ImpEtiq(aItens)
             nLl2 := IF(nEtiq == 1 .or. nEtiq == 2,155,565)//180,580
 
             // oPrinter:Fillrect( {nLl1, nCl1, nLl2, nCl2 }, oBrush1, "-2")  
-            oPrinter:SayBitmap(nLin-5 ,IF(nEtiq == 1 .or. nEtiq == 3,nCol+080,nCol+370) ,cSimCor,50,20) 
-            
+            if lTransp
+                oPrinter:Say(nLin+15 ,IF(nEtiq == 1 .or. nEtiq == 3,nCol+030,nCol+320),"BRASPRESS",oFontBras)
+                // oPrinter:Say(nLin+15 ,IF(nEtiq == 1 .or. nEtiq == 3,nCol+030,nCol+320),"BRASPRESS",oFontBras)
+                // oPrinter:Say(nLin+15,nCol+030,"BRASPRESS",oFontBras)
+            else                
+                oPrinter:SayBitmap(nLin-5 ,IF(nEtiq == 1 .or. nEtiq == 3,nCol+080,nCol+370) ,cSimCor,50,20) 
+            endif
             // oPrinter:SayBitmap(nLin ,IF(nEtiq == 1 .or. nEtiq == 3,nCol+215,nCol+515) ,cSedex,50,45) 
             
             nLl1 := IF(nEtiq == 1 .or. nEtiq == 2,175,586)//200,600
@@ -307,9 +321,9 @@ Static Function ImpEtiq(aItens)
             
             nCl1 := IF(nEtiq == 1 .or. nEtiq == 3,20,320)
             nLl1 := IF(nEtiq == 1 .or. nEtiq == 2,75,485)
-            
-            oPrinter:QRCode(nLl1,nCl1,cCodigo, 75) //60
-            
+            if !lTransp
+                oPrinter:QRCode(nLl1,nCl1,cCodigo, 75) //60
+            endif
             //nCl1 := IF(nEtiq == 1 .or. nEtiq == 3,3.5,28.5)
             nCl1 := IF(nEtiq == 1 .or. nEtiq == 3,2,16.3)
             nCl2 := IF(nEtiq == 1 .or. nEtiq == 3,1.4,27.4)
@@ -318,7 +332,7 @@ Static Function ImpEtiq(aItens)
             nLl1 := IF(nEtiq == 1 .or. nEtiq == 2, 6.8, (6.8*6)+0.8)
             nLl2 := IF(nEtiq == 1 .or. nEtiq == 2, 22, 56)
 
-            IF AllTrim(aItens[nZ,2,nR]) != ""
+            IF AllTrim(aItens[nZ,2,nR]) != "" .and. !lTransp
                 oPrinter:FwMSBAR("CODE128" , nLl1, nCl2 ,aItens[nZ,2,nR],oPrinter,.F. ,Nil ,Nil ,0.045,0.7 ,Nil ,Nil,"A" ,.F. )
             ENDIF
             
@@ -339,11 +353,14 @@ Static Function ImpEtiq(aItens)
             oPrinter:Say(nLin ,IF(nEtiq == 1 .or. nEtiq == 3,nCol+155,nCol+455),"Peso (g): "+cvaltochar(aItens[nZ,6]*1000),oFont8)
             
             nLin := IF(nEtiq == 1 .or. nEtiq == 2, 35, 435)
-            oPrinter:Say(nLin ,IF(nEtiq == 1 .or. nEtiq == 3,nCol+75,nCol+375),"Contrato: "+cCorrCont,oFont8)
+            if !lTransp
+                oPrinter:Say(nLin ,IF(nEtiq == 1 .or. nEtiq == 3,nCol+75,nCol+375),"Contrato: "+cCorrCont,oFont8)
+            endif
             nLin+= 10
-            oPrinter:Say(nLin ,IF(nEtiq == 1 .or. nEtiq == 3,nCol+75,nCol+375),Iif(cTpFrete == '03220','SEDEX','PAC'),oFont8)
-            
-            oPrinter:Say(nLin +29, IF(nEtiq == 1 .or. nEtiq == 3,nCol+75,nCol+375),aItens[nZ,2,nR],oFont10)
+            if !lTransp
+                oPrinter:Say(nLin ,IF(nEtiq == 1 .or. nEtiq == 3,nCol+75,nCol+375),Iif(cTpFrete == '03220','SEDEX','PAC'),oFont8)
+                oPrinter:Say(nLin +29, IF(nEtiq == 1 .or. nEtiq == 3,nCol+75,nCol+375),aItens[nZ,2,nR],oFont10)
+            endif
 
             nLin += IF(nEtiq == 1 .or. nEtiq == 2,65,75)
             nCol := 22

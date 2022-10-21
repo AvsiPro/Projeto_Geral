@@ -289,7 +289,7 @@ Static Function ImpEtiq(aItens)
                     '00'+;                      //Serviços Adicionais (AR, MP, DD, VD) 
                     aCont[2]+;                  //cartao postagem
                     cTpFrete+;                   //codigo do servico
-                    aItens[nZ,9,nR]+;           //Informação de Agrupamento
+                    aItens[nZ,10,nR]+;           //Informação de Agrupamento
                     cNumEnd+;                   //numero do logradouro
                     Alltrim(SA1->A1_COMPENT)+;  //complemento
                     '0'+;                       //valor declarado
