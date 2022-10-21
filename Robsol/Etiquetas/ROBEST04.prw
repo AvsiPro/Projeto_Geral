@@ -82,7 +82,7 @@ Local aMedidas := {}
 
 cQuery := " SELECT SF2.R_E_C_N_O_ AS REGF2,C5_XETIQUE,C5_PESOL,"
 cQuery += " C5_VOLUME1,SC5.R_E_C_N_O_ AS REGC5,F2_DOC, C5_XOBS002,"
-cQuery += " C5_NUM,F2_SERIE"
+cQuery += " C5_NUM,F2_SERIE,C5_TRANSP"
 cQuery += " FROM "+RetSQLName("SF2")+" SF2 "
 cQuery += " INNER JOIN "+RetSQLName("SC5")+" SC5 
 cQuery += " ON C5_FILIAL = F2_FILIAL
@@ -109,7 +109,7 @@ DbSelectArea("TRB")
 
 WHILE !EOF()
     cPedido := TRB->C5_NUM
-    
+
     Aadd(aRet,{ TRB->REGF2,;
                 strtokarr(TRB->C5_XETIQUE,','),;
                 TRB->C5_VOLUME1,;
@@ -117,13 +117,14 @@ WHILE !EOF()
                 TRB->F2_DOC,;
                 TRB->C5_PESOL,;
                 TRB->C5_XOBS002,;
-                TRB->F2_SERIE})
+                TRB->F2_SERIE,;
+                AllTrim(TRB->C5_TRANSP)})
     Dbskip()
 ENDDO
 
 FOR nCont := 1 TO len(aRet)
 
-        cTpAux := Upper(aRet[nCont,7])
+        cTpAux   := Upper(aRet[nCont,7])
         nPosIni  := At("<TPFRETE>",  cTpAux) + Len('<TPFRETE>')
         nPosFim  := At("</TPFRETE>", cTpAux)
         nLeitura := nPosFim - nPosIni
@@ -203,11 +204,13 @@ Static Function ImpEtiq(aItens)
 
     // Local cSedex        := "\system\img\"+Iif(cTpFrete == '03220','expressa','pac')+".bmp"
     Local cSimCor          := "\system\img\correio.bmp"
+    // Local cSimBras         := "\system\img\braspress-logo2.bmp"
     Local cRobsol          := "\system\img\robsol.bmp"
     Local oFont6           := TFont():New('Arial',5,5,,.F.,,,,.F.,.F.,.F.)
     Local oFont8           := TFont():New('Arial',5,5,,.F.,,,,.F.,.F.,.F.)
     Local oFont8N          := TFont():New('Arial',8,8,,.F.,,,,.T.,.F.,.F.)
     Local oFont10          := TFont():New('Arial',8,8,,.F.,,,,.F.,.F.,.F.)
+    Local oFontBras        := TFont():New('Arial',15,15,,.F.,,,,.F.,.F.,.F.)
     Local lAdjustToLegacy  := .F.
     Local lDisableSetup    := .T.
     Local nLin             := 0
@@ -222,12 +225,20 @@ Static Function ImpEtiq(aItens)
     Local cCepE            := ""
     Local cMunE            := ""
     Local cEstE            := ""
+    Local lTransp
 
     Private oPrinter       := NIL                 
 
     nEtiq := 1
     FOR nZ := 1 TO len(aItens)
         FOR nR := 1 TO len(aItens[nZ,2])
+
+            if aItens[nZ,9] == 'T1'
+                lTransp := .T.
+            else
+                lTransp := .F.
+            endif
+
             DbSelectArea('SF2')
             DbGotop()
             DbGoto(aItens[nZ,1])
@@ -237,7 +248,7 @@ Static Function ImpEtiq(aItens)
             SA1->(DbSeek(xFilial('SA1')+SF2->(F2_CLIENTE+F2_LOJA)))
             
             oPrinter := FWMSPrinter():New("produto"+Alltrim(__cUserID)+".etq",IMP_SPOOL,lAdjustToLegacy,"/spool/",lDisableSetup,,,Alltrim(cImpress) /*parametro que recebe a impressora*/)
-            //oPrinter := FWMSPrinter():New("produto"+Alltrim(__cUserID)+".etq",IMP_PDF,lAdjustToLegacy,"/spool/",lDisableSetup,,,Alltrim(cImpress) /*parametro que recebe a impressora*/)
+            // oPrinter := FWMSPrinter():New("produto"+Alltrim(__cUserID)+".etq",IMP_PDF,lAdjustToLegacy,"/spool/",lDisableSetup,,,Alltrim(cImpress) /*parametro que recebe a impressora*/)
             
             oPrinter:StartPage()
             oPrinter:SetMargin(000,000,000,000)
@@ -258,7 +269,7 @@ Static Function ImpEtiq(aItens)
             nValidador := 0
 
             FOR nX := 1 TO Len(SA1->A1_CEP)
-                cCepAux := SubsTr(SA1->A1_CEP,nX,1)
+                cCepAux    := SubsTr(SA1->A1_CEP,nX,1)
                 nValidador += Val(cCepAux)
             NEXT nX
 
@@ -267,7 +278,7 @@ Static Function ImpEtiq(aItens)
             cTel    := StrTran(Alltrim(SA1->A1_DDD)+Alltrim(SA1->A1_TEL),'-','')
             cCodigo := ''
 
-            IF len(aItens[nZ,2]) >= 1 .AND. len(aItens[nZ,9]) >= 1
+            IF len(aItens[nZ,2]) >= 1 .AND. len(aItens[nZ,10]) >= 1
                 cCodigo := SA1->A1_CEP+;        //cep destino
                     '00000'+;                   //complemento cep
                     SM0->M0_CEPENT+;            //cep remetente
@@ -301,7 +312,12 @@ Static Function ImpEtiq(aItens)
 
             // oPrinter:Fillrect( {nLl1,nCl1,nLl2,nCl2}, oBrush1, "-2")  
             //oPrinter:SayBitmap(nLin ,IF(Mod(nZ,4) == 1 .or. Mod(nZ,4) == 3,nCol,nCol+300) ,cLogo,70,030) 
-            oPrinter:SayBitmap(nLin-5,nCol+045,cSimCor,50,20) 
+            if lTransp
+                oPrinter:Say(nLin+15,nCol+030,"BRASPRESS",oFontBras)
+                // oPrinter:SayBitmap(nLin-5,nCol+045,cSimBras,50,20) 
+            else
+                oPrinter:SayBitmap(nLin-5,nCol+045,cSimCor,50,20)
+            endif
             
             oPrinter:SayBitmap(nLin+220,nCol+115,cRobsol,45,45) 
 
@@ -360,10 +376,15 @@ Static Function ImpEtiq(aItens)
             oPrinter:Say(nLin,nCol+90+20,"Peso (g): "+cvaltochar(aItens[nZ,6]*1000),oFont8)
             
             nLin := 35
-            oPrinter:Say(nLin,nCol+42,"Contrato: "+cCorrCont,oFont8)
+            if !lTransp
+                oPrinter:Say(nLin,nCol+42,"Contrato: "+cCorrCont,oFont8)
+            endif
             nLin += 10
-            oPrinter:Say(nLin ,nCol+50,Iif(cTpFrete == '03220','SEDEX','PAC'),oFont10)
             
+            if !lTransp
+                oPrinter:Say(nLin ,nCol+50,Iif(cTpFrete == '03220','SEDEX','PAC'),oFont10)
+            endif
+                
             //oPrinter:Say(nLin + 30,nCol,"PP: 561374",oFont8)
             
             //oPrinter:Say(nLin + IF(Mod(nR,4) == 1 .or. Mod(nR,4) ==2,38,46),IF(nEtiq == 1 .or. nEtiq == 3,nCol+100,nCol+400),aItens[nR,2,nR],oFont8n)
