@@ -498,16 +498,27 @@ LOCAL cValor    :=    'res'
 LOCAL nPage     :=    1
 LOCAL nX
 ///api/v1/vends/?access_token=AkH1cWGwYdvUy3KfKwHdTQaegWcD9SVCsGQ03trB&start_date=31-05-2017%2000:00:00&machine_id=227
-aAux     :=    {}
-        
+Local aAux     :=    {}
+Local aAux2    :=   {}
+
 WHILE nPage > 0
     oRestClient:setPath("/api/v1/vends/?access_token="+cToken+"&start_date="+cDtCriac+"&end_date="+cDtCria2+"&machine_id="+cMaquina+"&page="+cvaltochar(nPage)) 
     
     IF oRestClient:Get(aHeader)
         cValor := oRestClient:GetResult("GET")
+
+        cValor := DecodeUTF8(cValor, "cp1252")
+        FWJsonDeserialize(cValor, @aAux2)
+        
+        oJson := JsonObject():New()
+        
+        ret := oJson:FromJson(cValor)
+        
+        
         cValor := strtran(cValor,"[")
         cValor := strtran(cValor,"]")
         cValor := strtran(cValor,'"')
+        
         
         IF !Empty(cValor)
             nPage++ 
@@ -515,8 +526,18 @@ WHILE nPage > 0
             nPage := 0
         ENDIF
         
-        aLinhas := strtokarr(cValor,"},{")      
-        FOR nX := 1 TO len(aLinhas)     
+        aLinhas := strtokarr(cValor,"},{")
+
+        For nX := 1 to len(aAux2)
+            Aadd(aAux,aAux2[nX]:COIL)
+            Aadd(aAux,aAux2[nX]:OCCURRED_AT)
+            Aadd(aAux,cvaltochar(aAux2[nX]:QUANTITY))
+            Aadd(aAux,cvaltochar(aAux2[nX]:VALUE))
+            Aadd(aAux,If(aAux2[nX]:GOOD:UPC_CODE==nil,'null',aAux2[nX]:GOOD:UPC_CODE))
+            Aadd(aHeader[nPos],aAux)
+            aAux := {}
+        Next nX       
+        /*FOR nX := 1 TO len(aLinhas)     
             IF "occurred_at:" $ aLinhas[nX]
                 Aadd(aAux,stod(strtran(substr(alinhas[nX],13,10),"-")))
             ELSEIF "coil:" $ aLinhas[nX]
@@ -530,7 +551,7 @@ WHILE nPage > 0
                 Aadd(aHeader[nPos],aAux)
                 aAux := {}
             ENDIF 
-        NEXT nX
+        NEXT nX*/
     ELSE
         nPage := 0
     ENDIF
