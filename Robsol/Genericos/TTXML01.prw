@@ -250,11 +250,7 @@ If !Empty(cFornec)
 	cDtEmissao	:= oXml:_NFEPROC:_NFE:_INFNFE:_IDE:_dhEmi:Text
 	cDtEmissao	:= CTOD(Substr(cDtEmissao,9,2)+"/"+Substr(cDtEmissao,6,2)+"/"+Substr(cDtEmissao,1,4))
 	
-	/*If Year(cDtEmissao) > 2021
-		MsgAlert("Somente notas de 2021 para trás podem ser importadas")
-		Return(.F.)
-	EndIf*/
-		//Base ICMS
+	//Base ICMS
 	nBaseIcm	:= Val(oXml:_NFEPROC:_NFE:_INFNFE:_TOTAL:_ICMSTOT:_VBC:Text)
 	//Valor ICMS
 	nVlrIcm		:= Val(oXml:_NFEPROC:_NFE:_INFNFE:_TOTAL:_ICMSTOT:_VICMS:Text)
