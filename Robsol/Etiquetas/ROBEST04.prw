@@ -29,12 +29,14 @@ User Function ROBEST04(lDnfB)
     Private aEtiqueta := {}
     Private cTpFrete  := ''
     Private cPedido   := ''
+    Private Imprime   := IMP_SPOOL
 
     Default lDnfB     := .F.
 
     IF Select("SM0") == 0
         RpcSetType(3)
-        RPCSetEnv("01","0103")
+        RPCSetEnv("01","0101")
+        Imprime := IMP_PDF
     ENDIF
 
     IF !lDnfB
@@ -274,6 +276,10 @@ Static Function ImpEtiq(aItens)
             NEXT nX
 
             cValid  := Val(SubsTr(cValToChar(nValidador+10),1,1)+'0')-nValidador
+            if len(strtokarr(Alltrim(SA1->A1_END),',')) < 2
+                MsgAlert("Cadastro no formato incorreto! Nota: " + SF2->F2_DOC, "Erro!")
+                Return
+            endif
             cNumEnd := strtokarr(Alltrim(SA1->A1_END),',')[2]
             cTel    := StrTran(Alltrim(SA1->A1_DDD)+Alltrim(SA1->A1_TEL),'-','')
             cCodigo := ''
