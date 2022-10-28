@@ -206,8 +206,12 @@ Local aParam := {{ 2, "Status Chamado",nStatus,aStatus,60,, .T. },;
                 cMsgGrv += 'Observações anotadas '+cMsgNew
 
                 If cPar1 == 2
-                    Processa({|| aRetPed := fGeraPV(cPar2)}, "Gerando Pedido de Vendas...")
-                    lAtStat := aRetPed[1]
+                    If Empty(Z50->Z50_PEDVEN)
+                        Processa({|| aRetPed := fGeraPV(cPar2,Z50->Z50_FILPED)}, "Gerando Pedido de Vendas...")
+                        lAtStat := aRetPed[1]
+                    else
+                        lAtStat := .T.
+                    EndIF 
 
                 ElseIf cPar1 == 3
                     MsgInfo('Atendimento Negado pelo atendente!')
@@ -223,9 +227,9 @@ Local aParam := {{ 2, "Status Chamado",nStatus,aStatus,60,, .T. },;
                         Z50->Z50_STATUS := If(cPar1 == 4,'1',cValToChar(cPar1))
                         Z50->Z50_OBSATD := cObsOld + CRLF + Alltrim(cMsgGrv)
                         Z50->Z50_ATENDE := cUserName
-                        Z50->Z50_FILPED := aRetPed[3]
+                        //Z50->Z50_FILPED := aRetPed[3]
 
-                        If cPar1 == 2
+                        If cPar1 == 2 .And. len(aRetPed) > 0
                             Z50->Z50_PEDVEN := aRetPed[2]
                         EndIf
                     Z50->(MsUnlock())
@@ -352,9 +356,9 @@ Return
     @author Felipe Mayer
     @since 01/10/2022
 /*/
-Static Function fGeraPV(cProd)
+Static Function fGeraPV(cProd,cFilPv)
 
-Local cDoc       := GetSxeNum("SC5", "C5_NUM")
+Local cDoc       := '' //GetSxeNum("SC5", "C5_NUM")
 Local cA1Cod     := PadR(Z50->Z50_CODCLI,TamSX3("C5_CLIENTE")[1])   // Código do Cliente
 Local cA1Loja    := PadR(Z50->Z50_LOJCLI,TamSX3("C5_LOJACLI")[1])   // Loja do Cliente
 Local cB1Cod     := PadR(cProd,TamSX3("B1_COD")[1])                 // Código do Produto
@@ -365,11 +369,15 @@ Local aCabec     := {}
 Local aItens     := {}
 Local aLinha     := {}
 Local lRet       := .T. 
-Local cFilRet    := ''
+//Local cFilRet    := ''
 
 Private lMsErroAuto    := .F.
 Private lAutoErrNoFile := .F.
  
+cFilant    := cFilPv
+cDoc       := GetSxeNum("SC5", "C5_NUM")
+
+aadd(aCabec, {"C5_FILIAL",     cFilant,      Nil})
 aadd(aCabec, {"C5_NUM",     cDoc,      Nil})
 aadd(aCabec, {"C5_TIPO",    "N",       Nil})
 aadd(aCabec, {"C5_XCHAMAD", Z50->Z50_CODIGO,Nil})
@@ -382,6 +390,7 @@ aadd(aCabec, {"C5_TIPOCLI", "F",       Nil})
 aadd(aCabec, {"C5_NATUREZ", PadR(cNaturez,TamSX3("C5_NATUREZ")[1]),Nil})
 aadd(aCabec, {"C5_VEND1",   PadR(cVend1,TamSX3("C5_VEND1")[1]),Nil})
 
+aadd(aLinha,{"C6_FILIAL",   cFilant ,           Nil})
 aadd(aLinha,{"C6_ITEM",   '01',           Nil})
 aadd(aLinha,{"C6_PRODUTO",cB1Cod,         Nil})
 aadd(aLinha,{"C6_QTDVEN", 1,              Nil})
@@ -395,12 +404,12 @@ MSExecAuto({|a, b, c, d| MATA410(a, b, c, d)}, aCabec, aItens, 3, .F.)
 
 If !lMsErroAuto
     MsgInfo("Pedido de Vendas gerado com sucesso! <b>" + cDoc + "</b>")
-    cFilRet := SC5->C5_FILIAL 
+    //cFilRet := SC5->C5_FILIAL 
     ConfirmSX8()
 Else
     lRet := .F.
     cDoc := ''
-    cFilRet := ''
+    //cFilRet := ''
 
     RollbackSX8()
     If MsgYesNo('Erro ao gerar o pedido de vendas, deseja visualizar?')
@@ -409,7 +418,7 @@ Else
 EndIf
 
 
-Return {lRet,cDoc,cFilRet}
+Return {lRet,cDoc}
 
 
 

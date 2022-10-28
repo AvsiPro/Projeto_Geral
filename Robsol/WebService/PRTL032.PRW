@@ -24,6 +24,7 @@ WsRestFul FieldService DESCRIPTION "API REST - EVENTO Notas | PORTAL ROBSOL "
 	WSDATA CODIGO As String 
     WSDATA COD_CLIENTE As String
 	WSDATA LOJA_CLIENTE As String
+	WSDATA NOTA As String
 
 	WsMethod GET Description "Retorna o Cliente especifico ou cadastro todo" WSSYNTAX "/FieldService || /FieldService/{CODIGO}" 
 
@@ -41,11 +42,12 @@ Descricao: 	Serviço Rest contendo o Metodo POST do evento de
 
 /*/
 //-------------------------------------------------------------------
-WsMethod GET WsReceive CODIGO,COD_CLIENTE,LOJA_CLIENTE WsService FieldService
+WsMethod GET WsReceive CODIGO,COD_CLIENTE,LOJA_CLIENTE,NOTA WsService FieldService
 
 	Local cCode 	:= Self:CODIGO
     Local cCliente 	:= Self:COD_CLIENTE
 	Local cLojCli 	:= Self:LOJA_CLIENTE
+	Local cNota 	:= Self:NOTA
 	Local aArea		:= GetArea()
 	Local nCont		:= 0
 	Local cVirg		:= ''
@@ -62,6 +64,10 @@ WsMethod GET WsReceive CODIGO,COD_CLIENTE,LOJA_CLIENTE WsService FieldService
 	conout(cCode)
 	conout(cCliente)
 	conout(cLojCli)
+
+	IF valtype(cNota) == 'U'
+		cNota := ''
+	ENDIF 
 
 	DbSelectArea("SF2")
 	SF2->(DBSetOrder(1))
@@ -90,6 +96,10 @@ WsMethod GET WsReceive CODIGO,COD_CLIENTE,LOJA_CLIENTE WsService FieldService
 	cQuery += " AND D2_COD='"+cCode+"'"
 	cQuery += " AND D2_CLIENTE='"+cCliente+"' AND D2_LOJA='"+cLojCli+"'"
 	//cQuery += " AND D2_CLIENTE = '44667313'" //05290313
+	If !Empty(cNota)
+		cQuery += " AND D2_DOC='"+cNota+"'"
+	EndIf
+	
 	cQuery += " AND D2.D_E_L_E_T_=' '"
 
 	CONOUT(cQuery)

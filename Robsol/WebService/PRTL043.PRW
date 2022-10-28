@@ -42,6 +42,7 @@ WsMethod POST WsReceive RECEIVE WsService PRTL043
 	Local cTpDefeito	As Character
 	Local cDefeito 		As Character
 	Local cOutroEnd		As Character
+	Local cFilFat		As Character
 	Local lRet			As Logical 
 
 	conout("chegou aqui PRTL043")
@@ -58,6 +59,7 @@ WsMethod POST WsReceive RECEIVE WsService PRTL043
 		cCode  := "#200"
 		cMessage := "Conexao realizada com sucesso"
 		lRet   := .T.
+		cFilFat:= oBody:getJsonText("filial_faturamento")
 		cNota  := oBody:getJsonText("nota")
 		cItem  := oBody:getJsonText("item")
 		cProd  := oBody:getJsonText("cod_produto")
@@ -106,6 +108,7 @@ WsMethod POST WsReceive RECEIVE WsService PRTL043
 				Z50->Z50_DEFEIT := cDefeito
 				Z50->Z50_TPDEFE := cTpDefeito
 				Z50->Z50_OUTEND := fRemoveCarc(cOutroEnd)
+				Z50->Z50_FILPED := cFilFat
 				ConfirmSx8()
 			Z50->(MsUnlock())
 		Else
