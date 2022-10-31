@@ -86,10 +86,10 @@ Return(aRotina)
 Static Function Aprov()
 
 Local aArea        := GetArea()                                                          
-Local cPatrimo    := Z07->Z07_CHAPA
-Local cCodCli    := Z07->Z07_CLIENTE
+Local cPatrimo     := Z07->Z07_CHAPA
+Local cCodCli      := Z07->Z07_CLIENTE
 Local cLoja        := Z07->Z07_LOJA
-Local cVersao    := Z07->Z07_VERSAO
+Local cVersao      := Z07->Z07_VERSAO
 // Local cVerOld    := ""
 
 If MsgYesNo("É necessário conferir as molas antes de aprovar. Você já conferiu?")
@@ -154,7 +154,7 @@ Local nLinhaAux
 Local nColunaAux    
 Local nColunaX      
 Private oLayer        :=    FwLayer():New()
-Private aAlter        :=    { /*"Z07_BANDEJA",*/"Z07_MOLA","Z07_QUANT","Z07_TIPOMOL","Z07_CODPROD" }
+Private aAlter        :=    { /*"Z07_BANDEJA","Z07_MOLA",*/"Z07_QUANT",/*"Z07_TIPOMOL",*/"Z07_CODPROD" }
 Private aCols         :=    {}
 Private aHeader       :=    {}
 Private _aDados       :=    {}
@@ -240,12 +240,12 @@ oWindow := MSDialog():New( aSize[7],aSize[1],aSize[6],aSize[5],"Mapa de máquina"
      _cMsgInfo := _cMsgRev
     EndIf
     
-        nTamanho   := 20
-        nLinha     := 5
-        nColuna    := 5
-        nLinhaAux  := 35
-        nColunaAux := 25
-        nColunaX   := nColuna
+        nTamanho      :=    20
+        nLinha        :=    5
+        nColuna       :=    5
+        nLinhaAux     :=    35
+        nColunaAux    :=    25
+        nColunaX      :=    nColuna
     
         oBdj1 := TButton():New( nLinha, nColuna,"S1",oPnl1,{ || AtvBdj(1)     },nTamanho,nTamanho,,,,.T.,,"",,,,.F. )
         oBdj1:SetCss( "QPushButton{  background-color: #C2D6D6; border: 1px solid gray; border-radius: 3px; background-repeat: none; margin: 1px }" ) 
@@ -521,14 +521,13 @@ If Empty(aCols)
     AAdd(aCols, Array(Len(aHeader)+1))
     nLin := Len(aCols) 
     //aCols[nLin][1] := Space(TamSX3("Z07_BANDEJA")[1])
-    aCols[nLin][1] := Space(TamSX3("Z07_MOLA")[1])
-    aCols[nLin][2] := Space(TamSX3("Z07_TIPOMOL")[1])
-    aCols[nLin][3] := 0//Space(TamSX3("Z07_QUANT")[1])
+    // aCols[nLin][1] := Space(TamSX3("Z07_MOLA")[1])
+    // aCols[nLin][2] := Space(TamSX3("Z07_TIPOMOL")[1])
+    aCols[nLin][3] := 0 //Space(TamSX3("Z07_QUANT")[1])
     aCols[nLin][4] := Space(TamSX3("Z07_CODPROD")[1])
     aCols[nLin][5] := Space(TamSX3("B1_DESC")[1])
     aCols[nLin][6] := Space(TamSx3("BM_DESC")[1])
-    
-    aCols[nLin][Len(aHeader)+1] := .F.    
+    aCols[nLin][Len(aHeader)+1] := .F.
 EndIf
 
 oMsGD:SetArray( aCols )
@@ -634,17 +633,28 @@ Local nPGrupo     :=    Ascan( aheader, { |x| ALLTRIM(x[2]) == "BM_DESC" } )
 Local nPos        :=    0
 
 // mola
-If __readvar == "M->Z07_MOLA"
-    If Len(ALLTRIM(CVALTOCHAR(M->Z07_MOLA))) > 2
+If __readvar == "M->Z07_SELECA"
+// If __readvar == "M->Z07_MOLA"
+    If Len(ALLTRIM(CVALTOCHAR(M->Z07_SELECA))) > 2
         MsgAlert("O código de mola deve ter apenas 2 caracteres!")
         lRet := .F.
     EndIf
     
-    nPos := AScan( oMsGd:aCols, { |x| x[2] == M->Z07_MOLA .And. x <> oMsGd:nAt } )
+    nPos := AScan( oMsGd:aCols, { |x| x[2] == M->Z07_SELECA .And. x <> oMsGd:nAt } )
     If nPos > 0
         MsgAlert("Essa mola já está configurada!")
         lRet := .F.    
     EndIf
+    // If Len(ALLTRIM(CVALTOCHAR(M->Z07_MOLA))) > 2
+    //     MsgAlert("O código de mola deve ter apenas 2 caracteres!")
+    //     lRet := .F.
+    // EndIf
+    
+    // nPos := AScan( oMsGd:aCols, { |x| x[2] == M->Z07_MOLA .And. x <> oMsGd:nAt } )
+    // If nPos > 0
+    //     MsgAlert("Essa mola já está configurada!")
+    //     lRet := .F.    
+    // EndIf
     
 // tipo mola    
 ElseIf __readvar == "M->Z07_TIPOMOL"
@@ -704,11 +714,12 @@ Return lRet
 
 Static Function LinOk()
 
-Local lRet := .T.                                                  
+Local lRet       :=    .T.                                                  
 // Local nPBan := Ascan( aheader, { |x| ALLTRIM(x[2]) == "Z07_BANDEJA" } )
-Local nPMola := Ascan( aheader, { |x| ALLTRIM(x[2]) == "Z07_MOLA" } )
-Local nPTpMol := Ascan( aheader, { |x| ALLTRIM(x[2]) == "Z07_TIPOMOL" } )
-Local nPQtd := Ascan( aheader, { |x| ALLTRIM(x[2]) == "Z07_QUANT" } )
+// Local nPMola     :=    Ascan( aheader, { |x| ALLTRIM(x[2]) == "Z07_MOLA" } )
+Local nPMola     :=    Ascan( aheader, { |x| ALLTRIM(x[2]) == "Z07_SELECA" } )
+// Local nPTpMol    :=    Ascan( aheader, { |x| ALLTRIM(x[2]) == "Z07_TIPOMOL" } )
+Local nPQtd      :=    Ascan( aheader, { |x| ALLTRIM(x[2]) == "Z07_QUANT" } )
 // Local nPProd := Ascan( aheader, { |x| ALLTRIM(x[2]) == "Z07_CODPROD" } )            
 
 // mola 
@@ -793,32 +804,36 @@ If msSeek("Z07_BANDEJA")
     AADD(aHeader,{Trim(X3Titulo()),SX3->X3_CAMPO,SX3->X3_PICTURE,SX3->X3_TAMANHO,SX3->X3_DECIMAL,"",SX3->X3_USADO,SX3->X3_TIPO,"",SX3->X3_CONTEXT,SX3->X3_CBOX,,,"V" } )
 EndIf 
 */
-If msSeek("Z07_MOLA")
-    AADD(aHeader,{Trim(X3Titulo()),SX3->X3_CAMPO,SX3->X3_PICTURE,SX3->X3_TAMANHO,SX3->X3_DECIMAL,"",SX3->X3_USADO,SX3->X3_TIPO,"",SX3->X3_CONTEXT,SX3->X3_CBOX } )
-EndIf      
+// If msSeek("Z07_MOLA")
+//     AADD(aHeader,{Trim(X3Titulo()),SX3->X3_CAMPO,SX3->X3_PICTURE,SX3->X3_TAMANHO,SX3->X3_DECIMAL,"",SX3->X3_USADO,SX3->X3_TIPO,"",SX3->X3_CONTEXT,SX3->X3_CBOX } )
+// EndIf      
 
-If msSeek("Z07_TIPOMOL")
-     AADD(aHeader,{Trim(X3Titulo()),SX3->X3_CAMPO,SX3->X3_PICTURE,SX3->X3_TAMANHO,SX3->X3_DECIMAL,SX3->X3_VALID,SX3->X3_USADO,SX3->X3_TIPO,SX3->X3_F3,SX3->X3_CONTEXT,SX3->X3_CBOX } )
-EndIf     
+// If msSeek("Z07_TIPOMOL")
+//     AADD(aHeader,{Trim(X3Titulo()),SX3->X3_CAMPO,SX3->X3_PICTURE,SX3->X3_TAMANHO,SX3->X3_DECIMAL,SX3->X3_VALID,SX3->X3_USADO,SX3->X3_TIPO,SX3->X3_F3,SX3->X3_CONTEXT,SX3->X3_CBOX } )
+// EndIf     
 
-If msSeek("Z07_QUANT")
-     AADD(aHeader,{Trim(X3Titulo()),SX3->X3_CAMPO,SX3->X3_PICTURE,SX3->X3_TAMANHO,SX3->X3_DECIMAL,SX3->X3_VALID,SX3->X3_USADO,SX3->X3_TIPO,SX3->X3_F3,SX3->X3_CONTEXT,SX3->X3_CBOX } )
+If msSeek("Z07_SELECA")
+    AADD(aHeader,{Trim(X3Titulo()),SX3->X3_CAMPO,SX3->X3_PICTURE,SX3->X3_TAMANHO,SX3->X3_DECIMAL,"" /*vld campo*/,SX3->X3_USADO,SX3->X3_TIPO,SX3->X3_F3,SX3->X3_CONTEXT,SX3->X3_CBOX,SX3->X3_RELACAO } )
 EndIf
 
 If msSeek("Z07_CODPROD")
-    AADD(aHeader,{Trim(X3Titulo()),    SX3->X3_CAMPO,SX3->X3_PICTURE,SX3->X3_TAMANHO,SX3->X3_DECIMAL,"" /*vld campo*/,SX3->X3_USADO,SX3->X3_TIPO,SX3->X3_F3,SX3->X3_CONTEXT,SX3->X3_CBOX,SX3->X3_RELACAO } )
+    AADD(aHeader,{Trim(X3Titulo()),SX3->X3_CAMPO,SX3->X3_PICTURE,SX3->X3_TAMANHO,SX3->X3_DECIMAL,"" /*vld campo*/,SX3->X3_USADO,SX3->X3_TIPO,SX3->X3_F3,SX3->X3_CONTEXT,SX3->X3_CBOX,SX3->X3_RELACAO } )
 EndIf
 
 If msSeek("Z07_DESCPRO") 
     AADD(aHeader,{Trim(X3Titulo()),SX3->X3_CAMPO,SX3->X3_PICTURE,SX3->X3_TAMANHO,SX3->X3_DECIMAL,"",SX3->X3_USADO,SX3->X3_TIPO,SX3->X3_F3,SX3->X3_CONTEXT,SX3->X3_CBOX,SX3->X3_RELACAO } )
 EndIf
 
+If msSeek("Z07_QUANT")
+    AADD(aHeader,{Trim(X3Titulo()),SX3->X3_CAMPO,SX3->X3_PICTURE,SX3->X3_TAMANHO,SX3->X3_DECIMAL,SX3->X3_VALID,SX3->X3_USADO,SX3->X3_TIPO,SX3->X3_F3,SX3->X3_CONTEXT,SX3->X3_CBOX } )
+EndIf
+
 //Aadd(aHeader, {" ","IMGP", "@BMP", 2, 0, ".F." ,""    , "C", "", "R" ,"" , "","","V"})
 
 
-If msSeek("BM_DESC") 
-    AADD(aHeader,{Trim(X3Titulo()),SX3->X3_CAMPO,SX3->X3_PICTURE,SX3->X3_TAMANHO,SX3->X3_DECIMAL,"",SX3->X3_USADO,SX3->X3_TIPO,SX3->X3_F3,SX3->X3_CONTEXT,SX3->X3_CBOX,SX3->X3_RELACAO } )
-EndIf
+// If msSeek("BM_DESC") 
+//     AADD(aHeader,{Trim(X3Titulo()),SX3->X3_CAMPO,SX3->X3_PICTURE,SX3->X3_TAMANHO,SX3->X3_DECIMAL,"",SX3->X3_USADO,SX3->X3_TIPO,SX3->X3_F3,SX3->X3_CONTEXT,SX3->X3_CBOX,SX3->X3_RELACAO } )
+// EndIf
 
 Return
 
@@ -843,7 +858,8 @@ Local nLin := 0
 
 cSql := "SELECT * FROM Z07010 "
 cSql += " WHERE Z07_CHAPA = '"+Z07->Z07_CHAPA+"' AND Z07_VERSAO = '"+Z07->Z07_VERSAO+"' AND D_E_L_E_T_ = '' "
-cSql += " ORDER BY Z07_BANDEJA, Z07_MOLA "
+cSql += " ORDER BY Z07_SELECA "
+// cSql += " ORDER BY Z07_BANDEJA, Z07_MOLA "
 
 If Select("TRB") > 0
     TRB->(dbCloseArea())
@@ -854,19 +870,19 @@ TcQuery cSql New Alias "TRB"
 dbSelectArea("TRB")
 While !EOF()
 
-    _cChapa := TRB->Z07_CHAPA
-    _cCliente := TRB->Z07_CLIENTE
-    _cLOja := TRB->Z07_LOJA
-    _cCodMaq := TRB->Z07_CODMAQ
-    _cVersao := TRB->Z07_VERSAO
-    _dInicio := STOD(TRB->Z07_DINICIO)
+    _cChapa      :=    TRB->Z07_CHAPA
+    _cCliente    :=    TRB->Z07_CLIENTE
+    _cLOja       :=    TRB->Z07_LOJA
+    _cCodMaq     :=    TRB->Z07_CODMAQ
+    _cVersao     :=    TRB->Z07_VERSAO
+    _dInicio     :=    STOD(TRB->Z07_DINICIO)
 
     AAdd(aCols, Array(Len(aHeader)+1))
     nLin := Len(aCols)
                    
     //aCols[nLin][1] := TRB->Z07_BANDEJA
-    aCols[nLin][1] := TRB->Z07_MOLA
-    aCols[nLin][2] := TRB->Z07_TIPOMOL
+    // aCols[nLin][1] := TRB->Z07_MOLA
+    // aCols[nLin][2] := TRB->Z07_TIPOMOL
     aCols[nLin][3] := TRB->Z07_QUANT
     aCols[nLin][4] := TRB->Z07_CODPROD
     aCols[nLin][5] := AllTrim(Posicione( "SB1",1,xFilial("SB1") +AvKey(TRB->Z07_CODPROD,"B1_COD"),"B1_DESC" ))
@@ -913,20 +929,20 @@ Return
 Static Function Gravar(nOpc)
 
 // Local nRecno := 0
-Local nLinha := 0
-Local nCol := 0
-Local nNrCampo := 0
-Local nPos := 0
-Local aDados := {}
-Local aRecnos := {}
-Local lOk := .T. 
-Local nPProd := Ascan( aheader, { |x| ALLTRIM(x[2]) == "Z07_CODPROD" } )
-Local nPMola := Ascan( aheader, { |x| ALLTRIM(x[2]) == "Z07_MOLA" } )
-Local aMap := {}
-Local cBandeja := ""
-Local lCafe := .T.
-Local lGrava := .T.
-Local cGrupo := ""
+Local nLinha      :=    0
+Local nCol        :=    0
+Local nNrCampo    :=    0
+Local nPos        :=    0
+Local aDados      :=    {}
+Local aRecnos     :=    {}
+Local lOk         :=    .T. 
+Local nPProd      :=    Ascan( aheader, { |x| ALLTRIM(x[2]) == "Z07_CODPROD" } )
+// Local nPMola      :=    Ascan( aheader, { |x| ALLTRIM(x[2]) == "Z07_MOLA" } )
+Local aMap        :=    {}
+Local cBandeja    :=    ""
+Local lCafe       :=    .T.
+Local lGrava      :=    .T.
+Local cGrupo      :=    ""
 Local nI
 
 dbSelectArea("SN1")
@@ -949,9 +965,9 @@ EndIf
 dbSelectArea("Z07")
 For nI := 1 To Len(_aBandeja)
 
-    cBandeja := cvaltochar(_aBandeja[nI][1])
-    aDados := aClone( _aBandeja[nI][4] )
-    aRecnos := aClone( _aBandeja[nI][5] )
+    cBandeja    :=    cvaltochar(_aBandeja[nI][1])
+    aDados      :=    aClone( _aBandeja[nI][4] )
+    aRecnos     :=    aClone( _aBandeja[nI][5] )
     
     // revisao
     If nOpc == 6
@@ -960,8 +976,8 @@ For nI := 1 To Len(_aBandeja)
             If nLinha <= Len(aRecnos)
                 dbGoTo(aRecnos[nLinha])
                 If RecLock("Z07",.F.)  
-                    Z07->Z07_MSBLQL    := "1"
-                    Z07->Z07_STATUS  := "1"
+                    Z07->Z07_MSBLQL := "1"
+                    Z07->Z07_STATUS := "1"
                     Z07->( MsUnlock() )
                 EndIf
             EndIf    
@@ -969,15 +985,15 @@ For nI := 1 To Len(_aBandeja)
         
         // inclui o novo mapa
         If RecLock("Z07",.T.)
-            Z07->Z07_CHAPA    := _cChapa
-            Z07->Z07_CLIENTE    := _cCliente
-            Z07->Z07_LOJA    := _cLoja
-            Z07->Z07_CODMAQ    := _cCodMaq
-            Z07->Z07_USUARIO    := cUserName
-            Z07->Z07_DINICIO    := Date()
-            Z07->Z07_VERSAO    := Soma1(_cVersao)
-            Z07->Z07_STATUS    := "3"
-            Z07->Z07_BANDEJA := cBandeja
+            Z07->Z07_CHAPA      :=    _cChapa
+            Z07->Z07_CLIENTE    :=    _cCliente
+            Z07->Z07_LOJA       :=    _cLoja
+            Z07->Z07_CODMAQ     :=    _cCodMaq
+            Z07->Z07_USUARIO    :=    cUserName
+            Z07->Z07_DINICIO    :=    Date()
+            Z07->Z07_VERSAO     :=    Soma1(_cVersao)
+            Z07->Z07_STATUS     :=    "3"
+            Z07->Z07_BANDEJA    :=    cBandeja
             
             For nCol := 1 To Len(aHeader)
                 nNrCampo := FieldPos(Trim(aHeader[nCol][2]))
@@ -1014,15 +1030,15 @@ For nI := 1 To Len(_aBandeja)
             // Inclusao
             Else
                 If RecLock("Z07",.T.)
-                    Z07->Z07_CHAPA    := _cChapa
-                    Z07->Z07_CLIENTE    := _cCliente
-                    Z07->Z07_LOJA    := _cLoja
-                    Z07->Z07_CODMAQ    := _cCodMaq
-                    Z07->Z07_USUARIO    := cUserName
-                    Z07->Z07_DINICIO    := Date()
-                    Z07->Z07_VERSAO    := _cVersao
-                    Z07->Z07_STATUS    := "3"
-                    Z07->Z07_BANDEJA := cBandeja
+                    Z07->Z07_CHAPA      :=    _cChapa
+                    Z07->Z07_CLIENTE    :=    _cCliente
+                    Z07->Z07_LOJA       :=    _cLoja
+                    Z07->Z07_CODMAQ     :=    _cCodMaq
+                    Z07->Z07_USUARIO    :=    cUserName
+                    Z07->Z07_DINICIO    :=    Date()
+                    Z07->Z07_VERSAO     :=    _cVersao
+                    Z07->Z07_STATUS     :=    "3"
+                    Z07->Z07_BANDEJA    :=    cBandeja
                     
                     For nCol := 1 To Len(aHeader)
                         nNrCampo := FieldPos(Trim(aHeader[nCol][2]))
