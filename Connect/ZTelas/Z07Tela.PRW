@@ -7,7 +7,7 @@
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
 ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัอออออออออออออปฑฑ
-ฑฑบPrograma  ณZ07Tela  บAutor  ณJackson E. de Deus  บ Data ณ  18/11/15   บฑฑ
+ฑฑบPrograma  ณZ07Tela  บAutor  ณAVSI Pro  บ Data ณ  18/11/15   บฑฑ
 ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
 ฑฑบDesc.     ณ Mapa de maquina                                            บฑฑ
 ฑฑบ          ณ                                                            บฑฑ
@@ -41,7 +41,7 @@ Return
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
 ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัอออออออออออออปฑฑ
-ฑฑบPrograma  ณMenuDef  บAutor  ณJackson E. de Deus   บ Data ณ  15/12/15   บฑฑ
+ฑฑบPrograma  ณMenuDef  บAutor  ณAVSI Pro   บ Data ณ  15/12/15   บฑฑ
 ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
 ฑฑบDesc.     ณ Menu do browse                                             บฑฑ
 ฑฑบ          ณ                                                            บฑฑ
@@ -72,7 +72,7 @@ Return(aRotina)
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
 ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัอออออออออออออปฑฑ
-ฑฑบPrograma  ณAprov  บAutor  ณJackson E. de Deus     บ Data ณ  12/08/15   บฑฑ
+ฑฑบPrograma  ณAprov  บAutor  ณAVSI Pro     บ Data ณ  12/08/15   บฑฑ
 ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
 ฑฑบDesc.     ณ Aprova o mapa                                              บฑฑ
 ฑฑบ          ณ                                                            บฑฑ
@@ -85,11 +85,11 @@ Return(aRotina)
 
 Static Function Aprov()
 
-Local aArea        := GetArea()                                                          
-Local cPatrimo    := Z07->Z07_CHAPA
-Local cCodCli    := Z07->Z07_CLIENTE
-Local cLoja        := Z07->Z07_LOJA
-Local cVersao    := Z07->Z07_VERSAO
+Local aArea         := GetArea()                                                          
+Local cPatrimo      := Z07->Z07_CHAPA
+Local cCodCli       := Z07->Z07_CLIENTE
+Local cLoja         := Z07->Z07_LOJA
+Local cVersao       := Z07->Z07_VERSAO
 // Local cVerOld    := ""
 
 If MsgYesNo("ษ necessแrio conferir as molas antes de aprovar. Voc๊ jแ conferiu?")
@@ -127,7 +127,7 @@ Return
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
 ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัอออออออออออออปฑฑ
-ฑฑบPrograma  ณManut  บAutor  ณJackson E. de Deus     บ Data ณ  26/11/15   บฑฑ
+ฑฑบPrograma  ณManut  บAutor  ณAVSI Pro     บ Data ณ  26/11/15   บฑฑ
 ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
 ฑฑบDesc.     ณ Manutencao do cadastro de mapa                             บฑฑ
 ฑฑบ          ณ                                                            บฑฑ
@@ -154,7 +154,7 @@ Local nLinhaAux
 Local nColunaAux    
 Local nColunaX      
 Private oLayer        :=    FwLayer():New()
-Private aAlter        :=    { /*"Z07_BANDEJA",*/"Z07_MOLA","Z07_QUANT","Z07_TIPOMOL","Z07_CODPROD" }
+Private aAlter        :=    { "Z07_MOLA","Z07_TIPOMOL","Z07_CODPROD" }
 Private aCols         :=    {}
 Private aHeader       :=    {}
 Private _aDados       :=    {}
@@ -476,7 +476,7 @@ Return
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
 ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัอออออออออออออปฑฑ
-ฑฑบPrograma  ณAtvBdj  บAutor  ณJackson E. de Deus    บ Data ณ  12/08/15   บฑฑ
+ฑฑบPrograma  ณAtvBdj  บAutor  ณAVSI Pro    บ Data ณ  12/08/15   บฑฑ
 ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
 ฑฑบDesc.     ณ Configuracao de bandeja                                    บฑฑ
 ฑฑบ          ณ                                                            บฑฑ
@@ -521,12 +521,12 @@ If Empty(aCols)
     AAdd(aCols, Array(Len(aHeader)+1))
     nLin := Len(aCols) 
     //aCols[nLin][1] := Space(TamSX3("Z07_BANDEJA")[1])
-    aCols[nLin][1] := Space(TamSX3("Z07_MOLA")[1])
-    aCols[nLin][2] := Space(TamSX3("Z07_TIPOMOL")[1])
+    aCols[nLin][1] := Space(TamSX3("Z07_SELECA")[1])
+    //aCols[nLin][2] := Space(TamSX3("Z07_TIPOMOL")[1])
     aCols[nLin][3] := 0//Space(TamSX3("Z07_QUANT")[1])
     aCols[nLin][4] := Space(TamSX3("Z07_CODPROD")[1])
     aCols[nLin][5] := Space(TamSX3("B1_DESC")[1])
-    aCols[nLin][6] := Space(TamSx3("BM_DESC")[1])
+    //aCols[nLin][6] := Space(TamSx3("BM_DESC")[1])
     
     aCols[nLin][Len(aHeader)+1] := .F.    
 EndIf
@@ -542,7 +542,7 @@ Return
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
 ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัอออออออออออออปฑฑ
-ฑฑบPrograma  ณAtuCab  บAutor  ณJackson E. de Deus    บ Data ณ  12/07/15   บฑฑ
+ฑฑบPrograma  ณAtuCab  บAutor  ณAVSI Pro    บ Data ณ  12/07/15   บฑฑ
 ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
 ฑฑบDesc.     ณ Atualiza campos do cabecalho                               บฑฑ
 ฑฑบ          ณ                                                            บฑฑ
@@ -580,7 +580,7 @@ Return
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
 ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัอออออออออออออปฑฑ
-ฑฑบPrograma  ณfChange   บAutor  ณJackson E. de Deus  บ Data ณ  12/07/15   บฑฑ
+ฑฑบPrograma  ณfChange   บAutor  ณAVSI Pro  บ Data ณ  12/07/15   บฑฑ
 ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
 ฑฑบDesc.     ณ bloco fchange do grid                                      บฑฑ
 ฑฑบ          ณ                                                            บฑฑ
@@ -614,7 +614,7 @@ Return
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
 ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัอออออออออออออปฑฑ
-ฑฑบPrograma  ณAltCpo  บAutor  ณJackson E. de Deus    บ Data ณ  26/11/15   บฑฑ
+ฑฑบPrograma  ณAltCpo  บAutor  ณAVSI Pro    บ Data ณ  26/11/15   บฑฑ
 ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
 ฑฑบDesc.     ณ Alteracao de campos do grid                                บฑฑ
 ฑฑบ          ณ                                                            บฑฑ
@@ -691,7 +691,7 @@ Return lRet
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
 ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัอออออออออออออปฑฑ
-ฑฑบPrograma  ณLinOk  บAutor  ณJackson E. de Deus     บ Data ณ  02/12/15   บฑฑ
+ฑฑบPrograma  ณLinOk  บAutor  ณAVSI Pro     บ Data ณ  02/12/15   บฑฑ
 ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
 ฑฑบDesc.     ณ LinhaOk do grid                                            บฑฑ
 ฑฑบ          ณ                                                            บฑฑ
@@ -739,7 +739,7 @@ Return lRet
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
 ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัอออออออออออออปฑฑ
-ฑฑบPrograma  ณTudoOk  บAutor  ณJackson E. de Deus    บ Data ณ  06/12/15   บฑฑ
+ฑฑบPrograma  ณTudoOk  บAutor  ณAVSI Pro    บ Data ณ  06/12/15   บฑฑ
 ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
 ฑฑบDesc.     ณ Validacao tudok do grid                                    บฑฑ
 ฑฑบ          ณ                                                            บฑฑ
@@ -769,7 +769,7 @@ Return lRet
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
 ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัอออออออออออออปฑฑ
-ฑฑบPrograma  ณfHead  บAutor  ณJackson E. de Deus     บ Data ณ  26/11/15   บฑฑ
+ฑฑบPrograma  ณfHead  บAutor  ณAVSI Pro     บ Data ณ  26/11/15   บฑฑ
 ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
 ฑฑบDesc.     ณ Carrega aHeader                                            บฑฑ
 ฑฑบ          ณ                                                            บฑฑ
@@ -826,7 +826,7 @@ Return
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
 ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัอออออออออออออปฑฑ
-ฑฑบPrograma  ณCarrega  บAutor  ณJackson E. de Deus   บ Data ณ  11/26/15   บฑฑ
+ฑฑบPrograma  ณCarrega  บAutor  ณAVSI Pro   บ Data ณ  11/26/15   บฑฑ
 ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
 ฑฑบDesc.     ณ Carrega o mapa                                             บฑฑ
 ฑฑบ          ณ                                                            บฑฑ
@@ -899,7 +899,7 @@ Return
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
 ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัอออออออออออออปฑฑ
-ฑฑบPrograma  ณGravar  บAutor  ณJackson E. de Deus    บ Data ณ  12/02/15   บฑฑ
+ฑฑบPrograma  ณGravar  บAutor  ณAVSI Pro    บ Data ณ  12/02/15   บฑฑ
 ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
 ฑฑบDesc.     ณ Efetua a gravacao do mapa                                  บฑฑ
 ฑฑบ          ณ                                                            บฑฑ
