@@ -1842,7 +1842,7 @@ IF nOpcao == 1
             Reclock("Z06",.F.)
             Z06->Z06_CODCLI     :=    aPlanog[nX,36]
             Z06->Z06_LOJCLI    :=    aPlanog[nX,37]
-            Z06->Z06_CHAPA    :=    aPlanog[nX,38]
+            Z06->Z06_CHAPA     :=    aPlanog[nX,38]
             Z06->Z06_CODMAQ    :=    aPlanog[nX,40]
             Z06->Z06_CODPRO    :=    aPlanog[nX,03]
             Z06->Z06_SELECAO    :=    aPlanog[nX,02]
@@ -2284,7 +2284,7 @@ RETURN
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
 ±±ÉÍÍÍÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍ»±±
 ±±ºPrograma  ³CONFATC01   ºAutor  ³Microsiga           º Data ³  05/31/17   º±±
-±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±º±±
 ±±ºDesc.     ³    Busca planograma                                        º±±
 ±±º          ³                                                            º±±
 ±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
@@ -2355,6 +2355,7 @@ LOCAL dDtD     :=    ctod(' / / ')
 LOCAL dDtA     :=    ctod(' / / ')    
 LOCAL cHri     :=    space(5)
 // LOCAL cHrf    :=    space(5)
+LOCAL cData    :=    ''
 LOCAL nX
 
 PRIVATE aPergs     :=    {}
@@ -2365,7 +2366,7 @@ aAdd(aPergs ,{1, "Data Inicial?", dDtD, "", "", "", "", 070, .T.})
 aAdd(aPergs ,{1, "Data Final?",   dDtA, "", "", "", "", 070, .T.})    
 aAdd(aPergs ,{1, "Hora Inicial?", cHri, "", "", "", "", 070, .T.})    
 aAdd(aPergs ,{1, "Hora Final?",   cHri, "", "", "", "", 070, .T.})    
-      
+
 IF ParamBox(aPergs ,"Periodo de vendas",@aRet)
     aVendas := U_CONWSC03(aList[oList:nAt,02],2,aRet[1],aRet[2],aRet[3],aRet[4])
     IF len(aVendas) > 0
@@ -2374,17 +2375,21 @@ IF ParamBox(aPergs ,"Periodo de vendas",@aRet)
         FOR nX := 3 TO len(aVendas) 
             cCodProt := ''
             IF aVendas[nX,05] == "null"
-                IF Ascan(aList3,{|x| Alltrim(x[3]) == Alltrim(aVendas[nX,02])}) > 0
-                    cCodProt      :=     aList3[Ascan(aList3,{|x| Alltrim(x[3]) == Alltrim(aVendas[nX,02])}),04]  
-                ENDIF   
+                cCodProt      :=     "Nao Consta"
             ELSE
                 cCodProt := aVendas[nX,05]
             ENDIF
-            cDesc := Posicione("SB1",1,xFilial("SB1")+cCodProt,"B1_DESC")       
             
-            nPosit := Ascan(aList8,{|x| x[2] == aVendas[nX,02]})
+            if cCodProt != "Nao Consta"
+                cDesc := Posicione("SB1",1,xFilial("SB1")+cCodProt,"B1_DESC")
+            else
+                cDesc := "Codigo do produto nao se encontra no VMPay"
+            endif
+
+            nPosit := Ascan(aList8,{|x| x[2] == aVendas[nX,01]})
             IF nPosit == 0
-                Aadd(aList8,{cvaltochar(aRet[2]),aVendas[nX,02],cCodProt,cDesc,val(aVendas[nX,03]),aVendas[2],;
+                cData := StrTran(StrTran(SubStr(aVendas[nX,02], 1, 19), '-', '/'), 'T', ' ')
+                Aadd(aList8,{cData,aVendas[nX,01],cCodProt,cDesc,val(aVendas[nX,03]),aVendas[2],;
                             aList[oList:nAt,17],IF(val(aVendas[nX,03])>1,val(aVendas[nX,04])/val(aVendas[nX,03]),val(aVendas[nX,04]))})
             ELSE
                 aList8[nPosit,05] += val(aVendas[nX,03])
