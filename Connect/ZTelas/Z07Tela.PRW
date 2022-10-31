@@ -152,7 +152,9 @@ Local lAprovar        :=    .F.
 Local nTamanho           
 Local nLinhaAux     
 Local nColunaAux    
-Local nColunaX      
+Local nColunaX   
+Local nCont 
+
 Private oLayer        :=    FwLayer():New()
 Private aAlter        :=    { /*"Z07_BANDEJA",*/"Z07_MOLA","Z07_QUANT","Z07_TIPOMOL","Z07_CODPROD" }
 Private aCols         :=    {}
@@ -165,10 +167,11 @@ Private _cLOja        :=    Space(4)
 Private _cCodMaq      :=    Space(15)
 Private _cVersao      :=    ""
 Private _dInicio      :=    stod("")
-Private _aBandeja     :=    { { 1, "S1", .F., {}, {} },{ 2, "S2", .F., {}, {} },{ 3, "S3", .F., {}, {} },{ 4, "S4", .F., {}, {} },{ 5, "S5", .F., {}, {} },{ 6, "S6", .F., {},{} },{ 7, "S7", .F., {},{} },{ 8, "S8", .F., {},{} },{ 9, "S9", .F., {},{} },{ 10, "S10", .F., {},{} },{ 11, "S11", .F., {},{} },{ 12, "S12", .F., {},{} },{ 13, "S13", .F., {},{} },{ 14, "S14", .F., {},{} },{ 15, "S15", .F., {},{} },{ 16, "S16", .F., {},{} },{ 17, "S17", .F., {},{} },{ 18, "S18", .F., {},{} },{ 19, "S19", .F., {},{} },{ 20, "S20", .F., {},{} },{ 21, "S21", .F., {},{} },{ 22, "S22", .F., {},{} },{ 23, "S23", .F., {},{} },{ 24, "S24", .F., {},{} },{ 25, "S25", .F., {},{} },{ 26, "S26", .F., {},{} },{ 27, "S27", .F., {},{} },{ 28, "S28", .F., {},{} },{ 29, "S29", .F., {},{} },{ 30, "S30", .F., {},{} },{ 31, "S31", .F., {},{} },{ 32, "S32", .F., {},{} },{ 33, "S33", .F., {},{} },{ 34, "S34", .F., {},{} },{ 35, "S35", .F., {},{} },{ 36, "S36", .F., {},{} },{ 37, "S37", .F., {},{} },{ 38, "S38", .F., {},{} },{ 39, "S39", .F., {},{} },{ 40, "S40", .F., {},{} } }
+Private _aBandeja     :=    {} //{ { 1, "S1", .F., {}, {} },{ 2, "S2", .F., {}, {} },{ 3, "S3", .F., {}, {} },{ 4, "S4", .F., {}, {} },{ 5, "S5", .F., {}, {} },{ 6, "S6", .F., {},{} },{ 7, "S7", .F., {},{} },{ 8, "S8", .F., {},{} },{ 9, "S9", .F., {},{} },{ 10, "S10", .F., {},{} },{ 11, "S11", .F., {},{} },{ 12, "S12", .F., {},{} },{ 13, "S13", .F., {},{} },{ 14, "S14", .F., {},{} },{ 15, "S15", .F., {},{} },{ 16, "S16", .F., {},{} },{ 17, "S17", .F., {},{} },{ 18, "S18", .F., {},{} },{ 19, "S19", .F., {},{} },{ 20, "S20", .F., {},{} },{ 21, "S21", .F., {},{} },{ 22, "S22", .F., {},{} },{ 23, "S23", .F., {},{} },{ 24, "S24", .F., {},{} },{ 25, "S25", .F., {},{} },{ 26, "S26", .F., {},{} },{ 27, "S27", .F., {},{} },{ 28, "S28", .F., {},{} },{ 29, "S29", .F., {},{} },{ 30, "S30", .F., {},{} },{ 31, "S31", .F., {},{} },{ 32, "S32", .F., {},{} },{ 33, "S33", .F., {},{} },{ 34, "S34", .F., {},{} },{ 35, "S35", .F., {},{} },{ 36, "S36", .F., {},{} },{ 37, "S37", .F., {},{} },{ 38, "S38", .F., {},{} },{ 39, "S39", .F., {},{} },{ 40, "S40", .F., {},{} } }
 Private _cMsgInfo     :=    ""
 Private _cMsgRev      :=    "Você está gerando uma nova versão do mapa"
 Private _cMsgAprov    :=    "Essa é uma versão de mapa gerada via aplicativo mobile"
+Private oPlCp
 
 If nOpc == 2
     nOpcGD := 2
@@ -177,6 +180,13 @@ ElseIf nOpc == 3 .Or. nOpc == 4 .Or. nOpc == 6
 ElseIf nOpc == 5
     nOpcGD := 2
 EndIf
+
+For nCont := 1 to 54
+    aAux := { nCont, "S"+cvaltochar(nCont), .F., {}, {} }
+    Aadd(_aBandeja,aAux)
+Next nCont
+
+Aadd(aCols,{'','',''})
 
 fHead()
 dbSelectArea("Z07")
@@ -246,226 +256,36 @@ oWindow := MSDialog():New( aSize[7],aSize[1],aSize[6],aSize[5],"Mapa de máquina"
         nLinhaAux     :=    35
         nColunaAux    :=    25
         nColunaX      :=    nColuna
-    
-        oBdj1 := TButton():New( nLinha, nColuna,"S1",oPnl1,{ || AtvBdj(1)     },nTamanho,nTamanho,,,,.T.,,"",,,,.F. )
-        oBdj1:SetCss( "QPushButton{  background-color: #C2D6D6; border: 1px solid gray; border-radius: 3px; background-repeat: none; margin: 1px }" ) 
-        
-        nColuna += nColunaAux
+        nPula         :=    1
 
-        oBdj2 := TButton():New( nLinha, nColuna,"S2",oPnl1,{ || AtvBdj(2)     },nTamanho,nTamanho,,,,.T.,,"",,,,.F. )
-        oBdj2:SetCss( "QPushButton{  background-color: #C2D6D6; border: 1px solid gray; border-radius: 3px; background-repeat: none; margin: 1px }" ) 
-        
-        nColuna += nColunaAux
+        For nCont := 1 to 54
+            cItem := 'S'+cvaltochar(nCont)
+            cFunCh := 'AtvBdj('+CVALTOCHAR(nCont)+')'
+            &('oBdj'+cvaltochar(nCont)) := TButton():New( nLinha, nColuna,cItem,oPnl1,{ || &(cFunCh) },nTamanho,nTamanho,,,,.T.,,"",,,,.F. )
+            &('oBdj'+cvaltochar(nCont)):SetCss( "QPushButton{  background-color: #C2D6D6; border: 1px solid gray; border-radius: 3px; background-repeat: none; margin: 1px }" ) 
+            
+            nColuna += nColunaAux
+            nPula++
+            If nPula > 9
+                nLinha += nLinhaAux
+                nColuna := nColunaX
+                nPula := 1
+            EndIf 
 
-        oBdj3 := TButton():New( nLinha, nColuna,"S3",oPnl1,{ || AtvBdj(3)     },nTamanho,nTamanho,,,,.T.,,"",,,,.F. )
-        oBdj3:SetCss( "QPushButton{  background-color: #C2D6D6; border: 1px solid gray; border-radius: 3px; background-repeat: none; margin: 1px }" ) 
-        
-        nColuna += nColunaAux
-
-        oBdj4 := TButton():New( nLinha, nColuna,"S4",oPnl1,{ || AtvBdj(4)     },nTamanho,nTamanho,,,,.T.,,"",,,,.F. )
-        oBdj4:SetCss( "QPushButton{  background-color: #C2D6D6; border: 1px solid gray; border-radius: 3px; background-repeat: none; margin: 1px }" ) 
-        
-        nColuna += nColunaAux
-
-        oBdj5 := TButton():New( nLinha, nColuna,"S5",oPnl1,{ || AtvBdj(5)    },nTamanho,nTamanho,,,,.T.,,"",,,,.F. )
-        oBdj5:SetCss( "QPushButton{  background-color: #C2D6D6; border: 1px solid gray; border-radius: 3px; background-repeat: none; margin: 1px }" ) 
-        
-        nColuna += nColunaAux
-
-        oBdj6 := TButton():New( nLinha, nColuna,"S6",oPnl1,{ || AtvBdj(6)    },nTamanho,nTamanho,,,,.T.,,"",,,,.F. )
-        oBdj6:SetCss( "QPushButton{  background-color: #C2D6D6; border: 1px solid gray; border-radius: 3px; background-repeat: none; margin: 1px }" ) 
-        
-        nColuna += nColunaAux
-
-        oBdj7 := TButton():New( nLinha, nColuna,"S7",oPnl1,{ || AtvBdj(7)    },nTamanho,nTamanho,,,,.T.,,"",,,,.F. )
-        oBdj7:SetCss( "QPushButton{  background-color: #C2D6D6; border: 1px solid gray; border-radius: 3px; background-repeat: none; margin: 1px }" ) 
-        
-        nColuna += nColunaAux
-        
-        oBdj8 := TButton():New( nLinha, nColuna,"S8",oPnl1,{ || AtvBdj(8)    },nTamanho,nTamanho,,,,.T.,,"",,,,.F. )
-        oBdj8:SetCss( "QPushButton{  background-color: #C2D6D6; border: 1px solid gray; border-radius: 3px; background-repeat: none; margin: 1px }" ) 
-        
-        nLinha += nLinhaAux
-        nColuna := nColunaX
-
-        
-        oBdj9 := TButton():New( nLinha, nColuna,"S9",oPnl1,{ || AtvBdj(9)    },nTamanho,nTamanho,,,,.T.,,"",,,,.F. )
-        oBdj9:SetCss( "QPushButton{  background-color: #C2D6D6; border: 1px solid gray; border-radius: 3px; background-repeat: none; margin: 1px }" ) 
-        
-        nColuna += nColunaAux
-
-        oBdj10 := TButton():New( nLinha, nColuna,"S10",oPnl1,{ || AtvBdj(10)  },nTamanho,nTamanho,,,,.T.,,"",,,,.F. )
-        oBdj10:SetCss( "QPushButton{  background-color: #C2D6D6; border: 1px solid gray; border-radius: 3px; background-repeat: none; margin: 1px }" ) 
-        
-        nColuna += nColunaAux
-
-        oBdj11 := TButton():New( nLinha, nColuna,"S11",oPnl1,{ || AtvBdj(11)  },nTamanho,nTamanho,,,,.T.,,"",,,,.F. )
-        oBdj11:SetCss( "QPushButton{  background-color: #C2D6D6; border: 1px solid gray; border-radius: 3px; background-repeat: none; margin: 1px }" ) 
-        
-        nColuna += nColunaAux
-
-        oBdj12 := TButton():New( nLinha, nColuna,"S12",oPnl1,{ || AtvBdj(12)  },nTamanho,nTamanho,,,,.T.,,"",,,,.F. )
-        oBdj12:SetCss( "QPushButton{  background-color: #C2D6D6; border: 1px solid gray; border-radius: 3px; background-repeat: none; margin: 1px }" ) 
-        
-        nColuna += nColunaAux
-
-        oBdj13 := TButton():New( nLinha, nColuna,"S13",oPnl1,{ || AtvBdj(13)  },nTamanho,nTamanho,,,,.T.,,"",,,,.F. )
-        oBdj13:SetCss( "QPushButton{  background-color: #C2D6D6; border: 1px solid gray; border-radius: 3px; background-repeat: none; margin: 1px }" ) 
-        
-        nColuna += nColunaAux
-
-        oBdj14 := TButton():New( nLinha, nColuna,"S14",oPnl1,{ || AtvBdj(14)  },nTamanho,nTamanho,,,,.T.,,"",,,,.F. )
-        oBdj14:SetCss( "QPushButton{  background-color: #C2D6D6; border: 1px solid gray; border-radius: 3px; background-repeat: none; margin: 1px }" ) 
-        
-        nColuna += nColunaAux
-
-        oBdj15 := TButton():New( nLinha, nColuna,"S15",oPnl1,{ || AtvBdj(15)  },nTamanho,nTamanho,,,,.T.,,"",,,,.F. )
-        oBdj15:SetCss( "QPushButton{  background-color: #C2D6D6; border: 1px solid gray; border-radius: 3px; background-repeat: none; margin: 1px }" ) 
-        
-        nColuna += nColunaAux
-        
-        oBdj16 := TButton():New( nLinha, nColuna,"S16",oPnl1,{ || AtvBdj(16)  },nTamanho,nTamanho,,,,.T.,,"",,,,.F. )
-        oBdj16:SetCss( "QPushButton{  background-color: #C2D6D6; border: 1px solid gray; border-radius: 3px; background-repeat: none; margin: 1px }" ) 
-        
-        nLinha += nLinhaAux
-        nColuna := nColunaX
-
-        
-        oBdj17 := TButton():New( nLinha, nColuna,"S17",oPnl1,{ || AtvBdj(17)  },nTamanho,nTamanho,,,,.T.,,"",,,,.F. )
-        oBdj17:SetCss( "QPushButton{  background-color: #C2D6D6; border: 1px solid gray; border-radius: 3px; background-repeat: none; margin: 1px }" ) 
-        
-        nColuna += nColunaAux
-
-        oBdj18 := TButton():New( nLinha, nColuna,"S18",oPnl1,{ || AtvBdj(18)  },nTamanho,nTamanho,,,,.T.,,"",,,,.F. )
-        oBdj18:SetCss( "QPushButton{  background-color: #C2D6D6; border: 1px solid gray; border-radius: 3px; background-repeat: none; margin: 1px }" ) 
-        
-        nColuna += nColunaAux
-
-        oBdj19 := TButton():New( nLinha, nColuna,"S19",oPnl1,{ || AtvBdj(19)  },nTamanho,nTamanho,,,,.T.,,"",,,,.F. )
-        oBdj19:SetCss( "QPushButton{  background-color: #C2D6D6; border: 1px solid gray; border-radius: 3px; background-repeat: none; margin: 1px }" ) 
-        
-        nColuna += nColunaAux
-
-        oBdj20 := TButton():New( nLinha, nColuna,"S20",oPnl1,{ || AtvBdj(20)  },nTamanho,nTamanho,,,,.T.,,"",,,,.F. )
-        oBdj20:SetCss( "QPushButton{  background-color: #C2D6D6; border: 1px solid gray; border-radius: 3px; background-repeat: none; margin: 1px }" ) 
-        
-        nColuna += nColunaAux
-        
-        oBdj21 := TButton():New( nLinha, nColuna,"S21",oPnl1,{ || AtvBdj(21)  },nTamanho,nTamanho,,,,.T.,,"",,,,.F. )
-        oBdj21:SetCss( "QPushButton{  background-color: #C2D6D6; border: 1px solid gray; border-radius: 3px; background-repeat: none; margin: 1px }" ) 
-        
-        nColuna += nColunaAux
-        
-        oBdj22 := TButton():New( nLinha, nColuna,"S22",oPnl1,{ || AtvBdj(22)  },nTamanho,nTamanho,,,,.T.,,"",,,,.F. )
-        oBdj22:SetCss( "QPushButton{  background-color: #C2D6D6; border: 1px solid gray; border-radius: 3px; background-repeat: none; margin: 1px }" ) 
-        
-        nColuna += nColunaAux
-        
-        oBdj23 := TButton():New( nLinha, nColuna,"S23",oPnl1,{ || AtvBdj(23)  },nTamanho,nTamanho,,,,.T.,,"",,,,.F. )
-        oBdj23:SetCss( "QPushButton{  background-color: #C2D6D6; border: 1px solid gray; border-radius: 3px; background-repeat: none; margin: 1px }" ) 
-        
-        nColuna += nColunaAux
-        
-        oBdj24 := TButton():New( nLinha, nColuna,"S24",oPnl1,{ || AtvBdj(24)  },nTamanho,nTamanho,,,,.T.,,"",,,,.F. )
-        oBdj24:SetCss( "QPushButton{  background-color: #C2D6D6; border: 1px solid gray; border-radius: 3px; background-repeat: none; margin: 1px }" ) 
-        
-        nLinha += nLinhaAux
-        nColuna := nColunaX
-
-        
-        oBdj25 := TButton():New( nLinha, nColuna,"S25",oPnl1,{ || AtvBdj(25)  },nTamanho,nTamanho,,,,.T.,,"",,,,.F. )
-        oBdj25:SetCss( "QPushButton{  background-color: #C2D6D6; border: 1px solid gray; border-radius: 3px; background-repeat: none; margin: 1px }" ) 
-        
-        nColuna += nColunaAux
-        
-        oBdj26 := TButton():New( nLinha, nColuna,"S26",oPnl1,{ || AtvBdj(26)  },nTamanho,nTamanho,,,,.T.,,"",,,,.F. )
-        oBdj26:SetCss( "QPushButton{  background-color: #C2D6D6; border: 1px solid gray; border-radius: 3px; background-repeat: none; margin: 1px }" ) 
-        
-        nColuna += nColunaAux
-
-        oBdj27 := TButton():New( nLinha, nColuna,"S27",oPnl1,{ || AtvBdj(27)  },nTamanho,nTamanho,,,,.T.,,"",,,,.F. )
-        oBdj27:SetCss( "QPushButton{  background-color: #C2D6D6; border: 1px solid gray; border-radius: 3px; background-repeat: none; margin: 1px }" ) 
-        
-        nColuna += nColunaAux
-
-        oBdj28 := TButton():New( nLinha, nColuna,"S28",oPnl1,{ || AtvBdj(28)  },nTamanho,nTamanho,,,,.T.,,"",,,,.F. )
-        oBdj28:SetCss( "QPushButton{  background-color: #C2D6D6; border: 1px solid gray; border-radius: 3px; background-repeat: none; margin: 1px }" ) 
-        
-        nColuna += nColunaAux
-
-        oBdj29 := TButton():New( nLinha, nColuna,"S29",oPnl1,{ || AtvBdj(29)  },nTamanho,nTamanho,,,,.T.,,"",,,,.F. )
-        oBdj29:SetCss( "QPushButton{  background-color: #C2D6D6; border: 1px solid gray; border-radius: 3px; background-repeat: none; margin: 1px }" ) 
-        
-        nColuna += nColunaAux
-
-        oBdj30 := TButton():New( nLinha, nColuna,"S30",oPnl1,{ || AtvBdj(30)  },nTamanho,nTamanho,,,,.T.,,"",,,,.F. )
-        oBdj30:SetCss( "QPushButton{  background-color: #C2D6D6; border: 1px solid gray; border-radius: 3px; background-repeat: none; margin: 1px }" ) 
-        
-        nColuna += nColunaAux
-
-        oBdj31 := TButton():New( nLinha, nColuna,"S31",oPnl1,{ || AtvBdj(31)  },nTamanho,nTamanho,,,,.T.,,"",,,,.F. )
-        oBdj31:SetCss( "QPushButton{  background-color: #C2D6D6; border: 1px solid gray; border-radius: 3px; background-repeat: none; margin: 1px }" ) 
-        
-        nColuna += nColunaAux
-
-        oBdj32 := TButton():New( nLinha, nColuna,"S32",oPnl1,{ || AtvBdj(32)  },nTamanho,nTamanho,,,,.T.,,"",,,,.F. )
-        oBdj32:SetCss( "QPushButton{  background-color: #C2D6D6; border: 1px solid gray; border-radius: 3px; background-repeat: none; margin: 1px }" ) 
-        
-        nLinha += nLinhaAux
-        nColuna := nColunaX
-
-        
-        oBdj33 := TButton():New( nLinha, nColuna,"S33",oPnl1,{ || AtvBdj(33)  },nTamanho,nTamanho,,,,.T.,,"",,,,.F. )
-        oBdj33:SetCss( "QPushButton{  background-color: #C2D6D6; border: 1px solid gray; border-radius: 3px; background-repeat: none; margin: 1px }" ) 
-        
-        nColuna += nColunaAux
-
-        oBdj34 := TButton():New( nLinha, nColuna,"S34",oPnl1,{ || AtvBdj(34)  },nTamanho,nTamanho,,,,.T.,,"",,,,.F. )
-        oBdj34:SetCss( "QPushButton{  background-color: #C2D6D6; border: 1px solid gray; border-radius: 3px; background-repeat: none; margin: 1px }" ) 
-        
-        nColuna += nColunaAux
-
-        oBdj35 := TButton():New( nLinha, nColuna,"S35",oPnl1,{ || AtvBdj(35)  },nTamanho,nTamanho,,,,.T.,,"",,,,.F. )
-        oBdj35:SetCss( "QPushButton{  background-color: #C2D6D6; border: 1px solid gray; border-radius: 3px; background-repeat: none; margin: 1px }" ) 
-        
-        nColuna += nColunaAux
-
-        oBdj36 := TButton():New( nLinha, nColuna,"S36",oPnl1,{ || AtvBdj(36)  },nTamanho,nTamanho,,,,.T.,,"",,,,.F. )
-        oBdj36:SetCss( "QPushButton{  background-color: #C2D6D6; border: 1px solid gray; border-radius: 3px; background-repeat: none; margin: 1px }" ) 
-        
-        nColuna += nColunaAux
-
-        oBdj37 := TButton():New( nLinha, nColuna,"S37",oPnl1,{ || AtvBdj(37)  },nTamanho,nTamanho,,,,.T.,,"",,,,.F. )
-        oBdj37:SetCss( "QPushButton{  background-color: #C2D6D6; border: 1px solid gray; border-radius: 3px; background-repeat: none; margin: 1px }" ) 
-        
-        nColuna += nColunaAux
-
-        oBdj38 := TButton():New( nLinha, nColuna,"S38",oPnl1,{ || AtvBdj(38)  },nTamanho,nTamanho,,,,.T.,,"",,,,.F. )
-        oBdj38:SetCss( "QPushButton{  background-color: #C2D6D6; border: 1px solid gray; border-radius: 3px; background-repeat: none; margin: 1px }" ) 
-        
-        nColuna += nColunaAux
-
-        oBdj39 := TButton():New( nLinha, nColuna,"S39",oPnl1,{ || AtvBdj(39)  },nTamanho,nTamanho,,,,.T.,,"",,,,.F. )
-        oBdj39:SetCss( "QPushButton{  background-color: #C2D6D6; border: 1px solid gray; border-radius: 3px; background-repeat: none; margin: 1px }" ) 
-        
-        nColuna += nColunaAux
-        
-        oBdj40 := TButton():New( nLinha, nColuna,"S40",oPnl1,{ || AtvBdj(40)  },nTamanho,nTamanho,,,,.T.,,"",,,,.F. )
-        oBdj40:SetCss( "QPushButton{  background-color: #C2D6D6; border: 1px solid gray; border-radius: 3px; background-repeat: none; margin: 1px }" ) 
-    
+        Next nCont 
 
     // D:\Protheus11\Protheus_Data\_mobile\data\data_img      
-    oMsGD := MsNewGetDados():New(0,0,0,0,nOpcGD,'STATICCALL( Z07Tela, LinOk )','STATICCALL( Z07Tela, TudoOk )','',aAlter,0,100,'STATICCALL( Z07Tela,AltCpo )','','AllwaysTrue()',oPnl2,aHeader,aCols, { || fChange() })
-       oMsGD:oBrowse:Align    := CONTROL_ALIGN_ALLCLIENT
-       
-        If nOpc <> 3
-            Carrega()   
-        EndIf
-
-    oMsGD:Refresh(.T.)     
-    oMsGD:GoTop()
-    oMsGd:Disable()
-     
+    //oMsGD := MsNewGetDados():New(0,0,0,0,nOpcGD,'STATICCALL( Z07Tela, LinOk )','STATICCALL( Z07Tela, TudoOk )','',aAlter,0,100,'STATICCALL( Z07Tela,AltCpo )','','AllwaysTrue()',oPnl2,aHeader,aCols, { || fChange() })
+    //   oMsGD:oBrowse:Align    := CONTROL_ALIGN_ALLCLIENT
+    oPlCp            := TCBrowse():New(100,260,480,205,, {'','Ativo','Modelo','Cliente','Nome Fantasia'},{10,30,40,50,50},;
+                                oWindow,,,,{|| },{|| },, ,,,  ,,.F.,,.T.,,.F.,,,)
+    oPlCp:SetArray(aCols)
+    oPlCp:bLine := {||{ aCols[oPlCp:nAt,01],; 
+                        Alltrim(aCols[oPlCp:nAt,02])}}   
+    If nOpc <> 3
+        Carrega()   
+    EndIf
+   
 oWindow:Activate(,,,.T.,/*aButtons*/,,EnchoiceBar(oWindow,{ || fChange(),IIF(oMsGD:tudoOk(),lOk := Gravar(nOpc),), IIF(lOk, oWindow:End() ,)    },{ || oWindow:End(),,aButtons,,,.F.,.F.,.F.} )) 
 
 Return 
@@ -492,11 +312,11 @@ Static Function AtvBdj(nPos)
 Local nI
 
 // salva o que esta na bandeja ativa
-For nI := 1 To Len(_aBandeja)
+/*For nI := 1 To Len(_aBandeja)
     If _aBandeja[nI][3]
         _aBandeja[nI][4] := aclone( oMsGd:acols )
     EndIf
-Next nI
+Next nI*/
 
 // muda status bandeja
 For nI := 1 To Len(_aBandeja)
@@ -516,25 +336,32 @@ If !Empty(_aBandeja[nPos][4])
 EndIf
 
 If Empty(aCols)
-    oMsGD:aCols := {}
+    //oMsGD:aCols := {}
 
     AAdd(aCols, Array(Len(aHeader)+1))
     nLin := Len(aCols) 
-    //aCols[nLin][1] := Space(TamSX3("Z07_BANDEJA")[1])
-    aCols[nLin][1] := Space(TamSX3("Z07_MOLA")[1])
-    aCols[nLin][2] := Space(TamSX3("Z07_TIPOMOL")[1])
-    aCols[nLin][3] := 0//Space(TamSX3("Z07_QUANT")[1])
-    aCols[nLin][4] := Space(TamSX3("Z07_CODPROD")[1])
-    aCols[nLin][5] := Space(TamSX3("B1_DESC")[1])
-    aCols[nLin][6] := Space(TamSx3("BM_DESC")[1])
+    aCols[nLin][1] := Space(TamSX3("Z07_SELECA")[1])
+    aCols[nLin][2] := Space(TamSX3("Z07_CODPROD")[1])
+    aCols[nLin][3] := Space(TamSX3("B1_DESC")[1])
+    aCols[nLin][4] := 0//Space(TamSX3("Z07_QUANT")[1])
+    aCols[nLin][5] := 0//Space(TamSX3("Z07_QUANT")[1])
+    //aCols[nLin][6] := Space(TamSx3("BM_DESC")[1])
     
-    aCols[nLin][Len(aHeader)+1] := .F.    
-EndIf
+    aCols[nLin][Len(aHeader)+1] := .F.  
 
+    If valtype("oPlCp") == "O"
+        oPlCp:SetArray(aCols)
+        oPlCp:bLine := {||{ aCols[oPlCp:nAt,01],; 
+                            Alltrim(aCols[oPlCp:nAt,02])}}   
+        oPlCp:refresh()
+        oWindows:refresh() 
+    EndIf 
+EndIf
+/*
 oMsGD:SetArray( aCols )
 oMsGD:Refresh()     
 oMsGd:Enable()                            
-
+*/
 Return
        
 
