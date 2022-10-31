@@ -137,6 +137,60 @@ WsMethod GET WsReceive CODIGO,COD_CLIENTE,LOJA_CLIENTE,NOTA WsService FieldServi
 		Dbskip()
 	EndDo
 
+	cQuery := "SELECT Z53_DOC,Z53_SERIE,Z53_QUANT,Z53_PRCVEN,Z53_CF,Z53_FILIAL,Z53_EMISSAO,Z53_COD,Z53_ITEM,"
+	cQuery += " ' ' AS X5_DESCRI,Z53_BASEICM,Z53_VALICM,Z53_VALIPI,Z52_CHVNFE,M0_NOMECOM,"
+	cQuery += " M0_ENDENT,M0_COMPENT,M0_BAIRENT,M0_CIDENT,M0_ESTENT,M0_CGC,M0_INSC"
+	cQuery += " FROM "+RetSQLName("Z53")+" Z53"
+	cQuery += " INNER JOIN "+RetSQLName("Z52")+" Z52 ON Z52_FILIAL=Z53_FILIAL"
+	cQuery += "    AND Z52_DOC=Z53_DOC AND Z52_SERIE=Z53_SERIE AND Z52_CLIENT=Z53_CLIENTE"
+	cQuery += "    AND Z52_LOJA=Z53_LOJA AND Z52.D_E_L_E_T_=' '"
+	cQuery += " INNER JOIN "+RetSQLName("SX5")+" X5 ON X5_FILIAL='"+xFilial("SX5")+"'"
+	cQuery += "    AND X5_TABELA='13' AND X5_CHAVE=Z53_CF AND X5.D_E_L_E_T_=' '"
+	cQuery += " INNER JOIN SYS_COMPANY M0 ON M0_CODIGO='01' AND M0_CODFIL=Z53_FILIAL AND M0.D_E_L_E_T_=' '"
+	cQuery += " WHERE Z53_FILIAL BETWEEN ' ' AND 'ZZ'"
+	cQuery += " AND Z53_COD='"+cCode+"'"
+	cQuery += " AND Z53_CLIENTE='"+cCliente+"' AND Z53_LOJA='"+cLojCli+"'"
+	If !Empty(cNota)
+		cQuery += " AND Z53_DOC='"+cNota+"'"
+	EndIf
+
+	cQuery += " AND Z53.D_E_L_E_T_=' '"
+
+	CONOUT(cQuery)
+
+	If Select('TRB') > 0
+		dbSelectArea('TRB')
+		dbCloseArea()
+	EndIf
+
+	DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
+
+	DbSelectArea("TRB")
+
+	While !EOF()
+		Aadd(aAux,{ TRB->Z53_DOC,;
+					TRB->Z53_EMISSAO,;
+					TRB->Z53_SERIE,;
+					TRB->Z53_QUANT,;
+					TRB->Z53_PRCVEN,;
+					TRB->Z53_CF+"-"+Alltrim(TRB->X5_DESCRI),;
+					TRB->Z53_BASEICM,;
+					TRB->Z53_VALICM,;
+					TRB->Z53_VALIPI,;
+					TRB->Z52_CHVNFE,;
+					Alltrim(TRB->M0_NOMECOM),;
+					Alltrim(TRB->M0_ENDENT)+', '+Alltrim(TRB->M0_COMPENT),;
+					Alltrim(TRB->M0_BAIRENT),;
+					Alltrim(TRB->M0_CIDENT),;
+					TRB->M0_ESTENT,;
+					TRB->M0_CGC,;
+					TRB->M0_INSC,;
+					TRB->Z53_FILIAL,;
+					TRB->Z53_COD,;
+					TRB->Z53_ITEM})
+		Dbskip()
+	EndDo
+	
 	Asort(aAux,,,{|x,y| x[1] < y[1]})
 
 	For nCont := 1 to len(aAux)

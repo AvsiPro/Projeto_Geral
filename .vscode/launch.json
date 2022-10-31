@@ -15,7 +15,10 @@
 	"lastPrograms": [
 		{
 			"label": "sigaadv"
+		},
+		{
+			"label": "U_TTXML02"
 		}
 	],
-	"lastProgramExecuted": "sigaadv"
+	"lastProgramExecuted": "U_TTXML02"
 }
