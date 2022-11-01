@@ -52,7 +52,7 @@ export async function getClientByCNPJ(cnpj) {
 
 export default function SaleCli({route,navigation}){
 
-    const {setCli,dataUser} = useContext(CartContext)
+    const {setCli,dataUser,copyPedido} = useContext(CartContext)
 
     const { nameSec,data,filter,dataBack } = route.params;
 
@@ -313,7 +313,7 @@ export default function SaleCli({route,navigation}){
         >
             <View style={styles.container}>
                 <View style={styles.headerSales}>  
-                    <TouchableOpacity onPress={()=>{navigation.navigate('Detail',{
+                    <TouchableOpacity onPress={()=>{copyPedido([]),navigation.navigate('Detail',{
                         nameSec:dataBack[0],
                         data:dataBack[1],
                         filter:dataBack[3],

@@ -13,7 +13,6 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import {decode, encode} from 'base-64'
 import api from '../../services/api'
-
 import {CartContext} from '../../Contexts/cart'
 
 import styles from './styles';

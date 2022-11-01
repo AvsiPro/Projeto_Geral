@@ -32,6 +32,7 @@ WsRestFul Products DESCRIPTION "API REST - EVENTO PRODUTOS | PORTAL ROBSOL "
 	WSDATA COR As String
 	WSDATA FORMATO As String
 	WSDATA VENDEDOR As String
+	WSDATA SALDO As String
 	 	
 	//WsMethod POST Description "API REST - EVENTO PRODUTOS - METODO POST "  WsSyntax "PRTL010"
 	WsMethod GET Description "Retorna o Produto especifico ou cadastro todo" WSSYNTAX "/Products || /Products/{CODIGO} || /Products/{CODIGOPAGE}" 
@@ -50,7 +51,7 @@ Descricao: 	Serviço Rest contendo o Metodo POST do evento de
 
 /*/
 //-------------------------------------------------------------------
-WsMethod GET WsReceive CODIGO,PAGE,pageSize,DESCRICAO,MARCA,GENERO,LINHA,MATERIAL,COR,FORMATO,VENDEDOR WsService Products
+WsMethod GET WsReceive CODIGO,PAGE,pageSize,DESCRICAO,MARCA,GENERO,LINHA,MATERIAL,COR,FORMATO,VENDEDOR,SALDO WsService Products
 
 	Local cCode 	:= Self:CODIGO
 	Local cPage		:= Self:PAGE
@@ -63,6 +64,7 @@ WsMethod GET WsReceive CODIGO,PAGE,pageSize,DESCRICAO,MARCA,GENERO,LINHA,MATERIA
 	Local cCor		:= Self:COR
 	Local cFormato	:= Self:FORMATO
 	Local cVendedor := Self:VENDEDOR
+	Local cSaldo    := Self:SALDO
 
 	Local aArea		:= GetArea()
 	Local cVirg		:= ''
@@ -220,28 +222,29 @@ WsMethod GET WsReceive CODIGO,PAGE,pageSize,DESCRICAO,MARCA,GENERO,LINHA,MATERIA
 
 		DbSelectArea("TRB")
 
+		If cSaldo == '2' //Somente Disponiveis
+			cSaldoAux := 'Disponivel'
+		ElseIf cSaldo == '3' //Somente Indisponiveis
+			cSaldoAux := 'Indisponivel'
+		Else //todos
+			cSaldoAux := 'Todos'
+		EndIf
+
 		While !EOF()
 
-			//Else
 			nTextSld := ''
-			//conout('Filial '+TRB->B2_FILIAL +" Saldo "+cvaltochar(TRB->SALDO)+" Armazem "+TRB->B2_LOCAL)
-			
-			/*If TRB->SALDO > 10
-				nTextSld := 'Disponivel'
-			Else
-				nTextSld := If(TRB->SALDO>0,Cvaltochar(TRB->SALDO),'Indisponivel')
-			EndIf*/
-			
 			nTextSld := If(TRB->SALDO >= 10,'Disponivel','Indisponivel')
-
-				Aadd(aAux,{	TRB->B1_COD,Alltrim(TRB->B1_DESC)+' / Saldo '+nTextSld,TRB->Z03_DESGRI,;
-							TRB->Z04_DESGEN,TRB->Z05_DESLIN,;
-							TRB->Z06_DESMAT,TRB->B1_XCORES,;
-							TRB->B1_XFORMAT,0,;
-							cUrlPrd+Alltrim(TRB->B1_COD)+'.JPG',;
-							nTextSld,TRB->RECB1})
-							//TRB->B1_XURLIMG})
-			//ENDIF
+			
+			If cSaldoAux == 'Todos' .Or. cSaldoAux == nTextSld
+				Aadd(aAux,{;
+					TRB->B1_COD,Alltrim(TRB->B1_DESC)+' / Saldo '+nTextSld,TRB->Z03_DESGRI,;
+					TRB->Z04_DESGEN,TRB->Z05_DESLIN,;
+					TRB->Z06_DESMAT,TRB->B1_XCORES,;
+					TRB->B1_XFORMAT,0,;
+					cUrlPrd+Alltrim(TRB->B1_COD)+'.JPG',;
+					nTextSld,TRB->RECB1;
+				})
+			EndIf
 			Dbskip()
 		ENDDO
 

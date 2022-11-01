@@ -1,4 +1,4 @@
-import React,{useState, useContext, useEffect} from 'react';
+import React,{useState, useContext, useEffect, useCallback} from 'react';
 import {
     SafeAreaView,
     View,
@@ -11,6 +11,10 @@ import {
     ActivityIndicator,
     Alert
 } from 'react-native';
+
+import {useForm, Controller} from 'react-hook-form'
+
+import DropDownPicker from "react-native-dropdown-picker";
 
 import { RadioButton } from 'react-native-paper';
 
@@ -40,18 +44,39 @@ if (!global.atob) { global.atob = decode }
 
 export default function SalePrd({route,navigation}){
 
-    const { addCart,cart,totalCart,vlrTotalCart,quantCart,qtdTotalCart,dataUser,descontoCart,desconto } = useContext(CartContext)
+    const { 
+        addCart,
+        cart,
+        totalCart,
+        vlrTotalCart,
+        quantCart,
+        qtdTotalCart,
+        dataUser,
+        descontoCart,
+        desconto,
+        copyPedido,
+        copy
+    } = useContext(CartContext)
 
-    const { nameSec,data,filter,dataBack,continuaP,ItensContinua } = route.params;
+    const { 
+        nameSec,
+        data,
+        filter,
+        dataBack,
+        continuaP,
+        ItensContinua 
+    } = route.params;
 
     const [visibleCart, setVisibleCart] = useState(false);
     const [searchText, setSearchText] = useState('');
     const [searchT,setSearchT] = useState(false);
+    const [searchFilter,setSearchFilter] = useState(false);
     const [listSearch,setListSearch] = useState([]);
     const [list, setList] = useState(data);
     const [page, setPage] = useState(2);
     const [checked, setChecked] = useState(filter);
     const [load, setLoad] = useState(false);
+    const [loadFilter, setLoadFilter] = useState(false);
     const [selectBenef, setSelectBenef] = useState(false);
 
     const [visibleFilter, setVisibleFilter] = useState(false);
@@ -61,10 +86,24 @@ export default function SalePrd({route,navigation}){
     const [hasPermission, setHasPermission] = useState(null);
     const [scanned, setScanned] = useState(false);
     const [textScan, setTextScan] = useState('');
+    const [selectItems, setSelectItems] = useState([])
 
     const authBasic = 'YWRtaW46QVZTSTIwMjI';
 
-    useEffect(()=> {askForCameraPermission()},[])
+
+    const [genderOpen, setGenderOpen] = useState(false);
+    const [genderValue, setGenderValue] = useState('1');
+    const [gender, setGender] = useState([
+      { label: "Todos (Padrão)", value: "1" },
+      { label: "Somente Disponíveis", value: "2" },
+      { label: "Somente Indisponíveis", value: "3" },
+    ]);
+
+    const { control } = useForm();
+
+    
+
+    useEffect(()=> {askForCameraPermission(), loadCopyProd()},[])
     
     const askForCameraPermission = () =>{
         (async () =>{
@@ -72,6 +111,34 @@ export default function SalePrd({route,navigation}){
             setHasPermission(status == 'granted')
         })()
     };
+
+
+    const loadCopyProd = () =>{
+        if(copy.length > 0){
+            const copyCart = [];
+            let sumall = 0
+            let sumQtd = 0
+
+            copy.map((item) =>{
+                copyCart.push({
+                    id: parseInt(item.id),
+                    QUANTIDADE: parseInt(item.quantidade),
+                    PRODUTO: item.codigo.trim(),
+                    DESCRICAO: item.descricao.trim(), 
+                    VALOR: item.valor_unit.trim(),
+                    TOTAL: item.valor_total.trim(),
+                    BENEF: 'N'
+                });
+                
+                sumall = sumall + (parseInt(item.quantidade) * parseFloat(item.valor_unit.trim().replace(',', '.')))
+                sumQtd = sumQtd + parseInt(item.quantidade)
+            })
+
+            totalCart(sumall)
+            quantCart(sumQtd)
+            addCart(copyCart)
+        }
+    }
 
     const handleBarCodeScanned = async({type, data}) =>{
 
@@ -116,13 +183,9 @@ export default function SalePrd({route,navigation}){
     };
 
 
-    function buttomSearch(option){
-        if(searchT){ loadSec() } else { searchSec(option) }
-
-        Keyboard.dismiss()
-    };
-
     const loadSec = async() =>{
+        Keyboard.dismiss()
+
         if (searchT){
             setList(data)
             setSearchT(false)
@@ -155,10 +218,11 @@ export default function SalePrd({route,navigation}){
         return Object.values(newList)
     }
     
-    const searchSec = async(option) =>{
-        if (searchText==='') return;
+    const searchSec = async(option,lSaveFilter) =>{
+        if (searchText==='' && !lSaveFilter) return;
 
-        setListSearch([])
+        Keyboard.dismiss()
+        //setListSearch([])
         setList(data)
 
         let params = {
@@ -167,6 +231,7 @@ export default function SalePrd({route,navigation}){
             'ORIGEMAPP': "S",
             'page': 1,
             'pageSize': 2000,
+            'saldo': genderValue
         };
 
         let opt_new = option.split(":");
@@ -197,7 +262,8 @@ export default function SalePrd({route,navigation}){
         let aResult = [];
 
         try{
-            setLoad(true)
+            lSaveFilter ? setLoadFilter(true) : setLoad(true)
+
             const response = await api.get(`/${nameSec}/`,{headers: params})
             if(_.has(response.data,"Erro")){
                 aResult = [];
@@ -216,11 +282,66 @@ export default function SalePrd({route,navigation}){
         }
         
         setListSearch(aResult)
-        setSearchT(true)
-        setLoad(false)
+
+        if(lSaveFilter){
+            setLoadFilter(false)
+            setVisibleFilter(false)
+            setSearchFilter(true)
+        }else{
+            setLoad(false)
+            setSearchT(true)
+        }
+        
     };
 
-    function addProductToCart(item,initial,benef){
+
+
+    const closePesq = async() =>{
+
+        Keyboard.dismiss()
+
+        let params = {
+            'Authorization': 'Basic '+authBasic,
+            'VENDEDOR': dataUser.cod_vendedor,
+            'ORIGEMAPP': "S",
+            'page': 1,
+            'pageSize': 2000,
+            'saldo': genderValue
+        };
+
+        let aResult = [];
+
+        try{
+            setLoad(true)
+
+            const response = await api.get(`/${nameSec}/`,{headers: params})
+            if(_.has(response.data,"Erro")){
+                aResult = [];
+            }else{
+                if(response.data.items){
+                    response.data["items"].forEach((element, index) => {
+                      aResult.push({index: index, ...element});
+                    });
+                  }else{
+                    aResult.push(response.data);
+                }
+            }
+            
+        }catch(error){
+            console.log(error)
+        }
+
+        
+        setListSearch(aResult)
+        setLoad(false)
+        setSearchT(false)
+        setSearchText('')
+        
+        
+    };
+
+
+    function  addProductToCart(item,initial,benef){
 
         if(initial){setVisibleCart(true)}
         
@@ -228,9 +349,8 @@ export default function SalePrd({route,navigation}){
 
         const copyCart = [...cart];
         const result = copyCart.find((product) => product.id === parseInt(item.id));
-
+    
         if(!result){
-
             vlrTotal = parseFloat(item.preco.trim().replace(',', '.'))
 
             copyCart.push({
@@ -321,6 +441,7 @@ export default function SalePrd({route,navigation}){
 
     function clearCart(){
         addCart([])
+        copyPedido([])
         totalCart(0)
         quantCart(0)
         descontoCart('')
@@ -331,6 +452,8 @@ export default function SalePrd({route,navigation}){
     function backCart(retorna){
 
         if(retorna){
+
+            copyPedido([])
 
             if(!continuaP){
                 addCart([])
@@ -416,6 +539,67 @@ export default function SalePrd({route,navigation}){
     };
 
 
+    const multiplePrd = (produto) =>{
+        if(produto.saldo.trim() !== 'Indisponivel'){
+            if(selectItems.includes(produto)){
+                const newListItem = selectItems.filter(idProd => idProd.id !== produto.id)
+                return setSelectItems(newListItem)
+            }
+
+            setSelectItems([...selectItems, produto])
+        }else{
+            if(selectItems.length > 0){
+                alert('Não é possível selecionar um item indisponível')
+            }
+        }
+    }
+
+    const getSelected = (produto) => selectItems.includes(produto)
+
+
+    const adicionaItens = () => {
+        let vlrTotal = 0
+        let sumQtd = 0
+        let sumall = 0
+
+        const copyCart = [...cart]
+
+        selectItems.forEach((item) =>{
+
+            const result = copyCart.find((product) => product.id === parseInt(item.id))
+
+            if(!result){
+                vlrTotal = parseFloat(item.preco.trim().replace(',', '.'))
+
+                copyCart.push({
+                    id: parseInt(item.id),
+                    QUANTIDADE: 1,
+                    PRODUTO: item.codigo.trim(),
+                    DESCRICAO: item.descricao.trim(), 
+                    VALOR: item.preco.trim(),
+                    TOTAL: vlrTotal,
+                    BENEF: 'N'
+                });
+
+                sumQtd++
+                sumall = sumall + vlrTotal
+
+            }else {
+                sumQtd++
+                sumall = sumall + parseFloat(item.preco.trim().replace(',', '.'))
+
+                result.QUANTIDADE = result.QUANTIDADE + 1;
+                result.TOTAL = parseFloat(item.preco.trim().replace(',', '.')) * result.QUANTIDADE;
+            }
+        })
+
+        totalCart(vlrTotalCart + sumall)
+        quantCart(qtdTotalCart + sumQtd)
+        addCart(copyCart)
+        setVisibleCart(true)
+    }
+
+
     return( 
         <>
         <SafeAreaView edges={["top"]} style={{ flex: 0, backgroundColor: "#175A93" }}/>
@@ -432,43 +616,101 @@ export default function SalePrd({route,navigation}){
                     <Text style={{fontSize:24,fontWeight:'bold', color:'#fff'}}>Selecione o Produto</Text>
                 </View> 
 
-                <View style={styles.containerInput}>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Pesquisar..."
-                        placeholderTextColor="#888"
-                        value={searchText}
-                        onChangeText={(t) => setSearchText(t)}
-                    />
-
-                    {load ? 
-                        <View style={{flex:1,flexDirection:'row',top:5,right:30}}>
-                            <ActivityIndicator color={'#000000'} size={30}/>
-                        </View>
-                        :
-                        <TouchableOpacity style={{right:30}} onPress={()=>{buttomSearch(`${checked}:${searchText}`)}}>
-                            <Ionicons name={searchT?"close":"search"} size={32} color='#175A93' />
+                <View style={{
+                    flexDirection:'row',
+                    justifyContent:'space-between',
+                    alignItems:'center',
+                    width:'88%'
+            }}>
+                    {
+                        searchT &&
+                        <TouchableOpacity onPress={()=>{closePesq()}}>
+                            <Ionicons name={"close"} size={24} color='tomato' />
                         </TouchableOpacity>
                     }
+                    <View style={styles.containerInput}>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Pesquisar..."
+                            placeholderTextColor="#888"
+                            value={searchText}
+                            onChangeText={(t) => setSearchText(t)}
+                        />
+
+                        {load ? 
+                            <View style={{flex:1,flexDirection:'row'}}>
+                                <ActivityIndicator color={'#000000'} size={30}/>
+                            </View>
+                            : 
+                            
+                            <View style={{flexDirection:'row',alignItems:'center'}}>
+                                
+                                <TouchableOpacity  onPress={()=>{searchSec(`${checked}:${searchText}`,false)}}>
+                                   <Ionicons name={"search"} size={32} color='#175A93' />
+                                </TouchableOpacity>
+                            </View>
+                        
+                        }
+
+                    </View>
 
                     <TouchableOpacity onPress={() => { setVisibleFilter(true) }}>
                         <Image 
-                            style={{resizeMode:'contain', width:30}}
+                            style={{resizeMode:'contain', width:20,height:30,paddingHorizontal:30, bottom:5}}
                             source={checked==''?typeIcons[4]:typeIcons[5]}
                         />
                     </TouchableOpacity>
                 </View>
+                    
+                { selectItems.length > 0 &&
+                    <View style={{
+                        width:'90%',
+                        flexDirection:'row',
+                        justifyContent:'space-between',
+                        alignItems:'center',
+                        marginBottom:20
+                    }}>
+                        
+                        <TouchableOpacity onPress={() => setSelectItems([])} style={{borderWidth:2,borderRadius:10,paddingVertical:4,paddingHorizontal:8,flexDirection:'row',justifyContent:'center',alignItems:'center'}}>
+                            <FontAwesome name="close" size={24} color="black" />
+                            <Text style={{fontWeight:'bold',fontSize:18,top:1}}>  {selectItems.length}</Text>
+                        </TouchableOpacity>
 
+                        <TouchableOpacity
+                            style={styles.buttonAddInitial} 
+                            onPress={()=> adicionaItens()}
+                        >
+                            <Text style={styles.txtAddInitial}>Adicionar Itens</Text>
+                        </TouchableOpacity>
+                    </View>
+                }
+                
                 <FlatList
-                    data={searchT 
+                    data={searchT || searchFilter
                         ? Array.from(listSearch).sort((a, b) => b.id.localeCompare(a.id))
                         : Array.from(list).sort((a, b) => b.id.localeCompare(a.id))
                     }
                     style={{width:'100%'}}
-                    renderItem={({item})=> 
-                        <View style={styles.cardP} > 
+                    renderItem={({item})=>
+                        <TouchableOpacity
+                            onLongPress={() => {multiplePrd(item)}}
+                            onPress={()=>{ selectItems.length > 0 && multiplePrd(item) }}
+                            style={item.saldo.trim() === 'Indisponivel' ? styles.cardPInd : styles.cardP} 
+                        >
                             <View style={{flexDirection:'row',justifyContent:'space-between'}}>
-                                <Text style={styles.cardTitleP}>{item.codigo.trim()}</Text>
+                                <View style={{flexDirection:'row'}}>
+                                    { item.saldo.trim() !== 'Indisponivel' && selectItems.length > 0 &&
+                                    <>
+                                    { getSelected(item)
+                                        ? 
+                                        <FontAwesome style={{marginRight:10}} name="check-square-o" size={24} color="green" />
+                                        :
+                                        <FontAwesome style={{marginRight:10}} name="square-o" size={24} color="black" />
+                                    }
+                                    </>
+                                    }
+                                    <Text style={styles.cardTitleP}>{item.codigo.trim()}</Text>
+                                </View>
 
                                 <Ionicons
                                     name={item.genero.trim()==='Masculino'?"male":"female"} 
@@ -478,7 +720,7 @@ export default function SalePrd({route,navigation}){
                             </View>
 
                             <Text style={styles.cardDescP}>{item.descricao.trim().substr(0,35)}</Text>
-                           
+                        
                             <View style={{flexDirection:'row',justifyContent:'space-between'}}>
                                 <View>
                                     <Text style={styles.cardSubTitleP}>{'R$ '+item.preco.trim()}</Text>
@@ -491,35 +733,37 @@ export default function SalePrd({route,navigation}){
                                 </View>
                             </View>
 
-                            <View style={{
-                                flexDirection:'row',
-                                justifyContent:'center',
-                                marginTop:20,
-                            }}>
-                                <TouchableOpacity 
-                                    style={styles.buttonAddInitial} 
-                                    onPress={()=>{addProductToCart(item, true, false)}}
-                                >
-                                    <Text style={styles.txtAddInitial}>Adicionar +</Text>
-                                </TouchableOpacity>
-
-                                { !selectBenef && verifyBenef(item,cart) &&
+                            { item.saldo.trim() !== 'Indisponivel' && selectItems.length === 0 &&
+                                <View style={{
+                                    flexDirection:'row',
+                                    justifyContent:'center',
+                                    marginTop:20,
+                                }}>
                                     <TouchableOpacity 
-                                    style={{
-                                        width: 40,
-                                        height: 40,
-                                        borderRadius: 40/2,
-                                        backgroundColor:'#F4C619',
-                                        alignItems:'center',
-                                        justifyContent:'center',
-                                        marginHorizontal:10
-                                      }} 
-                                    onPress={()=>{addProductToCart(item, true, true)}}
-                                >
-                                    <FontAwesome name="bold" size={20} color="black" />
-                                </TouchableOpacity>}
-                            </View>
-                        </View>
+                                        style={styles.buttonAddInitial} 
+                                        onPress={()=>{addProductToCart(item, true, false)}}
+                                    >
+                                        <Text style={styles.txtAddInitial}>Adicionar +</Text>
+                                    </TouchableOpacity>
+
+                                    { !selectBenef && verifyBenef(item,cart) &&
+                                        <TouchableOpacity 
+                                        style={{
+                                            width: 40,
+                                            height: 40,
+                                            borderRadius: 40/2, 
+                                            backgroundColor:'#F4C619',
+                                            alignItems:'center',
+                                            justifyContent:'center',
+                                            marginHorizontal:10
+                                        }} 
+                                        onPress={()=>{addProductToCart(item, true, true)}}
+                                    >
+                                        <FontAwesome name="bold" size={20} color="black" />
+                                    </TouchableOpacity>}
+                                </View>
+                            }
+                        </TouchableOpacity>
                     }
 
                     onEndReached={!searchT&&loadSec}
@@ -559,62 +803,110 @@ export default function SalePrd({route,navigation}){
                         </TouchableOpacity>
                     </View>
                 </View>
-            
-                <View style={{flexDirection:'row',justifyContent:'space-between',marginHorizontal:7}}>
-                    <View style={{marginVertical:20}}>
-                        <View style={{flexDirection:'row',alignItems:'center'}}>
-                            <RadioButton
-                                value="CODIGO"
-                                status={ checked === 'CODIGO' ? 'checked' : 'unchecked' }
-                                onPress={() => {setChecked('CODIGO');setVisibleFilter(false)}}
-                            />
-                            <Text>Código</Text>
+                
+                <View>
+                    <View style={{flexDirection:'row',justifyContent:'space-between',marginHorizontal:7}}>
+                        <View style={{marginVertical:20}}>
+                            <View style={{flexDirection:'row',alignItems:'center'}}>
+                                <RadioButton
+                                    value="CODIGO"
+                                    status={ checked === 'CODIGO' ? 'checked' : 'unchecked' }
+                                    onPress={() => {setChecked('CODIGO')}}
+                                />
+                                <Text>Código</Text>
+                            </View>
+                            <View style={{flexDirection:'row',alignItems:'center'}}>
+                                <RadioButton
+                                    value="DESCRICAO"
+                                    status={ checked === 'DESCRICAO' ? 'checked' : 'unchecked' }
+                                    onPress={() => {setChecked('DESCRICAO')}}
+                                />
+                                <Text>Descrição</Text>
+                            </View>
+                            <View style={{flexDirection:'row',alignItems:'center'}}>
+                                <RadioButton
+                                    value="LINHA"
+                                    color='#000'
+                                    status={ checked === 'LINHA' ? 'checked' : 'unchecked' }
+                                    onPress={() => {setChecked('LINHA')}}
+                                />
+                                <Text>Linha</Text>
+                            </View>
                         </View>
-                        <View style={{flexDirection:'row',alignItems:'center'}}>
-                            <RadioButton
-                                value="DESCRICAO"
-                                status={ checked === 'DESCRICAO' ? 'checked' : 'unchecked' }
-                                onPress={() => {setChecked('DESCRICAO');setVisibleFilter(false)}}
-                            />
-                            <Text>Descrição</Text>
-                        </View>
-                        <View style={{flexDirection:'row',alignItems:'center'}}>
-                            <RadioButton
-                                value="LINHA"
-                                color='#000'
-                                status={ checked === 'LINHA' ? 'checked' : 'unchecked' }
-                                onPress={() => {setChecked('LINHA');setVisibleFilter(false)}}
-                            />
-                            <Text>Linha</Text>
+
+                        <View style={{marginVertical:20}}>
+                            <View style={{flexDirection:'row',alignItems:'center'}}>
+                                <RadioButton
+                                    value="MARCA"
+                                    status={ checked === 'MARCA' ? 'checked' : 'unchecked' }
+                                    onPress={() => {setChecked('MARCA')}}
+                                />
+                                <Text>Marca</Text>
+                            </View>
+                            <View style={{flexDirection:'row',alignItems:'center'}}>
+                                <RadioButton
+                                    value="MATERIAL"
+                                    status={ checked === 'MATERIAL' ? 'checked' : 'unchecked' }
+                                    onPress={() => {setChecked('MATERIAL')}}
+                                />
+                                <Text>Material</Text>
+                            </View>
+                            <View style={{flexDirection:'row',alignItems:'center'}}>
+                                <RadioButton
+                                    value="GENERO"
+                                    status={ checked === 'GENERO' ? 'checked' : 'unchecked' }
+                                    onPress={() => {setChecked('GENERO')}}
+                                />
+                                <Text>Gênero</Text>
+                            </View>
                         </View>
                     </View>
 
-                    <View style={{marginVertical:20}}>
-                        <View style={{flexDirection:'row',alignItems:'center'}}>
-                            <RadioButton
-                                value="MARCA"
-                                status={ checked === 'MARCA' ? 'checked' : 'unchecked' }
-                                onPress={() => {setChecked('MARCA');setVisibleFilter(false)}}
+                    <Text style={{fontWeight:'bold',marginBottom:5}}>Tipo de Saldo:</Text>
+                    <Controller
+                        name="gender"
+                        defaultValue=""
+                        control={control}
+                        render={({ field: { onChange, value } }) => (
+                            <DropDownPicker
+                                open={genderOpen}
+                                value={genderValue}
+                                items={gender}
+                                setOpen={setGenderOpen}
+                                setValue={setGenderValue}
+                                setItems={setGender}
+                                placeholder="Selecione"
+                                onChangeValue={onChange}
+                                zIndex={3000}
+                                zIndexInverse={1000}
                             />
-                            <Text>Marca</Text>
-                        </View>
-                        <View style={{flexDirection:'row',alignItems:'center'}}>
-                            <RadioButton
-                                value="MATERIAL"
-                                status={ checked === 'MATERIAL' ? 'checked' : 'unchecked' }
-                                onPress={() => {setChecked('MATERIAL');setVisibleFilter(false)}}
-                            />
-                            <Text>Material</Text>
-                        </View>
-                        <View style={{flexDirection:'row',alignItems:'center'}}>
-                            <RadioButton
-                                value="GENERO"
-                                status={ checked === 'GENERO' ? 'checked' : 'unchecked' }
-                                onPress={() => {setChecked('GENERO');setVisibleFilter(false)}}
-                            />
-                            <Text>Gênero</Text>
-                        </View>
+                        )}
+                    />
+
+                    <View 
+                        style={{
+                            backgroundColor:'#2F8BD8',
+                            justifyContent:'center',
+                            alignItems:'center',
+                            height:40,
+                            borderRadius:10,
+                            padding:10,
+                            marginHorizontal:60,
+                            marginTop:20
+                        }} 
+                    >
+                        { loadFilter ? 
+                            <View>
+                                <ActivityIndicator color={'#fff'} size={50}/>
+                                <Text style={{color:'tomato',fontWeight:'bold'}}>Aplicando Filtros...</Text>
+                            </View>
+                            :
+                            <TouchableOpacity onPress={()=>{searchSec(`${checked}:${searchText}`,true)}}>   
+                                <Text style={styles.txtAddInitial}>Salvar Filtros</Text>
+                            </TouchableOpacity>
+                        }
                     </View>
+                    
                 </View>
             </ModFilter>
 
