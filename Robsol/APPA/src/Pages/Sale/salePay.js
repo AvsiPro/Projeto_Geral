@@ -129,10 +129,10 @@ export default function SalePay({route,navigation}){
             console.log(error)
         }
 
-        await shareAsync(file.uri)
         setLoad2(false)
 
         if(lSaldo){
+            await shareAsync(file.uri)
             navigation.navigate('Home')
         }
     }
