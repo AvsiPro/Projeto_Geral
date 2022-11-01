@@ -14,7 +14,7 @@
     <form #produtoInputForm="ngForm">
 
       <po-table (p-selected)="chooseSelect($event)"
-      (p-unselected)="chooseDeselect($event)" [p-striped]="true" [p-actions]="tableActions" [p-single-select]="true" [p-selectable]="true"
+      (p-unselected)="chooseDeselect($event)" [p-striped]="true" [p-single-select]="true" [p-selectable]="true"
         [p-columns]="columns" [p-items]="items"> </po-table>
     </form>
 

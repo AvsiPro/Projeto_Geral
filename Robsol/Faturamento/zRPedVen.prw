@@ -28,8 +28,8 @@ Static nPosSTVl   := 0000                                                       
 Static nPosSTBa   := 0000                                                                  //Posição Inicial da Coluna de Base do ST
 Static nPosSTTo   := 0000                                                                  //Posição Inicial da Coluna de Valor Total ST
 Static nTamFundo  := 15                                                                    //Altura de fundo dos blocos com título
-Static cEmpEmail  := Alltrim(SuperGetMV("MV_X_EMAIL", .F., "pedidos@robsol.com.br"))        //Parâmetro com o e-Mail da empresa
-Static cEmpSite   := Alltrim(SuperGetMV("MV_X_HPAGE", .F., "http://www.robsol.com.br"))   //Parâmetro com o site da empresa
+Static cEmpEmail  := IIf(IsBlind(), "pedidos@robsol.com.br" ,Alltrim(SuperGetMV("MV_X_EMAIL", .F., "pedidos@robsol.com.br")) )         //Parâmetro com o e-Mail da empresa
+Static cEmpSite   := IIf(IsBlind(), "http://www.robsol.com.br", Alltrim(SuperGetMV("MV_X_HPAGE", .F., "http://www.robsol.com.br")))     //Parâmetro com o site da empresa
 Static nCorAzul   := RGB(062, 179, 206)                                                    //Cor Azul usada nos Títulos
 Static cNomeFont  := "Arial"                                                               //Nome da Fonte Padrão
 Static oFontDet   := Nil                                                                   //Fonte utilizada na impressão dos itens
@@ -43,12 +43,12 @@ Static cMaskTel   := "@R (99) 99999999"                                         
 Static cMaskCNPJ  := "@R 99.999.999/9999-99"                                               //Máscara de CNPJ
 Static cMaskCEP   := "@R 99999-999"                                                        //Máscara de CEP
 Static cMaskCPF   := "@R 999.999.999-99"                                                   //Máscara de CPF
-Static cMaskQtd   := PesqPict("SC6", "C6_QTDVEN")                                          //Máscara de quantidade
-Static cMaskPrc   := PesqPict("SC6", "C6_PRUNIT")                                          //Máscara de preço
-Static cMaskVlr   := PesqPict("SC6", "C6_VALOR")                                           //Máscara de valor
-Static cMaskFrete := PesqPict("SC5", "C5_FRETE")                                           //Máscara de frete
-Static cMaskPBru  := PesqPict("SC5", "C5_PBRUTO")                                          //Máscara de peso bruto
-Static cMaskPLiq  := PesqPict("SC5", "C5_PESOL")                                           //Máscara de peso liquido
+Static cMaskQtd   := IIf(!IsBlind(),PesqPict("SC6", "C6_QTDVEN"),'')                                          //Máscara de quantidade
+Static cMaskPrc   := IIf(!IsBlind(),PesqPict("SC6", "C6_PRUNIT"),'')                                          //Máscara de preço
+Static cMaskVlr   := IIf(!IsBlind(),PesqPict("SC6", "C6_VALOR"),'')                                           //Máscara de valor
+Static cMaskFrete := IIf(!IsBlind(),PesqPict("SC6", "C5_FRETE"),'')                                           //Máscara de frete
+Static cMaskPBru  := IIf(!IsBlind(),PesqPict("SC6", "C5_PBRUTO"),'')                                         //Máscara de peso bruto
+Static cMaskPLiq  := IIf(!IsBlind(),PesqPict("SC6", "C5_PESOL"),'')                                          //Máscara de peso liquido
 Static cCodBar    := ""
 Static cFretePed  := ""
 
@@ -62,57 +62,80 @@ Impressão gráfica genérica de Pedido de Venda (em pdf)
 	u_zRPedVen()
 /*/
 
-User Function zRPedVen()
+User Function zRPedVen(cPedDe,cPedAt,cCliDe,cCliAt,cVndDe,cVndAt,lAPPA)
 	Local aArea      := GetArea()
-	Local aAreaC5    := SC5->(GetArea())
 	Local aPergs     := {}
 	Local aRetorn    := {}
 	Local oProcess   := Nil
 	//Variáveis usadas nas outras funções
-	Private cLogoEmp := fLogoEmp()
-	Private cPedDe   := SC5->C5_NUM
-	Private cPedAt   := SC5->C5_NUM
+	Private cLogoEmp := ''
 	Private cLayout  := "1"
 	Private cTipoBar := "1"
 	Private cImpDupl := "1"
 	Private cZeraPag := "1"
-	Private cCliDe   := space(6) 
-	Private cCliAt   := 'ZZZZZZ' 
-	Private cVndDe   := space(6) 
-	Private cVndAt   := 'ZZZZZZ' 
 
-	//Adiciona os parametros para a pergunta
-	aAdd(aPergs, {1, "Pedido De",  cPedDe, "", ".T.", "SC5", ".T.", 80, .T.})
-	aAdd(aPergs, {1, "Pedido Até", cPedAt, "", ".T.", "SC5", ".T.", 80, .T.})
-	aAdd(aPergs, {1, "Cliente De",  cCliDe, "", ".T.", "SA1", ".T.", 80, .F.})
-	aAdd(aPergs, {1, "Cliente Até", cCliAt, "", ".T.", "SA1", ".T.", 80, .T.})
-	aAdd(aPergs, {1, "Vendedor De",  cVndDe, "", ".T.", "SA3", ".T.", 80, .F.})
-	aAdd(aPergs, {1, "Vendedor Até", cVndAt, "", ".T.", "SA3", ".T.", 80, .T.})
-	//aAdd(aPergs, {2, "Layout",                         Val(cLayout),  {"1=Dados com ST",     "2=Dados com IPI"},                                       100, ".T.", .F.})
-	//aAdd(aPergs, {2, "Código de Barras",               Val(cTipoBar), {"1=Número do Pedido", "2=Filial + Número do Pedido", "3=Sem Código de Barras"}, 100, ".T.", .F.})
-	//aAdd(aPergs, {2, "Imprimir Previsão Duplicatas",   Val(cImpDupl), {"1=Sim",              "2=Não"},                                                 100, ".T.", .F.})
-	//aAdd(aPergs, {2, "Zera a Página ao trocar Pedido", Val(cZeraPag), {"1=Sim",              "2=Não"},                                                 100, ".T.", .F.})
-	
-	//Se a pergunta for confirmada
-	If ParamBox(aPergs, "Informe os parâmetros", @aRetorn, , , , , , , , .F., .F.)
-		cPedDe   := aRetorn[1]
-		cPedAt   := aRetorn[2]
+	Default cPedDe   := ''
+	Default cPedAt   := ''
+	Default cCliDe   := space(6) 
+	Default cCliAt   := 'ZZZZZZ' 
+	Default cVndDe   := space(6) 
+	Default cVndAt   := 'ZZZZZZ' 
+	Default lAPPA	 := .F.
 
-		cCliDe	:= aRetorn[3]
-		cCliAt	:= aRetorn[4]
-		cVndDe	:= aRetorn[5]
-		cVndAt	:= aRetorn[6]
-		//cLayout  := cValToChar(aRetorn[3])
-		//cTipoBar := cValToChar(aRetorn[3])
-		//cImpDupl := cValToChar(aRetorn[5])
-		//cZeraPag := cValToChar(aRetorn[6])
+	If !lAPPA
+		aAreaC5  := SC5->(GetArea())
+		cPedDe   := SC5->C5_NUM
+		cPedAt   := SC5->C5_NUM
+		cLogoEmp := fLogoEmp()
 		
-		//Função que muda alinhamento e fontes
+		//Adiciona os parametros para a pergunta
+		aAdd(aPergs, {1, "Pedido De",  cPedDe, "", ".T.", "SC5", ".T.", 80, .T.})
+		aAdd(aPergs, {1, "Pedido Até", cPedAt, "", ".T.", "SC5", ".T.", 80, .T.})
+		aAdd(aPergs, {1, "Cliente De",  cCliDe, "", ".T.", "SA1", ".T.", 80, .F.})
+		aAdd(aPergs, {1, "Cliente Até", cCliAt, "", ".T.", "SA1", ".T.", 80, .T.})
+		aAdd(aPergs, {1, "Vendedor De",  cVndDe, "", ".T.", "SA3", ".T.", 80, .F.})
+		aAdd(aPergs, {1, "Vendedor Até", cVndAt, "", ".T.", "SA3", ".T.", 80, .T.})
+		//aAdd(aPergs, {2, "Layout",                         Val(cLayout),  {"1=Dados com ST",     "2=Dados com IPI"},                                       100, ".T.", .F.})
+		//aAdd(aPergs, {2, "Código de Barras",               Val(cTipoBar), {"1=Número do Pedido", "2=Filial + Número do Pedido", "3=Sem Código de Barras"}, 100, ".T.", .F.})
+		//aAdd(aPergs, {2, "Imprimir Previsão Duplicatas",   Val(cImpDupl), {"1=Sim",              "2=Não"},                                                 100, ".T.", .F.})
+		//aAdd(aPergs, {2, "Zera a Página ao trocar Pedido", Val(cZeraPag), {"1=Sim",              "2=Não"},                                                 100, ".T.", .F.})
+		
+		//Se a pergunta for confirmada
+		If ParamBox(aPergs, "Informe os parâmetros", @aRetorn, , , , , , , , .F., .F.)
+			cPedDe   := aRetorn[1]
+			cPedAt   := aRetorn[2]
+
+			cCliDe	:= aRetorn[3]
+			cCliAt	:= aRetorn[4]
+			cVndDe	:= aRetorn[5]
+			cVndAt	:= aRetorn[6]
+			//cLayout  := cValToChar(aRetorn[3])
+			//cTipoBar := cValToChar(aRetorn[3])
+			//cImpDupl := cValToChar(aRetorn[5])
+			//cZeraPag := cValToChar(aRetorn[6])
+			
+			//Função que muda alinhamento e fontes
+			fMudaLayout()
+			
+			//Chama o processamento do relatório
+			oProcess := MsNewProcess():New({|| fMontaRel(@oProcess,{cPedDe,cPedAt,cCliDe,cCliAt,cVndDe,cVndAt,lAPPA}) }, "Impressão Pedidos de Venda", "Processando", .F.)
+			oProcess:Activate()
+		EndIf
+	Else
+		RPCSetType(3)  
+		RpcSetEnv('01','0101',,,,GetEnvServer(),{ })
+
+		aAreaC5    := SC5->(GetArea())
+		cLogoEmp   := fLogoEmp()
+		cMaskQtd   := PesqPict("SC6", "C6_QTDVEN") //Máscara de quantidade
+		cMaskPrc   := PesqPict("SC6", "C6_PRUNIT") //Máscara de preço
+		cMaskVlr   := PesqPict("SC6", "C6_VALOR")  //Máscara de valor
+		cMaskFrete := PesqPict("SC5", "C5_FRETE")  //Máscara de frete
+		cMaskPBru  := PesqPict("SC5", "C5_PBRUTO") //Máscara de peso bruto
+		cMaskPLiq  := PesqPict("SC5", "C5_PESOL")  //Máscara de peso liquido
+
 		fMudaLayout()
-		
-		//Chama o processamento do relatório
-		oProcess := MsNewProcess():New({|| fMontaRel(@oProcess) }, "Impressão Pedidos de Venda", "Processando", .F.)
-		oProcess:Activate()
+		oProcess := MsNewProcess():New({|| fMontaRel(@oProcess,{cPedDe,cPedAt,cCliDe,cCliAt,cVndDe,cVndAt,lAPPA}) }, "Impressão Pedidos de Venda", "Processando", .F.)
 	EndIf
 	
 	RestArea(aAreaC5)
@@ -124,7 +147,7 @@ Return
  | Desc:  Função principal que monta o relatório                       |
  *---------------------------------------------------------------------*/
 
-Static Function fMontaRel(oProc)
+Static Function fMontaRel(oProc,aParams)
 	//Variáveis usada no controle das réguas
 	Local nTotIte       := 0
 	Local nItAtu        := 0
@@ -143,6 +166,14 @@ Static Function fMontaRel(oProc)
 	Local nBasSol       := 0
 	Local nPrcUniSol    := 0
 	Local nTotSol       := 0
+	Local cPedDe := aParams[1]
+	Local cPedAt := aParams[2]
+	Local cCliDe := aParams[3]
+	Local cCliAt := aParams[4]
+	Local cVndDe := aParams[5]
+	Local cVndAt := aParams[6]
+	Local lAPPA  := aParams[7]
+
 	//Variáveis do Relatório
 	Local cNomeRel      := "pedido_venda_"+FunName()+"_"+RetCodUsr()+"_"+dToS(Date())+"_"+StrTran(Time(), ":", "-")
 	Private oPrintPvt
@@ -168,10 +199,16 @@ Static Function fMontaRel(oProc)
 	SB1->(DbSetOrder(1)) //B1_FILIAL+B1_COD
 	SB1->(DbGoTop())
 	DbSelectArea("SC5")
-	
+
+	If !IsBlind()
+		cTempPtch := GetTempPath()
+	Else
+		cTempPtch := 'C:\Temp\'
+	EndIf
+
 	//Criando o objeto de impressão
 	oPrintPvt := FWMSPrinter():New(cNomeRel, IMP_PDF, .F., /*cStartPath*/, .T., , @oPrintPvt, , , , , .T.)
-	oPrintPvt:cPathPDF := GetTempPath()
+	oPrintPvt:cPathPDF := cTempPtch
 	oPrintPvt:SetResolution(72)
 	oPrintPvt:SetPortrait()
 	oPrintPvt:SetPaperSize(DMPAPER_A4)
@@ -687,7 +724,7 @@ Static Function fLogoEmp()
 	Local cUnitGrp    := AllTrim(FWUnitBusiness())
 	Local cFilGrp     := AllTrim(FWFilial())
 	Local cLogo       := ""
-	Local cCamFim     := GetTempPath()
+	Local cCamFim     := IIf(!IsBlind(),GetTempPath(),'C:\Temp\')  
 	Local cStart      := GetSrvProfString("Startpath", "")
 
 	//Se tiver filiais por grupo de empresas
@@ -708,7 +745,12 @@ Static Function fLogoEmp()
 	EndIf
 	
 	//Copia para a temporária do s.o.
-	CpyS2T(cLogo, cCamFim)
+	If IsBlind()
+		__CopyFile(cLogo, cCamFim)
+	Else
+		CpyS2T(cLogo, cCamFim)
+	EndIf
+	
 	cLogo := cCamFim + StrTran(cLogo, cStart, "")
 	
 	//Se o arquivo não existir na temporária, espera meio segundo para terminar a cópia

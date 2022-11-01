@@ -27,6 +27,16 @@ const styles = StyleSheet.create({
         marginBottom:8 
     },
 
+    buttonBack:{
+        borderColor:'#175A93',
+        borderWidth:2,
+        borderRadius:5,
+        height:35,
+        width:'30%',
+        justifyContent:'center',
+        alignItems:'center'
+      },
+
     cardDescP:{
         fontWeight: 'bold',
         fontSize:16,

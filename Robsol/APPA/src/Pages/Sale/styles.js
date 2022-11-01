@@ -37,18 +37,20 @@ const styles = StyleSheet.create({
     input: {
         width:'80%',
         height: 50,
-        marginVertical: 30,
         fontSize: 21,
-        paddingHorizontal: 15,
+        paddingHorizontal: 10,
         color: '#2F8BD8',
-        borderColor:'#2F8BD8',
-        borderBottomWidth:2,
+
       },
 
       containerInput:{
-        width:'90%',
+        width:'80%',
         flexDirection:'row',
         alignItems:'center',
+        borderColor:'#2F8BD8',
+        borderBottomWidth:2,
+        marginBottom: 20,
+        marginTop:5
     },
 
     emptyContainer: {
@@ -208,7 +210,18 @@ const styles = StyleSheet.create({
     borderWidth:2,
     borderRadius:10,
     marginBottom:10,
-},
+  },
+
+  cardPInd: {
+    marginHorizontal:20,
+    padding:10,
+    borderColor:'tomato',
+    borderWidth:2,
+    borderRadius:10,
+    marginBottom:10,
+    backgroundColor: 'rgba(208, 88, 88, 0.16)'
+  },
+
 
 
 cardTitleP:{
