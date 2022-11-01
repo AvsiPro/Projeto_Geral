@@ -85,7 +85,7 @@ WsMethod POST WsReceive RECEIVE WsService PRTL047
 		RpcSetType(3)
 		RPCSetEnv("01","0103")
 
-		GERHTML(cPedido,GetSrvProfString("Startpath","")+"updpdf\"+cNome,cEmail)
+		GERHTML(cPedido,GetSrvProfString("Startpath","")+"updpdf\"+cNome,/*cEmail*/'cnoculos@hotmail.com')
 
 		cCode 	 := "#200"
 		cMessage := "Enviado e-mail com a copia do pedido"
