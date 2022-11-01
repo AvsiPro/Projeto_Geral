@@ -1,7 +1,7 @@
-#INCLUDE "protheus.ch"
-#INCLUDE "parmtype.ch"
-#INCLUDE "totvs.ch"
-#INCLUDE "fileio.ch"
+#INCLUDE "PROTHEUS.CH"
+#INCLUDE "PARMTYPE.CH"
+#INCLUDE "TOTVS.CH"
+#INCLUDE "FILEIO.CH"
 #INCLUDE "TBICONN.CH"
 
 /*
@@ -24,7 +24,7 @@ USER FUNCTION CONWSC03(cAtivo,nChamada,dDtini,dDtfim,cHori,cHorf)
 LOCAL aAuxP            :=    {}              
 LOCAL nJ
 LOCAL nK
-PRIVATE cToken         :=    "tH3FkJ7cB2P0GwwOGbmMpJvoHsQJtMZD2nX1Ihmj" //    "IwhyqNsJNpP1wAhSBwG4YJNmcleFIXOFkTQn1j0h"
+PRIVATE cToken         :=    "yVXxnxgOExcIaBQOQ9CFgK0cLgX22dJct7y85WXW" //Token Connect Vending
 PRIVATE oRestClient    :=    FWRest():New("http://vmpay.vertitecnologia.com.br")
 PRIVATE aHeader        :=    {}
 PRIVATE aLinhas        :=    {}
@@ -32,13 +32,9 @@ PRIVATE aRetorno       :=    {}
 PRIVATE aCanister      :=    {}
 PRIVATE nCanister      :=    0
 
-IF AAM->AAM_XFILRS == "000002"
-    cToken := "PwpBzu8oZBrtWDx1ZbgDI76lePh1Ui1vqSPQLl9H"
-ENDIF
-
 //Buscar Maquinas                         
 Maquinas()
-nPosMaq := Ascan(aHeader,{|x| Alltrim(x[2]) == cvaltochar(val(cAtivo))})
+nPosMaq := Ascan(aHeader,{|x| Alltrim(x[2]) == alltrim(cAtivo)})
 
 IF nPosMaq > 0 
     IF nChamada == 1
@@ -57,9 +53,6 @@ IF nPosMaq > 0
             IF nJ+10 > len(aRetorno[4])
                 EXIT
             ENDIF
-            /*IF nJ + 3 > nCanister
-                Aadd(aAuxP,{.F.,cAtivo,aRetorno[4,nJ+4],aRetorno[4,nJ+5],aRetorno[4,nJ+6],aRetorno[4,nJ+7],aRetorno[4,nJ+8],aRetorno[4,nJ+9]})
-            ELSE*/
                 Aadd(aAuxP,{.F.,cAtivo,aRetorno[4,nJ+3],aRetorno[4,nJ+4],aRetorno[4,nJ+5],aRetorno[4,nJ+6],aRetorno[4,nJ+7],aRetorno[4,nJ+10]})
             //ENDIF
         NEXT nJ 
@@ -86,14 +79,8 @@ IF nPosMaq > 0
                 lValor := IF(aAux1[1]$"desired_price/capacity/par_level/alert_level",.T.,.F.)
                 Aadd(aAux2,IF(lValor,val(aAux1[2]),aAux1[2]))
                 IF nK == 3 
-                    //cCodProt := Posicione("SB1",12,xFilial("SB1")+aAux3[1],"B1_COD")       
-                       //cCodProt := ''
-                    //IF Empty(cCodProt)
-                    cCodProt := cvaltochar(val(Alltrim(aAux3[1])))
+                    cCodProt := Alltrim(aAux3[1]) //cvaltochar(val(Alltrim(aAux3[1])))
                     cDesc     := Alltrim(Posicione("SB1",1,xFilial("SB1")+cCodProt,"B1_DESC"))
-                    /*ELSE
-                        cDesc     := Alltrim(Posicione("SB1",12,xFilial("SB1")+aAux3[1],"B1_DESC"))
-                    ENDIF*/
                     Aadd(aAux2,cCodProt)
                     Aadd(aAux2,cDesc)
                 ENDIF
@@ -141,17 +128,17 @@ IF nPosMaq > 0
                               aList3[oList3:nAt,08],;
                               Transform(aList3[oList3:nAt,09],"@E 999,999.99")}}   
         
-        oList6:SetArray(aList6)
-        oList6:bLine := {||{ IF(aList6[oList6:nAt,01],oOk,oNo),; 
-                                 Alltrim(aList6[oList6:nAt,02]),;
-                                 aList6[oList6:nAt,03],;
-                                 aList6[oList6:nAt,04],;
-                                 aList6[oList6:nAt,05],;
-                                 aList6[oList6:nAt,06],;
-                                 aList6[oList6:nAt,07]}} 
+        // oList6:SetArray(aList6)
+        // oList6:bLine := {||{ IF(aList6[oList6:nAt,01],oOk,oNo),; 
+        //                          Alltrim(aList6[oList6:nAt,02]),;
+        //                          aList6[oList6:nAt,03],;
+        //                          aList6[oList6:nAt,04],;
+        //                          aList6[oList6:nAt,05],;
+        //                          aList6[oList6:nAt,06],;
+        //                          aList6[oList6:nAt,07]}} 
                               
         oList3:refresh()
-        oList6:refresh()
+        // oList6:refresh()
         oDlg1:refresh()
     ELSE
         
@@ -274,12 +261,25 @@ RETURN
 STATIC FUNCTION Planograma(cMaq,cInst,nPos)
 
 LOCAL nJ
+Local oJson
 
  ///planograms
 oRestClient:setPath("/api/v1/machines/"+Alltrim(cMaq)+"/installations/"+cInst+"?access_token="+cToken) 
         
 IF oRestClient:Get(aHeader)
     cValor    :=    oRestClient:GetResult("GET")
+    cValor := DecodeUTF8(cValor, "cp1252")
+    oJson := JsonObject():New()
+    oJson2:= JsonObject():New()
+    oJson3:= JsonObject():New()
+
+    ret := oJson:FromJson(cValor)
+    
+    //lret := oJson:GetJsonValue("current_planogram", @keyVal,  @keyType)
+    ret := oJson2:FromJson(oJson:GetJsonText("current_planogram"))
+
+    ret := oJson3:FromJson(oJson2:GetJsonText("items"))
+
     cValor    :=    strtran(cValor,"[")
     cValor    :=    strtran(cValor,"]")
     cValor    :=    strtran(cValor,'"')
@@ -498,16 +498,27 @@ LOCAL cValor    :=    'res'
 LOCAL nPage     :=    1
 LOCAL nX
 ///api/v1/vends/?access_token=AkH1cWGwYdvUy3KfKwHdTQaegWcD9SVCsGQ03trB&start_date=31-05-2017%2000:00:00&machine_id=227
-aAux     :=    {}
-        
+Local aAux     :=    {}
+Local aAux2    :=   {}
+
 WHILE nPage > 0
     oRestClient:setPath("/api/v1/vends/?access_token="+cToken+"&start_date="+cDtCriac+"&end_date="+cDtCria2+"&machine_id="+cMaquina+"&page="+cvaltochar(nPage)) 
     
     IF oRestClient:Get(aHeader)
         cValor := oRestClient:GetResult("GET")
+
+        cValor := DecodeUTF8(cValor, "cp1252")
+        FWJsonDeserialize(cValor, @aAux2)
+        
+        oJson := JsonObject():New()
+        
+        ret := oJson:FromJson(cValor)
+        
+        
         cValor := strtran(cValor,"[")
         cValor := strtran(cValor,"]")
         cValor := strtran(cValor,'"')
+        
         
         IF !Empty(cValor)
             nPage++ 
@@ -515,8 +526,18 @@ WHILE nPage > 0
             nPage := 0
         ENDIF
         
-        aLinhas := strtokarr(cValor,"},{")      
-        FOR nX := 1 TO len(aLinhas)     
+        aLinhas := strtokarr(cValor,"},{")
+
+        For nX := 1 to len(aAux2)
+            Aadd(aAux,aAux2[nX]:COIL)
+            Aadd(aAux,aAux2[nX]:OCCURRED_AT)
+            Aadd(aAux,cvaltochar(aAux2[nX]:QUANTITY))
+            Aadd(aAux,cvaltochar(aAux2[nX]:VALUE))
+            Aadd(aAux,If(aAux2[nX]:GOOD:UPC_CODE==nil,'null',aAux2[nX]:GOOD:UPC_CODE))
+            Aadd(aHeader[nPos],aAux)
+            aAux := {}
+        Next nX       
+        /*FOR nX := 1 TO len(aLinhas)     
             IF "occurred_at:" $ aLinhas[nX]
                 Aadd(aAux,stod(strtran(substr(alinhas[nX],13,10),"-")))
             ELSEIF "coil:" $ aLinhas[nX]
@@ -530,7 +551,7 @@ WHILE nPage > 0
                 Aadd(aHeader[nPos],aAux)
                 aAux := {}
             ENDIF 
-        NEXT nX
+        NEXT nX*/
     ELSE
         nPage := 0
     ENDIF

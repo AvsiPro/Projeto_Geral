@@ -3,7 +3,7 @@
 #INCLUDE 'FWMVCDef.ch'
  
 //Variáveis Estáticas
-STATIC cTitulo    :=    "Cadastro de Embalagem"
+STATIC cTitulo    :=    "Cadastro de Embalagem Connect"
  
 USER FUNCTION Z05Tela()
    

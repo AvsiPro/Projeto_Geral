@@ -146,7 +146,7 @@ WsMethod GET WsReceive CLIENTE,PAGINA,TITULO,PREFIXO,PARCELA,VENDEDOR,EMISSAO,VE
 
 		cTipVnd := Posicione("SA3",1,xFilial("SA3")+cVendedor,"A3_XFUNCAO")
 
-		If !Empty(cVendedor) .And. cTipVnd <> '2'
+		If !Empty(cVendedor) //.And. cTipVnd <> '2'
 			cQuery += " AND E1_VEND1='"+cVendedor+"' " 
 		EndIf
 		

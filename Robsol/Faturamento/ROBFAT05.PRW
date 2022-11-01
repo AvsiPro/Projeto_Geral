@@ -32,10 +32,18 @@ User Function ROBFAT05
 
 Local nOpc      := 0
 Local lOk       := .F.
-Local aStatCm   := {'0=Selecione','1=Conferido','2=Bloquear p/ inadimplência','3=Aguardar cliente','4=Liberar para estoque'}
-Local aParam    := {	{ 2 ,"Status Comissao"      ,1,aStatCm              ,60     ,    , .T. } }
+Local aStatCm   := {'0=Selecione',;
+                    '1=Conferido',;
+    '2=Bloquear p/ inadimplência',;
+             '3=Aguardar cliente',;
+         '4=Liberar para estoque',;
+                    '5=Imprimido',;
+                     '6=Cancelado'}
+Local aParam    := { { 2, "Status Comissao", 1, aStatCm, 60, , .T. } }
+Local cLibera
+Local cBloqueia
 
-SetPrvt("oDlg1","oGrp1","oGet1","oGet2","oGrp2","oFld1","oBrw1","oBrw2","oBrw3","oBrw4","oSay1","oSay2")
+SetPrvt("oDlg1","oGrp1","oGrp2","oFld1","oSay1","oSay2")
 SetPrvt("oSay4","oSay5","oSay6","oSay7","oSay8","oSay9","oSay10","oSay11","oSay12","oSay13","oSay14")
 SetPrvt("oSay16","oSay17","oBtn1","oBtn2")
 Private oList1
@@ -43,11 +51,11 @@ Private oList2
 Private oList3
 Private oList4
 Private oList5
-Private aList1 := {}
-Private aList2 := {}
-Private aList3 := {}
-Private aList4 := {}
-Private aList5 := {}
+Private aList1  := {}
+Private aList2  := {}
+Private aList3  := {}
+Private aList4  := {}
+Private aList5  := {}
 Private cMsgObs := Alltrim(SC5->C5_XOBSLIB)
 Private cMsgNew := space(1024)
 
@@ -76,7 +84,7 @@ DbSetOrder(2)
 DbSeek(xFilial("SE1")+SC5->C5_CLIENTE+SC5->C5_LOJACLI)
 While !EOF() .AND. SE1->E1_CLIENTE == SC5->C5_CLIENTE .AND. SE1->E1_LOJA == SC5->C5_LOJACLI
     Aadd(aList2,{SE1->E1_PREFIXO,SE1->E1_NUM,SE1->E1_PARCELA,SE1->E1_EMISSAO,;
-                SE1->E1_VENCTO,SE1->E1_VENCREA,SE1->E1_VALOR,SE1->E1_SALDO,SE1->E1_BAIXA})
+        SE1->E1_VENCTO,SE1->E1_VENCREA,SE1->E1_VALOR,SE1->E1_SALDO,SE1->E1_BAIXA})
     Dbskip()
 Enddo 
 
@@ -89,11 +97,7 @@ PedidosAnt(SC5->C5_CLIENTE,SC5->C5_LOJACLI)
 oDlg1      := MSDialog():New( 086,213,756,1508,"Conferências",,,.F.,,,,,,.T.,,,.T. )
 
 oGrp1      := TGroup():New( 004,008,120,632,"Observações de atendimentos do pedido",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
-    /*
-    oGet1      := TGet():New( 016,012,,oGrp1,316,094,'',,CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.T.,.F.,"","",,)
-    oGet1:Disable()
-    oGet2      := TGet():New( 016,332,,oGrp1,288,094,'',,CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"","",,)
-    */
+
     oMGet1     := TMultiGet():New( 012,012,{|u| cMsgObs },oGrp1,316,100,,,CLR_BLACK,CLR_WHITE,,.T.,"",,,.F.,.F.,.T.,,,.F.,,  )
     oMGet2     := TMultiGet():New( 012,332,{|u| If(PCount()>0,cMsgNew:=u,cMsgNew) },oGrp1,292,100,,,CLR_BLACK,CLR_WHITE,,.T.,"",,,.F.,.F.,.F.,,,.F.,,  )
 
@@ -118,12 +122,6 @@ oGrp2      := TGroup():New( 124,008,308,632,"Dados Pedido x Dados do Cliente",oD
     oSay16     := TSay():New( 104,008,{||"Observações APP"},oFld1:aDialogs[1],,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,076,008)
     oSay17     := TSay():New( 104,088,{||SC5->C5_X_OBS},oFld1:aDialogs[1],,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,516,020)
 
-    /*oBrw1      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{004,004,156,608},,, oFld1:aDialogs[2] ) 
-    oBrw2      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{004,004,156,608},,, oFld1:aDialogs[3] ) 
-    oBrw3      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{004,004,156,608},,, oFld1:aDialogs[4] ) 
-    oBrw4      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{004,004,156,608},,, oFld1:aDialogs[5] ) 
-    */
-
     oList1:= 	TCBrowse():New(004,004,600,143,, {'Item','Codigo','Descricao','Qtd','Vlr Unit.','Valor Total','Desconto %'},;
                                                 {20,60,230,35,35,35,30},;
                                         oFld1:aDialogs[2],,,,{|| /*Fhelp2(oList2:nAt)*/},{|| /*editcol(oList2:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
@@ -136,10 +134,6 @@ oGrp2      := TGroup():New( 124,008,308,632,"Dados Pedido x Dados do Cliente",oD
                         Transform(aList1[oList1:nAt,05],"@E 999,999,999.99"),;
                         Transform(aList1[oList1:nAt,06],"@E 999,999,999.99"),;
                         aList1[oList1:nAt,07]}}
-
-/*   Aadd(aList2,{SE1->E1_PREFIXO,SE1->E1_NUM,SE1->E1_PARCELA,SE1->E1_EMISSAO,;
-                SE1->E1_VENCTO,SE1->E1_VENCREA,SE1->E1_VALOR,SE1->E1_SALDO,SE1->E1_BAIXA})
-*/   
 
     oList2:= 	TCBrowse():New(004,004,600,143,, {'Prefixo','Titulo','Parcela','Emissao','Vencto','Vcto. Real','Valor','Saldo','Data Baixa'},;
                                                 {30,60,30,45,45,45,40,40,40},;
@@ -197,9 +191,10 @@ If nOpc == 1
         EndIf
     ENDDO
 
-    //0=Selecione','1=Conferido',
-    //'2=Bloquear p/ inadimplência','3=Aguardar cliente',
-    //'4=Liberar para estoque'}
+    // '0=Selecione','1=Conferido'
+    // '2=Bloquear p/ inadimplência'
+    // '3=Aguardar cliente'
+    // '4=Liberar para estoque'
     cStatus := ''
     cStaOpc := ''
     If MV_PAR01 == 1
@@ -214,7 +209,15 @@ If nOpc == 1
     ElseIf MV_PAR01 == 4
         cStatus := ''
         cStaOpc := 'Liberado para estoque'
-    EndIf 
+        cLibera := 'S'
+    ElseIf MV_PAR01 == 5
+        cStatus := 'F'
+        cStaOpc := 'Imprimido'
+    ElseIf MV_PAR01 == 6
+        cStatus := 'G'
+        cStaOpc := 'Cancelado'
+        cBloqueia := '1'
+    EndIf
 
     cMsgGrv := 'Data '+cvaltochar(dDatabase)+' Hora '+cvaltochar(time())+CRLF
     cMsgGrv += 'Usuário '+cusername+CRLF 
@@ -223,6 +226,12 @@ If nOpc == 1
     RecLock("SC5", .F.)
     SC5->C5_XOBSLIB := Alltrim(cMsgObs)+cMsgGrv
     SC5->C5_ZZSTATU := cStatus
+    if !Empty(cLibera)
+        SC5->C5_LIBEROK := cLibera
+    endif
+    if !Empty(cBloqueia)
+        SC5->C5_MSBLQL := cBloqueia
+    endif
     SC5->(MsUnlock())    
 EndIf 
 

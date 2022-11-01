@@ -12,7 +12,7 @@
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
 ±±ÉÍÍÍÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍ»±±
-±±ºPrograma  ³TTXML01   ºAutor  ³Microsiga           º Data ³  08/05/19   º±±
+±±ºPrograma  ³TTXML02   ºAutor  ³Microsiga           º Data ³  08/05/19   º±±
 ±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
 ±±ºDesc.     ³    Alexandre Venancio                                      º±±
 ±±º          ³                                                            º±±
@@ -23,8 +23,7 @@
 ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
 */
 
-User Function TTXML01
-
+User Function TTXML02
 Local lRet			:= .T.
 Local nCont			:= 0
 
@@ -202,6 +201,8 @@ If XmlChildEx( oXml:_NFEPROC:_NFE:_INFNFE:_DEST , "_CNPJ" ) != Nil
 Else
 	cCNPJ_CLI := oxml:_NFEPROC:_NFE:_INFNFE:_DEST:_CPF:TEXT
 EndIf
+
+cEstD := oXml:_NFEPROC:_NFE:_INFNFE:_DEST:_ENDERDEST:_UF:TEXT
 //Verificando fornecedor: " +cCNPJ_FOR)                  
 cNum	:= PadL(Alltrim(oXml:_NFEPROC:_NFE:_INFNFE:_IDE:_NNF:TEXT),9,"0") //Nro da Nota
 cSerie	:= Alltrim(oXml:_NfeProc:_Nfe:_InfNfe:_IDE:_Serie:Text) //STRZero(val(Alltrim(oXml:_NfeProc:_Nfe:_InfNfe:_IDE:_Serie:Text)),3)
@@ -287,8 +288,8 @@ If !Empty(cFornec)
 	lCadOk	:= ValProd(cFornec, cLjFornec, aItensXML)
 	
 	dDataBase := cDtEmissao
-
-	lRet := GERAPV(cFile)
+    gerarnf()
+	//lRet := GERAPV(cFile)
 Else
 	FWrite(nHandlel,"Cliente não encontrado na base - cnpj "+cCNPJ_CLI+CRLF,1000)
 	conout("Cliente inexistente para o cnpj "+cCNPJ_CLI)
@@ -308,6 +309,69 @@ oXml := NIL
 RestArea(aArea)
 	
 Return lRet
+
+/*/{Protheus.doc} gerarnf
+    (long_description)
+    @type  Static Function
+    @author user
+    @since 28/10/2022
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function gerarnf()
+
+Local aArea :=  GetArea()
+Local nX 
+
+DbSelectArea("Z52")
+Reclock("Z52",.T.)
+//cCNPJ_CLI
+Z52->Z52_FILIAL :=  cFilant
+Z52->Z52_DOC    :=  cNum
+Z52->Z52_SERIE  :=  cSerie
+Z52->Z52_CLIENT :=  cFornec
+Z52->Z52_LOJA   :=  cLjFornec
+Z52->Z52_COND   :=  cCondPg
+Z52->Z52_EMISSA :=  cDtEmissao
+Z52->Z52_EST    :=  cEstD
+//Aadd(aList4,{nBaseIcm,nVlrIcm,nBaseSt,nIcmsSubs,nTotalMerc,nFrete,nSeguro,nDescNota,nAcrescimo,nVlrIPI,nValor}) 
+
+Z52->Z52_FRETE  :=  aList4[1,6]
+Z52->Z52_SEGURO :=  aList4[1,7]
+Z52->Z52_VALBRU :=  aList4[1,5]
+Z52->Z52_VALICM :=  aList4[1,2]
+Z52->Z52_BASEIC :=  aList4[1,1]
+Z52->Z52_VALIPI :=  aList4[1,10]
+Z52->Z52_BASEIP :=  aList4[1,1]
+Z52->Z52_VALMER :=  aList4[1,5]
+Z52->Z52_CHVNFE :=  cChave_NFe
+Z52->(MsUnlock())
+
+FOR nX := 1 to len(aItensCad)  
+    DbSelectArea("Z53")
+    Reclock("Z53",.T.)
+	Z53->Z53_FILIAL :=  cFilant
+    Z53->Z53_ITEM   :=  aItensCad[nX,01]
+    Z53->Z53_COD    :=  aItensCad[nX,02]
+    Z53->Z53_UM     :=  'PC'
+    Z53->Z53_QUANT  :=  aItensCad[nX,05]
+    Z53->Z53_PRCVEN :=  aItensCad[nX,06]
+    Z53->Z53_TOTAL  :=  aItensCad[nX,07]
+    Z53->Z53_DOC    :=  cNum
+    Z53->Z53_SERIE  :=  cSerie
+    Z53->Z53_EMISSA :=  cDtEmissao
+    Z53->Z53_CLIENT :=  cFornec
+    Z53->Z53_LOJA   :=  cLjFornec
+    Z53->(MsUnlock())
+Next nX 
+
+RestArea(aArea)
+
+Return
 
 
 //Gerapv - 
@@ -463,22 +527,7 @@ For nI := 1 To Len(aItensXML)
 	DbSetOrder(1)
 	Dbseek(xFilial("SB1")+cCodItem)
 	                          
-	dbSelectArea("SB2")
-	dbSetOrder(1)
-	If !dbSeek(xFilial("SB2")+Avkey(cCodItem,"B2_COD")+SB1->B1_LOCPAD)
-		CriaSB2(cCodItem,SB1->B1_LOCPAD)
-	EndIf
 	
-	If !Empty(SB1->B1_LOCPAD)
-		dbSelectArea("NNR")
-		dbSetOrder(1)
-		If !Dbseek(xFilial("NNR")+SB1->B1_LOCPAD)
-			Reclock("NNR",.T.)
-			NNR->NNR_CODIGO := SB1->B1_LOCPAD
-			NNR->NNR_DESCRI	:= "OUTROS"
-		EndIf
-	EndIf
-	                                                       //+x[4] +cNumItem
 	If Ascan(aAuxDeP,{|x| Alltrim(x[1])+x[3] == Alltrim(cCodItem)+cNum}) > 0
 		cTes	 := aAuxDeP[Ascan(aAuxDeP,{|x| Alltrim(x[1])+x[3] == Alltrim(cCodItem)+cNum}),05]
 		cCodItem := aAuxDeP[Ascan(aAuxDeP,{|x| Alltrim(x[1])+x[3] == Alltrim(cCodItem)+cNum}),02]

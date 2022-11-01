@@ -16,7 +16,7 @@ User Function ROBFAT06()
 Local aList0    := {}
 Local cQuery    := ''
 Local cAliasSQL := GetNextAlias()
-Local aStatus   := {'Aberto','Atendido','Negado'}
+Local aStatus   := {'Aberto','Atendido','Negado','Aguardando Cliente'}
 
 Private cMsgNew   := space(1024)
 Private cVend1    := ''
@@ -29,7 +29,8 @@ SetPrvt("oSay1","oSay2","oSay3","oSay4","oSay5","oSay6","oSay7","oSay8","oSay9",
         Return
     EndIf
 
-    cQuery := " SELECT TOP 1 * FROM "+RetSqlName('Z50')+" Z50 "
+    cQuery := " SELECT TOP 1 ISNULL(CAST(CAST(Z50_OBSATD AS VARBINARY(8000)) AS VARCHAR(8000)),'') AS Z50_OBSATD"
+    cQuery += " ,Z50.*,SF2.*,SC5.* FROM "+RetSqlName('Z50')+" Z50 "
     cQuery += " INNER JOIN "+RetSqlName('SF2')+" SF2 "
     cQuery += "     ON F2_DOC=Z50_NOTA "
     cQuery += "     AND F2_CLIENTE=Z50_CODCLI "
@@ -78,12 +79,13 @@ SetPrvt("oSay1","oSay2","oSay3","oSay4","oSay5","oSay6","oSay7","oSay8","oSay9",
             RobToDef(3,(cAliasSQL)->Z50_OPCTRC),;
             RobToDef(1,(cAliasSQL)->Z50_DEFEIT),;
             RobToDef(2,(cAliasSQL)->Z50_TPDEFE),;
+            (cAliasSQL)->Z50_OBSATD,;
         })
         (cAliasSQL)->(DbSkip())
     EndDo
 
     DbSelectArea((cAliasSQL))
-    DbGoTop()
+    //DbGoTop()
 
     If Len(aList0) > 0
 
@@ -101,7 +103,7 @@ SetPrvt("oSay1","oSay2","oSay3","oSay4","oSay5","oSay6","oSay7","oSay8","oSay9",
             oDlg1  := MSDialog():New( 086,213,756,1508,"Atender Chamados de Garantia",,,.F.,,,,,,.T.,,,.T. )
             oGrp1  := TGroup():New( 004,008,120,632,"Observações para atendimento",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
 
-            oMGet1 := TMultiGet():New( 012,012,{|u| Alltrim((cAliasSQL)->Z50_OBS) },oGrp1,316,100,,,CLR_BLACK,CLR_WHITE,,.T.,"",,,.F.,.F.,.T.,,,.F.,,  )
+            oMGet1 := TMultiGet():New( 012,012,{|u| Alltrim(aList0[1,17]) },oGrp1,316,100,,,CLR_BLACK,CLR_WHITE,,.T.,"",,,.F.,.F.,.T.,,,.F.,,  )
             oMGet2 := TMultiGet():New( 012,332,{|u| If(PCount()>0,cMsgNew:=u,cMsgNew) },oGrp1,292,100,,,CLR_BLACK,CLR_WHITE,,.T.,"",,,.F.,.F.,.F.,,,.F.,,  )
 
             oGrp2  := TGroup():New( 124,008,308,632,"Dados Pedido x Dados do Cliente",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
@@ -171,10 +173,10 @@ Default nStatus := 1
 
 Local lAtStat:= .F.
 Local aRetPed:= {}
-Local aStatus:= {'1=Aberto','2=Atendido','3=Negado'}
+Local aStatus:= {'1=Aberto','2=Atendido','3=Negado','4=Aguardando'}
 Local cProd  := Space(TamSX3('B1_COD')[01])
 Local aParam := {{ 2, "Status Chamado",nStatus,aStatus,60,, .T. },;
-                 { 1, "Produto Troca",  cProd,  "", ".T.", "SB1", ".T.", 80,  .F.}}
+                 { 1, "Produto Troca",  cProd,  "@!", ".T.", "SB1", ".T.", 80,  .F.}}
 
     If Empty(cMsgNew)
         MsgAlert('Necessário preencher o campo de observações!')
@@ -188,7 +190,7 @@ Local aParam := {{ 2, "Status Chamado",nStatus,aStatus,60,, .T. },;
 
     If ParamBox(aParam, "Atender Chamado")
         cPar1 := Iif(ValType(MV_PAR01) == 'N',MV_PAR01,Val(MV_PAR01))
-        cPar2 := MV_PAR02
+        cPar2 := upper(Alltrim(MV_PAR02))
 
         If cPar1 == nStatus
             MsgInfo('Necessário atualizar o Status do Atendimento')
@@ -204,24 +206,30 @@ Local aParam := {{ 2, "Status Chamado",nStatus,aStatus,60,, .T. },;
                 cMsgGrv += 'Observações anotadas '+cMsgNew
 
                 If cPar1 == 2
-                    Processa({|| aRetPed := fGeraPV(cPar2)}, "Gerando Pedido de Vendas...")
-                    lAtStat := aRetPed[1]
+                    If Empty(Z50->Z50_PEDVEN)
+                        Processa({|| aRetPed := fGeraPV(cPar2,Z50->Z50_FILPED)}, "Gerando Pedido de Vendas...")
+                        lAtStat := aRetPed[1]
+                    else
+                        lAtStat := .T.
+                    EndIF 
 
                 ElseIf cPar1 == 3
                     MsgInfo('Atendimento Negado pelo atendente!')
                     lAtStat := .T.
 
-                ElseIf cPar1 == 1
+                ElseIf cPar1 == 1 .or. cPar1 == 4
                     MsgInfo('Atendimento em aberto!')
                     lAtStat := .T.
                 EndIf
                 
                 If lAtStat
                     RecLock('Z50', .F.)
-                        Z50->Z50_STATUS := cValToChar(cPar1)
+                        Z50->Z50_STATUS := If(cPar1 == 4,'1',cValToChar(cPar1))
                         Z50->Z50_OBSATD := cObsOld + CRLF + Alltrim(cMsgGrv)
+                        Z50->Z50_ATENDE := cUserName
+                        //Z50->Z50_FILPED := aRetPed[3]
 
-                        If cPar1 == 2
+                        If cPar1 == 2 .And. len(aRetPed) > 0
                             Z50->Z50_PEDVEN := aRetPed[2]
                         EndIf
                     Z50->(MsUnlock())
@@ -244,10 +252,11 @@ Return
 User Function ENCERCHM()
 
 Local lEncerra:= .F.
-Local aStatus := {'1=Aberto','2=Atendido','3=Negado'}
+Local aStatus := {'1=Aberto','2=Atendido','3=Negado','4=Aguardando'}
 Local cStatus := ''
 Local cMsgGrv := ''
 Local cObsOld := ''
+Local cSeq3   := 0
 
 Local cMultG := ""
 Local oTMultiget,oTButton1,oSay1,oSay2,oSay3,oSay4
@@ -282,15 +291,27 @@ Local aItems:= {'Atende','Não atende'}
             cCombo1 := aItems[1]    
             oCombo1 := TComboBox():New(150,03,{|u|if(PCount()>0,cCombo1:=u,cCombo1)}, aItems,48,20,oDlg,,{|| },,RGB(031, 073, 125),,.T.,TFont():New("Arial",,-12,,.T.),,,,,,,,'cCombo1')
             
+            //Valor a cobrar de frete
+            oSay5 := TSay():New(153, 125, {|| 'Frete'},oDlg,"",TFont():New("Arial",,-12,,.T.),,,,.T.,RGB(031,073,125),,200,30,,,,,,.F.,,)
+            oFrete	:= TGet():New( 150,140,{|u| If(PCount()>0,cSeq3:=u,cSeq3)},oDlg,044,008,'@E 9,999.99',,CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"","",,)
+	
             oTButton1 := TButton():New(150,242,"Confirmar",oDlg,{||oDlg:end()},40,15,,TFont():New("Arial",,-12,,.T.),.F.,.T.,.F.,,.F.,,,.F.)
         
         ACTIVATE DIALOG oDlg CENTERED
 
+        cNFAtend := Posicione("SC5",1,Z50->Z50_FILPED+Z50->Z50_PEDVEN,"C5_NOTA")
+    
+        If Empty(cNFAtend)
+            lEncerra := .F.
+            MsgAlert("Não é possível encerrar o chamado ainda pois a nota fiscal para atender o cliente ainda não foi emitida")
+            RETURN
+        EndIf 
+        
         If !Empty(cMultG)
             If cCombo1 == 'Atende'
                 lEncerra := .T.
             Else
-                Processa({|| lEncerra := fGeraTit()}, "Gerando Titulo no Financeiro...")
+                Processa({|| lEncerra := fGeraTit(cSeq3)}, "Gerando Titulo no Financeiro...")
             EndIf
 
             If lEncerra
@@ -309,14 +330,17 @@ Local aItems:= {'Atende','Não atende'}
         MsgAlert('Não é possível finalizar um chamado em aberto. Por favor, verifique as etapas de atendimento.')
     EndIf
 
+    
+
     If lEncerra
         MsgInfo('Chamado Finalizado!')
 
         cMsgGrv += 'Chamado Finalizado'
 
         RecLock('Z50', .F.)
-            Z50->Z50_STATUS := '4'
-            Z50->Z50_OBSATD := cObsOld + CRLF + Alltrim(cMsgGrv)
+        Z50->Z50_STATUS := '4'
+        Z50->Z50_OBSATD := cObsOld + CRLF + Alltrim(cMsgGrv)
+        Z50->Z50_NFATEN := cNFAtend
         Z50->(MsUnlock())
     Else
         MsgAlert('Operação Cancelada!')
@@ -332,9 +356,9 @@ Return
     @author Felipe Mayer
     @since 01/10/2022
 /*/
-Static Function fGeraPV(cProd)
+Static Function fGeraPV(cProd,cFilPv)
 
-Local cDoc       := GetSxeNum("SC5", "C5_NUM")
+Local cDoc       := '' //GetSxeNum("SC5", "C5_NUM")
 Local cA1Cod     := PadR(Z50->Z50_CODCLI,TamSX3("C5_CLIENTE")[1])   // Código do Cliente
 Local cA1Loja    := PadR(Z50->Z50_LOJCLI,TamSX3("C5_LOJACLI")[1])   // Loja do Cliente
 Local cB1Cod     := PadR(cProd,TamSX3("B1_COD")[1])                 // Código do Produto
@@ -345,10 +369,15 @@ Local aCabec     := {}
 Local aItens     := {}
 Local aLinha     := {}
 Local lRet       := .T. 
+//Local cFilRet    := ''
 
 Private lMsErroAuto    := .F.
 Private lAutoErrNoFile := .F.
  
+cFilant    := cFilPv
+cDoc       := GetSxeNum("SC5", "C5_NUM")
+
+aadd(aCabec, {"C5_FILIAL",     cFilant,      Nil})
 aadd(aCabec, {"C5_NUM",     cDoc,      Nil})
 aadd(aCabec, {"C5_TIPO",    "N",       Nil})
 aadd(aCabec, {"C5_XCHAMAD", Z50->Z50_CODIGO,Nil})
@@ -361,6 +390,7 @@ aadd(aCabec, {"C5_TIPOCLI", "F",       Nil})
 aadd(aCabec, {"C5_NATUREZ", PadR(cNaturez,TamSX3("C5_NATUREZ")[1]),Nil})
 aadd(aCabec, {"C5_VEND1",   PadR(cVend1,TamSX3("C5_VEND1")[1]),Nil})
 
+aadd(aLinha,{"C6_FILIAL",   cFilant ,           Nil})
 aadd(aLinha,{"C6_ITEM",   '01',           Nil})
 aadd(aLinha,{"C6_PRODUTO",cB1Cod,         Nil})
 aadd(aLinha,{"C6_QTDVEN", 1,              Nil})
@@ -374,10 +404,12 @@ MSExecAuto({|a, b, c, d| MATA410(a, b, c, d)}, aCabec, aItens, 3, .F.)
 
 If !lMsErroAuto
     MsgInfo("Pedido de Vendas gerado com sucesso! <b>" + cDoc + "</b>")
+    //cFilRet := SC5->C5_FILIAL 
     ConfirmSX8()
 Else
     lRet := .F.
-    cDoc := '''
+    cDoc := ''
+    //cFilRet := ''
 
     RollbackSX8()
     If MsgYesNo('Erro ao gerar o pedido de vendas, deseja visualizar?')
@@ -396,7 +428,7 @@ Return {lRet,cDoc}
     @author Felipe Mayer
     @since 01/10/2022
 /*/
-Static Function fGeraTit()
+Static Function fGeraTit(cSeq3)
 
 Local aVetSE1 := {}
 Local lRet    := .T.
@@ -415,7 +447,7 @@ Local cNatu   := SuperGetMV('MV_NATGAR',.F.,'OUTROS')
     aAdd(aVetSE1, {"E1_EMISSAO", dDataBase                                    , Nil})
     aAdd(aVetSE1, {"E1_VENCTO",  dDataBase+nVenc                              , Nil})
     aAdd(aVetSE1, {"E1_VENCREA", dDataBase+nVenc                              , Nil})
-    aAdd(aVetSE1, {"E1_VALOR",   Z50->Z50_PRECO                               , Nil})
+    aAdd(aVetSE1, {"E1_VALOR",   Z50->Z50_PRECO+cSeq3                         , Nil})
     aAdd(aVetSE1, {"E1_HIST",    cHist                                        , Nil})
     aAdd(aVetSE1, {"E1_MOEDA",   1                                            , Nil})
     

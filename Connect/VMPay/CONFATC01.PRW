@@ -48,29 +48,30 @@ PRIVATE aList6     :=    {}
 PRIVATE aList7     :=    {}
 PRIVATE aList8B    :=    {}
 PRIVATE aList8     :=    {}
-// PRIVATE aList9B    :=    {}
-// PRIVATE aList9     :=    {}
+//PRIVATE aList9B    :=    {}
+//PRIVATE aList9     :=    {}
 PRIVATE aList10    :=    {}
 PRIVATE oOk        :=    LoadBitmap(GetResources(),'br_verde')  //Controla se o pedido foi alterado ou nao no grid.
 PRIVATE oNo        :=    LoadBitmap(GetResources(),'br_vermelho')
 
 DEFAULT contrato   := ''
 
-    IF Select("SM0") == 0
-        RpcSetType(3)
-        RPCSetEnv("01","0101")
-    ENDIF
+IF Select("SM0") == 0
+    RpcSetType(3)
+    RPCSetEnv("01","0101")
+ENDIF
 
-Aadd(aList,{.T.,'','','','','','','','','','','','','','','','','',''})
+// Aadd(aList,{.T.,'0708','','','','','','','','','','','','','','','','',''})
+// Aadd(aList,{.T.,'0669','','','','','','','','','','','','','','','','',''})
 Aadd(aList1,{.T.,'','','','','','','','','','','','','','','','','',''})
-Aadd(aList2,{.T.,'','','','','','','','','','','','','','','','','',''})
+// Aadd(aList2,{.T.,'','','','','','','','','','','','','','','','','',''})
 Aadd(aList3,{.T.,'','','','','','','','','','','','','','','','','',''})
 Aadd(aList4,{.T.,'','','','','','','','','','','','','','','','','',''})
-Aadd(aList5,{.T.,'','','','','','','','','','','','','','','','','',''})
+// Aadd(aList5,{.T.,'','','','','','','','','','','','','','','','','',''})
 Aadd(aList6,{.T.,'','','','','','','','','','','','','','','','','',''})
 Aadd(aList7,{.T.,'','','','','','','','','','','','','','','','','',''})
 Aadd(aList8,{.T.,'','','','','','','','','','','','','','','','','',''})
-// Aadd(aList9,{.T.,'','','','','','','','','','','','','','','','','',''})
+//Aadd(aList9,{.T.,'','','','','','','','','','','','','','','','','',''})
 Aadd(aList10,{.T.,'','','','','','','','','','','','','','','','','',''})
 
 DbSelectArea("SBM")
@@ -80,7 +81,7 @@ WHILE !EOF()
     Dbskip()         
 ENDDO
 
-// Processa({|| Busca1(contrato),"Aguarde, buscando ativos"})
+Processa({|| Busca1(contrato),"Aguarde, buscando ativos"})
 
 WHILE !empty(procname(nCont))
     IF alltrim(UPPER(procname(nCont))) $ "TECA201"
@@ -90,199 +91,203 @@ WHILE !empty(procname(nCont))
     nCont++
 ENDDO
 
-oDlg1    := MSDialog():New( 017,058,628,1344,"Pick-List",,,.F.,,,,,,.T.,,,.T. )
+If len(aList) > 0
+    oDlg1    := MSDialog():New( 017,058,628,1344,"Pick-List",,,.F.,,,,,,.T.,,,.T. )
 
-    oGrp1    := TGroup():New( 000,004,148,280,"Ativos",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
+        oGrp1    := TGroup():New( 000,004,148,280,"Ativos",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
 
-        //oBrw1      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{008,008,144,276},,, oGrp1 ) 
-        oList    := TCBrowse():New(008,008,270,137,, {'','Ativo','Modelo','Num. Série','Linha'},{10,30,40,20},;
-                                    oGrp1,,,,{|| FHelp()},{|| editped(oList:nAt)},, ,,,  ,,.F.,,.T.,,.F.,,,)
-        oList:SetArray(aList)
-        oList:bLine := {||{ IF(aList[oList:nAt,01],oOk,oNo),; 
-                              Alltrim(aList[oList:nAt,02]),;
-                              aList[oList:nAt,03],;
-                              aList[oList:nAt,04],;
-                              aList[oList:nAt,19]}}
-                                                            //,"Sangrias"    //,"Inventários"
-    oFld1    := TFolder():New( 000,284,{"Pick-List","Leituras"},{},oDlg1,,,,.T.,.F.,348,148,) 
+            //oBrw1    := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{008,008,144,276},,, oGrp1 ) 
+            oList    := TCBrowse():New(008,008,270,137,, {'','Ativo','Modelo','Num. Série','Linha'},{10,30,40,20},;
+                                        oGrp1,,,,{|| FHelp()},{|| editped(oList:nAt)},, ,,,  ,,.F.,,.T.,,.F.,,,)
+            oList:SetArray(aList)
+            oList:bLine := {||{ IF(aList[oList:nAt,01],oOk,oNo),; 
+                                Alltrim(aList[oList:nAt,02]),;
+                                aList[oList:nAt,03],;
+                                aList[oList:nAt,04],;
+                                aList[oList:nAt,19]}}
+                                                                //,"Sangrias"    //,"Inventários"
+        oFld1    := TFolder():New( 000,284,{"Pick-List","Leituras"},{},oDlg1,,,,.T.,.F.,348,148,) 
 
-        //oBrw4      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{000,000,132,344},,, oFld1:aDialogs[3] ) 
-        oList1    := TCBrowse():New(000,001,344,135,, {'','Mola','Produto','Descrição','Quant.','Conf','Nivel Par','Saldo'},{5,20,20,90,20,20,20},;
-                           oFld1:aDialogs[1],,,,{|| /*FHelp(oList:nAt)*/},{|| editcol(oList1:nAt)},, ,,,  ,,.F.,,.T.,,.F.,,,)
+            //oBrw4      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{000,000,132,344},,, oFld1:aDialogs[3] ) 
+            oList1    := TCBrowse():New(000,001,344,135,, {'','Mola','Produto','Descrição','Quant.','Conf','Nivel Par','Saldo'},{5,20,20,90,20,20,20},;
+                            oFld1:aDialogs[1],,,,{|| /*FHelp(oList:nAt)*/},{|| editcol(oList1:nAt)},, ,,,  ,,.F.,,.T.,,.F.,,,)
 
-        oList1:SetArray(aList1)
-        oList1:bLine := {||{IF(aList1[oList1:nAt,01],oOk,oNo),;
-                            aList1[oList1:nAt,02],; 
-                            aList1[oList1:nAt,03],;
-                            aList1[oList1:nAt,04],;
-                            aList1[oList1:nAt,05],;
-                            aList1[oList1:nAt,06],;  
-                            aList1[oList1:nAt,16],;  
-                            aList1[oList1:nAt,07]}}
-                             
-        //oBrw3      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{000,000,132,344},,, oFld1:aDialogs[2] ) 
-        oList8    := TCBrowse():New(000,001,344,135,, {'Data','Seleção','Produto','Descrição','Quant. Apont.','Valor'},{30,30,50,120,30,30},;
-                           oFld1:aDialogs[2],,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList2:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
+            oList1:SetArray(aList1)
+            oList1:bLine := {||{IF(aList1[oList1:nAt,01],oOk,oNo),;
+                                            aList1[oList1:nAt,02],; 
+                                            aList1[oList1:nAt,03],;
+                                            aList1[oList1:nAt,04],;
+                                            aList1[oList1:nAt,05],;
+                                            aList1[oList1:nAt,06],;  
+                                            aList1[oList1:nAt,16],;  
+                                            aList1[oList1:nAt,07]}}
+                                
+            //oBrw3      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{000,000,132,344},,, oFld1:aDialogs[2] ) 
+            oList8    := TCBrowse():New(000,001,344,135,, {'Data','Seleção','Produto','Descrição','Quant. Apont.','Valor'},{30,30,50,120,30,30},;
+                            oFld1:aDialogs[2],,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList2:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
 
-        oList8:SetArray(aList8)
-        oList8:bLine := {||{aList8[oList8:nAt,01],;
-                            aList8[oList8:nAt,02],; 
-                            aList8[oList8:nAt,03],;
-                            aList8[oList8:nAt,04],;
-                            aList8[oList8:nAt,05],;
-                            aList8[oList8:nAt,08]}}
+            oList8:SetArray(aList8)
+            oList8:bLine := {||{aList8[oList8:nAt,01],;
+                                aList8[oList8:nAt,02],; 
+                                aList8[oList8:nAt,03],;
+                                aList8[oList8:nAt,04],;
+                                aList8[oList8:nAt,05],;
+                                aList8[oList8:nAt,08]}}
 
-        //oBrw2      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{000,000,132,344},,, oFld1:aDialogs[1] ) 
-        // oList9    := TCBrowse():New(000,001,344,135,, {'Data','Audit','Valor'},{30,40,40},;
-        //                     oFld1:aDialogs[3],,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList2:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
+            //oBrw2      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{000,000,132,344},,, oFld1:aDialogs[1] ) 
+            // oList9    := TCBrowse():New(000,001,344,135,, {'Data','Audit','Valor'},{30,40,40},;
+            //                     oFld1:aDialogs[3],,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList2:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
 
-        // oList9:SetArray(aList9)
-        // oList9:bLine := {||{aList9[oList9:nAt,01],;
-        //                     aList9[oList9:nAt,02],; 
-        //                     aList9[oList9:nAt,03]}}
-                             
-        //oBrw5      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{000,000,132,344},,, oFld1:aDialogs[4] ) 
-                                                                                                   //,"oaDialogs10"
-    oFld2    := TFolder():New( 152,004,{"Produtos","MAPAS","Locais Inst.","Rotas","Cânisteres"},{},oDlg1,,,,.T.,.F.,276,132,) 
+            // oList9:SetArray(aList9)
+            // oList9:bLine := {||{aList9[oList9:nAt,01],;
+            //                     aList9[oList9:nAt,02],; 
+            //                     aList9[oList9:nAt,03]}}
+                                
+            //oBrw5      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{000,000,132,344},,, oFld1:aDialogs[4] ) 
+                                                                                        //,"Cânisteres" //,"oaDialogs10"
+        oFld2    := TFolder():New( 152,004,{"Produtos","Layouts","Locais Inst.","Rotas"},{},oDlg1,,,,.T.,.F.,276,132,) 
 
-        //oBrw6      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{000,000,116,272},,, oFld2:aDialogs[1] ) 
-        oList2    := TCBrowse():New(000,001,274,110,, {'','Código','Descrição','Saldo'},{10,30,40,20},;
-                                    oFld2:aDialogs[1],,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
-        oList2:SetArray(aList2)
-        oList2:bLine := {||{ IF(aList2[oList2:nAt,01],oOk,oNo),; 
-                                Alltrim(aList2[oList2:nAt,02]),;
-                                aList2[oList2:nAt,03],;
-                                aList2[oList2:nAt,04]}}    
-                              
-        //oBrw7      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{000,000,116,272},,, oFld2:aDialogs[2] ) 
-        oList3    := TCBrowse():New(000,001,274,110,, {'','Ativo','Selecao','Produto','Descrição','Capacidade','Nivel Par','Nivel Alerta','Valor'},{10,30,30,40,30,30,30,30,30},;
-                                    oFld2:aDialogs[2],,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
-        oList3:SetArray(aList3)
-        oList3:bLine := {||{ IF(aList3[oList3:nAt,01],oOk,oNo),; 
-                                Alltrim(aList3[oList3:nAt,02]),;
-                                Strzero(val(aList3[oList3:nAt,03]),2),;
-                                aList3[oList3:nAt,04],;
-                                aList3[oList3:nAt,05],;
-                                aList3[oList3:nAt,06],;
-                                aList3[oList3:nAt,07],;
-                                aList3[oList3:nAt,08],;
-                                Transform(aList3[oList3:nAt,09],"@E 999,999.99")}}    
+            //oBrw6      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{000,000,116,272},,, oFld2:aDialogs[1] ) 
+            oList2    := TCBrowse():New(000,001,274,110,, {'','Código','Descrição','Saldo'},{10,30,40,20},;
+                                        oFld2:aDialogs[1],,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
+            oList2:SetArray(aList2)
+            oList2:bLine := {||{ IF(aList2[oList2:nAt,01],oOk,oNo),; 
+                                    Alltrim(aList2[oList2:nAt,02]),;
+                                    aList2[oList2:nAt,03],;
+                                    aList2[oList2:nAt,04]}}    
+                                
+            //oBrw7      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{000,000,116,272},,, oFld2:aDialogs[2] ) 
+            oList3    := TCBrowse():New(000,001,274,110,, {'','Ativo','Selecao','Produto','Descrição','Capacidade','Nivel Par','Nivel Alerta','Valor'},{10,30,30,40,30,30,30,30,30},;
+                                        oFld2:aDialogs[2],,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
+            oList3:SetArray(aList3)
+            oList3:bLine := {||{ IF(aList3[oList3:nAt,01],oOk,oNo),; 
+                                    Alltrim(aList3[oList3:nAt,02]),;
+                                    Strzero(val(aList3[oList3:nAt,03]),2),;
+                                    aList3[oList3:nAt,04],;
+                                    aList3[oList3:nAt,05],;
+                                    aList3[oList3:nAt,06],;
+                                    aList3[oList3:nAt,07],;
+                                    aList3[oList3:nAt,08],;
+                                    Transform(aList3[oList3:nAt,09],"@E 999,999.99")}}    
 
-        //oBrw8      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{000,000,116,272},,, oFld2:aDialogs[3] ) 
-        oList4    := TCBrowse():New(000,001,274,110,, {'','Cod. LOCAL','Descricao'},{10,30,40},;
-                                    oFld2:aDialogs[3],,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
-        oList4:SetArray(aList4)             
-        oList4:bLine := {||{ IF(aList4[oList4:nAt,01],oOk,oNo),; 
-                                        aList4[oList4:nAt,02],;
-                                        aList4[oList4:nAt,03],;
-                                        aList4[oList4:nAt,04]}}   
-                               
-        //oBrw9      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{000,000,116,272},,, oFld2:aDialogs[4] ) 
-        oList5    := TCBrowse():New(000,001,274,110,, {'','Codigo','Descricao'},{10,30,40},;
-                                    oFld2:aDialogs[4],,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
-        oList5:SetArray(aList5)
-        oList5:bLine := {||{ IF(aList5[oList5:nAt,01],oOk,oNo),; 
-                                Alltrim(aList5[oList5:nAt,02]),;
-                                aList5[oList5:nAt,03]}}   
-                               
-        //oBrw10     := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{000,000,116,272},,, oFld2:aDialogs[5] ) 
-        oList6    := TCBrowse():New(000,001,274,110,, {'','Insumo','Capacidade','Nivel Par','Nivel Alerta','Disponível','Utilizado'},{10,80,30,30,30,30,30},;
-                                    oFld2:aDialogs[5],,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
-        oList6:SetArray(aList6)
-        oList6:bLine := {||{ IF(aList6[oList6:nAt,01],oOk,oNo),; 
-                                Alltrim(aList6[oList6:nAt,02]),;
-                                aList6[oList6:nAt,03],;
-                                aList6[oList6:nAt,04],;
-                                aList6[oList6:nAt,05],;
-                                aList6[oList6:nAt,06],;
-                                aList6[oList6:nAt,07]}}   
-                               
-        //oBrw11     := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{000,000,116,272},,, oFld2:aDialogs[6] ) 
-        // oList7    := TCBrowse():New(000,001,274,110,, {'','Ativo','Modelo','Pick-List'},{10,30,40,20},;
-        //                 oFld2:aDialogs[6],,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
-        // oList7:SetArray(aList7)
-        // oList7:bLine := {||{ IF(aList7[oList7:nAt,01],oOk,oNo),; 
-        //                         Alltrim(aList7[oList7:nAt,02]),;
-        //                         aList7[oList7:nAt,03],;
-        //                         aList7[oList7:nAt,04]}}    
+            //oBrw8      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{000,000,116,272},,, oFld2:aDialogs[3] ) 
+            oList4    := TCBrowse():New(000,001,274,110,, {'','Cod. LOCAL','Descricao'},{10,30,40},;
+                                        oFld2:aDialogs[3],,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
+            oList4:SetArray(aList4)             
+            oList4:bLine := {||{ IF(aList4[oList4:nAt,01],oOk,oNo),; 
+                                            aList4[oList4:nAt,02],;
+                                            aList4[oList4:nAt,03],;
+                                            aList4[oList4:nAt,04]}}   
+                                
+            //oBrw9      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{000,000,116,272},,, oFld2:aDialogs[4] ) 
+            oList5    := TCBrowse():New(000,001,274,110,, {'','Codigo','Descricao'},{10,30,40},;
+                                        oFld2:aDialogs[4],,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
+            oList5:SetArray(aList5)
+            oList5:bLine := {||{ IF(aList5[oList5:nAt,01],oOk,oNo),; 
+                                    Alltrim(aList5[oList5:nAt,02]),;
+                                    aList5[oList5:nAt,03]}}   
+                                
+            //oBrw10     := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{000,000,116,272},,, oFld2:aDialogs[5] ) 
+            // oList6    := TCBrowse():New(000,001,274,110,, {'','Insumo','Capacidade','Nivel Par','Nivel Alerta','Disponível','Utilizado'},{10,80,30,30,30,30,30},;
+            //                             oFld2:aDialogs[5],,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
+            // oList6:SetArray(aList6)
+            // oList6:bLine := {||{ IF(aList6[oList6:nAt,01],oOk,oNo),; 
+            //                         Alltrim(aList6[oList6:nAt,02]),;
+            //                         aList6[oList6:nAt,03],;
+            //                         aList6[oList6:nAt,04],;
+            //                         aList6[oList6:nAt,05],;
+            //                         aList6[oList6:nAt,06],;
+            //                         aList6[oList6:nAt,07]}}   
+                                
+            // oBrw11     := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{000,000,116,272},,, oFld2:aDialogs[6] ) 
+            // oList7    := TCBrowse():New(000,001,274,110,, {'','Ativo','Modelo','Pick-List'},{10,30,40,20},;
+            //                 oFld2:aDialogs[6],,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
+            // oList7:SetArray(aList7)
+            // oList7:bLine := {||{ IF(aList7[oList7:nAt,01],oOk,oNo),; 
+            //                         Alltrim(aList7[oList7:nAt,02]),;
+            //                         aList7[oList7:nAt,03],;
+            //                         aList7[oList7:nAt,04]}}    
 
-    oGrp2    := TGroup():New( 152,284,198,424,"",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
+        oGrp2    := TGroup():New( 152,284,198,424,"",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
 
-        oBmp1    := TBitmap():New( 159,288,044,034,,"C:\Users\digog\OneDrive\Imagens\Saved Pictures\connect-vending-logo.png",.F.,oGrp2,,,.F.,.T.,,"",.T.,,.T.,,.F. )
-        oBmp2    := TBitmap():New( 159,339,044,034,,"\system\lgvmp.bmp",.F.,oGrp2,,,.F.,.T.,,"",.T.,,.T.,,.F. )
-        oSay1    := TSay():New( 160,386,{||"Pick List V. 2.0"},oGrp2,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,037,008)
-        oSay2    := TSay():New( 178,386,{||"developed by"},oGrp2,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,035,008)
-        oSay3    := TSay():New( 186,387,{||"AVSI Pro"},oGrp2,,,.F.,.F.,.F.,.T.,CLR_BLUE,CLR_WHITE,032,008)
+            oBmp1    := TBitmap():New( 159,288,044,034,,"C:\Users\digog\OneDrive\Imagens\Saved Pictures\connect-vending-logo.png",.F.,oGrp2,,,.F.,.T.,,"",.T.,,.T.,,.F. )
+            oBmp2    := TBitmap():New( 159,339,044,034,,"\system\lgvmp.bmp",.F.,oGrp2,,,.F.,.T.,,"",.T.,,.T.,,.F. )
+            oSay1    := TSay():New( 160,386,{||"Pick List V. 2.0"},oGrp2,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,037,008)
+            oSay2    := TSay():New( 178,386,{||"developed by"},oGrp2,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,035,008)
+            oSay3    := TSay():New( 186,387,{||"AVSI Pro"},oGrp2,,,.F.,.F.,.F.,.T.,CLR_BLUE,CLR_WHITE,032,008)
 
-    oGrp3    := TGroup():New( 209,284,285,632,"Informações do Cliente",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
+        oGrp3    := TGroup():New( 209,284,285,632,"Informações do Cliente",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
+            
+            oSay4    := TSay():New( 221,288,{||"oSay4"},oGrp3,,,.F.,.F.,.F.,.T.,CLR_BLUE,CLR_WHITE,432,008)
+            oSay5    := TSay():New( 233,288,{||"oSay5"},oGrp3,,,.F.,.F.,.F.,.T.,CLR_BLUE,CLR_WHITE,432,008)
+            oSay6    := TSay():New( 245,288,{||"oSay6"},oGrp3,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,432,008)
+            oSay7    := TSay():New( 257,288,{||"oSay7"},oGrp3,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,432,008)
+            oSay8    := TSay():New( 269,288,{||"oSay8"},oGrp3,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,432,008)
         
-        oSay4    := TSay():New( 221,288,{||"oSay4"},oGrp3,,,.F.,.F.,.F.,.T.,CLR_BLUE,CLR_WHITE,432,008)
-        oSay5    := TSay():New( 233,288,{||"oSay5"},oGrp3,,,.F.,.F.,.F.,.T.,CLR_BLUE,CLR_WHITE,432,008)
-        oSay6    := TSay():New( 245,288,{||"oSay6"},oGrp3,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,432,008)
-        oSay7    := TSay():New( 257,288,{||"oSay7"},oGrp3,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,432,008)
-        oSay8    := TSay():New( 269,288,{||"oSay8"},oGrp3,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,432,008)
-    
-    oGrp4    := TGroup():New( 151,428,208,548,"Busca",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
+        oGrp4    := TGroup():New( 151,428,208,548,"Busca",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
 
-        oSay9    := TSay():New( 179,432,{||"Procurar por"},oGrp4,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
-        oCBox1   := TComboBox():New( 163,432,{|u|IF(PCount()>0,cCombo1:=u,cCombo1)},aItens,108,010,oGrp4,,,,CLR_BLACK,CLR_WHITE,.T.,,"",,,,,,, )
-        oGet1    := TGet():New( 179,480,{|u|IF(PCount()>0,cBusca:=u,cBusca)},oGrp4,060,008,'',,CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"","",,)
-        oBtn3    := TButton():New( 195,438,"Procurar",oGrp4,{||Busca2(1)},037,008,,,,.T.,,"",,,,.F. )
-        oBtn4    := TButton():New( 195,495,"Filtrar",oGrp4,{||Busca2(2)},037,008,,,,.T.,,"",,,,.F. )
-    
+            oSay9    := TSay():New( 179,432,{||"Procurar por"},oGrp4,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
+            oCBox1   := TComboBox():New( 163,432,{|u|IF(PCount()>0,cCombo1:=u,cCombo1)},aItens,108,010,oGrp4,,,,CLR_BLACK,CLR_WHITE,.T.,,"",,,,,,, )
+            oGet1    := TGet():New( 179,480,{|u|IF(PCount()>0,cBusca:=u,cBusca)},oGrp4,060,008,'',,CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"","",,)
+            oBtn3    := TButton():New( 195,438,"Procurar",oGrp4,{||Busca2(1)},037,008,,,,.T.,,"",,,,.F. )
+            oBtn4    := TButton():New( 195,495,"Filtrar",oGrp4,{||Busca2(2)},037,008,,,,.T.,,"",,,,.F. )
+        
 
-    oBtn2    := TButton():New( 180,588,"Sair",oDlg1,{||oDlg1:end()},037,012,,,,.T.,,"",,,,.F. )
-     
-     //Botao de faturamento
-    oMenu := TMenu():New(0,0,0,0,.T.)
-    // Adiciona itens no Menu
-    oTMenuIte1   := TMenuItem():New(oDlg1,"Pick-List Vmpay",,,,{|| Processa({|| Vmpay(),"Buscando informações"})},,,,,,,,,.T.)
-    oTMenuIte7   := TMenuItem():New(oDlg1,"Vendas Vmpay",,,,{|| Processa({|| Vendaspay(),"Buscando informações"})},,,,,,,,,.T.)
-    oTMenuIte2   := TMenuItem():New(oDlg1,"Validar Saldo",,,,{|| Processa({||saldos(),"Aguarde..."})},,,,,,,,,.T.)   
-    oTMenuIte3   := TMenuItem():New(oDlg1,"Inverter",,,,{|| Processa({||inverte(),"Aguarde..."})},,,,,,,,,.T.) 
-    oTMenuIte4   := TMenuItem():New(oDlg1,"Validar MAPA",,,,{|| Processa({|| ValidPlan(),"Aguarde..."})},,,,,,,,,.T.) 
-    oTMenuIte5   := TMenuItem():New(oDlg1,"Gerar PV",,,,{|| Processa({||pedido(),"Aguarde..."})},,,,,,,,,.T.) 
-    //oTMenuIte6 := TMenuItem():New(oDlg1,"Exportar Remessas",,,,{|| Processa({||Remessas(),"Aguarde..."})},,,,,,,,,.T.) 
-    IF !lTeca
-        oMenu:Add(oTMenuIte1)
-        oMenu:Add(oTMenuIte7)
-        oMenu:Add(oTMenuIte2)
-        oMenu:Add(oTMenuIte3)
-        oMenu:Add(oTMenuIte4)
-        oMenu:Add(oTMenuIte5) 
-    ELSE
-        oMenu:Add(oTMenuIte7)
-    ENDIF
-    //oMenu:Add(oTMenuIte6)
-    //oBtn1      := TButton():New( 160,588,"oBtn1",oDlg1,,037,012,,,,.T.,,"",,,,.F. )
-    // Cria botão que sera usado no Menu
-    oTButton1 := TButton():New( 160, 588, "Opções",oDlg1,{||},037,12,,,.F.,.T.,.F.,,.F.,,,.F. )
-    // Define botão no Menu
-    oTButton1:SetPopupMenu(oMenu)     
-    
-    IF !lTeca
-        // Menu popup grid 3
-        MENU oMenuP POPUP 
-        MENUITEM "Salvar MAPA" ACTION ( saveplan())
-        MENUITEM "Incluir MAPA" ACTION ( incplan(1))
-        MENUITEM "Alterar MAPA" ACTION ( incplan(2))
-        MENUITEM "Excluir MAPA" ACTION ( excplan())
-        MENUITEM "Replicar MAPA" ACTION ( repplan())
+        oBtn2    := TButton():New( 180,588,"Sair",oDlg1,{||oDlg1:end()},037,012,,,,.T.,,"",,,,.F. )
+        
+        //Botao de faturamento
+        oMenu := TMenu():New(0,0,0,0,.T.)
+        // Adiciona itens no Menu
+        oTMenuIte1   := TMenuItem():New(oDlg1,"Pick-List Vmpay",,,,{|| Processa({|| Vmpay(),"Buscando informações"})},,,,,,,,,.T.)
+        oTMenuIte7   := TMenuItem():New(oDlg1,"Vendas Vmpay",,,,{|| Processa({|| Vendaspay(),"Buscando informações"})},,,,,,,,,.T.)
+        oTMenuIte2   := TMenuItem():New(oDlg1,"Validar Saldo",,,,{|| Processa({||saldos(),"Aguarde..."})},,,,,,,,,.T.)   
+        oTMenuIte3   := TMenuItem():New(oDlg1,"Inverter",,,,{|| Processa({||inverte(),"Aguarde..."})},,,,,,,,,.T.) 
+        oTMenuIte4   := TMenuItem():New(oDlg1,"Validar LAYOUT",,,,{|| Processa({|| ValidPlan(),"Aguarde..."})},,,,,,,,,.T.) 
+        oTMenuIte5   := TMenuItem():New(oDlg1,"Gerar PV",,,,{|| Processa({||pedido(),"Aguarde..."})},,,,,,,,,.T.) 
+        //oTMenuIte6 := TMenuItem():New(oDlg1,"Exportar Remessas",,,,{|| Processa({||Remessas(),"Aguarde..."})},,,,,,,,,.T.) 
+        IF !lTeca
+            oMenu:Add(oTMenuIte1)
+            oMenu:Add(oTMenuIte7)
+            oMenu:Add(oTMenuIte2)
+            oMenu:Add(oTMenuIte3)
+            oMenu:Add(oTMenuIte4)
+            oMenu:Add(oTMenuIte5) 
+        ELSE
+            oMenu:Add(oTMenuIte7)
+        ENDIF
+        //oMenu:Add(oTMenuIte6)
+        //oBtn1      := TButton():New( 160,588,"oBtn1",oDlg1,,037,012,,,,.T.,,"",,,,.F. )
+        // Cria botão que sera usado no Menu
+        oTButton1 := TButton():New( 160, 588, "Opções",oDlg1,{||},037,12,,,.F.,.T.,.F.,,.F.,,,.F. )
+        // Define botão no Menu
+        oTButton1:SetPopupMenu(oMenu)     
+        
+        IF !lTeca
+            // Menu popup grid 3
+            MENU oMenuP POPUP 
+            MENUITEM "Salvar LAYOUT"   ACTION (saveplan())
+            MENUITEM "Incluir LAYOUT"  ACTION (incplan(1))
+            MENUITEM "Alterar LAYOUT"  ACTION (incplan(2))
+            MENUITEM "Excluir LAYOUT"  ACTION (excplan())
+            MENUITEM "Replicar LAYOUT" ACTION (repplan())
+            
+            ENDMENU                                                                           
+        
+            // oList3:bRClicked := { |oObject,nX,nY| oMenuP:Activate( nX, (nY-10), oObject ) }
+        ENDIF                                                                               
+
+        // Menu popup grid 2
+        MENU oMenu8 POPUP 
+        MENUITEM "Salvar Venda" ACTION (savevend())
         
         ENDMENU                                                                           
-    
-        // oList3:bRClicked := { |oObject,nX,nY| oMenuP:Activate( nX, (nY-10), oObject ) }
-    ENDIF                                                                               
 
-    // Menu popup grid 2
-    MENU oMenu8 POPUP 
-    MENUITEM "Salvar Venda" ACTION ( savevend())
-    
-    ENDMENU                                                                           
-
-    // oList8:bRClicked := { |oObject,nX,nY| oMenu8:Activate( nX, (nY-10), oObject ) }
-    
-oDlg1:Activate(,,,.T.)
+        oList8:bRClicked := { |oObject,nX,nY| oMenu8:Activate( nX, (nY-10), oObject ) }
+        
+    oDlg1:Activate(,,,.T.)
+else
+    MsgAlert("Não há dados a serem exibidos")
+EndIf
 
 RETURN
 
@@ -313,7 +318,7 @@ cQuery += " FROM "+RetSQLName("AA3")+" AA3 "
 cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_COD=AA3_CODPRO AND B1.D_E_L_E_T_=''"
 //cQuery += " INNER JOIN "+RetSQLName("SZN")+" ZN ON ZN_NUMSER=AA3_NUMSER AND ZN.D_E_L_E_T_=''"
 
-cQuery += " INNER JOIN "+RetSQLName("AAN")+" AAN ON AAN_FILIAL=AA3_FILIAL AND AAN_CODIND=AA3_NUMSER AND AAN.D_E_L_E_T_=''"
+cQuery += " INNER JOIN "+RetSQLName("AAN")+" AAN ON AAN_FILIAL=AA3_FILIAL AND AAN_XCBASE=AA3_NUMSER AND AAN.D_E_L_E_T_=''"
 
 IF !Empty(contrato)
     //Puxar leituras para faturamento
@@ -358,7 +363,7 @@ cQuery := "SELECT B1_COD,B1_DESC"
 cQuery += " FROM "+RetSQLName("SB1")+" SB1 "
 cQuery += " WHERE SB1.D_E_L_E_T_='' AND B1_MSBLQL<>'1'"
 
-cQuery += " AND B1_GRUPO  IN('PA72')" //'PA62' ,'PA73','PA74'
+// cQuery += " AND B1_GRUPO  IN('PA72')" //'PA62' ,'PA73','PA74'
 
 cQuery += " ORDER BY B1_COD"
 
@@ -383,16 +388,16 @@ DbSelectArea("SB2")
 DbSetOrder(1)
 FOR nX := 1 TO len(aList2B)
     DbSeek(xFilial("SB2")+aList2B[nX,02]+'01')
-    nSaldo    :=    SaldoSB2()
-    aList2B[nX,04] := nSaldo
-    aList2[nX,04] := nSaldo
+    nSaldo            :=    SaldoSB2()
+    aList2B[nX,04]    :=    nSaldo
+    aList2[nX,04]     :=    nSaldo
 NEXT nX
 
-cQuery := "SELECT ZO_NUMSER,ZO_SEQUEN,ZO_BEBIDA,B1_DESC,0 AS QTD,'' AS CLIENTE,'' AS LOJA,ZO_MAQUINA"
-cQuery += " FROM "+RetSQLName("SZO")+" ZO"
-cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_COD=ZO_BEBIDA AND B1.D_E_L_E_T_=''"
-cQuery += " INNER JOIN "+RetSQLName("AAN")+" AN ON AAN_XCBASE=ZO_NUMSER AND AN.D_E_L_E_T_=''"
-cQuery += " WHERE ZO.D_E_L_E_T_='' AND ZO_NUMSER<>''" 
+// cQuery := "SELECT Z11_NUMSER,Z11_SEQUEN,Z11_BEBIDA,B1_DESC,0 AS QTD,'' AS CLIENTE,'' AS LOJA,Z11_MAQUINA"
+// cQuery += " FROM "+RetSQLName("Z11")+" Z11"
+// cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_COD=Z11_BEBIDA AND B1.D_E_L_E_T_=''"
+// cQuery += " INNER JOIN "+RetSQLName("AAN")+" AN ON AAN_XCBASE=Z11_NUMSER AND AN.D_E_L_E_T_=''"
+// cQuery += " WHERE Z11.D_E_L_E_T_='' AND Z11_NUMSER<>''" 
 cQuery := "SELECT ABS_LOCAL,ABS_DESCRI,ABS_CODIGO,ABS_LOJA,ABS_END,ABS_BAIRRO,ABS_MUNIC,ABS_ESTADO,ABS_CEP"
 cQuery += " FROM "+RetSQLName("ABS")
 cQuery += " WHERE D_E_L_E_T_=''"
@@ -415,7 +420,8 @@ ENDDO
 
 cQuery := "SELECT NNR_CODIGO,NNR_DESCRI"
 cQuery += " FROM "+RetSQLName("NNR")+" NNR "
-cQuery += " WHERE NNR.D_E_L_E_T_='' AND SUBSTRING(NNR_CODIGO,1,1)='R' ORDER BY NNR_CODIGO"
+// cQuery += " WHERE NNR.D_E_L_E_T_='' AND SUBSTRING(NNR_CODIGO,1,1)='R' ORDER BY NNR_CODIGO"
+cQuery += " WHERE NNR.D_E_L_E_T_='' ORDER BY NNR_CODIGO"
 
 IF Select('TRB') > 0
     dbSelectArea('TRB')
@@ -469,10 +475,10 @@ IF cCombo1 == "1"
                 Aadd(aList,aListB[nX])
                 oList:SetArray(aList)
                 oList:bLine := {||{ IF(aList[oList:nAt,01],oOk,oNo),; 
-                                        Alltrim(aList[oList:nAt,02]),;
-                                        aList[oList:nAt,03],;
-                                        aList[oList:nAt,04],;
-                                        aList[oList:nAt,19]}}
+                                       Alltrim(aList[oList:nAt,02]),;
+                                       aList[oList:nAt,03],;
+                                       aList[oList:nAt,04],;
+                                       aList[oList:nAt,19]}}
                 EXIT
             ENDIF   
         NEXT nX  
@@ -486,10 +492,10 @@ IF cCombo1 == "1"
     
         oList:SetArray(aList)
         oList:bLine := {||{ IF(aList[oList:nAt,01],oOk,oNo),; 
-                                Alltrim(aList[oList:nAt,02]),;
-                                aList[oList:nAt,03],;
-                                aList[oList:nAt,04],;
-                                aList[oList:nAt,19]}}
+                               Alltrim(aList[oList:nAt,02]),;
+                               aList[oList:nAt,03],;
+                               aList[oList:nAt,04],;
+                               aList[oList:nAt,19]}}
         //oList:nAt := 1
     ENDIF   
     oList:refresh()
@@ -509,10 +515,10 @@ ElseIf cCombo1 == "2"
                 Aadd(aList,aListB[nX])
                 oList:SetArray(aList)
                 oList:bLine := {||{ IF(aList[oList:nAt,01],oOk,oNo),; 
-                                        Alltrim(aList[oList:nAt,02]),;
-                                        aList[oList:nAt,03],;
-                                        aList[oList:nAt,04],;
-                                        aList[oList:nAt,19]}}
+                                       Alltrim(aList[oList:nAt,02]),;
+                                       aList[oList:nAt,03],;
+                                       aList[oList:nAt,04],;
+                                       aList[oList:nAt,19]}}
                 EXIT
             ENDIF   
         NEXT nX  
@@ -525,10 +531,10 @@ ElseIf cCombo1 == "2"
 
             oList:SetArray(aList)
             oList:bLine := {||{ IF(aList[oList:nAt,01],oOk,oNo),; 
-                                    Alltrim(aList[oList:nAt,02]),;
-                                    aList[oList:nAt,03],;
-                                    aList[oList:nAt,04],;
-                                    aList[oList:nAt,19]}}
+                                   Alltrim(aList[oList:nAt,02]),;
+                                   aList[oList:nAt,03],;
+                                   aList[oList:nAt,04],;
+                                   aList[oList:nAt,19]}}
                 
         ENDIF
     ENDIF   
@@ -581,10 +587,10 @@ ElseIf cCombo1 == "4"
 
     oList:SetArray(aList)
     oList:bLine := {||{ IF(aList[oList:nAt,01],oOk,oNo),; 
-                            Alltrim(aList[oList:nAt,02]),;
-                            aList[oList:nAt,03],;
-                            aList[oList:nAt,04],;
-                            aList[oList:nAt,19]}}
+                           Alltrim(aList[oList:nAt,02]),;
+                           aList[oList:nAt,03],;
+                           aList[oList:nAt,04],;
+                           aList[oList:nAt,19]}}
     oList:nAt:=1
     oList:refresh()
     oDlg1:refresh()
@@ -606,10 +612,10 @@ ElseIf cCombo1 == "5"
     
     oList:SetArray(aList)
     oList:bLine := {||{ IF(aList[oList:nAt,01],oOk,oNo),; 
-                            Alltrim(aList[oList:nAt,02]),;
-                            aList[oList:nAt,03],;
-                            aList[oList:nAt,04],;
-                            aList[oList:nAt,19]}}
+                           Alltrim(aList[oList:nAt,02]),;
+                           aList[oList:nAt,03],;
+                           aList[oList:nAt,04],;
+                           aList[oList:nAt,19]}}
     oList:nAt:=1
     oList:refresh()
     oDlg1:refresh()
@@ -633,10 +639,10 @@ ElseIf cCombo1 == "6"
 
     oList:SetArray(aList)
     oList:bLine := {||{ IF(aList[oList:nAt,01],oOk,oNo),; 
-                            Alltrim(aList[oList:nAt,02]),;
-                            aList[oList:nAt,03],;
-                            aList[oList:nAt,04],;
-                            aList[oList:nAt,19]}}
+                           Alltrim(aList[oList:nAt,02]),;
+                           aList[oList:nAt,03],;
+                           aList[oList:nAt,04],;
+                           aList[oList:nAt,19]}}
 
     //oList:refresh()
     //oDlg1:refresh()
@@ -694,14 +700,14 @@ ENDIF
 oList3:nAt := 1
 oList3:SetArray(aList3)
 oList3:bLine := {||{ IF(aList3[oList3:nAt,01],oOk,oNo),; 
-                      Alltrim(aList3[oList3:nAt,02]),;
-                      Strzero(val(aList3[oList3:nAt,03]),2),;
-                      aList3[oList3:nAt,04],;
-                      aList3[oList3:nAt,05],;
-                      aList3[oList3:nAt,06],;
-                      aList3[oList3:nAt,07],;
-                      aList3[oList3:nAt,08],;
-                      Transform(aList3[oList3:nAt,09],"@E 999,999.99")}}  
+                        Alltrim(aList3[oList3:nAt,02]),;
+                        Strzero(val(aList3[oList3:nAt,03]),2),;
+                        aList3[oList3:nAt,04],;
+                        aList3[oList3:nAt,05],;
+                        aList3[oList3:nAt,06],;
+                        aList3[oList3:nAt,07],;
+                        aList3[oList3:nAt,08],;
+                        Transform(aList3[oList3:nAt,09],"@E 999,999.99")}}  
 
 FOR nX := 1 TO len(aList1B)
     IF Alltrim(aList1B[nX,08]) == Alltrim(aList[oList:nAt,02])
@@ -716,13 +722,13 @@ ENDIF
 oList1:nAt := 1
 oList1:SetArray(aList1)
 oList1:bLine := {||{IF(aList1[oList1:nAt,01],oOk,oNo),;
-                    aList1[oList1:nAt,02],; 
-                     aList1[oList1:nAt,03],;
-                     aList1[oList1:nAt,04],;
-                     aList1[oList1:nAt,05],;
-                     aList1[oList1:nAt,06],;  
-                     aList1[oList1:nAt,16],;  
-                     aList1[oList1:nAt,07]}} 
+                                aList1[oList1:nAt,02],; 
+                                aList1[oList1:nAt,03],;
+                                aList1[oList1:nAt,04],;
+                                aList1[oList1:nAt,05],;
+                                aList1[oList1:nAt,06],;  
+                                aList1[oList1:nAt,16],;  
+                                aList1[oList1:nAt,07]}} 
                      
 FOR nX := 1 TO len(aList4B)
     IF aList4B[nX,04] == aList[oList:nAt,17] .And. aList4B[nX,05] == aList[oList:nAt,18]    
@@ -730,7 +736,7 @@ FOR nX := 1 TO len(aList4B)
         IF aList4B[nX,02] == aList[oList:nAt,20] .And. !Empty(aList[oList:nAt,20])
             aList4[len(aList4),01] := .T.
             IF !Empty(aList4[len(aList4),06]) 
-                oSay6:settext("LOCAL de Instalação "+aList4[len(aList4),06]+" / "+aList4[len(aList4),07]+" / "+aList4[len(aList4),08]+" / "+aList4[len(aList4),09]+" / "+aList4[len(aList4),10])
+                oSay6:settext("Local de Instalação "+aList4[len(aList4),06]+" / "+aList4[len(aList4),07]+" / "+aList4[len(aList4),08]+" / "+aList4[len(aList4),09]+" / "+aList4[len(aList4),10])
             ENDIF
         ENDIF  
     ENDIF
@@ -743,9 +749,9 @@ ENDIF
 oList4:nAt := 1
 oList4:SetArray(aList4)             
 oList4:bLine := {||{ IF(aList4[oList4:nAt,01],oOk,oNo),; 
-                      aList4[oList4:nAt,02],;
-                      aList4[oList4:nAt,03],;
-                      aList4[oList4:nAt,04]}}   
+                                 aList4[oList4:nAt,02],;
+                                 aList4[oList4:nAt,03],;
+                                 aList4[oList4:nAt,04]}}   
 
 FOR nX := 1 TO len(aList8B)
     IF Alltrim(aList8B[nX,06]) == Alltrim(aList[oList:nAt,02])
@@ -791,20 +797,20 @@ IF len(aList6) < 1
     Aadd(aList6,{.F.,'','','','','','','','','','','','','','','','','','',''})
 ENDIF
 
-oList6:SetArray(aList6)
-oList6:bLine := {||{ IF(aList6[oList6:nAt,01],oOk,oNo),; 
-                      Alltrim(aList6[oList6:nAt,02]),;
-                      aList6[oList6:nAt,03],;
-                      aList6[oList6:nAt,04],;
-                      aList6[oList6:nAt,05],;
-                      aList6[oList6:nAt,06],;
-                      aList6[oList6:nAt,07]}}   
-                                 
+// oList6:SetArray(aList6)
+// oList6:bLine := {||{ IF(aList6[oList6:nAt,01],oOk,oNo),; 
+//                         Alltrim(aList6[oList6:nAt,02]),;
+//                         aList6[oList6:nAt,03],;
+//                         aList6[oList6:nAt,04],;
+//                         aList6[oList6:nAt,05],;
+//                         aList6[oList6:nAt,06],;
+//                         aList6[oList6:nAt,07]}}
+
                      
 oList1:refresh()
 oList3:refresh()    
 oList4:refresh()
-oList6:refresh()
+// oList6:refresh()
 oList8:refresh()
 // oList9:refresh()
 oList:refresh()
@@ -1458,14 +1464,12 @@ LOCAL cVarVM         :=    ''
 LOCAL aAuxRet        :=    {}
 LOCAL aAuxR2         :=    {}
 LOCAL oRestClient    :=    FWRest():New("http://vmpay.vertitecnologia.com.br")
-// LOCAL oRestClient    :=    FWRest():New("http://demo.vmpay.vertitecnologia.com.br")
 LOCAL aHeader        :=    {}        
 LOCAL nPikid         :=    199090      
-// LOCAL cChavH         :=    "?access_token=JKRwU4xyVkMFwLY4Z085wmMOSfUAJ0YD1UfgqEMU7"
-LOCAL cChavP         :=    "?access_token=tH3FkJ7cB2P0GwwOGbmMpJvoHsQJtMZD2nX1Ihmj"  
+LOCAL cChavP         :=    "?access_token=yVXxnxgOExcIaBQOQ9CFgK0cLgX22dJct7y85WXW"  
 LOCAL nX
 
-Aadd(aHeader, "Authorization: Basic " + Encode64("access_token:tH3FkJ7cB2P0GwwOGbmMpJvoHsQJtMZD2nX1Ihmj"))
+Aadd(aHeader, "Authorization: Basic " + Encode64("access_token:yVXxnxgOExcIaBQOQ9CFgK0cLgX22dJct7y85WXW"))
 
 cDtCriac := Date()
 cDtCriac := Dtos(cDtCriac)
@@ -1625,7 +1629,7 @@ RETURN
 STATIC FUNCTION Saveplan()
 
 LOCAL aArea    :=    GetArea()
-// LOCAL aCabec:=    {"Z07_CLIENTE","Z07_LOJA","Z07_CHAPA","Z07_CODMAQ","Z07_CODPROD","Z07_MOLA","Z07_QUANT","Z07_NIVPAR","Z07_NIVALE","Z07_VALOR"}
+// LOCAL aCabec:=    {"Z07_CLIENT","Z07_LOJA","Z07_CHAPA","Z07_CODMAQ","Z07_CODPROD","Z07_MOLA","Z07_QUANT","Z07_NIVPAR","Z07_NIVALE","Z07_VALOR"}
 // LOCAL nPosB    :=    Ascan(aList3B,{|x| Alltrim(x[2]) == Alltrim(aList3[oList3:nAt,02])}) 
 LOCAL lAlt     :=    .F. 
 LOCAL lMolD    :=    .F.
@@ -1634,7 +1638,7 @@ LOCAL nPing
 LOCAL nX
 LOCAL nJ
 
- //Z07_CLIENTE, Z07_LOJA, Z07_CHAPA, Z07_CODMAQ, Z07_CODPROD, Z07_MOLA, 
+ //Z07_CLIENT, Z07_LOJA, Z07_CHAPA, Z07_CODMAQ, Z07_CODPROD, Z07_MOLA, 
 //FILIAL+CHAPA+SELECAO+CODCLI
 FOR nX := 1 TO len(aList3)
     IF !aList3[nX,01] 
@@ -1648,10 +1652,10 @@ FOR nX := 1 TO len(aList3)
                FOR nPing := 1 TO len(aAuxD)  
                     DbSelectArea("Z07")     
                     DbSetOrder(2)
-                ////Z07_CLIENTE, Z07_LOJA, Z07_CHAPA, Z07_CODMAQ, Z07_CODPROD, Z07_MOLA,
+                ////Z07_CLIENT, Z07_LOJA, Z07_CHAPA, Z07_CODMAQ, Z07_CODPROD, Z07_MOLA,
                    IF !DbSeek(xFilial("Z07")+aList3[nX,02]+aList[oList:nAt,17]+aList[oList:nAt,18]+Avkey(aAuxD[nPing],"Z07_MOLA"))
                        Reclock("Z07",.T.)
-                    Z07->Z07_CLIENTE    :=    aList[oList:nAt,17]
+                    Z07->Z07_CLIENT     :=    aList[oList:nAt,17]
                     Z07->Z07_LOJA       :=    aList[oList:nAt,18]
                     Z07->Z07_CHAPA      :=    aList3[nX,02]
                     Z07->Z07_CODMAQ     :=    Posicione("AA3",7,xFilial("AA3")+aList3[nX,02],"AA3_CODPRO")
@@ -1664,7 +1668,7 @@ FOR nX := 1 TO len(aList3)
                     IF Z07->Z07_CODPROD <> aList3[nX,04]
                         //Na sequencia cria um novo
                         Reclock("Z07",.T.)
-                        Z07->Z07_CLIENTE    :=    aList[oList:nAt,17]
+                        Z07->Z07_CLIENT     :=    aList[oList:nAt,17]
                         Z07->Z07_LOJA       :=    aList[oList:nAt,18]
                         Z07->Z07_CHAPA      :=    aList3[nX,02]
                         Z07->Z07_CODMAQ     :=    Posicione("AA3",7,xFilial("AA3")+aList3[nX,02],"AA3_CODPRO")
@@ -1680,7 +1684,7 @@ FOR nX := 1 TO len(aList3)
                IF !DbSeek(xFilial("Z07")+aList3[nX,02]+aList[oList:nAt,17]+aList[oList:nAt,18]+Avkey(aList3[nX,03],"Z07_MOLA"))
     //        IF !DbSeek(xFilial("Z06")+aList3[nX,02]+Avkey(aList3[nX,03],"Z06_SELECAO")+aList[oList:nAt,17])    
                     Reclock("Z07",.T.)
-                    Z07->Z07_CLIENTE    :=    aList[oList:nAt,17]
+                    Z07->Z07_CLIENT    :=    aList[oList:nAt,17]
                     Z07->Z07_LOJA       :=    aList[oList:nAt,18]
                     Z07->Z07_CHAPA      :=    aList3[nX,02]
                     Z07->Z07_CODMAQ     :=    Posicione("AA3",7,xFilial("AA3")+aList3[nX,02],"AA3_CODPRO")
@@ -1693,7 +1697,7 @@ FOR nX := 1 TO len(aList3)
                 IF Z06->Z06_CODPRO <> aList3[nX,04]
                     //Na sequencia cria um novo
                     Reclock("Z07",.T.)
-                    Z07->Z07_CLIENTE    :=    aList[oList:nAt,17]
+                    Z07->Z07_CLIENT    :=    aList[oList:nAt,17]
                     Z07->Z07_LOJA       :=    aList[oList:nAt,18]
                     Z07->Z07_CHAPA      :=    aList3[nX,02]
                     Z07->Z07_CODMAQ     :=    Posicione("AA3",7,xFilial("AA3")+aList3[nX,02],"AA3_CODPRO")
@@ -1761,7 +1765,7 @@ ELSE
     aPlanog := BuscPlan()
 ENDIF
 
-oPlan1     := MSDialog():New( 092,232,577,1480,"Incluir MAPA",,,.F.,,,,,,.T.,,,.T. )
+oPlan1     := MSDialog():New( 092,232,577,1480,"Incluir LAYOUT",,,.F.,,,,,,.T.,,,.T. )
 
     oGrPlan    := TGroup():New( 000,004,212,619,"Produtos",oPlan1,CLR_BLACK,CLR_WHITE,.T.,.F. )
     //oBrw1      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{008,008,208,340},,, oGrPlan ) 
@@ -1838,7 +1842,7 @@ IF nOpcao == 1
             Reclock("Z06",.F.)
             Z06->Z06_CODCLI     :=    aPlanog[nX,36]
             Z06->Z06_LOJCLI    :=    aPlanog[nX,37]
-            Z06->Z06_CHAPA    :=    aPlanog[nX,38]
+            Z06->Z06_CHAPA     :=    aPlanog[nX,38]
             Z06->Z06_CODMAQ    :=    aPlanog[nX,40]
             Z06->Z06_CODPRO    :=    aPlanog[nX,03]
             Z06->Z06_SELECAO    :=    aPlanog[nX,02]
@@ -2247,12 +2251,12 @@ IF ParamBox(aPergs ,"Motivo da Despesa",@aRet)
         
         FOR nX := 1 TO len(aExcel)
             oExcel:AddRow("Remessas","PDV",{aExcel[nX,01],;
-                                            aExcel[nX,02],;     //Produto
-                                            aExcel[nX,03],;        //Descricao
+                                            aExcel[nX,02],;  //Produto
+                                            aExcel[nX,03],;  //Descricao
                                             aExcel[nX,04],;
                                             aExcel[nX,05],;
                                             aExcel[nX,06],;
-                                            aExcel[nX,07],;        //Qtd
+                                            aExcel[nX,07],;  //Qtd
                                             aExcel[nX,08],;
                                             aExcel[nX,09],;
                                             aExcel[nX,10],;
@@ -2280,7 +2284,7 @@ RETURN
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
 ±±ÉÍÍÍÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍ»±±
 ±±ºPrograma  ³CONFATC01   ºAutor  ³Microsiga           º Data ³  05/31/17   º±±
-±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±º±±
 ±±ºDesc.     ³    Busca planograma                                        º±±
 ±±º          ³                                                            º±±
 ±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
@@ -2351,17 +2355,18 @@ LOCAL dDtD     :=    ctod(' / / ')
 LOCAL dDtA     :=    ctod(' / / ')    
 LOCAL cHri     :=    space(5)
 // LOCAL cHrf    :=    space(5)
+LOCAL cData    :=    ''
 LOCAL nX
 
 PRIVATE aPergs     :=    {}
 PRIVATE aRet       :=    {}
 PRIVATE aVendas    :=    {}
 
-aAdd(aPergs ,{1,"Data Inicial?",dDtD,"","","","",070,.T.})    
-aAdd(aPergs ,{1,"Data Final?",dDtA,"","","","",070,.T.})    
-aAdd(aPergs ,{1,"Hora Inicial?",cHri,"","","","",070,.T.})    
-aAdd(aPergs ,{1,"Hora Final?",cHri,"","","","",070,.T.})    
-      
+aAdd(aPergs ,{1, "Data Inicial?", dDtD, "", "", "", "", 070, .T.})    
+aAdd(aPergs ,{1, "Data Final?",   dDtA, "", "", "", "", 070, .T.})    
+aAdd(aPergs ,{1, "Hora Inicial?", cHri, "", "", "", "", 070, .T.})    
+aAdd(aPergs ,{1, "Hora Final?",   cHri, "", "", "", "", 070, .T.})    
+
 IF ParamBox(aPergs ,"Periodo de vendas",@aRet)
     aVendas := U_CONWSC03(aList[oList:nAt,02],2,aRet[1],aRet[2],aRet[3],aRet[4])
     IF len(aVendas) > 0
@@ -2370,36 +2375,38 @@ IF ParamBox(aPergs ,"Periodo de vendas",@aRet)
         FOR nX := 3 TO len(aVendas) 
             cCodProt := ''
             IF aVendas[nX,05] == "null"
-                IF Ascan(aList3,{|x| Alltrim(x[3]) == Alltrim(aVendas[nX,02])}) > 0
-                    cCodProt      :=     aList3[Ascan(aList3,{|x| Alltrim(x[3]) == Alltrim(aVendas[nX,02])}),04]  
-                ENDIF   
+                cCodProt      :=     "Nao Consta"
             ELSE
                 cCodProt := aVendas[nX,05]
             ENDIF
-            cDesc := Posicione("SB1",1,xFilial("SB1")+cCodProt,"B1_DESC")       
             
-            nPosit := Ascan(aList8,{|x| x[2] == aVendas[nX,02]})
+            if cCodProt != "Nao Consta"
+                cDesc := Posicione("SB1",1,xFilial("SB1")+cCodProt,"B1_DESC")
+            else
+                cDesc := "Codigo do produto nao se encontra no VMPay"
+            endif
+
+            nPosit := Ascan(aList8,{|x| x[2] == aVendas[nX,01]})
             IF nPosit == 0
-                Aadd(aList8,{cvaltochar(aRet[2]),aVendas[nX,02],cCodProt,cDesc,val(aVendas[nX,03]),aVendas[2],;
+                cData := StrTran(StrTran(SubStr(aVendas[nX,02], 1, 19), '-', '/'), 'T', ' ')
+                Aadd(aList8,{cData,aVendas[nX,01],cCodProt,cDesc,val(aVendas[nX,03]),aVendas[2],;
                             aList[oList:nAt,17],IF(val(aVendas[nX,03])>1,val(aVendas[nX,04])/val(aVendas[nX,03]),val(aVendas[nX,04]))})
             ELSE
                 aList8[nPosit,05] += val(aVendas[nX,03])
             ENDIF
         NEXT nX
         
-        
         IF len(aList8) > 0
             Asort(aList8,,,{|x,y| x[2]+x[1] < y[2]+y[1]})
             oList8:SetArray(aList8)
             oList8:bLine := {||{aList8[oList8:nAt,01],;
                                 aList8[oList8:nAt,02],; 
-                                 aList8[oList8:nAt,03],;
-                                 aList8[oList8:nAt,04],;
-                                 aList8[oList8:nAt,05],;
-                                 Transform(aList8[oList8:nAt,08],"@E 999,999.99")}}
+                                aList8[oList8:nAt,03],;
+                                aList8[oList8:nAt,04],;
+                                aList8[oList8:nAt,05],;
+                                Transform(aList8[oList8:nAt,08],"@E 999,999.99")}}
             oList8:refresh()
             oDlg1:refresh()
-    
         ENDIF
     ENDIF
 ENDIF
@@ -2433,15 +2440,15 @@ LOCAL cMesAno     :=    Compete()
 LOCAL nX   
 LOCAL nJ
          
-cContrato := POSICIONE("AAN",3,XFILIAL("AAN")+aList[oList:nAt,2],"AAN_CONTRT")
-//cLeitura  := STRZERO(VAL(GetSX8NUM("Z08","Z08_COD"))+1,6)
+cContrato   :=    POSICIONE("AAN",3,XFILIAL("AAN")+aList[oList:nAt,2],"AAN_CONTRT")
+//cLeitura    :=    STRZERO(VAL(GetSX8NUM("Z08","Z08_COD"))+1,6)
 //ConfirmSX8() 
-cLeitura  :=  GetMV("MV_XNRCONT")  //GetSx8Num("Z08","Z08_COD")
-cPrx := Strzero(val(cLeitura)+1,6)
+cLeitura    :=    GetMV("MV_XNRCONT")  //GetSx8Num("Z08","Z08_COD")
+cPrx        :=    Strzero(val(cLeitura)+1,6)
 PUTMV("MV_XNRCONT",cPrx)
 
-cItem      := POSICIONE("AAN",3,XFILIAL("AAN")+aList[oList:nAt,2],"AAN_ITEM")
-cModPg      := POSICIONE("AAN",3,XFILIAL("AAN")+aList[oList:nAt,2],"AAN_XMODPG")
+cItem     :=    POSICIONE("AAN",3,XFILIAL("AAN")+aList[oList:nAt,2],"AAN_ITEM")
+cModPg    :=    POSICIONE("AAN",3,XFILIAL("AAN")+aList[oList:nAt,2],"AAN_XMODPG")
 
 Aadd(aGravarP,{"Z08_FILIAL"   , xFilial("Z08")}) 
 Aadd(aGravarP,{"Z08_COD"      , cLeitura}) 
@@ -2449,29 +2456,33 @@ Aadd(aGravarP,{"Z08_NUMSER"   , aList[oList:nAt,2]})
 Aadd(aGravarP,{"Z08_DTDIGIT"  , dDataBase}) 
 Aadd(aGravarP,{"Z08_CONTRT"   , cContrato}) 
 Aadd(aGravarP,{"Z08_ITEM"     , cItem}) 
+Aadd(aGravarP,{"Z08_SELECAO"     , cItem}) //AAA
+Aadd(aGravarP,{"Z08_PRODUTO"     , cItem}) //AAA
+Aadd(aGravarP,{"Z08_QTDLIDA"     , cItem}) //AAA
+Aadd(aGravarP,{"Z08_VLRLIDO"     , cItem}) //AAA
 Aadd(aGravarP,{"Z08_DATA"     , ctod(aList8[1,1])}) 
-Aadd(aGravarP,{"Z08_PERIODO"  , cMesAno })     //strzero(month(ctod(alist8[1,1])),2)+"/"+cvaltochar(year(ctod(alist8[1,1])))
+Aadd(aGravarP,{"Z08_PERIODO"  , cMesAno })  //strzero(month(ctod(alist8[1,1])),2)+"/"+cvaltochar(year(ctod(alist8[1,1])))
 Aadd(aGravarP,{"Z08_MAQUINA"  , aList[oList:nAt,21]}) 
-Aadd(aGravarP,{"Z08_CODTEC"   , ""}) 
-Aadd(aGravarP,{"Z08_TECNICO"  , ""}) 
+// Aadd(aGravarP,{"Z08_CODTEC"   , ""}) 
+// Aadd(aGravarP,{"Z08_TECNICO"  , ""}) 
 Aadd(aGravarP,{"Z08_CODCLI"   , aList[oList:nAt,17]+aList[oList:nAt,18]})  
 Aadd(aGravarP,{"Z08_CLIPAG"   , aList[oList:nAt,17]+aList[oList:nAt,18]})  
-Aadd(aGravarP,{"Z08_TIPOCON"  , "COM"})  
-Aadd(aGravarP,{"Z08_GRPCLI"   , Posicione("SZM",1,xFilial("SZM")+cContrato,"ZM_GRPCLI")})  
-Aadd(aGravarP,{"Z08_FILRESP"  , Strzero(val(xFilial("SC5")),6)})  
+// Aadd(aGravarP,{"Z08_TIPOCON"  , "COM"})  
+// Aadd(aGravarP,{"Z08_GRPCLI"   , Posicione("Z09",1,xFilial("Z09")+cContrato,"Z09_GRPCLI")})  
+// Aadd(aGravarP,{"Z08_FILRESP"  , Strzero(val(xFilial("SC5")),6)})  
                 
 FOR nX := 1 TO len(aList8)
-    Aadd(aGravarS,{"ZS_COD"         , cLeitura})
-    Aadd(aGravarS,{"ZS_CONTRT"      , cContrato})
-    Aadd(aGravarS,{"ZS_ITEM"        , cItem})
-    Aadd(aGravarS,{"ZS_SEQUEN"      , aList8[nX,02]})
+    Aadd(aGravarS,{"Z12_COD"         , cLeitura})
+    Aadd(aGravarS,{"Z12_CONTRT"      , cContrato})
+    Aadd(aGravarS,{"Z12_ITEM"        , cItem})
+    Aadd(aGravarS,{"Z12_SEQUEN"      , aList8[nX,02]})
     IF !Empty(cModPg)
-        Aadd(aGravarS,{"ZS_DOSESG"  , aList8[nX,05]})        
+        Aadd(aGravarS,{"Z12_DOSESG"  , aList8[nX,05]})        
     ELSE
-        Aadd(aGravarS,{"ZS_DOSESP"  , aList8[nX,05]})
+        Aadd(aGravarS,{"Z12_DOSESP"  , aList8[nX,05]})
     ENDIF
     
-    Aadd(aGravarS,{"ZS_BEBIDA"      , aList8[nX,03]})
+    Aadd(aGravarS,{"Z12_BEBIDA"      , aList8[nX,03]})
     Aadd(aGravar,aGravarS)
     aGravarS := {}
 NEXT nX
@@ -2484,14 +2495,14 @@ IF len(aGravarP) > 0
     NEXT nX
     Z08->(Msunlock())
     
-    DbSelectArea("SZS")
+    DbSelectArea("Z12")
     
     FOR nX := 1 TO len(aGravar)        
-        Reclock("SZS",.T.)
+        Reclock("Z12",.T.)
         FOR nJ := 1 TO len(aGravar[nX])
-            &("SZS->"+aGravar[nX,nJ,01]) := aGravar[nX,nJ,02]
+            &("Z12->"+aGravar[nX,nJ,01]) := aGravar[nX,nJ,02]
         NEXT nJ
-        SZS->(Msunlock())
+        Z12->(Msunlock())
     NEXT nX   
     
     MsgAlert("Leitura salva com sucesso!")
@@ -2528,9 +2539,9 @@ LOCAL cRet        :=    ''
 LOCAL cMsg        :=    ""
 LOCAL nXx
 
-cQuery := "SELECT ZZ4_PERIOD,MIN(ZZ4_DTINI) AS INI,MAX(ZZ4_DTFIM) AS FIM"
-cQuery += " FROM ZZ4010"
-cQuery += " WHERE ZZ4_STATUS='A' AND D_E_L_E_T_='' GROUP BY ZZ4_PERIOD"
+cQuery := "SELECT Z13_PERIOD,MIN(Z13_DTINI) AS INI,MAX(Z13_DTFIM) AS FIM"
+cQuery += " FROM Z13010"
+cQuery += " WHERE Z13_STATUS='A' AND D_E_L_E_T_='' GROUP BY Z13_PERIOD"
 
 IF Select('TRB') > 0
     dbSelectArea('TRB')
@@ -2545,7 +2556,7 @@ DbSelectArea("TRB")
 nCont := 1
 
 WHILE !EOF()        
-    Aadd(aPeriodo,{nCont,TRB->ZZ4_PERIOD,TRB->INI,TRB->FIM})
+    Aadd(aPeriodo,{nCont,TRB->Z13_PERIOD,TRB->INI,TRB->FIM})
     nCont++
     Dbskip()
 ENDDO
@@ -2616,7 +2627,7 @@ FOR nX := 1 TO len(aListB)
     ENDIF
 NEXT nX       
 
-oRepPl     := MSDialog():New( 092,232,437,876,"Replicar MAPA",,,.F.,,,,,,.T.,,,.T. )
+oRepPl     := MSDialog():New( 092,232,437,876,"Replicar LAYOUT",,,.F.,,,,,,.T.,,,.T. )
 
     oGrp1      := TGroup():New( 004,008,148,308,"Ativos",oRepPl,CLR_BLACK,CLR_WHITE,.T.,.F. )
     //oBrw1      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{012,012,144,304},,, oGrp1 ) 
@@ -2636,7 +2647,7 @@ oRepPl     := MSDialog():New( 092,232,437,876,"Replicar MAPA",,,.F.,,,,,,.T.,,,.
 oRepPl:Activate(,,,.T.)
 
 IF nOpc == 1
-    IF MsgYesNo("Confirma a cópia do MAPA atual para as maquinas selecionadas?","repplan - CONFATC01")
+    IF MsgYesNo("Confirma a cópia do LAYOUT atual para as maquinas selecionadas?","repplan - CONFATC01")
         FOR nX := 1 TO len(aAteq)
             IF aAteq[nX,01]
                 //Aadd(aGrav,aAteq[nX])
@@ -2679,7 +2690,7 @@ IF nOpc == 1
             Z06->(Msunlock())
         NEXT nX  
         
-        MsgAlert("MAPAS salvos, saia da rotina e abra novamente para atualização.")
+        MsgAlert("Layouts salvos, saia da rotina e abra novamente para atualização.")
     ENDIF
 ENDIF
 

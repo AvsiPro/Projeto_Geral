@@ -282,6 +282,8 @@ Local aItens    := {}
 Local aLinha    := {}
 Local cDoc 		:= GetSxeNum("SC5", "C5_NUM")
 Local nX		:=	0
+Local cItem     :=  '01'
+
 Private lMsErroAuto := .F. 
 
 
@@ -309,8 +311,8 @@ FOR nX := 1 to len(aItensCad)
 	DbSelectArea("SB1")
 	DbSetOrder(1)
 	DbSeek(xFilial("SB1")+aItensCad[nX,01])
-	
-      aadd(aLinha,{"C6_ITEM"    , strzero(nX,2)     , Nil})
+    //strzero(nX,2) 
+      aadd(aLinha,{"C6_ITEM"    , cItem             , Nil})
       aadd(aLinha,{"C6_PRODUTO" , aItensCad[nX,01]  , Nil})
       aadd(aLinha,{"C6_QTDVEN"  , aItensCad[nX,02]  , Nil})
       aadd(aLinha,{"C6_PRCVEN"  , aItensCad[nX,03]  , Nil})
@@ -319,7 +321,7 @@ FOR nX := 1 to len(aItensCad)
       aadd(aLinha,{"C6_DESCONT" , aItensCad[nX,04]  , Nil})
       aadd(aLinha,{"C6_LOCAL"   , SB1->B1_LOCPAD	, Nil})
       
-      
+      cItem := Soma1(cItem)
       aadd(aItens, aLinha)
 
 NEXT      

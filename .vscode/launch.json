@@ -4,13 +4,12 @@
 		{
 			"type": "totvs_language_debug",
 			"request": "launch",
-			"name": "Smart Client Debug",
+			"name": "Depuração do idioma TOTVS",
 			"program": "${command:AskForProgramName}",
-			"smartclientBin": "/Applications/smartclient.app/Contents/MacOS/smartclient",
 			"cwb": "${workspaceFolder}",
+			"smartclientBin": "C:/Adm/smartclient_12_1_33/smartclient.exe",
 			"isMultiSession": true,
-			"enableTableSync": true,
-			"enableMultiThread": true
+			"enableTableSync": true
 		}
 	],
 	"lastPrograms": [
@@ -18,8 +17,8 @@
 			"label": "sigaadv"
 		},
 		{
-			"label": "x"
+			"label": "U_TTXML02"
 		}
 	],
-	"lastProgramExecuted": "x"
+	"lastProgramExecuted": "sigaadv"
 }

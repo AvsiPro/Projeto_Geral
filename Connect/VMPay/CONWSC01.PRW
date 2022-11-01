@@ -1,7 +1,7 @@
-#INCLUDE "protheus.ch"
-#INCLUDE "parmtype.ch"
-#INCLUDE "totvs.ch"
-#INCLUDE "fileio.ch"
+#INCLUDE "PROTHEUS.CH"
+#INCLUDE "PARMTYPE.CH"
+#INCLUDE "TOTVS.CH"
+#INCLUDE "FILEIO.CH"
 
 USER FUNCTION CONWSC01() 
  
@@ -13,7 +13,7 @@ LOCAL nHandle        :=    fcreate("c:\temp\vmp_20172301.txt" , FO_READWRITE + F
 LOCAL aLinhas        :=    {}
 LOCAL n              :=    0
 LOCAL aItens         :=    {} 
-LOCAL cToken         :=    "tH3FkJ7cB2P0GwwOGbmMpJvoHsQJtMZD2nX1Ihmj"  //"IwhyqNsJNpP1wAhSBwG4YJNmcleFIXOFkTQn1j0h"
+LOCAL cToken         :=    "yVXxnxgOExcIaBQOQ9CFgK0cLgX22dJct7y85WXW" //Token Connect Vending
 LOCAL j
 
     IF Select("SM0") == 0

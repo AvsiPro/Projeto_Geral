@@ -1,7 +1,7 @@
-#INCLUDE "protheus.ch"
-#INCLUDE "parmtype.ch"
-#INCLUDE "totvs.ch"
-#INCLUDE "fileio.ch"
+#INCLUDE "PROTHEUS.CH"
+#INCLUDE "PARMTYPE.CH"
+#INCLUDE "TOTVS.CH"
+#INCLUDE "FILEIO.CH"
 #INCLUDE "TBICONN.CH"
 
 /*
@@ -42,12 +42,12 @@ LOCAL aAux           :=    {}
 LOCAL cId,cPlanId,cPending,nQtd,cGoodId,cProduto,cCodProt,cCodCl,cClProt,cLjProt,cNoCl,cNoFa,cEndCl,cIdP,cPlaItd := ''
 LOCAL cDataP         :=    ctod(" / / ")
 LOCAL cHoraP         :=    ""             
-LOCAL cToken         :=    "tH3FkJ7cB2P0GwwOGbmMpJvoHsQJtMZD2nX1Ihmj" //    "IwhyqNsJNpP1wAhSBwG4YJNmcleFIXOFkTQn1j0h"
+LOCAL cToken         :=    "yVXxnxgOExcIaBQOQ9CFgK0cLgX22dJct7y85WXW" // Token Connect Vending
 LOCAL nX
 LOCAL nMol
 LOCAL nTora
 // inclui o campo Authorization no formato <usuario>:<senha> na base64
-//Aadd(aHeader, "Authorization: Basic " + Encode64("admin:AkH1cWGwYdvUy3KfKwHdTQaegWcD9SVCsGQ03trB"))   
+//Aadd(aHeader, "Authorization: Basic " + Encode64("admin:yVXxnxgOExcIaBQOQ9CFgK0cLgX22dJct7y85WXW"))   
 
 // chamada da classe exemplo de REST com retorno de lista
 FWrite(nHandle,chr(13)+chr(10)+'Pick Lists '+chr(13)+chr(10)+chr(13)+chr(10),1000)
