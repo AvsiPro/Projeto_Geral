@@ -23,7 +23,7 @@ USER FUNCTION CONWSC03(cAtivo,nChamada,dDtini,dDtfim,cHori,cHorf)
                      
 LOCAL aAuxP            :=    {}              
 LOCAL nJ
-LOCAL nK
+//LOCAL nK
 PRIVATE cToken         :=    "yVXxnxgOExcIaBQOQ9CFgK0cLgX22dJct7y85WXW" //Token Connect Vending
 PRIVATE oRestClient    :=    FWRest():New("http://vmpay.vertitecnologia.com.br")
 PRIVATE aHeader        :=    {}
@@ -42,11 +42,11 @@ IF nPosMaq > 0
         Instalacoes(aHeader[nPosMaq,01],nPosMaq)       
         
         //Buscar id de Planogramas por maquina
-        Planograma(aHeader[nPosMaq,01],aHeader[nPosMaq,03],nPosMaq)
+        aAuxP := Planograma(aHeader[nPosMaq,01],aHeader[nPosMaq,03],nPosMaq)
         
         //Buscar Planograma da maquina
         //PlanoMaq(aHeader[nPosMaq,01],aHeader[nPosMaq,03],aHeader[nPosMaq,04],nPosMaq)
-        
+        /*
         aRetorno := aHeader[nPosMaq] 
         nP := 0       
         FOR nJ := 1 TO len(aRetorno[4]) step 11  
@@ -56,41 +56,50 @@ IF nPosMaq > 0
                 Aadd(aAuxP,{.F.,cAtivo,aRetorno[4,nJ+3],aRetorno[4,nJ+4],aRetorno[4,nJ+5],aRetorno[4,nJ+6],aRetorno[4,nJ+7],aRetorno[4,nJ+10]})
             //ENDIF
         NEXT nJ 
-        
+        */
         aList3 := {}
         aList6 := {}
         
         FOR nJ := 1 TO len(aAuxP)               
-            IF !"name:" $ aAuxP[nJ,03] 
+            /*IF !"name:" $ aAuxP[nJ,03] 
                 LOOP
-            ENDIF
-            aAux2 := {}
-            Aadd(aAux2,aAuxP[nJ,01])
-            Aadd(aAux2,aAuxP[nJ,02])
-            //nPosn := Ascan(aAuxP[nJ],{|x| substr(x,1,3) == "upc"})
-            aAux1 := strtokarr(aAuxP[nJ,len(aAuxP[nJ])],":")
-            aAux3 := strtokarr(aAux1[2],"-")
-            
-            FOR nK := 3 TO len(aAuxP[nJ])-1
-                aAux1 := strtokarr(aAuxP[nJ,nK],":")
-                IF aAux1[1] == 'name' .And. val(aAux1[2]) <= 0 .And. !"_" $ aAux1[2]
-                    LOOP
+            ENDIF*/
+            If val(aAuxP[nJ,03]) > 0
+                aAux2 := {}
+                Aadd(aAux2,aAuxP[nJ,01])
+                Aadd(aAux2,aAuxP[nJ,02])
+                Aadd(aAux2,aAuxP[nJ,03])
+                Aadd(aAux2,aAuxP[nJ,04])
+                Aadd(aAux2,aAuxP[nJ,05])
+                Aadd(aAux2,aAuxP[nJ,06])
+                Aadd(aAux2,aAuxP[nJ,07])
+                Aadd(aAux2,aAuxP[nJ,08])
+                Aadd(aAux2,'')
+                //nPosn := Ascan(aAuxP[nJ],{|x| substr(x,1,3) == "upc"})
+                //aAux1 := strtokarr(aAuxP[nJ,len(aAuxP[nJ])],":")
+                //aAux3 := strtokarr(aAux1[2],"-")
+                /*
+                FOR nK := 3 TO len(aAuxP[nJ])-1
+                    aAux1 := strtokarr(aAuxP[nJ,nK],":")
+                    IF aAux1[1] == 'name' .And. val(aAux1[2]) <= 0 .And. !"_" $ aAux1[2]
+                        LOOP
+                    ENDIF
+                    lValor := IF(aAux1[1]$"desired_price/capacity/par_level/alert_level",.T.,.F.)
+                    Aadd(aAux2,IF(lValor,val(aAux1[2]),aAux1[2]))
+                    IF nK == 3 
+                        cCodProt := Alltrim(aAux3[1]) //cvaltochar(val(Alltrim(aAux3[1])))
+                        cDesc     := Alltrim(Posicione("SB1",1,xFilial("SB1")+cCodProt,"B1_DESC"))
+                        Aadd(aAux2,cCodProt)
+                        Aadd(aAux2,cDesc)
+                    ENDIF
+                NEXT nK
+                */
+                IF len(aAux2) > 7
+                    Aadd(aList3,aAux2)
                 ENDIF
-                lValor := IF(aAux1[1]$"desired_price/capacity/par_level/alert_level",.T.,.F.)
-                Aadd(aAux2,IF(lValor,val(aAux1[2]),aAux1[2]))
-                IF nK == 3 
-                    cCodProt := Alltrim(aAux3[1]) //cvaltochar(val(Alltrim(aAux3[1])))
-                    cDesc     := Alltrim(Posicione("SB1",1,xFilial("SB1")+cCodProt,"B1_DESC"))
-                    Aadd(aAux2,cCodProt)
-                    Aadd(aAux2,cDesc)
-                ENDIF
-            NEXT nK
-            Aadd(aAux2,'')
-            IF len(aAux2) > 7
-                Aadd(aList3,aAux2)
-            ENDIF
+            EndIf
         NEXT nJ 
-        
+        /*
         FOR nJ := 1 TO len(aCanister)
             aAux1 := strtokarr(aCanister[nJ],":")
             aCanister[nJ] := aAux1[2]
@@ -109,7 +118,7 @@ IF nPosMaq > 0
                 Aadd(aList6,aAux2)
             ENDIF
         NEXT nJ
-    
+        */
         IF len(aList3) < 1
             Aadd(aList3,{.T.,'','','','','','','','','','','','','','','','','',''})
         ENDIF
@@ -262,7 +271,8 @@ STATIC FUNCTION Planograma(cMaq,cInst,nPos)
 
 LOCAL nJ
 Local oJson
-
+Local aMapa     :=  {}
+Local aAux      :=  {}
  ///planograms
 oRestClient:setPath("/api/v1/machines/"+Alltrim(cMaq)+"/installations/"+cInst+"?access_token="+cToken) 
         
@@ -278,8 +288,24 @@ IF oRestClient:Get(aHeader)
     //lret := oJson:GetJsonValue("current_planogram", @keyVal,  @keyType)
     ret := oJson2:FromJson(oJson:GetJsonText("current_planogram"))
 
-    ret := oJson3:FromJson(oJson2:GetJsonText("items"))
-
+    aMapa := oJson2["items"]
+    
+    For nJ :=  1 to len(aMapa)
+        aAxCd := aMapa[nJ]:GetJsonObject('good')
+        Aadd(aAux,{,;
+            aHeader[nPos,2],;
+            aMapa[nJ]:GetJsonText('name'),;
+            aAxCd:GetJsonText('upc_code'),; //aMapa[nJ]:GetJsonText('id'),;
+            aAxCd:GetJsonText('name'),;
+            aMapa[nJ]:GetJsonText('planogram_id'),;
+            aMapa[nJ]:GetJsonText('good_id'),;
+            aMapa[nJ]:GetJsonText('capacity'),;
+            aMapa[nJ]:GetJsonText('par_level'),;
+            aMapa[nJ]:GetJsonText('alert_level'),;
+            aMapa[nJ]:GetJsonText('desired_price'),;
+        })
+    Next nJ
+    /*
     cValor    :=    strtran(cValor,"[")
     cValor    :=    strtran(cValor,"]")
     cValor    :=    strtran(cValor,'"')
@@ -362,10 +388,11 @@ IF oRestClient:Get(aHeader)
         //unit_symbol: finaliza
  
         Aadd(aHeader[nPos],aAux)
-    ENDIF
+        
+    ENDIF*/
 ENDIF
 
-RETURN           
+RETURN(aAux)        
 
 
 /*
