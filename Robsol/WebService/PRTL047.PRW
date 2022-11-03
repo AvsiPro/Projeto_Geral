@@ -48,8 +48,10 @@ WsMethod POST WsReceive RECEIVE WsService PRTL047
 	Local cNome			As Character
 	Local cPedido		As Character
 	Local cEmail		As Character
+	Local cEmp			As Character
+	Local cFil			As Character
 	Local lRet			As Logical 
-	Local oBody			As J 
+	Local oBody			As J
 
 	cCode	:= ''
 	cMessage	:= ''
@@ -64,16 +66,19 @@ WsMethod POST WsReceive RECEIVE WsService PRTL047
 		cMessage	:= "Formato Json nao reco`nhecido. Revisar a estrutura e layout informado."
 		lRet		:= .F.
 	Else
+		cEmp := '01'
+		cFil := '0103'
+
 		cCode64 := oBody:getJsonText("CODE64")
-		cNome	:= oBody:getJsonText("NOME")
+		cNome	:= cFil+oBody:getJsonText("NOME")
 		cPedido := oBody:getJsonText("PEDIDO")
 		cEmail  := oBody:getJsonText("EMAIL")
 		
-		If !ExistDir("\updpdf")
-			MakeDir("\updpdf")
+		If !ExistDir("\clientes\cnpj\updpdf")
+			MakeDir("\clientes\cnpj\updpdf")
 		EndIf
 
-		oFWriter := FWFileWriter():New("\updpdf\"+cNome, .T.)
+		oFWriter := FWFileWriter():New("\clientes\cnpj\updpdf\"+cNome, .T.)
 
 		If oFWriter:Create()
 			oFWriter:Write(Decode64(cCode64))
@@ -83,9 +88,9 @@ WsMethod POST WsReceive RECEIVE WsService PRTL047
 		sleep(3000)
 
 		RpcSetType(3)
-		RPCSetEnv("01","0103")
+		RPCSetEnv(cEmp,cFil)
 
-		GERHTML(cPedido,GetSrvProfString("Startpath","")+"updpdf\"+cNome,/*cEmail*/'cnoculos@hotmail.com')
+		GERHTML(cPedido,GetSrvProfString("Startpath","")+"clientes\cnpj\updpdf\"+cNome,/*cEmail*/'cnoculos@hotmail.com')
 
 		cCode 	 := "#200"
 		cMessage := "Enviado e-mail com a copia do pedido"
