@@ -128,7 +128,7 @@ If len(aList) > 0
 
             oList8:SetArray(aList8)
             oList8:bLine := {||{aList8[oList8:nAt,01],;
-                                aList8[oList8:nAt,02],; 
+                                strzero(val(aList8[oList8:nAt,02]),2),; 
                                 aList8[oList8:nAt,03],;
                                 aList8[oList8:nAt,04],;
                                 aList8[oList8:nAt,05],;
@@ -771,7 +771,7 @@ ENDIF
 oList8:nAt := 1
 oList8:SetArray(aList8)
 oList8:bLine := {||{aList8[oList8:nAt,01],;
-                    aList8[oList8:nAt,02],; 
+                    strzero(val(aList8[oList8:nAt,02]),2),; 
                     aList8[oList8:nAt,03],;
                     aList8[oList8:nAt,04],;
                     aList8[oList8:nAt,05],;
@@ -2388,19 +2388,25 @@ IF ParamBox(aPergs ,"Periodo de vendas",@aRet)
 
             nPosit := Ascan(aList8,{|x| x[2] == aVendas[nX,01]})
             IF nPosit == 0
-                cData := StrTran(StrTran(SubStr(aVendas[nX,02], 1, 19), '-', '/'), 'T', ' ')
-                Aadd(aList8,{cData,aVendas[nX,01],cCodProt,cDesc,val(aVendas[nX,03]),aVendas[2],;
-                            aList[oList:nAt,17],IF(val(aVendas[nX,03])>1,val(aVendas[nX,04])/val(aVendas[nX,03]),val(aVendas[nX,04]))})
+                cData := ddatabase //stod(StrTran(SubStr(aVendas[nX,02], 1, 10), '-')) //StrTran(StrTran(SubStr(aVendas[nX,02], 1, 10), '-', '/'), 'T', ' ')
+                Aadd(aList8,{cvaltochar(cData),;
+                            aVendas[nX,01],;
+                            cCodProt,;
+                            cDesc,;
+                            val(aVendas[nX,03]),;
+                            aVendas[2],;
+                            aList[oList:nAt,17],;
+                            IF(val(aVendas[nX,03])>1,val(aVendas[nX,04])/val(aVendas[nX,03]),val(aVendas[nX,04]))})
             ELSE
                 aList8[nPosit,05] += val(aVendas[nX,03])
             ENDIF
         NEXT nX
         
         IF len(aList8) > 0
-            Asort(aList8,,,{|x,y| x[2]+x[1] < y[2]+y[1]})
+            Asort(aList8,,,{|x,y| strzero(val(x[2]),2)+x[1] < strzero(val(y[2]),2)+y[1]})
             oList8:SetArray(aList8)
             oList8:bLine := {||{aList8[oList8:nAt,01],;
-                                aList8[oList8:nAt,02],; 
+                                strzero(val(aList8[oList8:nAt,02]),2),; 
                                 aList8[oList8:nAt,03],;
                                 aList8[oList8:nAt,04],;
                                 aList8[oList8:nAt,05],;
