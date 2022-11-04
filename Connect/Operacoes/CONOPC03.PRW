@@ -33,6 +33,7 @@
 User Function CONOPC03
 
 Local nOpc      :=  0
+Local nX 
 Private aCols   :=  {}
 Private oDlg1,oGrp1,oSay1,oSay2,oSay3,oSay4,oSay5,oSay6
 Private oSay7,oSay8,oGet1,oGet2,oGet4,oGrp3,oBtn1,oBtn2
@@ -58,7 +59,7 @@ oDlg1      := MSDialog():New( 057,187,748,993,"Cadastro de Leiautes",,,.F.,,,,,,
 oGrp1      := TGroup():New( 004,016,108,380,"Cadastro",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
     
     oSay1      := TSay():New( 012,116,{||"Patrimonio"},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
-    oGet1      := TGet():New( 012,168,{|u| If(PCount()>0,cPatr:=u,cPatr)},oGrp1,060,008,'',,CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"AA3","",,)
+    oGet1      := TGet():New( 012,168,{|u| If(PCount()>0,cPatr:=u,cPatr)},oGrp1,060,008,'',{|| Basexcli()},CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"AA3VMP","",,)
 
     oSay2      := TSay():New( 032,032,{||"Cliente"},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
     oGet2      := TGet():New( 032,068,{|u| If(PCount()>0,cCli:=u,cCli)},oGrp1,060,008,'',{|| Fcadcli()},CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"SA1","",,)
@@ -92,7 +93,24 @@ oGrp1      := TGroup():New( 004,016,108,380,"Cadastro",oDlg1,CLR_BLACK,CLR_WHITE
 oDlg1:Activate(,,,.T.)
 
 If nOpc == 1
-
+    //Z07_FILIAL+Z07_CHAPA+Z07_CLIENT+Z07_LOJA+Z07_SELECA
+    DbSelectArea("Z07")
+    DbSetOrder(1)
+    For nX := 1 to len(aCols)
+        If !Dbseek(xFilial("Z07")+Avkey(cPatr,"Z07_CHAPA")+Avkey(cCli,"Z07_CLIENT")+Avkey(cLj,"Z07_LOJA")+Avkey(aCols[nX,02],"Z07_SELECA"))
+            Reclock("Z07",.T.)
+        Else 
+            RecLock("Z07",.F.)
+        ENDIF
+        Z07->Z07_FILIAL :=  xFilial("Z07")
+        Z07->Z07_CHAPA  :=  cPatr
+        Z07->Z07_CLIENT :=  cCli
+        Z07->Z07_LOJA   :=  cLj
+        Z07->Z07_SELECA :=  aCols[nX,02]
+        Z07->Z07_CODPRO :=  aCols[nX,03]
+        Z07->Z07_VLRVND :=  aCols[nX,05]
+        Z07->(MsUnlock())
+    Next nX 
 EndIf 
 
 Return
@@ -244,5 +262,84 @@ ENDIF
 
 oDlg1:refresh()
 
+
+Return
+
+/*/{Protheus.doc} Basexcli()
+    (long_description)
+    @type  Static Function
+    @author user
+    @since 03/11/2022
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function Basexcli()
+
+Local aArea     :=  GetArea()
+
+If !Empty(cPatr)
+    aCols := {}
+    // '','Selecao','Produto','Descrição','Valor'
+    cQuery := 'SELECT Z07_CHAPA,Z07_SELECA,Z07_CODPRO,B1_DESC,Z07_VLRVND'
+    cQuery += " FROM "+RetSQLName("Z07")+" Z07"
+    cQuery += " INNER JOIN "+RetSQLName("SB1")+ " B1 ON B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD=Z07_CODPRO AND B1.D_E_L_E_T_=' '"
+    cQuery += " WHERE Z07_FILIAL='"+xFilial("Z07")+"' AND Z07_CHAPA='"+cPatr+"' AND Z07.D_E_L_E_T_=' '"
+    
+    IF Select('TRB') > 0
+        dbSelectArea('TRB')
+        dbCloseArea()
+    ENDIF
+
+    MemoWrite("CONFATC01.SQL",cQuery)
+    DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
+
+    DbSelectArea("TRB")  
+
+    WHILE !EOF() 
+        Aadd(aCols,{'',;
+                    TRB->Z07_SELECA,;
+                    TRB->Z07_CODPRO,;
+                    TRB->B1_DESC,;
+                    TRB->Z07_VLRVND,;
+                    .F.})
+        Dbskip()
+    EndDo 
+
+    If len(aCols) < 1
+        Aadd(aCols,{'','','','',0,.f.})
+    EndIf 
+
+    oList1:SetArray(aCols)
+    oList1:bLine := {||{aCols[oList1:nAt,01],; 
+                        aCols[oList1:nAt,02],;
+                        aCols[oList1:nAt,03],; 
+                        aCols[oList1:nAt,04],;
+                        Transform(aCols[oList1:nAt,05],"@E 999,999.99")}}
+EndIf 
+
+If !Empty(cCli)
+
+    DbSelectArea("SA1")
+    DbSetOrder(1)
+    If Dbseek(xFilial("SA1")+cCli+cLj)
+        oSay3:settext("")
+        oSay6:settext("")
+
+        oSay3:settext(SA1->A1_NOME)
+        oSay6:settext(Alltrim(SA1->A1_END)+' - '+Alltrim(SA1->A1_BAIRRO)+' - '+Alltrim(SA1->A1_MUN)+' - '+Alltrim(SA1->A1_EST))
+        oGet2:disable()
+        oGet3:disable()
+        
+    EndIf 
+EndIf 
+
+oList1:refresh()
+oDlg1:refresh()
+
+RestArea(aArea)
 
 Return

@@ -207,7 +207,7 @@ Local aParam := {{ 2, "Status Chamado",nStatus,aStatus,60,, .T. },;
 
                 If cPar1 == 2
                     If Empty(Z50->Z50_PEDVEN)
-                        Processa({|| aRetPed := fGeraPV(cPar2,Z50->Z50_FILPED)}, "Gerando Pedido de Vendas...")
+                        Processa({|| aRetPed := fGeraPV(cPar2,If(Z50->Z50_FILPED=='0102','0101',Z50->Z50_FILPED))}, "Gerando Pedido de Vendas...")
                         lAtStat := aRetPed[1]
                     else
                         lAtStat := .T.
@@ -388,7 +388,7 @@ aadd(aCabec, {"C5_LOJAENT", cA1Loja,   Nil})
 aadd(aCabec, {"C5_CONDPAG", cE4Codigo, Nil})
 aadd(aCabec, {"C5_TIPOCLI", "F",       Nil})
 aadd(aCabec, {"C5_NATUREZ", PadR(cNaturez,TamSX3("C5_NATUREZ")[1]),Nil})
-aadd(aCabec, {"C5_VEND1",   PadR(cVend1,TamSX3("C5_VEND1")[1]),Nil})
+aadd(aCabec, {"C5_VEND1",   '000001',Nil}) //PadR(cVend1,TamSX3("C5_VEND1")[1])
 
 aadd(aLinha,{"C6_FILIAL",   cFilant ,           Nil})
 aadd(aLinha,{"C6_ITEM",   '01',           Nil})

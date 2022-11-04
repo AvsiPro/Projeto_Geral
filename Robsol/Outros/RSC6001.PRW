@@ -57,7 +57,7 @@ cPath := tFileDialog( "Selecione a pasta ",'Selecao de pasta',, cTmp, .F., GETF_
 
 cQuery:=""
 cQuery+=" SELECT C6_NUM,A1_COD,A1_LOJA,A1_NOME,C6_PRODUTO,C6_QTDVEN,C5_CONDPAG,C5_VEND1,A3_NOME,E4_DESCRI,A1_END,A1_BAIRRO,A1_CONTATO,A1_CGC,A1_INSCR,A1_DDD,A1_TEL, "
-cQuery+=" A1_ENDENT,A1_BAIRROE,A1_CEPE,A1_CEP,A1_EMAIL,C6_ITEM "
+cQuery+=" A1_ENDENT,A1_BAIRROE,A1_CEPE,A1_CEP,A1_EMAIL,C6_ITEM,A1_EST,A1_ESTE "
 cQuery+=" FROM " + RetSqlName("SC6")+" SC6 " 
 cQuery+=" INNER JOIN "+ RetSqlName("SA1") + " SA1  ON C6_CLI=A1_COD AND C6_LOJA=A1_LOJA AND SA1.D_E_L_E_T_ = ' '"
 cQuery+=" INNER JOIN "+ RetSqlName("SC5") + " SC5  ON C6_FILIAL=C5_FILIAL AND C6_NUM=C5_NUM AND SC5.D_E_L_E_T_=' ' "
@@ -194,7 +194,7 @@ Else
 
 	aEndereco :={}
 	aAdd(aEndereco,{;
-											"Endereço: " + Alltrim(XQRY->A1_END) + ' - Bairro: '+ Alltrim(XQRY->A1_BAIRRO)+' - CEP: '+ Alltrim(XQRY->A1_CEP) ,;
+											"Endereço: " + Alltrim(XQRY->A1_END) + ' - Bairro: '+ Alltrim(XQRY->A1_BAIRRO)+' - CEP: '+ Alltrim(XQRY->A1_CEP) + ' - Estado: '+XQRY->A1_EST,;
 											"",;
 											"",;
 											"",;
@@ -207,7 +207,7 @@ Else
 
 	aEnd2 :={}
 	aAdd(aEnd2,{;
-											"Endereço Entrega: " + Alltrim(XQRY->A1_ENDENT) + ' - Bairro: '+ Alltrim(XQRY->A1_BAIRROE)+' - CEP: '+ Alltrim(XQRY->A1_CEPE) ,;
+											"Endereço Entrega: " + Alltrim(XQRY->A1_ENDENT) + ' - Bairro: '+ Alltrim(XQRY->A1_BAIRROE)+' - CEP: '+ Alltrim(XQRY->A1_CEPE)+' - Estado: '+XQRY->A1_ESTE ,;
 											"",;
 											"",;
 											"",;
@@ -519,7 +519,7 @@ Static Function ImpCab(nPagina)
 	oPrn:Say(0455,470,XQRY->A1_INSCR,oFont14n)
 
 	oPrn:Say(0505,170,"Endereço:",oFont14n)
-	oPrn:Say(0505,470,Alltrim(XQRY->A1_END)+" "+Alltrim(XQRY->A1_BAIRRO)+" "+XQRY->A1_CEP,oFont14n)
+	oPrn:Say(0505,470,Alltrim(XQRY->A1_END)+" "+Alltrim(XQRY->A1_BAIRRO)+" "+XQRY->A1_CEP+" "+XQRY->A1_ESTE,oFont14n)
 
 	oPrn:Say(0555,170,"Contato:" ,oFont14n)
 	oPrn:Say(0555,470,Alltrim(XQRY->A1_CONTATO) ,oFont14n)
@@ -531,7 +531,7 @@ Static Function ImpCab(nPagina)
 	oPrn:Say(0655,470,"("+Alltrim(XQRY->A1_DDD)+") "+Transform(XQRY->A1_TEL,"@R 9999-9999"),oFont14n)
 
 	oPrn:Say(0710,170,"Endereço Entrega:",oFont14n)
-	oPrn:Say(0710,470,Alltrim(XQRY->A1_ENDENT)+" "+Alltrim(XQRY->A1_BAIRROE)+" "+XQRY->A1_CEPE,oFont14n)
+	oPrn:Say(0710,470,Alltrim(XQRY->A1_ENDENT)+" "+Alltrim(XQRY->A1_BAIRROE)+" "+XQRY->A1_CEPE+" "+XQRY->A1_EST,oFont14n)
 	
 	oPrn:Say(0760,170,"Vendedor:",oFont14n)
 	oPrn:Say(0760,470,XQRY->A3_NOME,oFont14n)

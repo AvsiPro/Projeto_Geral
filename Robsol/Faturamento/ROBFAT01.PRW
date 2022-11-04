@@ -225,7 +225,11 @@ If nOpc == 1
         */
     ElseIf nRadio == 2 
         If cCombo2 == "1"
-            SC5->C5_TRANSP := 'T1'
+            If SC5->C5_FILIAL == '0101'
+                SC5->C5_TRANSP := 'T1'
+            else
+                SC5->C5_TRANSP := 'T16'
+            EndIf 
         ElseIf cCombo2 == "2"
             SC5->C5_TRANSP := 'T2'
         EndIf
