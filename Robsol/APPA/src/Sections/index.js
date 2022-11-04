@@ -17,8 +17,7 @@ import {CartContext} from '../Contexts/cart'
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import Swipeable from 'react-native-gesture-handler/Swipeable'
-
-
+import * as WebBrowser from 'expo-web-browser';
 
 
 export default function Sections({nameSec,item,vendedor,prdProd,dataBack,reset,handleOpenCli,handleCloseCli,handleOpenTit,loadPrdSet}){
@@ -199,25 +198,55 @@ export default function Sections({nameSec,item,vendedor,prdProd,dataBack,reset,h
         ()=>handleCloseCli(false);
     };
 
+    const handleDownload = async (doc) => {
+        await WebBrowser.openBrowserAsync(doc);
+      };
 
 
     function leftActions(){
         return(
-            <TouchableOpacity
-                onPress={()=> setVisibleBack(true)}
-                style={{
-                    justifyContent:'center',
-                    alignItems:'center',
-                    margin:10
-                }}
-            >
-                <Ionicons name="md-copy" size={24} color="grey" />
-                <Text style={{
-                    fontWeight:'bold',
-                    fontSize:16,
-                    marginTop:6,
-                }}>Copiar</Text>
-            </TouchableOpacity>
+            <View style={{
+                flexDirection:'row',
+                justifyContent:'center',
+                alignItems:'center'
+            }}>
+                <TouchableOpacity
+                    onPress={()=> setVisibleBack(true)}
+                    style={{
+                        justifyContent:'center',
+                        alignItems:'center',
+                        margin:10
+                    }}
+                >
+                    <Ionicons name="md-copy" size={24} color="grey" />
+                    <Text style={{
+                        fontWeight:'bold',
+                        fontSize:16,
+                        marginTop:6,
+                    }}>Copiar</Text>
+                </TouchableOpacity>
+
+                <View style={{
+                    borderRightWidth:1.5,
+                    height:30
+                }}></View>
+
+                <TouchableOpacity
+                    onPress={()=> handleDownload('http://portal.robsol.com.br/updpdf/'+item.codigo+'_'+item.cnpj+'.pdf')}
+                    style={{
+                        justifyContent:'center',
+                        alignItems:'center',
+                        margin:10
+                    }}
+                >
+                    <Ionicons name="document-attach" size={24} color="grey" />
+                    <Text style={{
+                        fontWeight:'bold',
+                        fontSize:16,
+                        marginTop:6,
+                    }}>Gerar PDF</Text>
+                </TouchableOpacity>
+            </View>
         )
     }
 

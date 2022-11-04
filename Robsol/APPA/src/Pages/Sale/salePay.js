@@ -113,7 +113,7 @@ export default function SalePay({route,navigation}){
         try{
             const response = await api.post("/PRTL047",{
                 CODE64: file.base64, 
-                NOME:pedido+params.CLIENTE.cnpj+'.pdf', 
+                NOME:pedido+'_'+params.CLIENTE.cnpj+'.pdf', 
                 PEDIDO: pedido,
                 EMAIL: params.CLIENTE.email
             });
