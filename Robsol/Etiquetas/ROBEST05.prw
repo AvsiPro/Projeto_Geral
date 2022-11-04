@@ -231,7 +231,7 @@ Static Function ImpEtiq(aItens)
     FOR nZ := 1 TO len(aItens)
         FOR nR := 1 TO len(aItens[nZ,2])
 
-            if aItens[nZ,9] == 'T1'
+            if aItens[nZ,9] $ 'T1/T16'
                 lTransp := .T.
             else
                 lTransp := .F.

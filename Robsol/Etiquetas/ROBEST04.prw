@@ -35,7 +35,7 @@ User Function ROBEST04(lDnfB)
 
     IF Select("SM0") == 0
         RpcSetType(3)
-        RPCSetEnv("01","0101")
+        RPCSetEnv("01","0103")
         Imprime := IMP_PDF
     ENDIF
 
@@ -235,7 +235,7 @@ Static Function ImpEtiq(aItens)
     FOR nZ := 1 TO len(aItens)
         FOR nR := 1 TO len(aItens[nZ,2])
 
-            if aItens[nZ,9] == 'T1'
+            if aItens[nZ,9] $ 'T1/T16'
                 lTransp := .T.
             else
                 lTransp := .F.
@@ -249,7 +249,7 @@ Static Function ImpEtiq(aItens)
             
             SA1->(DbSeek(xFilial('SA1')+SF2->(F2_CLIENTE+F2_LOJA)))
             
-            oPrinter := FWMSPrinter():New("produto"+Alltrim(__cUserID)+".etq",IMP_SPOOL,lAdjustToLegacy,"/spool/",lDisableSetup,,,Alltrim(cImpress) /*parametro que recebe a impressora*/)
+            oPrinter := FWMSPrinter():New("produto"+Alltrim(__cUserID)+".etq",Imprime,lAdjustToLegacy,"/spool/",lDisableSetup,,,Alltrim(cImpress) /*parametro que recebe a impressora*/)
             // oPrinter := FWMSPrinter():New("produto"+Alltrim(__cUserID)+".etq",IMP_PDF,lAdjustToLegacy,"/spool/",lDisableSetup,,,Alltrim(cImpress) /*parametro que recebe a impressora*/)
             
             oPrinter:StartPage()
