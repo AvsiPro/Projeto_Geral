@@ -14,14 +14,16 @@ User Function ROBFAT07()
     Local aRet   := {}
 
     Private oDlg1,oGrp1,oBtn1,oBtn2,oBtn3,oList1,oList2,oList3,oComb1
-    Private aList1    :=    {}
-    Private aList2    :=    {}
-    Private aList3    :=    {}
-    Private aList3B    :=    {}
-    Private cCombo1   :=    ''
-    Private oOk       :=    LoadBitmap(GetResources(),'br_verde')
-    Private oNo       :=    LoadBitmap(GetResources(),'br_vermelho')
-    Private cMarca    :=    '1'
+    Private aList1         :=    {}
+    Private aList2         :=    {}
+    Private aList3         :=    {}
+    Private aList3B        :=    {}
+    Private cCombo1        :=    ''
+    Private oOk            :=    LoadBitmap(GetResources(),'br_verde')
+    Private oNo            :=    LoadBitmap(GetResources(),'br_vermelho')
+    Private cMarca         :=    '1'
+    Private lRet           :=    .F.
+    Private lMsErroAuto    :=    .F.
 
     If Select("SM0") == 0
         RpcSetType(3)
@@ -86,8 +88,14 @@ User Function ROBFAT07()
             endif
         next
     
-        Processa({|| geraPV(aRet)})
+        Processa({|| geraPV(aRet)}, "Gerando Pedido de Venda...")
+        if lRet
+            Processa({|| geraPDEeDE(aRet)}, "Gerando Pré-Documento de Entrada e Documento de Entrada...")  
+        endif
         
+        if !lRet
+            MsgAlert("Pedido não concluído!", "Erro!")
+        endif
     endif
 
 Return
@@ -97,10 +105,10 @@ Static Function buscaGeren()
     Local cQuery := ''
 
     cQuery := " "
-    cQuery += " SELECT SA3.A3_COD,Z30.Z30_CODVEN,Z30.Z30_CODGER,SA3.A3_NOME,Z30.Z30_MALA,Z30.Z30_REGIAO   " 
-    cQuery += " FROM   " + RetSQLName("SA3") + " SA3   " 
-    cQuery += " LEFT JOIN " + RetSQLName("Z30") + " Z30 ON Z30.Z30_CODVEN = SA3.A3_COD   " 
-    cQuery += " WHERE SA3.A3_XFUNCAO != '1'  " 
+    cQuery += " SELECT SA3.A3_COD,Z30.Z30_CODVEN,Z30.Z30_CODGER,SA3.A3_NOME,Z30.Z30_MALA,Z30.Z30_REGIAO " 
+    cQuery += " FROM " + RetSQLName("SA3") + " SA3 " 
+    cQuery += " LEFT JOIN " + RetSQLName("Z30") + " Z30 ON Z30.Z30_CODVEN = SA3.A3_COD " 
+    cQuery += " WHERE SA3.A3_XFUNCAO = '2' " 
 
     If Select('TRB') > 0
         dbSelectArea('TRB')
@@ -184,6 +192,7 @@ Static Function buscaProd(nLinha, nIgnora)
     Local nX
     Local aMalas := strTokArr(aList2[nLinha,4], '/')
     Local cMalas := ""
+    Local cAux   := ""
 
     cQuery := " "
     cQuery += " SELECT MAX(C5_EMISSAO) AS ULTIMOPEDIDO FROM " + RetSQLName("SC5") + " SC5 " 
@@ -229,7 +238,7 @@ Static Function buscaProd(nLinha, nIgnora)
         DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
 
         While !EOF()
-                Aadd(aList3, { .F., AllTrim(TRB->B1_COD), AllTrim(TRB->B1_DESC), 0001,TRB->B2_QATU, TRB->B1_PRV1, TRB->BM_XMODELO,SB1->B1_LOCPAD})
+                Aadd(aList3, { .F., AllTrim(TRB->B1_COD), AllTrim(TRB->B1_DESC), 0001,TRB->B2_QATU, TRB->B1_PRV1, TRB->BM_XMODELO,TRB->B1_LOCPAD})
             DBSKIP()
         End
 
@@ -293,6 +302,42 @@ Static Function buscaProd(nLinha, nIgnora)
             DBSKIP()
         End
     
+        cAux := '01'
+
+        for nX := 1 to len(aList3)
+            if aList3[nX,7] != cAux .OR. cAux == '01'
+                cMalas += "'"
+                cMalas += aList3[nX,7]
+                cMalas += "'"
+                cMalas += ","
+            endif
+            cAux := aList3[nX,7]
+        next
+
+        cMalas := SubStr(cMalas, 1, len(cMalas) - 1)
+
+        cQuery := " "
+        cQuery += " SELECT DISTINCT SB1.B1_COD, SB1.B1_DESC, SB2.B2_QATU,SB1.B1_PRV1,SBM.BM_XMODELO,SB1.B1_LOCPAD  " 
+        cQuery += " FROM " + RetSQLName("SB1") + " SB1  " 
+        cQuery += " INNER JOIN " + RetSQLName("SBM") + " SBM ON SB1.B1_GRUPO = SBM.BM_GRUPO  " 
+        cQuery += " INNER JOIN " + RetSQLName("SB2") + " SB2 ON SB1.B1_COD = SB2.B2_COD   " 
+        cQuery += " WHERE SB2.B2_QATU > '50' AND SB2.B2_LOCAL = '101'  " 
+        cQuery += " AND SBM.BM_XMODELO IN (" + cMalas + ") " 
+        cQuery += " AND SB1.B1_PRV1 > '0'  " 
+        cQuery += " AND SB1.B1_MSBLQL != '1'  " 
+
+        If Select('TRB') > 0
+            dbSelectArea('TRB')
+            dbCloseArea()
+        EndIf
+
+        DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
+
+        While !EOF()
+                Aadd(aList3, { .F., AllTrim(TRB->B1_COD), AllTrim(TRB->B1_DESC), 0001,TRB->B2_QATU, TRB->B1_PRV1, TRB->BM_XMODELO,TRB->B1_LOCPAD})
+            DBSKIP()
+        End
+
         if aList2[nLinha,1] == .T.
             aList2[nLinha,1] := .F.
         else
@@ -465,9 +510,6 @@ Static Function geraPV(aRet)
     Local cItem     :=    '01'
     Local cPathL    :=    'C:\00'
 
-    Private lRet        :=    .F.
-    Private lMsErroAuto := .F.
-
     Dbselectarea("SA1")
     DbSetOrder(1)
     Dbseek(xFilial("SA1")+aRet[2,6]+aRet[2,7])
@@ -482,8 +524,8 @@ Static Function geraPV(aRet)
     aadd(aCabec, { "C5_TIPOPV"  ,'1'        ,Nil }) //
     aadd(aCabec, { "C5_MOEDA"   ,1          ,Nil }) // Moeda
     aadd(aCabec, { "C5_CONDPAG" ,'001'      ,Nil })
-    aadd(aCabec, { "C5_NATUREZ" ,"11010007" ,Nil })  
-    aadd(aCabec, { "C5_VEND1"   ,aRet[2,2]  ,Nil })
+    aadd(aCabec, { "C5_NATUREZ" ,"11010007" ,Nil }) //Perguntar para Michelle
+    aadd(aCabec, { "C5_VEND1"   ,aRet[2,2]  ,Nil }) //Perguntar para Michelle
 
     FOR nX := 3 to len(aRet)
         aLinha := {}
@@ -496,7 +538,7 @@ Static Function geraPV(aRet)
         aadd(aLinha,{ "C6_QTDVEN"  ,aRet[nX,4] ,Nil })
         aadd(aLinha,{ "C6_PRCVEN"  ,aRet[nX,6] ,Nil })
         aadd(aLinha,{ "C6_PRUNIT"  ,aRet[nX,6] ,Nil })
-        aadd(aLinha,{ "C6_TES"     ,'502'      ,Nil })
+        aadd(aLinha,{ "C6_TES"     ,'502'      ,Nil }) //Perguntar para Michelle
         aadd(aLinha,{ "C6_LOCAL"   ,aRet[nX,8] ,Nil })
         
         cItem := Soma1(cItem)
@@ -508,7 +550,7 @@ Static Function geraPV(aRet)
 
     Begin Transaction 
 
-    // MSExecAuto({|a, b, c| MATA410(a, b, c)}, aCabec, aItens, 3)
+    MSExecAuto({|a, b, c| MATA410(a, b, c)}, aCabec, aItens, 3)
     
     If !lMsErroAuto
         ConOut("Incluído com sucesso! " + cDoc)
@@ -524,4 +566,65 @@ Static Function geraPV(aRet)
 
     RestAreA(aArea)
 
+Return
+
+
+Static Function geraPDEeDE(aRet)
+ 
+    Local nX
+    Local aCabec      := {}
+    Local aItens      := {}
+    Local aLinha      := {}
+    Local lMsErroAuto := .F.
+    Local cDoc        := GetSxeNum("SF1","F1_DOC")
+
+    // [2]aList2 [1].F. [2]TRB->A3_COD [3]AllTrim(TRB->A3_NOME) [4]AllTrim(TRB->Z30_MALA) [5]AllTrim(TRB->Z30_REGIAO) [6]TRB->A1_COD [7]TRB->A1_LOJA [8]TRB->A1_TIPO
+    // [3+]aList3 [1].F. [2]AllTrim(TRB->B1_COD) [3]AllTrim(TRB->B1_DESC) [4]0001 [5]TRB->B2_QATU [6]TRB->B1_PRV1 [7]TRB->BM_XMODELO [8]TRB->B1_LOCPAD
+
+    aAdd( aCabec, {'F1_TIPO'    ,'N'       ,NIL} )
+    aAdd( aCabec, {'F1_FORMUL'  ,'N'       ,NIL} )
+    aAdd( aCabec, {'F1_DOC'     ,cDoc      ,NIL} )
+    aAdd( aCabec, {"F1_SERIE"   ,"01"      ,NIL} ) //Perguntar para Michelle
+    aAdd( aCabec, {"F1_EMISSAO" ,dDataBase ,NIL} )
+    aAdd( aCabec, {'F1_FORNECE' ,aRet[2,6] ,NIL} )
+    aAdd( aCabec, {'F1_LOJA'    ,aRet[2,7] ,NIL} )
+    aAdd( aCabec, {"F1_ESPECIE" ,"NF"      ,NIL} )
+    aAdd( aCabec, {"F1_COND"    ,'001'     ,NIL} ) //Perguntar para Michelle
+    aAdd( aCabec, {"F1_STATUS"  ,''        ,NIL} )
+    
+    For nX := 3 to Len(aRet)
+        
+        aItens := {}
+
+        aAdd( aItens ,{'D1_ITEM'  ,StrZero(nX-2,4)       ,NIL} )
+        aAdd( aItens ,{'D1_COD'   ,aRet[nX,2]            ,NIL} )
+        aAdd( aItens ,{"D1_QUANT" ,aRet[nX,4]            ,Nil} )
+        aAdd( aItens ,{"D1_VUNIT" ,aRet[nX,6]            ,Nil} )
+        aAdd( aItens ,{"D1_TOTAL" ,aRet[nX,4]*aRet[nX,6] ,Nil} ) 
+        aAdd( aItens ,{"D1_TES"   ,''                    ,NIL} ) //Perguntar para Michelle
+        
+        aAdd( aLinha ,aItens )
+        
+    NEXT nX
+
+    lMsErroAuto := .F.
+
+    MSExecAuto( {|x,y,z,a,b| MATA140(x,y,z,a,b)} ,aCabec ,aLinha ,3 , , )
+    
+    If lMsErroAuto
+        mostraerro()
+    Else
+        MsgInfo("Pré - Documento de Entrada concluído com sucesso!", "Êxito!")
+    EndIf
+
+    lMsErroAuto := .F.
+
+    MSExecAuto( {|x,y,z,a| MATA103(x,y,z,a)} ,aCabec ,aLinha ,3 , .T. )
+
+    If lMsErroAuto
+        mostraerro()
+    Else
+        MsgInfo("Documento de Entrada concluído com sucesso!", "Êxito!")
+    EndIf
+  
 Return
