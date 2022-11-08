@@ -60,7 +60,7 @@ aadd(aHeader,'Authorization: Basic ' + Encode64(cUsrId))
 
 
 sPostRet := HttpPost(cUrlInt+cPath,"",cJson,nTimeOut,aHeader,@cHeadRet)
-if !empty(sPostRet) .And. !'<statusCode>500' $ sPostRet .AND. !'"statusCode":500' $ sPostRet
+if !empty(sPostRet) .And. !'<statusCode>500' $ sPostRet .AND. !'"statusCode":500' $ sPostRet .AND. !"502 Bad Gateway" $ sPostRet
     //ret := oJson:FromJson(sPostRet)
     FWJsonDeserialize(sPostRet,@oJson)
     cRetorno := cvaltochar(oJson:ID) + ";" + cvaltochar(oJson:PRAZO) + ";" + cvaltochar(oJson:TOTALFRETE)
