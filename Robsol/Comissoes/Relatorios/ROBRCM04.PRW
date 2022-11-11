@@ -5,7 +5,7 @@
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
 ±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
-±±³Fun‡…o    ³ ROBRFT02  ³ Autor ³ Alexandre Venancio  ³ Data ³30/05/2020 ³±±
+±±³Fun‡…o    ³ ROBRCM04  ³ Autor ³ Alexandre Venancio  ³ Data ³30/05/2020 ³±±
 ±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
 ±±³Descri‡…o ³ Relatorio de Vendas						                  ³±±
 ±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
@@ -59,9 +59,9 @@ Local cTitle := "Relatório de Restrições"
 //³ mv_par02    Data Ate                                         ³
 //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
 
-Pergunte("ROBRFT02",.F.)
+Pergunte("ROBRCM04",.F.)
 
-oReport := TReport():New("ROBRFT02",cTitle,If(lAuto,Nil,"ROBRFT02"), {|oReport| ReportPrint(oReport)},"") 
+oReport := TReport():New("ROBRCM04",cTitle,If(lAuto,Nil,"ROBRCM04"), {|oReport| ReportPrint(oReport)},"") 
 oReport:SetLandscape() 
 
 //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
@@ -141,7 +141,7 @@ cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"
 cQuery += " INNER JOIN "+RetSQLName("SE4")+" E4 ON E4_FILIAL='"+xFilial("SE4")+"' AND E4_CODIGO=C5_CONDPAG AND E4.D_E_L_E_T_=' '"
 cQuery += " INNER JOIN "+RetSQLName("SA3")+" A3 ON A3.A3_FILIAL='"+xFilial("SA3")+"' AND A3.A3_COD=C5_VEND1 AND A3.D_E_L_E_T_=' '"
 cQuery += " LEFT JOIN "+RetSQLName("SA3")+" A32 ON A32.A3_FILIAL='"+xFilial("SA3")+"' AND A32.A3_COD=A3.A3_GEREN AND A32.D_E_L_E_T_=' '"
-cQuery += " WHERE C5_FILIAL='"+xFilial("SC5")+"' AND C5_ZZSTATU='B'"
+cQuery += " WHERE C5_FILIAL BETWEEN '0101' AND '0103' AND C5_ZZSTATU='B'"
 cQuery += " AND C5.D_E_L_E_T_=' '"
 cQuery += " AND C5_EMISSAO BETWEEN '"+dtos(MV_PAR01)+"' AND '"+dtos(MV_PAR02)+"'"
 cQuery += " GROUP BY C5_XOBSLIB,C5_NUM,C5_EMISSAO,A1_NOME,A1_CGC,A1_NREDUZ,E4_DESCRI,A1_MUN,A1_EST,A3.A3_NOME,A32.A3_NOME,BM_XMODELO"
