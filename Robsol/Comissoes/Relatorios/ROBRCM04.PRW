@@ -59,9 +59,9 @@ Local cTitle := "Relatório de Restrições"
 //³ mv_par02    Data Ate                                         ³
 //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
 
-Pergunte("ROBRCM04",.F.)
+Pergunte("ROBRFT02",.F.)
 
-oReport := TReport():New("ROBRCM04",cTitle,If(lAuto,Nil,"ROBRCM04"), {|oReport| ReportPrint(oReport)},"") 
+oReport := TReport():New("ROBRCM04",cTitle,If(lAuto,Nil,"ROBRFT02"), {|oReport| ReportPrint(oReport)},"") 
 oReport:SetLandscape() 
 
 //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
