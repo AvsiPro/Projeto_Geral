@@ -17,6 +17,7 @@ Local aList0    := {}
 Local cQuery    := ''
 Local cAliasSQL := GetNextAlias()
 Local aStatus   := {'Aberto','Atendido','Negado','Aguardando Cliente'}
+Local lZ52      :=  .F.
 
 Private cMsgNew   := space(1024)
 Private cVend1    := ''
@@ -85,17 +86,70 @@ SetPrvt("oSay1","oSay2","oSay3","oSay4","oSay5","oSay6","oSay7","oSay8","oSay9",
     EndDo
 
     DbSelectArea((cAliasSQL))
-    //DbGoTop()
+    
+    If Len(aList0) < 1
+        cQuery := "SELECT TOP 1 COALESCE(CAST(CAST(Z50_OBSATD AS VARBINARY(8000)) AS VARCHAR(8000)),' ') AS Z50_OBSATD,Z50.*,Z52.*" 
+        cQuery += " FROM "+RetSQLName("Z50")+" Z50" 
+        cQuery += " INNER JOIN "+RetSQLName("Z52")+" Z52 ON Z52_DOC=Z50_NOTA"
+        cQuery += "     AND Z52_CLIENT=Z50_CODCLI"
+        cQuery += "     AND Z52_LOJA=Z50_LOJCLI"
+        cQuery += "     AND Z52.D_E_L_E_T_=' '"
+        cQuery += " WHERE  Z50.D_E_L_E_T_=' '"
+        cQuery += "     AND Z50_NOTA='"+Z50->Z50_NOTA+"' "
+        cQuery += "     AND Z50_CODCLI='"+Z50->Z50_CODCLI+"' "
+        cQuery += "     AND Z50_LOJCLI='"+Z50->Z50_LOJCLI+"'
+
+        If Select((cAliasSQL)) > 0
+            (cAliasSQL)->(DBCloseArea())
+        EndIF 
+
+        cQuery := ChangeQuery(cQuery)
+
+        MPSysOpenQuery(cQuery,cAliasSQL)
+
+        While (cAliasSQL)->(!EoF())
+
+            /*If Empty(cVend1)
+                cVend1 := Alltrim((cAliasSQL)->C5_VEND1)
+            EndIf*/
+
+            Aadd(aList0,{;
+                Alltrim((cAliasSQL)->Z50_CODIGO),;
+                DToC(SToD((cAliasSQL)->Z50_DTCRIA)),;
+                Alltrim((cAliasSQL)->Z50_HRCRIA),;
+                aStatus[Val((cAliasSQL)->Z50_STATUS)],;
+                Alltrim((cAliasSQL)->Z50_NOTA),;
+                DToC(SToD((cAliasSQL)->Z50_EMISSAO)),;
+                Alltrim((cAliasSQL)->Z50_CODCLI),;
+                Alltrim((cAliasSQL)->Z50_LOJCLI),;
+                Alltrim(Posicione("SA1",1,xFilial("SA1")+Alltrim((cAliasSQL)->Z50_CODCLI),"A1_NREDUZ")),;
+                Alltrim((cAliasSQL)->Z50_PROD),;
+                Alltrim(Posicione("SB1",1,xFilial("SB1")+(cAliasSQL)->Z50_PROD,"B1_DESC")),;
+                Alltrim(Transform((cAliasSQL)->Z50_QUANT,"@E 999,999,999.99")),;
+                Alltrim(Transform((cAliasSQL)->Z50_PRECO,"@E 999,999,999.99")),;
+                RobToDef(3,(cAliasSQL)->Z50_OPCTRC),;
+                RobToDef(1,(cAliasSQL)->Z50_DEFEIT),;
+                RobToDef(2,(cAliasSQL)->Z50_TPDEFE),;
+                (cAliasSQL)->Z50_OBSATD,;
+            })
+            (cAliasSQL)->(DbSkip())
+            lZ52 := .T.
+        EndDo
+
+        DbSelectArea((cAliasSQL))
+    EndIf 
 
     If Len(aList0) > 0
 
         DbSelectArea("SA1")
         SA1->(DbSetOrder(1))
-        SA1->(DbSeek(xFilial("SA1")+(cAliasSQL)->C5_CLIENTE+(cAliasSQL)->C5_LOJACLI))
+        SA1->(DbSeek(xFilial("SA1")+(cAliasSQL)->Z50_CODCLI+(cAliasSQL)->Z50_LOJCLI))
 
-        DbSelectArea("SC6")
-        SC6->(DbSetOrder(1))
-        SC6->(DbSeek((cAliasSQL)->C5_FILIAL+(cAliasSQL)->C5_NUM))
+        If !lZ52
+            DbSelectArea("SC6")
+            SC6->(DbSetOrder(1))
+            SC6->(DbSeek((cAliasSQL)->C5_FILIAL+(cAliasSQL)->C5_NUM))
+        EndIf 
 
 
         If Len(aList0) > 0
