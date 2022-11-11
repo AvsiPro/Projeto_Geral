@@ -9,14 +9,14 @@ User Function ROBFAT07()
 
     Local nLarg
     Local nAlt
-    Local aItens1 := {'Todos', 'Selecionados', 'Não Selecionados'}
+    Local aItens1 := {'Todos', 'Selecionados', 'Nao Selecionados'}
     Local aItens2 := {'Tamanho Mala', 'Mala P', 'Mala G'}
     Local nX
     Local aRet   := {}
     Local cQuery
     Local nOpc   := 0
 
-    Private oDlg1,oGrp1,oBtn1,oBtn2,oBtn3,oBtn4,oBtn5,oBtn6,oList1,oList2,oList3,oComb1,oComb2,oSay1,oSay2
+    Private oDlg1,oGrp1,oBtn1,oBtn2,oBtn3,oBtn4,oBtn5,oBtn6,oList1,oList2,oList3,oComb1,oComb2,oSay1,oSay2,oSay3,oSay4
     Private oFont1         :=    TFont():New( 'Arial',, 20,, .T.,,,,, .T., )
     Private aList1         :=    {}
     Private aList2         :=    {}
@@ -30,6 +30,7 @@ User Function ROBFAT07()
     Private lRet           :=    .F.
     Private lMsErroAuto    :=    .F.
     Private nQtdTot        :=    0
+    Private nQtdNotas
 
     If Select("SM0") == 0
         RpcSetType(3)
@@ -56,14 +57,14 @@ User Function ROBFAT07()
     oDlg1      := MSDialog():New( 100, 200, 750, 1500, "",,, .F.,,,,,, .T.,,, .T. )
     oGrp1      := TGroup():New( 005, 005, 300, 645, "", oDlg1, CLR_BLACK, CLR_WHITE, .T., .F. )
      
-    oList1     := TCBrowse():New( 012, 008, 190, 135,, {'', 'Codigo','Gerente','Região'}, {10,25,90,25}, oGrp1,,,, {|| buscaRepre(oList1:nAt)},,,,,,,,,, .T.,,,, .F., .T. )
+    oList1     := TCBrowse():New( 012, 008, 190, 135,, {'', 'Codigo','Gerente','Regiao'}, {10,25,90,25}, oGrp1,,,, {|| buscaRepre(oList1:nAt)},,,,,,,,,, .T.,,,, .F., .T. )
     oList1:SetArray(aList1)
     oList1:bLine := {||{ If(aList1[oList1:nAt,01],oOk,oNo),;
                                       aList1[oList1:nAt,2],;
                                       aList1[oList1:nAt,3],;
                                       aList1[oList1:nAt,4]}}
     
-    oList2     := TCBrowse():New( 012, 200, 440, 135,, {'','Código','Representante','Malas', 'Regiões'},, oGrp1,,,, {|| buscaProd(oList2:nAt)},,,,,,,,,, .T.,,,, .F., .T. )
+    oList2     := TCBrowse():New( 012, 200, 440, 135,, {'','Codigo','Representante','Malas', 'Regioes'},, oGrp1,,,, {|| buscaProd(oList2:nAt)},,,,,,,,,, .T.,,,, .F., .T. )
     oList2:SetArray(aList2)
     oList2:bLine := {||{If(aList2[oList2:nAt,01],oOk,oNo),;
                                      aList2[oList2:nAt,2],;
@@ -71,7 +72,7 @@ User Function ROBFAT07()
                                      aList2[oList2:nAt,4],;
                                      aList2[oList2:nAt,5]}}
 
-    oList3     := TCBrowse():New( 150, 008, 500, 145,, {'', 'Cod', 'Desc', 'Qtd', 'Saldo Total', 'Vlr'}, {,,200,,}, oGrp1,,,,, {|| selecProd(oList3:nAt)},,,,,,,,, .T.,,,, .F., .T. )
+    oList3     := TCBrowse():New( 150, 008, 500, 145,, {'', 'Codigo', 'Descricao', 'Saldo 3', 'Saldo Estoque', 'Preco UN'}, {,,200,,}, oGrp1,,,,, {|| selecProd(oList3:nAt)},,,,,,,,, .T.,,,, .F., .T. )
     oList3:SetArray(aList3)
     oList3:bLine := {||{ If(aList3[oList3:nAt,01],oOk,oNo),;
                                       aList3[oList3:nAt,2],;
@@ -88,13 +89,14 @@ User Function ROBFAT07()
     
     oBtn1      := TButton():New( nLinha+25,   564,  "Ok",                   oGrp1, {|| oDlg1:end(nOpc:=1)},      nLarg,    nAlt,,,,.T.,,"",,,,.F. )
     oBtn2      := TButton():New( nLinha+50,   564,  "Marca/Desmarca Todos", oGrp1, {|| marcaTodos()},            nLarg,    nAlt,,,,.T.,,"",,,,.F. )
-    oBtn3      := TButton():New( nLinha+75,   564,  "Ignora Ultimo PV",     oGrp1, {|| buscaProd(oList2:nAt,1)}, nLarg,    nAlt,,,,.T.,,"",,,,.F. )
     oBtn4      := TButton():New( nLinha+100,  564,  "Sair",                 oGrp1, {|| oDlg1:end(nOpc:=0)},      nLarg,    nAlt,,,,.T.,,"",,,,.F. )
     oBtn5      := TButton():New( nLinha+75,   510,  "Ir ao Início",         oGrp1, {|| oList3:GoTop()},          nLarg-25, nAlt,,,,.T.,,"",,,,.F. )
     oBtn6      := TButton():New( nLinha+100,  510,  "Ir ao Fim",            oGrp1, {|| oList3:GoBottom()},       nLarg-25, nAlt,,,,.T.,,"",,,,.F. )
 
     oSay1:= TSay():New( nLinha+180, 10, {||'Quantidade total de produtos: '}, oDlg1,,      ,,,, .T., CLR_BLACK,, 200, 20 )
     oSay2:= TSay():New( nLinha+177, 85, {||''},                               oDlg1,,oFont1,,,, .T., CLR_BLACK,, 200, 20 )
+    oSay3:= TSay():New( nLinha+180, 140, {||'Quantidade de notas: '}, oDlg1,,      ,,,, .T., CLR_BLACK,, 200, 20 )
+    oSay4:= TSay():New( nLinha+177, 195, {||''},                               oDlg1,,oFont1,,,, .T., CLR_BLACK,, 200, 20 )
 
     oDlg1:Activate( ,,, .T. )
 
@@ -215,20 +217,21 @@ Static Function buscaRepre(nLinha)
 
 Return
 
-Static Function buscaProd(nLinha, nIgnora)
+Static Function buscaProd(nLinha)
 
     Local cQuery       :=    ""
     Local nX         
-    Local aMalas       :=    strTokArr(aList2[nLinha,4], '/')
-    Local cMalas       :=    ""
-    Local cAux         :=    ""
-    Local cProdutos    :=    ""
     Local cValid       :=    ""
 
     cQuery := " "
-    cQuery += " SELECT MAX(C5_EMISSAO) AS ULTIMOPEDIDO FROM " + RetSQLName("SC5") + " SC5 " 
-    cQuery += " WHERE C5_TIPO = 'N' AND C5_CLIENTE = '" + aList2[nLinha,6] + "' AND C5_LOJACLI = '" + aList2[nLinha,7] + "' "
-    cQuery += " AND R_E_C_D_E_L_ = '0' " 
+    cQuery += " SELECT BM_XMODELO,B1_COD,B1_DESC,B2_QATU,B1_PRV1,BM_XMODELO,B1_LOCPAD,B6_SALDO,B6_PRUNIT "
+    cQuery += " FROM " + RetSQLName("SB6") + " SB6 "
+    cQuery += " INNER JOIN " + RetSQLName("SB1") + " SB1 ON B6_PRODUTO = B1_COD "
+    cQuery += " INNER JOIN " + RetSQLName("SBM") + " SBM ON BM_GRUPO = B1_GRUPO "
+    cQuery += " INNER JOIN " + RetSQLName("SB2") + " SB2 ON B2_COD = B1_COD "
+    cQuery += " WHERE B6_CLIFOR = '" + aList2[nLinha,6] + "' AND B6_TIPO = 'E' AND B6_SALDO > '0' "
+    cQuery += " AND B6_PODER3 = 'R' AND B2_QATU >= '50' " 
+    cQuery += " ORDER BY B1_COD " 
 
     If Select('TRB') > 0
         dbSelectArea('TRB')
@@ -237,183 +240,30 @@ Static Function buscaProd(nLinha, nIgnora)
 
     DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
 
-    cData := TRB->ULTIMOPEDIDO
+    aList3 := {}
 
-    if AllTrim(cData) == '' .or. nIgnora == 1
-
-        For nX := 1 To len(aMalas)
-        cMalas += "'"
-        cMalas += aMalas[nX]
-        cMalas += "'"
-        cMalas += ","
-        Next
-
-        cMalas := SubStr(cMalas, 0, len(cMalas) - 1)
-
-        aList3 := {}
-
-        cQuery := " "
-        cQuery += " SELECT DISTINCT SB1.B1_COD, SB1.B1_DESC, SB2.B2_QATU,SB1.B1_PRV1,SBM.BM_XMODELO,SB1.B1_LOCPAD  " 
-        cQuery += " FROM " + RetSQLName("SB1") + " SB1  " 
-        cQuery += " INNER JOIN " + RetSQLName("SBM") + " SBM ON SB1.B1_GRUPO = SBM.BM_GRUPO  " 
-        cQuery += " INNER JOIN " + RetSQLName("SB2") + " SB2 ON SB1.B1_COD = SB2.B2_COD   " 
-        cQuery += " WHERE SB2.B2_QATU > '50' AND SB2.B2_LOCAL = '101'  " 
-        cQuery += " AND SBM.BM_XMODELO IN (" + cMalas + ")  " 
-        cQuery += " AND SB1.B1_PRV1 > '0'  " 
-        cQuery += " AND SB1.B1_MSBLQL != '1'  " 
-
-        If Select('TRB') > 0
-            dbSelectArea('TRB')
-            dbCloseArea()
-        EndIf
-
-        DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
-
-        While !EOF()
-            if cValid != TRB->B1_COD
-                Aadd(aList3, { .F., AllTrim(TRB->B1_COD), AllTrim(TRB->B1_DESC), 0001,TRB->B2_QATU, TRB->B1_PRV1, TRB->BM_XMODELO,TRB->B1_LOCPAD})
-                cValid := TRB->B1_COD
-            endif
-            DBSKIP()
-        End
-
-        cValid := ""
-
-        If len(aList3) == 0
-            Aadd(aList3, { .F., '', '', '', '', '', '',''})
-        EndIf
-
-        if nIgnora != 1
-            if aList2[nLinha,1] == .T.
-                aList2[nLinha,1] := .F.
-            else
-                aList2[nLinha,1] := .T.
-            endif
-
-            for nX := 1 to len(aList2)
-                if nX == nLinha
-                    nX++
-                endif
-                if !(nX > len(aList2))
-                    aList2[nX,1] := .F.
-                endif
-            Next
+    While !EOF()
+        if cValid != TRB->B1_COD
+            Aadd(aList3, { .T., AllTrim(TRB->B1_COD), AllTrim(TRB->B1_DESC), TRB->B6_SALDO, TRB->B2_QATU, TRB->B6_PRUNIT, TRB->BM_XMODELO,TRB->B1_LOCPAD})
+            cValid := TRB->B1_COD
         endif
-        
+        DBSKIP()
+    End
+
+    if aList2[nLinha,1] == .T.
+        aList2[nLinha,1] := .F.
     else
-
-        cQuery := " "
-        cQuery += " SELECT MAX(C5_NUM) FROM " + RetSQLName("SC5") + " " 
-        cQuery += " WHERE C5_TIPO = 'N' AND C5_CLIENTE = '" + aList2[nLinha,6] + "' " 
-        cQuery += " AND C5_LOJACLI = '" + aList2[nLinha,7] + "' " 
-        cQuery += " AND C5_EMISSAO = '" + cData + "' " 
-        cQuery += " AND R_E_C_D_E_L_ = '0' " 
-
-        If Select('TRB') > 0
-            dbSelectArea('TRB')
-            dbCloseArea()
-        EndIf
-
-        DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
-
-        cNum := TRB->C5_NUM
-
-        cQuery := " "
-        cQuery += " SELECT SC6.C6_ITEM,SC6.C6_PRODUTO,SC6.C6_QTDVEN,SC6.C6_PRCVEN,SC6.C6_PRUNIT,SC6.C6_TES,SC6.C6_LOCAL,SB1.B1_DESC,SB2.B2_QATU,SB1.B1_PRV1,SBM.BM_XMODELO,SB1.B1_LOCPAD FROM " + RetSQLName("SC6") + " SC6 " 
-        cQUery += " INNER JOIN " + RetSQLName("SB1") + " SB1 ON SB1.B1_COD = C6_PRODUTO " 
-        cQuery += " INNER JOIN " + RetSQLName("SB2") + " SB2 ON SB1.B1_COD = SB2.B2_COD " 
-        cQuery += " INNER JOIN " + RetSQLName("SBM") + " SBM ON SB1.B1_GRUPO = SBM.BM_GRUPO " 
-        cQUery += " WHERE C6_NUM = '" + cNum + "' " 
-        cQuery += " AND SB2.B2_QATU > '50' AND SB2.B2_LOCAL = '101' AND SC6.R_E_C_D_E_L_ = '0' " 
-        cQuery += " ORDER BY SC6.C6_PRODUTO "
-
-        If Select('TRB') > 0
-            dbSelectArea('TRB')
-            dbCloseArea()
-        EndIf
-
-        DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
-
-        aList3 := {}
-
-        While !EOF()
-            if cValid != TRB->C6_PRODUTO               
-                Aadd(aList3, { .T., AllTrim(TRB->C6_PRODUTO), AllTrim(TRB->B1_DESC), TRB->C6_QTDVEN,TRB->B2_QATU, TRB->C6_PRUNIT, TRB->BM_XMODELO,TRB->B1_LOCPAD})
-                cValid := TRB->C6_PRODUTO
-            endif
-            DBSKIP()
-        End
-    
-        cValid := ""
-
-        cAux := '01'
-
-        for nX := 1 to len(aList3)
-            if aList3[nX,7] != cAux .OR. cAux == '01'
-                cMalas += "'"
-                cMalas += aList3[nX,7]
-                cMalas += "'"
-                cMalas += ","
-            endif
-            cAux := aList3[nX,7]
-        next
-
-        cMalas := SubStr(cMalas, 1, len(cMalas) - 1)
-
-        for nX := 1 to len(aList3)
-            cProdutos += "'"
-            cProdutos += aList3[nX,2]
-            cProdutos += "'"
-            cProdutos += ","
-        next
-
-        cProdutos := SubStr(cProdutos, 1, len(cProdutos) - 1)
-
-        cQuery := " "
-        cQuery += " SELECT DISTINCT SB1.B1_COD, SB1.B1_DESC, SB2.B2_QATU,SB1.B1_PRV1,SBM.BM_XMODELO,SB1.B1_LOCPAD  " 
-        cQuery += " FROM " + RetSQLName("SB1") + " SB1  " 
-        cQuery += " INNER JOIN " + RetSQLName("SBM") + " SBM ON SB1.B1_GRUPO = SBM.BM_GRUPO  " 
-        cQuery += " INNER JOIN " + RetSQLName("SB2") + " SB2 ON SB1.B1_COD = SB2.B2_COD   " 
-        cQuery += " WHERE SB2.B2_QATU > '50' AND SB2.B2_LOCAL = '101'  " 
-        cQuery += " AND SBM.BM_XMODELO IN (" + cMalas + ") " 
-        cQuery += " AND SB1.B1_PRV1 > '0'  " 
-        cQuery += " AND SB1.B1_MSBLQL != '1'  " 
-        cQuery += " AND SB1.B1_COD NOT IN (" + cProdutos + ") " 
-        cQuery += " ORDER BY SB1.B1_COD " 
-
-        If Select('TRB') > 0
-            dbSelectArea('TRB')
-            dbCloseArea()
-        EndIf
-
-        DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
-
-        While !EOF()
-            if cValid != TRB->B1_COD
-                Aadd(aList3, { .F., AllTrim(TRB->B1_COD), AllTrim(TRB->B1_DESC), 0001,TRB->B2_QATU, TRB->B1_PRV1, TRB->BM_XMODELO,TRB->B1_LOCPAD})
-                cValid := TRB->B1_COD
-            endif
-            DBSKIP()
-        End
-
-        cValid := ""
-
-        if aList2[nLinha,1] == .T.
-            aList2[nLinha,1] := .F.
-        else
-            aList2[nLinha,1] := .T.
-        endif
-
-        for nX := 1 to len(aList2)
-            if nX == nLinha
-                nX++
-            endif
-            if !(nX > len(aList2))
-                aList2[nX,1] := .F.
-            endif
-        Next
-
+        aList2[nLinha,1] := .T.
     endif
+
+    for nX := 1 to len(aList2)
+        if nX == nLinha
+            nX++
+        endif
+        if !(nX > len(aList2))
+            aList2[nX,1] := .F.
+        endif
+    Next
 
     oList2:SetArray(aList2)
     oList2:bLine := {||{If(aList2[oList2:nAt,01],oOk,oNo),;
@@ -435,6 +285,7 @@ Static Function buscaProd(nLinha, nIgnora)
     oList3:Refresh()
 
     qtdTot()
+    qtdNotas()
 
 Return 
 
@@ -491,6 +342,7 @@ Static Function selecProd(nLinha)
     oList3:Refresh()
 
     qtdTot()
+    qtdNotas()
 
 Return
 
@@ -534,6 +386,7 @@ Static Function marcaTodos()
     oList3:Refresh()
 
     qtdTot()
+    qtdNotas()
 
 Return 
 
@@ -551,7 +404,7 @@ Static Function filtraLista()
                 Aadd(aList3, aList3B[nX])
             endif
         next
-    elseif cCombo1 == 'Não Selecionados'
+    elseif cCombo1 == 'Nao Selecionados'
         for nX := 1 to len(aList3B)
             if !aList3B[nX,1]
                 Aadd(aList3, aList3B[nX])
@@ -575,6 +428,7 @@ Static Function filtraLista()
     oList3:Refresh()
 
     qtdTot()
+    qtdNotas()
 
 Return 
 
@@ -723,4 +577,32 @@ Static Function qtdTot()
     oSay2:SetText(nQtdTot)
     oSay2:CtrlRefresh()
     
+Return 
+
+
+Static Function qtdNotas()
+
+    Local nAux := len(aList3B) / 487
+    Local nX
+    Local nQtdProd := 0
+
+    aAux := aList3B
+
+    for nX := 1 to len(aList3B)
+        if aList3B[nX,7] == if(cCombo1 == "Todos" .OR. cCombo1 == "Selecionados" .OR. cCombo1 == "Nao Selecionados", ".F.", cCombo1) .AND. aList3B[nX,1]
+            nQtdProd++
+        elseif (cCombo1 == "Selecionados" .OR. cCombo1 == "Todos") .AND. aList3B[nX,1]
+            nQtdProd++
+        endif
+    next
+
+    nQtdNotas := Round(nQtdProd / 487, 0)
+
+    if nQtdNotas < nAux
+        nQtdNotas++
+    endif
+
+    oSay4:SetText(nQtdNotas)
+    oSay4:CtrlRefresh()
+
 Return 
