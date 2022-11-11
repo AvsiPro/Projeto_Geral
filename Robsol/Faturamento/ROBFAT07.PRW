@@ -40,7 +40,9 @@ User Function ROBFAT07()
     buscaGeren()
 
     cQuery := " "
-    cQuery += " SELECT Z03_CODGRI FROM Z03010 "
+    cQuery += " SELECT Z03_CODGRI FROM "+RetSQLName("Z03")
+    cQuery += " WHERE Z03_FILIAL='"+xFilial("Z03")+"' AND D_E_L_E_T_=' '"
+    cQuery += " AND Z03_MSBLQL<>'1'"
 
     If Select('TRB') > 0
         dbSelectArea('TRB')
@@ -138,8 +140,8 @@ Static Function buscaGeren()
     cQuery := " "
     cQuery += " SELECT SA3.A3_COD,Z30.Z30_CODVEN,Z30.Z30_CODGER,SA3.A3_NOME,Z30.Z30_MALA,Z30.Z30_REGIAO " 
     cQuery += " FROM " + RetSQLName("SA3") + " SA3 " 
-    cQuery += " LEFT JOIN " + RetSQLName("Z30") + " Z30 ON Z30.Z30_CODVEN = SA3.A3_COD " 
-    cQuery += " WHERE SA3.A3_XFUNCAO = '2' " 
+    cQuery += " LEFT JOIN " + RetSQLName("Z30") + " Z30 ON Z30.Z30_FILIAL=SA3.A3_FILIAL AND Z30.Z30_CODVEN = SA3.A3_COD AND Z30.D_E_L_E_T_=' ' " 
+    cQuery += " WHERE SA3.A3_FILIAL='"+xFilial("SA3")+"' AND SA3.A3_XFUNCAO = '2' AND SA3.D_E_L_E_T_=' '" 
 
     If Select('TRB') > 0
         dbSelectArea('TRB')
@@ -168,7 +170,7 @@ Static Function buscaRepre(nLinha)
     cQuery += " FROM   " + RetSQLName("SA3") + " SA3 " 
     cQuery += " INNER JOIN " + RetSQLName("Z30") + " Z30 ON SA3.A3_COD = Z30.Z30_CODVEN " 
     cQuery += " INNER JOIN " + RetSQLName("SA1") + " SA1 ON SA1.A1_CGC = SA3.A3_CGC "
-    cQuery += " WHERE  Z30.Z30_CODGER = '"+ cGeren +"' "
+    cQuery += " WHERE Z30.Z30_FILIAL='"+xFilial("Z30")+"' AND Z30.Z30_CODGER = '"+ cGeren +"' "
     cQuery += " AND  SA3.A3_XFUNCAO != '2' "
     cQuery += " AND  Z30.Z30_MALA != '' "
 
@@ -222,13 +224,14 @@ Static Function buscaProd(nLinha)
     Local cQuery       :=    ""
     Local nX         
     Local cValid       :=    ""
+    Local cBarra       
 
     cQuery := " "
     cQuery += " SELECT BM_XMODELO,B1_COD,B1_DESC,B2_QATU,B1_PRV1,BM_XMODELO,B1_LOCPAD,B6_SALDO,B6_PRUNIT "
     cQuery += " FROM " + RetSQLName("SB6") + " SB6 "
-    cQuery += " INNER JOIN " + RetSQLName("SB1") + " SB1 ON B6_PRODUTO = B1_COD "
-    cQuery += " INNER JOIN " + RetSQLName("SBM") + " SBM ON BM_GRUPO = B1_GRUPO "
-    cQuery += " INNER JOIN " + RetSQLName("SB2") + " SB2 ON B2_COD = B1_COD "
+    cQuery += " INNER JOIN " + RetSQLName("SB1") + " SB1 ON B6_FILIAL='"+xFilial("SB6")+"' AND B6_PRODUTO = B1_COD "
+    cQuery += " INNER JOIN " + RetSQLName("SBM") + " SBM ON BM_FILIAL='"+xFilial("SBM")+"' AND BM_GRUPO = B1_GRUPO "
+    cQuery += " INNER JOIN " + RetSQLName("SB2") + " SB2 ON B2_FILIAL=B6_FILIAL AND B2_COD = B1_COD "
     cQuery += " WHERE B6_CLIFOR = '" + aList2[nLinha,6] + "' AND B6_TIPO = 'E' AND B6_SALDO > '0' "
     cQuery += " AND B6_PODER3 = 'R' AND B2_QATU >= '50' " 
     cQuery += " ORDER BY B1_COD " 
@@ -243,12 +246,18 @@ Static Function buscaProd(nLinha)
     aList3 := {}
 
     While !EOF()
-        if cValid != TRB->B1_COD
+        if Ascan(aList3,{|x| Alltrim(x[2]) == Alltrim(TRB->B1_COD)}) == 0
             Aadd(aList3, { .T., AllTrim(TRB->B1_COD), AllTrim(TRB->B1_DESC), TRB->B6_SALDO, TRB->B2_QATU, TRB->B6_PRUNIT, TRB->BM_XMODELO,TRB->B1_LOCPAD})
-            cValid := TRB->B1_COD
+            cValid := cBarra + TRB->B1_COD
+            cBarra := "','"
         endif
         DBSKIP()
     End
+
+        
+    If len(aList3) > 0
+        cMarca := '2'
+    EndIf
 
     if aList2[nLinha,1] == .T.
         aList2[nLinha,1] := .F.
@@ -350,28 +359,36 @@ Return
 Static Function marcaTodos()
     
     Local nX
-    Local nY
 
     if cMarca == '1'
         for nX := 1 to len(aList3)
             aList3[nX,1] := .T.
-            for nY := 1 to len(aList3B)
+            nPos := Ascan(aList3B,{|x| Alltrim(x[2]) == Alltrim(aList3[nX,02])})
+            If nPos > 0
+                aList3B[nPos,01] := .t.
+            EndIf 
+            /*for nY := 1 to len(aList3B)
                 if AScan(aList3B[nY], aList3[nX,2]) > 0
                     nPos := AScan(aList3B[nY], aList3[nX,2])
                     aList3B[nY] := aList3[nX]
                 endif
-            next
+            next*/
         next
         cMarca := '2'
     else
         for nX := 1 to len(aList3)
             aList3[nX,1] := .F.
-            for nY := 1 to len(aList3B)
+            
+            nPos := Ascan(aList3B,{|x| Alltrim(x[2]) == Alltrim(aList3[nX,02])})
+            If nPos > 0
+                aList3B[nPos,01] := .f.
+            EndIf 
+            /*for nY := 1 to len(aList3B)
                 if AScan(aList3B[nY], aList3[nX,2]) > 0
                     nPos := AScan(aList3B[nY], aList3[nX,2])
                     aList3B[nY] := aList3[nX]
                 endif
-            next
+            next*/
         next
         cMarca := '1'
     endif
