@@ -5,7 +5,6 @@
 #INCLUDE 'PROTHEUS.CH'
 #INCLUDE 'TOTVS.CH'
 
-
 /*/{Protheus.doc} User Function ROBFAT07
     Tela para facilitar a inclusão de pedido de vendas para representantes
     @type  Function
@@ -20,6 +19,7 @@
     XCLASPV - 3
     NATUREZA - 11040005
     CONDIÇAO DE PAGAMENTO - 001
+    Exemplo - 041601
     /*/
 User Function ROBFAT07()
 
@@ -27,9 +27,9 @@ User Function ROBFAT07()
 	Local nAlt
 	Local aItens2 := {'Tamanho Mala', 'Mala P', 'Mala G'}
 	Local nX
-	Local aRet   := {}
+	Local aRet    := {}
 	Local cQuery
-	Local nOpc   := 0
+	Local nOpc    := 0
 
 	Private oDlg1,oGrp1,oBtn1,oBtn2,oBtn3,oBtn4,oBtn5,oBtn6,oList1,oList2,oList3,oComb1,oComb2,oSay1,oSay2,oSay3,oSay4
 	Private aItens1        :=    {'Todos', 'Selecionados', 'Nao Selecionados'}
@@ -52,7 +52,7 @@ User Function ROBFAT07()
 
 	If Select("SM0") == 0
 		RpcSetType(3)
-		RPCSetEnv("01","0101")
+		RPCSetEnv("01","0103")
 	EndIf
 
 	buscaGeren()
@@ -84,7 +84,7 @@ User Function ROBFAT07()
 		aList1[oList1:nAt,3],;
 		aList1[oList1:nAt,4]}}
 
-	oList2     := TCBrowse():New( 012, 200, 440, 135,, {'','Codigo','Representante','Malas', 'Regioes'},, oGrp1,,,, {|| buscaProd(oList2:nAt, 2)},,,,,,,,,, .T.,,,, .F., .T. )
+	oList2     := TCBrowse():New( 012, 200, 440, 135,, {'','Codigo','Representante','Malas', 'Regioes'},, oGrp1,,,, {|| buscaProd(oList2:nAt)},,,,,,,,,, .T.,,,, .F., .T. )
 	oList2:SetArray(aList2)
 	oList2:bLine := {||{If(aList2[oList2:nAt,01],oOk,oNo),;
 		aList2[oList2:nAt,2],;
@@ -100,9 +100,9 @@ User Function ROBFAT07()
 		aList3[oList3:nAt,4],;
 		aList3[oList3:nAt,5]}}
 
-	nLarg := 052*1.5
-	nAlt  := 012*1.5
-	nLinha:= 128
+	nLarg  := 052*1.5
+	nAlt   := 012*1.5
+	nLinha := 128
 
 	oComb1     := TComboBox():New( nLinha+26, 510, {|u| IF( PCount() > 0, cCombo1 := u, cCombo1 )}, aItens1, nLarg-25, nAlt, oGrp1,, {|| filtraLista()},, CLR_BLACK, CLR_WHITE, .T.,, "",,,,,,, )
 	oComb2     := TComboBox():New( nLinha+51, 510, {|u| IF( PCount() > 0, cCombo2 := u, cCombo2 )}, aItens2, nLarg-25, nAlt, oGrp1,,  {|| tipoDeMala()},, CLR_BLACK, CLR_WHITE, .T.,, "",,,,,,, )
@@ -189,7 +189,7 @@ Static Function buscaRepre(nLinha)
 	cQuery += " SELECT DISTINCT SA3.A3_COD,Z30.Z30_CODVEN,Z30.Z30_CODGER,SA3.A3_NOME,Z30.Z30_MALA,Z30.Z30_REGIAO,SA1.A1_COD,SA1.A1_LOJA,SA1.A1_TIPO "
 	cQuery += " FROM   " + RetSQLName("SA3") + " SA3 "
 	cQuery += " INNER JOIN " + RetSQLName("Z30") + " Z30 ON SA3.A3_COD = Z30.Z30_CODVEN AND Z30.D_E_L_E_T_=' ' "
-	cQuery += " INNER JOIN " + RetSQLName("SA1") + " SA1 ON SA1.A1_CGC = SA3.A3_CGC "
+	cQuery += " INNER JOIN " + RetSQLName("SA1") + " SA1 ON SA1.A1_FILIAL = SA3.A3_FILIAL AND SA1.A1_CGC = SA3.A3_CGC "
 	cQuery += " WHERE Z30.Z30_FILIAL = '" + xFilial("Z30") + "' AND Z30.Z30_CODGER = '"+ cGeren +"' "
 	cQuery += " AND  SA1.A1_TIPO = 'R' "
 	cQuery += " AND  SA3.A3_XFUNCAO != '2' "
@@ -208,10 +208,6 @@ Static Function buscaRepre(nLinha)
 		Aadd(aList2, { .F., TRB->A3_COD, AllTrim(TRB->A3_NOME), AllTrim(TRB->Z30_MALA), AllTrim(TRB->Z30_REGIAO),TRB->A1_COD,TRB->A1_LOJA,TRB->A1_TIPO})
 		DBSKIP()
 	End
-
-	if len(aList2) > 0
-		aList2[1,1] := .T.
-	endif
 
 	If aList1[nLinha,1] == .T.
 		aList1[nLinha,1] := .F.
@@ -244,11 +240,9 @@ Static Function buscaRepre(nLinha)
 		aList2[oList2:nAt,5]}}
 	oList2:Refresh()
 
-	buscaProd(1, 1)
-
 Return
 
-Static Function buscaProd(nLinha, nAux)
+Static Function buscaProd(nLinha)
 
 	Local cQuery       :=    ""
 	Local nX
@@ -287,7 +281,7 @@ Static Function buscaProd(nLinha, nAux)
 	cQuery := " "
 	cQuery += " SELECT BM_XMODELO,B1_COD,B1_DESC,B2_QATU,B1_PRV1,BM_XMODELO,B1_LOCPAD,B6_SALDO,B6_PRUNIT "
 	cQuery += " FROM " + RetSQLName("SB6") + " SB6 "
-	cQuery += " INNER JOIN " + RetSQLName("SB1") + " SB1 ON B6_FILIAL = '" + xFilial("SB6") + "' AND B6_PRODUTO = B1_COD AND SB1.B1_MSBLQL <> '1' AND SB1.D_E_L_E_T_ <> '1'"
+	cQuery += " INNER JOIN " + RetSQLName("SB1") + " SB1 ON B1_FILIAL = '" + xFilial("SB1") + "' AND B6_PRODUTO = B1_COD AND SB1.B1_MSBLQL <> '1' AND SB1.D_E_L_E_T_ <> '1'"
 	cQuery += " INNER JOIN " + RetSQLName("SBM") + " SBM ON BM_FILIAL = '" + xFilial("SBM") + "' AND BM_GRUPO = B1_GRUPO "
 	cQuery += " INNER JOIN " + RetSQLName("SB2") + " SB2 ON B2_FILIAL = B6_FILIAL AND B2_COD = B1_COD "
 	cQuery += " WHERE B6_CLIFOR = '" + aList2[nLinha,6] + "' AND B6_TIPO = 'E' AND B6_SALDO > '0' "
@@ -313,6 +307,10 @@ Static Function buscaProd(nLinha, nAux)
 	End
 
 	cProdutos := SubStr(cProdutos, 1, len(cProdutos) - 1)
+
+    if len(cProdutos) = 0
+        cProdutos := "''"
+    endif
 
 	cQuery := " "
 	cQuery += " SELECT SB1.B1_COD, SB1.B1_DESC, SB2.B2_QATU,SB1.B1_PRV1,SBM.BM_XMODELO,SB1.B1_LOCPAD "
@@ -343,10 +341,10 @@ Static Function buscaProd(nLinha, nAux)
 	If len(aList3) > 0
 		cMarca := '2'
 	EndIf
-
-	if aList2[nLinha,1] == .T. .AND. nAux != 1
+    
+	if aList2[nLinha,1] == .T.
 		aList2[nLinha,1] := .F.
-	elseif nAux != 1
+	else
 		aList2[nLinha,1] := .T.
 	endif
 
@@ -381,7 +379,6 @@ Static Function buscaProd(nLinha, nAux)
 	oComb2:Select(1)
 
 	qtdTot()
-	qtdNotas()
 
 Return
 
@@ -390,7 +387,7 @@ Static Function selecProd(nLinha)
 	Local nX
 	Local nPos
 	Local nColPos := oList3:nColpos
-	Local cBkpCol := aList3[nLinha,4]
+	Local cBkpCol := aList3[nLinha,nColPos]
 
 	if nColPos == 4
 		leditcell(aList3,oList3,'@E 9,999',4)
@@ -399,6 +396,18 @@ Static Function selecProd(nLinha)
 				aList3[nLinha,4] := aList3[nLinha,5]
 			endif
 
+			aList3[nLinha,1] := .T.
+
+			for nX := 1 to len(aList3B)
+				if AScan(aList3B[nX], aList3[nLinha,2]) > 0
+					nPos := AScan(aList3B[nX], aList3[nLinha,2])
+					aList3B[nX] := aList3[nLinha]
+				endif
+			next
+		endif
+    elseif nColPos == 6
+        leditcell(aList3,oList3,'@E 9,999.99',6)
+		if !(aList3[nLinha,6] == cBkpCol)
 			aList3[nLinha,1] := .T.
 
 			for nX := 1 to len(aList3B)
@@ -438,7 +447,6 @@ Static Function selecProd(nLinha)
 	oList3:Refresh()
 
 	qtdTot()
-	qtdNotas()
 
 Return
 
@@ -477,7 +485,6 @@ Static Function marcaTodos()
 	oList3:Refresh()
 
 	qtdTot()
-	qtdNotas()
 
 Return
 
@@ -519,7 +526,6 @@ Static Function filtraLista()
 	oList3:Refresh()
 
 	qtdTot()
-	qtdNotas()
 
 Return
 
@@ -540,7 +546,6 @@ Static Function geraPV(aRet)
 	aadd(aCabec, { "C5_TIPO"    ,"N"        ,Nil })
 	aadd(aCabec, { "C5_CLIENTE" ,aRet[2,6]  ,Nil })
 	aadd(aCabec, { "C5_LOJACLI" ,aRet[2,7]  ,Nil })
-	aadd(aCabec, { "C5_LOJAENT" ,aRet[2,7]  ,Nil })
 	aadd(aCabec, { "C5_EMISSAO" ,dDatabase  ,Nil }) // Data de emissao
 	aadd(aCabec, { "C5_TIPOCLI" ,aRet[2,8]  ,Nil }) // Tipo de cliente
 	aadd(aCabec, { "C5_TIPOPV"  ,'1'        ,Nil })
@@ -561,8 +566,7 @@ Static Function geraPV(aRet)
 		nPos := nnXG1 + nX
 
 		if nPos > len(aRet) .OR. cValid != SubStr(aRet[nPos,2], 1, 2)
-			if cValid == "MA"
-			else
+			if cValid != "MA"
 				EXIT
 			endif
 		endif
@@ -691,23 +695,6 @@ Return
 Static Function qtdTot()
 
 	Local nX
-
-	nQtdTot := 0
-
-	for nX := 1 to len(aList3B)
-		if aList3B[nX,1]
-			nQtdTot += aList3B[nX,4]
-		endif
-	next
-
-	oSay2:SetText(nQtdTot)
-	oSay2:CtrlRefresh()
-
-Return
-
-Static Function qtdNotas()
-
-	Local nX
 	Local nY
 	Local nProd
 	Local nAux
@@ -739,6 +726,17 @@ Static Function qtdNotas()
 	oSay4:SetText(nQtdNotas)
 	oSay4:CtrlRefresh()
 
+	nQtdTot := 0
+
+	for nX := 1 to len(aList3B)
+		if aList3B[nX,1]
+			nQtdTot += aList3B[nX,4]
+		endif
+	next
+
+	oSay2:SetText(nQtdTot)
+	oSay2:CtrlRefresh()
+
 Return
 
 Static Function tipoDeMala()
@@ -753,7 +751,19 @@ Static Function tipoDeMala()
 	elseif Upper(cCombo2) == "MALA G"
 		nAux := 1
 	else
-		buscaProd(oList2:nAt, 1)
+		buscaProd(oList2:nAt)
+        aList2[oList2:nAt,1] := .T.
+        
+        oList2:SetArray(aList2)
+        oList2:bLine := {||{If(aList2[oList2:nAt,01],oOk,oNo),;
+            aList2[oList2:nAt,2],;
+            aList2[oList2:nAt,3],;
+            aList2[oList2:nAt,4],;
+            aList2[oList2:nAt,5],;
+            aList2[oList2:nAt,6]}}
+        oList2:Refresh()
+
+        qtdTot()
 		RETURN
 	endif
 
@@ -772,7 +782,7 @@ Static Function tipoDeMala()
 	DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
 
 	While !EOF()
-		Aadd(aAux, { .T., AllTrim(TRB->B1_COD), AllTrim(TRB->B1_DESC), 1, TRB->B2_QATU, TRB->B1_PRV1, "",TRB->B1_LOCPAD})
+		Aadd(aAux, { .T., AllTrim(TRB->B1_COD), AllTrim(TRB->B1_DESC), 1, TRB->B2_QATU, 000000, "",TRB->B1_LOCPAD})
 		DBSKIP()
 	End
 
@@ -782,11 +792,12 @@ Static Function tipoDeMala()
 		Aadd(aAux2, aAux[2])
 	endif
 
-	for nX := 1 to len(aList3)
-		Aadd(aAux2, aList3[nX])
+	for nX := 1 to len(aList3B)
+		Aadd(aAux2, aList3B[nX])
 	next
 
-	aList3 := aAux2
+	aList3B := aAux2
+    aList3  := aList3B
 
 	oList3:SetArray(aList3)
 	oList3:bLine := {||{If(aList3[oList3:nAt,01],oOk,oNo),;
@@ -797,4 +808,6 @@ Static Function tipoDeMala()
 		aList3[oList3:nAt,6]}}
 	oList3:Refresh()
 
+	qtdTot()
+    
 Return
