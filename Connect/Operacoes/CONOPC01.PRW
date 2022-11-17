@@ -35,7 +35,7 @@ Static nPosaListb := 0
 User Function CONOPC01()
                  
 Local cNumPatr	:= Space(6)
-Local nJ,nX
+//Local nJ,nX
 Private oDlg1,oGrp1,oBrw1,oGrp2,oBmp1,oSay1,oGrp3,oBrw2,oGrp4,oBtn1,oBtn2,oBtn3,oBtn4,oBtn5,oBtn6,oBtn7,oMsCalend
 Private oSay2,oSay3,oSay4,oSay5,oSay6,oSay7,oSay8,oSay9,oSay10,oSay11,oSay12
 Private oList1,oList2       
@@ -122,7 +122,7 @@ Define MsDialog oDlg1 From 091,232 To 656,1164 Title "Estrutura Operacional" Pix
 	oBtn5      := TButton():New( 220,380,"Replicar",oDlg1,{ || MsAguarde({ || ReplSZE() },"Aguarde,replicando plano...") },037,012,,,,.T.,,"",,,,.F. )	
 	oBtn3      := TButton():New( 220,419,"Gravar",oDlg1,{ || IF(lAlterou,Processa({ || Gravar()},"Aguarde","Salvando alterações.."), )  },037,012,,,,.T.,,"",,,,.F. )
 	oBtSim     := TButton():New( 252,341,"Simular",oDlg1,{ || Simular() },037,012,,,,.T.,,"",,,,.F. )	
-	oBtn7      := TButton():New( 252,380,"Gerar Excel",oDlg1,{ || Processa({ || U_TTOPER04()},"Aguarde") },037,012,,,,.T.,,"",,,,.F. )	
+	oBtn7      := TButton():New( 252,380,"Gerar Excel",oDlg1,{ || Processa({ || U_CONOPC04()},"Aguarde") },037,012,,,,.T.,,"",,,,.F. )	
 	oBtn4      := TButton():New( 252,419,"Sair",oDlg1,{ || If(lAlterou,If(MsgYesNo("Deseja gravar antes de sair?"), Processa({ ||Gravar()},"Aguarde","Salvando alterações.."),oDlg1:End() ),oDlg1:End() ),oDlg1:End() },037,012,,,,.T.,,"",,,,.F. )
 		
 		If lSacUs
@@ -179,20 +179,18 @@ If DbSeek(xFilial("SX5")+AvKey("ZW","X5_TABELA"))
 	EndDo
 EndIf
 
-cQuery := "SELECT N1_CHAPA,B1_DESC,N1_XCLIENT,N1_XLOJA,'' AS N1_XLOCINS,"
+cQuery := "SELECT AA3_CHAPA,B1_DESC,AA3_CODCLI,AA3_LOJA,'' AS N1_XLOCINS,"
 cQuery += "A1_NREDUZ,A1_END,A1_COMPLEM,A1_BAIRRO,A1_MUN,'2' AS N1_XTPSERV,"
 cQuery += "A1_EST,NL_DESCRIC,'' AS N1_XSTATTT, "
-cQuery += "ZE_MENSAL,ZE_ROTA,ZE_FREQUEN,'' AS ZE_FECHAME,'' AS ZZ1_DESCRI,"
-cQuery += "'' AS N1_XPLANTR,'' AS N1_XSISPG,ZE_TIPOPLA,ZE.R_E_C_N_O_ AS RECZE,"
-cQuery += " ZE_SEQ, ZE_ROTAAUX, ZE_SEQAUX,'' AS N1_XPA,ZE_FRMLEIT, ZE_FRMSANG "
-cQuery += " FROM "+RetSQLName("SN1")+" N1"
-cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_COD=N1_PRODUTO AND B1.D_E_L_E_T_=''" // AND B1_XSECAO='026' "
-cQuery += " LEFT JOIN "+RetSQLName("SA1")+" A1 ON A1_COD=N1_XCLIENT AND A1_LOJA=N1_XLOJA AND A1.D_E_L_E_T_='' " 
-cQuery += " LEFT JOIN "+RetSQLName("SZE")+" ZE ON ZE_CHAPA=N1_CHAPA AND ZE.D_E_L_E_T_='' AND SUBSTRING(ZE_MENSAL,1,6)='"+substr(dtos(dDataBase),1,6)+"' "
-//cQuery += " LEFT JOIN "+RetSQLName("ZZ1")+" Z1 ON ZZ1_COD=ZE_ROTA AND ZZ1_MSBLQL<>'1' AND Z1.D_E_L_E_T_=''"
-cQuery += " LEFT JOIN "+RetSQLName("SNL")+" NL ON NL_FILIAL='"+xFilial("SNL")+"' AND NL_CODIGO=N1_LOCAL AND NL.D_E_L_E_T_=''"
-//cQuery += " WHERE N1_XSTATTT IN ('2','3','5','6') AND N1.D_E_L_E_T_='' AND N1_BAIXA = '' "
-cQuery += " WHERE N1.D_E_L_E_T_=' ' AND N1_BAIXA = ' ' "
+cQuery += "'' ZE_MENSAL,'' ZE_ROTA,'' ZE_FREQUEN,'' AS ZE_FECHAME,'' AS ZZ1_DESCRI,"
+cQuery += "'' AS N1_XPLANTR,'' AS N1_XSISPG,'' ZE_TIPOPLA,'ZE.R_E_C_N_O_' AS RECZE,"
+cQuery += "'' ZE_SEQ,'' ZE_ROTAAUX,'' ZE_SEQAUX,'' AS N1_XPA,''ZE_FRMLEIT,'' ZE_FRMSANG "
+cQuery += " FROM "+RetSQLName("AA3")+" AA3"
+cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_COD=AA3_CODPRO AND B1.D_E_L_E_T_=''" 
+cQuery += " LEFT JOIN "+RetSQLName("SA1")+" A1 ON A1_COD=AA3_CODCLI AND A1_LOJA=AA3_LOJA AND A1.D_E_L_E_T_='' " 
+//cQuery += " LEFT JOIN "+RetSQLName("SZE")+" ZE ON ZE_CHAPA=AA3_CHAPA AND ZE.D_E_L_E_T_='' AND SUBSTRING(ZE_MENSAL,1,6)='"+substr(dtos(dDataBase),1,6)+"' "
+cQuery += " LEFT JOIN "+RetSQLName("SNL")+" NL ON NL_FILIAL='"+xFilial("SNL")+"' AND NL_CODIGO=AA3_LOCAL AND NL.D_E_L_E_T_=''"
+cQuery += " WHERE AA3.D_E_L_E_T_=' '"
 
 If Select("TRB") > 0
 	dbSelectArea("TRB")
@@ -207,20 +205,18 @@ DbUseArea(.T.,"TOPCONN",TcGenQry(,,cQuery),'TRB',.F.,.T.)
 
 DbSelectArea("TRB")
 
-While !EOF()
-	nCont++
-	dbskip()
-EndDo
-
+Count To nCont
 Procregua(nCont)
+
 dbgoTop()
+
 While !EOF()
 	Incproc()
-    If Ascan(aList1,{|x| Alltrim(x[1]) == Alltrim(TRB->N1_CHAPA)}) == 0
-	    Aadd(aList1,{	TRB->N1_CHAPA,;
+    If Ascan(aList1,{|x| Alltrim(x[1]) == Alltrim(TRB->AA3_CHAPA)}) == 0
+	    Aadd(aList1,{	TRB->AA3_CHAPA,;
 						TRB->B1_DESC,;
-						If(TRB->N1_XSTATTT=="2","PATRIMONIO EM TRANSITO",TRB->N1_XCLIENT),;
-						TRB->N1_XLOJA,;
+						If(TRB->N1_XSTATTT=="2","PATRIMONIO EM TRANSITO",TRB->AA3_CODCLI),;
+						TRB->AA3_LOJA,;
 						'TRB->N1_XLOCINS',;
 						TRB->A1_NREDUZ,;
 	    			 	If(!Empty(TRB->NL_DESCRIC),TRB->NL_DESCRIC,TRB->A1_END),;
@@ -244,16 +240,16 @@ While !EOF()
 						'TRB->N1_XPA'+" - "})
 					 //Posicione("ZZ1",1,xFilial("ZZ1")+TRB->N1_XPA,"ZZ1_DESCRI")
 	Else
-		cAux := aList1[Ascan(aList1,{|x| Alltrim(x[1]) == Alltrim(TRB->N1_CHAPA)}),12]
+		cAux := aList1[Ascan(aList1,{|x| Alltrim(x[1]) == Alltrim(TRB->AA3_CHAPA)}),12]
 		For nTz := 9 to len(Alltrim(cAux))
 			If substr(TRB->ZE_MENSAL,nTz,1) != "0" .And. substr(cAux,nTz,1) == "0"	
 				cAux := substr(cAux,1,nTz-1)+substr(TRB->ZE_MENSAL,nTz,1)+substr(cAux,nTz+1)
 			EndIf
 		Next nTz
-		aList1[Ascan(aList1,{|x| Alltrim(x[1]) == Alltrim(TRB->N1_CHAPA)}),12] := cAux
+		aList1[Ascan(aList1,{|x| Alltrim(x[1]) == Alltrim(TRB->AA3_CHAPA)}),12] := cAux
 	EndIf
     
-    Aadd(alistb,{TRB->N1_CHAPA,TRB->ZE_TIPOPLA})
+    Aadd(alistb,{TRB->AA3_CHAPA,TRB->ZE_TIPOPLA})
     
     For nPP := 1 to len(aList2)
     	Aadd(aListb[len(alistb)],{aList2[nPP,01],;
@@ -601,7 +597,7 @@ If nSel == 1
 	aAdd(aPergs ,{1,"Data Especifica",dDataE,"99/99/99","","","",0,.F.})
 	aAdd(aPergs ,{1,"Cliente"	,space(TamSx3("A1_COD")[1]),"@!",".T.","SA1",".T.",60,.F.})
 	aAdd(aPergs ,{1,"Loja"		,space(TamSx3("A1_LOJA")[1]),"@!",".T.","",".T.",30,.F.})
-	aAdd(aPergs ,{1,"Patrimonio",space(TamSx3("N1_CHAPA")[1]),"@!",".T.","SN1",".T.",60,.F.})
+	aAdd(aPergs ,{1,"Patrimonio",space(TamSx3("AA3_CHAPA")[1]),"@!",".T.","SN1",".T.",60,.F.})
 	aAdd(aPergs ,{2,"Estado"	,"", {"","0=Todos","1=SP","2=RJ","3=BA","4=PE","5=CE","6=MG","7=PR","8=RS"},50,'',.T.})
 	
 		
@@ -1223,7 +1219,7 @@ oDlg2	:= MSDialog():New( 088,232,410,635,"Abastecimento",,,.F.,,,,,,.T.,,,.T. )
              
 	
 	
-	oBtFchmto	:= TButton():New( 140,010,"Fechamento",oDlg2,{ || IF( !lFecmto, lFecmto := .T.,lFecmto := .F.), IF( lFecmto,MsgInfo("Escolha o dia do fechamento"),)  },037,012,,,,.T.,,"",,,,.F. )
+	oBtFchmto	:= TButton():New( 140,010,"Fechamento",oDlg2,{ || IF( !lFecmto, lFecmto := .T.,lFecmto := .F.), IF( lFecmto,msginfo("Escolha o dia do fechamento"),"")  },037,012,,,,.T.,,"",,,,.F. )
 	oBtn2		:= TButton():New( 140,056,"Excluir",oDlg2,{||oDlg2:end(nOpcao:=2)},032,012,,,,.T.,,"",,,,.F. )
 	oBtn2:Disable()
 	
@@ -1911,8 +1907,8 @@ For nI := 1 To Len(aListb)
 		cSeqAux += "/" +aListb[nI][17]
 	EndIf
 	
-	cCli		:= Posicione("SN1",2,xFilial("SN1")+Avkey(cChapa,"N1_CHAPA"),"N1_XCLIENT")
-	cLoja		:= Posicione("SN1",2,xFilial("SN1")+Avkey(cChapa,"N1_CHAPA"),"N1_XLOJA")
+	cCli		:= Posicione("SN1",2,xFilial("SN1")+Avkey(cChapa,"AA3_CHAPA"),"AA3_CODCLI")
+	cLoja		:= Posicione("SN1",2,xFilial("SN1")+Avkey(cChapa,"AA3_CHAPA"),"AA3_LOJA")
 	
 	If Empty(cChapa) .Or. Empty(cTipoPla)
 		Loop
