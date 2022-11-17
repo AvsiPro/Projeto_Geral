@@ -40,8 +40,7 @@ Local aStatCm   := {'0=Selecione',;
                     '5=Imprimido',;
                      '6=Cancelado'}
 Local aParam    := { { 2, "Status Comissao", 1, aStatCm, 60, , .T. } }
-Local cLibera
-Local cBloqueia
+Local cBloqueia := ""
 
 SetPrvt("oDlg1","oGrp1","oGrp2","oFld1","oSay1","oSay2")
 SetPrvt("oSay4","oSay5","oSay6","oSay7","oSay8","oSay9","oSay10","oSay11","oSay12","oSay13","oSay14")
@@ -207,15 +206,14 @@ If nOpc == 1
         cStatus := 'C'
         cStaOpc := 'Aguardando resposta cliente'
     ElseIf MV_PAR01 == 4
-        cStatus := ''
+        cStatus := 'H'
         cStaOpc := 'Liberado para estoque'
-        cLibera := 'S'
     ElseIf MV_PAR01 == 5
         cStatus := 'F'
         cStaOpc := 'Imprimido'
     ElseIf MV_PAR01 == 6
-        cStatus := 'G'
-        cStaOpc := 'Cancelado'
+        cStatus   := 'G'
+        cStaOpc   := 'Cancelado'
         cBloqueia := '1'
     EndIf
 
@@ -226,10 +224,7 @@ If nOpc == 1
     RecLock("SC5", .F.)
     SC5->C5_XOBSLIB := Alltrim(cMsgObs)+cMsgGrv
     SC5->C5_ZZSTATU := cStatus
-    if !Empty(cLibera)
-        SC5->C5_LIBEROK := cLibera
-    endif
-    if !Empty(cBloqueia)
+    if cBloqueia != ""
         SC5->C5_MSBLQL := cBloqueia
     endif
     SC5->(MsUnlock())    
