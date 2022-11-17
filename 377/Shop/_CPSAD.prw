@@ -15,29 +15,68 @@ bRet := FiltraZZY()
  
 Return(bRet)
  
+//зддддддддддддддддддддддддддддддддддддд©
+//ЁConsulta Especifica de Marcas - SAD
+//юддддддддддддддддддддддддддддддддддддды
 Static Function FiltraZZY()
  
 Local cQuery
-
-Private cBusca  :=  space(25)
-Private oDlgZZY := nil
-Private _bRet   := .F.
-Private aDadosZZY := {}
-Private aBkpFil :=  {}
+Local cGrpFor       :=  ''      
+Local cBarra        :=  ''
+Private cBusca      :=  space(25)
+Private oDlgZZY     :=  nil
+Private _bRet       :=  .F.
+Private aDadosZZY   :=  {}
+Private aBkpFil     :=  {}
  
-//Query de marca x produto x referencia
-cQuery := " SELECT B1_COD,B1_DESC,B1_GRUPO" + CRLF 
-cQuery += " FROM "+RetSQLName("SB1")+" B1" + CRLF
-cQuery += " INNER JOIN "+RetSQLName("SAD")+" AD ON AD_FILIAL=B1_FILIAL"
-cQuery += " AND AD_FORNECE='"+CA120FORN+"' AND AD_LOJA='"+CA120LOJ+"' AND AD_GRUPO=B1_GRUPO AND AD.D_E_L_E_T_=' '
-cQuery += " WHERE B1.D_E_L_E_T_=' ' AND B1_MSBLQL<>'1' "
+//Query para produto x fornecedor
+cQuery := " SELECT A5_PRODUTO,A5_NOMPROD,B1_GRUPO" + CRLF
+cQuery += " FROM "+RetSQLName("SA5")+" A5" + CRLF
+cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_FILIAL=A5_FILIAL AND B1_COD=A5_PRODUTO AND B1.D_E_L_E_T_=' ' AND B1_MSBLQL<>'1'" + CRLF
+cQuery += " WHERE A5.D_E_L_E_T_=' '" + CRLF
+cQuery += " AND A5_FORNECE='"+CA120FORN+"' AND A5_LOJA='"+CA120LOJ+"'"
 
 cAlias1:= CriaTrab(Nil,.F.)
+
+If Select(cAlias1) > 0
+    (cAlias1)->(DBCloseArea())
+EndIf 
+
 DbUseArea(.T.,"TOPCONN", TCGENQRY(,,cQuery),cAlias1, .F., .T.)
  
 (cAlias1)->(DbGoTop())
 
-If (cAlias1)->(Eof())
+Do While (cAlias1)->(!Eof())
+
+    If !(cAlias1)->B1_GRUPO $ cGrpFor
+        cGrpFor += cBarra + (cAlias1)->B1_GRUPO
+        cBarra := "','"
+    EndIf 
+
+    aAdd( aDadosZZY, { (cAlias1)->A5_PRODUTO, (cAlias1)->A5_NOMPROD, (cAlias1)->B1_GRUPO} )
+    aAdd( aBkpFil  , { (cAlias1)->A5_PRODUTO, (cAlias1)->A5_NOMPROD, (cAlias1)->B1_GRUPO} )
+    (cAlias1)->(DbSkip())
+ 
+Enddo
+
+//Query para grupo x fornecedor 
+cQuery := " SELECT B1_COD,B1_DESC,B1_GRUPO" + CRLF 
+cQuery += " FROM "+RetSQLName("SB1")+" B1" + CRLF
+cQuery += " INNER JOIN "+RetSQLName("SAD")+" AD ON AD_FILIAL=B1_FILIAL" + CRLF
+cQuery += " AND AD_FORNECE='"+CA120FORN+"' AND AD_LOJA='"+CA120LOJ+"' AND AD_GRUPO=B1_GRUPO AND AD.D_E_L_E_T_=' '" + CRLF
+cQuery += " AND B1_GRUPO NOT IN('"+cGrpFor+"')"+ CRLF
+cQuery += " WHERE B1.D_E_L_E_T_=' ' AND B1_MSBLQL<>'1' " + CRLF 
+
+If Select(cAlias1) > 0
+    (cAlias1)->(DBCloseArea())
+EndIf 
+
+//cAlias1:= CriaTrab(Nil,.F.)
+DbUseArea(.T.,"TOPCONN", TCGENQRY(,,cQuery),cAlias1, .F., .T.)
+ 
+(cAlias1)->(DbGoTop())
+
+If (cAlias1)->(Eof()) .And. len(aDadosZZY) < 1
     Aviso( "Cadastro de Grupo x Fornecedores", "NЦo existe dados a consultar", {"Ok"} )
     Return .F.
 Endif

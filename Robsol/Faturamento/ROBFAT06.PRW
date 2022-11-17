@@ -311,6 +311,7 @@ Local cStatus := ''
 Local cMsgGrv := ''
 Local cObsOld := ''
 Local cSeq3   := 0
+Local cNFAtend := ''
 
 Local cMultG := ""
 Local oTMultiget,oTButton1,oSay1,oSay2,oSay3,oSay4
