@@ -116,7 +116,7 @@ Else
 EndIf
 
 Processa( { || Busca(cCond),"Aguarde"})
-Aadd(aList,{'',0,'',})
+//Aadd(aList,{'',0,'',})
 Aadd(aList2,{'','',0})
 Aadd(aList3,{'','',0})
 Aadd(aList4,{'','',0})
@@ -137,7 +137,7 @@ oGrp1      := TGroup():New( 000,004,236,618,"",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F.
 
 	oGrp3      := TGroup():New( 076,008,232,128,"Contratos",oGrp1,CLR_BLACK,CLR_WHITE,.T.,.F. )
 		oList 	   := TCBrowse():New(084,010,115,135,, {'','Contrato','Vlr Faturamento'},{5,30,40},;
-	                            oGrp3,,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
+	                            oGrp3,,,,{|| FHelp(oList:nAt)},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
 		oList:SetArray(aList)
 		oList:bLine := {||{Alltrim(aList[oList:nAt,01]),;
 							Alltrim(aList[oList:nAt,01]),; 
@@ -226,7 +226,7 @@ Local nNewVlr	:=	0
 Local nDiasMs	:=	day(lastday(ddatabase))
 Local nCont 
 
-cQuery := "SELECT AAN_CONTRT,AAM_CODCLI,AAM_LOJA,AAN_ITEM,AAN_CODPRO,B1_DESC,'' AS AAN_XCBASE,AAN_QUANT,AAN_ULTEMI,"
+cQuery := "SELECT AAN_CONTRT,AAM_CODCLI,AAM_LOJA,AAN_ITEM,AAN_CODPRO,B1_DESC,AAN_XCBASE,AAN_QUANT,AAN_ULTEMI,"
 cQuery += "AAN_VLRUNI,AAN_INICOB,AAN_FIMCOB,AAN_CONPAG,E4_COND,E4_DESCRI,A1_NREDUZ,A1_NOME,A1_END,A1_BAIRRO,A1_MUN,"
 cQuery += "AAM_INIVIG,AAM_FIMVIG,A1_EMAIL,'' AS AAN_XISENT,'' AS AAM_XINIMU,'' AS AAM_XPRAZO,'' AS AAM_XPERCT,'' AS AAM_XRENOV,AAN_FILIAL"
 cQuery += " FROM "+RetSQLName("AAN")+" AAN"
@@ -286,7 +286,7 @@ While !EOF()
   	EndIf
     //Item do contrato isento de cobranca    
     If TRB->AAN_XISENT == "1"
-    	nNewVlr := 0
+    	//nNewVlr := 0
     EndIf
     //Preenche o array do primeiro grid
     If nPos1 == 0
@@ -655,7 +655,7 @@ else
 	cResp2 := aRet[2]
 EndIf
 
-U_AMCFRR01(cResp1,cResp2)
+U_CONFSR01(cResp1,cResp2)
 
 RestArea(aArea)
 
