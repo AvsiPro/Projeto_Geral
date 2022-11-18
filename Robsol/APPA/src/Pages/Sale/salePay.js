@@ -74,7 +74,6 @@ export default function SalePay({route,navigation}){
 
         let lSaldo = true
         
-        
         await api.post("/prtl003", { body: JSON.stringify(paramPed) })
         .then(async (item) => {
             if (item.data.code == "200") {
@@ -178,7 +177,7 @@ export default function SalePay({route,navigation}){
             FORCE: 'FALSE',
             ITEMS: copyCart,
             VENDEDOR: vendedor,
-            OBSERVATION: continuaP?ItensContinua.txtObs:txtObs,
+            OBSERVATION: txtObs,
             ENDERECO_ENTREGA: !!copyClient.endereco1?copyClient.endereco1:'',
             BAIRRO_ENTREGA: !!copyClient.bairro1?copyClient.bairro1:'',
             CEP_ENTREGA: !!copyClient.cep1?copyClient.cep1:'',
