@@ -17,21 +17,23 @@ Data: 02/08/2016
 
 User Function FilFor()
 
-Local cForRet 	:= ""
-Local cQuery  	:= ""
-Local aArea	  	:= GetArea()
-Local aGrupo  	:= UsrGrComp(RetCodUsr())  
-Local cFornePJ	:= ""
-Local nX 		:= 0
-Local nI 		:= 0
+Local cForRet 	:=	""
+Local cQuery  	:=	""
+Local aArea	  	:=	GetArea()
+Local aGrupo  	:=	UsrGrComp(RetCodUsr())  
+Local cFornePJ	:=	""
+Local nX 		:=	0
+Local nI 		:=	0
 Local cCodUsr	:=	RetCodUsr()
 Local cGrpUsr	:=	''
 Local aGrupos 	:=	UsrRetGrp(cCodUsr)
-//Local aGrpPC	:=	{}
-Local aFilUser  := FWLoadSM0(.T.,.T.)
-Local cFilUser	:= ""
+Local cGrpCFG	:=	SuperGetMV("SC_GRPVEPJ",.f.,"")
+Local aFilUser  :=	FWLoadSM0(.T.,.T.)
+Local cFilUser	:=	""
+Local lSupUsr	:=	.F.
 
 Aeval(aGrupos,{|x| cGrpUsr += x + '/'})
+Aeval(aGrupos,{|x| lSupUsr := If(!lSupUsr,x $ cGrpCFG,lSupUsr)})
 
 For nI:=1 to Len(aFilUser)
 	If aFilUser[nI][11]
@@ -62,8 +64,10 @@ EndIf
 
 TRBUSR->(DbCloseArea())
 
-cQuery := " SELECT DISTINCT C7_FORNECE, C7_LOJA, C7_USER FROM "
+cQuery := " SELECT DISTINCT C7_FORNECE, C7_LOJA, C7_USER, A2_USER FROM "
 cQuery += RetSqlName("SC7") + " SC7 "
+cQuery += "  INNER JOIN " + RETSQLNAME("SA2") + " A2 "
+cQuery += "     ON C7_FORNECE = A2_COD AND C7_LOJA = A2_LOJA "
 cQuery += " WHERE "
 cQuery += " (C7_QUANT-C7_QUJE-C7_QTDACLA)> 0 AND "
 cQuery += " C7_RESIDUO =  ' ' AND "
@@ -71,6 +75,7 @@ cQuery += " C7_TPOP <>    'P' AND "
 cQuery += " C7_CONAPRO <> 'B' AND "
 cQuery += " C7_FILIAL = '" + xFilial("SC7") + "' AND"
 cQuery += " SC7.D_E_L_E_T_ = ' '"
+cQuery += " AND A2.D_E_L_E_T_ = ' ' " 
 
 
 If (Ascan(aGrupo,"*") == 0 )
@@ -103,6 +108,7 @@ DbUseArea( .T.,"TOPCONN", TcGenQry(,,cQuery), "TRBFORN", .F., .T.)
 cForRet := "("
 
 While TRBFORN->(!EOF())
+	/*
 	aGrpPC := UsrRetGrp(TRBFORN->C7_USER)
 	lPCGrp := .F.
 	Aeval(aGrpPC,{|x| lPCGrp := If(x $ cGrpUsr,.T.,.F.)})
@@ -110,7 +116,13 @@ While TRBFORN->(!EOF())
 	If !lPCGrp
 		TRBFORN->(Dbskip())
 		loop
+	EndIf */
+
+	If !Empty(TRBFORN->A2_USER) .And. TRBFORN->A2_USER <> cCodUsr .And. !lSupUsr
+		TRBFORN->(Dbskip())
+		loop
 	EndIf 
+
 	cForRet +=  TRBFORN->C7_FORNECE + TRBFORN->C7_LOJA + ","
 	TRBFORN->(DbSkip())
 EndDo

@@ -102,9 +102,12 @@ Static Function RunReport(Cabec1,Cabec2,Titulo,nLin)
 	Local cCodUsr	:=	RetCodUsr()
 	Local cGrpUsr	:=	''
 	Local aGrupos 	:=	UsrRetGrp(cCodUsr)
-	Local aGrpPC	:=	{}
+	//Local aGrpPC	:=	{}
+	Local cGrpCFG	:=	SuperGetMV("SC_GRPVEPJ",.f.,"")
+	Local lSupUsr	:=	.F.
 
 	Aeval(aGrupos,{|x| cGrpUsr += x + '/'})
+	Aeval(aGrupos,{|x| lSupUsr := If(!lSupUsr,x $ cGrpCFG,lSupUsr)})
 
 	For nI:=1 to Len(aFilUser)
 		If aFilUser[nI][11]
@@ -248,7 +251,7 @@ Static Function RunReport(Cabec1,Cabec2,Titulo,nLin)
 				Endif
 
 				lPrimeira := .T.
-
+				/*
 				aGrpPC := UsrRetGrp(TRB->C7_USER)
 				lPCGrp := .F.
 				Aeval(aGrpPC,{|x| lPCGrp := If(x $ cGrpUsr,.T.,.F.)})
@@ -257,11 +260,12 @@ Static Function RunReport(Cabec1,Cabec2,Titulo,nLin)
 					TRB->(Dbskip())
 					loop
 				EndIf 
+				*/
 
-				/*If !Empty(TRB->A2_USER) .And. TRB->A2_USER <> cCodUsr
+				If !Empty(TRB->A2_USER) .And. TRB->A2_USER <> cCodUsr .And. !lSupUsr
 					TRB->(Dbskip())
 					loop
-				EndIf */
+				EndIf 
 
 				If TRB->C7_CONAPRO == "B"
 					cStatus := "Bloqueado"
