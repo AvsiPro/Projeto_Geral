@@ -1,5 +1,6 @@
 Robsol/APPA/node_modules/
 Robsol/APPA/.expo/
+.vscode/
 dist/
 npm-debug.*
 *.jks
