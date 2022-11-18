@@ -1,5 +1,5 @@
-node_modules/
-.expo/
+Robsol/APPA/node_modules/
+Robsol/APPA/.expo/
 dist/
 npm-debug.*
 *.jks
@@ -11,4 +11,6 @@ npm-debug.*
 web-build/
 
 # macOS
+Robsol/.DS_Store
+Robsol/APPA/.DS_Store
 .DS_Store
