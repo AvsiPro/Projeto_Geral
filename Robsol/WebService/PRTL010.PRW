@@ -119,11 +119,11 @@ WsMethod GET WsReceive CODIGO,PAGE,pageSize,DESCRICAO,MARCA,GENERO,LINHA,MATERIA
 			DbSelectArea("SB2")
 			DbSetOrder(1)
 			DbSeek('0103'+SB1->B1_COD+SB1->B1_LOCPAD)
-				
+
 			::SetResponse('"saldo":"'+If(SaldoSB2(.T.) >= 10,'Disponivel','Indisponivel')+'",')
 			::SetResponse('"ncm":"'+SB1->B1_POSIPI+'",')
 			::SetResponse('"ean":"'+SB1->B1_CODBAR+'",')
-			::SetResponse('"imagem":"'+ALLTRIM(SB1->B1_XURLIMG)+'",')
+			::SetResponse('"imagem":"'+STRTRAN(Alltrim(SB1->B1_XURLIMG),' ','%20')+'",')
 			::SetResponse('"id":"'+cvaltochar(Recno())+'"')
 			::SetResponse('}')
 		Else
@@ -280,7 +280,7 @@ WsMethod GET WsReceive CODIGO,PAGE,pageSize,DESCRICAO,MARCA,GENERO,LINHA,MATERIA
 				::SetResponse('"cor":"'+Capital(Alltrim(aAux[nCont,07]))+'",')
 				::SetResponse('"formato":"'+Capital(Alltrim(aAux[nCont,08]))+'",')
 				::SetResponse('"preco":"'+Transform(aAux[nCont,09],"@E 9,999.99")+'",')
-				::SetResponse('"imagem":"'+ALLTRIM(aAux[nCont,10])+'",')
+				::SetResponse('"imagem":"'+STRTRAN(Alltrim(aAux[nCont,10]),' ','%20')+'",')
 				::SetResponse('"saldo":"'+cvaltochar(aAux[nCont,11])+'",')
 				::SetResponse('"id":"'+cvaltochar(aAux[nCont,12])+'"')
 				::SetResponse('}')
@@ -295,7 +295,7 @@ WsMethod GET WsReceive CODIGO,PAGE,pageSize,DESCRICAO,MARCA,GENERO,LINHA,MATERIA
 				cJsonRet += '"cor":"'+Capital(Alltrim(aAux[nCont,07]))+'",'
 				cJsonRet += '"formato":"'+Capital(Alltrim(aAux[nCont,08]))+'",'
 				cJsonRet += '"preco":"'+Transform(aAux[nCont,09],"@E 9,999.99")+'",'
-				cJsonRet += '"imagem":"'+ALLTRIM(aAux[nCont,10])+'",'
+				cJsonRet += '"imagem":"'+STRTRAN(Alltrim(aAux[nCont,10]),' ','%20')+'",'
 				cJsonRet += '"saldo":"'+cvaltochar(aAux[nCont,11])+'",'
 				cJsonRet += '"id":"'+cvaltochar(aAux[nCont,12])+'"'
 				cJsonRet += '}'
