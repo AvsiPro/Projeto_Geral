@@ -50,6 +50,7 @@ WsMethod POST WsReceive RECEIVE WsService PRTL047
 	Local cEmail		As Character
 	Local cEmp			As Character
 	Local cFil			As Character
+	Local cGeraNov		As Character
 	Local lRet			As Logical 
 	Local oBody			As J
 
@@ -73,27 +74,37 @@ WsMethod POST WsReceive RECEIVE WsService PRTL047
 		cNome	:= cFil+oBody:getJsonText("NOME")
 		cPedido := oBody:getJsonText("PEDIDO")
 		cEmail  := oBody:getJsonText("EMAIL")
-		
-		If !ExistDir("\clientes\cnpj\updpdf")
-			MakeDir("\clientes\cnpj\updpdf")
+		cGeraNov:= oBody:getJsonText("GERANOV")
+		cVend	:= oBody:getJsonText("VEND")
+		cNVend	:= oBody:getJsonText("NVEND")
+
+		If Alltrim(cGeraNov) == 'S'
+			cMessage := fTextoHtml(cPedido,cVend,cNVend)
+		Else
+			conout('entrou2')
+			conout(cGeraNov)
+			If !ExistDir("\clientes\cnpj\updpdf")
+				MakeDir("\clientes\cnpj\updpdf")
+			EndIf
+
+			oFWriter := FWFileWriter():New("\clientes\cnpj\updpdf\"+cNome, .T.)
+
+			If oFWriter:Create()
+				oFWriter:Write(Decode64(cCode64))
+				oFWriter:Close()
+			EndIf
+
+			sleep(3000)
+
+			RpcSetType(3)
+			RPCSetEnv(cEmp,cFil)
+
+			GERHTML(cPedido,GetSrvProfString("Startpath","")+"clientes\cnpj\updpdf\"+cNome,/*cEmail*/'cnoculos@hotmail.com')
+
+			cMessage := "Enviado e-mail com a copia do pedido"
 		EndIf
-
-		oFWriter := FWFileWriter():New("\clientes\cnpj\updpdf\"+cNome, .T.)
-
-		If oFWriter:Create()
-			oFWriter:Write(Decode64(cCode64))
-			oFWriter:Close()
-		EndIf
-
-		sleep(3000)
-
-		RpcSetType(3)
-		RPCSetEnv(cEmp,cFil)
-
-		GERHTML(cPedido,GetSrvProfString("Startpath","")+"clientes\cnpj\updpdf\"+cNome,/*cEmail*/'cnoculos@hotmail.com')
 
 		cCode 	 := "#200"
-		cMessage := "Enviado e-mail com a copia do pedido"
 		lRet 	 := .T.
 
 	EndIf
@@ -242,3 +253,154 @@ If lEnviar
 EndIf 
 
 Return 
+
+
+
+
+Static Function fTextoHtml(cCode,cVend,cNVend)
+
+	RpcSetType(3)
+	RPCSetEnv("01",'0103')
+
+	cTextHtml := ""
+	top := 1.76
+	nTotal := 0
+	nDesct := 0
+	nQuant := 0
+	cItems := ''
+
+	DbSelectArea("SC5")
+	SC5->(DBSetOrder(1))
+	SC5->(DBGoTOP())
+	
+	DbSelectArea("SC6")
+	SC6->(DBSetOrder(1))
+	SC6->(DBGoTOP())
+
+	If SC5->(DBSeek(cCode))
+		SC6->(DBSeek(SC5->C5_FILIAL+SC5->C5_NUM))
+		
+		While !EoF() .And. SC6->C6_FILIAL == SC5->C5_FILIAL .AND. SC6->C6_NUM == SC5->C5_NUM
+
+			cItem := '<div style="position:absolute;top:'+cValToChar(top)+'in;left:0.41in;width:0.64in;line-height:0.16in;"><span style="font-style:normal;font-weight:normal;font-size:8pt;font-family:Arial;color:#000000">'+Alltrim(SC6->C6_PRODUTO)+'</span><span style="font-style:normal;font-weight:normal;font-size:8pt;font-family:Arial;color:#000000"> </span><br/></SPAN></div> '+CRLF
+			cItem += '<div style="position:absolute;top:'+cValToChar(top)+'in;left:1.85in;width:2.59in;line-height:0.16in;"><span style="font-style:normal;font-weight:normal;font-size:8pt;font-family:Arial;color:#000000">'+Alltrim(Posicione("SB1",1,xFilial("SB1")+SC6->C6_PRODUTO,"B1_DESC"))+'</span><span style="font-style:normal;font-weight:normal;font-size:8pt;font-family:Arial;color:#000000"> </span><br/></SPAN></div> '+CRLF
+			cItem += '<div style="position:absolute;top:'+cValToChar(top)+'in;left:4.73in;width:0.20in;line-height:0.16in;"><span style="font-style:normal;font-weight:normal;font-size:8pt;font-family:Arial;color:#000000">'+Alltrim(SC6->C6_UM)+'</span><span style="font-style:normal;font-weight:normal;font-size:8pt;font-family:Arial;color:#000000"> </span><br/></SPAN></div> '+CRLF
+			cItem += '<div style="position:absolute;top:'+cValToChar(top)+'in;left:5.26in;width:0.26in;line-height:0.16in;"><span style="font-style:normal;font-weight:normal;font-size:8pt;font-family:Arial;color:#000000">0,00</span><span style="font-style:normal;font-weight:normal;font-size:8pt;font-family:Arial;color:#000000"> </span><br/></SPAN></div> '+CRLF
+			cItem += '<div style="position:absolute;top:'+cValToChar(top)+'in;left:5.94in;width:0.26in;line-height:0.16in;"><span style="font-style:normal;font-weight:normal;font-size:8pt;font-family:Arial;color:#000000">'+cvaltochar(SC6->C6_QTDVEN)+'</span><span style="font-style:normal;font-weight:normal;font-size:8pt;font-family:Arial;color:#000000"> </span><br/></SPAN></div> '+CRLF
+			cItem += '<div style="position:absolute;top:'+cValToChar(top)+'in;left:6.62in;width:0.26in;line-height:0.16in;"><span style="font-style:normal;font-weight:normal;font-size:8pt;font-family:Arial;color:#000000">0,00</span><span style="font-style:normal;font-weight:normal;font-size:8pt;font-family:Arial;color:#000000"> </span><br/></SPAN></div> '+CRLF
+			cItem += '<div style="position:absolute;top:'+cValToChar(top)+'in;left:7.23in;width:0.33in;line-height:0.16in;"><span style="font-style:normal;font-weight:normal;font-size:8pt;font-family:Arial;color:#000000">'+Transform(SC6->C6_PRCVEN,"@E 999,999,999.99")+'</span><span style="font-style:normal;font-weight:normal;font-size:8pt;font-family:Arial;color:#000000"> </span><br/></SPAN></div> '+CRLF
+			cItem += '<div style="position:absolute;top:'+cValToChar(top)+'in;left:7.83in;width:0.26in;line-height:0.16in;"><span style="font-style:normal;font-weight:normal;font-size:8pt;font-family:Arial;color:#000000">'+Transform(SC6->C6_DESCONT,"@E 999,999,999.99")+'</span><span style="font-style:normal;font-weight:normal;font-size:8pt;font-family:Arial;color:#000000"> </span><br/></SPAN></div> '+CRLF
+			cItem += '<div style="position:absolute;top:'+cValToChar(top)+'in;left:8.45in;width:0.33in;line-height:0.16in;"><span style="font-style:normal;font-weight:normal;font-size:8pt;font-family:Arial;color:#000000">'+Transform((SC6->C6_VALOR - SC6->C6_DESCONT),"@E 999,999,999.99")+'</span><span style="font-style:normal;font-weight:normal;font-size:8pt;font-family:Arial;color:#000000"> </span><br/></SPAN></div> '+CRLF
+			
+			top += 0.15
+			nTotal += (SC6->C6_PRCVEN * SC6->C6_QTDVEN)
+			nDesct += SC6->C6_DESCONT
+			nQuant += SC6->C6_QTDVEN
+			
+			cItems += cItem
+			DBSkip()
+		EndDo
+	
+		cTextHtml += '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"> '+CRLF
+		cTextHtml += '    <html> '+CRLF
+		cTextHtml += '       <head> '+CRLF
+		cTextHtml += '          <link rel="stylesheet" type="text/css" href="style.css"/> '+CRLF
+		cTextHtml += '       </head> '+CRLF
+		cTextHtml += '       <body> '+CRLF
+		cTextHtml += '          <img style="position:absolute;top:0.12in;left:0.41in;width:4.05in;height:1.14in" src="http://portal.robsol.com.br/PDF/vi_1.png" /> '+CRLF
+		cTextHtml += '          <img style="position:absolute;top:0.12in;left:0.41in;width:4.05in;height:1.14in" src="http://portal.robsol.com.br/PDF/vi_2.png" /> '+CRLF
+		cTextHtml += '          <img style="position:absolute;top:0.35in;left:0.41in;width:4.05in;height:0.00in" src="http://portal.robsol.com.br/PDF/vi_3.png" /> '+CRLF
+		cTextHtml += '          <div style="position:absolute;top:0.14in;left:0.48in;width:0.74in;line-height:0.22in;"><span style="font-style:normal;font-weight:bold;font-size:10pt;font-family:Arial;color:#3eb3ce">Emitente:</span><span style="font-style:normal;font-weight:bold;font-size:10pt;font-family:Arial;color:#3eb3ce"> </span><br/></SPAN></div> '+CRLF
+		cTextHtml += '          <img style="position:absolute;top:0.39in;left:0.48in;width:0.82in;height:0.82in" src="http://portal.robsol.com.br/PDF/ri_1.png" /> '+CRLF
+		cTextHtml += '          <div style="position:absolute;top:0.36in;left:1.39in;width:1.72in;line-height:0.13in;"><span style="font-style:normal;font-weight:bold;font-size:6pt;font-family:Arial;color:#000000">Empresa: </span><span style="font-style:normal;font-weight:normal;font-size:6pt;font-family:Arial;color:#000000">ROB SOL INDUSTRIA LTDA</span><span style="font-style:normal;font-weight:normal;font-size:6pt;font-family:Arial;color:#000000"> </span><br/></SPAN></div> '+CRLF
+		cTextHtml += '          <div style="position:absolute;top:0.47in;left:1.39in;width:1.22in;line-height:0.14in;"><span style="font-style:normal;font-weight:bold;font-size:6pt;font-family:Arial;color:#000000">CNPJ: </span></SPAN><br/></div> '+CRLF
+		cTextHtml += '          <div style="position:absolute;top:0.57in;left:1.39in;width:0.38in;line-height:0.14in;"><span style="font-style:normal;font-weight:bold;font-size:6pt;font-family:Arial;color:#000000">Cidade:</span><span style="font-style:normal;font-weight:bold;font-size:6pt;font-family:Arial;color:#000000"> </span><br/></SPAN></div> '+CRLF
+		cTextHtml += '          <div style="position:absolute;top:0.57in;left:1.85in;width:0.79in;line-height:0.13in;"><span style="font-style:normal;font-weight:normal;font-size:6pt;font-family:Arial;color:#000000">SAO PAULO / SP</span><span style="font-style:normal;font-weight:normal;font-size:6pt;font-family:Arial;color:#000000"> </span><br/></SPAN></div> '+CRLF
+		cTextHtml += '          <div style="position:absolute;top:0.68in;left:1.39in;width:0.79in;line-height:0.14in;"><span style="font-style:normal;font-weight:bold;font-size:6pt;font-family:Arial;color:#000000">CEP: </span></SPAN><br/></div> '+CRLF
+		cTextHtml += '          <div style="position:absolute;top:0.68in;left:1.39in;width:0.79in;line-height:0.13in;"> '+CRLF
+		cTextHtml += '             <DIV style="position:relative; left:0.30in;"><span style="font-style:normal;font-weight:normal;font-size:6pt;font-family:Arial;color:#000000">03021-060</span><span style="font-style:normal;font-weight:normal;font-size:6pt;font-family:Arial;color:#000000"> </span><br/></SPAN></DIV> '+CRLF
+		cTextHtml += '          </div> '+CRLF
+		cTextHtml += '          <div style="position:absolute;top:0.79in;left:1.39in;width:1.01in;line-height:0.13in;"><span style="font-style:normal;font-weight:bold;font-size:6pt;font-family:Arial;color:#000000">Telefone: </span><span style="font-style:normal;font-weight:normal;font-size:6pt;font-family:Arial;color:#000000">1150821955</span><span style="font-style:normal;font-weight:normal;font-size:6pt;font-family:Arial;color:#000000"> </span><br/></SPAN></div> '+CRLF
+		cTextHtml += '          <div style="position:absolute;top:1.00in;left:1.39in;width:1.37in;line-height:0.13in;"><span style="font-style:normal;font-weight:bold;font-size:6pt;font-family:Arial;color:#000000">E-Mail: </span><span style="font-style:normal;font-weight:normal;font-size:6pt;font-family:Arial;color:#000000">pedidos@robsol.com.br</span><span style="font-style:normal;font-weight:normal;font-size:6pt;font-family:Arial;color:#000000"> </span><br/></SPAN></div> '+CRLF
+		cTextHtml += '          <div style="position:absolute;top:1.10in;left:1.39in;width:1.69in;line-height:0.14in;"><span style="font-style:normal;font-weight:bold;font-size:6pt;font-family:Arial;color:#000000">Home Page: </span></SPAN><br/></div> '+CRLF
+		cTextHtml += '          <div style="position:absolute;top:1.10in;left:1.39in;width:1.69in;line-height:0.13in;"> '+CRLF
+		cTextHtml += '             <DIV style="position:relative; left:0.61in;"><a href="http://www.robsol.com.br"><span style="font-style:normal;font-weight:normal;font-size:6pt;font-family:Arial;color:#000000">http://www.robsol.com.br</span></a> '+CRLF
+		cTextHtml += '                <span style="font-style:normal;font-weight:normal;font-size:6pt;font-family:Arial;color:#000000"> </span><br/></SPAN> '+CRLF
+		cTextHtml += '             </DIV> '+CRLF
+		cTextHtml += '          </div> '+CRLF
+		cTextHtml += '          <img style="position:absolute;top:0.12in;left:4.55in;width:4.35in;height:1.14in" src="http://portal.robsol.com.br/PDF/vi_4.png" /> '+CRLF
+		cTextHtml += '          <img style="position:absolute;top:0.12in;left:4.54in;width:4.35in;height:1.14in" src="http://portal.robsol.com.br/PDF/vi_5.png" /> '+CRLF
+		cTextHtml += '          <img style="position:absolute;top:0.35in;left:4.54in;width:4.35in;height:0.00in" src="http://portal.robsol.com.br/PDF/vi_6.png" /> '+CRLF
+		cTextHtml += '          <div style="position:absolute;top:0.14in;left:4.62in;width:0.61in;line-height:0.22in;"><span style="font-style:normal;font-weight:bold;font-size:10pt;font-family:Arial;color:#3eb3ce">Pedido:</span><span style="font-style:normal;font-weight:bold;font-size:10pt;font-family:Arial;color:#3eb3ce"> </span><br/></SPAN></div> '+CRLF
+		cTextHtml += '          <div style="position:absolute;top:0.21in;left:5.26in;width:3.51in;line-height:0.13in;"> '+CRLF
+		cTextHtml += '             <DIV style="position:relative; left:1.97in;"><span style="font-style:normal;font-weight:bold;font-size:6pt;font-family:Arial;color:#000000">No. '+SC5->C5_NUM+ ' - Emiss&atilde;o:  '+cValToChar(SC5->C5_EMISSAO) +'</span><span style="font-style:normal;font-weight:bold;font-size:6pt;font-family:Arial;color:#000000"> </span><br/></DIV> '+CRLF
+		cTextHtml += '             <DIV style="position:relative; left:0.03in;"><span style="font-style:normal;font-weight:normal;font-size:6pt;font-family:Arial;color:#000000">'+SC5->C5_CLIENTE+ ' - '+ Alltrim(Posicione("SA1",1,xFilial("SA1")+SC5->C5_CLIENTE+SC5->C5_LOJACLI,"A1_NOME")) +'</span><span style="font-style:normal;font-weight:normal;font-size:6pt;font-family:Arial;color:#000000"> </span><br/></SPAN></DIV> '+CRLF
+		cTextHtml += '             <span style="font-style:normal;font-weight:normal;font-size:6pt;font-family:Arial;color:#000000">'+Alltrim(Posicione("SA1",1,xFilial("SA1")+SC5->C5_CLIENTE+SC5->C5_LOJACLI,"A1_END"))+ ' - Bairro: '+ Alltrim(Posicione("SA1",1,xFilial("SA1")+SC5->C5_CLIENTE+SC5->C5_LOJACLI,"A1_BAIRRO")) +'</span><span style="font-style:normal;font-weight:normal;font-size:6pt;font-family:Arial;color:#000000"> </span><br/></SPAN> '+CRLF
+		cTextHtml += '          </div> '+CRLF
+		cTextHtml += '          <div style="position:absolute;top:0.36in;left:4.62in;width:0.38in;line-height:0.14in;"><span style="font-style:normal;font-weight:bold;font-size:6pt;font-family:Arial;color:#000000">Cliente:</span><span style="font-style:normal;font-weight:bold;font-size:6pt;font-family:Arial;color:#000000"> </span><br/></SPAN></div> '+CRLF
+		cTextHtml += '          <div style="position:absolute;top:0.47in;left:4.62in;width:0.49in;line-height:0.14in;"><span style="font-style:normal;font-weight:bold;font-size:6pt;font-family:Arial;color:#000000">Endere&ccedil;o:</span><span style="font-style:normal;font-weight:bold;font-size:6pt;font-family:Arial;color:#000000"> </span><br/></SPAN></div> '+CRLF
+		cTextHtml += '         <div style="position:absolute;top:0.57in;left:4.62in;width:2.20in;line-height:0.14in;"><span style="font-style:normal;font-weight:bold;font-size:6pt;font-family:Arial;color:#000000">Cidade: </span></SPAN><br/></div> '+CRLF
+		cTextHtml += '          <div style="position:absolute;top:0.57in;left:4.62in;width:2.20in;line-height:0.13in;"> '+CRLF
+		cTextHtml += '             <DIV style="position:relative; left:0.39in;"><span style="font-style:normal;font-weight:normal;font-size:6pt;font-family:Arial;color:#000000">'+Alltrim(Posicione("SA1",1,xFilial("SA1")+SC5->C5_CLIENTE+SC5->C5_LOJACLI,"A1_MUN"))+ ' - CEP: '+ Alltrim(Posicione("SA1",1,xFilial("SA1")+SC5->C5_CLIENTE+SC5->C5_LOJACLI,"A1_CEP")) +'</span><span style="font-style:normal;font-weight:normal;font-size:6pt;font-family:Arial;color:#000000"> </span><br/></SPAN></DIV> '+CRLF
+		cTextHtml += '          </div> '+CRLF
+		cTextHtml += '          <div style="position:absolute;top:0.68in;left:4.62in;width:1.25in;line-height:0.14in;"><span style="font-style:normal;font-weight:bold;font-size:6pt;font-family:Arial;color:#000000">CNPJ: </span></SPAN><br/></div> '+CRLF
+		cTextHtml += '          <div style="position:absolute;top:0.68in;left:4.62in;width:1.25in;line-height:0.13in;"> '+CRLF
+		cTextHtml += '             <DIV style="position:relative; left:0.36in;"><span style="font-style:normal;font-weight:normal;font-size:6pt;font-family:Arial;color:#000000">'+Alltrim(Posicione("SA1",1,xFilial("SA1")+SC5->C5_CLIENTE+SC5->C5_LOJACLI,"A1_CGC"))+'</span><span style="font-style:normal;font-weight:normal;font-size:6pt;font-family:Arial;color:#000000"> </span><br/></SPAN></DIV> '+CRLF
+		cTextHtml += '          </div> '+CRLF
+		cTextHtml += '          <div style="position:absolute;top:0.79in;left:4.62in;width:0.45in;line-height:0.14in;"><span style="font-style:normal;font-weight:bold;font-size:6pt;font-family:Arial;color:#000000">Telefone:</span><span style="font-style:normal;font-weight:bold;font-size:6pt;font-family:Arial;color:#000000"> </span><br/></SPAN></div> '+CRLF
+		cTextHtml += '          <div style="position:absolute;top:0.79in;left:5.29in;width:1.85in;line-height:0.13in;"><span style="font-style:normal;font-weight:normal;font-size:6pt;font-family:Arial;color:#000000">'+Alltrim(Posicione("SA1",1,xFilial("SA1")+SC5->C5_CLIENTE+SC5->C5_LOJACLI,"A1_TEL"))+ ' - Contato: '+ Alltrim(Posicione("SA1",1,xFilial("SA1")+SC5->C5_CLIENTE+SC5->C5_LOJACLI,"A1_CONTATO")) +'</span><span style="font-style:normal;font-weight:normal;font-size:6pt;font-family:Arial;color:#000000"> </span><br/></SPAN></div> '+CRLF
+		cTextHtml += '          <div style="position:absolute;top:0.89in;left:4.62in;width:0.36in;line-height:0.14in;"><span style="font-style:normal;font-weight:bold;font-size:6pt;font-family:Arial;color:#000000">Tabela:</span><span style="font-style:normal;font-weight:bold;font-size:6pt;font-family:Arial;color:#000000"> </span><br/></SPAN></div> '+CRLF
+		cTextHtml += '          <div style="position:absolute;top:1.00in;left:4.62in;width:1.76in;line-height:0.14in;"><span style="font-style:normal;font-weight:bold;font-size:6pt;font-family:Arial;color:#000000">Vendedor: </span></SPAN><br/></div> '+CRLF
+		cTextHtml += '          <div style="position:absolute;top:1.00in;left:4.62in;width:1.76in;line-height:0.13in;"> '+CRLF
+		cTextHtml += '             <DIV style="position:relative; left:0.55in;"><span style="font-style:normal;font-weight:normal;font-size:6pt;font-family:Arial;color:#000000">'+cVend+' '+cNVend+'</span><span style="font-style:normal;font-weight:normal;font-size:6pt;font-family:Arial;color:#000000"> </span><br/></SPAN></DIV> '+CRLF
+		cTextHtml += '          </div> '+CRLF
+		cTextHtml += '          <div style="position:absolute;top:1.10in;left:4.62in;width:1.30in;line-height:0.14in;"><span style="font-style:normal;font-weight:bold;font-size:6pt;font-family:Arial;color:#000000">Cond.Pagto.: </span></SPAN><br/></div> '+CRLF
+		cTextHtml += '          <div style="position:absolute;top:1.10in;left:4.62in;width:1.30in;line-height:0.13in;"> '+CRLF
+		cTextHtml += '             <DIV style="position:relative; left:0.67in;"><span style="font-style:normal;font-weight:normal;font-size:6pt;font-family:Arial;color:#000000">001 - A VISTA</span><span style="font-style:normal;font-weight:normal;font-size:6pt;font-family:Arial;color:#000000"> </span><br/></SPAN></DIV> '+CRLF
+		cTextHtml += '          </div> '+CRLF
+		cTextHtml += '          <img style="position:absolute;top:1.33in;left:0.41in;width:8.48in;height:0.23in" src="http://portal.robsol.com.br/PDF/vi_7.png" /> '+CRLF
+		cTextHtml += '          <img style="position:absolute;top:1.33in;left:0.41in;width:8.49in;height:0.23in" src="http://portal.robsol.com.br/PDF/vi_8.png" /> '+CRLF
+		cTextHtml += '          <div style="position:absolute;top:1.36in;left:4.01in;width:1.33in;line-height:0.22in;"><span style="font-style:normal;font-weight:bold;font-size:10pt;font-family:Arial;color:#3eb3ce">Pedido de Venda:</span><span style="font-style:normal;font-weight:bold;font-size:10pt;font-family:Arial;color:#3eb3ce"> </span><br/></SPAN></div> '+CRLF
+		cTextHtml += '          <div style="position:absolute;top:1.64in;left:0.41in;width:1.08in;line-height:0.17in;"><span style="font-style:normal;font-weight:bold;font-size:8pt;font-family:Arial;color:#000000">C&oacute;d.Prod. No.Lote</span><span style="font-style:normal;font-weight:bold;font-size:8pt;font-family:Arial;color:#000000"> </span><br/></SPAN></div> '+CRLF
+		cTextHtml += '          <div style="position:absolute;top:1.64in;left:1.85in;width:0.60in;line-height:0.17in;"><span style="font-style:normal;font-weight:bold;font-size:8pt;font-family:Arial;color:#000000">Descri&ccedil;&atilde;o</span><span style="font-style:normal;font-weight:bold;font-size:8pt;font-family:Arial;color:#000000"> </span><br/></SPAN></div> '+CRLF
+		cTextHtml += '          <div style="position:absolute;top:1.64in;left:4.73in;width:0.79in;line-height:0.17in;"><span style="font-style:normal;font-weight:bold;font-size:8pt;font-family:Arial;color:#000000">Unid. </span></SPAN><br/></div> '+CRLF
+		cTextHtml += '          <div style="position:absolute;top:1.64in;left:4.73in;width:0.79in;line-height:0.17in;"> '+CRLF
+		cTextHtml += '             <DIV style="position:relative; left:0.37in;"><span style="font-style:normal;font-weight:bold;font-size:8pt;font-family:Arial;color:#000000">Embal.</span><span style="font-style:normal;font-weight:bold;font-size:8pt;font-family:Arial;color:#000000"> </span><br/></SPAN></DIV> '+CRLF
+		cTextHtml += '          </div> '+CRLF
+		cTextHtml += '          <div style="position:absolute;top:1.64in;left:5.79in;width:0.41in;line-height:0.17in;"><span style="font-style:normal;font-weight:bold;font-size:8pt;font-family:Arial;color:#000000">Quant.</span><span style="font-style:normal;font-weight:bold;font-size:8pt;font-family:Arial;color:#000000"> </span><br/></SPAN></div> '+CRLF
+		cTextHtml += '          <div style="position:absolute;top:1.64in;left:6.36in;width:0.52in;line-height:0.17in;"><span style="font-style:normal;font-weight:bold;font-size:8pt;font-family:Arial;color:#000000">Qtd Cxs.</span><span style="font-style:normal;font-weight:bold;font-size:8pt;font-family:Arial;color:#000000"> </span><br/></SPAN></div> '+CRLF
+		cTextHtml += '          <div style="position:absolute;top:1.64in;left:7.12in;width:0.97in;line-height:0.17in;"><span style="font-style:normal;font-weight:bold;font-size:8pt;font-family:Arial;color:#000000">Vl.Unit. </span></SPAN><br/></div> '+CRLF
+		cTextHtml += '          <div style="position:absolute;top:1.64in;left:7.12in;width:0.97in;line-height:0.17in;"> '+CRLF
+		cTextHtml += '             <DIV style="position:relative; left:0.48in;"><span style="font-style:normal;font-weight:bold;font-size:8pt;font-family:Arial;color:#000000">Vl.Desc.</span><span style="font-style:normal;font-weight:bold;font-size:8pt;font-family:Arial;color:#000000"> </span><br/></SPAN></DIV> '+CRLF
+		cTextHtml += '          </div> '+CRLF
+		cTextHtml += '          <div style="position:absolute;top:1.64in;left:8.32in;width:0.46in;line-height:0.17in;"><span style="font-style:normal;font-weight:bold;font-size:8pt;font-family:Arial;color:#000000">Vl.Total</span><span style="font-style:normal;font-weight:bold;font-size:8pt;font-family:Arial;color:#000000"> </span><br/></SPAN></div> '+CRLF
+		cTextHtml += '          '+cItems+' '
+		cTextHtml += '          <img style="position:absolute;top:'+cValToChar(top+0.33)+'in;left:0.41in;width:8.48in;height:0.68in" src="http://portal.robsol.com.br/PDF/vi_9.png" /> '+CRLF
+		cTextHtml += '          <img style="position:absolute;top:'+cValToChar(top+0.33)+'in;left:0.41in;width:8.49in;height:0.68in" src="http://portal.robsol.com.br/PDF/vi_10.png" /> '+CRLF
+		cTextHtml += '          <img style="position:absolute;top:'+cValToChar(top+0.55)+'in;left:0.41in;width:8.49in;height:0.00in" src="http://portal.robsol.com.br/PDF/vi_11.png" /> '+CRLF
+		cTextHtml += '          <div style="position:absolute;top:'+cValToChar(top+0.34)+'in;left:0.48in;width:0.55in;line-height:0.22in;"><span style="font-style:normal;font-weight:bold;font-size:10pt;font-family:Arial;color:#3eb3ce">Totais:</span><span style="font-style:normal;font-weight:bold;font-size:10pt;font-family:Arial;color:#3eb3ce"> </span><br/></SPAN></div> '+CRLF
+		cTextHtml += '          <div style="position:absolute;top:'+cValToChar(top+0.56)+'in;left:0.48in;width:1.10in;line-height:0.11in;"><span style="font-style:normal;font-weight:normal;font-size:6pt;font-family:Arial;color:#000000">Valor do Frete:</span><span style="font-style:normal;font-weight:normal;font-size:6pt;font-family:Arial;color:#000000"> </span><br/><span style="font-style:normal;font-weight:normal;font-size:6pt;font-family:Arial;color:#000000">Percentual de Desconto :</span><span style="font-style:normal;font-weight:normal;font-size:6pt;font-family:Arial;color:#000000"> </span><br/><span style="font-style:normal;font-weight:normal;font-size:6pt;font-family:Arial;color:#000000">Peso.L&iacute;q.:</span><span style="font-style:normal;font-weight:normal;font-size:6pt;font-family:Arial;color:#000000"> </span><br/></SPAN><span style="font-style:normal;font-weight:normal;font-size:6pt;font-family:Arial;color:#000000">Peso.Bru:</span><span style="font-style:normal;font-weight:normal;font-size:6pt;font-family:Arial;color:#000000"> </span><br/></SPAN></div> '+CRLF
+		cTextHtml += '          <div style="position:absolute;top:'+cValToChar(top+0.56)+'in;left:2.87in;width:0.21in;line-height:0.14in;"><span style="font-style:normal;font-weight:bold;font-size:6pt;font-family:Arial;color:#000000">0,00</span><span style="font-style:normal;font-weight:bold;font-size:6pt;font-family:Arial;color:#000000"> </span><br/></SPAN></div> '+CRLF
+		cTextHtml += '          <div style="position:absolute;top:'+cValToChar(top+0.56)+'in;left:6.09in;width:1.11in;line-height:0.11in;"><span style="font-style:normal;font-weight:normal;font-size:6pt;font-family:Arial;color:#000000">Valor Total dos Produtos:</span><span style="font-style:normal;font-weight:normal;font-size:6pt;font-family:Arial;color:#000000"> </span><br/><span style="font-style:normal;font-weight:normal;font-size:6pt;font-family:Arial;color:#000000">Valor Desconto:</span><span style="font-style:normal;font-weight:normal;font-size:6pt;font-family:Arial;color:#000000"> </span><br/></SPAN><span style="font-style:normal;font-weight:normal;font-size:6pt;font-family:Arial;color:#000000">Total de Itens:</span><span style="font-style:normal;font-weight:normal;font-size:6pt;font-family:Arial;color:#000000"> </span><br/></SPAN><span style="font-style:normal;font-weight:normal;font-size:6pt;font-family:Arial;color:#000000">Valor Total do Pedido:</span><span style="font-style:normal;font-weight:normal;font-size:6pt;font-family:Arial;color:#000000"> </span><br/></SPAN></div> '+CRLF
+		cTextHtml += '          <div style="position:absolute;top:'+cValToChar(top+0.56)+'in;left:8.37in;width:0.32in;line-height:0.14in;"><span style="font-style:normal;font-weight:bold;font-size:6pt;font-family:Arial;color:#000000">'+Transform(nTotal,"@E 999,999,999.99")+'</span><span style="font-style:normal;font-weight:bold;font-size:6pt;font-family:Arial;color:#000000"> </span><br/></SPAN></div> '+CRLF
+		cTextHtml += '          <div style="position:absolute;top:'+cValToChar(top+0.66)+'in;left:2.87in;width:0.21in;line-height:0.14in;"><span style="font-style:normal;font-weight:bold;font-size:6pt;font-family:Arial;color:#000000">0,00</span><span style="font-style:normal;font-weight:bold;font-size:6pt;font-family:Arial;color:#000000"> </span><br/></SPAN></div> '+CRLF
+		cTextHtml += '          <div style="position:absolute;top:'+cValToChar(top+0.66)+'in;left:8.48in;width:0.21in;line-height:0.14in;"><span style="font-style:normal;font-weight:bold;font-size:6pt;font-family:Arial;color:#000000">'+Transform(nDesct,"@E 999,999,999.99")+'</span><span style="font-style:normal;font-weight:bold;font-size:6pt;font-family:Arial;color:#000000"> </span><br/></SPAN></div> '+CRLF
+		cTextHtml += '          <div style="position:absolute;top:'+cValToChar(top+0.77)+'in;left:2.77in;width:0.32in;line-height:0.14in;"><span style="font-style:normal;font-weight:bold;font-size:6pt;font-family:Arial;color:#000000">0,0000</span><span style="font-style:normal;font-weight:bold;font-size:6pt;font-family:Arial;color:#000000"> </span><br/></SPAN></div> '+CRLF
+		cTextHtml += '          <div style="position:absolute;top:'+cValToChar(top+0.77)+'in;left:8.48in;width:0.21in;line-height:0.14in;"><span style="font-style:normal;font-weight:bold;font-size:6pt;font-family:Arial;color:#000000">'+cValToChar(nQuant)+'</span><span style="font-style:normal;font-weight:bold;font-size:6pt;font-family:Arial;color:#000000"> </span><br/></SPAN></div> '+CRLF
+		cTextHtml += '          <div style="position:absolute;top:'+cValToChar(top+0.88)+'in;left:2.77in;width:0.32in;line-height:0.14in;"><span style="font-style:normal;font-weight:bold;font-size:6pt;font-family:Arial;color:#000000">0,0000</span><span style="font-style:normal;font-weight:bold;font-size:6pt;font-family:Arial;color:#000000"> </span><br/></SPAN></div> '+CRLF
+		cTextHtml += '          <div style="position:absolute;top:'+cValToChar(top+0.88)+'in;left:8.37in;width:0.32in;line-height:0.14in;"><span style="font-style:normal;font-weight:bold;font-size:6pt;font-family:Arial;color:#000000">'+Transform((nTotal-nDesct),"@E 999,999,999.99")+'</span><span style="font-style:normal;font-weight:bold;font-size:6pt;font-family:Arial;color:#000000"> </span><br/></SPAN></div> '+CRLF
+		cTextHtml += '          <img style="position:absolute;top:'+cValToChar(top+1.38)+'in;left:0.41in;width:8.48in;height:0.08in" src="http://portal.robsol.com.br/PDF/vi_12.png" /> '+CRLF
+		cTextHtml += '          <img style="position:absolute;top:'+cValToChar(top+1.38)+'in;left:0.41in;width:8.49in;height:0.08in" src="http://portal.robsol.com.br/PDF/vi_13.png" /> '+CRLF
+		cTextHtml += '          <img style="position:absolute;top:'+cValToChar(top+1.60)+'in;left:0.41in;width:8.49in;height:0.00in" src="http://portal.robsol.com.br/PDF/vi_14.png" /> '+CRLF
+		cTextHtml += '          <div style="position:absolute;top:'+cValToChar(top+1.42)+'in;left:0.48in;width:0.87in;line-height:0.22in;"><span style="font-style:normal;font-weight:bold;font-size:10pt;font-family:Arial;color:#3eb3ce">Duplicatas:</span><span style="font-style:normal;font-weight:bold;font-size:10pt;font-family:Arial;color:#3eb3ce"> </span><br/></SPAN></div> '+CRLF
+		cTextHtml += '          <div style="position:absolute;top:'+cValToChar(top+1.64)+'in;left:0.48in;width:0.82in;line-height:0.13in;"><span style="font-style:normal;font-weight:normal;font-size:6pt;font-family:Arial;color:#000000">001, no dia   /  /    :</span><span style="font-style:normal;font-weight:normal;font-size:6pt;font-family:Arial;color:#000000"> </span><br/></SPAN></div> '+CRLF
+		cTextHtml += '          <div style="position:absolute;top:'+cValToChar(top+1.64)+'in;left:2.87in;width:0.21in;line-height:0.14in;"><span style="font-style:normal;font-weight:bold;font-size:6pt;font-family:Arial;color:#000000">0,00</span><span style="font-style:normal;font-weight:bold;font-size:6pt;font-family:Arial;color:#000000"> </span><br/></SPAN></div> '+CRLF
+		cTextHtml += '          <img style="position:absolute;top:'+cValToChar(top+9.50)+'in;left:0.41in;width:8.49in;height:0.00in" src="http://portal.robsol.com.br/PDF/vi_15.png" /> '+CRLF
+		cTextHtml += '          </body> '+CRLF
+		cTextHtml += '    </html>
+		
+	Else
+		conout('Pedido nao encontrado')
+	EndIf
+
+Return cTextHtml
