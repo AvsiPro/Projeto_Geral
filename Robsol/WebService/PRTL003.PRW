@@ -44,7 +44,6 @@ WsMethod POST WsReceive RECEIVE WsService PRTL003
 	Local cMessage		As Character
 	Local cEmp			As Character 
 	Local cFil			As Character 
-	Local cUser			As Character
 	Local cCodUsu		As Character
 	Local cNomUsu		As Character
 	Local cCodVnd		As Character 
@@ -67,6 +66,9 @@ WsMethod POST WsReceive RECEIVE WsService PRTL003
 	
 	Local aItens			:=	{}
 	Local aCliente			:=	{}
+
+	Private cUser			As Character
+	Private cUserCod		As Character
 
 	cCode					:= ''
 	cCodUsu					:= ''
@@ -99,8 +101,9 @@ WsMethod POST WsReceive RECEIVE WsService PRTL003
 		oBody:fromJson(oJsonIM:Body)
 		cUser 		:= oBody:getJsonText("VENDEDOR")
 		cCondPg		:= oBody:getJsonText("CONDPAGTO")
-		aItens		:=	oBody:getJsonText("ITEMS")
-		aCliente	:=	oBody:getJsonText("CLIENTE")
+		aItens		:= oBody:getJsonText("ITEMS")
+		aCliente	:= oBody:getJsonText("CLIENTE")
+		cUserCod	:= oBody:getJsonText("USUARIO")
 	ENDIF
 	
 	/*If AllTrim( self:getContent() ) != 'U' //ValType(oBody:fromJson( AllTrim( self:getContent() ) )) != 'U'	
@@ -341,6 +344,10 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
 					SA1->A1_CONTATO := oBody:Cliente[1]:CONTATO
 				EndIF
 
+				If Alltrim(SA1->A1_EMAIL) <> Alltrim(oBody:Cliente[1]:EMAIL)
+					SA1->A1_EMAIL := oBody:Cliente[1]:EMAIL
+				EndIF
+
 				If Alltrim(SA1->A1_END) <> Alltrim(oBody:Cliente[1]:ENDERECO)
 					SA1->A1_END := Alltrim(oBody:Cliente[1]:ENDERECO)
 				ENDIF
@@ -359,6 +366,10 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
 			ELSE
 				If Alltrim(SA1->A1_CONTATO) <> Alltrim(oBody:Cliente:CONTATO)
 					SA1->A1_CONTATO := oBody:Cliente:CONTATO
+				EndIF
+
+				If Alltrim(SA1->A1_EMAIL) <> Alltrim(oBody:Cliente:EMAIL)
+					SA1->A1_EMAIL := oBody:Cliente:EMAIL
 				EndIF
 
 				If Alltrim(SA1->A1_END) <> Alltrim(oBody:Cliente:ENDERECO)
@@ -532,6 +543,16 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
 					
 					If aItensCad[nX]:GetJsonObject("BENEF") <> Nil
 						If aItensCad[nX]:BENEF == "B"
+
+							DbSelectArea("AI3")
+							AI3->(DbsetOrder(1))
+							
+							If AI3->(Dbseek('0101'+AvKey(cUserCod,'AI3_CODUSU')))
+								RecLock('AI3', .F.)
+									AI3->AI3_ULTBEN := Date()
+								AI3->(MsUnlock())
+							EndIf
+
 							aadd(aLinha,{"C6_TES"		, '626'			 				, Nil})
 							aadd(aCabec, {"C5_MENNOTA"    , 'Produto '+Alltrim(aItensCad[nX]:PRODUTO)+' enviar como Brinde'		,Nil})
 						Else
