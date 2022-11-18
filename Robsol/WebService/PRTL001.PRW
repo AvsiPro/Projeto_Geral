@@ -70,6 +70,8 @@ WsMethod POST WsReceive RECEIVE WsService PRTL001
 	cFil					:= '0101'
 	cMessage				:= ''
 	cAcesso					:= ''
+	cDtUltBn				:= ''
+	cFlagBn					:= ''
 
 	aTitulos				:= {}
 	aTitTrans			    := {}
@@ -123,6 +125,8 @@ WsMethod POST WsReceive RECEIVE WsService PRTL001
 				cAcesso		:= aRetExec[6]
 				cCodClt		:= aRetExec[7]
 				cLojCli		:= aRetExec[8]
+				cDtUltBn	:= aRetExec[9]
+				cFlagBn		:= aRetExec[10]
 				
 			Else
 				// Mostra o Erro no Retorno do Processamento.
@@ -134,6 +138,8 @@ WsMethod POST WsReceive RECEIVE WsService PRTL001
 				cAcesso  	:= ''
 				cCodClt		:= ''
 				cLojCli		:= ''
+				cDtUltBn	:= ''
+				cFlagBn		:= ''
 			EndIf 
 
 		EndIf 
@@ -146,7 +152,7 @@ WsMethod POST WsReceive RECEIVE WsService PRTL001
 	conout('cliente '+cCodClt)
 	//-> Mensagem de Retorno da Requisição
 	self:setContentType("application/json")
-	self:setResponse(fwJsonSerialize(StatReq(cCode,cCodUsu,cNomUsu,cCodVnd,cAcesso,cCodClt,cLojCli)))
+	self:setResponse(fwJsonSerialize(StatReq(cCode,cCodUsu,cNomUsu,cCodVnd,cAcesso,cCodClt,cLojCli,cDtUltBn,cFlagBn)))
 
 	// Realiza o fechamento do Ambiente
 	RpcClearEnv()
@@ -169,7 +175,7 @@ Descricao: 	Realiza o Tratamento para envio de Mensagem de Retorno
 
 /*/
 //-------------------------------------------------------------------
-Static Function StatReq(cCode As Character, cCodUsu As Character, cNomUsu As Character , cCodVnd As Character, cAcesso As Character, cCodClt As Character, cLojCli As Character) As J
+Static Function StatReq(cCode As Character, cCodUsu As Character, cNomUsu As Character , cCodVnd As Character, cAcesso As Character, cCodClt As Character, cLojCli As Character,cDtUltBn As Character,cFlagBn As Character) As J
 
 	Local oJsonBody	As J
 	Local oJsonRet 	As J
@@ -192,6 +198,8 @@ Static Function StatReq(cCode As Character, cCodUsu As Character, cNomUsu As Cha
 		oJsonBody["user_token"]   	:= Encode64(cCode+cCodUsu+cCodVnd)
 		oJsonBody["cod_cliente"]   	:= cCodClt
 		oJsonBody["loja_cliente"]	:= cLojCli
+		oJsonBody["ult_benef"]		:= cDtUltBn
+		oJsonBody["auth_benef"]		:= cFlagBn	
 	EndIf
 
 	AAdd( oJsonRet["statusrequest"], oJsonBody )
@@ -218,6 +226,7 @@ Descricao: 	Realiza o tratamento dos dados vindos do Json e ja prepara
 Static Function RetUser(oBody As J, aRetExec as Array, aErro As Array, cUser As Character, cPass As Character) As Logical 
 
 	Local lRet			As Logical
+	Local cBenef := 'N'
 
 	Default aRetExec	:= {}
 	Default aErro		:= {}
@@ -229,14 +238,30 @@ Static Function RetUser(oBody As J, aRetExec as Array, aErro As Array, cUser As 
 	If Dbseek(xFilial("AI3")+cUser)
 		If Alltrim(AI3->AI3_PSW) <> Alltrim(cPass)
 			aErro	:= {.F.,'#400', "Senha invalida"}
-			lRet := .f.
+			lRet := .F.
 		EndIf
 
 		If lRet
 			DbSelectArea("AI4")
 			DbSetOrder(1)
 			DbSeek(xFilial("AI4")+AI3->AI3_CODUSU)
-			aRetExec := {.T.,"#200", AI3->AI3_CODUSU, Alltrim(AI3->AI3_NOME), AI3->AI3_VEND, AI3->AI3_XACESS,AI4->AI4_CODCLI,AI4->AI4_LOJCLI}
+
+			If Empty(AI3->AI3_ULTBEN) .Or. SubStr(DToS(AI3->AI3_ULTBEN),5,2) != SubStr(DToS(Date()),5,2)
+				cBenef := 'S'
+			EndIf
+
+			aRetExec := {;
+					.T.,;
+					"#200",;
+					AI3->AI3_CODUSU,;
+					Alltrim(AI3->AI3_NOME),;
+					AI3->AI3_VEND,;
+					AI3->AI3_XACESS,;
+					AI4->AI4_CODCLI,;
+					AI4->AI4_LOJCLI,;
+					DToS(AI3->AI3_ULTBEN),;
+					cBenef;
+				}
 		EndIf
 	else
 		aErro	:= {.F.,'#400', "Usuario nao encontrado"}
