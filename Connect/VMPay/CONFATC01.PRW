@@ -244,6 +244,7 @@ If len(aList) > 0
         oTMenuIte3   := TMenuItem():New(oDlg1,"Inverter",,,,{|| Processa({||inverte(),"Aguarde..."})},,,,,,,,,.T.) 
         oTMenuIte4   := TMenuItem():New(oDlg1,"Validar LAYOUT",,,,{|| Processa({|| ValidPlan(),"Aguarde..."})},,,,,,,,,.T.) 
         oTMenuIte5   := TMenuItem():New(oDlg1,"Gerar PV",,,,{|| Processa({||pedido(),"Aguarde..."})},,,,,,,,,.T.) 
+        oTMenuIte8   := TMenuItem():New(oDlg1,"Salvar Vendas",,,,{|| Processa({||savevend(),"Aguarde..."})},,,,,,,,,.T.) 
         //oTMenuIte6 := TMenuItem():New(oDlg1,"Exportar Remessas",,,,{|| Processa({||Remessas(),"Aguarde..."})},,,,,,,,,.T.) 
         IF !lTeca
             oMenu:Add(oTMenuIte1)
@@ -252,6 +253,7 @@ If len(aList) > 0
             oMenu:Add(oTMenuIte3)
             oMenu:Add(oTMenuIte4)
             oMenu:Add(oTMenuIte5) 
+            oMenu:Add(oTMenuIte8)
         ELSE
             oMenu:Add(oTMenuIte7)
         ENDIF
@@ -275,14 +277,6 @@ If len(aList) > 0
         
             // oList3:bRClicked := { |oObject,nX,nY| oMenuP:Activate( nX, (nY-10), oObject ) }
         ENDIF                                                                               
-
-        // Menu popup grid 2
-        MENU oMenu8 POPUP 
-        MENUITEM "Salvar Venda" ACTION (savevend())
-        
-        ENDMENU                                                                           
-
-        oList8:bRClicked := { |oObject,nX,nY| oMenu8:Activate( nX, (nY-10), oObject ) }
         
     oDlg1:Activate(,,,.T.)
 else
@@ -752,30 +746,42 @@ oList4:bLine := {||{ IF(aList4[oList4:nAt,01],oOk,oNo),;
                                  aList4[oList4:nAt,02],;
                                  aList4[oList4:nAt,03],;
                                  aList4[oList4:nAt,04]}}   
-
-FOR nX := 1 TO len(aList8B)
-    IF Alltrim(aList8B[nX,06]) == Alltrim(aList[oList:nAt,02])
-        Aadd(aList8,aList8B[nX])
-        nPos := Ascan(aList3B,{|x| Alltrim(x[2])+Alltrim(x[3]) == Alltrim(aList8B[nX,06])+Alltrim(aList8B[nX,02])})
-        IF nPos > 0  
-            aList8[len(aList8),03] := aList3B[nPos,04]
-            aList8[len(aList8),04] := aList3B[nPos,05]
+if len(aList8B) > 0     
+    FOR nX := 1 TO len(aList8B[oList:nAt,1])
+        IF Alltrim(aList8B[oList:nAt,1,nX,6]) == Alltrim(aList[oList:nAt,02])
+            Aadd(aList8,aList8B[oList:nAt,1])
+            nPos := Ascan(aList3B,{|x| Alltrim(x[2])+Alltrim(x[3]) == Alltrim(aList8B[nX,06])+Alltrim(aList8B[nX,02])})
+            IF nPos > 0  
+                aList8[len(aList8),03] := aList3B[nPos,04]
+                aList8[len(aList8),04] := aList3B[nPos,05]
+            ENDIF
         ENDIF
-    ENDIF
-NEXT nX
-         
+    NEXT nX
+endif
+
 IF len(aList8) < 1
     Aadd(aList8,{'','','','','','','','','','','','','','','','','','',''})
+
+    oList8:nAt := 1
+    oList8:SetArray(aList8)
+    oList8:bLine := {||{aList8[oList8:nAt,01],;
+                        strzero(val(aList8[oList8:nAt,02]),2),; 
+                        aList8[oList8:nAt,03],;
+                        aList8[oList8:nAt,04],;
+                        aList8[oList8:nAt,05],;
+                        aList8[oList8:nAt,08]}} 
+else
+    oList8:nAt := 1
+    oList8:SetArray(aList8)
+    oList8:bLine := {||{aList8[oList:nAt,oList8:nAt,01],;
+                        strzero(val(aList8[oList:nAt,oList8:nAt,02]),2),; 
+                        aList8[oList:nAt,oList8:nAt,03],;
+                        aList8[oList:nAt,oList8:nAt,04],;
+                        aList8[oList:nAt,oList8:nAt,05],;
+                        aList8[oList:nAt,oList8:nAt,08]}} 
 ENDIF
 
-oList8:nAt := 1
-oList8:SetArray(aList8)
-oList8:bLine := {||{aList8[oList8:nAt,01],;
-                    strzero(val(aList8[oList8:nAt,02]),2),; 
-                    aList8[oList8:nAt,03],;
-                    aList8[oList8:nAt,04],;
-                    aList8[oList8:nAt,05],;
-                    aList8[oList8:nAt,08]}} 
+
                      
 // FOR nX := 1 TO len(aList9B)
 //     IF Alltrim(aList9B[nX,04]) == Alltrim(aList[oList:nAt,02])
@@ -2351,12 +2357,13 @@ RETURN(aRet)
 STATIC FUNCTION Vendaspay()
 
 LOCAL aArea    :=    GetArea()
-LOCAL dDtD     :=    ctod(' / / ') 
-LOCAL dDtA     :=    ctod(' / / ')    
+LOCAL dDtD     :=    FirstDate(Date()) 
+LOCAL dDtA     :=    LastDate(Date())    
 LOCAL cHri     :=    space(5)
 // LOCAL cHrf    :=    space(5)
 LOCAL cData    :=    ''
 LOCAL nX
+LOCAL nY
 
 PRIVATE aPergs     :=    {}
 PRIVATE aRet       :=    {}
@@ -2368,38 +2375,46 @@ aAdd(aPergs ,{1, "Hora Inicial?", cHri, "", "", "", "", 070, .T.})
 aAdd(aPergs ,{1, "Hora Final?",   cHri, "", "", "", "", 070, .T.})    
 
 IF ParamBox(aPergs ,"Periodo de vendas",@aRet)
-    aVendas := U_CONWSC03(aList[oList:nAt,02],2,aRet[1],aRet[2],aRet[3],aRet[4])
-    IF len(aVendas) > 0
-        aList8 := {}
-    //'Data','SeleÁ„o','Produto','DescriÁ„o','Quant. Apont.',chapa,codigo cliente
-        FOR nX := 3 TO len(aVendas) 
-            cCodProt := ''
-            IF aVendas[nX,05] == "null"
-                cCodProt      :=     "Nao Consta"
-            ELSE
-                cCodProt := aVendas[nX,05]
-            ENDIF
-            
-            if cCodProt != "Nao Consta"
-                cDesc := Posicione("SB1",1,xFilial("SB1")+cCodProt,"B1_DESC")
-            else
-                cDesc := "Codigo do produto nao se encontra no VMPay"
-            endif
+    for nX := 1 to len(aList)
+        Aadd(aVendas, U_CONWSC03(aList[nX,02],2,aRet[1],aRet[2],aRet[3],aRet[4]))
+    next
 
-            nPosit := Ascan(aList8,{|x| x[2] == aVendas[nX,01]})
-            IF nPosit == 0
-                cData := ddatabase //stod(StrTran(SubStr(aVendas[nX,02], 1, 10), '-')) //StrTran(StrTran(SubStr(aVendas[nX,02], 1, 10), '-', '/'), 'T', ' ')
-                Aadd(aList8,{cvaltochar(cData),;
-                            aVendas[nX,01],;
-                            cCodProt,;
-                            cDesc,;
-                            val(aVendas[nX,03]),;
-                            aVendas[2],;
-                            aList[oList:nAt,17],;
-                            IF(val(aVendas[nX,03])>1,val(aVendas[nX,04])/val(aVendas[nX,03]),val(aVendas[nX,04]))})
-            ELSE
-                aList8[nPosit,05] += val(aVendas[nX,03])
-            ENDIF
+    IF len(aVendas) > 0
+        aList8B := {}
+    //'Data','SeleÁ„o','Produto','DescriÁ„o','Quant. Apont.',chapa,codigo cliente
+        FOR nX := 1 TO len(aVendas) 
+            aList8 := {}
+            for nY := 3 to len(aVendas[nX])
+                cCodProt := ''
+                IF aVendas[nX,nY,05] == "null"
+                    cCodProt := "Nao Consta"
+                ELSE
+                    cCodProt := aVendas[nX,nY,05]
+                ENDIF
+                
+                if cCodProt != "Nao Consta"
+                    cDesc := Posicione("SB1",1,xFilial("SB1")+cCodProt,"B1_DESC")
+                else
+                    cDesc := "Codigo do produto nao se encontra no VMPay"
+                endif
+
+                nPosit := Ascan(aList8,{|x| x[2] == aVendas[nX,nY,01]})
+                IF nPosit == 0
+                    cData := ddatabase //stod(StrTran(SubStr(aVendas[nX,nY,02], 1, 10), '-')) //StrTran(StrTran(SubStr(aVendas[nX,nY,02], 1, 10), '-', '/'), 'T', ' ')
+                    Aadd(aList8,{cvaltochar(cData),;
+                                aVendas[nX,nY,01],;
+                                cCodProt,;
+                                cDesc,;
+                                val(aVendas[nX,nY,03]),;
+                                aVendas[nX,2],;
+                                aList[nX,17],;
+                                IF(val(aVendas[nX,nY,03])>1,val(aVendas[nX,nY,04])/val(aVendas[nX,nY,03]),val(aVendas[nX,nY,04]))})
+                ELSE
+                    aList8[nPosit,05] += val(aVendas[nX,nY,03])
+                ENDIF
+            next nY
+            Aadd(aList8B, {})
+            Aadd(aList8B[nX], aList8)
         NEXT nX
         
         IF len(aList8) > 0
@@ -2438,82 +2453,56 @@ RETURN
 
 STATIC FUNCTION savevend()
 
-LOCAL aArea       :=    GetArea()  
-LOCAL aGravarP    :=    {}
-LOCAL aGravarS    :=    {}      
-LOCAL aGravar     :=    {}
-LOCAL cMesAno     :=    Compete()    
+LOCAL aArea        :=    GetArea()  
+LOCAL aGravarP     :=    {} 
+LOCAL cCod         := GetSXENum("Z08", "Z08_COD") 
+LOCAL cSeq         :=    "01" 
+LOCAL aContrato    :=    Contrato()
 LOCAL nX   
-LOCAL nJ
+LOCAL nY   
          
-cContrato   :=    POSICIONE("AAN",3,XFILIAL("AAN")+aList[oList:nAt,2],"AAN_CONTRT")
-//cLeitura    :=    STRZERO(VAL(GetSX8NUM("Z08","Z08_COD"))+1,6)
-//ConfirmSX8() 
-cLeitura    :=    GetMV("MV_XNRCONT")  //GetSx8Num("Z08","Z08_COD")
-cPrx        :=    Strzero(val(cLeitura)+1,6)
-PUTMV("MV_XNRCONT",cPrx)
+for nX := 1 to len(aList8)
 
-cItem     :=    POSICIONE("AAN",3,XFILIAL("AAN")+aList[oList:nAt,2],"AAN_ITEM")
-cModPg    :=    POSICIONE("AAN",3,XFILIAL("AAN")+aList[oList:nAt,2],"AAN_XMODPG")
+    aGravarP := {}
 
-Aadd(aGravarP,{"Z08_FILIAL"   , xFilial("Z08")}) 
-Aadd(aGravarP,{"Z08_COD"      , cLeitura}) 
-Aadd(aGravarP,{"Z08_NUMSER"   , aList[oList:nAt,2]}) 
-Aadd(aGravarP,{"Z08_DTDIGIT"  , dDataBase}) 
-Aadd(aGravarP,{"Z08_CONTRT"   , cContrato}) 
-Aadd(aGravarP,{"Z08_ITEM"     , cItem}) 
-Aadd(aGravarP,{"Z08_SELECAO"     , cItem}) //AAA
-Aadd(aGravarP,{"Z08_PRODUTO"     , cItem}) //AAA
-Aadd(aGravarP,{"Z08_QTDLIDA"     , cItem}) //AAA
-Aadd(aGravarP,{"Z08_VLRLIDO"     , cItem}) //AAA
-Aadd(aGravarP,{"Z08_DATA"     , ctod(aList8[1,1])}) 
-Aadd(aGravarP,{"Z08_PERIODO"  , cMesAno })  //strzero(month(ctod(alist8[1,1])),2)+"/"+cvaltochar(year(ctod(alist8[1,1])))
-Aadd(aGravarP,{"Z08_MAQUINA"  , aList[oList:nAt,21]}) 
-// Aadd(aGravarP,{"Z08_CODTEC"   , ""}) 
-// Aadd(aGravarP,{"Z08_TECNICO"  , ""}) 
-Aadd(aGravarP,{"Z08_CODCLI"   , aList[oList:nAt,17]+aList[oList:nAt,18]})  
-Aadd(aGravarP,{"Z08_CLIPAG"   , aList[oList:nAt,17]+aList[oList:nAt,18]})  
-// Aadd(aGravarP,{"Z08_TIPOCON"  , "COM"})  
-// Aadd(aGravarP,{"Z08_GRPCLI"   , Posicione("Z09",1,xFilial("Z09")+cContrato,"Z09_GRPCLI")})  
-// Aadd(aGravarP,{"Z08_FILRESP"  , Strzero(val(xFilial("SC5")),6)})  
-                
-FOR nX := 1 TO len(aList8)
-    Aadd(aGravarS,{"Z12_COD"         , cLeitura})
-    Aadd(aGravarS,{"Z12_CONTRT"      , cContrato})
-    Aadd(aGravarS,{"Z12_ITEM"        , cItem})
-    Aadd(aGravarS,{"Z12_SEQUEN"      , aList8[nX,02]})
-    IF !Empty(cModPg)
-        Aadd(aGravarS,{"Z12_DOSESG"  , aList8[nX,05]})        
-    ELSE
-        Aadd(aGravarS,{"Z12_DOSESP"  , aList8[nX,05]})
+    Aadd( aGravarP, {"Z08_FILIAL"  ,xFilial("Z08")})
+    Aadd( aGravarP, {"Z08_COD"     ,cCod})
+    Aadd( aGravarP, {"Z08_SEQUEN"  ,cSeq})
+    Aadd( aGravarP, {"Z08_NUMSER"  ,aList[oList:nAt,2]})
+    Aadd( aGravarP, {"Z08_DATA"    ,ctod(aList8[nX,1])})
+    Aadd( aGravarP, {"Z08_SELECA"  ,aList8[nX,2]})
+    Aadd( aGravarP, {"Z08_PRODUT"  ,aList8[nX,3]})
+    Aadd( aGravarP, {"Z08_CONTRT"  ,aContrato[1,1]})
+    Aadd( aGravarP, {"Z08_ITEM"    ,aContrato[1,2]})
+    Aadd( aGravarP, {"Z08_QTDLID"  ,aList8[nX,5]})
+    Aadd( aGravarP, {"Z08_VLRLID"  ,aList8[nX,8]})
+    Aadd( aGravarP, {"Z08_DTDIGIT" ,dDataBase}) 
+    Aadd( aGravarP, {"Z08_PERIODO" ,Strtokarr(aList8[nX,1], "/")[2] + Strtokarr(aList8[nX,1], "/")[3] })
+    Aadd( aGravarP, {"Z08_MAQUINA" ,aList[oList:nAt,21]}) 
+    Aadd( aGravarP, {"Z08_CODCLI"  ,aList[oList:nAt,17]+aList[oList:nAt,18]})  
+    Aadd( aGravarP, {"Z08_CLIPAG"  ,aList[oList:nAt,17]+aList[oList:nAt,18]})
+
+    IF len(aGravarP) > 0
+
+        DbSelectArea("Z08") 
+
+        Reclock("Z08",.T.)
+
+        FOR nY := 1 TO len(aGravarP)
+
+            &("Z08->"+aGravarP[nY,01]) := aGravarP[nY,02]
+        
+        NEXT nY
+
+        Z08->(Msunlock())
+        
+        MsgAlert("Leitura salva com sucesso!")
+        
     ENDIF
-    
-    Aadd(aGravarS,{"Z12_BEBIDA"      , aList8[nX,03]})
-    Aadd(aGravar,aGravarS)
-    aGravarS := {}
-NEXT nX
 
-IF len(aGravarP) > 0
-    DbSelectArea("Z08") 
-    Reclock("Z08",.T.)
-    FOR nX := 1 TO len(aGravarP)
-        &("Z08->"+aGravarP[nX,01]) := aGravarP[nX,02]
-    NEXT nX
-    Z08->(Msunlock())
-    
-    DbSelectArea("Z12")
-    
-    FOR nX := 1 TO len(aGravar)        
-        Reclock("Z12",.T.)
-        FOR nJ := 1 TO len(aGravar[nX])
-            &("Z12->"+aGravar[nX,nJ,01]) := aGravar[nX,nJ,02]
-        NEXT nJ
-        Z12->(Msunlock())
-    NEXT nX   
-    
-    MsgAlert("Leitura salva com sucesso!")
-    
-ENDIF
+    cSeq := Soma1(cSeq)
+
+next nX
 
 RestArea(aArea)
 
@@ -2534,63 +2523,33 @@ RETURN
 ﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂ
 */
 
-STATIC FUNCTION Compete()
+STATIC FUNCTION Contrato()
 
-LOCAL cQuery
-LOCAL aPeriodo    :=    {}  
-LOCAL aPergs      :=    {}
-LOCAL aRet        :=    {}
-LOCAL nQtd        :=    space(1)
-LOCAL cRet        :=    ''     
-LOCAL cMsg        :=    ""
-LOCAL nXx
+    LOCAL cQuery := ""
+    LOCAL aRet   := {}
 
-cQuery := "SELECT Z13_PERIOD,MIN(Z13_DTINI) AS INI,MAX(Z13_DTFIM) AS FIM"
-cQuery += " FROM Z13010"
-cQuery += " WHERE Z13_STATUS='A' AND D_E_L_E_T_='' GROUP BY Z13_PERIOD"
+    cQuery := " "
+    cQuery += " SELECT AAN_CONTRT,AAN_ITEM FROM " + RetSQLName("AAN") + " "
+    cQuery += " INNER JOIN " + RetSQLName("SN1") + " "
+    cQuery += " ON N1_FILIAL = " + xFilial("SN1") + " AND AAN_XCBASE = N1_CBASE "
+    cQuery += " WHERE AAN_XCBASE = '" + AllTrim(aList[oList:nAt,2]) + "' "
+    cQuery += " AND AAN_FILIAL = " + xFilial("AAN") + " "
 
-IF Select('TRB') > 0
-    dbSelectArea('TRB')
-    dbCloseArea()
-ENDIF
-
-MemoWrite("PRTFAT01.SQL",cQuery)
-DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
-
-DbSelectArea("TRB") 
-
-nCont := 1
-
-WHILE !EOF()        
-    Aadd(aPeriodo,{nCont,TRB->Z13_PERIOD,TRB->INI,TRB->FIM})
-    nCont++
-    Dbskip()
-ENDDO
-
-IF len(aPeriodo) == 0
-    MsgAlert("N„o encontrado um periodo de competencia aberto, favor verificar")
-ElseIf len(aPeriodo) > 1
-    FOR nXx := 1 TO len(aPeriodo)
-        cMsg += cvaltochar(aPeriodo[nXx,01])+" - "+aPeriodo[nXx,02]+" # "
-    NEXT nXx                             
-ELSE
-    cRet := aPeriodo[1,2]
-ENDIF
-                
-IF !Empty(cMsg)
+    if Select("TRB") > 0
+        DBSELECTAREA("TRB")
+        DBCLOSEAREA()
+    endif
     
-    aAdd(aPergs ,{1,"Informe o Numero",nQtd,"","","","",50,.F.})
+    DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
 
-      Aadd(aPergs ,{9,cMsg,150,80,.F.})
-        
-    IF !ParamBox(aPergs ,"Informe a competencia desejada",@aRet)
-        RETURN 
-    ELSE                               
-        cRet := aPeriodo[Ascan(aPeriodo,{|x| cvaltochar(x[1]) == cvaltochar(aRet[1])}),2]
-    ENDIF      
-ENDIF
+    while !EOF()
 
-RETURN(cRet)   
+        Aadd(aRet, {TRB->AAN_CONTRT, TRB->AAN_ITEM})
+
+        DBSKIP()
+    end
+
+RETURN  aRet
 
 /*
 ‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹

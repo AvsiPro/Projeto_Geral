@@ -189,26 +189,28 @@ RETURN
 
 STATIC FUNCTION Maquinas()
 
-LOCAL nX
+    LOCAL nX
 
-oRestClient:setPath("/api/v1/machines?access_token="+cToken) 
+    oRestClient:setPath("/api/v1/machines?access_token="+cToken) 
 
-IF oRestClient:Get(aHeader)
-    cValor := oRestClient:GetResult("GET")
-    cValor := strtran(cValor,"[")
-    cValor := strtran(cValor,"]")
-    cValor := strtran(cValor,'"')
-    
-    aLinhas := strtokarr(cValor,"},{") 
-    
-    FOR nX := 1 TO len(aLinhas)
-        IF "asset_number" $ Alltrim(aLinhas[nX]) 
-            aAux1 := Strtokarr(aLinhas[nX],":")
-            aAux2 := Strtokarr(aLinhas[nX-1],":")
-            Aadd(aHeader,{aAux2[2],aAux1[2]})  
-        ENDIF
-    NEXT nX
-ENDIF
+    IF oRestClient:Get(aHeader)
+        cValor := oRestClient:GetResult("GET")
+        cValor := strtran(cValor,"[")
+        cValor := strtran(cValor,"]")
+        cValor := strtran(cValor,'"')
+        
+        aLinhas := strtokarr(cValor,"},{") 
+        
+        FOR nX := 1 TO len(aLinhas)
+            
+            IF "asset_number" $ Alltrim(aLinhas[nX]) 
+                aAux1 := Strtokarr(aLinhas[nX],":")
+                aAux2 := Strtokarr(aLinhas[nX-1],":")
+                Aadd(aHeader,{aAux2[2],aAux1[2]})  
+            ENDIF
+
+        NEXT nX
+    ENDIF
 
 RETURN       
 
@@ -415,7 +417,7 @@ STATIC FUNCTION PlanoMaq(cMaq,cInst,cPlan,nPos)
 LOCAL nJ
 
 oRestClient:setPath("/api/v1/machines/"+Alltrim(cMaq)+"/installations/"+cInst+"/planograms/"+cPlan+"?access_token="+cToken) 
-        
+
 IF oRestClient:Get(aHeader)
     cValor    :=    oRestClient:GetResult("GET")
     cValor    :=    strtran(cValor,"[")

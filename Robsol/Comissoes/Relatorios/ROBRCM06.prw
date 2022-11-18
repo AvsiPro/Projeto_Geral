@@ -18,8 +18,8 @@ Static Function PPeri()
 
     aAdd(aPerg, {1, "Data de Emissao de: " ,   cPerg1,  "", ".T.", "",    ".T.",    90,  .T.})
     aAdd(aPerg, {1, "Data de Emissao ate: " ,  cPerg2,  "", ".T.", "",    ".T.",    90,  .T.})
-    aAdd(aPerg, {1, "Cliente de: " ,           cPerg3,  "", ".T.", "SA1", ".T.",    90,  .T.})
-    aAdd(aPerg, {1, "Cliente ate: " ,          cPerg4,  "", ".T.", "SA1", ".T.",    90,  .T.})
+    aAdd(aPerg, {1, "Representante de: " ,     cPerg3,  "", ".T.", "SA3", ".T.",    90,  .T.})
+    aAdd(aPerg, {1, "Representante ate: " ,    cPerg4,  "", ".T.", "SA3", ".T.",    90,  .T.})
     aAdd(aPerg, {1, "Pedido de: " ,            cPerg5,  "", ".T.", "SC5", ".T.",    90,  .T.})
     aAdd(aPerg, {1, "Pedido ate: " ,           cPerg6,  "", ".T.", "SC5", ".T.",    90,  .T.})
     aAdd(aPerg, {1, "TES: " ,                  cPerg7,  "", ".T.", "",    ".T.",    90,  .T.})
@@ -76,7 +76,7 @@ User Function ROBRCM06()
     cQuery += " INNER JOIN " + RetSQLName("SA3") + " SA3 ON A3_COD = C5_VEND1 AND A3_FILIAL = " + xFilial("SA3") + " "
     cQuery += " WHERE C6_TES IN (" + aParams[7] + ") "
     cQuery += " AND C5_EMISSAO BETWEEN " + aParams[1] + " AND " + aParams[2] + " "
-    cQuery += " AND C5_CLIENTE BETWEEN " + aParams[3] + " AND " + aParams[4] + " "
+    cQuery += " AND C5_VEND1 BETWEEN " + aParams[3] + " AND " + aParams[4] + " "
     cQuery += " AND C5_NUM BETWEEN " + aParams[5] + " AND " + aParams[6] + " "
     cQuery += " AND C5_FILIAL = " + xFilial("SC5") + " "
     cQuery += " AND SC5.D_E_L_E_T_ = '' "
