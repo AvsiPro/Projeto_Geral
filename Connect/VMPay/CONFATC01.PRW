@@ -2452,61 +2452,61 @@ RETURN
 */
 
 STATIC FUNCTION savevend()
+    
+    LOCAL aArea        :=    GetArea()  
+    LOCAL aGravarP     :=    {} 
+    LOCAL cCod         := GetSXENum("Z08", "Z08_COD") 
+    LOCAL cSeq         :=    "01" 
+    LOCAL aContrato    :=    Contrato()
+    LOCAL nX   
+    LOCAL nY   
+    
+    for nX := 1 to len(aList8)
 
-LOCAL aArea        :=    GetArea()  
-LOCAL aGravarP     :=    {} 
-LOCAL cCod         := GetSXENum("Z08", "Z08_COD") 
-LOCAL cSeq         :=    "01" 
-LOCAL aContrato    :=    Contrato()
-LOCAL nX   
-LOCAL nY   
-         
-for nX := 1 to len(aList8)
+        aGravarP := {}
 
-    aGravarP := {}
+        Aadd( aGravarP, {"Z08_FILIAL"  ,xFilial("Z08")})
+        Aadd( aGravarP, {"Z08_COD"     ,cCod})
+        Aadd( aGravarP, {"Z08_SEQUEN"  ,cSeq})
+        Aadd( aGravarP, {"Z08_NUMSER"  ,aList[oList:nAt,2]})
+        Aadd( aGravarP, {"Z08_DATA"    ,ctod(aList8[nX,1])})
+        Aadd( aGravarP, {"Z08_SELECA"  ,aList8[nX,2]})
+        Aadd( aGravarP, {"Z08_PRODUT"  ,aList8[nX,3]})
+        Aadd( aGravarP, {"Z08_CONTRT"  ,aContrato[1,1]})
+        Aadd( aGravarP, {"Z08_ITEM"    ,aContrato[1,2]})
+        Aadd( aGravarP, {"Z08_QTDLID"  ,aList8[nX,5]})
+        Aadd( aGravarP, {"Z08_VLRLID"  ,aList8[nX,8]})
+        Aadd( aGravarP, {"Z08_DTDIGIT" ,dDataBase}) 
+        Aadd( aGravarP, {"Z08_PERIODO" ,Strtokarr(aList8[nX,1], "/")[2] + Strtokarr(aList8[nX,1], "/")[3] })
+        Aadd( aGravarP, {"Z08_MAQUINA" ,aList[oList:nAt,21]}) 
+        Aadd( aGravarP, {"Z08_CODCLI"  ,aList[oList:nAt,17]+aList[oList:nAt,18]})  
+        Aadd( aGravarP, {"Z08_CLIPAG"  ,aList[oList:nAt,17]+aList[oList:nAt,18]})
 
-    Aadd( aGravarP, {"Z08_FILIAL"  ,xFilial("Z08")})
-    Aadd( aGravarP, {"Z08_COD"     ,cCod})
-    Aadd( aGravarP, {"Z08_SEQUEN"  ,cSeq})
-    Aadd( aGravarP, {"Z08_NUMSER"  ,aList[oList:nAt,2]})
-    Aadd( aGravarP, {"Z08_DATA"    ,ctod(aList8[nX,1])})
-    Aadd( aGravarP, {"Z08_SELECA"  ,aList8[nX,2]})
-    Aadd( aGravarP, {"Z08_PRODUT"  ,aList8[nX,3]})
-    Aadd( aGravarP, {"Z08_CONTRT"  ,aContrato[1,1]})
-    Aadd( aGravarP, {"Z08_ITEM"    ,aContrato[1,2]})
-    Aadd( aGravarP, {"Z08_QTDLID"  ,aList8[nX,5]})
-    Aadd( aGravarP, {"Z08_VLRLID"  ,aList8[nX,8]})
-    Aadd( aGravarP, {"Z08_DTDIGIT" ,dDataBase}) 
-    Aadd( aGravarP, {"Z08_PERIODO" ,Strtokarr(aList8[nX,1], "/")[2] + Strtokarr(aList8[nX,1], "/")[3] })
-    Aadd( aGravarP, {"Z08_MAQUINA" ,aList[oList:nAt,21]}) 
-    Aadd( aGravarP, {"Z08_CODCLI"  ,aList[oList:nAt,17]+aList[oList:nAt,18]})  
-    Aadd( aGravarP, {"Z08_CLIPAG"  ,aList[oList:nAt,17]+aList[oList:nAt,18]})
+        IF len(aGravarP) > 0
 
-    IF len(aGravarP) > 0
+            DbSelectArea("Z08") 
 
-        DbSelectArea("Z08") 
+            Reclock("Z08",.T.)
 
-        Reclock("Z08",.T.)
+            FOR nY := 1 TO len(aGravarP)
 
-        FOR nY := 1 TO len(aGravarP)
+                &("Z08->"+aGravarP[nY,01]) := aGravarP[nY,02]
+            
+            NEXT nY
 
-            &("Z08->"+aGravarP[nY,01]) := aGravarP[nY,02]
-        
-        NEXT nY
+            Z08->(Msunlock())
+            
+            MsgAlert("Leitura salva com sucesso!")
+            
+        ENDIF
 
-        Z08->(Msunlock())
-        
-        MsgAlert("Leitura salva com sucesso!")
-        
-    ENDIF
+        cSeq := Soma1(cSeq)
 
-    cSeq := Soma1(cSeq)
+    next nX
 
-next nX
+    RestArea(aArea)
 
-RestArea(aArea)
-
-RETURN  
+RETURN
 
 /*
 ‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹
