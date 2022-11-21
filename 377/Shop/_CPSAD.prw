@@ -119,19 +119,21 @@ iif(nList = 0,nList := 1,nList)
 Return _bRet
  
 Static Function ConfZZY(_nPos, aDadosZZY, _bRet)
- 
-cCodigo := aDadosZZY[_nPos,1]
- 
-aCols[n,nPosProd] := cCodigo
 
-DbSelectArea("SB1")
-DbSetOrder(1)
-DbSeek(xFilial("SB1")+cCodigo)
+If _nPos > 0 
+    cCodigo := aDadosZZY[_nPos,1]
+    
+    aCols[n,nPosProd] := cCodigo
 
-_bRet := .T.
- 
-oDlgZZY:End()
- 
+    DbSelectArea("SB1")
+    DbSetOrder(1)
+    DbSeek(xFilial("SB1")+cCodigo)
+
+    _bRet := .T.
+    
+    oDlgZZY:End()
+EndIf 
+
 Return
 
 /*/{Protheus.doc} fBusca
