@@ -8,11 +8,9 @@
 /*/{Protheus.doc} User Function ROBFAT07
     Tela para facilitar a inclusão de pedido de vendas para representantes
     @type  Function
-    @author user
+    @author Diogo de Jesus Gasparini
     @since 14/11/2022
     @version 1
-    @param 
-    @return 
     @see 
     TES - 632/131
     VENDEDOR - 000059
@@ -92,13 +90,15 @@ User Function ROBFAT07()
 		aList2[oList2:nAt,4],;
 		aList2[oList2:nAt,5]}}
 
-	oList3     := TCBrowse():New( 150, 008, 500, 145,, {'', 'Codigo', 'Descricao', 'Saldo 3', 'Saldo Estoque', 'Preco UN'}, {,,200,,}, oGrp1,,,,, {|| selecProd(oList3:nAt)},,,,,,,,, .T.,,,, .F., .T. )
+	oList3     := TCBrowse():New( 150, 008, 500, 145,, {'', 'Codigo', 'Descricao', 'Saldo 3', 'Saldo Estoque', 'Preco UN', 'Data de Emissao'}, {,,200,,}, oGrp1,,,,, {|| selecProd(oList3:nAt)},,,,,,,,, .T.,,,, .F., .T. )
 	oList3:SetArray(aList3)
 	oList3:bLine := {||{ If(aList3[oList3:nAt,01],oOk,oNo),;
 		aList3[oList3:nAt,2],;
 		aList3[oList3:nAt,3],;
 		aList3[oList3:nAt,4],;
-		aList3[oList3:nAt,5]}}
+		aList3[oList3:nAt,5],;
+		aList3[oList3:nAt,6],;
+		SubStr(aList3[oList3:nAt,9], 7, 2) + "/" + SubStr(aList3[oList3:nAt,9], 5, 2) + "/" + SubStr(aList3[oList3:nAt,9],1,4)}}
 
 	nLarg  := 052*1.5
 	nAlt   := 012*1.5
@@ -211,7 +211,6 @@ Static Function buscaRepre(nLinha)
 
 	If aList1[nLinha,1] == .T.
 		aList1[nLinha,1] := .F.
-
 	Else
 		aList1[nLinha,1] := .T.
 	EndIf
@@ -246,16 +245,17 @@ Static Function buscaProd(nLinha)
 
 	Local cQuery       :=    ""
 	Local nX
-	Local cProdutos    :=    ""
+	Local nQtdTest     :=    0
 
 	cQuery := " "
-	cQuery += " SELECT BM_XMODELO,B1_COD,B1_DESC,B2_QATU,B1_PRV1,BM_XMODELO,B1_LOCPAD,B6_SALDO,B6_PRUNIT "
+	cQuery += " SELECT BM_XMODELO,B1_COD,B1_DESC,B2_QATU,B1_PRV1,BM_XMODELO,B1_LOCPAD,B6_SALDO,B6_PRUNIT,B6_EMISSAO "
 	cQuery += " FROM " + RetSQLName("SB6") + " SB6 "
-	cQuery += " INNER JOIN " + RetSQLName("SB1") + " SB1 ON B6_FILIAL = '" + xFilial("SB6") + "' AND B6_PRODUTO = B1_COD AND SB1.B1_MSBLQL <> '1' AND SB1.D_E_L_E_T_ <> '1'"
+	cQuery += " INNER JOIN " + RetSQLName("SB1") + " SB1 ON B1_FILIAL = '" + xFilial("SB1") + "' AND B6_PRODUTO = B1_COD AND SB1.B1_MSBLQL <> '1' AND SB1.D_E_L_E_T_ <> '1'"
 	cQuery += " INNER JOIN " + RetSQLName("SBM") + " SBM ON BM_FILIAL = '" + xFilial("SBM") + "' AND BM_GRUPO = B1_GRUPO "
-	cQuery += " INNER JOIN " + RetSQLName("SB2") + " SB2 ON B2_FILIAL = B6_FILIAL AND B2_COD = B1_COD "
+	cQuery += " INNER JOIN " + RetSQLName("SB2") + " SB2 ON B2_FILIAL = B6_FILIAL AND B2_COD = B1_COD AND B2_LOCAL = B6_LOCAL "
 	cQuery += " WHERE B6_CLIFOR = '" + aList2[nLinha,6] + "' AND B6_TIPO = 'E' AND B6_SALDO > '0' "
-	cQuery += " AND B6_PODER3 = 'R' AND B2_QATU >= '50' "
+	cQuery += " AND B6_PODER3 = 'R' "
+	cQuery += " AND B6_FILIAL = '" + xFilial("SB6") + "' "
 	cQuery += " AND SB6.R_E_C_D_E_L_ = '0' "
 	cQuery += " ORDER BY B1_COD "
 
@@ -269,23 +269,24 @@ Static Function buscaProd(nLinha)
 	aList3 := {}
 
 	While !EOF()
+
+		nQtdTest += TRB->B6_SALDO
+
 		if AllTrim(TRB->B1_DESC) == "MALA DUBAY"
-			Aadd(aList3, { .T., AllTrim(TRB->B1_COD), AllTrim(TRB->B1_DESC), TRB->B6_SALDO, TRB->B2_QATU, TRB->B6_PRUNIT, TRB->BM_XMODELO,TRB->B1_LOCPAD})
-			cProdutos += "'"
-			cProdutos += TRB->B1_COD
-			cProdutos += "',"
+			Aadd(aList3, { .T., AllTrim(TRB->B1_COD), AllTrim(TRB->B1_DESC), TRB->B6_SALDO, TRB->B2_QATU, TRB->B6_PRUNIT, TRB->BM_XMODELO,TRB->B1_LOCPAD,TRB->B6_EMISSAO})
 		endif
 		DBSKIP()
 	End
 
 	cQuery := " "
-	cQuery += " SELECT BM_XMODELO,B1_COD,B1_DESC,B2_QATU,B1_PRV1,BM_XMODELO,B1_LOCPAD,B6_SALDO,B6_PRUNIT "
+	cQuery += " SELECT BM_XMODELO,B1_COD,B1_DESC,B2_QATU,B1_PRV1,BM_XMODELO,B1_LOCPAD,B6_SALDO,B6_PRUNIT,B6_EMISSAO "
 	cQuery += " FROM " + RetSQLName("SB6") + " SB6 "
 	cQuery += " INNER JOIN " + RetSQLName("SB1") + " SB1 ON B1_FILIAL = '" + xFilial("SB1") + "' AND B6_PRODUTO = B1_COD AND SB1.B1_MSBLQL <> '1' AND SB1.D_E_L_E_T_ <> '1'"
 	cQuery += " INNER JOIN " + RetSQLName("SBM") + " SBM ON BM_FILIAL = '" + xFilial("SBM") + "' AND BM_GRUPO = B1_GRUPO "
-	cQuery += " INNER JOIN " + RetSQLName("SB2") + " SB2 ON B2_FILIAL = B6_FILIAL AND B2_COD = B1_COD "
+	cQuery += " INNER JOIN " + RetSQLName("SB2") + " SB2 ON B2_FILIAL = B6_FILIAL AND B2_COD = B1_COD AND B2_LOCAL = B6_LOCAL "
 	cQuery += " WHERE B6_CLIFOR = '" + aList2[nLinha,6] + "' AND B6_TIPO = 'E' AND B6_SALDO > '0' "
-	cQuery += " AND B6_PODER3 = 'R' AND B2_QATU >= '50' "
+	cQuery += " AND B6_PODER3 = 'R' "
+	cQuery += " AND B6_FILIAL = '" + xFilial("SB6") + "' "
 	cQuery += " AND SB6.R_E_C_D_E_L_ = '0' "
 	cQuery += " ORDER BY B1_COD "
 
@@ -297,31 +298,25 @@ Static Function buscaProd(nLinha)
 	DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
 
 	While !EOF()
+
 		if Ascan(aList3,{|x| Alltrim(x[2]) == Alltrim(TRB->B1_COD)}) == 0
-			Aadd(aList3, { .T., AllTrim(TRB->B1_COD), AllTrim(TRB->B1_DESC), TRB->B6_SALDO, TRB->B2_QATU, TRB->B6_PRUNIT, TRB->BM_XMODELO,TRB->B1_LOCPAD})
-			cProdutos += "'"
-			cProdutos += TRB->B1_COD
-			cProdutos += "',"
+			Aadd(aList3, { .T., AllTrim(TRB->B1_COD), AllTrim(TRB->B1_DESC), TRB->B6_SALDO, TRB->B2_QATU, TRB->B6_PRUNIT, TRB->BM_XMODELO,TRB->B1_LOCPAD,TRB->B6_EMISSAO})
+		elseif aList3[Len(aList3),2] == AllTrim(TRB->B1_COD)
+			aList3[Len(aList3),4] += TRB->B6_SALDO
 		endif
 		DBSKIP()
 	End
-
-	cProdutos := SubStr(cProdutos, 1, len(cProdutos) - 1)
-
-    if len(cProdutos) = 0
-        cProdutos := "''"
-    endif
 
 	cQuery := " "
 	cQuery += " SELECT SB1.B1_COD, SB1.B1_DESC, SB2.B2_QATU,SB1.B1_PRV1,SBM.BM_XMODELO,SB1.B1_LOCPAD "
 	cQuery += " FROM " + RetSQLName("SB1") + " SB1 "
 	cQuery += " INNER JOIN " + RetSQLName("SBM") + " SBM ON SBM.BM_FILIAL = '" + xFilial("SBM") + "' AND SB1.B1_GRUPO = SBM.BM_GRUPO "
-	cQuery += " INNER JOIN " + RetSQLName("SB2") + " SB2 ON SB2.B2_FILIAL = '" + xFilial("SB2") + "' AND SB1.B1_COD = SB2.B2_COD "
+	cQuery += " INNER JOIN " + RetSQLName("SB2") + " SB2 ON SB2.B2_FILIAL = '" + xFilial("SB2") + "' AND SB1.B1_COD = SB2.B2_COD AND B2_LOCAL = B1_LOCPAD "
 	cQuery += " WHERE SB2.B2_QATU > '50' AND SB2.B2_LOCAL = '101' "
 	cQuery += " AND SB1.B1_PRV1 > '0' "
+	cQuery += " AND SB1.B1_FILIAL = '" + xFilial("SB1") + "' "
 	cQuery += " AND SB1.B1_FILIAL = SBM.BM_FILIAL "
 	cQuery += " AND SB1.B1_MSBLQL != '1' "
-	cQuery += " AND SB1.B1_COD NOT IN (" + cProdutos + ") "
 	cQuery += " ORDER BY SB1.B1_COD "
 
 	If Select('TRB') > 0
@@ -333,7 +328,7 @@ Static Function buscaProd(nLinha)
 
 	While !EOF()
 		if Ascan(aList3,{|x| Alltrim(x[2]) == Alltrim(TRB->B1_COD)}) == 0
-			Aadd(aList3, { .F., AllTrim(TRB->B1_COD), AllTrim(TRB->B1_DESC), 0001, TRB->B2_QATU, TRB->B1_PRV1, TRB->BM_XMODELO,TRB->B1_LOCPAD})
+			Aadd(aList3, { .F., AllTrim(TRB->B1_COD), AllTrim(TRB->B1_DESC), 0001, TRB->B2_QATU, TRB->B1_PRV1, TRB->BM_XMODELO,TRB->B1_LOCPAD,""})
 		endif
 		DBSKIP()
 	End
@@ -373,7 +368,8 @@ Static Function buscaProd(nLinha)
 		aList3[oList3:nAt,3],;
 		aList3[oList3:nAt,4],;
 		aList3[oList3:nAt,5],;
-		aList3[oList3:nAt,6]}}
+		aList3[oList3:nAt,6],;
+		SubStr(aList3[oList3:nAt,9], 7, 2) + "/" + SubStr(aList3[oList3:nAt,9], 5, 2) + "/" + SubStr(aList3[oList3:nAt,9],1,4)}}
 	oList3:Refresh()
 
 	oComb2:Select(1)
@@ -443,7 +439,8 @@ Static Function selecProd(nLinha)
 		aList3[oList3:nAt,3],;
 		aList3[oList3:nAt,4],;
 		aList3[oList3:nAt,5],;
-		aList3[oList3:nAt,6]}}
+		aList3[oList3:nAt,6],;
+		SubStr(aList3[oList3:nAt,9], 7, 2) + "/" + SubStr(aList3[oList3:nAt,9], 5, 2) + "/" + SubStr(aList3[oList3:nAt,9],1,4)}}
 	oList3:Refresh()
 
 	qtdTot()
@@ -481,7 +478,8 @@ Static Function marcaTodos()
 		aList3[oList3:nAt,3],;
 		aList3[oList3:nAt,4],;
 		aList3[oList3:nAt,5],;
-		aList3[oList3:nAt,6]}}
+		aList3[oList3:nAt,6],;
+		SubStr(aList3[oList3:nAt,9], 7, 2) + "/" + SubStr(aList3[oList3:nAt,9], 5, 2) + "/" + SubStr(aList3[oList3:nAt,9],1,4)}}
 	oList3:Refresh()
 
 	qtdTot()
@@ -522,7 +520,8 @@ Static Function filtraLista()
 		aList3[oList3:nAt,3],;
 		aList3[oList3:nAt,4],;
 		aList3[oList3:nAt,5],;
-		aList3[oList3:nAt,6]}}
+		aList3[oList3:nAt,6],;
+		SubStr(aList3[oList3:nAt,9], 7, 2) + "/" + SubStr(aList3[oList3:nAt,9], 5, 2) + "/" + SubStr(aList3[oList3:nAt,9],1,4)}}
 	oList3:Refresh()
 
 	qtdTot()
@@ -782,7 +781,7 @@ Static Function tipoDeMala()
 	DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
 
 	While !EOF()
-		Aadd(aAux, { .T., AllTrim(TRB->B1_COD), AllTrim(TRB->B1_DESC), 1, TRB->B2_QATU, 000000, "",TRB->B1_LOCPAD})
+		Aadd(aAux, { .T., AllTrim(TRB->B1_COD), AllTrim(TRB->B1_DESC), 1, TRB->B2_QATU, 000000, "",TRB->B1_LOCPAD,""})
 		DBSKIP()
 	End
 
@@ -805,7 +804,8 @@ Static Function tipoDeMala()
 		aList3[oList3:nAt,3],;
 		aList3[oList3:nAt,4],;
 		aList3[oList3:nAt,5],;
-		aList3[oList3:nAt,6]}}
+		aList3[oList3:nAt,6],;
+		SubStr(aList3[oList3:nAt,9], 7, 2) + "/" + SubStr(aList3[oList3:nAt,9], 5, 2) + "/" + SubStr(aList3[oList3:nAt,9],1,4)}}
 	oList3:Refresh()
 
 	qtdTot()
