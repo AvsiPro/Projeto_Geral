@@ -120,7 +120,7 @@ Return _bRet
  
 Static Function ConfZZY(_nPos, aDadosZZY, _bRet)
 
-If _nPos > 0 
+If _nPos > 0 .And. len(aDadosZZY) > 0
     cCodigo := aDadosZZY[_nPos,1]
     
     aCols[n,nPosProd] := cCodigo
@@ -132,6 +132,8 @@ If _nPos > 0
     _bRet := .T.
     
     oDlgZZY:End()
+else
+    MsgAlert("Não há dados")
 EndIf 
 
 Return
