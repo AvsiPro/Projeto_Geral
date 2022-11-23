@@ -135,37 +135,20 @@ User Function ROBFAT07()
 	oDlg1:Activate( ,,, .T. )
 
 	if nOpc == 1
-		/*for nX := 1 to len(aList1)
-			if aList1[nX,1]
-				Aadd(aRet, aList1[nX])
-			endif
-		next*/
+		
+		aPergs := {}
+		aPefil := {}
 
-/*
-		for nX := 1 to len(aList2)
-			if aList2[nX,1]
-				Aadd(aRet, aList2[nX])
-			endif
-		next
+		aAdd(aPergs,{2,"Filial do pedido?","3", {"1=0101","2=0102","3=0103"},80,'',.T.})
 
-		for nX := 1 to len(aList3B)
-			if aList3B[nX,1]
-				Aadd(aRet, aList3B[nX])
-			endif
-		next
+		If !ParamBox(aPergs ,"Parametros ",aPefil)
+			cCodFil := '0103'
+		Else
+			cCodFil := aPefil[1]
+		EndIf
 
 		BEGIN TRANSACTION
-			for nX := 1 to nQtdNotas
-				Processa({|| geraPV(aRet)}, "Gerando Pedido de Venda Nº" + CValToChar(nX) + "...")
-				// Processa({|| geraPDEeDE(aRet)}, "Gerando Pré-Documento de Entrada e Documento de Entrada " + CValToChar(nX) + "...")
-			Next
-		END TRANSACTION
-
-		if !lRet
-			MsgAlert("Pedido não concluído!", "Erro!")
-		endif
-		*/
-		BEGIN TRANSACTION
+		
 		for nX := 1 to len(aList2)
 			if aList2[nX,1]
 				aRet := {}
@@ -190,18 +173,19 @@ User Function ROBFAT07()
 					For nCont := 2 to len(aRet)
 						Aadd(aAuxItm,aRet[nCont])
 						If mod(len(aAuxItm),480) == 0
-							Processa({|| geraPV(aCabitm,aAuxItm)}, "Gerando Pedido de Venda Nº" + CValToChar(nCont-1) + " Vendedor "+aList2[nX,03]+"...")
+							Processa({|| geraPV(aCabitm,aAuxItm,cCodFil)}, "Gerando Pedido de Venda Nº" + CValToChar(nCont-1) + " Vendedor "+aList2[nX,03]+"...")
 							aAuxItm := {}
 						EndIf 
 					Next nCont
 
 					If len(aAuxItm) > 0
-						Processa({|| geraPV(aCabitm,aAuxItm)}, "Gerando Ultimo Pedido de Venda Vendedor "+aList2[nX,03]+"...")
+						Processa({|| geraPV(aCabitm,aAuxItm,cCodFil)}, "Gerando Ultimo Pedido de Venda Vendedor "+aList2[nX,03]+"...")
 						aAuxItm := {}
 					EndIf 
 				EndIf 
 			endif
 		next nX 
+
 		END TRANSACTION
 
 		If !Empty(cPedGer)
@@ -823,7 +807,7 @@ Return
 	(examples)
 	@see (links_or_references)
 /*/
-Static Function geraPV(aRet,aItQb)
+Static Function geraPV(aRet,aItQb,cFilGer)
 
 	Local aArea     :=    GetArea()
 	Local aCabec    :=    {}
@@ -849,21 +833,7 @@ Static Function geraPV(aRet,aItQb)
 	aadd(aCabec, { "C5_VEND1"   ,"000059"   ,Nil })
 	aadd(aCabec, { "C5_XCLASPV" ,"3"        ,Nil })
 
-	//cValid := SubStr(aRet[nPos,2], 1, 2)
-
-	/*if nnXG1 != 0
-		nnXG1 := nnXG1 - 3
-	endif*/
-
 	FOR nPos := 1 to len(aItQb)
-
-		/*nPos := nnXG1 + nX
-
-		if nPos > len(aRet) .OR. cValid != SubStr(aRet[nPos,2], 1, 2)
-			if cValid != "MA"
-				EXIT
-			endif
-		endif*/
 
 		aLinha := {}
 
@@ -878,11 +848,7 @@ Static Function geraPV(aRet,aItQb)
 		cItem := Soma1(cItem)
 		aadd(aItens, aLinha)
 
-		//cValid := SubStr(aRet[nnXG1 + nX,2], 1, 2)
-
 	NEXT nPos
-
-	//nnXG1 += nX
 
 	lMsErroAuto := .F.
 
