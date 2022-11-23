@@ -27,7 +27,7 @@ USER FUNCTION Z08Tela()
     oBrowse:AddLegend( "Z08->Z08_MSBLQL =  '1'", "RED",    "Bloqueado" )
      
     //Filtrando
-    //oBrowse:SetFilterDefault("Z08->Z08_CODIGO >= '000000' .And. Z08->Z08_CODIGO <= 'ZZZZZZ'")
+    oBrowse:SetFilterDefault("Z08->Z08_SEQUEN = '01'")
      
     //Ativa a Browse
     oBrowse:Activate()
@@ -45,7 +45,7 @@ STATIC FUNCTION MenuDef()
     ADD OPTION aRot TITLE 'Legenda'    ACTION 'U_Z08Leg'        OPERATION 6                      ACCESS 0 //OPERATION X
     ADD OPTION aRot TITLE 'Incluir'    ACTION 'U_CONOPC05'        OPERATION MODEL_OPERATION_INSERT ACCESS 0 //OPERATION 3
     ADD OPTION aRot TITLE 'Alterar'    ACTION 'VIEWDEF.Z08Tela' OPERATION MODEL_OPERATION_UPDATE ACCESS 0 //OPERATION 4
-    ADD OPTION aRot TITLE 'Excluir'    ACTION 'VIEWDEF.Z08Tela' OPERATION MODEL_OPERATION_DELETE ACCESS 0 //OPERATION 5
+    ADD OPTION aRot TITLE 'Excluir'    ACTION 'U_Z08EXC(Z08->Z08_COD)' OPERATION MODEL_OPERATION_DELETE ACCESS 0 //OPERATION 5
  
 RETURN aRot
 
@@ -133,3 +133,26 @@ USER FUNCTION Z08Leg()
      
     // BrwLegenda(cTitulo, "Status", aLegenda)
 RETURN
+
+USER FUNCTION Z08EXC(CCOD)
+
+Local aArea :=  GetArea()
+Local lRet  :=  .F.
+
+DbSelectArea("Z08")
+DbSetOrder(1)
+While !EOF() .AND. Z08->Z08_COD == CCOD 
+    Reclock("Z08",.F.)
+    DBDelete()
+    Z08->(MsUnlock())
+    lRet := .T.
+    Dbskip()
+EndDo 
+
+If lRet 
+    MsgAlert("Registro deletado com sucesso!!!")
+EndIf 
+
+RestArea(aArea)
+
+RETURN 
