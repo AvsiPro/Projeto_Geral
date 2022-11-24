@@ -77,7 +77,7 @@ User Function ROBRCM06()
     if Select("SM0") == 0
         
         RpcSetType(3)
-        RpcSetEnv('01', '0101')
+        RpcSetEnv('01', '0103')
 
     endif
 
@@ -92,9 +92,10 @@ User Function ROBRCM06()
     oExcel := FWMSEXCEL():New()
 
     cQuery := " "
-    cQuery += " SELECT DISTINCT C5_NUM,C5_CLIENTE,C5_VEND1,A3_NOME,C5_EMISSAO,C5_NOTA FROM " + RetSQLName("SC5") + " SC5 "
+    cQuery += " SELECT DISTINCT C5_FILIAL,C5_NUM,C5_CLIENTE,A1_NOME,C5_VEND1,A3_NOME,C5_EMISSAO,C5_NOTA FROM " + RetSQLName("SC5") + " SC5 "
     cQuery += " INNER JOIN " + RetSQLName("SC6") + " SC6 ON C5_NUM = C6_NUM AND C5_FILIAL = C6_FILIAL "
     cQuery += " INNER JOIN " + RetSQLName("SA3") + " SA3 ON A3_COD = C5_VEND1 AND A3_FILIAL = '" + xFilial("SA3") + "' "
+    cQuery += " INNER JOIN " + RetSQLName("SA1") + " SA1 ON A1_COD = C5_CLIENTE AND A1_FILIAL = '" + xFilial("SA1") + "' "
     cQuery += " WHERE C6_TES IN (" + aParams[7] + ") "
     cQuery += " AND C5_EMISSAO BETWEEN " + aParams[1] + " AND " + aParams[2] + " "
     cQuery += " AND C5_VEND1 BETWEEN " + aParams[3] + " AND " + aParams[4] + " "
@@ -126,7 +127,7 @@ User Function ROBRCM06()
 
         endif
 
-        Aadd(aAux1, {TRB->C5_NUM,TRB->C5_CLIENTE,TRB->C5_VEND1,TRB->A3_NOME, SubStr(TRB->C5_EMISSAO, 7, 2) + "/" + SubStr(TRB->C5_EMISSAO, 5, 2) + "/" + SubStr(TRB->C5_EMISSAO,1,4),cNota})
+        Aadd(aAux1, {TRB->C5_FILIAL,TRB->C5_NUM,TRB->C5_CLIENTE,TRB->A1_NOME,TRB->C5_VEND1,TRB->A3_NOME, SubStr(TRB->C5_EMISSAO, 7, 2) + "/" + SubStr(TRB->C5_EMISSAO, 5, 2) + "/" + SubStr(TRB->C5_EMISSAO,1,4),cNota})
 
         DBSKIP()
 
@@ -159,7 +160,7 @@ User Function ROBRCM06()
         
         While !EOF()
 
-            Aadd(aAux2[nX], {TRB->C6_ITEM,TRB->C6_PRODUTO,TRB->C6_DESCRI,TRB->C6_QTDVEN,TRB->C6_PRCVEN,TRB->C6_VALOR})
+            Aadd(aAux2[nX], {TRB->C6_ITEM,TRB->C6_PRODUTO,TRB->C6_DESCRI,TRB->C6_QTDVEN,TRB->C6_PRCVEN,TRB->C6_VALOR, "",""})
 
             DBSKIP()
 
@@ -176,28 +177,30 @@ User Function ROBRCM06()
     oExcel:AddColumn(cNome,cTabela,"" ,1,1)
     oExcel:AddColumn(cNome,cTabela,"" ,1,1)
     oExcel:AddColumn(cNome,cTabela,"" ,1,1)
+    oExcel:AddColumn(cNome,cTabela,"" ,1,1)
+    oExcel:AddColumn(cNome,cTabela,"" ,1,1)
 
     for nX := 1 to len(aAux1)
 
-        oExcel:AddRow(cNome, cTabela, {"Numero do PV","COD Cliente","COD Vendedor","Nome Vendedor","Data de Emissao","Nota"})
+        oExcel:AddRow(cNome, cTabela, {"Filial","Numero do PV","COD Cliente","Nome Cliente","COD Vendedor","Nome Vendedor","Data de Emissao","Nota"})
 
         //Aadd(aAux1, {TRB->C5_NUM,TRB->C5_CLIENTE,TRB->C5_VEND1,TRB->A3_NOME,TRB->C5_EMISSAO,TRB->C5_NOTA})
-        oExcel:AddRow(cNome, cTabela, {aAux1[nX,1],aAux1[nX,2],aAux1[nX,3],aAux1[nX,4],aAux1[nX,5],aAux1[nX,6]})
+        oExcel:AddRow(cNome, cTabela, {aAux1[nX,1],aAux1[nX,2],aAux1[nX,3],aAux1[nX,4],aAux1[nX,5],aAux1[nX,6],aAux1[nX,7],aAux1[nX,8]})
         
-        oExcel:AddRow(cNome, cTabela, {"","","","","",""})
+        oExcel:AddRow(cNome, cTabela, {"","","","","","","",""})
 
-        oExcel:AddRow(cNome, cTabela, {"N Item","COD Produto","Descricao","Quantidade","Preco Unit","Valor Total"})
+        oExcel:AddRow(cNome, cTabela, {"N Item","COD Produto","Descricao","Quantidade","Preco Unit","Valor Total", "",""})
 
         for nY := 1 to len(aAux2[nX])
             
             //Aadd(aAux2[nX], {TRB->C6_ITEM,TRB->C6_PRODUTO,TRB->C6_DESCRI,TRB->C6_QTDVEN,TRB->C6_PRCVEN,TRB->C6_VALOR})
-            oExcel:AddRow(cNome, cTabela, {aAux2[nX,nY,1],aAux2[nX,nY,2],aAux2[nX,nY,3],aAux2[nX,nY,4],aAux2[nX,nY,5],aAux2[nX,nY,6]})
+            oExcel:AddRow(cNome, cTabela, {aAux2[nX,nY,1],aAux2[nX,nY,2],aAux2[nX,nY,3],aAux2[nX,nY,4],aAux2[nX,nY,5],aAux2[nX,nY,6],"",""})
 
         next
 
-        oExcel:AddRow(cNome, cTabela, {"","","","","",""})
-        oExcel:AddRow(cNome, cTabela, {"--","--","--","--","--","--"})
-        oExcel:AddRow(cNome, cTabela, {"","","","","",""})
+        oExcel:AddRow(cNome, cTabela, {"","","","","","","",""})
+        oExcel:AddRow(cNome, cTabela, {"--","--","--","--","--","--","--","--"})
+        oExcel:AddRow(cNome, cTabela, {"","","","","","","",""})
 
     next
 

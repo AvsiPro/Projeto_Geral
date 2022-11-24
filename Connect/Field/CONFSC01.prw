@@ -113,7 +113,7 @@ aQtdH := {'Numero_Contrato',;
 			'Renovacao'}
  
 aAdd( aPergs ,{1,"Data de Faturamento : ",cCond,"@!",'.T.',"SE4",'.T.',40,.F.})  
-aAdd( aPergs ,{1,"Perํodo Faturamento 'MMAA' : ",cPeri,"9999",'.T.',"",'.T.',40,.F.})  
+aAdd( aPergs ,{1,"Perํodo Faturamento 'MMAA' : ",cPeri,"@E 9999",'.T.',"",'.T.',40,.F.})  
         
 If !ParamBox(aPergs ,"Parametros ",aRet)
 	Return
@@ -143,9 +143,8 @@ oGrp1      := TGroup():New( 002,004,336,710,"",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F.
 		oSay5      := TSay():New( 056,012,{||"Contrato"},oGrp2,,oFont2,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
 		oSay6      := TSay():New( 056,052,{||"oSay6"},oGrp2,,oFont3,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,392,008)
 	
-								//076,008,232,128
 	oGrp3      := TGroup():New( 076,008,332,170,"Contratos",oGrp1,CLR_BLACK,CLR_WHITE,.T.,.F. )
-									//084,010,115,135
+
 		oList 	   := TCBrowse():New(084,010,158,245,, {'','Contrato','Vlr Faturamento'},{5,30,40},;
 	                            oGrp3,,,,{|| FHelp(oList:nAt)},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
 		oList:SetArray(aList)
@@ -155,9 +154,8 @@ oGrp1      := TGroup():New( 002,004,336,710,"",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F.
     //
 	//oTBitmap := TBitmap():New(220,010,110,010,,"\_AMC\Legendas.bmp",.T.,oGrp3, {||alert('teste')},,.F.,.F.,,,.F.,,.T.,,.F.)
 								
-								//076,132,232,321
 	oGrp4      := TGroup():New( 076,172,232,466,"Ativos",oGrp1,CLR_BLACK,CLR_WHITE,.T.,.F. )
-									//084,134,185,145
+
 		oList2 	   := TCBrowse():New(084,174,290,145,, {'Ativo','Modelo','Vlr Loca็ใo','Qtd. Min.','Valor Min.','Qtd.Total','Vlr.Fat.'},{30,40,40,40,40,40,40},;
 	                            oGrp4,,,,{|| FHelp3(oList2:nAt)},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
 	
@@ -169,7 +167,6 @@ oGrp1      := TGroup():New( 002,004,336,710,"",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F.
 							 If(aList2[oList2:nAt,08]>0,Transform(aList2[oList2:nAt,08],"@E 999,999,999.99"),'S/ Vlr.Min.'),;
 							 If(aList2[oList2:nAt,09]>0,Transform(aList2[oList2:nAt,09],"@E 999,999,999.99"),'S/Qtd'),;
 							 If(aList2[oList2:nAt,10]>0,Transform(aList2[oList2:nAt,10],"@E 999,999,999.99"),'S/Vlr')}}
-
 	
 	oGrp7      := TGroup():New( 232,172,332,466,"Consumo",oGrp1,CLR_BLACK,CLR_WHITE,.T.,.F. )
 	
@@ -182,11 +179,9 @@ oGrp1      := TGroup():New( 002,004,336,710,"",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F.
 							 Alltrim(aList5[oList5:nAt,03]),;
 		 					 If(aList5[oList5:nAt,04]>0,Transform(aList5[oList5:nAt,04],"@E 999,999,999.99"),'Sem Consumo'),;
 							 STOD(aList5[oList5:nAt,05])}}
-	
 
-								//076,325,232,456
 	oGrp5      := TGroup():New( 076,470,202,708,"Faturamento",oGrp1,CLR_BLACK,CLR_WHITE,.T.,.F. )
-									//084,327,125,145
+
 		oList3 	   := TCBrowse():New(084,472,232,115,, {'Pedido','Emissใo','Vlr Faturamento'},{30,40,40},;
 	                            oGrp5,,,,{|| FHelp2(oList3:nAt)},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
 		oList3:SetArray(aList3)
@@ -194,9 +189,8 @@ oGrp1      := TGroup():New( 002,004,336,710,"",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F.
 							 aList3[oList3:nAt,02],;
 		 					 Transform(aList3[oList3:nAt,03],"@E 999,999,999.99")}}
 	
-								//076,460,232,612
 	oGrp6      := TGroup():New( 200,470,332,708,"Itens Faturados",oGrp1,CLR_BLACK,CLR_WHITE,.T.,.F. )
-									//084,462,145,145
+
 		oList4 	   := TCBrowse():New(208,472,232,120,, {'Nota','Produto','Vlr'},{30,50,30},;
 	                            oGrp6,,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,) 
 		oList4:SetArray(aList4)
@@ -204,7 +198,6 @@ oGrp1      := TGroup():New( 002,004,336,710,"",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F.
 							 aList4[oList4:nAt,02],;
 		 					 Transform(aList4[oList4:nAt,03],"@E 999,999,999.99")}}
 
-							//345
 oBtn1      := TButton():New( 055,640,"Sair",oDlg1,{||oDlg1:end()},037,012,,,,.T.,,"",,,,.F. )
 
 //Bot๕es diversos
@@ -251,12 +244,11 @@ Return
 
 Static Function Busca(cCond)
 
-Local aArea	:=	GetArea()
+Local aArea		:=	GetArea()
 Local cQuery   
-Local nPos1	:=	0
-//Local nPos2	:=	0
-Local nPos3	:=	0           
-Local aAux3	:=	{} 
+Local nPos1		:=	0
+Local nPos3		:=	0           
+Local aAux3		:=	{} 
 Local nNewVlr	:=	0
 Local nDiasMs	:=	day(lastday(ddatabase))
 Local nCont 
@@ -331,14 +323,25 @@ While !EOF()
     EndIf
     //Preenche o array do primeiro grid
     If nPos1 == 0
-        //(TRB->AAN_QUANT*TRB->AAN_VLRUNI)
-    	Aadd(aList,{TRB->AAN_CONTRT,nNewVlr,TRB->AAM_CODCLI,TRB->AAM_LOJA,;
+    	Aadd(aList,{TRB->AAN_CONTRT,;
+					nNewVlr,;
+					TRB->AAM_CODCLI,;
+					TRB->AAM_LOJA,;
     				Alltrim(TRB->A1_NOME)+" / "+Alltrim(TRB->A1_NREDUZ),;
-					Alltrim(TRB->A1_END),Alltrim(TRB->A1_BAIRRO),;
-					Alltrim(TRB->A1_MUN),TRB->E4_COND,TRB->E4_DESCRI,;
-    				STOD(TRB->AAM_INIVIG),STOD(TRB->AAM_FIMVIG),TRB->A1_EMAIL,;
-					TRB->AAM_XINIMU,TRB->AAM_XPRAZO,TRB->AAM_XPERCT,;
-					TRB->AAM_XRENOV,0,TRB->AAN_FILIAL})
+					Alltrim(TRB->A1_END),;
+					Alltrim(TRB->A1_BAIRRO),;
+					Alltrim(TRB->A1_MUN),;
+					TRB->E4_COND,;
+					TRB->E4_DESCRI,;
+    				STOD(TRB->AAM_INIVIG),;
+					STOD(TRB->AAM_FIMVIG),;
+					TRB->A1_EMAIL,;
+					TRB->AAM_XINIMU,;
+					TRB->AAM_XPRAZO,;
+					TRB->AAM_XPERCT,;
+					TRB->AAM_XRENOV,;
+					0,;
+					TRB->AAN_FILIAL})
     Else
     	//Soma todos os itens do contrato para pegar o valor total.
     	aList[nPos1,02] += nNewVlr //(TRB->AAN_QUANT*TRB->AAN_VLRUNI)
@@ -357,7 +360,10 @@ While !EOF()
 
     //Itens referente aos pedidos faturados para o contrato.
     If nPos3 == 0
-	    Aadd(aAux3,{TRB->AAN_CONTRT,TRB->AAM_CODCLI,TRB->AAM_LOJA,TRB->AAN_FILIAL})
+	    Aadd(aAux3,{TRB->AAN_CONTRT,;
+					TRB->AAM_CODCLI,;
+					TRB->AAM_LOJA,;
+					TRB->AAN_FILIAL})
 	EndIf
 
 	If Ascan(aList5b,{|x| Alltrim(x[1])+Alltrim(x[2]) == Alltrim(TRB->AAN_CONTRT)+Alltrim(TRB->AAN_XCBASE)}) == 0
@@ -393,12 +399,26 @@ For nCont := 1 to len(aAux3)
 	
 	While !EOF() 
 		If Ascan(aList3b,{|x| x[1] == TRB->C6_NUM}) == 0
-			Aadd(aList3b,{TRB->C6_NUM,stod(TRB->C5_EMISSAO),TRB->C6_VALOR,TRB->C6_NOTA,aAux3[nCont,01],aAux3[nCont,02],aAux3[nCont,03],TRB->C6_FILIAL+Alltrim(TRB->C6_SERIE)})
+			Aadd(aList3b,{TRB->C6_NUM,;
+						stod(TRB->C5_EMISSAO),;
+						TRB->C6_VALOR,;
+						TRB->C6_NOTA,;
+						aAux3[nCont,01],;
+						aAux3[nCont,02],;
+						aAux3[nCont,03],;
+						TRB->C6_FILIAL+Alltrim(TRB->C6_SERIE)})
 		Else
 			aList3b[Ascan(aList3b,{|x| x[1] == TRB->C6_NUM}),03] += TRB->C6_VALOR
 		EndIF
-	    Aadd(aList4b,{TRB->C6_NOTA,substr(TRB->C6_DESCRI,1,20),TRB->C6_VALOR,TRB->C6_NUM,TRB->C6_ITEM,;
-	    				aAux3[nCont,01],aAux3[nCont,02],aAux3[nCont,03],TRB->C6_QTDVEN})
+	    Aadd(aList4b,{	TRB->C6_NOTA,;
+						substr(TRB->C6_DESCRI,1,20),;
+						TRB->C6_VALOR,;
+						TRB->C6_NUM,;
+						TRB->C6_ITEM,;
+	    				aAux3[nCont,01],;
+						aAux3[nCont,02],;
+						aAux3[nCont,03],;
+						TRB->C6_QTDVEN})
 		DbSkip()
 	EndDo
 	
@@ -452,8 +472,6 @@ For nCont := 1 to len(aList5b)
 		EndIf
 		Dbskip()
 	EndDo 
-
-	 
 
 Next nCont
 
@@ -557,12 +575,12 @@ EndIf
     
 oList2:SetArray(aList2)
 oList2:bLine := {||{ Alltrim(aList2[oList2:nAt,01]),;
-							 Alltrim(aList2[oList2:nAt,02]),;
-		 					 If(aList2[oList2:nAt,03]>1,Transform(aList2[oList2:nAt,03],"@E 999,999,999.99"),'Isento'),;
-							 If(aList2[oList2:nAt,07]>0,Transform(aList2[oList2:nAt,07],"@E 999,999,999.99"),'S/ Min.Qtd.'),;
-							 If(aList2[oList2:nAt,08]>0,Transform(aList2[oList2:nAt,08],"@E 999,999,999.99"),'S/ Vlr.Min.'),;
-							 If(aList2[oList2:nAt,09]>0,Transform(aList2[oList2:nAt,09],"@E 999,999,999.99"),'Sem Leitura'),;
-							 If(aList2[oList2:nAt,10]>0,Transform(aList2[oList2:nAt,10],"@E 999,999,999.99"),'Sem Leitura')}}
+					Alltrim(aList2[oList2:nAt,02]),;
+					If(aList2[oList2:nAt,03]>1,Transform(aList2[oList2:nAt,03],"@E 999,999,999.99"),'Isento'),;
+					If(aList2[oList2:nAt,07]>0,Transform(aList2[oList2:nAt,07],"@E 999,999,999.99"),'S/ Min.Qtd.'),;
+					If(aList2[oList2:nAt,08]>0,Transform(aList2[oList2:nAt,08],"@E 999,999,999.99"),'S/ Vlr.Min.'),;
+					If(aList2[oList2:nAt,09]>0,Transform(aList2[oList2:nAt,09],"@E 999,999,999.99"),'Sem Leitura'),;
+					If(aList2[oList2:nAt,10]>0,Transform(aList2[oList2:nAt,10],"@E 999,999,999.99"),'Sem Leitura')}}
 
 oList3:SetArray(aList3)
 oList3:bLine := {||{ Alltrim(aList3[oList3:nAt,01]),;
@@ -1104,18 +1122,8 @@ For nAkacio := 1 to len(aEmail)
 	EndIf
 Next nAkacio
 
-
-//[15:28:02] Jackson: TTMAILN(cFrom,cTo,cSubject,cBody,aAttach,lConfirm,cCC,cBCC)
-//[15:28:16] Jackson: U_TTMAILN('cadastro@toktake.com.br',cDestino,'Nota de Debito',cMsg,aArquivos,.T.)
-
-
-
-//If lGerouNF
-	//MsgAlert("Finalizado, clique em OK para atualiza็ใo da tela","Enviar - CONFSC01")
-	oBoleto:end()
-	oDlg1:end()
-	//U_CONFSC01()
-//EndIF
+oBoleto:end()
+oDlg1:end()
 
 RestArea(aArea)
 
@@ -1164,6 +1172,20 @@ oDlg1:refresh()
 RestArea(aArea)
 
 Return
+/*
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
+ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัอออออออออออออปฑฑ
+ฑฑบPrograma  ณCONFSC01  บAutor  ณMicrosiga           บ Data ณ  09/16/16   บฑฑ
+ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
+ฑฑบDesc.     ณ Gera html de envio do email ao cliente                     บฑฑ
+ฑฑบ          ณ                                                            บฑฑ
+ฑฑฬออออออออออุออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออนฑฑ
+ฑฑบUso       ณ AP                                                         บฑฑ
+ฑฑศออออออออออฯออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออผฑฑ
+ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
+฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿
+*/
 
 Static Function cHtml(ccodbar,nnota)
 
@@ -1284,7 +1306,6 @@ Elseif cFilAnt == "04"
 	cRet += "</table>"
 
 Endif
-
 
 RestArea(aArea)
 

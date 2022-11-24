@@ -163,15 +163,15 @@ oMenu := TMenu():New(0,0,0,0,.T.)
 oTMenuIte1 := TMenuItem():New(oDlg1,"Procurar",,,,{|| procurar()},,,,,,,,,.T.)
 oTMenuIte2 := TMenuItem():New(oDlg1,"Pré-Faturamento",,,,{|| Processa({||PreFat(),"Aguarde"})} ,,,,,,,,,.T.)
 oTMenuIte3 := TMenuItem():New(oDlg1,"Envio NF/Boleto",,,,{|| NFBol()} ,,,,,,,,,.T.)
-oTMenuIte4 := TMenuItem():New(oDlg1,"Fechamento Mensal",,,,{|| Fechamento()} ,,,,,,,,,.T.)
-oTMenuIte5 := TMenuItem():New(oDlg1,"Rescisão Contrato",,,,{|| Rescisao(oList:nAt)} ,,,,,,,,,.T.)
+//oTMenuIte4 := TMenuItem():New(oDlg1,"Fechamento Mensal",,,,{|| Fechamento()} ,,,,,,,,,.T.)
+//oTMenuIte5 := TMenuItem():New(oDlg1,"Rescisão Contrato",,,,{|| Rescisao(oList:nAt)} ,,,,,,,,,.T.)
 
 
 oMenu:Add(oTMenuIte1)
 oMenu:Add(oTMenuIte2)
 oMenu:Add(oTMenuIte3)
-oMenu:Add(oTMenuIte4)
-oMenu:Add(oTMenuIte5)
+//oMenu:Add(oTMenuIte4)
+//oMenu:Add(oTMenuIte5)
 // Cria botão que sera usado no Menu
 oTButton1 := TButton():New( 240, 012, "Opções",oDlg1,{||},40,10,,,.F.,.T.,.F.,,.F.,,,.F. )
 // Define botão no Menu
@@ -204,7 +204,6 @@ Static Function Busca()
 Local aArea	:=	GetArea()
 Local cQuery   
 Local nPos1	:=	0
-Local nPos2	:=	0
 Local nPos3	:=	0           
 Local aAux3	:=	{} 
 Local nNewVlr	:=	0
