@@ -10,7 +10,7 @@ cQuery := "SELECT MAX(B1_COD) AS CODIGO"
 cQuery += " FROM "+RetSQLName("SB1")
 cQuery += " WHERE D_E_L_E_T_=' ' "
 cQuery += " AND SUBSTRING(B1_COD,1,8) = '"+cCod+"'"
-cQuery += " GROUP BY B1_COD"
+cQuery += " GROUP BY SUBSTRING(B1_COD,1,8)"
 
 If Select('TRB') > 0
 	dbSelectArea('TRB')	

@@ -41,11 +41,12 @@ STATIC FUNCTION MenuDef()
     LOCAL aRot    :=    {}
      
     //Adicionando opções
-    ADD OPTION aRot TITLE 'Visualizar' ACTION 'VIEWDEF.Z08Tela' OPERATION MODEL_OPERATION_VIEW   ACCESS 0 //OPERATION 1
-    ADD OPTION aRot TITLE 'Legenda'    ACTION 'U_Z08Leg'        OPERATION 6                      ACCESS 0 //OPERATION X
-    ADD OPTION aRot TITLE 'Incluir'    ACTION 'U_CONOPC05'        OPERATION MODEL_OPERATION_INSERT ACCESS 0 //OPERATION 3
-    ADD OPTION aRot TITLE 'Alterar'    ACTION 'VIEWDEF.Z08Tela' OPERATION MODEL_OPERATION_UPDATE ACCESS 0 //OPERATION 4
+    ADD OPTION aRot TITLE 'Visualizar' ACTION 'VIEWDEF.Z08Tela'        OPERATION MODEL_OPERATION_VIEW   ACCESS 0 //OPERATION 1
+    ADD OPTION aRot TITLE 'Legenda'    ACTION 'U_Z08Leg'               OPERATION 6                      ACCESS 0 //OPERATION X
+    ADD OPTION aRot TITLE 'Incluir'    ACTION 'U_CONOPC05'             OPERATION MODEL_OPERATION_INSERT ACCESS 0 //OPERATION 3
+    ADD OPTION aRot TITLE 'Alterar'    ACTION 'VIEWDEF.Z08Tela'        OPERATION MODEL_OPERATION_UPDATE ACCESS 0 //OPERATION 4
     ADD OPTION aRot TITLE 'Excluir'    ACTION 'U_Z08EXC(Z08->Z08_COD)' OPERATION MODEL_OPERATION_DELETE ACCESS 0 //OPERATION 5
+    ADD OPTION aRot TITLE 'Importar'   ACTION 'U_Z08IMP()'             OPERATION MODEL_OPERATION_DELETE ACCESS 0 //OPERATION 5
  
 RETURN aRot
 
@@ -156,3 +157,85 @@ EndIf
 RestArea(aArea)
 
 RETURN 
+
+// Z08_COD,Z08_SEQUENCIA,Z08_NUMSER,Z08_DATA,Z08_SELECA,Z08_PRODUT,Z08_CONTRT,Z08_ITEM,Z08_QTDLID,Z08_VLRLID,Z08_DTDIGI,Z08_PERIOD,Z08_MAQUIN,Z08_CODCLI,Z08_LOJACL,Z08_NOME,Z08_CLIPAG
+User Function Z08IMP()
+    
+    Local aPerg  := {}
+    Local cSeq   := '01'
+    Local nHandle  
+    Local nLast
+    Local cLine
+    Local nRecno
+
+    aAdd(aPerg,{6,"Buscar arquivo",Space(50),"","","",50,.T.,"Arquivos compativeis (*.csv*) |*.csv*"})
+    
+    If ParamBox(aPerg, "Informe o arquivo desejado!")
+        
+        cHandle  := MV_PAR01
+
+    else
+        MsgAlert("Operacao abortada!", "Saida!")
+        RETURN
+    ENDIF
+
+    nHandle := FT_FUSE(cHandle)
+
+    // Se houver erro de abertura abandona processamento
+    if nHandle = -1
+        return
+    endif
+
+    // Posiciona na primeria linha
+    FT_FGoTop()
+
+    // Retorna o número de linhas do arquivo
+    nLast := FT_FLastRec()
+
+    MsgAlert( nLast )
+
+    While !FT_FEOF()
+
+        nRecno := FT_FRecno()
+
+        if nRecno == 1
+            FT_FSKIP()
+            nRecno := FT_FRecno()
+        endif
+
+        cCod := GetSxeNum("Z08", "Z08_COD")
+
+        cLine  := FT_FReadLn()
+
+        aAux := Separa(cLine,';',.T.) 
+
+        RecLock("Z08", .T.)
+            Z08->Z08_COD       := cCod
+            Z08->Z08_SEQUENCIA := cSeq
+            Z08->Z08_NUMSER    := aAux[1]
+            Z08->Z08_DATA      := aAux[2]
+            Z08->Z08_SELECA    := aAux[3]
+            Z08->Z08_PRODUT    := aAux[4]
+            Z08->Z08_CONTRT    := aAux[5]
+            Z08->Z08_ITEM      := aAux[6]
+            Z08->Z08_QTDLID    := aAux[7]
+            Z08->Z08_VLRLID    := aAux[8]
+            Z08->Z08_DTDIGI    := cData
+            Z08->Z08_PERIOD    := SubStr(aAux[2], 5, 2) + SubStr(aAux[2], 3, 2)
+            Z08->Z08_MAQUIN    := aAux[9]
+            Z08->Z08_CODCLI    := aAux[10]
+            Z08->Z08_LOJACL    := aAux[11]
+            Z08->Z08_NOME      := cNome
+            Z08->Z08_CLIPAG    := aAux[12]
+        MsUnlock()
+
+        cSeq := Soma1(cSeq)
+
+        // Pula para próxima linha
+        FT_FSKIP()
+
+    End
+    // Fecha o Arquivo
+    FT_FUSE()
+
+Return 
