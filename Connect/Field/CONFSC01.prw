@@ -37,6 +37,7 @@ User Function CONFSC01
 Local aPergs	:=	{}
 Local aRet		:=	{}             
 Local cCond		:=	space(3)
+Local nCont 
 
 Private cPeri		:=	space(4)
 
@@ -159,8 +160,10 @@ oGrp1      := TGroup():New( 002,004,336,710,"",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F.
 								
 	oGrp4      := TGroup():New( 076,172,202,516,"Ativos",oGrp1,CLR_BLACK,CLR_WHITE,.T.,.F. )
 
-		oList2 	   := TCBrowse():New(084,174,337,115,, {'Ativo','Modelo','Vlr Locação','Qtd. Min.','Valor Min.','Qtd.Total','Vlr.Fat.'},{30,40,40,40,40,40,40},;
-	                            oGrp4,,,,{|| FHelp3(oList2:nAt,oList:nAt)},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
+		oList2 	   := TCBrowse():New(084,174,337,115,,;
+		{'Ativo','Modelo','Vlr Locação','Qtd. Min.','Valor Min.','Qtd.Total','Vlr.Fat.','Vlr.Compl.'},;
+		{30,40,40,40,40,40,40,40},;
+	            oGrp4,,,,{|| FHelp3(oList2:nAt,oList:nAt)},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
 	
 		oList2:SetArray(aList2)
 		oList2:bLine := {||{ Alltrim(aList2[oList2:nAt,01]),;
@@ -169,7 +172,8 @@ oGrp1      := TGroup():New( 002,004,336,710,"",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F.
 							 If(aList2[oList2:nAt,07]>0,Transform(aList2[oList2:nAt,07],"@E 999,999,999.99"),'S/ Min.Qtd.'),;
 							 If(aList2[oList2:nAt,08]>0,Transform(aList2[oList2:nAt,08],"@E 999,999,999.99"),'S/ Vlr.Min.'),;
 							 If(aList2[oList2:nAt,09]>0,Transform(aList2[oList2:nAt,09],"@E 999,999,999.99"),'S/Qtd'),;
-							 If(aList2[oList2:nAt,10]>0,Transform(aList2[oList2:nAt,10],"@E 999,999,999.99"),'S/Vlr')}}
+							 If(aList2[oList2:nAt,10]>0,Transform(aList2[oList2:nAt,10],"@E 999,999,999.99"),'S/Vlr'),;
+							 aList2[oList2:nAt,11]}}
 	
 	oGrp7      := TGroup():New( 202,172,332,708,"Consumo",oGrp1,CLR_BLACK,CLR_WHITE,.T.,.F. )
 										//290 118
@@ -206,16 +210,24 @@ oGrp1      := TGroup():New( 002,004,336,710,"",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F.
 							 aList4[oList4:nAt,02],;
 		 					 Transform(aList4[oList4:nAt,03],"@E 999,999,999.99")}}*/
 
+	For nCont := 1 to len(aList)
+		oList:nAt := nCont
+		Fhelp(nCont)
+	Next nCont
+	
+	oList:nAt := 1
+
 oBtn1      := TButton():New( 055,640,"Sair",oDlg1,{||oDlg1:end()},037,012,,,,.T.,,"",,,,.F. )
 
 //Botões diversos
 oMenu := TMenu():New(0,0,0,0,.T.)
 // Adiciona itens no Menu
 oTMenuIte1 := TMenuItem():New(oDlg1,"Procurar",,,,{|| procurar()},,,,,,,,,.T.)
-oTMenuIte2 := TMenuItem():New(oDlg1,"Pré-Faturamento",,,,{|| Processa({||PreFat(),"Aguarde"})} ,,,,,,,,,.T.)
-oTMenuIte3 := TMenuItem():New(oDlg1,"Envio NF/Boleto",,,,{|| NFBol()} ,,,,,,,,,.T.)
-oTMenuIte4 := TMenuItem():New(oDlg1,"Fechamento Mensal",,,,{|| Fechamento()} ,,,,,,,,,.T.)
-oTMenuIte5 := TMenuItem():New(oDlg1,"Rescisão Contrato",,,,{|| Rescisao(oList:nAt)} ,,,,,,,,,.T.)
+oTMenuIte2 := TMenuItem():New(oDlg1,"Listar-Faturamento",,,,{|| Processa({||PreFat(),"Aguarde"})} ,,,,,,,,,.T.)
+oTMenuIte3 := TMenuItem():New(oDlg1,"Faturar",,,,{|| Processa({||GeraPv(),"Aguarde"})} ,,,,,,,,,.T.)
+oTMenuIte4 := TMenuItem():New(oDlg1,"Envio NF/Boleto",,,,{|| NFBol()} ,,,,,,,,,.T.)
+oTMenuIte5 := TMenuItem():New(oDlg1,"Fechamento Mensal",,,,{|| Fechamento()} ,,,,,,,,,.T.)
+oTMenuIte6 := TMenuItem():New(oDlg1,"Rescisão Contrato",,,,{|| Rescisao(oList:nAt)} ,,,,,,,,,.T.)
 
 
 oMenu:Add(oTMenuIte1)
@@ -223,6 +235,7 @@ oMenu:Add(oTMenuIte2)
 oMenu:Add(oTMenuIte3)
 oMenu:Add(oTMenuIte4)
 oMenu:Add(oTMenuIte5)
+oMenu:Add(oTMenuIte6)
 // Cria botão que sera usado no Menu 345, 012
 oTButton1 := TButton():New( 025, 640, "Opções",oDlg1,{||},40,10,,,.F.,.T.,.F.,,.F.,,,.F. )
 // Define botão no Menu
@@ -366,16 +379,17 @@ While !EOF()
     	aList[nPos1,02] += nNewVlr //(TRB->AAN_QUANT*TRB->AAN_VLRUNI)
     EndIf
     
-    Aadd(aList2b,{	TRB->AAN_XCBASE,;
-					Alltrim(TRB->B1_DESC),;
-					TRB->AAN_VLRUNI,;
-					TRB->AAN_CONTRT,;
-					Stod(TRB->AAN_INICOB),;
-					stod(TRB->AAN_FIMCOB),;
-					TRB->AAN_XMINQT,;
-					TRB->AAN_XVLRMI,;
-					0,;
-					0}) 
+    Aadd(aList2b,{	TRB->AAN_XCBASE,;				//01
+					Alltrim(TRB->B1_DESC),;			//02
+					TRB->AAN_VLRUNI,;				//03
+					TRB->AAN_CONTRT,;				//04
+					Stod(TRB->AAN_INICOB),;			//05
+					stod(TRB->AAN_FIMCOB),;			//06
+					TRB->AAN_XMINQT,;				//07
+					TRB->AAN_XVLRMI,;				//08
+					0,;								//09
+					0,;								//10
+					0}) 							//11
 
     //Itens referente aos pedidos faturados para o contrato.
     If nPos3 == 0
@@ -637,7 +651,7 @@ Next nCont
                              
 If len(aList2) < 1
 	//Nao encontrou Ativos no Contrato
-	Aadd(aList2,{'','',0,'','',''})
+	Aadd(aList2,{'','',0,'','','',0,0,0,0,0})
 EndIf
 
 //PReenche o grid de Pedidos faturados para o contrato
@@ -674,9 +688,10 @@ oList2:bLine := {||{ Alltrim(aList2[oList2:nAt,01]),;
 					If(aList2[oList2:nAt,03]>1,Transform(aList2[oList2:nAt,03],"@E 999,999,999.99"),'Isento'),;
 					If(aList2[oList2:nAt,07]>0,Transform(aList2[oList2:nAt,07],"@E 999,999,999.99"),'S/ Min.Qtd.'),;
 					If(aList2[oList2:nAt,08]>0,Transform(aList2[oList2:nAt,08],"@E 999,999,999.99"),'S/ Vlr.Min.'),;
-					If(aList2[oList2:nAt,09]>0,Transform(aList2[oList2:nAt,09],"@E 999,999,999.99"),'Sem Leitura'),;
-					If(aList2[oList2:nAt,10]>0,Transform(aList2[oList2:nAt,10],"@E 999,999,999.99"),'Sem Leitura')}}
-
+					If(aList2[oList2:nAt,09]>0,Transform(aList2[oList2:nAt,09],"@E 999,999,999.99"),'S/Qtd'),;
+					If(aList2[oList2:nAt,10]>0,Transform(aList2[oList2:nAt,10],"@E 999,999,999.99"),'S/Vlr'),;
+					aList2[oList2:nAt,11]}}
+					
 oList3:SetArray(aList3)
 oList3:bLine := {||{ Alltrim(aList3[oList3:nAt,01]),;
 					 aList3[oList3:nAt,02],;
@@ -775,11 +790,8 @@ EndIF
 
 If !Empty(AAM->AAM_XTIPFA)
 	aTipFa := {'Minino Global','Minimo Unid./Ativo','Sem Minimo'}
-	IF AAM->AAM_XTIPFA == "1"
-		cTexto += " - Faturamento Mensal "
-	Else 
-		cTexto += " - Faturamento Quinzenal "
-	EndIF 
+	AAM->AAM_XTIPFA
+	cTexto += " - "+aTipFa[val(AAM->AAM_XTIPFA)]
 EndIF 
 If !Empty(AAM->AAM_XTIPMI)
 	//1=Quantidade;2=Valor  
@@ -1813,3 +1825,23 @@ EndIf
 fclose(nHdl)
 
 Return lRet
+
+/*/{Protheus.doc} GeraPv()
+	(long_description)
+	@type  Static Function
+	@author user
+	@since date
+	@version version
+	@param param, param_type, param_descr
+	@return return, return_type, return_description
+	@example
+	(examples)
+	@see (links_or_references)
+	/*/
+Static Function GeraPv()
+
+Local aArea :=	GetArea()
+
+RestArea(aArea)
+
+Return
