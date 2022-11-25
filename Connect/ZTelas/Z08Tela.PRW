@@ -3,7 +3,7 @@
 #INCLUDE 'FWMVCDef.ch'
  
 //Variáveis Estáticas
-STATIC cTitulo    :=    "Insercao Manual de Leitura"
+STATIC cTitulo    :=    "Inclusão Manual de Leitura"
  
 USER FUNCTION Z08Tela()
    

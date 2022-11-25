@@ -45,7 +45,11 @@ If aParam <> NIL
                      nPC := aParam[4]
                      
                      If nPC == 1
-                            oObj:ADATAMODEL[nPC][1][1][9] := dDtVenc
+                            If !Empty(dDtVenc)
+                                   oObj:ADATAMODEL[nPC][1][1][9] := dDtVenc
+                            else
+                                   dDtVenc := oObj:ADATAMODEL[nPC][1][1][9]
+                            endif
                      Else
                             oObj:ADATAMODEL[nPC][1][1][9] := MonthSum(dDtVenc,(nPC-1))
                      EndIf                         

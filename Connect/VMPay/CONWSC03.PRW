@@ -46,24 +46,12 @@ IF nPosMaq > 0
         
         //Buscar Planograma da maquina
         //PlanoMaq(aHeader[nPosMaq,01],aHeader[nPosMaq,03],aHeader[nPosMaq,04],nPosMaq)
-        /*
-        aRetorno := aHeader[nPosMaq] 
-        nP := 0       
-        FOR nJ := 1 TO len(aRetorno[4]) step 11  
-            IF nJ+10 > len(aRetorno[4])
-                EXIT
-            ENDIF
-                Aadd(aAuxP,{.F.,cAtivo,aRetorno[4,nJ+3],aRetorno[4,nJ+4],aRetorno[4,nJ+5],aRetorno[4,nJ+6],aRetorno[4,nJ+7],aRetorno[4,nJ+10]})
-            //ENDIF
-        NEXT nJ 
-        */
+        
         aList3 := {}
         aList6 := {}
         
         FOR nJ := 1 TO len(aAuxP)               
-            /*IF !"name:" $ aAuxP[nJ,03] 
-                LOOP
-            ENDIF*/
+            
             If val(aAuxP[nJ,03]) > 0
                 aAux2 := {}
                 Aadd(aAux2,aAuxP[nJ,01])
@@ -75,53 +63,17 @@ IF nPosMaq > 0
                 Aadd(aAux2,aAuxP[nJ,07])
                 Aadd(aAux2,aAuxP[nJ,08])
                 Aadd(aAux2,'')
-                //nPosn := Ascan(aAuxP[nJ],{|x| substr(x,1,3) == "upc"})
-                //aAux1 := strtokarr(aAuxP[nJ,len(aAuxP[nJ])],":")
-                //aAux3 := strtokarr(aAux1[2],"-")
-                /*
-                FOR nK := 3 TO len(aAuxP[nJ])-1
-                    aAux1 := strtokarr(aAuxP[nJ,nK],":")
-                    IF aAux1[1] == 'name' .And. val(aAux1[2]) <= 0 .And. !"_" $ aAux1[2]
-                        LOOP
-                    ENDIF
-                    lValor := IF(aAux1[1]$"desired_price/capacity/par_level/alert_level",.T.,.F.)
-                    Aadd(aAux2,IF(lValor,val(aAux1[2]),aAux1[2]))
-                    IF nK == 3 
-                        cCodProt := Alltrim(aAux3[1]) //cvaltochar(val(Alltrim(aAux3[1])))
-                        cDesc     := Alltrim(Posicione("SB1",1,xFilial("SB1")+cCodProt,"B1_DESC"))
-                        Aadd(aAux2,cCodProt)
-                        Aadd(aAux2,cDesc)
-                    ENDIF
-                NEXT nK
-                */
+            
                 IF len(aAux2) > 7
                     Aadd(aList3,aAux2)
                 ENDIF
             EndIf
         NEXT nJ 
-        /*
-        FOR nJ := 1 TO len(aCanister)
-            aAux1 := strtokarr(aCanister[nJ],":")
-            aCanister[nJ] := aAux1[2]
-        NEXT nJ
-
-        FOR nJ := 1 TO len(aCanister) step 6
-            IF nJ + 5 <= len(aCanister)
-                aAux2 := {}
-                Aadd(aAux2,.F.)
-                Aadd(aAux2,aCanister[nJ])
-                Aadd(aAux2,aCanister[nJ+1])
-                Aadd(aAux2,aCanister[nJ+2])
-                Aadd(aAux2,aCanister[nJ+3])
-                Aadd(aAux2,aCanister[nJ+5])
-                Aadd(aAux2,cvaltochar(val(aCanister[nJ+2])-val(aCanister[nJ+5])))
-                Aadd(aList6,aAux2)
-            ENDIF
-        NEXT nJ
-        */
+        
         IF len(aList3) < 1
             Aadd(aList3,{.T.,'','','','','','','','','','','','','','','','','',''})
         ENDIF
+        
         IF len(aList6) < 1
             Aadd(aList6,{.T.,'','','','','','','','','','','','','','','','','',''})
         ENDIF
@@ -294,11 +246,13 @@ IF oRestClient:Get(aHeader)
     
     For nJ :=  1 to len(aMapa)
         aAxCd := aMapa[nJ]:GetJsonObject('good')
+        aCodPrd := strtokarr(aAxCd:GetJsonText('upc_code_name'),"#")
+
         Aadd(aAux,{,;
             aHeader[nPos,2],;
             aMapa[nJ]:GetJsonText('name'),;
-            aAxCd:GetJsonText('upc_code'),; //aMapa[nJ]:GetJsonText('id'),;
-            aAxCd:GetJsonText('name'),;
+            If(len(aCodPrd)>1,Alltrim(aCodPrd[2]),aAxCd:GetJsonText('upc_code_name')),; //aAxCd:GetJsonText('upc_code'),; //aMapa[nJ]:GetJsonText('id'),;
+            If(len(aCodPrd)>1,Alltrim(aCodPrd[1]),aAxCd:GetJsonText('upc_code_name')),; //aAxCd:GetJsonText('name'),;
             aMapa[nJ]:GetJsonText('planogram_id'),;
             aMapa[nJ]:GetJsonText('good_id'),;
             aMapa[nJ]:GetJsonText('capacity'),;
@@ -307,91 +261,7 @@ IF oRestClient:Get(aHeader)
             aMapa[nJ]:GetJsonText('desired_price'),;
         })
     Next nJ
-    /*
-    cValor    :=    strtran(cValor,"[")
-    cValor    :=    strtran(cValor,"]")
-    cValor    :=    strtran(cValor,'"')
-    
-    aLinhas := strtokarr(cValor,"},{")
-    IF len(aLinhas) > 0
-        //Aadd(aHeader[nPos],substr(aLinhas[1],4))
-        lInicio      :=    .F.
-        lFim         :=    .F.
-        aAux         :=    {}
-        lCanister    :=    .F.
-        
-        FOR nJ := 1 TO len(aLinhas)
-            IF "items:" $ aLinhas[nJ]
-                lInicio := .T.
-            ENDIF
-            
-            IF "type:Canister" $ aLinhas[nJ] .And. !lCanister
-                lCanister := .T.
-                lInicio := .F.
-                //Aadd(aAux,aLinhas[nJ])
-                //nCanister := len(aAux)
-            ENDIF
-            
-            IF lInicio
-                IF "id:" $ substr(aLinhas[nJ],1,3)  //.And. Ascan(aAux,{|x| substr(x,1,3) == substr(aLinhas[nJ],1,3)}) == 0
-                    Aadd(aAux,aLinhas[nJ])    
-                ELSEIF "planogram_id:" $ aLinhas[nJ]
-                    Aadd(aAux,aLinhas[nJ])
-                ELSEIF "good_id:" $ aLinhas[nJ]
-                    Aadd(aAux,aLinhas[nJ])
-                ELSEIF "name:" $ aLinhas[nJ] 
-                    IF val(substr(aLinhas[nJ],6)) > 0 .And. valtype(val(aLinhas[nJ+1])) == "N" .And. val(aLinhas[nJ+1]) > 0
-                        //CORRIGIR AQUI PARA QUANDO FOR MAIS DE 2 MOLAS PARA O MESMO PRODUTO.
-                        lFim := .F.
-                        nPing := nJ
-                        cMolas := Alltrim(aLinhas[nPing])
-                        cBarra := ','                   
-                        nPing++
-                        WHILE !lFim
-                            IF valtype(val(aLinhas[nPing])) == "N" .And. val(aLinhas[nPing]) > 0
-                                cMolas += cBarra + Alltrim(aLinhas[nPing])
-                                nPing++
-                            ELSE
-                                lFim := .T.
-                            ENDIF
-                        ENDDO
-                        //Aadd(aAux,Alltrim(aLinhas[nJ])+","+aLinhas[nJ+1])
-                        Aadd(aAux,cMolas)
-                    ELSE
-                        Aadd(aAux,aLinhas[nJ])
-                    ENDIF
-                ELSEIF "capacity:" $ aLinhas[nJ]
-                    Aadd(aAux,aLinhas[nJ])
-                ELSEIF "par_level:" $ aLinhas[nJ]
-                    Aadd(aAux,aLinhas[nJ])
-                ELSEIF "alert_level:" $ aLinhas[nJ]
-                    Aadd(aAux,aLinhas[nJ])  
-                ELSEIF "desired_price:" $ aLinhas[nJ]
-                    Aadd(aAux,aLinhas[nJ])
-                ENDIF
-            ENDIF    
-            
-            IF lCanister 
-                IF "name:" $ aLinhas[nJ] .And. Ascan(aCanister,{|x| Alltrim(x) == Alltrim(aLinhas[nJ])}) == 0 .And. !"upc_code_name:" $ aLinhas[nJ]  
-                    Aadd(aCanister,aLinhas[nJ])    
-                ELSEIF "capacity:" $ aLinhas[nJ]
-                    Aadd(aCanister,aLinhas[nJ])    
-                ELSEIF "par_level:" $ aLinhas[nJ]
-                    Aadd(aCanister,aLinhas[nJ])    
-                ELSEIF "alert_level:" $ aLinhas[nJ]
-                    Aadd(aCanister,aLinhas[nJ])    
-                ELSEIF "desired_price:" $ aLinhas[nJ]
-                    Aadd(aCanister,aLinhas[nJ])    
-                ELSEIF "current_balance:" $ aLinhas[nJ]
-                    Aadd(aCanister,aLinhas[nJ])    
-                ENDIF
-            ENDIF
-        NEXT nJ
-        //unit_symbol: finaliza
- 
-        Aadd(aHeader[nPos],aAux)
-        
-    ENDIF*/
+
 ENDIF
 
 RETURN(aAux)        
@@ -566,21 +436,7 @@ WHILE nPage > 0
             Aadd(aHeader[nPos],aAux)
             aAux := {}
         Next nX       
-        /*FOR nX := 1 TO len(aLinhas)     
-            IF "occurred_at:" $ aLinhas[nX]
-                Aadd(aAux,stod(strtran(substr(alinhas[nX],13,10),"-")))
-            ELSEIF "coil:" $ aLinhas[nX]
-                Aadd(aAux,substr(aLinhas[nX],6))
-            ELSEIF "quantity:" $ aLinhas[nX]
-                Aadd(aAux,substr(aLinhas[nX],10))
-            ELSEIF "value:" $ aLinhas[nX]
-                Aadd(aAux,substr(aLinhas[nX],7))
-            ELSEIF "upc_code:" $ aLinhas[nX]
-                Aadd(aAux,substr(aLinhas[nX],10))    
-                Aadd(aHeader[nPos],aAux)
-                aAux := {}
-            ENDIF 
-        NEXT nX*/
+        
     ELSE
         nPage := 0
     ENDIF

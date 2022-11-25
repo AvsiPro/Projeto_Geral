@@ -68,7 +68,10 @@ Private oPvg   	:= LoadBitmap(GetResources(),'br_amarelo')
 Private oOk   	:= LoadBitmap(GetResources(),'br_verde')       //Controla se o pedido foi alterado ou nao no grid.
 Private oNo   	:= LoadBitmap(GetResources(),'br_vermelho')    
 
-PREPARE ENVIRONMENT EMPRESA "01" FILIAL "0101" MODULO "FAT" TABLES "AAN"   
+IF Select("SM0") == 0
+    RpcSetType(3)
+    RPCSetEnv("01","0101")
+ENDIF
         
 oFont4:Bold := .T.
  
@@ -141,7 +144,7 @@ oGrp1      := TGroup():New( 002,004,336,710,"",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F.
 		oSay3      := TSay():New( 040,012,{||"Endereço"},oGrp2,,oFont2,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
 		oSay4      := TSay():New( 040,052,{||"oSay4"},oGrp2,,oFont1,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,392,008)
 		oSay5      := TSay():New( 056,012,{||"Contrato"},oGrp2,,oFont2,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
-		oSay6      := TSay():New( 056,052,{||"oSay6"},oGrp2,,oFont3,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,392,008)
+		oSay6      := TSay():New( 056,052,{||"oSay6"},oGrp2,,oFont3,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,552,008)
 	
 	oGrp3      := TGroup():New( 076,008,332,170,"Contratos",oGrp1,CLR_BLACK,CLR_WHITE,.T.,.F. )
 
@@ -154,9 +157,9 @@ oGrp1      := TGroup():New( 002,004,336,710,"",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F.
     //
 	//oTBitmap := TBitmap():New(220,010,110,010,,"\_AMC\Legendas.bmp",.T.,oGrp3, {||alert('teste')},,.F.,.F.,,,.F.,,.T.,,.F.)
 								
-	oGrp4      := TGroup():New( 076,172,232,466,"Ativos",oGrp1,CLR_BLACK,CLR_WHITE,.T.,.F. )
+	oGrp4      := TGroup():New( 076,172,202,516,"Ativos",oGrp1,CLR_BLACK,CLR_WHITE,.T.,.F. )
 
-		oList2 	   := TCBrowse():New(084,174,290,145,, {'Ativo','Modelo','Vlr Locação','Qtd. Min.','Valor Min.','Qtd.Total','Vlr.Fat.'},{30,40,40,40,40,40,40},;
+		oList2 	   := TCBrowse():New(084,174,337,115,, {'Ativo','Modelo','Vlr Locação','Qtd. Min.','Valor Min.','Qtd.Total','Vlr.Fat.'},{30,40,40,40,40,40,40},;
 	                            oGrp4,,,,{|| FHelp3(oList2:nAt)},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
 	
 		oList2:SetArray(aList2)
@@ -168,35 +171,40 @@ oGrp1      := TGroup():New( 002,004,336,710,"",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F.
 							 If(aList2[oList2:nAt,09]>0,Transform(aList2[oList2:nAt,09],"@E 999,999,999.99"),'S/Qtd'),;
 							 If(aList2[oList2:nAt,10]>0,Transform(aList2[oList2:nAt,10],"@E 999,999,999.99"),'S/Vlr')}}
 	
-	oGrp7      := TGroup():New( 232,172,332,466,"Consumo",oGrp1,CLR_BLACK,CLR_WHITE,.T.,.F. )
-	
-		oList5 	   := TCBrowse():New(239,174,290,088,, {'Seleção','Produto','Descrição','Consumo','Data'},{30,40,40,30,30},;
-	                            oGrp7,,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
+	oGrp7      := TGroup():New( 202,172,332,708,"Consumo",oGrp1,CLR_BLACK,CLR_WHITE,.T.,.F. )
+										//290 118
+		oList5 	   := TCBrowse():New(209,174,532,118,, {'Seleção','Produto','Descrição','Data Ant.','Leit.Ant.','Data Atual','Leit.Atual','Consumo','Valor Un.','Valor Fat.'},{30,40,70,30,30,30,30,30,30,30},;
+	                            oGrp7,,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList:nAt)*/},, oFont2,,,  ,,.F.,,.T.,,.F.,,,)
 		
 		oList5:SetArray(aList5)
-		oList5:bLine := {||{ Alltrim(aList5[oList5:nAt,01]),;
-							 Alltrim(aList5[oList5:nAt,02]),;
-							 Alltrim(aList5[oList5:nAt,03]),;
-		 					 If(aList5[oList5:nAt,04]>0,Transform(aList5[oList5:nAt,04],"@E 999,999,999.99"),'Sem Consumo'),;
-							 STOD(aList5[oList5:nAt,05])}}
+		oList5:bLine := {||{Alltrim(aList5[oList5:nAt,01]),;
+							Alltrim(aList5[oList5:nAt,02]),;
+							Alltrim(aList5[oList5:nAt,03]),;
+							STOD(aList5[oList5:nAt,04]),;
+							aList5[oList5:nAt,05],;
+							STOD(aList5[oList5:nAt,06]),;
+							aList5[oList5:nAt,07],;
+							If(aList5[oList5:nAt,08]<>0,aList5[oList5:nAt,08],'Sem Consumo'),;
+							Transform(aList5[oList5:nAt,09],"@E 999,999,999.99"),;
+							Transform(aList5[oList5:nAt,10],"@E 999,999,999.99")}}
 
-	oGrp5      := TGroup():New( 076,470,202,708,"Faturamento",oGrp1,CLR_BLACK,CLR_WHITE,.T.,.F. )
+	oGrp5      := TGroup():New( 076,520,202,708,"Faturamento",oGrp1,CLR_BLACK,CLR_WHITE,.T.,.F. )
 
-		oList3 	   := TCBrowse():New(084,472,232,115,, {'Pedido','Emissão','Vlr Faturamento'},{30,40,40},;
+		oList3 	   := TCBrowse():New(084,524,182,115,, {'Pedido','Emissão','Vlr Faturamento'},{30,40,40},;
 	                            oGrp5,,,,{|| FHelp2(oList3:nAt)},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
 		oList3:SetArray(aList3)
 		oList3:bLine := {||{ Alltrim(aList3[oList3:nAt,01]),;
 							 aList3[oList3:nAt,02],;
 		 					 Transform(aList3[oList3:nAt,03],"@E 999,999,999.99")}}
 	
-	oGrp6      := TGroup():New( 200,470,332,708,"Itens Faturados",oGrp1,CLR_BLACK,CLR_WHITE,.T.,.F. )
+	/*oGrp6      := TGroup():New( 200,470,332,708,"Itens Faturados",oGrp1,CLR_BLACK,CLR_WHITE,.T.,.F. )
 
 		oList4 	   := TCBrowse():New(208,472,232,120,, {'Nota','Produto','Vlr'},{30,50,30},;
-	                            oGrp6,,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,) 
+	                            oGrp6,,,,{|| /*FHelp(oList:nAt)* /},{|| /*editcol(oList:nAt)* /},, ,,,  ,,.F.,,.T.,,.F.,,,) 
 		oList4:SetArray(aList4)
 		oList4:bLine := {||{ aList4[oList4:nAt,01],;
 							 aList4[oList4:nAt,02],;
-		 					 Transform(aList4[oList4:nAt,03],"@E 999,999,999.99")}}
+		 					 Transform(aList4[oList4:nAt,03],"@E 999,999,999.99")}}*/
 
 oBtn1      := TButton():New( 055,640,"Sair",oDlg1,{||oDlg1:end()},037,012,,,,.T.,,"",,,,.F. )
 
@@ -252,6 +260,12 @@ Local aAux3		:=	{}
 Local nNewVlr	:=	0
 Local nDiasMs	:=	day(lastday(ddatabase))
 Local nCont 
+Local aAux5		:=	{}
+Local nAux		:=	0
+Local cCntTab	:=	""
+Local cBarra 	:=	""
+Local aTabPrc 	:=	{}
+
 
 cQuery := "SELECT AAN_CONTRT,AAM_CODCLI,AAM_LOJA,AAN_ITEM,AAN_CODPRO,"
 cQuery += " B1_DESC,AAN_XCBASE,AAN_QUANT,AAN_ULTEMI,"
@@ -267,7 +281,7 @@ cQuery += " INNER JOIN "+RetSQLName("AAM")+" AAM ON AAM_FILIAL=AAN_FILIAL AND AA
 cQuery += " INNER JOIN "+RetSQLName("SE4")+" E4 ON E4_CODIGO=AAN_CONPAG AND E4.D_E_L_E_T_=''"
 cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_COD=AAN_CODPRO AND B1.D_E_L_E_T_=''"
 cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_COD=AAM_CODCLI AND A1_LOJA=AAM_LOJA AND A1.D_E_L_E_T_=''"
-cQuery += " WHERE AAN_FILIAL='"+xFilial("AAN")+"' AND AAN.D_E_L_E_T_=''" //AAN_FIMCOB>='20160801' AND
+cQuery += " WHERE AAN_FILIAL='"+xFilial("AAN")+"' AND AAN.D_E_L_E_T_=''" 
 
 If !Empty(cCond)
 	cQuery += " AND AAN_CONPAG='"+cCond+"'" 
@@ -295,6 +309,11 @@ AAM_XINIMU,AAM_XPRAZO,AAM_XPERCT,AAM_XRENOV,0,AAN_FILIAL
 DbSelectArea("TRB")   
 
 While !EOF()
+	If !TRB->AAN_CONTRT $ cCntTab
+		cCntTab += cBarra + TRB->AAN_CONTRT
+		cBarra := "','"
+	EndIf 
+
 	nPos1 := Ascan(aList,{|x| Alltrim(x[1]) == TRB->AAN_CONTRT})
 	nPos3 := Ascan(aAux3,{|x| Alltrim(x[1]) == TRB->AAN_CONTRT})
 
@@ -380,12 +399,14 @@ Asort(aList,,,{|x,y| x[1] < y[1]})
                 
 For nCont := 1 to len(aAux3)         
 	//Buscando os pedidos faturados
-	//cQuery := "SELECT C6_NUM,C5_EMISSAO,C6_NOTA,SUM(C6_VALOR) AS TOTAL"
-	cQuery := "SELECT C6_NUM,C5_EMISSAO,C6_NOTA,C6_VALOR,C6_DESCRI,C6_ITEM,C6_QTDVEN,C6_SERIE,C6_FILIAL"
+	cQuery := "SELECT C6_NUM,C5_EMISSAO,C6_NOTA,C6_VALOR,"
+	cQuery += " C6_DESCRI,C6_ITEM,C6_QTDVEN,C6_SERIE,C6_FILIAL"
 	cQuery += " FROM "+RetSQLName("SC6")+" C6"
-	cQuery += " INNER JOIN "+RetSQLName("SC5")+" C5 ON C5_FILIAL=C6_FILIAL AND C5_NUM=C6_NUM AND C5_CLIENTE=C6_CLI AND C5.D_E_L_E_T_=''"
-	cQuery += " WHERE C6_FILIAL='"+aAux3[nCont,04]+"' AND C6_CONTRT='"+aAux3[nCont,01]+"' AND C6_CLI='"+aAux3[nCont,02]+"' AND C6.D_E_L_E_T_=''"
-	//cQuery += " GROUP BY C6_NUM,C5_EMISSAO,C6_NOTA"
+	cQuery += " INNER JOIN "+RetSQLName("SC5")+" C5 ON C5_FILIAL=C6_FILIAL "
+	cQuery += " AND C5_NUM=C6_NUM AND C5_CLIENTE=C6_CLI AND C5.D_E_L_E_T_=''"
+	cQuery += " WHERE C6_FILIAL='"+aAux3[nCont,04]+"'"
+	cQuery += " AND C6_CONTRT='"+aAux3[nCont,01]+"' "
+	cQuery += " AND C6_CLI='"+aAux3[nCont,02]+"' AND C6.D_E_L_E_T_=''"
 	
 	If Select("TRB") > 0
 		dbSelectArea("TRB")
@@ -399,14 +420,14 @@ For nCont := 1 to len(aAux3)
 	
 	While !EOF() 
 		If Ascan(aList3b,{|x| x[1] == TRB->C6_NUM}) == 0
-			Aadd(aList3b,{TRB->C6_NUM,;
-						stod(TRB->C5_EMISSAO),;
-						TRB->C6_VALOR,;
-						TRB->C6_NOTA,;
-						aAux3[nCont,01],;
-						aAux3[nCont,02],;
-						aAux3[nCont,03],;
-						TRB->C6_FILIAL+Alltrim(TRB->C6_SERIE)})
+			Aadd(aList3b,{	TRB->C6_NUM,;
+							stod(TRB->C5_EMISSAO),;
+							TRB->C6_VALOR,;
+							TRB->C6_NOTA,;
+							aAux3[nCont,01],;
+							aAux3[nCont,02],;
+							aAux3[nCont,03],;
+							TRB->C6_FILIAL+Alltrim(TRB->C6_SERIE)})
 		Else
 			aList3b[Ascan(aList3b,{|x| x[1] == TRB->C6_NUM}),03] += TRB->C6_VALOR
 		EndIF
@@ -437,16 +458,51 @@ For nCont := 1 to len(aList3b)
 	EndIf
 Next nCont
 
+
+cQuery := "SELECT AAM_CONTRT,DA1_CODPRO,B1_DESC,DA1_PRCVEN"
+cQuery += " FROM "+RetSQLName("AAM")+" AAM"
+cQuery += "  INNER JOIN "+RetSQLName("DA1")+" DA1 ON DA1_FILIAL='"+xFilial("DA1")+"' AND DA1_CODTAB=AAM_XCODTA AND DA1.D_E_L_E_T_=' '"
+cQuery += "  INNER JOIN "+RetSQLName("SB1")+" SB1 ON B1_FILIAL=DA1_FILIAL AND B1_COD=DA1_CODPRO AND SB1.D_E_L_E_T_=' '"
+cQuery += " WHERE AAM.D_E_L_E_T_=' '"
+cQuery += " AND AAM_CONTRT IN('"+cCntTab+"')"
+If Select("TRB") > 0
+	dbSelectArea("TRB")
+	dbCloseArea()
+EndIf                                                                                 
+	
+MemoWrite("CONFSC01.SQL",cQuery)
+
+cQuery:= ChangeQuery(cQuery)
+DbUseArea(.T.,"TOPCONN",TcGenQry(,,cQuery),'TRB',.F.,.T.)   
+	
+While !EOF()
+	Aadd(aTabPrc,{	TRB->AAM_CONTRT,;
+					TRB->DA1_CODPRO,;
+					TRB->B1_DESC,;
+					TRB->DA1_PRCVEN})
+	Dbskip()
+EndDo 
+
 For nCont := 1 to len(aList5b)
-	cQuery := "SELECT Z08_SELECA,Z08_PRODUT,B1_DESC,Z08_QTDLID,Z08_DATA"
-	cQuery += " FROM "+RetSQLname("Z08")+" Z08"
-	cQuery += " LEFT JOIN "+RetSQLname("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"'"
-	cQuery += " AND B1_COD=Z08_PRODUT AND B1.D_E_L_E_T_=' '"
-	cQuery += " WHERE Z08_COD IN(SELECT MAX(Z08_COD) FROM "+RetSQLname("Z08")
-	cQuery += " WHERE Z08_FILIAL='"+xFilial("Z08")+"'"
-	cQuery += "  AND Z08_NUMSER='"+aList5b[nCont,02]+"'"
-	cQuery += "  AND Z08_CONTRT='"+aList5b[nCont,01]+"'"
-	cQuery += "  AND Z08_PERIOD='"+cPeri+"' AND D_E_L_E_T_='')"
+	
+	cQuery := "SELECT Z08_COD,Z08_SEQUEN,Z08_SELECA,Z08_PRODUT,B1_DESC,Z08_QTDLID,Z08_DATA,Z08_CONTRT" 
+	cQuery += "  FROM "+RetSQLname("Z08")+" Z08" 
+	cQuery += "  LEFT JOIN "+RetSQLname("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"'"
+	cQuery += "   AND B1_COD=Z08_PRODUT AND B1.D_E_L_E_T_=' ' 
+	cQuery += "  WHERE  Z08_COD IN(SELECT MAX(Z08_COD) FROM "+RetSQLname("Z08")
+	cQuery += "     	WHERE  Z08_FILIAL='"+xFilial("Z08")+"' AND Z08_NUMSER='"+aList5b[nCont,02]+"'"
+	cQuery += "  	AND Z08_CONTRT='"+aList5b[nCont,01]+"' AND D_E_L_E_T_=' ')
+	cQuery += "  AND Z08.D_E_L_E_T_=' '
+	cQuery += "  UNION 
+	cQuery += "  SELECT Z08_COD,Z08_SEQUEN,Z08_SELECA,Z08_PRODUT,B1_DESC,Z08_QTDLID,Z08_DATA,Z08_CONTRT" 
+	cQuery += "  FROM "+RetSQLname("Z08")+" Z08"
+	cQuery += "  LEFT JOIN "+RetSQLname("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"'"
+	cQuery += "		AND B1_COD=Z08_PRODUT AND B1.D_E_L_E_T_=' '" 
+	cQuery += "  WHERE  Z08_COD IN(SELECT MAX(Z08_COD)-1 FROM "+RetSQLname("Z08")
+	cQuery += "		WHERE  Z08_FILIAL='"+xFilial("Z08")+"' AND Z08_NUMSER='"+aList5b[nCont,02]+"'" 
+	cQuery += "  	AND Z08_CONTRT='"+aList5b[nCont,01]+"' AND D_E_L_E_T_=' ')"
+	cQuery += "  AND Z08.D_E_L_E_T_=' '"
+	cQuery += "  ORDER BY Z08_COD DESC"
 
 	If Select("TRB") > 0
 		dbSelectArea("TRB")
@@ -458,20 +514,57 @@ For nCont := 1 to len(aList5b)
 	cQuery:= ChangeQuery(cQuery)
 	DbUseArea(.T.,"TOPCONN",TcGenQry(,,cQuery),'TRB',.F.,.T.)   
 	
+	aAux5 := {}
+
 	While !EOF() 
 		aAuxL5 := {}
-	
-		Aadd(aAuxL5,strzero(val(TRB->Z08_SELECA),2))
-		Aadd(aAuxL5,TRB->Z08_PRODUT)
-		Aadd(aAuxL5,TRB->B1_DESC)
-		Aadd(aAuxL5,TRB->Z08_QTDLID)
-		Aadd(aAuxL5,TRB->Z08_DATA)
-		
-		If len(aAuxL5) > 0
-			Aadd(aList5B[nCont],aAuxL5)
-		EndIf
+		nPos := Ascan(aAux5,{|x| Alltrim(x[1]) == strzero(val(TRB->Z08_SELECA),2)})
+		nPos2 := Ascan(aTabPrc,{|x| x[1]+x[2] == TRB->Z08_CONTRT+TRB->Z08_PRODUT})
+
+		If nPos == 0
+			Aadd(aAuxL5,strzero(val(TRB->Z08_SELECA),2))
+			Aadd(aAuxL5,TRB->Z08_PRODUT)
+			Aadd(aAuxL5,TRB->B1_DESC)
+			Aadd(aAuxL5,'')
+			Aadd(aAuxL5,0)			
+			Aadd(aAuxL5,TRB->Z08_DATA)
+			Aadd(aAuxL5,TRB->Z08_QTDLID)
+			Aadd(aAuxL5,0)
+
+			If nPos2 > 0
+				Aadd(aAuxL5,aTabPrc[nPos2,04])
+			Else 
+				Aadd(aAuxL5,0)
+				
+			EndIf 
+
+			Aadd(aAuxL5,0)
+			
+			If len(aAuxL5) > 0
+				Aadd(aAux5,aAuxL5)
+			EndIf
+		Else 
+			If Empty(aAux5[nPos,04])
+				aAux5[nPos,04] := TRB->Z08_DATA
+				aAux5[nPos,05] := TRB->Z08_QTDLID
+			ElseIf Empty(aAux5[nPos,06])
+				aAux5[nPos,06] := TRB->Z08_DATA
+				aAux5[nPos,07] := TRB->Z08_QTDLID
+			Endif 
+
+			If nPos2 > 0 .And. aAux5[nPos,09] == 0
+				aAux5[nPos,09] := aTabPrc[nPos2,04]
+			EndIf 
+		EndIf 
 		Dbskip()
 	EndDo 
+
+	Aeval(aAux5,{|x| x[8] := x[7] - x[5]})
+	Aeval(aAux5,{|x| x[10] := x[9] * x[8]})
+	
+	For nAux := 1 to len(aAux5)
+		Aadd(aList5b[nCont],aAux5[nAux])
+	Next nAux
 
 Next nCont
 
@@ -530,7 +623,9 @@ alist                                               aList2b							aList3b       
 
 oSay2:settext(aList[nLinha,03]+'-'+aList[nLinha,04]+' - '+aList[nLinha,05])    
 oSay4:settext(aList[nLinha,06]+' - '+aList[nLinha,07]+' - '+aList[nLinha,08])
-oSay6:settext("Dia de Fat. "+Alltrim(cvaltochar(aList[nLinha,09]))+" - Vigência "+cvaltochar(aList[nLinha,11])+" a "+cvaltochar(aList[nLinha,12]))           
+
+
+//oSay6:settext("Dia de Fat. "+Alltrim(cvaltochar(aList[nLinha,09]))+" - Vigência "+cvaltochar(aList[nLinha,11])+" a "+cvaltochar(aList[nLinha,12]))           
 
 //PReenche o grid de ativos do contrato
 For nCont := 1 to len(aList2b)
@@ -544,7 +639,7 @@ If len(aList2) < 1
 	//Nao encontrou Ativos no Contrato
 	Aadd(aList2,{'','',0,'','',''})
 EndIf
-	
+
 //PReenche o grid de Pedidos faturados para o contrato
 For nCont := 1 to len(aList3b)
 	If aList3b[nCont,05] == aList[nLinha,01]
@@ -586,18 +681,19 @@ oList3:SetArray(aList3)
 oList3:bLine := {||{ Alltrim(aList3[oList3:nAt,01]),;
 					 aList3[oList3:nAt,02],;
  					 Transform(aList3[oList3:nAt,03],"@E 999,999,999.99")}}
-
+/*
 oList4:SetArray(aList4)
 oList4:bLine := {||{ aList4[oList4:nAt,01],;
 			 		 aList4[oList4:nAt,02],;
  					 Transform(aList4[oList4:nAt,03],"@E 999,999,999.99")}}
-
+*/
 oList:refresh()
 oList2:refresh()
 oList3:refresh() 
-oList4:refresh() 
+//oList4:refresh() 
 oDlg1:refresh()
 
+oList2:nAt := 1 
 Fhelp3(oList2:nAt)
 
 RestArea(aArea)
@@ -622,7 +718,11 @@ Local aArea :=	GetArea()
 Local nPos  := 	0
 Local nCont 
 Local nTotQ	:=	0
-//Local nTotV := 	0
+Local nTotV :=	0
+Local nTotC :=	0
+Local cTexto
+Local nDifCb:=	0
+
 
 aList5 := {}
 
@@ -633,20 +733,76 @@ If nPos > 0 .And. len(aList5b[nPos]) > 4
 		Aadd(aList5,aList5b[nPos,nCont])
 	Next nCont
 Else 
-	Aadd(aList5,{'','','',0,''})
+	Aadd(aList5,{'','','','',0,'',0,0,0,0})
 EndIf 
 
-Aeval(aList5,{|x| nTotQ += x[4]})
+Aeval(aList5,{|x| nTotQ += x[8]})
+Aeval(aList5,{|x| nTotV += x[10]})
 
 oList5:SetArray(aList5)
 oList5:bLine := {||{ Alltrim(aList5[oList5:nAt,01]),;
-					Alltrim(aList5[oList5:nAt,02]),;
-					Alltrim(aList5[oList5:nAt,03]),;
-					If(aList5[oList5:nAt,04]>0,Transform(aList5[oList5:nAt,04],"@E 999,999,999.99"),'Sem Consumo'),;
-					STOD(aList5[oList5:nAt,05])}}
+						Alltrim(aList5[oList5:nAt,02]),;
+						Alltrim(aList5[oList5:nAt,03]),;
+						STOD(aList5[oList5:nAt,04]),;
+						aList5[oList5:nAt,05],;
+						STOD(aList5[oList5:nAt,06]),;
+						aList5[oList5:nAt,07],;
+						If(aList5[oList5:nAt,08]<>0,aList5[oList5:nAt,08],'Sem Consumo'),;
+						Transform(aList5[oList5:nAt,09],"@E 999,999,999.99"),;
+						Transform(aList5[oList5:nAt,10],"@E 999,999,999.99")}}
 
 aList2[nLinha,09] := nTotQ
+aList2[nLinha,10] := nTotV
 
+Aeval(aList2,{|x| nTotC += If(x[3]>1,x[3],0)+x[10]})
+
+aList[oList:nAt,02] := nTotC
+
+Aeval(aList,{|x| x[18] := if(x[2]>1,0,1)})
+
+
+DbSelectArea("AAM")
+DbSetOrder(1)
+DbSeek(xFilial("AAM")+aList[nLinha,01])
+cTexto := "Tabela de Preço "+AAM->AAM_XCODTA+" "
+If !Empty(AAM->AAM_XFORFA)
+	IF AAM->AAM_XFORFA == "1"
+		cTexto += " - Faturamento Mensal "
+	Else 
+		cTexto += " - Faturamento Quinzenal "
+	EndIF 
+EndIF 
+
+If !Empty(AAM->AAM_XTIPFA)
+	aTipFa := {'Minino Global','Minimo Unid./Ativo','Sem Minimo'}
+	IF AAM->AAM_XTIPFA == "1"
+		cTexto += " - Faturamento Mensal "
+	Else 
+		cTexto += " - Faturamento Quinzenal "
+	EndIF 
+EndIF 
+If !Empty(AAM->AAM_XTIPMI)
+	//1=Quantidade;2=Valor  
+	IF AAM->AAM_XTIPMI == "1"
+		cTexto += " - Minimo por Quantidade "
+	Else 
+		cTexto += " - Minimo por Valor "
+	EndIF 
+EndIF 
+
+If AAM->AAM_XQTVLM > 0
+	cTexto += " - Qtd/Vlr Minimo "+Transform(AAM->AAM_XQTVLM,"@E 999,999,999") 
+
+	Aeval(aList2,{|x| nDifCb += x[9]})
+
+	If nDifCb < AAM->AAM_XQTVLM
+		cTexto += " - Doses Complementares a serem cobradas "+Transform(AAM->AAM_XQTVLM-nDifCb,"@E 999,999,999")
+	EndIf 
+EndIF 
+
+oSay6:settext(cTexto)
+
+oList:refresh()
 oList2:refresh()
 oList5:refresh()
 oDlg1:refresh()
@@ -1160,13 +1316,13 @@ Next nCont
 If len(aList4) < 1
 	Aadd(aList4,{'','',0,0,0})
 EndIf                              
-
+/*
 oList4:SetArray(aList4)
 oList4:bLine := {||{ aList4[oList4:nAt,01],;
 			 		 aList4[oList4:nAt,02],;
  					 Transform(aList4[oList4:nAt,03],"@E 999,999,999.99")}}
 
-oList4:refresh() 
+oList4:refresh() */
 oDlg1:refresh()
 
 RestArea(aArea)

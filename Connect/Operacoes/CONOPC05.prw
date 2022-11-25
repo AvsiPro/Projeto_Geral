@@ -84,7 +84,7 @@ User Function CONOPC05()
                 Z08->Z08_PRODUT := aCols[nCont,02]
                 Z08->Z08_CONTRT := aCols[nCont,13]
                 Z08->Z08_ITEM   := aCols[nCont,15]
-                Z08->Z08_QTDLID := aCols[nCont,05] - aCols[nCont,04]
+                Z08->Z08_QTDLID := aCols[nCont,05] 
                 Z08->Z08_DTDIGI := dDatabase 
                 Z08->Z08_PERIOD := STRZERO(MONTH(dDtLei),2)+substr(cvaltochar(YEAR(dDtLei)),3,2)
                 Z08->Z08_MAQUIN := aCols[nCont,14]
@@ -119,11 +119,15 @@ If !Empty(cPatr)
     cQuery += " Z07_CLIENT,Z07_LOJA,A1_NOME,A1_END,A1_BAIRRO,A1_MUN,A1_EST,"
     cQuery += " AAN_CONTRT,AAN_CODPRO,AAN_ITEM"
     cQuery += " FROM "+RetSQLName("Z07")+" Z07"
-    cQuery += " INNER JOIN "+RetSQLName("SB1")+ " B1 ON B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD=Z07_CODPRO AND B1.D_E_L_E_T_=' '"
-    cQuery += " INNER JOIN "+RetSQLNAme("SA1")+ " A1 ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_COD=Z07_CLIENT AND A1_LOJA=Z07_LOJA AND A1.D_E_L_E_T_=' '"
-    cQuery += " INNER JOIN "+RetSQLName("AAN")+" AAN ON AAN_FILIAL='"+xFilial("AAN")+"' AND AAN_XCBASE=Z07_CHAPA AND AAN.D_E_L_E_T_=' '"
+    cQuery += " LEFT JOIN "+RetSQLName("SB1")+ " B1 "
+    cQuery += " ON B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD=Z07_CODPRO AND B1.D_E_L_E_T_=' '"
+    cQuery += " INNER JOIN "+RetSQLNAme("SA1")+ " A1 
+    cQuery += " ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_COD=Z07_CLIENT AND A1_LOJA=Z07_LOJA AND A1.D_E_L_E_T_=' '"
+    cQuery += " INNER JOIN "+RetSQLName("AAN")+" AAN 
+    cQuery += " ON AAN_FILIAL='"+xFilial("AAN")+"' AND AAN_XCBASE=Z07_CHAPA AND AAN.D_E_L_E_T_=' '"
     cQuery += " WHERE Z07_FILIAL='"+xFilial("Z07")+"' AND Z07_CHAPA='"+cPatr+"' AND Z07.D_E_L_E_T_=' '"
-    
+    cQuery += " ORDER BY Z07_SELECA"
+
     IF Select('TRB') > 0
         dbSelectArea('TRB')
         dbCloseArea()
@@ -154,7 +158,7 @@ If !Empty(cPatr)
         Dbskip()
     EndDo 
 
-    cQuery := "SELECT * FROM "+RetSQLName("Z08")
+    cQuery := "SELECT Z08_DATA,Z08_SELECA,Z08_QTDLID FROM "+RetSQLName("Z08")
     cQuery += " WHERE Z08_FILIAL='"+xFilial("Z08")+"' AND Z08_NUMSER='"+cPatr+"'"
     cQuery += " AND Z08_DATA+Z08_COD IN(SELECT MAX(Z08_DATA)+MAX(Z08_COD) FROM "+RetSQLName("Z08")
     cQuery += " WHERE Z08_FILIAL='"+xFilial("Z08")+"' AND Z08_NUMSER='"+cPatr+"'"
@@ -181,6 +185,7 @@ If !Empty(cPatr)
 
     If len(aCols) < 1
         Aadd(aCols,{'','','',0,0,'','','','','','',''})
+        MsgAlert("Patrimônio não encontrado ou sem configuração de leiaute!!!")
     else
         oSay2:settext("")
         oSay3:settext("")
@@ -228,7 +233,7 @@ Static Function editcol(nLinha)
 
 Local aArea := GetArea()
 
-If !Empty(dDiaLei)
+If !Empty(dDtLei)
 
     lEditCell(aCols,oList1,"@E 999,999,999",5)
 

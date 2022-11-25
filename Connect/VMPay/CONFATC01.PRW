@@ -65,7 +65,7 @@ ENDIF
 // Aadd(aList,{.T.,'0669','','','','','','','','','','','','','','','','',''})
 Aadd(aList1,{.T.,'','','','','','','','','','','','','','','','','',''})
 // Aadd(aList2,{.T.,'','','','','','','','','','','','','','','','','',''})
-Aadd(aList3,{.T.,'','','','','','','','','','','','','','','','','',''})
+//Aadd(aList3,{.T.,'','','','','','','','','','','','','','','','','',''})
 Aadd(aList4,{.T.,'','','','','','','','','','','','','','','','','',''})
 // Aadd(aList5,{.T.,'','','','','','','','','','','','','','','','','',''})
 Aadd(aList6,{.T.,'','','','','','','','','','','','','','','','','',''})
@@ -157,7 +157,7 @@ If len(aList) > 0
                                     aList2[oList2:nAt,04]}}    
                                 
             //oBrw7      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{000,000,116,272},,, oFld2:aDialogs[2] ) 
-            oList3    := TCBrowse():New(000,001,274,110,, {'','Ativo','Selecao','Produto','Descrição','Capacidade','Nivel Par','Nivel Alerta','Valor'},{10,30,30,40,30,30,30,30,30},;
+            oList3    := TCBrowse():New(000,001,274,110,, {'','Ativo','Selecao','Produto','Descrição','Valor'},{10,30,30,40,30,30},;
                                         oFld2:aDialogs[2],,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
             oList3:SetArray(aList3)
             oList3:bLine := {||{ IF(aList3[oList3:nAt,01],oOk,oNo),; 
@@ -165,10 +165,7 @@ If len(aList) > 0
                                     Strzero(val(aList3[oList3:nAt,03]),2),;
                                     aList3[oList3:nAt,04],;
                                     aList3[oList3:nAt,05],;
-                                    aList3[oList3:nAt,06],;
-                                    aList3[oList3:nAt,07],;
-                                    aList3[oList3:nAt,08],;
-                                    Transform(aList3[oList3:nAt,09],"@E 999,999.99")}}    
+                                    Transform(aList3[oList3:nAt,06],"@E 999,999.99")}}    
 
             //oBrw8      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{000,000,116,272},,, oFld2:aDialogs[3] ) 
             oList4    := TCBrowse():New(000,001,274,110,, {'','Cod. LOCAL','Descricao'},{10,30,40},;
@@ -275,7 +272,7 @@ If len(aList) > 0
             
             ENDMENU                                                                           
         
-            // oList3:bRClicked := { |oObject,nX,nY| oMenuP:Activate( nX, (nY-10), oObject ) }
+            oList3:bRClicked := { |oObject,nX,nY| oMenuP:Activate( nX, (nY-10), oObject ) }
         ENDIF                                                                               
         
     oDlg1:Activate(,,,.T.)
@@ -303,15 +300,14 @@ RETURN
 STATIC FUNCTION Busca1(contrato)
 
 LOCAL cQuery 
-LOCAL aAtivos    :=    {}
+LOCAL aAtivos   :=  {}
 LOCAL nX
+Local cAtivos   :=  ''
 
 cQuery := "SELECT AA3_CHAPA,B1_DESC,AA3_NUMSER,AA3_CODCLI,AA3_LOJA,AA3_HORDIA,B1_GRUPO AS AA3_XCATEG,AA3_CODLOC,"
 cQuery += " A1_NOME,A1_NREDUZ,A1_END,A1_BAIRRO,A1_MUN,A1_EST,A1_CEP,AA3_CODPRO"
 cQuery += " FROM "+RetSQLName("AA3")+" AA3 "
 cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_COD=AA3_CODPRO AND B1.D_E_L_E_T_=''"
-//cQuery += " INNER JOIN "+RetSQLName("SZN")+" ZN ON ZN_NUMSER=AA3_NUMSER AND ZN.D_E_L_E_T_=''"
-
 cQuery += " INNER JOIN "+RetSQLName("AAN")+" AAN ON AAN_FILIAL=AA3_FILIAL AND AAN_XCBASE=AA3_NUMSER AND AAN.D_E_L_E_T_=''"
 
 IF !Empty(contrato)
@@ -322,7 +318,7 @@ ENDIF
 
 cQuery += " LEFT JOIN "+RetSQLName("SA1")+" A1 ON A1_COD=AA3_CODCLI AND A1_LOJA=AA3_LOJA AND A1.D_E_L_E_T_=''"
 cQuery += " WHERE AA3.D_E_L_E_T_='' AND AA3_CODCLI <> '' AND AA3_CODCLI <> '999999'"
-cQuery += " ORDER BY AA3_CHAPA"  //AND AA3_XVMPAY='1' 
+cQuery += " ORDER BY AA3_CHAPA"  
 
 IF Select('TRB') > 0
     dbSelectArea('TRB')
@@ -352,13 +348,12 @@ WHILE !EOF()
     ENDIF    
     Dbskip()
 ENDDO
+
+Aeval(aAtivos,{|x| cAtivos += "'"+x+"',"})
  
 cQuery := "SELECT B1_COD,B1_DESC"
 cQuery += " FROM "+RetSQLName("SB1")+" SB1 "
 cQuery += " WHERE SB1.D_E_L_E_T_='' AND B1_MSBLQL<>'1'"
-
-// cQuery += " AND B1_GRUPO  IN('PA72')" //'PA62' ,'PA73','PA74'
-
 cQuery += " ORDER BY B1_COD"
 
 IF Select('TRB') > 0
@@ -387,6 +382,33 @@ FOR nX := 1 TO len(aList2B)
     aList2[nX,04]     :=    nSaldo
 NEXT nX
 
+cQuery := "SELECT Z07_CHAPA,Z07_SELECA,Z07_CODPRO,B1_DESC,Z07_VLRVND" 
+cQuery += " FROM "+RetSQLName("Z07")+" Z07"
+cQuery += " LEFT JOIN "+RetSQLName("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"'"
+cQuery += "  AND B1_COD=Z07_CODPRO AND B1.D_E_L_E_T_=' '"
+cQuery += " WHERE Z07_FILIAL='"+xFilial("Z07")+"'"
+cQuery += " AND Z07_CHAPA IN("+substr(cAtivos,1,len(cAtivos)-1)+")"
+cQuery += " AND Z07.D_E_L_E_T_=' '"
+
+IF Select('TRB') > 0
+    dbSelectArea('TRB')
+    dbCloseArea()
+ENDIF
+
+MemoWrite("CONFATC01.SQL",cQuery)
+DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
+    
+DbSelectArea("TRB")  
+
+WHILE !EOF()   
+    Aadd(aList3B,{  .T.,;
+                    TRB->Z07_CHAPA,;
+                    TRB->Z07_SELECA,;
+                    TRB->Z07_CODPRO,;
+                    TRB->B1_DESC,;
+                    TRB->Z07_VLRVND})
+    Dbskip()
+EndDo 
 // cQuery := "SELECT Z11_NUMSER,Z11_SEQUEN,Z11_BEBIDA,B1_DESC,0 AS QTD,'' AS CLIENTE,'' AS LOJA,Z11_MAQUINA"
 // cQuery += " FROM "+RetSQLName("Z11")+" Z11"
 // cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_COD=Z11_BEBIDA AND B1.D_E_L_E_T_=''"
@@ -432,6 +454,7 @@ WHILE !EOF()
     Aadd(aList5,{.F.,TRB->NNR_CODIGO,TRB->NNR_DESCRI,'','','','','',''})
     Dbskip()
 ENDDO
+
 
 RETURN
 
@@ -698,10 +721,7 @@ oList3:bLine := {||{ IF(aList3[oList3:nAt,01],oOk,oNo),;
                         Strzero(val(aList3[oList3:nAt,03]),2),;
                         aList3[oList3:nAt,04],;
                         aList3[oList3:nAt,05],;
-                        aList3[oList3:nAt,06],;
-                        aList3[oList3:nAt,07],;
-                        aList3[oList3:nAt,08],;
-                        Transform(aList3[oList3:nAt,09],"@E 999,999.99")}}  
+                        Transform(aList3[oList3:nAt,06],"@E 999,999.99")}}   
 
 FOR nX := 1 TO len(aList1B)
     IF Alltrim(aList1B[nX,08]) == Alltrim(aList[oList:nAt,02])
@@ -1635,88 +1655,41 @@ RETURN
 STATIC FUNCTION Saveplan()
 
 LOCAL aArea    :=    GetArea()
-// LOCAL aCabec:=    {"Z07_CLIENT","Z07_LOJA","Z07_CHAPA","Z07_CODMAQ","Z07_CODPROD","Z07_MOLA","Z07_QUANT","Z07_NIVPAR","Z07_NIVALE","Z07_VALOR"}
+// LOCAL aCabec:=    {"Z07_CLIENT","Z07_LOJA","Z07_CHAPA","Z07_CODMAQ","Z07_CODPROD","Z07_SELECA","Z07_QUANT","Z07_NIVPAR","Z07_NIVALE","Z07_VALOR"}
 // LOCAL nPosB    :=    Ascan(aList3B,{|x| Alltrim(x[2]) == Alltrim(aList3[oList3:nAt,02])}) 
 LOCAL lAlt     :=    .F. 
-LOCAL lMolD    :=    .F.
-LOCAL aAuxD    :=    {}
-LOCAL nPing
+//LOCAL lMolD    :=    .F.
+//LOCAL aAuxD    :=    {}
+//LOCAL nPing
 LOCAL nX
 LOCAL nJ
 
- //Z07_CLIENT, Z07_LOJA, Z07_CHAPA, Z07_CODMAQ, Z07_CODPROD, Z07_MOLA, 
-//FILIAL+CHAPA+SELECAO+CODCLI
 FOR nX := 1 TO len(aList3)
     IF !aList3[nX,01] 
         DbSelectArea("Z07")     
-        DbSetOrder(2)
+        DbSetOrder(1)
 
-        IF "," $ aList3[nX,03] 
-               aAuxD := strtokarr(aList3[nX,03],",")
-               lMolD := .T.
-               
-               FOR nPing := 1 TO len(aAuxD)  
-                    DbSelectArea("Z07")     
-                    DbSetOrder(2)
-                ////Z07_CLIENT, Z07_LOJA, Z07_CHAPA, Z07_CODMAQ, Z07_CODPROD, Z07_MOLA,
-                   IF !DbSeek(xFilial("Z07")+aList3[nX,02]+aList[oList:nAt,17]+aList[oList:nAt,18]+Avkey(aAuxD[nPing],"Z07_MOLA"))
-                       Reclock("Z07",.T.)
-                    Z07->Z07_CLIENT     :=    aList[oList:nAt,17]
-                    Z07->Z07_LOJA       :=    aList[oList:nAt,18]
-                    Z07->Z07_CHAPA      :=    aList3[nX,02]
-                    Z07->Z07_CODMAQ     :=    Posicione("AA3",7,xFilial("AA3")+aList3[nX,02],"AA3_CODPRO")
-                    Z07->Z07_CODPROD    :=    aList3[nX,04]
-                    Z07->Z07_MOLA       :=    aAuxD[nPing]     
-                    Z07->Z07_DINICIO    :=    dDataBase
-                    Z07->Z07_QUANT      :=    aList3[nX,06]
-                    Z07->(Msunlock()) 
-                ELSE
-                    IF Z07->Z07_CODPROD <> aList3[nX,04]
-                        //Na sequencia cria um novo
-                        Reclock("Z07",.T.)
-                        Z07->Z07_CLIENT     :=    aList[oList:nAt,17]
-                        Z07->Z07_LOJA       :=    aList[oList:nAt,18]
-                        Z07->Z07_CHAPA      :=    aList3[nX,02]
-                        Z07->Z07_CODMAQ     :=    Posicione("AA3",7,xFilial("AA3")+aList3[nX,02],"AA3_CODPRO")
-                        Z07->Z07_CODPROD    :=    aList3[nX,04]
-                        Z07->Z07_MOLA       :=    aList3[nX,03]
-                        Z07->Z07_DINICIO    :=    dDataBase
-                        Z07->Z07_QUANT      :=    aList3[nX,06]
-                        Z07->(Msunlock())
-                    ENDIF
-                ENDIF
-            NEXT nPing
-        ELSE
-               IF !DbSeek(xFilial("Z07")+aList3[nX,02]+aList[oList:nAt,17]+aList[oList:nAt,18]+Avkey(aList3[nX,03],"Z07_MOLA"))
-    //        IF !DbSeek(xFilial("Z06")+aList3[nX,02]+Avkey(aList3[nX,03],"Z06_SELECAO")+aList[oList:nAt,17])    
-                    Reclock("Z07",.T.)
-                    Z07->Z07_CLIENT    :=    aList[oList:nAt,17]
-                    Z07->Z07_LOJA       :=    aList[oList:nAt,18]
-                    Z07->Z07_CHAPA      :=    aList3[nX,02]
-                    Z07->Z07_CODMAQ     :=    Posicione("AA3",7,xFilial("AA3")+aList3[nX,02],"AA3_CODPRO")
-                    Z07->Z07_CODPROD    :=    aList3[nX,04]
-                    Z07->Z07_MOLA       :=    aList3[nX,03]
-                    Z07->Z07_DINICIO    :=    dDataBase
-                    Z07->Z07_QUANT      :=    IF(Valtype(aList3[nX,06])<>"N",val(aList3[nX,06]),aList3[nX,06])
-                    Z07->(Msunlock())
-            ELSE
-                IF Z06->Z06_CODPRO <> aList3[nX,04]
-                    //Na sequencia cria um novo
-                    Reclock("Z07",.T.)
-                    Z07->Z07_CLIENT    :=    aList[oList:nAt,17]
-                    Z07->Z07_LOJA       :=    aList[oList:nAt,18]
-                    Z07->Z07_CHAPA      :=    aList3[nX,02]
-                    Z07->Z07_CODMAQ     :=    Posicione("AA3",7,xFilial("AA3")+aList3[nX,02],"AA3_CODPRO")
-                    Z07->Z07_CODPROD    :=    aList3[nX,04]
-                    Z07->Z07_MOLA       :=    aList3[nX,03]
-                    Z07->Z07_QUANT      :=    aList3[nX,06]
-                    Z07->(Msunlock())
-                ENDIF
-            ENDIF 
-        ENDIF
-        aList3[nX,01] := .T.
-        lAlt := .T.
-    ENDIF    
+        IF !DbSeek(xFilial("Z07")+Avkey(aList3[nX,02],"Z07_CHAPA")+Avkey(aList[oList:nAt,17],"Z07_CLIENT")+Avkey(aList[oList:nAt,18],"Z07_LOJA")+Avkey(strzero(val(aList3[nX,03]),2),"Z07_SELECA"))
+            Reclock("Z07",.T.)
+        else
+            Reclock("Z07",.T.)
+        EndIF 
+        
+        Z07->Z07_FILIAL     :=  xFilial("Z07")
+        Z07->Z07_CLIENT     :=  aList[oList:nAt,17]
+        Z07->Z07_LOJA       :=  aList[oList:nAt,18]
+        Z07->Z07_CHAPA      :=  aList3[nX,02]
+        Z07->Z07_CODMAQ     :=  Posicione("AA3",7,xFilial("AA3")+aList3[nX,02],"AA3_CODPRO")
+        Z07->Z07_CODPROD    :=  aList3[nX,04]
+        Z07->Z07_SELECA     :=  strzero(val(aList3[nX,03]),2)
+        Z07->Z07_DINICIO    :=  dDataBase
+        //Z07->Z07_QUANT      :=  IF(Valtype(aList3[nX,06])<>"N",val(aList3[nX,06]),aList3[nX,06])
+        Z07->(Msunlock())
+    ENDIF
+
+    aList3[nX,01] := .T.
+    lAlt := .T.
+
 NEXT nX
                    
 IF lAlt
