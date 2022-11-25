@@ -41,6 +41,7 @@ export default function SalePay({route,navigation}){
     const [txtObs,setTxtObs] = useState(continuaP?ItensContinua.txtObs:'')
     const [itensErrSld, setItensErrSld] = useState([]);
     const [payment,setPayment] = useState('');
+    const [dPayment,setDPayment] = useState('');
     const [load1,setLoad1] = useState(false);
     const [load2,setLoad2] = useState(false);
 
@@ -313,7 +314,7 @@ export default function SalePay({route,navigation}){
                                     paddingHorizontal:20,
                                     paddingVertical:10
                                 }}
-                                onPress={()=>{ setVisibleObs(true),setPayment(item.codigo) }}
+                                onPress={()=>{ setVisibleObs(true),setPayment(item.codigo), setDPayment(item.descricao) }}
 
                             > 
                                 <Text>{'Codigo: ' + item.codigo.trim()}</Text>
@@ -531,7 +532,7 @@ export default function SalePay({route,navigation}){
               </div>
               <div style="position:absolute;top:1.10in;left:4.62in;width:1.30in;line-height:0.14in;"><span style="font-style:normal;font-weight:bold;font-size:6pt;font-family:Arial;color:#000000">Cond.Pagto.: </span></SPAN><br/></div>
               <div style="position:absolute;top:1.10in;left:4.62in;width:1.30in;line-height:0.13in;">
-                 <DIV style="position:relative; left:0.67in;"><span style="font-style:normal;font-weight:normal;font-size:6pt;font-family:Arial;color:#000000">001 - A VISTA</span><span style="font-style:normal;font-weight:normal;font-size:6pt;font-family:Arial;color:#000000"> </span><br/></SPAN></DIV>
+                 <DIV style="position:relative; left:0.67in;"><span style="font-style:normal;font-weight:normal;font-size:6pt;font-family:Arial;color:#000000">${payment + ' - ' +dPayment}</span><span style="font-style:normal;font-weight:normal;font-size:6pt;font-family:Arial;color:#000000"> </span><br/></SPAN></DIV>
               </div>
               <img style="position:absolute;top:1.33in;left:0.41in;width:8.48in;height:0.23in" src="http://portal.robsol.com.br/PDF/vi_7.png" />
               <img style="position:absolute;top:1.33in;left:0.41in;width:8.49in;height:0.23in" src="http://portal.robsol.com.br/PDF/vi_8.png" />
