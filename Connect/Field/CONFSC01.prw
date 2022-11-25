@@ -160,7 +160,7 @@ oGrp1      := TGroup():New( 002,004,336,710,"",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F.
 	oGrp4      := TGroup():New( 076,172,202,516,"Ativos",oGrp1,CLR_BLACK,CLR_WHITE,.T.,.F. )
 
 		oList2 	   := TCBrowse():New(084,174,337,115,, {'Ativo','Modelo','Vlr Locação','Qtd. Min.','Valor Min.','Qtd.Total','Vlr.Fat.'},{30,40,40,40,40,40,40},;
-	                            oGrp4,,,,{|| FHelp3(oList2:nAt)},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
+	                            oGrp4,,,,{|| FHelp3(oList2:nAt,oList:nAt)},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
 	
 		oList2:SetArray(aList2)
 		oList2:bLine := {||{ Alltrim(aList2[oList2:nAt,01]),;
@@ -694,7 +694,7 @@ oList3:refresh()
 oDlg1:refresh()
 
 oList2:nAt := 1 
-Fhelp3(oList2:nAt)
+Fhelp3(oList2:nAt,oList:nAt)
 
 RestArea(aArea)
 
@@ -712,7 +712,7 @@ Return
 	(examples)
 	@see (links_or_references)
 /*/
-Static Function FHelp3(nLinha)
+Static Function FHelp3(nLinha,nLinha2)
 
 Local aArea :=	GetArea()
 Local nPos  := 	0
@@ -763,7 +763,7 @@ Aeval(aList,{|x| x[18] := if(x[2]>1,0,1)})
 
 DbSelectArea("AAM")
 DbSetOrder(1)
-DbSeek(xFilial("AAM")+aList[nLinha,01])
+DbSeek(xFilial("AAM")+aList[nLinha2,01])
 cTexto := "Tabela de Preço "+AAM->AAM_XCODTA+" "
 If !Empty(AAM->AAM_XFORFA)
 	IF AAM->AAM_XFORFA == "1"
