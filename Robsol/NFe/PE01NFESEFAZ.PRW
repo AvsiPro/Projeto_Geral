@@ -42,7 +42,7 @@ Local cOurPed	:= ""
 
 
 // mensagem - dados adicionais
-If !Empty(SA1->A1_ENDENT)
+If !Empty(SA1->A1_ENDENT) .AND. AllTrim(SA1->A1_INSCR) != "ISENTO"
     aEntrega := {}
     aadd(aEntrega,SA1->A1_CGC)
     aadd(aEntrega,MyGetEnd(SA1->A1_ENDENT,"SA1")[1])
@@ -60,8 +60,6 @@ If !Empty(SA1->A1_ENDENT)
     aadd(aEntrega,FormatTel(Alltrim(AllTrim(SA1->A1_DDD)+SA1->A1_TEL))) 
     aadd(aEntrega,Alltrim(SA1->A1_EMAIL))
 EndIf  
-
-
 
 aadd(aRetorno,aProd)
 aadd(aRetorno,cMensCli)
