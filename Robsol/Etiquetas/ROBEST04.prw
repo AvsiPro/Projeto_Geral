@@ -440,13 +440,13 @@ Static Function ImpEtiq(aItens)
             oPrinter:Say(nLin - 15 - 28 + 2 ,nCol,Alltrim(SA1->A1_NOME),oFont6)
 
             IF (AllTrim(SA1->A1_ENDENT) != "")
-                cEndE      := SA1->A1_ENDENT
+                cEndE      := AllTrim(SA1->A1_ENDENT) + " " + AllTrim(SA1->A1_COMPENT)
                 cBairroE   := SA1->A1_BAIRROE
                 cCepE      := SA1->A1_CEPE
                 cMunE      := SA1->A1_MUNE
                 cEstE      := SA1->A1_ESTE
             ELSE
-                cEndE      := SA1->A1_END
+                cEndE      := AllTrim(SA1->A1_END) + " " + AllTrim(SA1->A1_COMPLEM)
                 cBairroE   := SA1->A1_BAIRRO
                 cCepE      := SA1->A1_CEP
                 cMunE      := SA1->A1_MUN

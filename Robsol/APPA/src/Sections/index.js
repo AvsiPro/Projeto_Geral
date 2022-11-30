@@ -305,6 +305,16 @@ export default function Sections({nameSec,item,vendedor,prdProd,dataBack,reset,h
         )
     }
 
+    function selectCli(){
+        if(item.bloqueado === 'sim'){
+            alert('Cliente bloqueado, não é possível prosseguir com o pedido.')
+
+        } else {
+            if (prdProd){
+                searchSec(`cnpj:${item.cnpj}:cli`)
+            }
+        }
+    }
 
     return (
         <SafeAreaView style={styles.content}>
@@ -334,12 +344,26 @@ export default function Sections({nameSec,item,vendedor,prdProd,dataBack,reset,h
 
             { nameSec == 'Customers' &&
                 <TouchableOpacity 
-                    onPress={()=>{prdProd&&searchSec(`cnpj:${item.cnpj}:cli`)}} 
+                    onPress={()=>selectCli()} 
                     style={styles.cardP}
                     onLongPress={()=>{handleOpenTit(item.codigo.trim())}}
                 >
+                    <View style={{
+                        flexDirection:'row',
+                        justifyContent:'space-between',
+                        alignItems:'flex-start',
+                        width:'100%',
+                    }}>
+                        
+                        <View style={{width:'90%'}}>
+                            <Text style={styles.cardDescP}>{item.nome_fantasia.trim()}</Text>
+                        </View>
 
-                    <Text style={styles.cardDescP}>{item.nome_fantasia.trim()}</Text>
+                        { item.bloqueado === 'sim' &&
+                            <Ionicons name="lock-closed" size={24} color="tomato" />
+                        }
+                    </View>
+                    
                     <Text style={styles.cardSubTitleP}>{item.razao_social.trim()}</Text>
                     <Text style={[styles.cardSubTitleP,{fontWeight:'bold'}]}>{item.cnpj.trim()}</Text>
 
