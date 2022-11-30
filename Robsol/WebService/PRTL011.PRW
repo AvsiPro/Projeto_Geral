@@ -144,6 +144,7 @@ WsMethod GET WsReceive CNPJ,PAGE,PAGESIZE,RAZAO_SOCIAL,NOME_FANTASIA,ENDERECO,BA
 			::SetResponse('"qtd_atrasos":"'+transform(SA1->A1_ATR,"@R 9999")+'",')
 			::SetResponse('"maior_atraso":"'+transform(SA1->A1_MATR,"@R 9999")+'",')
 			::SetResponse('"qtd_pagto_atraso":"'+transform(SA1->A1_PAGATR,"@R 9999")+'",')
+			::SetResponse('"bloqueado":"'+Iif(Alltrim(SA1->A1_MSBLQL) == '1','sim','nao')+'",')
 			::SetResponse('"id":"'+cvaltochar(Recno())+'"')
 
 			If cAppEnv == "SSS"
@@ -202,9 +203,9 @@ WsMethod GET WsReceive CNPJ,PAGE,PAGESIZE,RAZAO_SOCIAL,NOME_FANTASIA,ENDERECO,BA
 		cQuery += " A1_CGC,A1_COD,A1_LOJA,A1_NOME,A1_NREDUZ,A1_END,A1_BAIRRO,A1_MUN,"
 		cQuery += " A1_EST,A1_DDD,A1_TEL,A1_CEP,A1_CONTATO,A1_EMAIL,A1_ULTCOM,A1_XDDD,"
 		cQuery += " A1_MCOMPRA,A1_NROCOM,A1_SALDUP,A1_ATR,A1_MATR,A1_PAGATR,A1_XTELEFO,"
-		cQuery += " A1_RISCO,A1_LC,A1_LC-A1_SALDUP AS SALDO,A1_PRICOM,A1_INSCR,A1.R_E_C_N_O_ AS RECA1"
+		cQuery += " A1_RISCO,A1_LC,A1_LC-A1_SALDUP AS SALDO,A1_PRICOM,A1_INSCR,A1_MSBLQL,A1.R_E_C_N_O_ AS RECA1"
 		cQuery += " FROM "+RetSQLName("SA1")+" A1"
-		cQuery += " WHERE D_E_L_E_T_=' ' AND A1_MSBLQL<>'1'" 
+		cQuery += " WHERE D_E_L_E_T_=' ' "//AND A1_MSBLQL<>'1'" 
 		
 		If !Empty(cNome)
 			cQuery += " AND A1_NOME LIKE '%"+upper(cNome)+"%'"
@@ -273,13 +274,35 @@ WsMethod GET WsReceive CNPJ,PAGE,PAGESIZE,RAZAO_SOCIAL,NOME_FANTASIA,ENDERECO,BA
 		DbSelectArea("TRB")
 
 		While !EOF()
-			Aadd(aAux,{	TRB->A1_CGC,TRB->A1_COD,TRB->A1_NOME,TRB->A1_NREDUZ,;
-						TRB->A1_END,TRB->A1_BAIRRO,TRB->A1_MUN,TRB->A1_EST,;
-						ALLTRIM(TRB->A1_DDD)+ALLTRIM(TRB->A1_TEL),TRB->A1_CEP,TRB->A1_CONTATO,;
-						TRB->A1_EMAIL,TRB->A1_LOJA,TRB->A1_ULTCOM,TRB->A1_PRICOM,;
-						TRB->A1_RISCO,TRB->A1_LC,TRB->SALDO,TRB->A1_MCOMPRA,;
-						TRB->A1_NROCOM,TRB->A1_SALDUP,TRB->A1_ATR,TRB->A1_MATR,;
-						TRB->A1_PAGATR,TRB->A1_INSCR,TRB->RECA1,ALLTRIM(TRB->A1_XDDD)+ALLTRIM(TRB->A1_XTELEFO)})
+			Aadd(aAux,{	TRB->A1_CGC,;
+						TRB->A1_COD,;
+						TRB->A1_NOME,;
+						TRB->A1_NREDUZ,;
+						TRB->A1_END,;
+						TRB->A1_BAIRRO,;
+						TRB->A1_MUN,;
+						TRB->A1_EST,;
+						ALLTRIM(TRB->A1_DDD)+ALLTRIM(TRB->A1_TEL),;
+						TRB->A1_CEP,;
+						TRB->A1_CONTATO,;
+						TRB->A1_EMAIL,;
+						TRB->A1_LOJA,;
+						TRB->A1_ULTCOM,;
+						TRB->A1_PRICOM,;
+						TRB->A1_RISCO,;
+						TRB->A1_LC,;
+						TRB->SALDO,;
+						TRB->A1_MCOMPRA,;
+						TRB->A1_NROCOM,;
+						TRB->A1_SALDUP,;
+						TRB->A1_ATR,;
+						TRB->A1_MATR,;
+						TRB->A1_PAGATR,;
+						TRB->A1_INSCR,;
+						TRB->RECA1,;
+						ALLTRIM(TRB->A1_XDDD)+ALLTRIM(TRB->A1_XTELEFO),;
+						Iif(Alltrim(TRB->A1_MSBLQL) == '1','sim','nao');
+					})
 			Dbskip()
 		ENDDO
 
@@ -322,6 +345,7 @@ WsMethod GET WsReceive CNPJ,PAGE,PAGESIZE,RAZAO_SOCIAL,NOME_FANTASIA,ENDERECO,BA
 					::SetResponse('"qtd_atrasos":"'+transform(aAux[nCont,22],"@R 9999")+'",')
 					::SetResponse('"maior_atraso":"'+transform(aAux[nCont,23],"@R 9999")+'",')
 					::SetResponse('"qtd_pagto_atraso":"'+transform(aAux[nCont,24],"@R 9999")+'",')
+					::SetResponse('"bloqueado":"'+aAux[nCont,28]+'",')
 					::SetResponse('"id":"'+cvaltochar(aAux[nCont,26])+'"')
 				/*Else
 					::SetResponse('"cnpj":"'+aAux[nCont,01]+'",')

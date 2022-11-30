@@ -46,7 +46,7 @@ STATIC FUNCTION MenuDef()
     ADD OPTION aRot TITLE 'Incluir'    ACTION 'U_CONOPC05'             OPERATION MODEL_OPERATION_INSERT ACCESS 0 //OPERATION 3
     ADD OPTION aRot TITLE 'Alterar'    ACTION 'VIEWDEF.Z08Tela'        OPERATION MODEL_OPERATION_UPDATE ACCESS 0 //OPERATION 4
     ADD OPTION aRot TITLE 'Excluir'    ACTION 'U_Z08EXC(Z08->Z08_COD)' OPERATION MODEL_OPERATION_DELETE ACCESS 0 //OPERATION 5
-    ADD OPTION aRot TITLE 'Importar'   ACTION 'U_Z08IMP()'             OPERATION MODEL_OPERATION_DELETE ACCESS 0 //OPERATION 5
+    ADD OPTION aRot TITLE 'Importar'   ACTION 'U_Z08IMP()'             OPERATION MODEL_OPERATION_INSERT ACCESS 0 //OPERATION 5
  
 RETURN aRot
 
@@ -162,7 +162,9 @@ RETURN
 User Function Z08IMP()
     
     Local aPerg  := {}
-    Local cSeq   := '01'
+    Local aAux   := {}
+    Local aItens := {}
+    Local nX := 0
     Local nHandle  
     Local nLast
     Local cLine
@@ -192,8 +194,6 @@ User Function Z08IMP()
     // Retorna o número de linhas do arquivo
     nLast := FT_FLastRec()
 
-    MsgAlert( nLast )
-
     While !FT_FEOF()
 
         nRecno := FT_FRecno()
@@ -203,39 +203,110 @@ User Function Z08IMP()
             nRecno := FT_FRecno()
         endif
 
-        cCod := GetSxeNum("Z08", "Z08_COD")
+        cLine := FT_FReadLn()
 
-        cLine  := FT_FReadLn()
+        aAux  := Separa(cLine,';',.T.) 
 
-        aAux := Separa(cLine,';',.T.) 
-
-        RecLock("Z08", .T.)
-            Z08->Z08_COD       := cCod
-            Z08->Z08_SEQUENCIA := cSeq
-            Z08->Z08_NUMSER    := aAux[1]
-            Z08->Z08_DATA      := aAux[2]
-            Z08->Z08_SELECA    := aAux[3]
-            Z08->Z08_PRODUT    := aAux[4]
-            Z08->Z08_CONTRT    := aAux[5]
-            Z08->Z08_ITEM      := aAux[6]
-            Z08->Z08_QTDLID    := aAux[7]
-            Z08->Z08_VLRLID    := aAux[8]
-            Z08->Z08_DTDIGI    := cData
-            Z08->Z08_PERIOD    := SubStr(aAux[2], 5, 2) + SubStr(aAux[2], 3, 2)
-            Z08->Z08_MAQUIN    := aAux[9]
-            Z08->Z08_CODCLI    := aAux[10]
-            Z08->Z08_LOJACL    := aAux[11]
-            Z08->Z08_NOME      := cNome
-            Z08->Z08_CLIPAG    := aAux[12]
-        MsUnlock()
-
-        cSeq := Soma1(cSeq)
+        Aadd(aItens, aAux)
 
         // Pula para próxima linha
         FT_FSKIP()
 
     End
+
     // Fecha o Arquivo
     FT_FUSE()
+
+    for nX := 1 to len(aItens)
+        
+        aAux := {}
+
+        //SELECT Z07_CODPRO,Z07_CLIENT,Z07_LOJA,Z07_CODMAQ FROM Z07010 WHERE Z07_CHAPA = '0669' AND Z07_SELECA = '01'
+        //SELECT AAM_CONTRT,AAN_ITEM,AAM_CODCLI,AAM_LOJA FROM AAM010 IINER JOIN AAN010 ON AAN_CONTRT = AAM_CONTRT WHERE AAN_XCBASE = '0669'    
+    
+        cQuery := " "
+        cQuery += " SELECT Z07_CODPRO,Z07_CLIENT,Z07_LOJA,Z07_CODMAQ,AAM_CONTRT,AAN_ITEM,AAM_CODCLI,AAM_LOJA "
+        cQuery += " FROM AAM010 "
+        cQuery += " INNER JOIN AAN010 "
+        cQuery += " ON AAN_CONTRT = AAM_CONTRT "
+        cQuery += " AND AAN_XCBASE = '" + aItens[nX,1] + "' "
+        cQuery += " INNER JOIN Z07010 "
+        cQuery += " ON Z07_CHAPA = AAN_XCBASE "
+        cQuery += " AND Z07_SELECA = '" + aItens[nX,3] + "' "
+
+        if Select("TRB") > 0
+            dbSelectArea('TRB')
+            dbCloseArea()
+        endif
+        
+        DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
+
+        Aadd(aAux, {aItens[nX,1],aItens[nX,2],aItens[nX,3],aItens[nX,4],TRB->Z07_CODPRO,TRB->AAM_CONTRT,TRB->AAN_ITEM,TRB->Z07_CODMAQ,TRB->Z07_CLIENT,TRB->Z07_LOJA,TRB->AAM_CODCLI,TRB->AAM_LOJA})
+
+    next
+
+    oDlg1      := MSDialog():New( 050,100,600,1000,"Importacao de Leituras",,,.F.,,,,,,.T.,,,.T. )
+        
+    oGrp1      := TGroup():New( 05,05,225,450,"Leituras",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
+    
+        //oBrw1      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{124,048,304,352},,, oGrp3 ) 
+        oList1            := TCBrowse():New(15,15,425,200,, {'Numero de Serie','Data','Selecao','Produto','Contrato','Item','Qtd Lida','Vlr Lido','Maquina','COD Cliente','Loja CLiente','COD Cliente Pagante'},,oGrp1,,,,,,, ,,,  ,,.F.,,.T.,,.F.,,,)
+        
+        oList1:SetArray(aItens)
+        oList1:bLine := {||{aItens[oList1:nAt,01],; 
+                            aItens[oList1:nAt,02],;
+                            aItens[oList1:nAt,03],; 
+                            aItens[oList1:nAt,04],;
+                            aItens[oList1:nAt,05],;
+                            aItens[oList1:nAt,06],;
+                            aItens[oList1:nAt,07],;
+                            aItens[oList1:nAt,08],;
+                            aItens[oList1:nAt,09],;
+                            aItens[oList1:nAt,10],;
+                            aItens[oList1:nAt,11],;
+                            aItens[oList1:nAt,12]}} 
+
+        oBtn1      := TButton():New( 250,200,"Salvar Leitura",oDlg1,{|| oDlg1:end(nOpc:=1)},037,012,,,,.T.,,"",,,,.F. )
+        oBtn2      := TButton():New( 250,250,"Cancelar",oDlg1,{|| oDlg1:end(nOpc:=0)},037,012,,,,.T.,,"",,,,.F. )
+
+    oDlg1:Activate(,,,.T.)
+
+    if nOpc == 1
+        Z08SALVA(aItens)
+    endif
+
+Return 
+
+Static Function Z08SALVA(aItens)
+    
+    Local nX
+    Local cSeq := "01"
+    Local cCod := GetSxeNum("Z08", "Z08_COD")
+
+    for nX := 1 to len(aItens)
+
+        RecLock("Z08", .T.)
+            Z08->Z08_FILIAL    := xFilial("Z08")
+            Z08->Z08_COD       := cCod         //C
+            Z08->Z08_SEQUENCIA := cSeq         //C
+            Z08->Z08_NUMSER    := aItens[nX,1] //C *
+            Z08->Z08_DATA      := CTOD(aItens[nX,2]) //D *
+            Z08->Z08_SELECA    := aItens[nX,3] //C *
+            Z08->Z08_PRODUT    := aItens[nX,4] //C
+            Z08->Z08_CONTRT    := aItens[nX,5] //C
+            Z08->Z08_ITEM      := aItens[nX,6] //C
+            Z08->Z08_QTDLID    := val(aItens[nX,7]) //N *
+            Z08->Z08_VLRLID    := val(aItens[nX,8]) //N
+            Z08->Z08_DTDIGI    := dDataBase    //D
+            Z08->Z08_PERIOD    := cvaltochar(month(ctod(aItens[nX,2]))) + SubStr(cvaltochar(year(ctod(aItens[nX,2]))), 3, 2) //C
+            Z08->Z08_MAQUIN    := aItens[nX,9]  //C
+            Z08->Z08_CODCLI    := aItens[nX,10] //C
+            Z08->Z08_LOJACL    := aItens[nX,11] //C
+            Z08->Z08_CLIPAG    := aItens[nX,12] //C
+        MsUnlock()
+
+        cSeq := Soma1(cSeq)
+
+    next
 
 Return 
