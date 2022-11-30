@@ -149,11 +149,11 @@ oGrp1      := TGroup():New( 002,004,336,710,"",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F.
 	
 	oGrp3      := TGroup():New( 076,008,332,170,"Contratos",oGrp1,CLR_BLACK,CLR_WHITE,.T.,.F. )
 
-		oList 	   := TCBrowse():New(084,010,158,245,, {'','Contrato','Vlr Faturamento'},{5,30,40},;
+		oList 	   := TCBrowse():New(084,010,158,245,, {'','Contrato','Vlr Faturamento'},{5,90,30},;
 	                            oGrp3,,,,{|| FHelp(oList:nAt)},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
 		oList:SetArray(aList)
 		oList:bLine := {||{If(aList[oList:nAt,len(aQtdH)+1]==0,oSpv,(If(aList[oList:nAt,len(aQtdH)+1]==1,oPvg,oFat))),;
-							Alltrim(aList[oList:nAt,01]),; 
+							substr(aList[oList:nAt,05],at("/ ",aList[oList:nAt,05])+2),; 
 		 					Transform(aList[oList:nAt,02],"@E 999,999,999.99")}}
     //
 	//oTBitmap := TBitmap():New(220,010,110,010,,"\_AMC\Legendas.bmp",.T.,oGrp3, {||alert('teste')},,.F.,.F.,,,.F.,,.T.,,.F.)
@@ -224,7 +224,7 @@ oMenu := TMenu():New(0,0,0,0,.T.)
 // Adiciona itens no Menu
 oTMenuIte1 := TMenuItem():New(oDlg1,"Procurar",,,,{|| procurar()},,,,,,,,,.T.)
 oTMenuIte2 := TMenuItem():New(oDlg1,"Listar-Faturamento",,,,{|| Processa({||PreFat(),"Aguarde"})} ,,,,,,,,,.T.)
-oTMenuIte3 := TMenuItem():New(oDlg1,"Faturar",,,,{|| Processa({||GeraPv(),"Aguarde"})} ,,,,,,,,,.T.)
+oTMenuIte3 := TMenuItem():New(oDlg1,"Faturar",,,,{|| Processa({||GeraPv(0),"Aguarde"})} ,,,,,,,,,.T.)
 oTMenuIte4 := TMenuItem():New(oDlg1,"Envio NF/Boleto",,,,{|| NFBol()} ,,,,,,,,,.T.)
 oTMenuIte5 := TMenuItem():New(oDlg1,"Fechamento Mensal",,,,{|| Fechamento()} ,,,,,,,,,.T.)
 oTMenuIte6 := TMenuItem():New(oDlg1,"Rescisão Contrato",,,,{|| Rescisao(oList:nAt)} ,,,,,,,,,.T.)
@@ -240,7 +240,12 @@ oMenu:Add(oTMenuIte6)
 oTButton1 := TButton():New( 025, 640, "Opções",oDlg1,{||},40,10,,,.F.,.T.,.F.,,.F.,,,.F. )
 // Define botão no Menu
 oTButton1:SetPopupMenu(oMenu)
-                             
+
+	MENU oMenuP POPUP 
+	MENUITEM "Faturar" ACTION (GeraPv(1))
+	ENDMENU                                                                           
+
+	oList:bRClicked := { |oObject,nX,nY| oMenuP:Activate( nX, (nY-10), oObject ) }
 
 oDlg1:Activate(,,,.T.)
 
@@ -373,7 +378,8 @@ While !EOF()
 					TRB->AAM_XPERCT,;
 					TRB->AAM_XRENOV,;
 					0,;
-					TRB->AAN_FILIAL})
+					TRB->AAN_FILIAL,;
+					0})
     Else
     	//Soma todos os itens do contrato para pegar o valor total.
     	aList[nPos1,02] += nNewVlr //(TRB->AAN_QUANT*TRB->AAN_VLRUNI)
@@ -691,7 +697,7 @@ oList2:bLine := {||{ Alltrim(aList2[oList2:nAt,01]),;
 					If(aList2[oList2:nAt,09]>0,Transform(aList2[oList2:nAt,09],"@E 999,999,999.99"),'S/Qtd'),;
 					If(aList2[oList2:nAt,10]>0,Transform(aList2[oList2:nAt,10],"@E 999,999,999.99"),'S/Vlr'),;
 					aList2[oList2:nAt,11]}}
-					
+
 oList3:SetArray(aList3)
 oList3:bLine := {||{ Alltrim(aList3[oList3:nAt,01]),;
 					 aList3[oList3:nAt,02],;
@@ -809,6 +815,7 @@ If AAM->AAM_XQTVLM > 0
 
 	If nDifCb < AAM->AAM_XQTVLM
 		cTexto += " - Doses Complementares a serem cobradas "+Transform(AAM->AAM_XQTVLM-nDifCb,"@E 999,999,999")
+		aList[oList:nAt,20] := AAM->AAM_XQTVLM-nDifCb
 	EndIf 
 EndIF 
 
@@ -1838,9 +1845,36 @@ Return lRet
 	(examples)
 	@see (links_or_references)
 	/*/
-Static Function GeraPv()
+Static Function GeraPv(nOpcG)
 
-Local aArea :=	GetArea()
+Local aArea 	:=	GetArea()
+Local nCont 
+Local aItens	:=	{}
+Local aLocac 	:=	{}
+
+If nOpcG == 0
+	//Faturar todos os itens liberados do array alist
+ElseIf nOpcG == 1
+	//Faturamento unico na linha do array alist
+	For nCont := 1 to len(aList2)
+		If aList2[nCont,03] > 1
+			Aadd(aLocac,{aList2[nCont,01],;
+						aList2[nCont,03]})
+		EndIf 
+	Next nCont
+
+	For nCont := 1 to len(aList5)
+		Aadd(aItens,{aList5[nCont,02],;
+					aList5[nCont,08],;
+					aList5[nCont,09]})
+	Next nCont
+
+	If aList[oList:nAt,20] > 0
+		Aadd(aItens,{'DOSE COMPLEMENTAR',;
+					aList[oList:nAt,20],;
+					'1'})
+	EndIf 
+EndIF 
 
 RestArea(aArea)
 

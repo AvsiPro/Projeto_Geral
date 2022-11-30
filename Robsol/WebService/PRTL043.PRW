@@ -108,7 +108,7 @@ WsMethod POST WsReceive RECEIVE WsService PRTL043
 				Z50->Z50_DEFEIT := cDefeito
 				Z50->Z50_TPDEFE := cTpDefeito
 				Z50->Z50_OUTEND := fRemoveCarc(cOutroEnd)
-				Z50->Z50_FILPED := cFilFat
+				Z50->Z50_FILPED := If(Valtype("cFilFat")=="C",cFilFat,'0101')
 				ConfirmSx8()
 			Z50->(MsUnlock())
 		Else
