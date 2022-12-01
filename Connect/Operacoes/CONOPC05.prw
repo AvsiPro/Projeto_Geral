@@ -90,6 +90,7 @@ User Function CONOPC05()
                 Z08->Z08_MAQUIN := aCols[nCont,14]
                 Z08->Z08_CODCLI := aCols[nCont,06]
                 Z08->Z08_LOJACL := aCols[nCont,07]
+                Z08->Z08_MSBLQL := "2"
                 Z08->(MsUnlock())
             Next nCont
         EndIF 
