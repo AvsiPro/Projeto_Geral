@@ -1,7 +1,12 @@
 //Bibliotecas
 #INCLUDE 'Protheus.ch'
 #INCLUDE 'FWMVCDef.ch'
- 
+#include "topconn.ch"
+#include "tbiconn.ch"
+#include "fileio.ch"
+#include "topconn.ch"
+#include "parmtype.ch"
+
 //Variáveis Estáticas
 STATIC cTitulo    :=    "Inclusão Manual de Leitura"
  
@@ -164,11 +169,16 @@ User Function Z08IMP()
     Local aPerg  := {}
     Local aAux   := {}
     Local aItens := {}
-    Local nX := 0
+    Local cArqT :=	"C:\00\" + dtos(dDataBase) + ".txt"
+    Local nX     := 0
+    Local lErro  := .F.
+    Local cErro  := ""
+    Local cMsg   := ""
     Local nHandle  
     Local nLast
     Local cLine
     Local nRecno
+    Local nHandle3 :=	fcreate(cArqT, FO_READWRITE + FO_SHARED )
 
     aAdd(aPerg,{6,"Buscar arquivo",Space(50),"","","",50,.T.,"Arquivos compativeis (*.csv*) |*.csv*"})
     
@@ -219,6 +229,79 @@ User Function Z08IMP()
 
     for nX := 1 to len(aItens)
         
+        //verifica se a data na linha é maior que a data atual
+        if CTOD(aItens[nX,2]) > dDataBase
+            lErro  := .T.
+            cMsg  := "A data da leitura na linha " + cValToChar(nX) + " é maior do que a data do sistema, deseja prosseguir?"
+            if !MsgYesNo(cMsg, "Atenção!")
+                cErro  := "A data da leitura na linha " + cValToChar(nX) + " é maior do que a data do sistema"
+                EXIT
+            endif
+            lErro := .F.
+        endif
+
+        cQuery := " "
+        cQuery += " SELECT N1_XCLIENT,N1_XLOJA,AAN_XCBASE " 
+        cQuery += " FROM   " + RetSQLName("SN1") + " " 
+        cQuery += " INNER JOIN " + RetSQLName("AAN") + " ON AAN_XCBASE = N1_CBASE " 
+        cQuery += " INNER JOIN " + RetSQLName("AAM") + " ON AAN_CONTRT = AAN_CONTRT" 
+        cQuery += " WHERE  N1_CBASE = '" + aItens[nX,1] + "' " 
+
+        if Select("TRB") > 0
+            dbSelectArea('TRB')
+            dbCloseArea()
+        endif
+        
+        DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
+
+        if AllTrim(TRB->N1_XCLIENT) == ''
+            lErro := .T.
+            cErro := " O numero de serie informado na linha " + cValToChar(nX) + " não tem cliente vinculado!"
+            EXIT
+        endif
+
+        cQuery := " "
+        cQuery += " SELECT * " 
+        cQuery += " FROM " + RetSQLName("Z07") + " " 
+        cQuery += " WHERE Z07_CHAPA = '" + aItens[nX,1] + "' " 
+        cQuery += "       AND Z07_SELECA = '" + aItens[nX,3] + "' " 
+
+        if Select("TRB") > 0
+            dbSelectArea('TRB')
+            dbCloseArea()
+        endif
+        
+        DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
+
+        if AllTrim(TRB->Z07_SELECA) != aItens[nX,3]
+            lErro := .T.
+            cErro := " A seleção informada na linha " + cValToChar(nX) + " não foi encontrada no cadastro do mapa!" 
+            EXIT
+        endif
+
+        cQuery := " "
+        cQuery += " SELECT MAX(Z08_DATA) AS DATA1 " 
+        cQuery += " FROM   " + RetSQLName("Z08") + " " 
+        cQuery += " WHERE  Z08_NUMSER = '0669' " 
+        cQuery += "        AND Z08_SELECA = '01' " 
+
+        if Select("TRB") > 0
+            dbSelectArea('TRB')
+            dbCloseArea()
+        endif
+        
+        DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
+
+        if TRB->DATA1 < DTOS(CTOD(aItens[nX,2]))
+            lErro := .T.
+            cMsg := " A data da leitura na linha " + cValToChar(nX) + " é menor do que a data da última leitura, deseja prosseguir?"
+            if !MsgYesNo(cMsg, "Atenção!")
+                cMsg := " A data da leitura na linha " + cValToChar(nX) + " é menor do que a data da última leitura"
+                EXIT    
+            endif
+            lErro := .F.
+        endif
+
         aAux := {}
 
         //SELECT Z07_CODPRO,Z07_CLIENT,Z07_LOJA,Z07_CODMAQ FROM Z07010 WHERE Z07_CHAPA = '0669' AND Z07_SELECA = '01'
@@ -244,6 +327,17 @@ User Function Z08IMP()
         Aadd(aAux, {aItens[nX,1],aItens[nX,2],aItens[nX,3],aItens[nX,4],TRB->Z07_CODPRO,TRB->AAM_CONTRT,TRB->AAN_ITEM,TRB->Z07_CODMAQ,TRB->Z07_CLIENT,TRB->Z07_LOJA,TRB->AAM_CODCLI,TRB->AAM_LOJA})
 
     next
+
+    if lErro
+        fwrite(nHandle3, "----------" + CRLF)
+        fwrite(nHandle3, cErro + CRLF)
+        fwrite(nHandle3, "----------" + CRLF)
+        FCLOSE(nHandle3)
+        ShellExecute("open", cArqT, "00\", "C:\", 1)
+        RETURN
+    else
+        FCLOSE(nHandle3)
+    endif
 
     oDlg1      := MSDialog():New( 050,100,600,1000,"Importacao de Leituras",,,.F.,,,,,,.T.,,,.T. )
         
