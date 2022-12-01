@@ -169,12 +169,12 @@ User Function Z08IMP()
     Local aPerg  := {}
     Local aAux   := {}
     Local aItens := {}
-    Local cArqT :=	"C:\00\" + dtos(dDataBase) + ".txt"
+    Local cArqT  :=	"C:\00\" + dtos(dDataBase) + StrTran(Time(),":","") + ".txt"
     Local nX     := 0
     Local lErro  := .F.
     Local cErro  := ""
     Local cMsg   := ""
-    Local nHandle  
+    Local nHandle
     Local nLast
     Local cLine
     Local nRecno
@@ -232,9 +232,9 @@ User Function Z08IMP()
         //verifica se a data na linha é maior que a data atual
         if CTOD(aItens[nX,2]) > dDataBase
             lErro  := .T.
-            cMsg  := "A data da leitura na linha " + cValToChar(nX) + " é maior do que a data do sistema, deseja prosseguir?"
+            cMsg  := "A data da leitura na linha " + cValToChar(nX + 1) + " (data: " + aItens[nX,2] + ") é maior do que a data do sistema, deseja prosseguir assim mesmo?"
             if !MsgYesNo(cMsg, "Atenção!")
-                cErro  := "A data da leitura na linha " + cValToChar(nX) + " é maior do que a data do sistema"
+                cErro  := "A data da leitura na linha " + cValToChar(nX + 1) + " (data: " + aItens[nX,2] + ") é maior do que a data do sistema"
                 EXIT
             endif
             lErro := .F.
@@ -242,10 +242,14 @@ User Function Z08IMP()
 
         cQuery := " "
         cQuery += " SELECT N1_XCLIENT,N1_XLOJA,AAN_XCBASE " 
-        cQuery += " FROM   " + RetSQLName("SN1") + " " 
-        cQuery += " INNER JOIN " + RetSQLName("AAN") + " ON AAN_XCBASE = N1_CBASE " 
-        cQuery += " INNER JOIN " + RetSQLName("AAM") + " ON AAN_CONTRT = AAN_CONTRT" 
+        cQuery += " FROM   " + RetSQLName("SN1") + " SN1 " 
+        cQuery += " INNER JOIN " + RetSQLName("AAN") + " AAN ON AAN_FILIAL = '" + xFilial("AAN") + "' AND AAN_XCBASE = N1_CBASE " 
+        cQuery += " INNER JOIN " + RetSQLName("AAM") + " AAM ON AAM_FILIAL = AAN_FILIAL AND AAN_CONTRT = AAN_CONTRT " 
         cQuery += " WHERE  N1_CBASE = '" + aItens[nX,1] + "' " 
+        cQuery += " AND SN1.D_E_L_E_T_ = ' ' " 
+        cQuery += " AND AAN.D_E_L_E_T_ = ' ' " 
+        cQuery += " AND AAM.D_E_L_E_T_ = ' ' " 
+        cQuery += " AND N1_FILIAL = '" + xFilial("SN1") + "' " 
 
         if Select("TRB") > 0
             dbSelectArea('TRB')
@@ -256,7 +260,7 @@ User Function Z08IMP()
 
         if AllTrim(TRB->N1_XCLIENT) == ''
             lErro := .T.
-            cErro := " O numero de serie informado na linha " + cValToChar(nX) + " não tem cliente vinculado!"
+            cErro := "O numero de série informado na linha " + cValToChar(nX + 1) + " (numero de série: " + aItens[nX,1] + ") não tem cliente vinculado!"
             EXIT
         endif
 
@@ -264,7 +268,9 @@ User Function Z08IMP()
         cQuery += " SELECT * " 
         cQuery += " FROM " + RetSQLName("Z07") + " " 
         cQuery += " WHERE Z07_CHAPA = '" + aItens[nX,1] + "' " 
-        cQuery += "       AND Z07_SELECA = '" + aItens[nX,3] + "' " 
+        cQuery += " AND Z07_SELECA = '" + aItens[nX,3] + "' " 
+        cQuery += " AND D_E_L_E_T_ = ' ' " 
+        cQuery += " AND Z07_FILIAL = '" + xFilial("Z07") + "' " 
 
         if Select("TRB") > 0
             dbSelectArea('TRB')
@@ -275,15 +281,18 @@ User Function Z08IMP()
 
         if AllTrim(TRB->Z07_SELECA) != aItens[nX,3]
             lErro := .T.
-            cErro := " A seleção informada na linha " + cValToChar(nX) + " não foi encontrada no cadastro do mapa!" 
+            cErro := "A seleção informada na linha " + cValToChar(nX + 1) + " (seleção: " + aItens[nX,3] + ") não foi encontrada no cadastro do mapa!" 
             EXIT
         endif
 
         cQuery := " "
         cQuery += " SELECT MAX(Z08_DATA) AS DATA1 " 
         cQuery += " FROM   " + RetSQLName("Z08") + " " 
-        cQuery += " WHERE  Z08_NUMSER = '0669' " 
-        cQuery += "        AND Z08_SELECA = '01' " 
+        cQuery += " WHERE  Z08_NUMSER = '" + aItens[nX,1] + "' " 
+        cQuery += " AND Z08_SELECA = '" + aItens[nX,3] + "' " 
+        cQuery += " AND D_E_L_E_T_ = ' ' " 
+        cQuery += " AND Z08_MSBLQL != '1' " 
+        cQuery += " AND Z08_FILIAL = '" + xFilial("Z08") + "' " 
 
         if Select("TRB") > 0
             dbSelectArea('TRB')
@@ -292,16 +301,61 @@ User Function Z08IMP()
         
         DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
 
-        if TRB->DATA1 < DTOS(CTOD(aItens[nX,2]))
+        if TRB->DATA1 > DTOS(CTOD(aItens[nX,2]))
+
+            cQuery := " "
+            cQuery += " SELECT Z08_COD " 
+            cQuery += " FROM   " + RetSQLName("Z08") + " " 
+            cQuery += " WHERE  Z08_NUMSER = '" + aItens[nX,1] + "' " 
+            cQuery += " AND Z08_SELECA = '" + aItens[nX,3] + "' " 
+            cQuery += " AND Z08_DATA = '" + DTOS(CTOD(aItens[nX,2])) + "' " 
+            cQuery += " AND D_E_L_E_T_ = ' ' " 
+            cQuery += " AND Z08_MSBLQL != '1' " 
+            cQuery += " AND Z08_FILIAL = '" + xFilial("Z08") + "' " 
+
+            if Select("TRB") > 0
+                dbSelectArea('TRB')
+                dbCloseArea()
+            endif
+            
+            DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
+
             lErro := .T.
-            cMsg := " A data da leitura na linha " + cValToChar(nX) + " é menor do que a data da última leitura, deseja prosseguir?"
+            cMsg  := "A data da leitura na linha " + cValToChar(nX + 1) + " (data: " + aItens[nX,2] + ") é menor do que a data da última leitura (" + TRB->Z08_COD + "), deseja prosseguir assim mesmo?"
             if !MsgYesNo(cMsg, "Atenção!")
-                cMsg := " A data da leitura na linha " + cValToChar(nX) + " é menor do que a data da última leitura"
+                cErro := "A data da leitura na linha " + cValToChar(nX + 1) + " (data: " + aItens[nX,2] + ") é menor do que a data da última leitura (" + TRB->Z08_COD + ")"
                 EXIT    
             endif
             lErro := .F.
         endif
 
+        if TRB->DATA1 == DTOS(CTOD(aItens[nX,2]))
+
+            cQuery := " "
+            cQuery += " SELECT Z08_COD " 
+            cQuery += " FROM   " + RetSQLName("Z08") + " " 
+            cQuery += " WHERE  Z08_NUMSER = '" + aItens[nX,1] + "' " 
+            cQuery += " AND Z08_SELECA = '" + aItens[nX,3] + "' " 
+            cQuery += " AND Z08_DATA = '" + DTOS(CTOD(aItens[nX,2])) + "' " 
+            cQuery += " AND D_E_L_E_T_ = ' ' " 
+            cQuery += " AND Z08_MSBLQL != '1' " 
+            cQuery += " AND Z08_FILIAL = '" + xFilial("Z08") + "' " 
+
+            if Select("TRB") > 0
+                dbSelectArea('TRB')
+                dbCloseArea()
+            endif
+            
+            DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
+
+            lErro := .T.
+            cMsg  := "A data da leitura na linha " + cValToChar(nX + 1) + " (data: " + aItens[nX,2] + ") é igual a data da última leitura (" + TRB->Z08_COD + "), deseja prosseguir assim mesmo?"
+            if !MsgYesNo(cMsg, "Atenção!")
+                cErro := "A data da leitura na linha " + cValToChar(nX + 1) + " (data: " + aItens[nX,2] + ") é igual a data da última leitura (" + TRB->Z08_COD + ")"
+                EXIT    
+            endif
+            lErro := .F.
+        endif
         aAux := {}
 
         //SELECT Z07_CODPRO,Z07_CLIENT,Z07_LOJA,Z07_CODMAQ FROM Z07010 WHERE Z07_CHAPA = '0669' AND Z07_SELECA = '01'
@@ -309,13 +363,19 @@ User Function Z08IMP()
     
         cQuery := " "
         cQuery += " SELECT Z07_CODPRO,Z07_CLIENT,Z07_LOJA,Z07_CODMAQ,AAM_CONTRT,AAN_ITEM,AAM_CODCLI,AAM_LOJA "
-        cQuery += " FROM AAM010 "
-        cQuery += " INNER JOIN AAN010 "
+        cQuery += " FROM " + RetSQLName("AAM") + " AAM "
+        cQuery += " INNER JOIN " + RetSQLName("AAN") + " AAN "
         cQuery += " ON AAN_CONTRT = AAM_CONTRT "
         cQuery += " AND AAN_XCBASE = '" + aItens[nX,1] + "' "
-        cQuery += " INNER JOIN Z07010 "
+        cQuery += " AND AAN_FILIAL = AAM_FILIAL "
+        cQuery += " INNER JOIN " + RetSQLName("Z07") + " Z07 "
         cQuery += " ON Z07_CHAPA = AAN_XCBASE "
         cQuery += " AND Z07_SELECA = '" + aItens[nX,3] + "' "
+        cQuery += " WHERE AAM.D_E_L_E_T_ = ' ' "
+        cQuery += " AND AAN.D_E_L_E_T_ = ' ' "
+        cQuery += " AND Z07.D_E_L_E_T_ = ' ' "
+        cQuery += " AND Z07_FILIAL = '"+xFilial("Z07")+"' "
+        cQuery += " AND AAM_FILIAL = '"+xFilial("AAM")+"' "
 
         if Select("TRB") > 0
             dbSelectArea('TRB')
@@ -324,12 +384,24 @@ User Function Z08IMP()
         
         DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
 
-        Aadd(aAux, {aItens[nX,1],aItens[nX,2],aItens[nX,3],aItens[nX,4],TRB->Z07_CODPRO,TRB->AAM_CONTRT,TRB->AAN_ITEM,TRB->Z07_CODMAQ,TRB->Z07_CLIENT,TRB->Z07_LOJA,TRB->AAM_CODCLI,TRB->AAM_LOJA})
+        Aadd(aAux, {aItens[nX,1],;
+                    aItens[nX,2],;
+                    aItens[nX,3],;
+                    aItens[nX,4],;
+                    AllTrim(TRB->Z07_CODPRO),;
+                    AllTrim(TRB->AAM_CONTRT),;
+                    AllTrim(TRB->AAN_ITEM),;
+                    AllTrim(TRB->Z07_CODMAQ),;
+                    AllTrim(TRB->Z07_CLIENT),;
+                    AllTrim(TRB->Z07_LOJA),;
+                    AllTrim(TRB->AAM_CODCLI),;
+                    AllTrim(TRB->AAM_LOJA)})
 
     next
 
     if lErro
         fwrite(nHandle3, "----------" + CRLF)
+        fwrite(nHandle3, "Erro ao importar leituras manuais (Z08Tela.PRW) " + Time() + " Usuario: " + cUsername + CRLF)
         fwrite(nHandle3, cErro + CRLF)
         fwrite(nHandle3, "----------" + CRLF)
         FCLOSE(nHandle3)
@@ -344,21 +416,21 @@ User Function Z08IMP()
     oGrp1      := TGroup():New( 05,05,225,450,"Leituras",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
     
         //oBrw1      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{124,048,304,352},,, oGrp3 ) 
-        oList1            := TCBrowse():New(15,15,425,200,, {'Numero de Serie','Data','Selecao','Produto','Contrato','Item','Qtd Lida','Vlr Lido','Maquina','COD Cliente','Loja CLiente','COD Cliente Pagante'},,oGrp1,,,,,,, ,,,  ,,.F.,,.T.,,.F.,,,)
+        oList1            := TCBrowse():New(15,15,425,200,, {'Numero de Serie','Data','Selecao','Qtd Lida','Cod Produto','Cod Contrato','Item Contrato','Cod Maquina','Cod Cliente','Loja CLiente','Cod Cliente Pag','Loja Cliente Pag'},,oGrp1,,,,,,, ,,,  ,,.F.,,.T.,,.F.,,,)
         
-        oList1:SetArray(aItens)
-        oList1:bLine := {||{aItens[oList1:nAt,01],; 
-                            aItens[oList1:nAt,02],;
-                            aItens[oList1:nAt,03],; 
-                            aItens[oList1:nAt,04],;
-                            aItens[oList1:nAt,05],;
-                            aItens[oList1:nAt,06],;
-                            aItens[oList1:nAt,07],;
-                            aItens[oList1:nAt,08],;
-                            aItens[oList1:nAt,09],;
-                            aItens[oList1:nAt,10],;
-                            aItens[oList1:nAt,11],;
-                            aItens[oList1:nAt,12]}} 
+        oList1:SetArray(aAux)
+        oList1:bLine := {||{aAux[oList1:nAt,01],; 
+                            aAux[oList1:nAt,02],;
+                            aAux[oList1:nAt,03],; 
+                            aAux[oList1:nAt,04],;
+                            aAux[oList1:nAt,05],;
+                            aAux[oList1:nAt,06],;
+                            aAux[oList1:nAt,07],;
+                            aAux[oList1:nAt,08],;
+                            aAux[oList1:nAt,09],;
+                            aAux[oList1:nAt,10],;
+                            aAux[oList1:nAt,11],;
+                            aAux[oList1:nAt,12]}} 
 
         oBtn1      := TButton():New( 250,200,"Salvar Leitura",oDlg1,{|| oDlg1:end(nOpc:=1)},037,012,,,,.T.,,"",,,,.F. )
         oBtn2      := TButton():New( 250,250,"Cancelar",oDlg1,{|| oDlg1:end(nOpc:=0)},037,012,,,,.T.,,"",,,,.F. )
@@ -366,7 +438,7 @@ User Function Z08IMP()
     oDlg1:Activate(,,,.T.)
 
     if nOpc == 1
-        Z08SALVA(aItens)
+        Z08SALVA(aAux)
     endif
 
 Return 
@@ -386,17 +458,18 @@ Static Function Z08SALVA(aItens)
             Z08->Z08_NUMSER    := aItens[nX,1] //C *
             Z08->Z08_DATA      := CTOD(aItens[nX,2]) //D *
             Z08->Z08_SELECA    := aItens[nX,3] //C *
-            Z08->Z08_PRODUT    := aItens[nX,4] //C
-            Z08->Z08_CONTRT    := aItens[nX,5] //C
-            Z08->Z08_ITEM      := aItens[nX,6] //C
-            Z08->Z08_QTDLID    := val(aItens[nX,7]) //N *
-            Z08->Z08_VLRLID    := val(aItens[nX,8]) //N
+            Z08->Z08_PRODUT    := aItens[nX,5] //C
+            Z08->Z08_CONTRT    := aItens[nX,6] //C
+            Z08->Z08_ITEM      := aItens[nX,7] //C
+            Z08->Z08_QTDLID    := val(aItens[nX,4]) //N *
+            // Z08->Z08_VLRLID    := val(aItens[nX,8]) //N
             Z08->Z08_DTDIGI    := dDataBase    //D
             Z08->Z08_PERIOD    := cvaltochar(month(ctod(aItens[nX,2]))) + SubStr(cvaltochar(year(ctod(aItens[nX,2]))), 3, 2) //C
-            Z08->Z08_MAQUIN    := aItens[nX,9]  //C
-            Z08->Z08_CODCLI    := aItens[nX,10] //C
-            Z08->Z08_LOJACL    := aItens[nX,11] //C
-            Z08->Z08_CLIPAG    := aItens[nX,12] //C
+            Z08->Z08_MAQUIN    := aItens[nX,8]  //C
+            Z08->Z08_CODCLI    := aItens[nX,9] //C
+            Z08->Z08_LOJACL    := aItens[nX,10] //C
+            Z08->Z08_CLIPAG    := aItens[nX,11] //C
+            Z08->Z08_MSBLQL    := "2" //C
         MsUnlock()
 
         cSeq := Soma1(cSeq)
