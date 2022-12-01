@@ -101,7 +101,7 @@ User Function ROBFAT07()
 								aList2[oList2:nAt,4],;
 								aList2[oList2:nAt,5]}}
 
-	oList3     := TCBrowse():New( 150, 008, 500, 145,, {'', 'Codigo', 'Descricao', 'Saldo 3', 'Saldo Estoque', 'Preco UN', 'Data de Emissao'}, {,,200,,},;
+	oList3     := TCBrowse():New( 150, 008, 550, 145,, {'', 'Codigo', 'Descricao', 'Saldo 3', 'Saldo Estoque', 'Preco UN', 'Nota', 'Data de Emissao'}, {,,200,,},;
 				 oGrp1,,,,, {|| selecProd(oList3:nAt)},,,,,,,,, .T.,,,, .F., .T. )
 	
 	oList3:SetArray(aList3)
@@ -111,6 +111,7 @@ User Function ROBFAT07()
 								aList3[oList3:nAt,4],;
 								aList3[oList3:nAt,5],;
 								aList3[oList3:nAt,6],;
+								aList3[oList3:nAt,11],;
 								SubStr(aList3[oList3:nAt,9], 7, 2) + "/" + SubStr(aList3[oList3:nAt,9], 5, 2) + "/" + SubStr(aList3[oList3:nAt,9],1,4)}}
 
 	nLarg  := 052*1.5
@@ -122,10 +123,10 @@ User Function ROBFAT07()
 
 	oBtn1      := TButton():New( nLinha+25,   564,  "Ok",                   oGrp1, {|| oDlg1:end(nOpc:=1)},      nLarg,    nAlt,,,,.T.,,"",,,,.F. )
 	oBtn2      := TButton():New( nLinha+50,   564,  "Marcar Todos", 		oGrp1, {|| marcaTodos()},            nLarg,    nAlt,,,,.T.,,"",,,,.F. )
-	oBtn4      := TButton():New( nLinha+100,  564,  "Sair",                 oGrp1, {|| oDlg1:end(nOpc:=0)},      nLarg,    nAlt,,,,.T.,,"",,,,.F. )
-	oBtn5      := TButton():New( nLinha+75,   510,  "Ir ao Início",         oGrp1, {|| oList3:GoTop()},          nLarg-25, nAlt,,,,.T.,,"",,,,.F. )
-	oBtn6      := TButton():New( nLinha+100,  510,  "Ir ao Fim",            oGrp1, {|| oList3:GoBottom()},       nLarg-25, nAlt,,,,.T.,,"",,,,.F. )
-	oBtn7      := TButton():New( nLinha+125,  510,  "Excel",	            oGrp1, {|| fExcel()},       		 nLarg-25, nAlt,,,,.T.,,"",,,,.F. )
+	oBtn7      := TButton():New( nLinha+75,   564,  "Excel",	            oGrp1, {|| fExcel()},       		 nLarg,    nAlt,,,,.T.,,"",,,,.F. )
+	oBtn5      := TButton():New( nLinha+100,  564,  "Ir ao Início",         oGrp1, {|| oList3:GoTop()},          nLarg,    nAlt,,,,.T.,,"",,,,.F. )
+	oBtn6      := TButton():New( nLinha+125,  564,  "Ir ao Fim",            oGrp1, {|| oList3:GoBottom()},       nLarg,    nAlt,,,,.T.,,"",,,,.F. )
+	oBtn4      := TButton():New( nLinha+150,  564,  "Sair",                 oGrp1, {|| oDlg1:end(nOpc:=0)},      nLarg,    nAlt,,,,.T.,,"",,,,.F. )
 
 	oSay1:= TSay():New( nLinha+180, 10, {||'Quantidade total de produtos: '}, oDlg1,,      ,,,, .T., CLR_BLACK,, 200, 20 )
 	oSay2:= TSay():New( nLinha+177, 85, {||''},                               oDlg1,,oFont1,,,, .T., CLR_BLACK,, 200, 20 )
@@ -251,7 +252,7 @@ Else
 	Next nCont 
 
 	If len(aList3) < 1
-		Aadd(aList3,{.F.,'','','','','','','','',''})
+		Aadd(aList3,{.F.,'','','','','','','','','',''})
 	EndIF 
 ENDIF
 
@@ -269,6 +270,7 @@ oList3:bLine := {||{ 	If(aList3[oList3:nAt,01],oOk,oNo),;
 						aList3[oList3:nAt,4],;
 						aList3[oList3:nAt,5],;
 						aList3[oList3:nAt,6],;
+						aList3[oList3:nAt,11],;
 						SubStr(aList3[oList3:nAt,9], 7, 2) + "/" + SubStr(aList3[oList3:nAt,9], 5, 2) + "/" + SubStr(aList3[oList3:nAt,9],1,4)}}
 
 If nOpc == 1
@@ -523,7 +525,7 @@ Static Function buscaProd(cCli)
 	Local cQuery    :=  ""
 	
 	cQuery := " "
-	cQuery += " SELECT BM_XMODELO,B1_COD,B1_DESC,B2_QATU,B1_PRV1,BM_XMODELO,B1_LOCPAD,B6_SALDO,B6_PRUNIT,B6_EMISSAO,B6_CLIFOR "+CRLF
+	cQuery += " SELECT BM_XMODELO,B1_COD,B1_DESC,B2_QATU,B1_PRV1,BM_XMODELO,B1_LOCPAD,B6_SALDO,B6_PRUNIT,B6_DOC,B6_EMISSAO,B6_CLIFOR "+CRLF
 	cQuery += " FROM " + RetSQLName("SB6") + " SB6 "+CRLF
 	cQuery += " INNER JOIN " + RetSQLName("SB1") + " SB1 ON B1_FILIAL = '" + xFilial("SB1") + "' AND B6_PRODUTO = B1_COD AND SB1.B1_MSBLQL <> '1' AND SB1.D_E_L_E_T_ = ' '"+CRLF
 	cQuery += " INNER JOIN " + RetSQLName("SBM") + " SBM ON BM_FILIAL = '" + xFilial("SBM") + "' AND BM_GRUPO = B1_GRUPO AND SBM.D_E_L_E_T_=' '"+CRLF
@@ -558,7 +560,8 @@ Static Function buscaProd(cCli)
 							TRB->BM_XMODELO,;			//7
 							TRB->B1_LOCPAD,;			//8
 							TRB->B6_EMISSAO,;			//9
-							TRB->B6_CLIFOR})			//10
+							TRB->B6_CLIFOR,;			//10
+							TRB->B6_DOC})     			//11
 
 		else
 			aList3B[nPosAux,04] += TRB->B6_SALDO
@@ -598,7 +601,8 @@ Static Function buscaProd(cCli)
 							TRB->BM_XMODELO,;
 							TRB->B1_LOCPAD,;
 							"",;
-							cCli})
+							cCli,;
+							""})
 		endif
 		DBSKIP()
 	End
@@ -679,6 +683,7 @@ Static Function selecProd(nLinha)
 						aList3[oList3:nAt,4],;
 						aList3[oList3:nAt,5],;
 						aList3[oList3:nAt,6],;
+						aList3[oList3:nAt,11],;
 						SubStr(aList3[oList3:nAt,9], 7, 2) + "/" + SubStr(aList3[oList3:nAt,9], 5, 2) + "/" + SubStr(aList3[oList3:nAt,9],1,4)}}
 	
 	oList3:Refresh()
@@ -719,6 +724,7 @@ Static Function marcaTodos()
 						aList3[oList3:nAt,4],;
 						aList3[oList3:nAt,5],;
 						aList3[oList3:nAt,6],;
+						aList3[oList3:nAt,11],;
 						SubStr(aList3[oList3:nAt,9], 7, 2) + "/" + SubStr(aList3[oList3:nAt,9], 5, 2) + "/" + SubStr(aList3[oList3:nAt,9],1,4)}}
 	
 	oList3:Refresh()
@@ -787,6 +793,7 @@ Static Function filtraLista()
 						aList3[oList3:nAt,4],;
 						aList3[oList3:nAt,5],;
 						aList3[oList3:nAt,6],;
+						aList3[oList3:nAt,11],;
 						SubStr(aList3[oList3:nAt,9], 7, 2) + "/" + SubStr(aList3[oList3:nAt,9], 5, 2) + "/" + SubStr(aList3[oList3:nAt,9],1,4)}}
 	
 	oList3:Refresh()
@@ -1079,7 +1086,7 @@ Static Function tipoDeMala()
 	DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
 
 	While !EOF()
-		Aadd(aAux, { .T., AllTrim(TRB->B1_COD), AllTrim(TRB->B1_DESC), 1, TRB->B2_QATU, 000000, "",TRB->B1_LOCPAD,""})
+		Aadd(aAux, { .T., AllTrim(TRB->B1_COD), AllTrim(TRB->B1_DESC), 1, TRB->B2_QATU, 000000, "",TRB->B1_LOCPAD,"",""})
 		DBSKIP()
 	End
 
@@ -1103,6 +1110,7 @@ Static Function tipoDeMala()
 							aList3[oList3:nAt,4],;
 							aList3[oList3:nAt,5],;
 							aList3[oList3:nAt,6],;
+							aList3[oList3:nAt,11],;
 							SubStr(aList3[oList3:nAt,9], 7, 2) + "/" + SubStr(aList3[oList3:nAt,9], 5, 2) + "/" + SubStr(aList3[oList3:nAt,9],1,4)}}
 	
 	oList3:Refresh()
