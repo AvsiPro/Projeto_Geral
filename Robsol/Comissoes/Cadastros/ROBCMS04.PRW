@@ -553,6 +553,76 @@ While !EOF()
     Dbskip()
 EndDo 
 
+cQuery := "SELECT D1_NFORI,D1_SERIORI,D1_ITEMORI,D1_DOC,D1_SERIE,D1_COD,B1_DESC,D1_EMISSAO,"
+cQuery += " BM_XMODELO,Z03_CODGRI,C5_CONDPAG,C5_VEND1,C5_XCLASPV,Z01_CODBAN,Z01_DESBAN,C5_EMISSAO,D2_DESC,"
+cQuery += " Z01_DSCESP,A1_XBANDEI,D2_PEDIDO,D1_QUANT,D1_VUNIT,D1_TOTAL,C5_CLIENTE,C5_LOJACLI,"
+cQuery += " A31.A3_NOME AS VEND1N,A31.A3_GEREN AS GEREN1N"
+cQuery += " FROM "+RetSQLName("SD1")+" D1"
+cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD=D1_COD AND B1.D_E_L_E_T_=' '"
+cQuery += " INNER JOIN "+RetSQLName("SD2")+" D2 ON D2_FILIAL=D1_FILIAL AND D2_DOC=D1_NFORI AND D2_SERIE=D1_SERIORI AND D2_COD=D1_COD AND D2_ITEM=D1_ITEMORI AND D2.D_E_L_E_T_=' '"
+cQuery += " INNER JOIN "+RetSQLName("SC5")+" C5 ON C5_FILIAL=D2_FILIAL AND C5_NUM=D2_PEDIDO AND C5_CLIENTE=D2_CLIENTE AND C5_LOJACLI=D2_LOJA AND C5.D_E_L_E_T_=' '"
+cQuery += " AND C5_VEND1 BETWEEN '"+Vend1+"' AND '"+Vend2+"'"
+cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_COD=D2_CLIENTE AND A1_LOJA=D2_LOJA AND A1.D_E_L_E_T_=' '"
+cQuery += " LEFT JOIN "+RetSQLName("Z01")+" Z01 ON Z01_FILIAL='"+xFilial("Z01")+"' AND Z01_CODBAN=A1_XBANDEI AND Z01.D_E_L_E_T_=' '"
+cQuery += " LEFT JOIN "+RetSQLName("SBM")+" BM ON BM_FILIAL=B1_FILIAL AND BM_GRUPO=B1_GRUPO AND BM.D_E_L_E_T_=' '"
+cQuery += " LEFT JOIN "+RetSQLName("Z03")+" Z3 ON Z03_FILIAL=BM_FILIAL AND Z03_CODGRI=BM_XMODELO AND Z3.D_E_L_E_T_=' '"
+cQuery += " LEFT JOIN "+RetSQLName("SA3")+" A31 ON A31.A3_FILIAL='"+xFilial("SA3")+"' AND A31.A3_COD=C5_VEND1 AND A31.D_E_L_E_T_=' '"
+cQuery += " WHERE D1_FILIAL BETWEEN '0101' AND '0103' AND D1_TIPO='D'" 
+cQuery += " AND D1_EMISSAO BETWEEN '"+dtos(DtDe)+"' AND '"+dtos(DtAt)+"'"
+cQuery += " AND D1.D_E_L_E_T_=' '"
+
+If Select('TRB') > 0
+    dbSelectArea('TRB')
+    dbCloseArea()
+EndIf
+
+DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
+
+DbSelectArea("TRB")
+
+While !EOF()
+    nPos := Ascan(aRet,{|x| x[1]+x[2]+x[5]+x[4] == TRB->C5_VEND1+TRB->BM_XMODELO+TRB->D1_NFORI+TRB->D2_PEDIDO}) 
+    If nPos == 0
+        Aadd(aRet,{ TRB->C5_VEND1,;                     //01
+                    TRB->BM_XMODELO,;                   //02
+                    Alltrim(TRB->Z03_CODGRI),;          //03
+                    TRB->D2_PEDIDO,;                    //04
+                    TRB->D1_NFORI,;                     //05
+                    TRB->D1_SERIORI,;                   //06
+                    TRB->C5_CLIENTE,;                   //07
+                    TRB->C5_LOJACLI,;                   //08
+                    STOD(TRB->C5_EMISSAO),;             //09
+                    STOD(TRB->D1_EMISSAO),;             //10
+                    TRB->D1_TOTAL,;                     //11
+                    TRB->C5_CONDPAG,;                   //12
+                    TRB->D2_DESC,;                      //13
+                    TRB->D1_QUANT,;                     //14 
+                    TRB->D1_TOTAL,;                     //15
+                    TRB->GEREN1N,;                      //16
+                    'TRB->VALORPEDIDO',;                //17
+                    Alltrim(TRB->VEND1N),;              //18
+                    10,;                                //19
+                    (TRB->D1_TOTAL*0.10)*(-1),;         //20
+                    '',;                                //21
+                    '',;                                //22
+                    '',;                                //23
+                    'D',;                               //24
+                    "D",;                               //25
+                    'TRB->F2_VEND2',;                   //26
+                    '',;                                //27
+                    TRB->A1_XBANDEI,;                   //28
+                    TRB->Z01_DESBAN,;                   //29
+                    TRB->Z01_DSCESP,;                   //30
+                    'TRB->DESCRIPAGTO',;                //31                  
+                    TRB->Z01_CODBAN})                   //32
+    Else 
+        aRet[nPos,14] += TRB->D1_QUANT
+        aRet[nPos,15] += TRB->D1_TOTAL  
+        aRet[nPos,20] := (aRet[nPos,15] *0.10)*(-1)      
+    EndIf
+    Dbskip()
+ENDDO
+
 Asort(aRet,,,{|x,y| x[4]+x[5] < y[4]+y[5]})
 Asort(aItens,,,{|x,y| x[8]+x[1] < y[8]+y[1]})
 
@@ -638,7 +708,7 @@ If len(aVend) > 0
                             aList2[oList2:nAt,19],;
                             Transform(aList2[oList2:nAt,20],"@E 999,999,999.99"),;
                             Alltrim(Posicione("SA1",1,xFilial("SA1")+aList2[oList2:nAt,07]+aList2[oList2:nAt,08],"A1_NOME")),;
-                            If(aList2[oList2:nAt,25]=="1","Venda",If(aList2[oList2:nAt,25]=="9","Desconto","Promoção")),;
+                            If(aList2[oList2:nAt,25]=="1","Venda",If(aList2[oList2:nAt,25]=="9","Desconto",If(Alltrim(aList2[oList2:nAt,25])=="D","Devolucao","Promoção"))),;
                             Alltrim(aList2[oList2:nAt,27])}}
 
     oGrp3      := TGroup():New( 180,008,276,795,"Regras",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
@@ -728,7 +798,7 @@ oList2:bLine := {||{aList2[oList2:nAt,03],;
                     aList2[oList2:nAt,19],;
                     Transform(aList2[oList2:nAt,20],"@E 999,999,999.99"),;
                     Alltrim(Posicione("SA1",1,xFilial("SA1")+aList2[oList2:nAt,07]+aList2[oList2:nAt,08],"A1_NOME")),;
-                    If(aList2[oList2:nAt,25]=="1","Venda",If(aList2[oList2:nAt,25]=="9","Desconto","Promoção")),;
+                    If(aList2[oList2:nAt,25]=="1","Venda",If(aList2[oList2:nAt,25]=="9","Desconto",If(Alltrim(aList2[oList2:nAt,25])=="D","Devolucao","Promoção"))),;
                     Alltrim(aList2[oList2:nAt,27])}}
 
 oList2:refresh()
