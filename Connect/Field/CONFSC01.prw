@@ -43,7 +43,7 @@ Private cPeri		:=	space(4)
 
 Private oDlg1,oGrp1,oGrp2,oSay1,oSay2,oSay6,oGrp3,oBrw1
 Private oGrp5,oBrw3,oBtn1,oMenu,oGrp6,oSay3,oSay4,oSay5
-Private oList,oList2,oList3,oList4,oList5,oGrp4
+Private oList,oList2,oList3,oList4,oList5,oGrp4,oSay7 
 Private aList	:=	{}
 Private aList2	:=	{}
 Private aList3	:=	{} 
@@ -144,8 +144,9 @@ oGrp1      := TGroup():New( 002,004,336,710,"",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F.
 		oSay2      := TSay():New( 024,052,{||"oSay2"},oGrp2,,oFont4,.F.,.F.,.F.,.T.,CLR_BLUE,CLR_WHITE,492,016)
 		oSay3      := TSay():New( 040,012,{||"Endereço"},oGrp2,,oFont2,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
 		oSay4      := TSay():New( 040,052,{||"oSay4"},oGrp2,,oFont1,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,392,008)
-		oSay5      := TSay():New( 056,012,{||"Contrato"},oGrp2,,oFont2,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
-		oSay6      := TSay():New( 056,052,{||"oSay6"},oGrp2,,oFont3,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,552,008)
+		oSay5      := TSay():New( 052,012,{||"Contrato"},oGrp2,,oFont2,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
+		oSay6      := TSay():New( 052,052,{||"oSay6"},oGrp2,,oFont3,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,552,008)
+		oSay7      := TSay():New( 062,360,{||"Valor Excedente"},oGrp2,,oFont1,.F.,.F.,.F.,.T.,CLR_RED,CLR_WHITE,552,008)
 	
 	oGrp3      := TGroup():New( 076,008,332,170,"Contratos",oGrp1,CLR_BLACK,CLR_WHITE,.T.,.F. )
 
@@ -214,7 +215,7 @@ oGrp1      := TGroup():New( 002,004,336,710,"",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F.
 		oList:nAt := nCont
 		Fhelp(nCont)
 	Next nCont
-	
+
 	oList:nAt := 1
 
 oBtn1      := TButton():New( 055,640,"Sair",oDlg1,{||oDlg1:end()},037,012,,,,.T.,,"",,,,.F. )
@@ -242,7 +243,7 @@ oTButton1 := TButton():New( 025, 640, "Opções",oDlg1,{||},40,10,,,.F.,.T.,.F.,,.
 oTButton1:SetPopupMenu(oMenu)
 
 	MENU oMenuP POPUP 
-	MENUITEM "Faturar" ACTION (GeraPv(1))
+	MENUITEM "Faturar" ACTION (Processa({|| GeraPv(1)},"Aguarde"))
 	ENDMENU                                                                           
 
 	oList:bRClicked := { |oObject,nX,nY| oMenuP:Activate( nX, (nY-10), oObject ) }
@@ -293,7 +294,7 @@ cQuery += " E4_COND,E4_DESCRI,A1_NREDUZ,A1_NOME,A1_END,"
 cQuery += " A1_BAIRRO,A1_MUN,"
 cQuery += " AAM_INIVIG,AAM_FIMVIG,A1_EMAIL,'' AS AAN_XISENT,"
 cQuery += " '' AS AAM_XINIMU,'' AS AAM_XPRAZO,'' AS AAM_XPERCT,"
-cQuery += " '' AS AAM_XRENOV,AAN_FILIAL"
+cQuery += " '' AS AAM_XRENOV,AAN_FILIAL,AAM_XPRDCM"
 cQuery += " FROM "+RetSQLName("AAN")+" AAN"
 cQuery += " INNER JOIN "+RetSQLName("AAM")+" AAM ON AAM_FILIAL=AAN_FILIAL AND AAM_CONTRT=AAN_CONTRT AND AAM.D_E_L_E_T_=' '"
 cQuery += " INNER JOIN "+RetSQLName("SE4")+" E4 ON E4_FILIAL='"+xFilial("SE4")+"' AND E4_CODIGO=AAN_CONPAG AND E4.D_E_L_E_T_=' '"
@@ -379,7 +380,9 @@ While !EOF()
 					TRB->AAM_XRENOV,;
 					0,;
 					TRB->AAN_FILIAL,;
-					0})
+					0,;
+					0,;
+					TRB->AAM_XPRDCM})
     Else
     	//Soma todos os itens do contrato para pegar o valor total.
     	aList[nPos1,02] += nNewVlr //(TRB->AAN_QUANT*TRB->AAN_VLRUNI)
@@ -615,6 +618,7 @@ Local nCont
 oSay2:settext("")
 oSay4:settext("")
 oSay6:settext("")
+oSay7:settext("")
 
 aList2 := {}
 aList3 := {}
@@ -714,8 +718,9 @@ oList3:refresh()
 //oList4:refresh() 
 oDlg1:refresh()
 
-oList2:nAt := 1 
-Fhelp3(oList2:nAt,oList:nAt)
+For nCont := 1 to len(aList2)
+	Fhelp3(nCont,oList:nAt)
+Next nCont 
 
 RestArea(aArea)
 
@@ -733,7 +738,7 @@ Return
 	(examples)
 	@see (links_or_references)
 /*/
-Static Function FHelp3(nLinha,nLinha2)
+Static Function FHelp3(nLinha,nLinha2,nOpini)
 
 Local aArea :=	GetArea()
 Local nPos  := 	0
@@ -744,10 +749,15 @@ Local nTotC :=	0
 Local cTexto
 Local nDifCb:=	0
 
+Default nOpini := 1
 
 aList5 := {}
 
-nPos := Ascan(aList5b,{|x| Alltrim(x[1])+Alltrim(x[2]) == Alltrim(aList2[nLinha,04])+Alltrim(aList2[nLinha,01])})
+If nOpini == 0
+	nPos := Ascan(aList5b,{|x| Alltrim(x[1])+Alltrim(x[2]) == Alltrim(aList2B[nLinha,04])+Alltrim(aList2B[nLinha,01])})
+else 
+	nPos := Ascan(aList5b,{|x| Alltrim(x[1])+Alltrim(x[2]) == Alltrim(aList2[nLinha,04])+Alltrim(aList2[nLinha,01])})
+endif 
 
 If nPos > 0 .And. len(aList5b[nPos]) > 4
 	For nCont := 5 to len(aList5b[nPos])
@@ -772,19 +782,24 @@ oList5:bLine := {||{ Alltrim(aList5[oList5:nAt,01]),;
 						Transform(aList5[oList5:nAt,09],"@E 999,999,999.99"),;
 						Transform(aList5[oList5:nAt,10],"@E 999,999,999.99")}}
 
-aList2[nLinha,09] := nTotQ
-aList2[nLinha,10] := nTotV
-
-Aeval(aList2,{|x| nTotC += If(x[3]>1,x[3],0)+x[10]})
-
-aList[oList:nAt,02] := nTotC
-
-Aeval(aList,{|x| x[18] := if(x[2]>1,0,1)})
-
+If nOpini == 0
+	aList2b[nLinha,09] := nTotQ
+	aList2b[nLinha,10] := nTotV
+else 
+	aList2[nLinha,09] := nTotQ
+	aList2[nLinha,10] := nTotV
+EndIf 
 
 DbSelectArea("AAM")
 DbSetOrder(1)
 DbSeek(xFilial("AAM")+aList[nLinha2,01])
+
+Aeval(aList2B,{|x| nTotC += If(x[3] > 1 .AND. x[4] == aList[nLinha2,01],x[3],0)+If(x[4] == aList[nLinha2,01],x[10],0)}) //
+
+aList[nLinha2,02] := nTotC
+
+Aeval(aList,{|x| x[18] := if(x[2]>1,0,1)})
+
 cTexto := "Tabela de Preço "+AAM->AAM_XCODTA+" "
 If !Empty(AAM->AAM_XFORFA)
 	IF AAM->AAM_XFORFA == "1"
@@ -811,18 +826,25 @@ EndIF
 If AAM->AAM_XQTVLM > 0
 	cTexto += " - Qtd/Vlr Minimo "+Transform(AAM->AAM_XQTVLM,"@E 999,999,999") 
 
-	Aeval(aList2,{|x| nDifCb += x[9]})
+	Aeval(aList2b,{|x| nDifCb += If(x[4] == aList[nLinha2,01],x[9],0)})
 
 	If nDifCb < AAM->AAM_XQTVLM
 		cTexto += " - Doses Complementares a serem cobradas "+Transform(AAM->AAM_XQTVLM-nDifCb,"@E 999,999,999")
-		aList[oList:nAt,20] := AAM->AAM_XQTVLM-nDifCb
+		aList[nLinha2,20] := AAM->AAM_XQTVLM-nDifCb
 	EndIf 
 EndIF 
 
 oSay6:settext(cTexto)
 
+If aList[nLinha2,20] > 0
+	aList[nLinha2,21] := POSICIONE("DA1",1,XFILIAL("DA1")+AAM->AAM_XCODTA+AAM->AAM_XPRDCM,"DA1_PRCVEN")
+	oSay7:settext("Valor Excedente a ser cobrado "+Transform(aList[nLinha2,20]*aList[nLinha2,21],"@E 999,999.99"))
+EndIf 
+
 oList:refresh()
-oList2:refresh()
+If nOpini <> 0
+	oList2:refresh()
+eNDiF
 oList5:refresh()
 oDlg1:refresh()
 
@@ -1851,30 +1873,125 @@ Local aArea 	:=	GetArea()
 Local nCont 
 Local aItens	:=	{}
 Local aLocac 	:=	{}
+Local nJ 
 
 If nOpcG == 0
 	//Faturar todos os itens liberados do array alist
 ElseIf nOpcG == 1
 	//Faturamento unico na linha do array alist
-	For nCont := 1 to len(aList2)
-		If aList2[nCont,03] > 1
-			Aadd(aLocac,{aList2[nCont,01],;
-						aList2[nCont,03]})
+	For nCont := 1 to len(aList2B)
+		If aList2B[nCont,04] == aList[oList:nAt,01]
+			If aList2B[nCont,03] > 1
+				Aadd(aLocac,{aList2B[nCont,01],;
+							aList2B[nCont,03]})
+			EndIf 
 		EndIf 
 	Next nCont
 
-	For nCont := 1 to len(aList5)
-		Aadd(aItens,{aList5[nCont,02],;
-					aList5[nCont,08],;
-					aList5[nCont,09]})
+	For nCont := 1 to len(aList5B)
+		If aList5B[nCont,01] == aList[oList:nAt,01] .And. len(aList5b[nCont]) > 4
+			For nJ := 5 to len(aList5b[nCont])
+				nPos := Ascan(aItens,{|x| x[1] == aList5B[nCont,nJ,02]})
+				If nPos == 0
+					Aadd(aItens,{	aList5B[nCont,nJ,02],;
+									aList5B[nCont,nJ,08],;
+									aList5B[nCont,nJ,09]})
+				Else 
+					aItens[nPos,02] += aList5B[nCont,nJ,08]
+				EndIf 
+			Next nJ 
+		EndIf
 	Next nCont
 
 	If aList[oList:nAt,20] > 0
-		Aadd(aItens,{'DOSE COMPLEMENTAR',;
+		Aadd(aItens,{aList[oList:nAt,22],;
 					aList[oList:nAt,20],;
-					'1'})
+					aList[oList:nAt,21]})
 	EndIf 
 EndIF 
+
+If len(aItens) > 0 
+	DbSelectArea("AAM")
+	DbSetOrder(1)
+	DbSeek(xFilial("AAM")+aList[oList:nAt,01])
+	aCabec := {}
+	aItC6  := {}
+	cItem  := '01'
+
+	aAdd( aCabec , { "C5_FILIAL"    , xFilial("SC5")      , Nil } ) 
+	aAdd( aCabec , { "C5_XTPPED"    , 'F'                 , Nil } )
+	aAdd( aCabec , { "C5_TIPO"      , 'N'                 , Nil } )
+	aAdd( aCabec , { "C5_CLIENTE"   , aList[oList:nAt,03]    , Nil } )
+	aAdd( aCabec , { "C5_LOJACLI"   , aList[oList:nAt,04]    , Nil } )
+	//aAdd( aCabec , { "C5_TRANSP"    , cAbast              , Nil } ) 
+	Aadd( aCabec , { "C5_MENNOTA"   , 'Faturamento de Doses'              , Nil } )
+	aAdd( aCabec , { "C5_CONDPAG"   , AAM->AAM_CPAGPV     , Nil } )    
+        
+	For nCont := 1 to len(aItens)
+		aLinha := {}
+		aAdd( aLinha , { "C6_FILIAL"     , xFilial("SC6")                         , Nil })
+		aAdd( aLinha , { "C6_ITEM"       , cItem 							      , Nil })
+		aAdd( aLinha , { "C6_PRODUTO"    , aItens[nCont,01]                       , Nil })
+		aAdd( aLinha , { "C6_QTDVEN"     , aItens[nCont,02]                       , Nil })
+		aAdd( aLinha , { "C6_PRCVEN"     , aItens[nCont,03]                       , Nil })
+		aAdd( aLinha , { "C6_TES"        , '523'                                  , Nil })  
+		aAdd( aLinha , { "C6_QTDLIB"     , aItens[nCont,02]    	                  , Nil })
+
+		aAdd( aItC6 , aLinha ) 
+		cItem := Soma1(cItem)
+	Next nCont
+
+	lMsErroAuto := .F.
+	MSExecAuto({|x,y,z| Mata410(x,y,z)},aCabec,aItC6,3)
+		
+	IF lMsErroAuto  
+		MostraErro()
+	ELSE
+		Msgalert("Pedido gerado de faturamento de doses "+SC5->C5_NUM)
+	ENDIF
+EndIF 
+
+//Faturamento locacao
+If len(aLocac) > 0
+	DbSelectArea("AAM")
+	DbSetOrder(1)
+	DbSeek(xFilial("AAM")+aList[oList:nAt,01])
+	aCabec := {}
+	aItC6  := {}
+	cItem  := '01'
+
+	aAdd( aCabec , { "C5_FILIAL"    , xFilial("SC5")      , Nil } ) 
+	aAdd( aCabec , { "C5_XTPPED"    , 'L'                 , Nil } )
+	aAdd( aCabec , { "C5_TIPO"      , 'N'                 , Nil } )
+	aAdd( aCabec , { "C5_CLIENTE"   , aList[oList:nAt,03]    , Nil } )
+	aAdd( aCabec , { "C5_LOJACLI"   , aList[oList:nAt,04]    , Nil } )
+	//aAdd( aCabec , { "C5_TRANSP"    , cAbast              , Nil } ) 
+	Aadd( aCabec , { "C5_MENNOTA"   , 'Locacao de Maquinas'              , Nil } )
+	aAdd( aCabec , { "C5_CONDPAG"   , AAM->AAM_CPAGPV     , Nil } )    
+
+	For nCont := 1 to len(aLocac)
+		aLinha := {}
+		aAdd( aLinha , { "C6_FILIAL"     , xFilial("SC6")                         , Nil })
+		aAdd( aLinha , { "C6_ITEM"       , cItem 							      , Nil })
+		aAdd( aLinha , { "C6_PRODUTO"    , 'SLOC680001'                           , Nil })
+		aAdd( aLinha , { "C6_QTDVEN"     , 1				                      , Nil })
+		aAdd( aLinha , { "C6_PRCVEN"     , aLocac[nCont,02]                       , Nil })
+		aAdd( aLinha , { "C6_TES"        , '523'                                  , Nil })  
+		aAdd( aLinha , { "C6_QTDLIB"     , 1			    	                  , Nil })
+
+		aAdd( aItC6 , aLinha ) 
+		cItem := Soma1(cItem)
+	Next nCont
+
+	lMsErroAuto := .F.
+	MSExecAuto({|x,y,z| Mata410(x,y,z)},aCabec,aItC6,3)
+		
+	IF lMsErroAuto  
+		MostraErro()
+	ELSE
+		Msgalert("Pedido gerado de locação "+SC5->C5_NUM)
+	ENDIF    
+EndIf 
 
 RestArea(aArea)
 
