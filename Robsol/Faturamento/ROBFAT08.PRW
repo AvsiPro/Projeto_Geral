@@ -28,7 +28,7 @@ User Function ROBFAT08()
 
 	If Select("SM0") == 0
 		RpcSetType(3)
-		RPCSetEnv("01","0103")
+		RPCSetEnv("01","01")
 	EndIf
 
     Processa({|| buscaGeren()},"Aguarde")
@@ -425,8 +425,8 @@ Static Function geraDE()
     aadd( aCab,{"F1_SERIE"   ,"1 "                    ,NIL} )
     aadd( aCab,{"F1_EMISSAO" ,DDATABASE               ,NIL} )
     aadd( aCab,{"F1_DTDIGIT" ,DDATABASE               ,NIL} )
-    aadd( aCab,{"F1_FORNECE" ,SubStr(aAux[1,9], 1, 8) ,NIL} )
-    aadd( aCab,{"F1_LOJA"    ,aAux[1,10]              ,NIL} )
+    aadd( aCab,{"F1_FORNECE" ,PadR(aAux[1,9],TamSX3("A2_COD")[1]) ,NIL} )
+    aadd( aCab,{"F1_LOJA"    ,PadR(aAux[1,10],TamSX3("A2_LOJA")[1])              ,NIL} )
     aadd( aCab,{"F1_ESPECIE" ,"SPED"                  ,NIL} )
     // aadd( aCab,{"F1_COND"    ,"001"                  ,NIL} )
     // aadd( aCab,{"F1_DESPESA" ,10                     ,NIL} )
