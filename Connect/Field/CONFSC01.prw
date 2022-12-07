@@ -35,7 +35,7 @@
 User Function CONFSC01
 
 Local aPergs	:=	{}
-Local aRet		:=	{}             
+Local aRet		:=	{}
 Local cCond		:=	space(3)
 Local nCont 
 
@@ -229,6 +229,7 @@ oTMenuIte3 := TMenuItem():New(oDlg1,"Faturar",,,,{|| Processa({||GeraPv(0),"Agua
 oTMenuIte4 := TMenuItem():New(oDlg1,"Envio NF/Boleto",,,,{|| NFBol()} ,,,,,,,,,.T.)
 oTMenuIte5 := TMenuItem():New(oDlg1,"Fechamento Mensal",,,,{|| Fechamento()} ,,,,,,,,,.T.)
 oTMenuIte6 := TMenuItem():New(oDlg1,"Rescisão Contrato",,,,{|| Rescisao(oList:nAt)} ,,,,,,,,,.T.)
+oTMenuIte7 := TMenuItem():New(oDlg1,"Recibo Locacao",,,,{|| Processa({||ReciboLoc(),"Aguarde"})} ,,,,,,,,,.T.)
 
 
 oMenu:Add(oTMenuIte1)
@@ -237,6 +238,7 @@ oMenu:Add(oTMenuIte3)
 oMenu:Add(oTMenuIte4)
 oMenu:Add(oTMenuIte5)
 oMenu:Add(oTMenuIte6)
+oMenu:Add(oTMenuIte7)
 // Cria botão que sera usado no Menu 345, 012
 oTButton1 := TButton():New( 025, 640, "Opções",oDlg1,{||},40,10,,,.F.,.T.,.F.,,.F.,,,.F. )
 // Define botão no Menu
@@ -1996,3 +1998,100 @@ EndIf
 RestArea(aArea)
 
 Return
+
+Static Function ReciboLoc()
+	
+    Local lAdjustToLegacy  := .F.
+    Local lDisableSetup    := .T.
+	Local cMes             := "XXXXXXXX"
+	Local cNum             := "XXXX"
+	Local cCli             := "XXXXXXXX XXXXXXXX XXXXXXXX"
+	Local cEnd             := "XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX"
+	Local cCnpj            := "XX.XXX.XXX/XXXX-XX"
+	Local cValor1          := "R$XXX,XX (XXX reais e XX centavos)"
+	Local cValor2          := "XXX,XX"
+	Local cPeriodo         := "Locação de máquina referente ao mês XX/XXXX"
+	Local cVencimento      := "XX/XX/XXXX"
+	Local cPonto           := "Ponto de Venda XXXXXXXX XXXXXXXXX - XXXX"
+	Local cEmitente        := "CONNECT VENDING COMERCIO DE MAQUINAS AUTOMATIZADAS LTDA (CNPJ: 24.575.331/0001-18 - IE:"
+	Local cEndEmit         := "Rua Fortunato Ferraz, 1030 - Vila Anastacio - São Paulo/SP - 05093-000"
+	Local cEmissao         := "XX/XX/XXXX"
+    Local oFont            := TFont():New('Arial' /*Fonte*/,,10 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
+    Local oFont1           := TFont():New('Arial' /*Fonte*/,,20 /*Tamanho*/,,.T. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
+    Local oFont2           := TFont():New('Arial' /*Fonte*/,,10 /*Tamanho*/,,.T. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
+    Local oFont3           := TFont():New('Arial' /*Fonte*/,,10 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.T. /*Italico*/ )
+    Local oFont4           := TFont():New('Arial' /*Fonte*/,,13 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
+
+	Private oPrinter := FWMSPrinter():New( "recibo_loc_"+cNum+".pdf",IMP_PDF,lAdjustToLegacy,"c:\temp\",lDisableSetup,,,,,,,, )
+    
+    oPrinter:StartPage()
+    oPrinter:SetMargin( 000, 000, 000, 000 )
+	
+	oBrush1 := TBrush():New( , rgb(237, 237, 237) )
+	oPrinter:Fillrect( { 26, 500, 74, 590 }, oBrush1, "-2")
+	
+	oPrinter:Box( 25, 5, 25, 590, "-9" )
+	// oPrinter:SayBitmap( nLin, nCol, cConnect, 50, 20 ) 
+	oPrinter:Say( 55, 125,"FATURA " + cNum + " - LOCAÇÃO DE " + cMes, oFont1 )
+	oPrinter:Say( 35, 510,"NÚMERO", oFont,, rgb(102, 102, 102)/*Cor*/ )
+	oPrinter:Say( 55, 530,cNum, oFont1 )
+	oPrinter:Box( 75, 5, 75, 590, "-9" )
+	oPrinter:Box( 25, 500, 75, 500, "-9" )
+
+	oPrinter:Box( 75, 500, 150, 500, "-1" )
+	oPrinter:Say( 85, 10,"RECEBEMOS DE", oFont,, rgb(102, 102, 102)/*Cor*/ )
+	oPrinter:Say( 100, 10,cCli, oFont4,, /*Cor*/ )
+	oPrinter:Say( 115, 10,cEnd, oFont4,, rgb(102, 102, 102)/*Cor*/ )
+	oPrinter:Say( 85, 510,"CNPJ OU CPF", oFont,, rgb(102, 102, 102)/*Cor*/ )
+	oPrinter:Say( 95, 510,cCnpj, oFont4,, /*Cor*/ )
+
+	oPrinter:Box( 150, 5, 150, 590,"-1" )
+	oPrinter:Say( 160, 10,"O VALOR DE", oFont,, rgb(102, 102, 102)/*Cor*/ )
+	oPrinter:Say( 175, 10,cValor1, oFont4,, /*Cor*/ )
+
+	oPrinter:Box( 200, 5, 200, 590,"-1" )
+	oPrinter:Say( 210, 10,"REFERENTES A", oFont,, rgb(102, 102, 102)/*Cor*/ )
+	oPrinter:Say( 225, 10,cPeriodo, oFont4,, /*Cor*/ )
+	oPrinter:Say( 240, 10,cVencimento, oFont4,, /*Cor*/ )
+
+	oPrinter:Box( 250, 5, 250, 590,"-1" )
+	oPrinter:Say( 260, 10,"DETALHAMENTO", oFont,, rgb(102, 102, 102)/*Cor*/ )
+	oPrinter:Say( 275, 10,cPonto, oFont4,, /*Cor*/ )
+	oPrinter:Say( 275, 500,cValor2, oFont4,, /*Cor*/ )
+
+	oPrinter:Box( 300, 5, 300, 590,"-1" )
+	oPrinter:Say( 310, 10,"EMITENTE", oFont,, rgb(102, 102, 102)/*Cor*/ )
+	oPrinter:Say( 325, 10,cEmitente, oFont4,, /*Cor*/ )
+	oPrinter:Say( 340, 10,cEndEmit, oFont4,, rgb(102, 102, 102)/*Cor*/ )
+
+	oPrinter:Fillrect( { 350, 300, 400, 590 }, oBrush1, "-2")
+	oPrinter:Box( 350, 5, 350, 590,"-1" )
+	oPrinter:Box( 350, 300, 400, 300,"-1" )
+	oPrinter:Box( 400, 5, 400, 590,"-1" )
+	oPrinter:Say( 360, 10,"DATA DE EMISSÃO", oFont,, rgb(102, 102, 102)/*Cor*/ )
+	oPrinter:Say( 375, 10,cEmissao, oFont4,, /*Cor*/ )
+	oPrinter:Say( 360, 310,"ASSINATURA", oFont,, rgb(102, 102, 102)/*Cor*/ )
+
+	oPrinter:Say( 735, 5,"_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ ", oFont )
+	oPrinter:Box( 750, 100, 750, 590,"-1" )
+	oPrinter:Box( 785, 100, 785, 590,"-1" )
+	oPrinter:Box( 825, 100, 825, 590,"-1" )
+	oPrinter:Box( 750, 300, 785, 420,"-1" )
+	oPrinter:Box( 750, 420, 785, 500,"-1" )
+	oPrinter:Box( 750, 420, 825, 420,"-1" )
+	oPrinter:Fillrect( { 750, 30, 825, 85 }, oBrush1, "-2")
+	oPrinter:Say( 760, 43,"NÚMERO", oFont2,, rgb(102, 102, 102)/*Cor*/ )
+	oPrinter:Say( 820, 12,"COMPROVANTE", oFont,, /*Cor*/, 270 /*Angulo*/ )
+	oPrinter:Say( 820, 22,"   DE ENTREGA", oFont,, /*Cor*/, 270 /*Angulo*/ )
+	oPrinter:Say( 760, 110,"DESTINATÁRIO", oFont,, rgb(102, 102, 102)/*Cor*/ )
+	oPrinter:Say( 760, 305,"CNPJ OU CPF", oFont,, rgb(102, 102, 102)/*Cor*/ )
+	oPrinter:Say( 760, 425,"EMISSÃO", oFont,, rgb(102, 102, 102)/*Cor*/ )
+	oPrinter:Say( 760, 505,"VALOR", oFont,, rgb(102, 102, 102)/*Cor*/ )
+	oPrinter:Say( 795, 110,"RECEBIDO POR", oFont2,, rgb(102, 102, 102)/*Cor*/ )
+	oPrinter:Say( 795, 175,"(nome e assinatura, por gentileza)", oFont3,, rgb(102, 102, 102)/*Cor*/ )
+	oPrinter:Say( 795, 425,"DATA", oFont2,, rgb(102, 102, 102)/*Cor*/ )
+
+	oPrinter:EndPage()
+	oPrinter:Print()
+
+Return 
