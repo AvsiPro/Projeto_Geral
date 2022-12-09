@@ -196,11 +196,12 @@ oGrp1      := TGroup():New( 002,004,336,710,"",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F.
 
 	oGrp5      := TGroup():New( 076,520,202,708,"Faturamento",oGrp1,CLR_BLACK,CLR_WHITE,.T.,.F. )
 
-		oList3 	   := TCBrowse():New(084,524,182,115,, {'Pedido','Emissão','Vlr Faturamento'},{30,40,40},;
+		oList3 	   := TCBrowse():New(084,524,182,115,, {'Pedido','Emissão','Nota','Vlr Faturamento'},{30,40,40},;
 	                            oGrp5,,,,{|| FHelp2(oList3:nAt)},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
 		oList3:SetArray(aList3)
 		oList3:bLine := {||{ Alltrim(aList3[oList3:nAt,01]),;
 							 aList3[oList3:nAt,02],;
+							 aList3[oList3:nAt,04],;
 		 					 Transform(aList3[oList3:nAt,03],"@E 999,999,999.99")}}
 	
 	/*oGrp6      := TGroup():New( 200,470,332,708,"Itens Faturados",oGrp1,CLR_BLACK,CLR_WHITE,.T.,.F. )
@@ -216,15 +217,23 @@ oGrp1      := TGroup():New( 002,004,336,710,"",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F.
 		oList:nAt := nCont
 		Fhelp(nCont)
 	Next nCont
-	
+
 	For nCont := 1 to len(aList)
-		For nJ := 1 to len(aList5B)
-			If aList[nLinha2,01] == aList5B[nJ,01] .And. len(aList5B[nJ]) > 4
-			EndIf 
-		Next nJ 
+		nPos := Ascan(aList5B,{|x| x[1] == aList[nCont,01]})
+		If nPos > 0 
+			If len(aList5B[nPos]) > 4
+				For nJ := 5 to len(aList5B[nPos])
+					If aList5B[nPos,nJ,12] == "S"
+						aList[nCont,18] := 2
+						exit
+					EndIf 
+				Next nJ 
+			EndIf
+		EndIf 
 	Next nCont
 
 	oList:nAt := 1
+	oList:refresh()
 
 oBtn1      := TButton():New( 055,640,"Sair",oDlg1,{||oDlg1:end()},037,012,,,,.T.,,"",,,,.F. )
 
@@ -247,16 +256,25 @@ oMenu:Add(oTMenuIte4)
 oMenu:Add(oTMenuIte5)
 oMenu:Add(oTMenuIte6)
 oMenu:Add(oTMenuIte7)
-// Cria botão que sera usado no Menu 345, 012
+
+// Cria botão que sera usado no Menu  
 oTButton1 := TButton():New( 025, 640, "Opções",oDlg1,{||},40,10,,,.F.,.T.,.F.,,.F.,,,.F. )
 // Define botão no Menu
 oTButton1:SetPopupMenu(oMenu)
 
+//ao clicar com o botão direito no grid de ativos.
 	MENU oMenuP POPUP 
 	MENUITEM "Faturar" ACTION (Processa({|| GeraPv(1)},"Aguarde"))
 	ENDMENU                                                                           
 
 	oList:bRClicked := { |oObject,nX,nY| oMenuP:Activate( nX, (nY-10), oObject ) }
+
+//ao clicar com o botão direito no grid de faturamentos.
+	MENU oMenuP3 POPUP 
+	MENUITEM "Itens Pedido" ACTION (Processa({|| ItensPv(aList3[oList3:nAt,01],aList3[oList3:nAt,04])},"Aguarde"))
+	ENDMENU                                                                           
+
+	oList3:bRClicked := { |oObject,nX,nY| oMenuP3:Activate( nX, (nY-10), oObject ) }
 
 oDlg1:Activate(,,,.T.)
 
@@ -437,7 +455,7 @@ For nCont := 1 to len(aAux3)
 	cQuery += " FROM "+RetSQLName("SC6")+" C6"
 	cQuery += " INNER JOIN "+RetSQLName("SC5")+" C5 ON C5_FILIAL=C6_FILIAL "
 	cQuery += " AND C5_NUM=C6_NUM AND C5_CLIENTE=C6_CLI AND C5.D_E_L_E_T_=''"
-	cQuery += " WHERE C6_FILIAL='"+aAux3[nCont,04]+"'"
+	cQuery += " WHERE C6_FILIAL='"+xFilial("SC6")+"'"
 	cQuery += " AND C6_CONTRT='"+aAux3[nCont,01]+"' "
 	cQuery += " AND C6_CLI='"+aAux3[nCont,02]+"' AND C6.D_E_L_E_T_=''"
 	
@@ -717,8 +735,9 @@ oList2:bLine := {||{ Alltrim(aList2[oList2:nAt,01]),;
 
 oList3:SetArray(aList3)
 oList3:bLine := {||{ Alltrim(aList3[oList3:nAt,01]),;
-					 aList3[oList3:nAt,02],;
- 					 Transform(aList3[oList3:nAt,03],"@E 999,999,999.99")}}
+							 aList3[oList3:nAt,02],;
+							 aList3[oList3:nAt,04],;
+		 					 Transform(aList3[oList3:nAt,03],"@E 999,999,999.99")}}
 /*
 oList4:SetArray(aList4)
 oList4:bLine := {||{ aList4[oList4:nAt,01],;
@@ -1953,7 +1972,7 @@ ElseIf nOpcG == 1
 EndIF 
 
 If len(aItens) > 0 
-
+//PEDIDOS DE DOSES
 	If Empty(cAtFat)
 		cAtFat := Alltrim(aList2[oList2:nAt,01])
 	EndIF 
@@ -1982,6 +2001,7 @@ If len(aItens) > 0
 		aAdd( aLinha , { "C6_PRCVEN"     , aItens[nCont,03]                       , Nil })
 		aAdd( aLinha , { "C6_TES"        , '523'                                  , Nil })  
 		aAdd( aLinha , { "C6_QTDLIB"     , aItens[nCont,02]    	                  , Nil })
+		aAdd( aLinha , { "C6_CONTRT" 	 , AAM->AAM_CONTRT						  , Nil })
 
 		aAdd( aItC6 , aLinha ) 
 		cItem := Soma1(cItem)
@@ -2040,6 +2060,7 @@ If len(aLocac) > 0
 		aAdd( aLinha , { "C6_PRCVEN"     , aLocac[nCont,02]                       , Nil })
 		aAdd( aLinha , { "C6_TES"        , '523'                                  , Nil })  
 		aAdd( aLinha , { "C6_QTDLIB"     , 1			    	                  , Nil })
+		aAdd( aLinha , { "C6_CONTRT" 	 , AAM->AAM_CONTRT						  , Nil })
 
 		aAdd( aItC6 , aLinha ) 
 		cItem := Soma1(cItem)
@@ -2174,3 +2195,88 @@ Static Function ReciboLoc()
 	oPrinter:Print()
 
 Return 
+
+/*/{Protheus.doc} ItensPv
+	(long_description)
+	@type  Static Function
+	@author user
+	@since 09/12/2022
+	@version version
+	@param param_name, param_type, param_descr
+	@return return_var, return_type, return_description
+	@example
+	(examples)
+	@see (links_or_references)
+/*/
+Static Function ItensPv(cPedido,cNota)
+
+Local oDlg3i,oGrp1i,oGrp2i,oBtn1i
+Local aItemPv 	:=	{}
+Local aItemNf 	:=	{}
+Local oItemPv
+Local oItemNf 
+
+If !Empty(cPedido)
+	DbSelectArea("SC6")
+	DbSetOrder(1)
+	DbSeek(xFilial("SC6")+cPedido)
+	While !EOF() .AND. SC6->C6_FILIAL == xFilial("SC6") .AND. SC6->C6_NUM == cPedido 
+		Aadd(aItemPv,{	SC6->C6_ITEM,;
+						SC6->C6_PRODUTO,;
+						SC6->C6_QTDVEN,;
+						SC6->C6_PRCVEN,;
+						SC6->C6_VALOR})
+		Dbskip()
+	EndDo 
+EndIF 
+
+IF !Empty(cNota)
+	DbSelectArea("SD2")
+	DbSetOrder(3)
+	DbSeek(xFilial("SD2")+cNota)
+	While !EOF() .AND. SD2->D2_FILIAL == xFilial("SD2") .AND. SD2->D2_DOC == cNota 
+		Aadd(aItemNf,{	SD2->D2_ITEM,;
+						SD2->D2_COD,;
+						SD2->D2_QUANT,;
+						SD2->D2_PRCVEN,;
+						SD2->D2_TOTAL})
+		Dbskip()
+	EndDo 
+	
+EndIF 
+
+If len(aItemNf) < 1
+	Aadd(aItemNf,{'','','',0,0})
+EndIf 
+
+If len(aItemPv) > 0
+	oDlg3i    := MSDialog():New( 092,232,395,1148,"Itens",,,.F.,,,,,,.T.,,,.T. )
+
+		oGrp1i      := TGroup():New( 004,008,124,216,"Pedido "+cPedido,oDlg3i,CLR_BLACK,CLR_WHITE,.T.,.F. )
+		//oBrw1      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{012,012,120,212},,, oGrp1i ) 
+		oItemPv 	   := TCBrowse():New(012,012,199,107,, {'Item','Produto','Qtd','Vlr Unit.','Vlr Total'},{30,40,40,40,40},;
+									oGrp1i,,,,{|| },{|| },, ,,,  ,,.F.,,.T.,,.F.,,,)
+			oItemPv:SetArray(aItemPv)
+			oItemPv:bLine := {||{ 	aItemPv[oItemPv:nAt,01],;
+									aItemPv[oItemPv:nAt,02],;
+									aItemPv[oItemPv:nAt,03],;
+									Transform(aItemPv[oItemPv:nAt,04],"@E 999,999,999.99"),;
+									Transform(aItemPv[oItemPv:nAt,05],"@E 999,999,999.99")}}
+		
+		oGrp2i      := TGroup():New( 004,220,124,448," Nota "+cNota,oDlg3i,CLR_BLACK,CLR_WHITE,.T.,.F. )
+		//oBrw2      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{012,224,120,444},,, oGrp2i ) 
+		oItemNf 	   := TCBrowse():New(012,224,222,107,, {'Item','Produto','Qtd','Vlr Unit.','Vlr Total'},{30,40,40,40,40},;
+									oGrp2i,,,,{|| },{|| },, ,,,  ,,.F.,,.T.,,.F.,,,)
+			oItemNf:SetArray(aItemNf)
+			oItemNf:bLine := {||{ 	aItemNf[oItemNf:nAt,01],;
+									aItemNf[oItemNf:nAt,02],;
+									aItemNf[oItemNf:nAt,03],;
+									Transform(aItemNf[oItemNf:nAt,04],"@E 999,999,999.99"),;
+									Transform(aItemNf[oItemNf:nAt,05],"@E 999,999,999.99")}}
+		
+		oBtn1i      := TButton():New( 128,192,"Sair",oDlg3i,{|| oDlg3i:end()},037,012,,,,.T.,,"",,,,.F. )
+
+	oDlg3i:Activate(,,,.T.)
+EndIf 
+
+Return
