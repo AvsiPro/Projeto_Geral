@@ -38,6 +38,7 @@ Local aPergs	:=	{}
 Local aRet		:=	{}
 Local cCond		:=	space(3)
 Local nCont 
+Local nJ 
 
 Private cPeri		:=	space(4)
 
@@ -214,6 +215,13 @@ oGrp1      := TGroup():New( 002,004,336,710,"",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F.
 	For nCont := 1 to len(aList)
 		oList:nAt := nCont
 		Fhelp(nCont)
+	Next nCont
+	
+	For nCont := 1 to len(aList)
+		For nJ := 1 to len(aList5B)
+			If aList[nLinha2,01] == aList5B[nJ,01] .And. len(aList5B[nJ]) > 4
+			EndIf 
+		Next nJ 
 	Next nCont
 
 	oList:nAt := 1
@@ -804,6 +812,7 @@ Aeval(aList2B,{|x| nTotC += If(x[3] > 1 .AND. x[4] == aList[nLinha2,01],x[3],0)+
 
 aList[nLinha2,02] := nTotC
 
+/*
 For nCont := 1 to len(aList5B)
 	If aList[nLinha2,01] == aList5B[nCont,01] .And. len(aList5B[nCont]) > 4
 		For nJ := 5 to len(aList5B[nCont])
@@ -816,10 +825,14 @@ For nCont := 1 to len(aList5B)
 	
 Next nCont
 
+
+
 If !lFatura
 	Aeval(aList,{|x| x[18] := if(x[2]>1,0,1)})
+Else 
+	aList[nLinha2,18] := 2
 EndIf 
-
+*/
 cTexto := "Tabela de Preço "+AAM->AAM_XCODTA+" "
 If !Empty(AAM->AAM_XFORFA)
 	IF AAM->AAM_XFORFA == "1"

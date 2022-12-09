@@ -52,7 +52,10 @@ SetPrvt("oSay1","oSay2","oSay3","oSay4","oSay5","oSay6","oSay7","oSay8","oSay9",
     cQuery += " WHERE Z50.D_E_L_E_T_='' "
     cQuery += "     AND Z50_NOTA='"+Z50->Z50_NOTA+"' "
     cQuery += "     AND Z50_CODCLI='"+Z50->Z50_CODCLI+"' "
-    cQuery += "     AND Z50_LOJCLI='"+Z50->Z50_LOJCLI+"'
+    cQuery += "     AND Z50_LOJCLI='"+Z50->Z50_LOJCLI+"' "
+    cQuery += "     AND Z50_CODIGO='"+Z50->Z50_CODIGO+"' "
+    cQuery += "     AND Z50_PROD='"+Z50->Z50_PROD+"' "
+    cQuery += "     AND Z50_ITEM='"+Z50->Z50_ITEM+"' "
 	cQuery := ChangeQuery(cQuery)
 
 	MPSysOpenQuery(cQuery,cAliasSQL)
