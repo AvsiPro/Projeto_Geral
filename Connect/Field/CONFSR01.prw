@@ -24,15 +24,13 @@
 User Function CONFSR01(cTipo,cPeriodo)
 
 Local nlinha   := 0
-Local ncoluna  := 0  
 Local nPagina  := 1  
 Local nTotDia  := 0     
 Local nTotMes  := 0
 Local nSub     := 0
 Local nCont    := 0
 Local cDiaAt   := ''
-Local nSub
-Local nCont 
+
 Private lAdjustToLegacy := .F. 
 Private lDisableSetup  := .T.
 Private oFont2n
@@ -88,7 +86,7 @@ oPrint:cPathPDF := "c:\temp\"
 oFont9I:Italic := .T.
 oBrush := TBrush():New("",5)//4
 //
-Cabecalho(nPagina,cTipo,cPeriodo)
+Cabecalho(nPagina,cTipo)
 nPagina++
 
 Asort(aList,,,{|x,y| x[9] < y[9]})
