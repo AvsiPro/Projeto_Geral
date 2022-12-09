@@ -62,6 +62,8 @@ WsMethod GET WsReceive COD_CLIENTE,LOJA_CLIENTE WsService EnvChamdo
 	cQuery += " WHERE Z50_CODCLI='"+cCliente+"' AND Z50_LOJCLI='"+cLojCli+"'"
 	cQuery += " AND D_E_L_E_T_=' '"
 	
+	conout(cQuery)
+
 	If Select('TRB') > 0
 		dbSelectArea('TRB')
 		dbCloseArea()
@@ -96,7 +98,7 @@ WsMethod GET WsReceive COD_CLIENTE,LOJA_CLIENTE WsService EnvChamdo
 			+AvKey(TRB->Z50_LOJCLI,'C5_LOJACLI');
 			+AvKey(TRB->Z50_PEDVEN,'C5_NUM')))
 
-			cRast := Iif(!Empty(Alltrim(SC5->C5_XETIQUE)),Alltrim(SC5->C5_XETIQUE),'" "')
+			cRast := Iif(!Empty(Alltrim(SC5->C5_XETIQUE)),'"'+Alltrim(SC5->C5_XETIQUE)+'"','" "')
 
 			::SetResponse('"rastreio":'+cRast+',')
 		Else
