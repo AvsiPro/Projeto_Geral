@@ -599,7 +599,7 @@ While !EOF()
                     TRB->D1_QUANT,;                     //14 
                     TRB->D1_TOTAL,;                     //15
                     TRB->GEREN1N,;                      //16
-                    'TRB->VALORPEDIDO',;                //17
+                    0,;                //17
                     Alltrim(TRB->VEND1N),;              //18
                     10,;                                //19
                     (TRB->D1_TOTAL*0.10)*(-1),;         //20
