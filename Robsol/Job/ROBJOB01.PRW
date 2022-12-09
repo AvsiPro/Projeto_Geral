@@ -19,10 +19,8 @@
 
 user function ROBJOB1a(cCodEmp,cCodFil)
 
-//Local aArea		:=	GetArea()
 Local cQuery                 
 Local cRemete   := "No-Reply Robsol <noreply@robsol.com.br>"
-//Local cRemete   := "Marketing Robsol <financeiro@robsol.com.br>"
 Local cBody                                   
 Local cSubject	:=	"Avisos de Vencimento"
 Local aArquivos := {}           
@@ -77,7 +75,9 @@ ELSE
 	dDtFour := datavalida(dDataBase+5,.T.)+2
 ENDIF
 
-cQuery := "SELECT TOP 1 E1_FILIAL,E1_PREFIXO,E1_NUM,E1_TIPO,E1_NATUREZ,ED_DESCRIC,E1_CLIENTE,E1_LOJA,A1_NOME,E1_VENCREA,E1_VALOR,A1_EMAIL,E1_PARCELA,A1_CGC,E1_PORTADO,E1.R_E_C_N_O_ AS REGE1"
+cQuery := "SELECT TOP 1 E1_FILIAL,E1_PREFIXO,E1_NUM,E1_TIPO,E1_NATUREZ,ED_DESCRIC,"
+cQuery += " E1_CLIENTE,E1_LOJA,A1_NOME,E1_VENCREA,E1_VALOR,A1_EMAIL,E1_PARCELA,A1_CGC,"
+cQuery += " E1_PORTADO,E1.R_E_C_N_O_ AS REGE1"
 cQuery += " FROM "+RetSQLName("SE1")+" E1"
 cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_COD=E1_CLIENTE AND A1_LOJA=E1_LOJA AND A1.D_E_L_E_T_=''"
 cQuery += " INNER JOIN "+RetSQLName("SED")+" ED ON ED_CODIGO=E1_NATUREZ AND ED.D_E_L_E_T_=''"
@@ -85,7 +85,6 @@ cQuery += " WHERE E1_VENCREA = '"+DTOS(datavalida(dDtFour))+"' AND E1_BAIXA='' A
 cQuery += " AND E1.D_E_L_E_T_='' AND E1_PORTADO BETWEEN ' ' AND '999'"
 cQuery += " AND E1_FILIAL='"+xFilial('SE1')+"'"
 cQuery += " AND E1_TIPO NOT IN('RA','NCC')"
-//cQuery += " AND E1_XENVNOT IN('','0')" //Condição colocada para a ICB
 cQuery += " ORDER BY E1_CLIENTE"                        
 
 If Select('TRB') > 0
@@ -104,25 +103,25 @@ Fwrite(nArq, '|                       Avisos de Vencimentos transmitidos em '+cv
 FWrite(nArq, '*************************************************************************************************************'+CRLF)
                
 While !EOF()
+	//cDestino 	:=	Alltrim(TRB->A1_EMAIL)
     cDestino 	:=	"alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br" //;adm@robsol.com.br;cnoculos@hotmail.com" //Alltrim(TRB->A1_EMAIL)    
 	MV_PAR01	:=	TRB->E1_PREFIXO
 	MV_PAR02	:=	TRB->E1_NUM
 	MV_PAR03	:=	TRB->E1_PARCELA
 	MV_PAR04	:=	TRB->E1_PARCELA
-	//cBoleto		:=	U_AVSIITAU(MV_PAR02,MV_PAR01,'c:\Boletos\',TRB->REGE1) //U_avsiitau(.T.,TRB->E1_PORTADO)
+
 	If File(cPasta+Alltrim(TRB->A1_CGC)+"\boleto_"+Alltrim(TRB->E1_NUM)+"_"+Alltrim(TRB->E1_PARCELA)+".PDF")
         cBoleto := cPasta+Alltrim(TRB->A1_CGC)+"\boleto_"+Alltrim(TRB->E1_NUM)+"_"+Alltrim(TRB->E1_PARCELA)+".PDF"
     ENDIF
 
-	cBody 		:=	Aviso_1(cBoleto)  //Alltrim(cBoleto)+".pdf"
+	cBody 		:=	Aviso_1(cBoleto) 
  
 	aArquivos 	:=  {}
 	
 	Aadd(aArquivos,{lower(cBoleto),''})
 
     U_robmail(cRemete,cDestino,cSubject,cBody,aArquivos,.T.)   
-    //U_EnviarEmail(cDestino,cSubject,cBody,'',.f.)
-
+    
     cCorpo := TRB->E1_CLIENTE+'#'+TRB->E1_LOJA+'#'+TRB->A1_NOME+'#'+TRB->E1_PREFIXO+'#'+TRB->E1_NUM+'#'+CVALTOCHAR(STOD(TRB->E1_VENCREA))+'#'+Transform(TRB->E1_VALOR,"@E 999,999,999.99")+'#'+TRB->A1_EMAIL
 
     FWrite(nArq,cCorpo+CRLF)
@@ -136,11 +135,11 @@ fWrite(nArq, 'Fim '+DTOC(dDataBase) + ' ' + Time()+CRLF)
 fClose(nArq)
 
 cBody := AvisFin(cSubject,{}) 
-//cDestino := Alltrim(GetMV("IC_MAILAVF"))
+
 cDestino := "alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br"
+
 U_robmail(cRemete,cDestino,cSubject+" "+cvaltochar(ddatabase),cBody,{},.T.)
 
-//RestArea(aArea)  
 Return                     
 
 /*
@@ -163,7 +162,6 @@ User Function ROBJOB1b(cCodEmp,cCodFil)
 Local aArea		:=	GetArea()
 Local cQuery                 
 Local cRemete   := "No-Reply Robsol <noreply@robsol.com.br>"
-//Local cRemete   := "Marketing Robsol <financeiro@robsol.com.br>"
 Local cBody                                   
 Local cSubject	:=	"Aviso de Cobrança"
 Local aArquivos := {}           
@@ -215,16 +213,16 @@ ELSE
 	dDtOne := datavalida(dDataBase-3,.F.)
 ENDIF
  
-cQuery := "SELECT TOP 1 E1_PREFIXO,E1_NUM,E1_TIPO,E1_EMISSAO,E1_NATUREZ,ED_DESCRIC,E1_PARCELA,E1_CLIENTE,E1_LOJA,A1_NOME,E1_VENCREA,E1_VALOR,A1_EMAIL,E1_VALJUR,E1.R_E_C_N_O_ AS REGE1" //,ZL_TIPOMOV,ZL_DATA"
+cQuery := "SELECT TOP 1 E1_PREFIXO,E1_NUM,E1_TIPO,E1_EMISSAO,E1_NATUREZ,ED_DESCRIC,"
+cQuery += " E1_PARCELA,E1_CLIENTE,E1_LOJA,A1_NOME,E1_VENCREA,E1_VALOR,A1_EMAIL,"
+cQuery += " E1_VALJUR,E1.R_E_C_N_O_ AS REGE1" 
 cQuery += " FROM "+RetSQLName("SE1")+" E1"
 cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_COD=E1_CLIENTE AND A1_LOJA=E1_LOJA AND A1.D_E_L_E_T_=''"
 cQuery += " INNER JOIN "+RetSQLName("SED")+" ED ON ED_CODIGO=E1_NATUREZ AND ED.D_E_L_E_T_=''"
-//cQuery += " LEFT JOIN "+RetSQLName("SZL")+" ZL ON ZL_PREFIXO=E1_PREFIXO AND ZL_DOCTO=E1_NUM AND ZL_SERIE=E1_PARCELA AND ZL_CLIENTE=E1_CLIENTE AND ZL_LOJA=E1_LOJA AND ZL.D_E_L_E_T_=''"
 cQuery += " WHERE E1_VENCREA = '"+dtos(datavalida(dDtOne,.F.))+"' AND E1_BAIXA='' AND E1_PREFIXO <> 'CTR' "
 cQuery += " AND E1_TIPO='NF'"
 cQuery += " AND E1_FILIAL='"+xFilial('SE1')+"'"
 cQuery += " AND E1.D_E_L_E_T_=''AND E1_PORTADO BETWEEN ' ' AND '999'"          
-//cQuery += " AND E1_XENVNOT IN('','0')" //Condição colocada para a ICB
 cQuery += " ORDER BY E1_CLIENTE,E1_LOJA,E1_VENCREA"
 
 If Select('TRB') > 0
@@ -253,7 +251,8 @@ While !EOF()
 			If Len(aTitCli) > 0
 				cBody := Cobranca1()
 				U_robmail(cRemete,cDestino,cSubject,cBody,aArquivos,.T.)
-				aTitCli := {}		                                     
+				aTitCli := {}		          
+				//cDestino := Alltrim(TRB->A1_EMAIL)                           
 				cDestino := "alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br" //Alltrim(TRB->A1_EMAIL) //
 				nCont++
 			Else
@@ -264,6 +263,7 @@ While !EOF()
 							TRB->E1_PREFIXO,TRB->E1_CLIENTE+TRB->E1_LOJA})	
 
 				EndIf
+				//cDestino := Alltrim(TRB->A1_EMAIL)                           
 				cDestino := "alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br" //Alltrim(TRB->A1_EMAIL) //
 			EndIf
 		Else
@@ -273,6 +273,7 @@ While !EOF()
 							Transform(TRB->E1_VALOR+(TRB->E1_VALJUR*(DDATABASE-STOD(TRB->E1_VENCREA))),"@E 999,999,999.99"),;
 							TRB->E1_PREFIXO,TRB->E1_CLIENTE+TRB->E1_LOJA})	
 			EndIf
+			//cDestino := Alltrim(TRB->A1_EMAIL)                           
 			cDestino := "alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br" //Alltrim(TRB->A1_EMAIL) //
 		EndIf
         
@@ -303,11 +304,9 @@ fClose(nArq)
 
 IF len(aAvisFi) > 0
 	cBody := AvisFin(cSubject,aCumula)
-	//cDestino := Alltrim(GetMV("IC_MAILAVF"))
 	cDestino := "alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br"
 	U_robmail(cRemete,cDestino,cSubject+" "+cvaltochar(ddatabase),cBody,{},.T.)
 EndIf
-
 
 // Validação para 05 dias 
 
@@ -324,7 +323,9 @@ ELSE
 ENDIF
 
 
-cQuery := "SELECT TOP 1 E1_PREFIXO,E1_NUM,E1_TIPO,E1_EMISSAO,E1_NATUREZ,ED_DESCRIC,E1_PARCELA,E1_CLIENTE,E1_LOJA,A1_NOME,E1_VENCREA,E1_VALOR,A1_EMAIL,E1_VALJUR,E1.R_E_C_N_O_ AS REGE1" //,ZL_TIPOMOV,ZL_DATA"
+cQuery := "SELECT TOP 1 E1_PREFIXO,E1_NUM,E1_TIPO,E1_EMISSAO,E1_NATUREZ,ED_DESCRIC,"
+cQuery += " E1_PARCELA,E1_CLIENTE,E1_LOJA,A1_NOME,E1_VENCREA,E1_VALOR,A1_EMAIL,"
+cQuery += " E1_VALJUR,E1.R_E_C_N_O_ AS REGE1" 
 cQuery += " FROM "+RetSQLName("SE1")+" E1"
 cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_COD=E1_CLIENTE AND A1_LOJA=E1_LOJA AND A1.D_E_L_E_T_=''"
 cQuery += " INNER JOIN "+RetSQLName("SED")+" ED ON ED_CODIGO=E1_NATUREZ AND ED.D_E_L_E_T_=''"
@@ -332,7 +333,6 @@ cQuery += " WHERE E1_VENCREA = '"+dtos(datavalida(dDtTwo,.F.))+"' AND E1_BAIXA='
 cQuery += " AND E1_TIPO='NF'"
 cQuery += " AND E1_FILIAL='"+xFilial('SE1')+"'"
 cQuery += " AND E1.D_E_L_E_T_=''AND E1_PORTADO BETWEEN ' ' AND '999'"          
-//cQuery += " AND E1_XENVNOT IN('','0','1') " //Condição colocada para a ICB
 cQuery += " ORDER BY E1_CLIENTE,E1_LOJA,E1_VENCREA"
 
 If Select('TRB') > 0
@@ -385,7 +385,7 @@ While !EOF()
 							TRB->E1_PREFIXO,TRB->E1_CLIENTE+TRB->E1_LOJA})	
 			EndIf
 			cDestino := "alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br"
-                //cDestino := Alltrim(TRB->A1_EMAIL)
+            //cDestino := Alltrim(TRB->A1_EMAIL)
 		EndIf	
 				
 				nPsi := Ascan(aCumula,{|x| Alltrim(x[1]) == Alltrim(TRB->A1_NOME)})
@@ -416,7 +416,6 @@ fClose(nArq)
 IF len(aAvisFi) > 0
 	cBody := AvisFin(cSubject,aCumula)
 	cDestino := "alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br"
-	//cDestino := Alltrim(GetMV("IC_MAILAVF"))
 	U_robmail(cRemete,cDestino,cSubject+" "+cvaltochar(ddatabase),cBody,{},.T.)
 EndIf
 
@@ -434,7 +433,9 @@ ELSE //DOW(dDataBase) == 6
 	dDtTree := datavalida(dDataBase-7,.F.)-2 //Condição para Sexta
 ENDIF
 
-cQuery := "SELECT TOP 1 E1_PREFIXO,E1_NUM,E1_TIPO,E1_EMISSAO,E1_NATUREZ,ED_DESCRIC,E1_PARCELA,E1_CLIENTE,E1_LOJA,A1_NOME,E1_VENCREA,E1_VALOR,A1_EMAIL,E1_VALJUR,E1.R_E_C_N_O_ AS REGE1" //,ZL_TIPOMOV,ZL_DATA"
+cQuery := "SELECT TOP 1 E1_PREFIXO,E1_NUM,E1_TIPO,E1_EMISSAO,E1_NATUREZ,ED_DESCRIC,"
+cQuery += " E1_PARCELA,E1_CLIENTE,E1_LOJA,A1_NOME,E1_VENCREA,E1_VALOR,A1_EMAIL,"
+cQuery += " E1_VALJUR,E1.R_E_C_N_O_ AS REGE1" 
 cQuery += " FROM "+RetSQLName("SE1")+" E1"
 cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_COD=E1_CLIENTE AND A1_LOJA=E1_LOJA AND A1.D_E_L_E_T_=''"
 cQuery += " INNER JOIN "+RetSQLName("SED")+" ED ON ED_CODIGO=E1_NATUREZ AND ED.D_E_L_E_T_=''"
@@ -442,7 +443,6 @@ cQuery += " WHERE E1_VENCREA = '"+dtos(datavalida(dDtTree,.F.))+"' AND E1_BAIXA=
 cQuery += " AND E1_TIPO='NF'"
 cQuery += " AND E1_FILIAL='"+xFilial('SE1')+"'"
 cQuery += " AND E1.D_E_L_E_T_=''AND E1_PORTADO BETWEEN ' ' AND '999'"          
-//cQuery += " AND E1_XENVNOT IN('','0','2') " //Condição colocada para a ICB
 cQuery += " ORDER BY E1_CLIENTE,E1_LOJA,E1_VENCREA"  
 
 If Select('TRB') > 0
@@ -521,7 +521,6 @@ IF len(aAvisFi) > 0
 	cBody := AvisFin(cSubject,aCumula)
 	
     cDestino := "alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br"
-	//cDestino := Alltrim(GetMV("IC_MAILAVF"))
 	U_robmail(cRemete,cDestino,cSubject+" "+cvaltochar(ddatabase),cBody,{},.T.)
 EndIf
 
@@ -544,23 +543,14 @@ Return
 ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
 */
 
-Static Function Aviso_1(cBoleto) // (aLinDig)
+Static Function Aviso_1(cBoleto) 
 
 Local aArea	:=	GetArea()
 
 cHtml := "<html>"
 cHtml += "<body>"
-/*cHtml += "<style type='text/css'>"
-cHtml += " body,td,th {"
-cHtml += "	font-family: Verdana, Geneva, sans-serif;"
-cHtml += "	color: #000;"
-cHtml += "	}"
-cHtml += " </style>"*/
-
 
 cHtml += "<table width='1078' border='0'>"    
-/*cHtml += " <tr bgcolor='#d4e6f6'>"
-cHtml += "   <td>Prezado Cliente "+Alltrim(TRB->A1_NOME)+" sua fatura referente ao fornecedor "+Alltrim(SM0->M0_NOMECOM)+", esta se aproximando do vencimento! Em anexo reenviamos o seu Boleto de Cobrança.</td>"*/
 cHtml += "  <tr bgcolor='#33FFFF'>"
 cHtml += "    <td align='center'><b>Aviso de vencimento / NOTA  Nº "+TRB->E1_NUM+" Prefixo "+TRB->E1_PREFIXO+" "+cvaltochar(STOD(TRB->E1_VENCREA))+"</b></td>"
 cHtml += "  </tr>"
@@ -574,32 +564,14 @@ cHtml += "    <tr bgcolor='#d4e6f6'><td>Valor:</td><td><b>R$ "+cvaltochar(Transf
 cHtml += "    <tr bgcolor='#d4e6f6'><td>Vencimento:</td><td><b>"+cvaltochar(Stod(TRB->E1_VENCREA))+"</b></td></tr>"
 cHtml += "    <tr bgcolor='#d4e6f6'><td>Referência:</td><td><b>"+Alltrim(TRB->ED_DESCRIC)+"</b></td></tr>"
 cHtml += "</table><br><br><br>"
-//cHtml += " <br><br><b>Esta mensagem não contém anexos</b><br><br>
-
-//cFilant := SUBSTR(TRB->E1_PREFIXO,1,2)
-//Opensm0(cempant+TRB->E1_FILIAL)
-//Openfile(cempant+TRB->E1_FILIAL)
 
 cHtml += "<table width='1078' border='0'>"
 cHtml += "  <tr>"
-//cHtml += "    <td>Lembramos  que o boleto poderá ser pago em qualquer agência, lotérica ou local credenciado  à rede bancária até a data do vencimento.</td>"
 cHtml += "    <td>Prezado (a), Cliente<br>" 
 cHtml += Alltrim(TRB->A1_NOME)+" Cnpj "+Transform(TRB->A1_CGC,'@R 99.999.999/9999-99')+"<br>"
 cHtml += "Lembramos do vencimento de seu boleto bancário do dia ( "+cvaltochar(stod(TRB->E1_VENCREA))+" ) , se encontra em anexo.<br>"
 cHtml += "Essa é uma mensagem automática, caso já tenha efetuado o pagamento, por favor desconsiderar o e-mail</td>"
 cHtml += "  </tr><br>"
-
-/*iF !Empty(aLinDig[1])
-	cHtml += " <tr bgcolor='#5592bb'>"
-	cHtml += "    <td>Caso prefira, segue aqui o seu código de barras para pagamento:</td>"
-	cHtml += " </tr>"
-	cHtml += " <tr bgcolor='#d4e6f6'>"
-	cHtml += "    <td><strong>"+aLinDig[1]+"</strong></td>"
-	cHtml += " </tr><BR><BR>"
-	cHtml += " <tr bgcolor='#d4e6f6'>"
-	cHtml += "    <td><strong>"+aLinDig[2]+"</strong></td>"
-	cHtml += " </tr><BR><BR>"
-ENDIF*/
 
 If !Empty(cBoleto)
 
@@ -609,18 +581,13 @@ If !Empty(cBoleto)
 
 EndIf
 
-
 cHtml += "  <tr>"
 cHtml += "    <td><p><strong>"+Alltrim(SM0->M0_NOMECOM)+"</strong><br />"
 cHtml += "      Departamento Financeiro<br />"
 cHtml += "      "+Alltrim(SM0->M0_ENDENT)+" "+Alltrim(SM0->M0_CIDENT)+" - "+SM0->M0_ESTENT+"<br />"
 cHtml += "  <strong>T</strong>el 55 (11) 5082-1955 Celular / WhatsApp: (11) 98577-0022 e (11) 97079-1448 <br />"  //"+SM0->M0_TEL+"
-//cHtml += "  <strong>Fax</strong> 55 "+SM0->M0_FAX+"<br />"
 cHtml += "  <strong>E-mail</strong><strong> </strong><a href='mailto:financeiro@robsol.com.br'>financeiro@robsol.com.br</a><u> </u></p></td>"
 cHtml += "  </tr>"
-//cHtml += "  <tr>"
-//cHtml += "	<td><img src='cid:lgrl.bmp'></td>"
-//cHtml += "  </tr>"
 cHtml += "</table>"  
 
 cHtml += "</body>"
@@ -653,12 +620,6 @@ Local nX 	:= 0
 
 cHtml := "<html>"
 cHtml += "<body>"
-/*cHtml += "<style type='text/css'>"
-cHtml += " body,td,th {"
-cHtml += "	font-family: Verdana, Geneva, sans-serif;"
-cHtml += "	color: #000;"
-cHtml += "	}"
-cHtml += " </style>"*/
 
 cHtml += "<table width='1081' border='0'>" 
 cHtml += "  <tr>"
@@ -674,7 +635,6 @@ cHtml += "  <td><p>Prezado Cliente,</p></td></tr><tr>"
 cHtml += "  <td><p>"+substr(aTitCli[1,11],1,6)+"-"+substr(aTitCli[1,11],7,2)+" / "+Alltrim(aTitCli[1,8])+"</p></td>"
 cHtml += "  </tr><br><br>"
 cHtml += "  <tr>"
-//cHtml += "  <td>Informamos que até a presente data, não registramos o pagamento do(s) título(s)  abaixo relacionado(s). Solicitamos seu contato através do telefone 11 "+SM0->M0_TEL+",  para regularização da pendência.</td>"
 cHtml += "  <td>Informamos que até a presente data, não registramos o pagamento do título abaixo relacionado. Pedimos para efetuar o pagamento para evitar possível protestos/negativação. Para qualquer dúvida, entrar em contato através do telefone (11) 5082-1955
 cHtml += "  Caso o pagamento já tenha ocorrido, anterior à data de hoje, solicitamos que desconsidere este aviso e nos encaminhe o comprovante de pagamento através do e-mail: financeiro@robsol.com.br , informando o numero do seu CNPJ."
 cHtml += "  Qualquer dúvida entrar em contato pelo telefone (11) 5082-1955"
@@ -702,9 +662,6 @@ cHtml += "</table><br><br>
 
 cHtml += "<table width='1081' border='0'>"
 cHtml += "  <tr>"
-cHtml += "    <td><p>Caso o  pagamento já tenha ocorrido, solicitamos que desconsidere este aviso e nos  encaminhe o(s) comprovante(s) de pagamento, através do e-mail <a href='mailto:financeiro@robsol.com.br'>financeiro@robsol.com.br</a> ou pelo Telefone (11) "+SM0->M0_TEL+"</p></td>"
-cHtml += "  </tr><br><br><br>"
-cHtml += "  <tr>"
 cHtml += "    <td><p>Certos de  vossa atenção, permanecemos no aguardo.</p></td>"
 cHtml += "  </tr><br><br><br>"
 cHtml += "  <tr>"
@@ -712,11 +669,6 @@ cHtml += "    <td><p><strong>"+Alltrim(SM0->M0_NOMECOM)+"</strong><br />"
 cHtml += "      Departamento Financeiro<br />"
 cHtml += "      "+Alltrim(SM0->M0_ENDENT)+" "+Alltrim(SM0->M0_CIDENT)+" - "+SM0->M0_ESTENT+"<br />"
 cHtml += "  <strong>T</strong>el 55 (11) 5082-1955 Celular / WhatsApp: (11) 98577-0022 e (11) 97079-1448  <br />" //"+SM0->M0_TEL+"
-/*
-cHtml += "    <td><p><strong>"+Posicione("SM0",1,"10"+SUBSTR(aTitCli[01,10],1,2),"M0_NOMECOM")+"</strong><br />"
-cHtml += "      Departamento Financeiro<br />"
-cHtml += "      "+Posicione("SM0",1,"10"+SUBSTR(aTitCli[01,10],1,2),"M0_ENDENT")+" "+Posicione("SM0",1,"10"+SUBSTR(aTitCli[01,10],1,2),"M0_CIDENT")+" - "+Posicione("SM0",1,"10"+SUBSTR(aTitCli[01,10],1,2),"M0_ESTENT")+"<br />"
-cHtml += "  <strong>Tel:</strong> 55 11 9999-8888 <br />"*/
 cHtml += "  <strong>E-mail:</strong><strong> </strong><a href='mailto:financeiro@robsol.com.br'>financeiro@robsol.com.br</a></p></td>"
 cHtml += "  </tr>"
 cHtml += "  <tr>"
@@ -754,13 +706,6 @@ Local nX  	:=	0
 cHtml := "<html>"
 cHtml += "<body>"
 
-/*cHtml += "<style type='text/css'>"
-cHtml += " body,td,th {"
-cHtml += "	font-family: Verdana, Geneva, sans-serif;"
-cHtml += "	color: #000;"
-cHtml += "	}"
-cHtml += " </style>"*/
-
 cHtml += "<table width='1081' border='0'>"
 cHtml += "  <tr>"
 cHtml += " <td align='center' bgcolor='#33FFFF'><b>Aviso de Cobrança</b></td>"
@@ -775,7 +720,6 @@ cHtml += "  <td><p>Prezado Cliente,</p></td></tr><tr>"
 cHtml += "  <td><p>"+substr(aTitCli[1,11],1,6)+"-"+substr(aTitCli[1,11],7,2)+" / "+Alltrim(aTitCli[1,8])+"</p></td>"
 cHtml += "  </tr><br><br>"
 cHtml += "  <tr>"
-//cHtml += "  <td>Informamos que até a presente data, não registramos o pagamento do(s) título(s)  abaixo relacionado(s). Solicitamos seu contato através do telefone 11 "+SM0->M0_TEL+",  para regularização da pendência.</td>"
 cHtml += "  <td>Informamos que até a presente data, não registramos o pagamento do título abaixo relacionado. Pedimos para efetuar o pagamento para evitar possível protestos/negativação. Para qualquer dúvida, entrar em contato através do telefone (11) 5082-1955
 cHtml += "  Caso o pagamento já tenha ocorrido, anterior à data de hoje, solicitamos que desconsidere este aviso e nos encaminhe o comprovante de pagamento através do e-mail: financeiro@robsol.com.br , informando o numero do seu CNPJ."
 cHtml += "  Qualquer dúvida entrar em contato pelo telefone (11) 5082-1955"
@@ -805,9 +749,6 @@ cHtml += "<table width='1081' border='0'>"
 cHtml += "  <tr>"
 cHtml += "  </tr>"
 cHtml += "  <tr><br>"
-cHtml += "    <td><p>Caso o pagamento já tenha ocorrido, pedimos que desconsidere este aviso e nos encaminhe o comprovante de pagamento através do e-mail <a href='mailto:financeiro@robsol.com.br'>financeiro@robsol.com.br</a> ou pelo Telefone (11) "+SM0->M0_TEL+"</p></td>"
-cHtml += "  </tr>"
-cHtml += "  <tr><br>"
 cHtml += "    <td><p><em>Certos  da vossa atenção, permanecemos no aguardo.</em></p></td>"
 cHtml += "  </tr>"
 cHtml += "  <tr>"
@@ -818,11 +759,6 @@ cHtml += "    <td><p><strong>"+Alltrim(SM0->M0_NOMECOM)+"</strong><br />"
 cHtml += "      Departamento Financeiro<br />"
 cHtml += "      "+Alltrim(SM0->M0_ENDENT)+" "+Alltrim(SM0->M0_CIDENT)+" - "+SM0->M0_ESTENT+"<br />"
 cHtml += "  <strong>T</strong>el 55 (11) 5082-1955 Celular / WhatsApp: (11) 98577-0022 e (11) 97079-1448 <br />" //"+SM0->M0_TEL+"
-/*
-cHtml += "    <td><p><strong>"+Posicione("SM0",1,"10"+SUBSTR(aTitCli[01,10],1,2),"M0_NOMECOM")+"</strong><br />"
-cHtml += "      Departamento Financeiro<br />"
-cHtml += "      "+Posicione("SM0",1,"10"+SUBSTR(aTitCli[01,10],1,2),"M0_ENDENT")+" "+Posicione("SM0",1,"10"+SUBSTR(aTitCli[01,10],1,2),"M0_CIDENT")+" - "+Posicione("SM0",1,"10"+SUBSTR(aTitCli[01,10],1,2),"M0_ESTENT")+"<br />"
-cHtml += "  <strong>Tel:</strong> 55 11 9999-8888 <br />"*/
 cHtml += "  <strong>E-mail:</strong><strong> </strong><a href='mailto:financeiro@robsol.com.br'>financeiro@robsol.com.br</a></p></td>"
 cHtml += "  </tr>"
 cHtml += "  <tr>"
@@ -860,13 +796,6 @@ Local nX 	:=	0
 cHtml := "<html>"
 cHtml += "<body>"
 
-/*cHtml += "<style type='text/css'>"
-cHtml += " body,td,th {"
-cHtml += "	font-family: Verdana, Geneva, sans-serif;"
-cHtml += "	color: #000;"
-cHtml += "	}"
-cHtml += " </style>"
-*/
 cHtml += "<table width='1081' border='0'>"
 cHtml += "  <tr>"
 cHtml += " <td align='center' bgcolor='#33FFFF'><b>Aviso de Cobrança</b></td>"
@@ -881,7 +810,6 @@ cHtml += "  <td><p>Prezado Cliente,</p></td></tr><tr>"
 cHtml += "  <td><p>"+substr(aTitCli[1,11],1,6)+"-"+substr(aTitCli[1,11],7,2)+" / "+Alltrim(aTitCli[1,8])+"</p></td>"
 cHtml += "  </tr><br><br>"
 cHtml += "  <tr>"
-//cHtml += "  <td>Informamos que até a presente data, não registramos o pagamento do(s) título(s)  abaixo relacionado(s). Solicitamos seu contato através do telefone 11 "+SM0->M0_TEL+",  para regularização da pendência.</td>"
 cHtml += "  <td>Informamos que até a presente data, não registramos o pagamento do título abaixo relacionado. Pedimos para efetuar o pagamento para evitar possível protestos/negativação. Para qualquer dúvida, entrar em contato através do telefone (11) 5082-1955
 cHtml += "  Caso o pagamento já tenha ocorrido, anterior à data de hoje, solicitamos que desconsidere este aviso e nos encaminhe o comprovante de pagamento através do e-mail: financeiro@robsol.com.br , informando o numero do seu CNPJ."
 cHtml += "  Qualquer dúvida entrar em contato pelo telefone (11) 5082-1955"
@@ -911,9 +839,6 @@ cHtml += "  </tr>"
 cHtml += "  <tr><br>"
 cHtml += "    <td>O não pronunciamento ensejará no encaminhamento do(s) título(s) para cartório.</td>"
 cHtml += "  </tr>"
-cHtml += "  <tr><br>"
-cHtml += "    <td><p>Caso o pagamento já tenha ocorrido, pedimos que desconsidere este aviso e nos encaminhe o comprovante de pagamento através do e-mail <a href='mailto:financeiro@robsol.com.br'>financeiro@robsol.com.br</a> ou pelo Telefone (11) "+SM0->M0_TEL+"</p></td>"
-cHtml += "  </tr>"
 cHtml += "  <tr>"
 cHtml += "    <td><p>Certos  de vossa atenção, permanecemos no aguardo. </p></td>"
 cHtml += "  </tr>"
@@ -925,10 +850,6 @@ cHtml += "    <td><p><strong>"+Alltrim(SM0->M0_NOMECOM)+"</strong><br />"
 cHtml += "      Departamento Financeiro<br />"
 cHtml += "      "+Alltrim(SM0->M0_ENDENT)+" "+Alltrim(SM0->M0_CIDENT)+" - "+SM0->M0_ESTENT+"<br />"
 cHtml += "  <strong>T</strong>el 55 (11) 5082-1955 Celular / WhatsApp: (11) 98577-0022 e (11) 97079-1448 <br />" //"+SM0->M0_TEL+"
-/*cHtml += "    <td><p><strong>"+Posicione("SM0",1,"10"+SUBSTR(aTitCli[01,10],1,2),"M0_NOMECOM")+"</strong><br />"
-cHtml += "      Departamento Financeiro<br />"
-cHtml += "      "+Posicione("SM0",1,"10"+SUBSTR(aTitCli[01,10],1,2),"M0_ENDENT")+" "+Posicione("SM0",1,"10"+SUBSTR(aTitCli[01,10],1,2),"M0_CIDENT")+" - "+Posicione("SM0",1,"10"+SUBSTR(aTitCli[01,10],1,2),"M0_ESTENT")+"<br />"
-cHtml += "  <strong>Tel:</strong> 55 11 9999-8888 <br />"*/
 cHtml += "  <strong>E-mail:</strong><strong> </strong><a href='mailto:financeiro@robsol.com.br'>financeiro@robsol.com.br</a></p></td>"
 cHtml += "  </tr>"
 cHtml += "  <tr>"
@@ -1014,7 +935,5 @@ EndIf
 
 cHtml	+=	"	</body></html>"
 
-                                
 Return(cHtml)                                                 
 	
-return

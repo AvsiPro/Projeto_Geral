@@ -59,7 +59,7 @@ WsMethod POST WsReceive RECEIVE WsService PRTL043
 		cCode  := "#200"
 		cMessage := "Conexao realizada com sucesso"
 		lRet   := .T.
-		cFilFat:= oBody:getJsonText("filial_faturamento")
+		cFilFat:= oBody:getJsonText("Filial_faturamento")
 		cNota  := oBody:getJsonText("nota")
 		cItem  := oBody:getJsonText("item")
 		cProd  := oBody:getJsonText("cod_produto")

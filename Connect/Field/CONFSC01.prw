@@ -131,7 +131,7 @@ Processa( { || Busca(cCond),"Aguarde"})
 Aadd(aList2,{'','',0})
 Aadd(aList3,{'','',0})
 Aadd(aList4,{'','',0})
-Aadd(aList5,{'','','',0})
+Aadd(aList5,{'','','','',0,'',0,0,0,0,''})
 
 //Asort(aList3,,,{|x,y| x[2] > y[2]})
 
@@ -508,7 +508,7 @@ EndDo
 
 For nCont := 1 to len(aList5b)
 	
-	cQuery := "SELECT Z08_COD,Z08_SEQUEN,Z08_SELECA,Z08_PRODUT,B1_DESC,Z08_QTDLID,Z08_DATA,Z08_CONTRT" 
+	cQuery := "SELECT Z08_COD,Z08_SEQUEN,Z08_SELECA,Z08_PRODUT,B1_DESC,Z08_QTDLID,Z08_DATA,Z08_CONTRT,Z08_FATURA" 
 	cQuery += "  FROM "+RetSQLname("Z08")+" Z08" 
 	cQuery += "  LEFT JOIN "+RetSQLname("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"'"
 	cQuery += "   AND B1_COD=Z08_PRODUT AND B1.D_E_L_E_T_=' ' 
@@ -517,7 +517,7 @@ For nCont := 1 to len(aList5b)
 	cQuery += "  	AND Z08_CONTRT='"+aList5b[nCont,01]+"' AND D_E_L_E_T_=' ')
 	cQuery += "  AND Z08.D_E_L_E_T_=' '
 	cQuery += "  UNION 
-	cQuery += "  SELECT Z08_COD,Z08_SEQUEN,Z08_SELECA,Z08_PRODUT,B1_DESC,Z08_QTDLID,Z08_DATA,Z08_CONTRT" 
+	cQuery += "  SELECT Z08_COD,Z08_SEQUEN,Z08_SELECA,Z08_PRODUT,B1_DESC,Z08_QTDLID,Z08_DATA,Z08_CONTRT,Z08_FATURA" 
 	cQuery += "  FROM "+RetSQLname("Z08")+" Z08"
 	cQuery += "  LEFT JOIN "+RetSQLname("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"'"
 	cQuery += "		AND B1_COD=Z08_PRODUT AND B1.D_E_L_E_T_=' '" 
@@ -553,7 +553,7 @@ For nCont := 1 to len(aList5b)
 			Aadd(aAuxL5,TRB->Z08_DATA)
 			Aadd(aAuxL5,TRB->Z08_QTDLID)
 			Aadd(aAuxL5,0)
-
+			
 			If nPos2 > 0
 				Aadd(aAuxL5,aTabPrc[nPos2,04])
 			Else 
@@ -563,6 +563,9 @@ For nCont := 1 to len(aList5b)
 
 			Aadd(aAuxL5,0)
 			
+			Aadd(aAuxL5,Z08_COD)
+			Aadd(aAuxL5,Z08_FATURA)
+
 			If len(aAuxL5) > 0
 				Aadd(aAux5,aAuxL5)
 			EndIf
@@ -740,16 +743,17 @@ Return
 /*/
 Static Function FHelp3(nLinha,nLinha2,nOpini)
 
-Local aArea :=	GetArea()
-Local nPos  := 	0
+Local aArea 	:=	GetArea()
+Local nPos  	:= 	0
 Local nCont 
-Local nTotQ	:=	0
-Local nTotV :=	0
-Local nTotC :=	0
+Local nTotQ		:=	0
+Local nTotV 	:=	0
+Local nTotC 	:=	0
 Local cTexto
-Local nDifCb:=	0
-
-Default nOpini := 1
+Local nDifCb	:=	0
+Local lFatura 	:= .F.
+Local nJ 		:=	0
+Default nOpini 	:= 	1
 
 aList5 := {}
 
@@ -764,7 +768,7 @@ If nPos > 0 .And. len(aList5b[nPos]) > 4
 		Aadd(aList5,aList5b[nPos,nCont])
 	Next nCont
 Else 
-	Aadd(aList5,{'','','','',0,'',0,0,0,0})
+	Aadd(aList5,{'','','','',0,'',0,0,0,0,''})
 EndIf 
 
 Aeval(aList5,{|x| nTotQ += x[8]})
@@ -798,7 +802,21 @@ Aeval(aList2B,{|x| nTotC += If(x[3] > 1 .AND. x[4] == aList[nLinha2,01],x[3],0)+
 
 aList[nLinha2,02] := nTotC
 
-Aeval(aList,{|x| x[18] := if(x[2]>1,0,1)})
+For nCont := 1 to len(aList5B)
+	If aList[nLinha2,01] == aList5B[nCont,01] .And. len(aList5B[nCont]) > 4
+		For nJ := 5 to len(aList5B[nCont])
+			If aList5B[nCont,nJ,12] == "S"
+				lFatura := .t.
+				aList[nLinha2,18] := 2
+			EndIf 
+		Next nJ
+	EndIf 
+	
+Next nCont
+
+If !lFatura
+	Aeval(aList,{|x| x[18] := if(x[2]>1,0,1)})
+EndIf 
 
 cTexto := "Tabela de Preço "+AAM->AAM_XCODTA+" "
 If !Empty(AAM->AAM_XFORFA)
@@ -1874,6 +1892,9 @@ Local nCont
 Local aItens	:=	{}
 Local aLocac 	:=	{}
 Local nJ 
+Local cAtLoc 	:=	""
+Local cBarra 	:=	""
+Local cAtFat 	:=	""
 
 If nOpcG == 0
 	//Faturar todos os itens liberados do array alist
@@ -1881,6 +1902,8 @@ ElseIf nOpcG == 1
 	//Faturamento unico na linha do array alist
 	For nCont := 1 to len(aList2B)
 		If aList2B[nCont,04] == aList[oList:nAt,01]
+			cAtLoc += cBarra + Alltrim(aList2b[nCont,01])
+			cBarra := "/"
 			If aList2B[nCont,03] > 1
 				Aadd(aLocac,{aList2B[nCont,01],;
 							aList2B[nCont,03]})
@@ -1888,8 +1911,12 @@ ElseIf nOpcG == 1
 		EndIf 
 	Next nCont
 
+	cBarra := ""
+
 	For nCont := 1 to len(aList5B)
 		If aList5B[nCont,01] == aList[oList:nAt,01] .And. len(aList5b[nCont]) > 4
+			cAtFat += cBarra + Alltrim(aList5b[nCont,02])
+			cBarra := "/"
 			For nJ := 5 to len(aList5b[nCont])
 				nPos := Ascan(aItens,{|x| x[1] == aList5B[nCont,nJ,02]})
 				If nPos == 0
@@ -1911,6 +1938,11 @@ ElseIf nOpcG == 1
 EndIF 
 
 If len(aItens) > 0 
+
+	If Empty(cAtFat)
+		cAtFat := Alltrim(aList2[oList2:nAt,01])
+	EndIF 
+
 	DbSelectArea("AAM")
 	DbSetOrder(1)
 	DbSeek(xFilial("AAM")+aList[oList:nAt,01])
@@ -1923,8 +1955,7 @@ If len(aItens) > 0
 	aAdd( aCabec , { "C5_TIPO"      , 'N'                 , Nil } )
 	aAdd( aCabec , { "C5_CLIENTE"   , aList[oList:nAt,03]    , Nil } )
 	aAdd( aCabec , { "C5_LOJACLI"   , aList[oList:nAt,04]    , Nil } )
-	//aAdd( aCabec , { "C5_TRANSP"    , cAbast              , Nil } ) 
-	Aadd( aCabec , { "C5_MENNOTA"   , 'Faturamento de Doses'              , Nil } )
+	Aadd( aCabec , { "C5_MENNOTA"   , 'Faturamento de Doses - Ref. Patrimonio(s) '+cAtFat   , Nil } )
 	aAdd( aCabec , { "C5_CONDPAG"   , AAM->AAM_CPAGPV     , Nil } )    
         
 	For nCont := 1 to len(aItens)
@@ -1948,6 +1979,23 @@ If len(aItens) > 0
 		MostraErro()
 	ELSE
 		Msgalert("Pedido gerado de faturamento de doses "+SC5->C5_NUM)
+		DbSelectArea("Z08")
+		DbSetOrder(1)
+		For nCont := 1 to len(aList5B)
+			If aList5B[nCont,01] == aList[oList:nAt,01] .And. len(aList5b[nCont]) > 4
+				For nJ := 5 to len(aList5b[nCont])
+					If Dbseek(xFilial("Z08")+aList5b[nCont,nJ,11])
+						While !EOF() .And. Z08->Z08_COD == aList5b[nCont,nJ,11]
+							RecLock("Z08", .F.)
+							Z08->Z08_FATURA := 'S'
+							Z08->(MsUnlock())
+							aList5b[nCont,nJ,12] := 'S'
+							Dbskip()
+						EndDo 
+					EndIf 
+				Next nJ
+			EndIf 
+		Next nCont
 	ENDIF
 EndIF 
 
@@ -1965,8 +2013,7 @@ If len(aLocac) > 0
 	aAdd( aCabec , { "C5_TIPO"      , 'N'                 , Nil } )
 	aAdd( aCabec , { "C5_CLIENTE"   , aList[oList:nAt,03]    , Nil } )
 	aAdd( aCabec , { "C5_LOJACLI"   , aList[oList:nAt,04]    , Nil } )
-	//aAdd( aCabec , { "C5_TRANSP"    , cAbast              , Nil } ) 
-	Aadd( aCabec , { "C5_MENNOTA"   , 'Locacao de Maquinas'              , Nil } )
+	Aadd( aCabec , { "C5_MENNOTA"   , 'Locacao de Maquinas Ref. Patrimonio(s) '+cAtLoc    , Nil } )
 	aAdd( aCabec , { "C5_CONDPAG"   , AAM->AAM_CPAGPV     , Nil } )    
 
 	For nCont := 1 to len(aLocac)
@@ -1990,8 +2037,27 @@ If len(aLocac) > 0
 		MostraErro()
 	ELSE
 		Msgalert("Pedido gerado de locação "+SC5->C5_NUM)
+		DbSelectArea("Z08")
+		DbSetOrder(1)
+		For nCont := 1 to len(aList5B)
+			If aList5B[nCont,01] == aList[oList:nAt,01] .And. len(aList5b[nCont]) > 4
+				For nJ := 5 to len(aList5b[nCont])
+					If Dbseek(xFilial("Z08")+aList5b[nCont,nJ,11])
+						While !EOF() .And. Z08->Z08_COD == aList5b[nCont,nJ,11]
+							RecLock("Z08", .F.)
+							Z08->Z08_FATURA := 'S'
+							Z08->(MsUnlock())
+							aList5b[nCont,nJ,12] := 'S'
+							Dbskip()
+						EndDo
+					EndIf 
+				Next nJ
+			EndIf 
+		Next nCont
 	ENDIF    
-EndIf 
+EndIf
+
+	
 
 RestArea(aArea)
 

@@ -24,11 +24,12 @@
 User Function CONFSR01(cTipo,cPeriodo)
 
 Local nlinha   := 0
-Local ncoluna  := 0  
 Local nPagina  := 1  
 Local nTotDia  := 0     
 Local nTotMes  := 0
 Local cDiaAt   := ''
+Local nSub
+Local nCont 
 Private lAdjustToLegacy := .F. 
 Private lDisableSetup  := .T.
 Private oFont2n
@@ -42,8 +43,8 @@ Private oFont14n
 Private oFont24
 Private i := 0
 Private oPrint
-Private aBmp2	:= "\SYSTEM\logoamc.bmp"
-Private aBmp 	:= "\SYSTEM\logo_toktake.png"
+Private aBmp2	 := "\SYSTEM\logoamc.bmp"
+Private aBmp 	 := "\SYSTEM\logo_toktake.png"
 Private aCoords1 := {0150,1900,0550,2300}
 Private aCoords2 := {0450,1050,0550,1900}
 Private aCoords3 := {0710,1900,0810,2300}
@@ -84,7 +85,7 @@ oPrint:cPathPDF := "c:\temp\"
 oFont9I:Italic := .T.
 oBrush := TBrush():New("",5)//4
 //
-Cabecalho(nPagina,cTipo,cPeriodo)
+Cabecalho(nPagina,cTipo)
 nPagina++
 
 Asort(aList,,,{|x,y| x[9] < y[9]})
@@ -96,7 +97,7 @@ Else
 EndIf
  
 If cPeriodo == "1"
-	cDiaAt	:= aList[1,9]
+	cDiaAt	:= aList[1,10]
 Else
 	cDiaAt	:= strzero(day(ddatabase),2)
 EndIf
@@ -104,7 +105,7 @@ EndIf
 For nCont := 1 to len(aList)
 	//Nova pagina 
 	If nLinha > 715
-		Cabecalho(nPagina,cTipo,cPeriodo)
+		Cabecalho(nPagina,cTipo)
 		nPagina++
 		
 		If cTipo == "ANALITICO"
@@ -114,7 +115,7 @@ For nCont := 1 to len(aList)
 		EndIf
 		 
 		If cPeriodo == "1"
-			cDiaAt	:= aList[1,9]
+			cDiaAt	:= aList[1,10]
 		Else
 			cDiaAt	:= strzero(day(ddatabase),2)
 		EndIf
@@ -122,19 +123,19 @@ For nCont := 1 to len(aList)
 	EndIf         
 	
 	If cPeriodo == "1"
-		If cDiaAt <> aList[nCont,09]
+		If cDiaAt <> aList[nCont,10]
 			oPrint:Say(nLinha,195,'Total dia '+cDiaAt				   						,oFont9N,,CLR_HBLUE)
 			oPrint:Say(nLinha,575,Transform(nTotDia,"@E 99,999.99")							,oFont9N,,CLR_HBLUE)
 			nTotMes += nTotDia
 
 			nTotDia := aList[nCont,02]
-			cDiaAt  := aList[nCont,09]
+			cDiaAt  := aList[nCont,10]
 			nLinha += 20 
 		else
 			nTotDia += aList[nCont,02]
 		EndIf
 			
-		oPrint:Say(nLinha,025,aList[nCont,09]					,oFont9)
+		oPrint:Say(nLinha,025,aList[nCont,10]					,oFont9)
 		oPrint:Say(nLinha,105,aList[nCont,01]					,oFont9)
 		oPrint:Say(nLinha,195,aList[nCont,05]					,oFont9)
 		oPrint:Say(nLinha,575,Transform(aList[nCont,02],"@E 99,999.99")							,oFont9)
@@ -166,8 +167,8 @@ For nCont := 1 to len(aList)
 	//IncProc()     
 	Else 
 
-		If aList[nCont,09] == strzero(day(ddatabase),2)
-			oPrint:Say(nLinha,025,aList[nCont,09]					,oFont9)
+		If aList[nCont,10] == cDiaAt // strzero(day(ddatabase),2)
+			oPrint:Say(nLinha,025,aList[nCont,10]					,oFont9)
 			oPrint:Say(nLinha,105,aList[nCont,01]					,oFont9)
 			oPrint:Say(nLinha,195,aList[nCont,05]					,oFont9)
 			oPrint:Say(nLinha,575,Transform(aList[nCont,02],"@E 99,999.99")							,oFont9)
