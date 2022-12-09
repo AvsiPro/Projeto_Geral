@@ -24,9 +24,12 @@
 User Function CONFSR01(cTipo,cPeriodo)
 
 Local nlinha   := 0
+Local ncoluna  := 0  
 Local nPagina  := 1  
 Local nTotDia  := 0     
 Local nTotMes  := 0
+Local nSub     := 0
+Local nCont    := 0
 Local cDiaAt   := ''
 Local nSub
 Local nCont 
@@ -85,7 +88,7 @@ oPrint:cPathPDF := "c:\temp\"
 oFont9I:Italic := .T.
 oBrush := TBrush():New("",5)//4
 //
-Cabecalho(nPagina,cTipo)
+Cabecalho(nPagina,cTipo,cPeriodo)
 nPagina++
 
 Asort(aList,,,{|x,y| x[9] < y[9]})
@@ -113,7 +116,7 @@ For nCont := 1 to len(aList)
 		Else
 			nLinha := 100
 		EndIf
-		 
+		
 		If cPeriodo == "1"
 			cDiaAt	:= aList[1,10]
 		Else
