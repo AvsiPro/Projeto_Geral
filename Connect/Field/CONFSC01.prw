@@ -2403,3 +2403,240 @@ ENDIF
 RestArea(aArea)
 
 Return
+
+Static Function ExtLeitura()
+	
+    Local lAdjustToLegacy  := .F.
+    Local lDisableSetup    := .T.
+    Local nX               := 0
+    Local nY               := 0
+	Local nLin             := 0
+    Local oFont1           := TFont():New('Arial' /*Fonte*/,,10 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
+    // Local oFont2           := TFont():New('Arial' /*Fonte*/,,12 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
+    Local oFont3           := TFont():New('Arial' /*Fonte*/,,12 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.T. /*Italico*/ )
+    Local oFont4           := TFont():New('Arial' /*Fonte*/,,15 /*Tamanho*/,,.T. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
+    Local oFont6           := TFont():New('Arial' /*Fonte*/,,15 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
+    Local oFont5           := TFont():New('Arial' /*Fonte*/,,25 /*Tamanho*/,,.T. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
+
+	Private oPrinter := FWMSPrinter():New( "extrato_leitura_.pdf",IMP_PDF,lAdjustToLegacy,"c:\temp\",lDisableSetup,,,,,,,, )
+    
+    oPrinter:StartPage()
+    oPrinter:SetMargin( 005, 005, 005, 005 )
+
+	oBrush1 := TBrush():New( , rgb(0, 0, 0) )
+	oBrush2 := TBrush():New( , rgb(238, 238, 238) )
+	oBrush3 := TBrush():New( , rgb(0, 99, 125) )
+
+	oPrinter:Say( nLin+=40, 10,"Extrato de Leituras", oFont5,, rgb(0, 99, 125) )
+	oPrinter:Say( nLin+=10, 10,"Realizadas entre ", oFont3,, rgb(102, 102, 102) )
+
+	oPrinter:Fillrect( { nLin+=30, 10, nLin+30, 590 }, oBrush2, "-2")
+	oPrinter:Fillrect( { nLin+=10, 20, nLin+10, 30 }, oBrush1, "-2")
+	oPrinter:Say( nLin+5, 45,"TOTAL GERAL", oFont4 )
+	oPrinter:Say( nLin+15, 45,"Totalizando 1 Cliente", oFont1 )
+
+	oPrinter:Say( nLin+=10, 400,"0001", oFont1 )
+	oPrinter:Say( nLin, 450,"0002", oFont1 )
+	oPrinter:Say( nLin, 500,"0003", oFont1 )
+	oPrinter:Say( nLin, 550,"0004", oFont1 )
+
+	oPrinter:Say( nLin+=30, 45,"Produto", oFont1 )
+	oPrinter:Say( nLin, 100,"Descrição", oFont1 )
+	oPrinter:Say( nLin, 360,"Consumo", oFont1 )
+	oPrinter:Say( nLin, 410,"Subsidiado R$", oFont1 )
+	oPrinter:Say( nLin, 480,"Ao Consumidor R$", oFont1 )
+	oPrinter:Say( nLin, 550,"Total R$", oFont1 )
+
+	for nX := 1 to 10
+		oPrinter:Say( nLin+=20, 45,"D01010101", oFont1 )
+		oPrinter:Say( nLin, 100,"CAFE NORMAL COM ACUCAR NORMAL", oFont1 )
+		oPrinter:Say( nLin, 360,"15", oFont1 )
+		oPrinter:Say( nLin, 410,"1000", oFont1 )
+		oPrinter:Say( nLin, 480,"2000", oFont1 )
+		oPrinter:Say( nLin, 550,"3000", oFont1 )
+		oPrinter:Fillrect( { nLin+5, 10, nLin+5, 590 }, oBrush2, "-2")
+	next
+
+	oPrinter:Fillrect( { nLin+=20, 10, nLin+30, 590 }, oBrush3, "-2")
+
+	oPrinter:Say( nLin+12, 30,"354 - AFIP", oFont4,, rgb(238, 238, 238) )
+	oPrinter:Say( nLin+24, 30,"47.673.793/0102-17", oFont6,, rgb(238, 238, 238) )
+
+	oPrinter:Say( nLin+=60, 10,"CONSOLIDADO", oFont6 )
+	oPrinter:Fillrect( { nLin+=5, 10, nLin, 590 }, oBrush1, "-2")
+	oPrinter:Fillrect( { nLin+=15, 10, nLin+30, 590 }, oBrush2, "-2")
+	oPrinter:Fillrect( { nLin+10, 20, nLin+20, 30 }, oBrush3, "-2")
+	oPrinter:Say( nLin+15, 40,"cCliente", oFont4 )
+	oPrinter:Say( nLin+25, 40,"Totalizando " + "cNum" + " Pontos de Venda", oFont1 )
+	oPrinter:Say( nLin+=15, 360,"cTotCons", oFont1 )
+	oPrinter:Say( nLin, 410,"cTotSub", oFont1 )
+	oPrinter:Say( nLin, 480,"cTotConsu", oFont1 )
+	oPrinter:Say( nLin, 550,"cTotal", oFont1 )
+	
+	oPrinter:Say( nLin+=30, 45,"Produto", oFont1 )
+	oPrinter:Say( nLin, 100,"Descrição", oFont1 )
+	oPrinter:Say( nLin, 360,"Consumo", oFont1 )
+	oPrinter:Say( nLin, 410,"Subsidiado R$", oFont1 )
+	oPrinter:Say( nLin, 480,"Ao Consumidor R$", oFont1 )
+	oPrinter:Say( nLin, 550,"Total R$", oFont1 )
+
+	for nX := 1 to 10
+		oPrinter:Say( nLin+=20, 45,"D01010101", oFont1 )
+		oPrinter:Say( nLin, 100,"CAFE NORMAL COM ACUCAR NORMAL", oFont1 )
+		oPrinter:Say( nLin, 360,"15", oFont1 )
+		oPrinter:Say( nLin, 410,"1000", oFont1 )
+		oPrinter:Say( nLin, 480,"2000", oFont1 )
+		oPrinter:Say( nLin, 550,"3000", oFont1 )
+		oPrinter:Fillrect( { nLin+5, 10, nLin+5, 590 }, oBrush2, "-2")
+	next
+	
+
+	for nX := 1 to 2
+	
+		oPrinter:StartPage()
+
+		oPrinter:Say( nLin:=20, 10,". . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .", oFont5,, rgb(0, 99, 125) )
+		oPrinter:Say( nLin+=15, 10,"PONTO DE VENDA", oFont6 )
+		oPrinter:Fillrect( { nLin+5, 10, nLin+5, 590 }, oBrush1, "-2")
+		oPrinter:Fillrect( { nLin+10, 10, nLin+40, 590 }, oBrush2, "-2")
+		oPrinter:Fillrect( { nLin+20, 30, nLin+30, 20 }, oBrush1, "-2")
+		oPrinter:Say( nLin+25, 40,"cCliente + cEnd", oFont4 )
+		oPrinter:Say( nLin+35, 40,"cMaq", oFont1 )
+		oPrinter:Say( nLin+25, 360,"cTotCons", oFont1 )
+		oPrinter:Say( nLin+25, 410,"cTotSub", oFont1 )
+		oPrinter:Say( nLin+25, 480,"cTotConsu", oFont1 )
+		oPrinter:Say( nLin+25, 550,"cTotal", oFont1 )
+		
+		oPrinter:Say( nLin+=50, 25,"Mola", oFont1 )
+		oPrinter:Say( nLin, 50,"Produto", oFont1 )
+		oPrinter:Say( nLin, 100,"Descrição", oFont1 )
+		oPrinter:Say( nLin, 360,"Consumo", oFont1 )
+		oPrinter:Say( nLin, 410,"Subsidiado R$", oFont1 )
+		oPrinter:Say( nLin, 480,"Ao Consumidor R$", oFont1 )
+		oPrinter:Say( nLin, 550,"Total R$", oFont1 )
+
+		for nY := 1 to 10
+
+			if nY == 37
+				oPrinter:StartPage()
+				nLin:=0
+			endif
+
+			oPrinter:Say( nLin+=20, 25,"cMola", oFont1 )
+			oPrinter:Say( nLin, 50,"cProduto", oFont1 )
+			oPrinter:Say( nLin, 100,"cDescri", oFont1 )
+			oPrinter:Say( nLin, 360,"cConsumo", oFont1 )
+			oPrinter:Say( nLin, 410,"cSubsidi", oFont1 )
+			oPrinter:Say( nLin, 480,"cConsumi", oFont1 )
+			oPrinter:Say( nLin, 550,"cTotal", oFont1 )
+			oPrinter:Fillrect( { nLin+5, 10, nLin+5, 590 }, oBrush2, "-2")
+		next
+
+		oPrinter:Say( nLin+=30, 10,"Leituras no Período", oFont6 )
+		oPrinter:Fillrect( { nLin-2.5, 120, nLin, 590 }, oBrush1, "-6")
+		oPrinter:Fillrect( { nLin+10, 10, nLin+40, 590 }, oBrush2, "-2")
+		oPrinter:Say( nLin+=25, 15,"22/11/22 10:00", oFont4 )
+		oPrinter:Say( nLin, 100,"cCod", oFont1 )
+		oPrinter:Say( nLin, 360,"cTotCons", oFont1 )
+		oPrinter:Say( nLin, 410,"cTotSub", oFont1 )
+		oPrinter:Say( nLin, 480,"cTotConsu", oFont1 )
+		oPrinter:Say( nLin, 550,"cTotal", oFont1 )
+		
+		oPrinter:Say( nLin+=30, 25,"Mola", oFont1 )
+		oPrinter:Say( nLin, 50,"Produto", oFont1 )
+		oPrinter:Say( nLin, 100,"Descrição", oFont1 )
+		oPrinter:Say( nLin, 360,"Consumo", oFont1 )
+		oPrinter:Say( nLin, 410,"Subsidiado R$", oFont1 )
+		oPrinter:Say( nLin, 480,"Ao Consumidor R$", oFont1 )
+		oPrinter:Say( nLin, 550,"Total R$", oFont1 )
+		
+		for nY := 1 to 10
+			oPrinter:Say( nLin+=20, 25,"cMola", oFont1 )
+			oPrinter:Say( nLin, 50,"cProduto", oFont1 )
+			oPrinter:Say( nLin, 100,"cDescri", oFont1 )
+			oPrinter:Say( nLin, 360,"cConsumo", oFont1 )
+			oPrinter:Say( nLin, 410,"cSubsidi", oFont1 )
+			oPrinter:Say( nLin, 480,"cConsumi", oFont1 )
+			oPrinter:Say( nLin, 550,"cTotal", oFont1 )
+			oPrinter:Fillrect( { nLin+5, 10, nLin+5, 590 }, oBrush2, "-2")
+		next
+	next
+
+	oPrinter:EndPage()
+	oPrinter:Print()
+
+Return 
+
+Static Function DemonsCon()
+	
+    Local lAdjustToLegacy  := .F.
+    Local lDisableSetup    := .T.
+    Local nX               := 0
+    Local nY               := 0
+	Local nLin             := 0
+    Local oFont1           := TFont():New('Arial' /*Fonte*/,,10 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
+    Local oFont2           := TFont():New('Arial' /*Fonte*/,,12 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
+    Local oFont3           := TFont():New('Arial' /*Fonte*/,,12 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.T. /*Italico*/ )
+    Local oFont4           := TFont():New('Arial' /*Fonte*/,,15 /*Tamanho*/,,.T. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
+    Local oFont5           := TFont():New('Arial' /*Fonte*/,,15 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
+    Local oFont6           := TFont():New('Arial' /*Fonte*/,,20 /*Tamanho*/,,.T. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
+    Local oFont7           := TFont():New('Arial' /*Fonte*/,,25 /*Tamanho*/,,.T. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
+
+	Private oPrinter := FWMSPrinter():New( "extrato_leitura_.pdf",IMP_PDF,lAdjustToLegacy,"c:\temp\",lDisableSetup,,,,,,,, )
+    
+    oPrinter:StartPage()
+    oPrinter:SetMargin( 005, 005, 005, 005 )
+	
+	oBrush1 := TBrush():New( , rgb(0, 0, 0) )
+	oBrush2 := TBrush():New( , rgb(238, 238, 238) )
+	oBrush3 := TBrush():New( , rgb(0, 99, 125) )
+
+	oPrinter:Say( nLin+=20, 125,"CONNECT VENDING COMERCIO DE MAQUINAS", oFont6,, rgb(0, 0, 0) )
+	oPrinter:Say( nLin+12, 125,"24.575.331/0001-18", oFont5,, rgb(0, 0, 0) )
+	oPrinter:Say( nLin+24, 125,"R Dom João V, 417", oFont5,, rgb(0, 0, 0) )
+	oPrinter:Say( nLin+36, 125,"05.075-060 - São Paulo - SP", oFont5,, rgb(0, 0, 0) )
+	oPrinter:Say( nLin+48, 125,"(11) 4323-2212", oFont5,, rgb(0, 0, 0) )
+
+	oPrinter:Fillrect( { nLin+=55, 10, nLin, 590 }, oBrush1, "-2")
+
+	oPrinter:Box( nLin+=20, 30, nLin+100, 350,"-1" )
+
+	oPrinter:Say( nLin+20, 35,"ASSOCICAO FUNDO DE INCENTIVO A", oFont6,, rgb(0, 0, 0) )
+	oPrinter:Say( nLin+32, 35,"47.673.793/0102-17", oFont5,, rgb(0, 0, 0) )
+	oPrinter:Say( nLin+44, 35,"Rua Padre Machado, 1040 - 1100", oFont5,, rgb(0, 0, 0) )
+	oPrinter:Say( nLin+56, 35,"04127-001 - São Paulo - SP", oFont5,, rgb(0, 0, 0) )
+	oPrinter:Say( nLin+68, 35,"Este é o seu demonstrativo de consumo para o período", oFont5,, rgb(0, 0, 0) )
+	oPrinter:Say( nLin+80, 35,"de 08/11/2022 e 21/11/2022", oFont5,, rgb(0, 0, 0) )
+
+	oPrinter:Fillrect( { nLin, 360, nLin+100, 570 }, oBrush2, "-1")
+
+	oPrinter:Say( nLin+40, 430,"6.530,04", oFont7,, rgb(0, 0, 0) )
+	oPrinter:Say( nLin+52, 400,"vencimento em 22/12/22", oFont5,, rgb(0, 0, 0) )
+	oPrinter:Say( nLin+64, 410,"pagamento via Boleto", oFont5,, rgb(0, 0, 0) )
+
+	
+	oPrinter:Fillrect( { nLin+=100, 10, nLin, 590 }, oBrush2, "-1")
+
+
+	for nX := 1 to 10
+		oPrinter:Say( nLin+90, 400,"Consumo", oFont5,, rgb(0, 0, 0) )
+		oPrinter:Say( nLin+90, 400+70,"Unitário (R$)", oFont5,, rgb(0, 0, 0) )
+		oPrinter:Say( nLin+90, 400+70+70,"Total (R$)", oFont5,, rgb(0, 0, 0) )
+		oPrinter:Fillrect( { nLin+=100, 10, nLin+20, 590 }, oBrush2, "-1")
+		oPrinter:Say( nLin+=15, 30,"CAFE COM LEITE (DOSE)", oFont5,, rgb(0, 0, 0) )
+		oPrinter:Say( nLin, 400,"2.306", oFont5,, rgb(0, 0, 0) )
+		oPrinter:Say( nLin, 400+70,"0,99", oFont5,, rgb(0, 0, 0) )
+		oPrinter:Say( nLin, 400+70+70,"2.282,94", oFont5,, rgb(0, 0, 0) )
+		for nY := 1 to 10
+			oPrinter:Say( nLin+=20, 30,"21/11/22 em 0730 - AFIP - MÁQ 0730", oFont5,, rgb(0, 0, 0) )
+			oPrinter:Say( nLin, 400,"1.019", oFont5,, rgb(0, 0, 0) )
+			oPrinter:Say( nLin, 400+70,"0,99", oFont5,, rgb(0, 0, 0) )
+			oPrinter:Say( nLin, 400+70+70,"1.008,81", oFont5,, rgb(0, 0, 0) )
+		next
+	next
+
+	oPrinter:EndPage()
+	oPrinter:Print()
+
+Return 
+
