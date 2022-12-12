@@ -233,7 +233,9 @@ oGrp1      := TGroup():New( 002,004,336,710,"",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F.
 	Next nCont
 
 	oList:nAt := 1
+	oList2:nAt := 1
 	oList:refresh()
+	oList2:refresh()
 
 oBtn1      := TButton():New( 055,640,"Sair",oDlg1,{||oDlg1:end()},037,012,,,,.T.,,"",,,,.F. )
 
@@ -321,7 +323,7 @@ cQuery += " AAN_VLRUNI,AAN_INICOB,AAN_FIMCOB,AAN_CONPAG,"
 cQuery += " E4_COND,E4_DESCRI,A1_NREDUZ,A1_NOME,A1_END,"
 cQuery += " A1_BAIRRO,A1_MUN,"
 cQuery += " AAM_INIVIG,AAM_FIMVIG,A1_EMAIL,'' AS AAN_XISENT,"
-cQuery += " '' AS AAM_XINIMU,'' AS AAM_XPRAZO,'' AS AAM_XPERCT,"
+cQuery += " AAM_XFORFA, AAM_XTIPFA,'' AS AAM_XPERCT,"
 cQuery += " '' AS AAM_XRENOV,AAN_FILIAL,AAM_XPRDCM"
 cQuery += " FROM "+RetSQLName("AAN")+" AAN"
 cQuery += " INNER JOIN "+RetSQLName("AAM")+" AAM ON AAM_FILIAL=AAN_FILIAL AND AAM_CONTRT=AAN_CONTRT AND AAM.D_E_L_E_T_=' '"
@@ -350,7 +352,7 @@ AAN_CONTRT,AAM_CODCLI,AAM_LOJA,AAN_ITEM,AAN_CODPRO,B1_DESC,AAN_XCBASE,AAN_QUANT,
 	11			12		13		  14		15		16		  17	  18	 19		   20      21		  22          23       24
 AAN_INICOB,AAN_FIMCOB,AAN_CONPAG,E4_COND,E4_DESCRI,A1_NREDUZ,A1_NOME,A1_END,A1_BAIRRO,A1_MUN,AAM_INIVIG,AAM_FIMVIG,A1_EMAIL,AAN_XISENT
 	25			26			27		28      29   30
-AAM_XINIMU,AAM_XPRAZO,AAM_XPERCT,AAM_XRENOV,0,AAN_FILIAL
+AAM_XFORFA,AAM_XTIPFA,AAM_XPERCT,AAM_XRENOV,0,AAN_FILIAL
 */
 
 DbSelectArea("TRB")   
@@ -402,8 +404,8 @@ While !EOF()
     				STOD(TRB->AAM_INIVIG),;
 					STOD(TRB->AAM_FIMVIG),;
 					TRB->A1_EMAIL,;
-					TRB->AAM_XINIMU,;
-					TRB->AAM_XPRAZO,;
+					TRB->AAM_XFORFA,;	//14
+					TRB->AAM_XTIPFA,;	//15
 					TRB->AAM_XPERCT,;
 					TRB->AAM_XRENOV,;
 					0,;
@@ -744,6 +746,9 @@ oList4:bLine := {||{ aList4[oList4:nAt,01],;
 			 		 aList4[oList4:nAt,02],;
  					 Transform(aList4[oList4:nAt,03],"@E 999,999,999.99")}}
 */
+
+oList2:nAt := 1
+
 oList:refresh()
 oList2:refresh()
 oList3:refresh() 
@@ -780,8 +785,6 @@ Local nTotV 	:=	0
 Local nTotC 	:=	0
 Local cTexto
 Local nDifCb	:=	0
-Local lFatura 	:= .F.
-Local nJ 		:=	0
 Default nOpini 	:= 	1
 
 aList5 := {}
@@ -818,9 +821,20 @@ oList5:bLine := {||{ Alltrim(aList5[oList5:nAt,01]),;
 If nOpini == 0
 	aList2b[nLinha,09] := nTotQ
 	aList2b[nLinha,10] := nTotV
+	If aList2b[nLinha,07] > 0	
+		If aList2b[nLinha,07] - aList2b[nLinha,09] > 0
+			aList2b[nLinha,11] := aList2b[nLinha,07] - aList2b[nLinha,09]
+		EndIf 
+	EndIf 
 else 
 	aList2[nLinha,09] := nTotQ
 	aList2[nLinha,10] := nTotV
+
+	If aList2[nLinha,07] > 0	
+		If aList2[nLinha,07] - aList2[nLinha,09] > 0
+			aList2[nLinha,11] := aList2[nLinha,07] - aList2[nLinha,09]
+		EndIf 
+	EndIf
 EndIf 
 
 DbSelectArea("AAM")
@@ -831,27 +845,6 @@ Aeval(aList2B,{|x| nTotC += If(x[3] > 1 .AND. x[4] == aList[nLinha2,01],x[3],0)+
 
 aList[nLinha2,02] := nTotC
 
-/*
-For nCont := 1 to len(aList5B)
-	If aList[nLinha2,01] == aList5B[nCont,01] .And. len(aList5B[nCont]) > 4
-		For nJ := 5 to len(aList5B[nCont])
-			If aList5B[nCont,nJ,12] == "S"
-				lFatura := .t.
-				aList[nLinha2,18] := 2
-			EndIf 
-		Next nJ
-	EndIf 
-	
-Next nCont
-
-
-
-If !lFatura
-	Aeval(aList,{|x| x[18] := if(x[2]>1,0,1)})
-Else 
-	aList[nLinha2,18] := 2
-EndIf 
-*/
 cTexto := "Tabela de Preço "+AAM->AAM_XCODTA+" "
 If !Empty(AAM->AAM_XFORFA)
 	IF AAM->AAM_XFORFA == "1"
@@ -896,7 +889,10 @@ EndIf
 oList:refresh()
 If nOpini <> 0
 	oList2:refresh()
-eNDiF
+EndIf 
+
+oList5:nAt := 1
+
 oList5:refresh()
 oDlg1:refresh()
 
@@ -1588,7 +1584,7 @@ Private aFecha2	:=	{}
 Private oDlF1,oGrpF1,oBrw1,oGrpF2,oBrw2,oBtnF1,oBtnF2
 
 cQuery := "SELECT AAM_STATUS,AAM_CODCLI,AAM_LOJA,A1_NOME,A1_NREDUZ,AAN_CONTRT,AAN_ITEM,'' AS AAN_XCBASE,'' AS AAN_XISENT,AAN_CODPRO,B1_DESC,AAN_QUANT,"
-cQuery += "AAN_VLRUNI,AAN_VALOR,AAN_INICOB,AAN_FIMCOB,AAN_ULTPED,AAN_ULTEMI,AAM_INIVIG,AAM_FIMVIG,'' AS AAM_XINIMU,'' AS AAM_XPRAZO,'' AS AAM_XRENOV,AAN.R_E_C_N_O_ AS REG"
+cQuery += "AAN_VLRUNI,AAN_VALOR,AAN_INICOB,AAN_FIMCOB,AAN_ULTPED,AAN_ULTEMI,AAM_INIVIG,AAM_FIMVIG,'' AS AAM_XFORFA,'' AS AAM_XTIPFA,'' AS AAM_XRENOV,AAN.R_E_C_N_O_ AS REG"
 cQuery += " FROM "+RetSQLName("AAN")+" AAN"
 cQuery += " INNER JOIN "+RetSQLName("AAM")+" AAM ON AAM_FILIAL=AAN_FILIAL AND AAM_CONTRT=AAN_CONTRT AND AAM.D_E_L_E_T_=''"
 cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_COD=AAM_CODCLI AND A1_LOJA=AAM_LOJA AND A1.D_E_L_E_T_=''"
@@ -1609,8 +1605,8 @@ DbUseArea(.T.,"TOPCONN",TcGenQry(,,cQuery),'TRB',.F.,.T.)
 While !EOF()
     Aadd(aFecha,{TRB->AAM_STATUS,TRB->AAM_CODCLI,TRB->AAM_LOJA,TRB->A1_NOME,TRB->A1_NREDUZ,TRB->AAN_CONTRT,TRB->AAN_ITEM,;
     			TRB->AAN_XCBASE,TRB->AAN_XISENT,TRB->AAN_CODPRO,TRB->B1_DESC,TRB->AAN_QUANT,TRB->AAN_VLRUNI,TRB->AAN_VALOR,;
-    			TRB->AAN_INICOB,TRB->AAN_FIMCOB,TRB->AAN_ULTPED,TRB->AAN_ULTEMI,TRB->AAM_INIVIG,TRB->AAM_FIMVIG,TRB->AAM_XINIMU,;
-    			TRB->AAM_XPRAZO,TRB->AAM_XRENOV})
+    			TRB->AAN_INICOB,TRB->AAN_FIMCOB,TRB->AAN_ULTPED,TRB->AAN_ULTEMI,TRB->AAM_INIVIG,TRB->AAM_FIMVIG,TRB->AAM_XFORFA,;
+    			TRB->AAM_XTIPFA,TRB->AAM_XRENOV})
     If TRB->AAN_XISENT != "1" .And. STRZERO(MONTH(stod(TRB->AAN_ULTEMI)),2) != STRZERO(MONTH(DDATABASE),2) .And. strzero(Month(Stod(TRB->AAN_FIMCOB)),2)+cvaltochar(year(Stod(TRB->AAN_FIMCOB))) <= strzero(Month(dDatabase),2)+cvaltochar(year(ddatabase))
  	 	Aadd(aFecha1,{TRB->AAN_CONTRT,Alltrim(TRB->B1_DESC),TRB->AAN_VLRUNI})
     EndIf       
@@ -1929,10 +1925,16 @@ Local nJ
 Local cAtLoc 	:=	""
 Local cBarra 	:=	""
 Local cAtFat 	:=	""
+//Local aTipFat	:=	{'Min.Global','Min.Ativo','Sem Min'} 15
+//Local aForFat	:=	{'Mensal','Quinzenal'}				 14
+Local cTipFat	:=	'' //aList[oList:nAt,15]
+Local nX 
 
 If nOpcG == 0
 	//Faturar todos os itens liberados do array alist
-ElseIf nOpcG == 1
+ElseIf nOpcG == 1	
+	cTipFat	:=	aList[oList:nAt,15]
+
 	//Faturamento unico na linha do array alist
 	For nCont := 1 to len(aList2B)
 		If aList2B[nCont,04] == aList[oList:nAt,01]
@@ -1947,32 +1949,60 @@ ElseIf nOpcG == 1
 
 	cBarra := ""
 
-	For nCont := 1 to len(aList5B)
-		If aList5B[nCont,01] == aList[oList:nAt,01] .And. len(aList5b[nCont]) > 4
-			cAtFat += cBarra + Alltrim(aList5b[nCont,02])
-			cBarra := "/"
-			For nJ := 5 to len(aList5b[nCont])
-				nPos := Ascan(aItens,{|x| x[1] == aList5B[nCont,nJ,02]})
-				If nPos == 0
-					Aadd(aItens,{	aList5B[nCont,nJ,02],;
-									aList5B[nCont,nJ,08],;
-									aList5B[nCont,nJ,09]})
-				Else 
-					aItens[nPos,02] += aList5B[nCont,nJ,08]
-				EndIf 
-			Next nJ 
-		EndIf
-	Next nCont
+	If cTipFat == "1"
+		For nCont := 1 to len(aList5B)
+			If aList5B[nCont,01] == aList[oList:nAt,01] .And. len(aList5b[nCont]) > 4
+				cAtFat += cBarra + Alltrim(aList5b[nCont,02])
+				cBarra := "/"
+				For nJ := 5 to len(aList5b[nCont])
+					nPos := Ascan(aItens,{|x| x[1] == aList5B[nCont,nJ,02]})
+					If nPos == 0
+						Aadd(aItens,{	aList5B[nCont,nJ,02],;
+										aList5B[nCont,nJ,08],;
+										aList5B[nCont,nJ,09]})
+					Else 
+						aItens[nPos,02] += aList5B[nCont,nJ,08]
+					EndIf 
+				Next nJ 
+			EndIf
+		Next nCont
+	
+		If aList[oList:nAt,20] > 0
+			Aadd(aItens,{aList[oList:nAt,22],;
+						aList[oList:nAt,20],;
+						aList[oList:nAt,21]})
+		EndIf 
+	
+	ElseIf cTipFat == "2"
+		For nX := 1 to len(aList2)
+			For nCont := 1 to len(aList5B)
+				If aList5B[nCont,01] == aList2[nX,04] .And. len(aList5b[nCont]) > 4 .And. aList5B[nCont,02] == aList2[nX,01]
+					For nJ := 5 to len(aList5b[nCont])
+						nPos := Ascan(aItens,{|x| x[1] == aList5B[nCont,nJ,02]})
+						If nPos == 0
+							Aadd(aItens,{	aList5B[nCont,nJ,02],;
+											aList5B[nCont,nJ,08],;
+											aList5B[nCont,nJ,09]})
+						Else 
+							aItens[nPos,02] += aList5B[nCont,nJ,08]
+						EndIf 
+					Next nJ 
+				EndIf
+			Next nCont
 
-	If aList[oList:nAt,20] > 0
-		Aadd(aItens,{aList[oList:nAt,22],;
-					aList[oList:nAt,20],;
-					aList[oList:nAt,21]})
+			cAtFat := Alltrim(aList2[nX,01])
+			If len(aItens) > 0
+				Processa({|| Pedido(cAtFat,aItens)},"Aguarde")
+			EndIF
+
+		Next nX
 	EndIf 
+
 EndIF 
 
 If len(aItens) > 0 
 //PEDIDOS DE DOSES
+/*
 	If Empty(cAtFat)
 		cAtFat := Alltrim(aList2[oList2:nAt,01])
 	EndIF 
@@ -2032,6 +2062,7 @@ If len(aItens) > 0
 			EndIf 
 		Next nCont
 	ENDIF
+*/
 EndIF 
 
 //Faturamento locacao
@@ -2093,12 +2124,14 @@ If len(aLocac) > 0
 	ENDIF    
 EndIf
 
-	
-
 RestArea(aArea)
 
 Return
 
+/*
+	Impressão do Recibo de locação de maquinas
+
+*/
 Static Function ReciboLoc()
 	
     Local lAdjustToLegacy  := .F.
@@ -2278,5 +2311,91 @@ If len(aItemPv) > 0
 
 	oDlg3i:Activate(,,,.T.)
 EndIf 
+
+Return
+
+/*/{Protheus.doc} Pedido
+	(long_description)
+	@type  Static Function
+	@author user
+	@since 10/12/2022
+	@version version
+	@param param_name, param_type, param_descr
+	@return return_var, return_type, return_description
+	@example
+	(examples)
+	@see (links_or_references)
+/*/
+Static Function Pedido(cAtFat,aItens)
+
+Local aArea		:=	GetArea()
+Local nCont 	:=	0
+Local nJ 
+Local aCabec	:=	{}
+Local aItC6		:=	{}
+Local cItem
+Local aLinha	:=	{}
+
+If Empty(cAtFat)
+	cAtFat := Alltrim(aList2[oList2:nAt,01])
+EndIF 
+
+DbSelectArea("AAM")
+DbSetOrder(1)
+DbSeek(xFilial("AAM")+aList[oList:nAt,01])
+aCabec := {}
+aItC6  := {}
+cItem  := '01'
+
+aAdd( aCabec , { "C5_FILIAL"    , xFilial("SC5")      , Nil } ) 
+aAdd( aCabec , { "C5_XTPPED"    , 'F'                 , Nil } )
+aAdd( aCabec , { "C5_TIPO"      , 'N'                 , Nil } )
+aAdd( aCabec , { "C5_CLIENTE"   , aList[oList:nAt,03]    , Nil } )
+aAdd( aCabec , { "C5_LOJACLI"   , aList[oList:nAt,04]    , Nil } )
+Aadd( aCabec , { "C5_MENNOTA"   , 'Faturamento de Doses - Ref. Patrimonio(s) '+cAtFat   , Nil } )
+aAdd( aCabec , { "C5_CONDPAG"   , AAM->AAM_CPAGPV     , Nil } )    
+	
+For nCont := 1 to len(aItens)
+	aLinha := {}
+	aAdd( aLinha , { "C6_FILIAL"     , xFilial("SC6")                         , Nil })
+	aAdd( aLinha , { "C6_ITEM"       , cItem 							      , Nil })
+	aAdd( aLinha , { "C6_PRODUTO"    , aItens[nCont,01]                       , Nil })
+	aAdd( aLinha , { "C6_QTDVEN"     , aItens[nCont,02]                       , Nil })
+	aAdd( aLinha , { "C6_PRCVEN"     , aItens[nCont,03]                       , Nil })
+	aAdd( aLinha , { "C6_TES"        , '523'                                  , Nil })  
+	aAdd( aLinha , { "C6_QTDLIB"     , aItens[nCont,02]    	                  , Nil })
+	aAdd( aLinha , { "C6_CONTRT" 	 , AAM->AAM_CONTRT						  , Nil })
+
+	aAdd( aItC6 , aLinha ) 
+	cItem := Soma1(cItem)
+Next nCont
+
+lMsErroAuto := .F.
+MSExecAuto({|x,y,z| Mata410(x,y,z)},aCabec,aItC6,3)
+	
+IF lMsErroAuto  
+	MostraErro()
+ELSE
+	Msgalert("Pedido gerado de faturamento de doses "+SC5->C5_NUM)
+	DbSelectArea("Z08")
+	DbSetOrder(1)
+	For nCont := 1 to len(aList5B)
+		If aList5B[nCont,01] == aList[oList:nAt,01] .And. len(aList5b[nCont]) > 4
+			For nJ := 5 to len(aList5b[nCont])
+				If Dbseek(xFilial("Z08")+aList5b[nCont,nJ,11])
+					While !EOF() .And. Z08->Z08_COD == aList5b[nCont,nJ,11]
+						RecLock("Z08", .F.)
+						Z08->Z08_FATURA := 'S'
+						Z08->(MsUnlock())
+						aList5b[nCont,nJ,12] := 'S'
+						Dbskip()
+					EndDo 
+				EndIf 
+			Next nJ
+		EndIf 
+	Next nCont
+ENDIF
+
+RestArea(aArea)
 
 Return
