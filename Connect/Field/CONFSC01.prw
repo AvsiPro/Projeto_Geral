@@ -432,7 +432,7 @@ While !EOF()
 					TRB->AAN_XVLRMI,;				//08
 					0,;								//09
 					0,;								//10
-					0}) 							//11
+					0})								//11
 
     //Itens referente aos pedidos faturados para o contrato.
     If nPos3 == 0
@@ -1932,12 +1932,27 @@ Local cAtFat 	:=	""
 //Local aTipFat	:=	{'Min.Global','Min.Ativo','Sem Min'} 15
 //Local aForFat	:=	{'Mensal','Quinzenal'}				 14
 Local cTipFat	:=	'' //aList[oList:nAt,15]
+Local cForFat 	:=	''
 Local nX 
+Local aPergs	:=	{}
+Local aRet 		:=	{}
+Local cCond		:=	""
 
 If nOpcG == 0
 	//Faturar todos os itens liberados do array alist
 ElseIf nOpcG == 1	
+	cForFat :=	aList[oList:nAt,14]
 	cTipFat	:=	aList[oList:nAt,15]
+	//Faturamento Quinzenal referente a qual quinzena?
+	If cForFat == "2"
+		aAdd( aPergs ,{2,"Informe a quinzena do faturamento: ","1",{"1=Primeira","2=Segunda"},080,'',.T.})
+
+		If !ParamBox(aPergs ,"Parametros ",aRet)
+			Return
+		Else
+			cCond := aRet[1]
+		EndIf
+	EndIf 
 
 	//Faturamento unico na linha do array alist
 	For nCont := 1 to len(aList2B)
@@ -1979,11 +1994,18 @@ ElseIf nOpcG == 1
 	
 	ElseIf cTipFat == "2"
 		For nX := 1 to len(aList2)
+			aItens := {}
 			For nCont := 1 to len(aList5B)
 				If aList5B[nCont,01] == aList2[nX,04] .And. len(aList5b[nCont]) > 4 .And. aList5B[nCont,02] == aList2[nX,01]
 					For nJ := 5 to len(aList5b[nCont])
 						nPos := Ascan(aItens,{|x| x[1] == aList5B[nCont,nJ,02]})
+						
+						If cCond == "2"
+							Recalc(aList5B[nCont],nJ)
+						EndIf 
+
 						If nPos == 0
+							
 							Aadd(aItens,{	aList5B[nCont,nJ,02],;
 											aList5B[nCont,nJ,08],;
 											aList5B[nCont,nJ,09]})
@@ -1994,6 +2016,11 @@ ElseIf nOpcG == 1
 				EndIf
 			Next nCont
 
+			If aList2[nX,11] > 0 .And. cCond == "2"
+				Aadd(aItens,{	aList[oList:nAt,22],;
+								aList2[nX,11],;
+								Posicione("DA1",1,xFilial("DA1")+AAM->AAM_XCODTA+aList[oList:nAt,22],"DA1_PRCVEN")})
+			EndIf 
 			cAtFat := Alltrim(aList2[nX,01])
 			If len(aItens) > 0
 				Processa({|| Pedido(cAtFat,aItens)},"Aguarde")
@@ -2574,10 +2601,10 @@ Static Function DemonsCon()
     Local nX               := 0
     Local nY               := 0
 	Local nLin             := 0
-    Local oFont1           := TFont():New('Arial' /*Fonte*/,,10 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-    Local oFont2           := TFont():New('Arial' /*Fonte*/,,12 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-    Local oFont3           := TFont():New('Arial' /*Fonte*/,,12 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.T. /*Italico*/ )
-    Local oFont4           := TFont():New('Arial' /*Fonte*/,,15 /*Tamanho*/,,.T. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
+    //Local oFont1           := TFont():New('Arial' /*Fonte*/,,10 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
+    //Local oFont2           := TFont():New('Arial' /*Fonte*/,,12 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
+    //Local oFont3           := TFont():New('Arial' /*Fonte*/,,12 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.T. /*Italico*/ )
+    //Local oFont4           := TFont():New('Arial' /*Fonte*/,,15 /*Tamanho*/,,.T. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
     Local oFont5           := TFont():New('Arial' /*Fonte*/,,15 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
     Local oFont6           := TFont():New('Arial' /*Fonte*/,,20 /*Tamanho*/,,.T. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
     Local oFont7           := TFont():New('Arial' /*Fonte*/,,25 /*Tamanho*/,,.T. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
@@ -2640,3 +2667,43 @@ Static Function DemonsCon()
 
 Return 
 
+/*/{Protheus.doc} Recalc
+	(long_description)
+	@type  Static Function
+	@author user
+	@since 12/12/2022
+	@version version
+	@param param_name, param_type, param_descr
+	@return return_var, return_type, return_description
+	@example
+	(examples)
+	@see (links_or_references)
+/*/
+Static Function Recalc(aArray,nLin)
+
+Local aArea :=	GetArea()
+Local cQuery 
+
+cQuery := "  SELECT Z08_COD,Z08_SEQUEN,Z08_SELECA,Z08_PRODUT,B1_DESC,Z08_QTDLID,Z08_DATA,Z08_CONTRT,Z08_FATURA" 
+cQuery += "  FROM "+RetSQLname("Z08")+" Z08"
+cQuery += "  LEFT JOIN "+RetSQLname("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"'"
+cQuery += "		AND B1_COD=Z08_PRODUT AND B1.D_E_L_E_T_=' '" 
+cQuery += "  WHERE  Z08_COD IN(SELECT MAX(Z08_COD)-2 FROM "+RetSQLname("Z08")
+cQuery += "		WHERE  Z08_FILIAL='"+xFilial("Z08")+"' AND Z08_NUMSER='"+aArray[02]+"'" 
+cQuery += "  	AND Z08_CONTRT='"+aArray[01]+"' AND D_E_L_E_T_=' ')"
+cQuery += "  AND Z08.D_E_L_E_T_=' '"
+cQuery += "  ORDER BY Z08_COD DESC"
+
+If Select("TRB") > 0
+	dbSelectArea("TRB")
+	dbCloseArea()
+EndIf                                                                                 
+	
+MemoWrite("CONFSC01.SQL",cQuery)
+
+cQuery:= ChangeQuery(cQuery)
+DbUseArea(.T.,"TOPCONN",TcGenQry(,,cQuery),'TRB',.F.,.T.)   
+
+RestArea(aArea)
+
+Return
