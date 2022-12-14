@@ -2,7 +2,7 @@
 
 User Function GERARTAB()
 
-Local aTab  := {'AA3','AAM','AAN','AA1','SN1','SN3'}
+Local aTab  := {'AA1'}
 //{'SA2','SA3','SB1','SF4','SE1','SE2','SE4','SED'}  
 //{'AI0','AC8','SU5','SA3','SB1','SC5','SC6','SF2','SD2','CV8','PDR','SE1','SE2','SE5','SN1','SN3','AD2','ADK','ADY','ADZ'}
 //{'CN9','CNA','CNB','CNC','PH4','PHG'}
