@@ -2682,7 +2682,9 @@ Return
 Static Function Recalc(aArray,nLin)
 
 Local aArea :=	GetArea()
-Local cQuery 
+Local cQuery
+Local aRet 	:=	{}
+
 
 cQuery := "  SELECT Z08_COD,Z08_SEQUEN,Z08_SELECA,Z08_PRODUT,B1_DESC,Z08_QTDLID,Z08_DATA,Z08_CONTRT,Z08_FATURA" 
 cQuery += "  FROM "+RetSQLname("Z08")+" Z08"
@@ -2703,6 +2705,19 @@ MemoWrite("CONFSC01.SQL",cQuery)
 
 cQuery:= ChangeQuery(cQuery)
 DbUseArea(.T.,"TOPCONN",TcGenQry(,,cQuery),'TRB',.F.,.T.)   
+
+While !EOF()
+//Z08_COD,Z08_SEQUEN,,,,,,Z08_CONTRT,Z08_FATURA
+	Aadd(aRet,{	TRB->Z08_SELECA,;
+				TRB->Z08_PRODUT,;
+				TRB->B1_DESC,;
+				TRB->Z08_DATA,;
+				TRB->Z08_QTDLID,;
+				'',;
+				0,;
+				0})
+	Dbskip()
+EndDo 
 
 RestArea(aArea)
 
