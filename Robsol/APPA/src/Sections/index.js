@@ -67,6 +67,7 @@ export default function Sections({nameSec,item,vendedor,prdProd,dataBack,reset,h
             case "copy":
                 setLoadCopy(true)
                 params.codigo = opt_new[1];
+                params.copy = 'S';
                 break;
             default:
                 break;
@@ -103,8 +104,9 @@ export default function Sections({nameSec,item,vendedor,prdProd,dataBack,reset,h
         if(opt_new[2] == 'ped' || opt_new[2] == 'copy'){
             let qtd = 0;
             let vlr = 0;
-    
+            
             aResult.forEach((item) => {
+
                 qtd += parseInt(item.quantidade)
                 vlr += parseFloat(item.valor_total.trim().replace('.','').replace(',','.'))
             })
@@ -131,8 +133,6 @@ export default function Sections({nameSec,item,vendedor,prdProd,dataBack,reset,h
                 descontoCart('')
                 setVisibleBack(false)
                 setLoadCopy(false)
-
-                console.log(aResult[0])
         
                 navigation.navigate('SaleCli',{
                     nameSec:'Customers',

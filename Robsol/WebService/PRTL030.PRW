@@ -30,6 +30,7 @@ WsRestFul Sales DESCRIPTION "API REST - EVENTO Pedidos | PORTAL ROBSOL "
 	WSDATA FILTRO As String
 	WSDATA RAZAO As String
 	WSDATA CNPJ As String
+	WSDATA COPY AS String
 
 	WsMethod GET Description "Retorna o Cliente especifico ou cadastro todo" WSSYNTAX "/Sales || /Sales/{CODIGO}" 
 
@@ -47,7 +48,7 @@ Descricao: 	Serviço Rest contendo o Metodo POST do evento de
 
 /*/
 //-------------------------------------------------------------------
-WsMethod GET WsReceive CODIGO,VENDEDOR,PAGINA,STATUS,EMISSAO,CLIENTE,CNPJ,FILTRO,RAZAO WsService Sales
+WsMethod GET WsReceive CODIGO,VENDEDOR,PAGINA,STATUS,EMISSAO,CLIENTE,CNPJ,FILTRO,RAZAO,COPY WsService Sales
 
 	Local cCode 	:= Self:CODIGO
 	Local CodVend 	:= Self:VENDEDOR
@@ -58,8 +59,11 @@ WsMethod GET WsReceive CODIGO,VENDEDOR,PAGINA,STATUS,EMISSAO,CLIENTE,CNPJ,FILTRO
 	Local cFilter	:= Self:FILTRO
 	Local cRazao	:= Self:RAZAO
 	Local cCnpj 	:= Self:CNPJ
+	Local cCopy 	:= Self:COPY
 	Local aArea		:= GetArea()
 	Local nCont		:= 0
+	Local nVlrUnit	:= 0
+	Local nVlrTotal := 0
 	Local cVirg		:= ''
 	Local aAux		:= {}
 
@@ -87,6 +91,10 @@ WsMethod GET WsReceive CODIGO,VENDEDOR,PAGINA,STATUS,EMISSAO,CLIENTE,CNPJ,FILTRO
 	conout(cFilter)
 	conout(cRazao)
 	conout('Vendedor '+CodVend)
+
+	If Empty(cCopy)
+		cCopy := 'N'
+	EndIf
 	
 	If !Empty(cStatus) .Or. !Empty(cEmissao) .Or. !Empty(cCliente)
 		cCode := ""
@@ -108,19 +116,25 @@ WsMethod GET WsReceive CODIGO,VENDEDOR,PAGINA,STATUS,EMISSAO,CLIENTE,CNPJ,FILTRO
             SC6->(DBSeek(SC5->C5_FILIAL+SC5->C5_NUM))
             
             cVirg := ""
+
 			While !EOF() .And. SC6->C6_FILIAL == SC5->C5_FILIAL .AND. SC6->C6_NUM == SC5->C5_NUM
+				
+				nVlrUnit  := Iif(cCopy == 'S',SC6->C6_PRUNIT,SC6->C6_PRCVEN)
+				nVlrTotal := Iif(cCopy == 'S',(nVlrUnit * SC6->C6_QTDVEN) + SC6->C6_VALDESC,SC6->C6_VALOR)
+
 				::SetResponse(cVirg+'{')
                 ::SetResponse('"codigo":"'+Alltrim(SC6->C6_PRODUTO)+'",')
                 ::SetResponse('"descricao":"'+Alltrim(Posicione("SB1",1,xFilial("SB1")+SC6->C6_PRODUTO,"B1_DESC"))+'",')
                 ::SetResponse('"quantidade":"'+cvaltochar(SC6->C6_QTDVEN)+'",')
-                ::SetResponse('"valor_unit":"'+Transform(SC6->C6_PRCVEN,"@E 999,999,999.99")+'",')
-                ::SetResponse('"valor_total":"'+Transform(SC6->C6_VALOR,"@E 999,999,999.99")+'",')
+                ::SetResponse('"valor_unit":"'+Transform(nVlrUnit,"@E 999,999,999.99")+'",')
+                ::SetResponse('"valor_total":"'+Transform(nVlrTotal,"@E 999,999,999.99")+'",')
 				::SetResponse('"id":"'+cvaltochar(SC6->(Recno()))+'"')
                 ::SetResponse('}')
                 cVirg := ',' 
-				
+
 				DBSkip()
 			EndDo
+
 
 			::SetResponse(']')
 			::SetResponse('}')
