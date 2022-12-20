@@ -6,17 +6,17 @@
 // Inclusão de Adição e Sequencial do PC no DE.
 User Function MT103IP2()
 
-	Local nLinha:= PARAMIXB[1]
+	Local nLinha:= PARAMIXB[1]    
 	Local nPosAd     := aScan(aHeader,{|x| AllTrim(Upper(x[2]))=="D1_X_AD" })
 	Local nPosSq     := aScan(aHeader,{|x| AllTrim(Upper(x[2]))=="D1_X_SEQAD" })
 
 	If SC7->C7_X_ADIC > 0
 		aCols[nLinha,nPosAd] := SC7->C7_X_ADIC
 	EndIF
-
+	
 	If SC7->C7_X_SEQ > 0
 		aCols[nLinha,nPosSq] := SC7->C7_X_SEQ
-	EndIf
+	EndIf	
 
 Return Nil
 
@@ -34,7 +34,7 @@ User Function SF1100I()
 	Private cCTrans   := PadR('6Q',(TamSX3("F1_TRANSP")[1]))  //Space(6)
 	Private cTPFrete  := "CIF"
 	Private nQuant    := 0
-	Private cEspecie  := "CONTAINER"
+	Private cEspecie  := "VOLUMES"
 	Private nPesoB    := 0
 	Private nPesoL    := 0
 	Private c_Marca   := Space(10)  //F1__MARCA  = Marca
@@ -48,49 +48,39 @@ User Function SF1100I()
 	Private dDesemb   := CTOD('//')
 	Private n_AliqCOF := 8.60
 	Private n_AliqPIS := 1.65
-	//RODRIGO BARRETO 19/12/2022
-	Private n_VlCOF := 0.00
-	Private n_VlPIS := 0.00
-	Private n_SisCo := 0.00 //taxa siscomex
-	Private cNrRef := SPACE(40)
-	Private cNbr := SPACE(40)
-
 	Private n_VlTot	  := 0.00
 	Private aAdicao   := {}
 	Private aHeaderAdd:= {}
 	Private aColsAdd  := {}
-	Private aSize     := MSAdvSize()
+	Private aSize     := MSAdvSize() 
 
-	aTPFrete :={"CIF","FOB"}
+	aTPFrete :={"CIF","FOB"}                  
 
 	// Tratamento da observação da nota fiscal de entrada
-	If cFormul == "S" // Formulário próprio -> solicita observação
+	If cFormul == "S" // Formulário próprio -> solicita observação  
 		//If ( ( (SF1->F1_TIPO == 'N') .OR. (SF1->F1_TIPO == 'C') ) .AND. (SF1->F1_EST == 'EX') ) //Documento de Importacao, requer preenchimento das adicoes
-		If SF1->F1_EST == 'EX'
-
+		If SF1->F1_EST == 'EX' 
+			
 			AddAdicao()
 			HeadAdd()
-
+								
 			@aSize[1],aSize[2] TO ((aSize[6]/2)+50),aSize[5] DIALOG oDlgObs TITLE OemToAnsi("Dados Adicionais da NF de Entrada: " + SF1->F1_DOC + " - " + SF1->F1_SERIE)
-
-			oMulti2:=MsNewGetDados():New(002,(aSize[3]/2),(aSize[4]/2)-5,aSize[3]-5,GD_INSERT+GD_DELETE+GD_UPDATE, "AllwaysTrue()", , "",,,,,,,oDlgObs,aHeaderAdd,aColsAdd)
+								
+			oMulti2:=MsNewGetDados():New(002,(aSize[3]/2),(aSize[4]/2)-5,aSize[3]-5,GD_INSERT+GD_DELETE+GD_UPDATE, "AllwaysTrue()", , "",,,,,,,oDlgObs,aHeaderAdd,aColsAdd)                                    
 			oMulti2:lNewLine := .T.
-
-			ColAdd()
-
-			//@127,230 BMPBUTTON TYPE 1 ACTION (ActFunc(1),lRet := .T.)
-			@151,230 BMPBUTTON TYPE 1 ACTION (ActFunc(1),lRet := .T.)
-
+					
+			ColAdd()  
+								
+			@127,230 BMPBUTTON TYPE 1 ACTION (ActFunc(1),lRet := .T.)
+		
 		Else
-			@000,000 TO 350,540 DIALOG oDlgObs TITLE OemToAnsi("Dados Adicionais da NF de Entrada: " + SF1->F1_DOC + " - " + SF1->F1_SERIE)
-			//@000,000 TO 300,540 DIALOG oDlgObs TITLE OemToAnsi("Dados Adicionais da NF de Entrada: " + SF1->F1_DOC + " - " + SF1->F1_SERIE)
-			//@002,002 TO 147,270
-			@002,002 TO 174,270
-
-			@151,230 BMPBUTTON TYPE 1 ACTION GravaObs()
-
+			@000,000 TO 300,540 DIALOG oDlgObs TITLE OemToAnsi("Dados Adicionais da NF de Entrada: " + SF1->F1_DOC + " - " + SF1->F1_SERIE)
+			@002,002 TO 147,270   
+								
+			@127,230 BMPBUTTON TYPE 1 ACTION GravaObs()
+					
 		EndIf
-
+		
 		@007,004 SAY "Tranportadora.:"
 		@006,047 GET cCTrans F3 "SA4" Valid VldTransp(cCTrans) object oTransp
 		@006,092 GET cNTrans When .F. Size 148,50 object oNomeTra
@@ -118,34 +108,19 @@ User Function SF1100I()
 		@103,004 SAY "Estado Desemb.:"
 		@102,047 GET UFDesemb SIZE 40,50
 		@103,106 SAY "Local Desemb.:"
-		@102,145 GET xLocDesemb SIZE 40,50
+		@102,145 GET xLocDesemb SIZE 40,50   
 		@115,004 SAY "Data Desemb.:"
-		@114,047 GET dDesemb SIZE 40,50
-		//RODRIGO BARRETO 19/12/2022
-		//@115,106 SAY "Aliq. COF:"
-		//@114,145 GET n_AliqCOF  Picture "@e 999999.999" SIZE 40,50
-		//@127,004 SAY "Aliq. PIS:"
-		//@126,047 GET n_AliqPIS  Picture "@e 999999.999" SIZE 40,50
-		@115,106 SAY "Valor COF:"
-		@114,145 GET n_VlCOF  Picture "@e 999999.999" SIZE 40,50
-		@127,004 SAY "Valor PIS:"
-		@126,047 GET n_VlPIS  Picture "@e 999999.999" SIZE 40,50
-
+		@114,047 GET dDesemb SIZE 40,50    
+		@115,106 SAY "Aliq. COF:"
+		@114,145 GET n_AliqCOF  Picture "@e 999999.999" SIZE 40,50    
+		@127,004 SAY "Aliq. PIS:"
+		@126,047 GET n_AliqPIS  Picture "@e 999999.999" SIZE 40,50    
 		@127,106 SAY "Vl.Total:"
 		@126,145 GET n_VlTot  Picture "@e 999,999,999.99" SIZE 80,50
-
-		//RODRIGO BARRETO 19/12/2022
-		@139,004 SAY "TX Siscomex:"
-		@138,047 GET n_SisCo  Picture "@e 999999.999" SIZE 40,50
-		@139,106 SAY "Nr/REF:"
-		@138,145 GET cNrRef   SIZE 100,50
-		@151,004 SAY "BL NR:"
-		@150,047 GET cNbr  SIZE 100,50
-
-
+					
 		ACTIVATE DIALOG oDlgObs CENTERED
-
-	EndIf
+					
+	EndIf            
 
 Return
 
@@ -159,7 +134,7 @@ Static Function HeadAdd()
 	AADD(aHeaderAdd,{ "Valor ADU"       , "XX_VALADU"  , "@E 999,999,999.99"  , 12, 2, ".T.",".T.", "N", "", } )
 	AADD(aHeaderAdd,{ "Valor II"        , "XX_VALIPI"  , "@E 999,999,999.99"  , 12, 2, ".T.",".T.", "N", "", } )
 
-Return
+Return  
 
 // Rotina para montar o vetor aCOLS
 Static Function ColAdd()
@@ -170,17 +145,17 @@ Static Function ColAdd()
 	aAdicao := ASort(aAdicao,,,{|x,y| x<y})
 
 	aColsAdd:= {}
-
+		
 	For nAux := 1 To Len(aAdicao)
-		AADD(aColsAdd, {StrZero(aAdicao[nAux],3),0,0,0,0,0, .F.})
+		AADD(aColsAdd, {StrZero(aAdicao[nAux],3),0,0,0,0,0, .F.})        
 	Next nAux
-
+					
 	oMulti2:SetArray(aColsAdd)
-	oMulti2:oBrowse:Refresh()
-
+	oMulti2:oBrowse:Refresh()   
+					
 	Restarea( aArea )
 
-Return
+Return         
 
 //Rotina responsável por preencher array com adi??es
 Static Function AddAdicao()
@@ -192,22 +167,22 @@ Static Function AddAdicao()
 	AAdd(aAdicao,aCols[1,nPosAd])
 
 	For nAux := 1 To Len(aCols)
-		If( ( AScan(aAdicao,{|x| x==aCols[nAux,nPosAd]}) ) == 0 ) //Inclusão de nova adição
-			AAdd(aAdicao,aCols[nAux,nPosAd])
-		EndIf
+					If( ( AScan(aAdicao,{|x| x==aCols[nAux,nPosAd]}) ) == 0 ) //Inclusão de nova adição
+								AAdd(aAdicao,aCols[nAux,nPosAd])
+					EndIf     
 	Next nAux
-
+			
 	RestArea(aArea)
 
 Return
-
+                                                                            
 
 //Rotina responsável por preencher array com informações para geração de complemento,
 //por incluir os complementos na tabela CD5.
 Static Function GeraComple()
 
 	Local aArea      := GetArea()
-	Local nVlTotal   := 0
+	Local nVlTotal   := 0  
 	Local nPos       := 0
 	Local nBasePISCO := 0
 	Local nValPIS    := 0
@@ -237,33 +212,33 @@ Static Function GeraComple()
 
 	For nAux := 1 To Len(aCols)
 		nPos    := ( AScan(oMulti2:aCols,{|x| AllTrim(x[1])==StrZero(aCols[nAux,nPosAd],3)}) )
-
+								
 		//Valores contidos no array de adicao, utilizados no rateio.
 		If (nPos > 0)
-
+								
 			nBasePISCO := oMulti2:aCols[nPos,2]
 			nValPIS    := oMulti2:aCols[nPos,3]
 			nValCOF    := oMulti2:aCols[nPos,4]
 			nValADU    := oMulti2:aCols[nPos,5]
 			nValII     := oMulti2:aCols[nPos,6]
 			nValTOT	   := oMulti2:aCols[nPos,7]
-
-		EndIf
-
+												
+		EndIf                                   
+								
 		nVlTotal := (nValADU+nValII)
-
-		nFatRat := Round((aCols[nAux,nPosTotal]/nVlTotal),9)
-
-		AAdd(aDados,{SF1->F1_DOC         ,; //01 Num Documento
-			SF1->F1_SERIE                ,; //02 Serie
+								
+		nFatRat := Round((aCols[nAux,nPosTotal]/nVlTotal),9) 
+								
+		AAdd(aDados,{SF1->F1_DOC         ,; //01 Num Documento 
+			SF1->F1_SERIE                ,; //02 Serie  
 			SF1->F1_ESPECIE              ,; //03 Especie
 			SF1->F1_FORNECE              ,; //04 Fornecedor
-			SF1->F1_LOJA                 ,; //05 Loja
+			SF1->F1_LOJA                 ,; //05 Loja 
 			"0"                          ,; //06 Tipo Doc Imp
-			SF1->F1_DOC                  ,; //07 Num Doc Imp
+			SF1->F1_DOC                  ,; //07 Num Doc Imp    
 			Round((nFatRat*nBasePISCO),2),; //08 Base PIS
 			n_AliqPIS                    ,; //09 Aliquota PIS
-			Round((nFatRat*nValPIS),2)   ,; //10 Val PIS
+			Round((nFatRat*nValPIS),2)   ,; //10 Val PIS    
 			Round((nFatRat*nBasePISCO),2),; //11 Base COF
 			n_AliqCOF                    ,; //12 Aliquota COF
 			Round((nFatRat*nValCOF),2)   ,; //13 Val COF
@@ -273,12 +248,12 @@ Static Function GeraComple()
 			'0'                    		 ,; //17 Local Exec Serv
 			SF1->F1_X_DI                 ,; //18 Num DI
 			SF1->F1_X_DTDI               ,; //19 Dt DI
-			SF1->F1_X_LOCDES             ,; //20 Local Desembara?o
+			SF1->F1_X_LOCDES             ,; //20 Local Desembara?o    
 			SF1->F1_X_UFDES              ,; //21 UF Desembara?o
 			SF1->F1_X_DTDES              ,; //22 Data Desembara?o
 			SF1->F1_FORNECE              ,; //23 Exportador
 			AllTrim(STR(aCols[nAux,nPosAd])),; //24 Adicao
-			AllTrim(aCols[nAux,1]),; // Rodrigo Barreto AllTrim(Str(aCols[nAux,nPosSq])),; //25 Sequencial
+			AllTrim(Str(aCols[nAux,nPosSq])),; //25 Sequencial
 			SF1->F1_FORNECE              ,; //26 Cod Fabricante
 			Round((nFatRat*nValADU),2)   ,; //27 Val Desc
 			Round((nFatRat*nValADU),2)   ,; //28 Val BC Imp
@@ -286,7 +261,7 @@ Static Function GeraComple()
 			Round((nFatRat*nValII),2)    ,; //30 Val II
 			0                            ,; //31 Val IOF
 			aCols[nAux,nPosIt]           ,; //32 Item
-			aCols[nAux,nPosProd]         ,; //33 Produto
+			aCols[nAux,nPosProd]         ,; //33 Produto 
 			'1'         				 ,; //34 Via Transp
 			'1'         				 ; //35 Forma Impoortacao
 			})
@@ -296,17 +271,17 @@ Static Function GeraComple()
 		nPosic := aScan(aTot, {|x| x[1]==AllTrim(STR(aCols[nAux,nPosAd])) })
 		If nPosic <= 0
 			aadd(aTot, {AllTrim(STR(aCols[nAux,nPosAd]))            ,;  //  1- Adição
-				nBasePISCO                                              ,;  //  2- Valor Base PIS/COFINS
-				nValPIS                                                 ,;  //  3- Valor PIS
-				nValCOF                                                 ,;  //  4- Valor COFINS
-				nValADU                                                 ,;  //  5- Valor ADU
-				nValII                                                  ,;  //  6- Valor II
-				Round((nFatRat*nBasePISCO),2)                           ,;  //  7- Total Base PIS/COFINS
-				Round((nFatRat*nValPIS),2)                              ,;  //  8- Total PIS
-				Round((nFatRat*nValCOF),2)                              ,;  //  9- Total COFINS
-				Round((nFatRat*nValADU),2)                              ,;  // 10- Total ADU
-				Round((nFatRat*nValII),2)                               ,;  // 11- Total II
-				})
+			nBasePISCO                                              ,;  //  2- Valor Base PIS/COFINS
+			nValPIS                                                 ,;  //  3- Valor PIS
+			nValCOF                                                 ,;  //  4- Valor COFINS
+			nValADU                                                 ,;  //  5- Valor ADU
+			nValII                                                  ,;  //  6- Valor II
+			Round((nFatRat*nBasePISCO),2)                           ,;  //  7- Total Base PIS/COFINS
+			Round((nFatRat*nValPIS),2)                              ,;  //  8- Total PIS
+			Round((nFatRat*nValCOF),2)                              ,;  //  9- Total COFINS
+			Round((nFatRat*nValADU),2)                              ,;  // 10- Total ADU
+			Round((nFatRat*nValII),2)                               ,;  // 11- Total II
+			})
 		Else
 			aTot[nPosic,07] += Round((nFatRat*nBasePISCO),2)
 			aTot[nPosic,08] += Round((nFatRat*nValPIS),2)
@@ -319,32 +294,32 @@ Static Function GeraComple()
 
 	// --- Ajuste de centavos em função do arredondamento nos cálculos --- //
 	For nAux := 1 To Len(aTot)
-		nPosic := aScan(aDados, {|x| x[24]==aTot[nAux,1] })
-		If nPosic > 0
-			aDados[nPosic,08] := aDados[nPosic,08] + ( aTot[nAux,2] - aTot[nAux,07] )       // Base PIS
-			aDados[nPosic,11] := aDados[nPosic,11] + ( aTot[nAux,2] - aTot[nAux,07] )       // Base COFINS
-			aDados[nPosic,10] := aDados[nPosic,10] + ( aTot[nAux,3] - aTot[nAux,08] )       // Valor PIS
-			aDados[nPosic,13] := aDados[nPosic,13] + ( aTot[nAux,4] - aTot[nAux,09] )       // Valor COFINS
-			aDados[nPosic,29] := aDados[nPosic,29] + ( aTot[nAux,5] - aTot[nAux,10] )       // Valor ADU
-			aDados[nPosic,30] := aDados[nPosic,30] + ( aTot[nAux,6] - aTot[nAux,11] )       // Valor II
-			aDados[nPosic,27] := aDados[nPosic,27] + ( aTot[nAux,5] - aTot[nAux,10] )       // Valor Desc
-			aDados[nPosic,28] := aDados[nPosic,28] + ( aTot[nAux,5] - aTot[nAux,10] )       // Valor BC Imp
-		EndIf
+					nPosic := aScan(aDados, {|x| x[24]==aTot[nAux,1] })
+					If nPosic > 0
+								aDados[nPosic,08] := aDados[nPosic,08] + ( aTot[nAux,2] - aTot[nAux,07] )       // Base PIS
+								aDados[nPosic,11] := aDados[nPosic,11] + ( aTot[nAux,2] - aTot[nAux,07] )       // Base COFINS
+								aDados[nPosic,10] := aDados[nPosic,10] + ( aTot[nAux,3] - aTot[nAux,08] )       // Valor PIS
+								aDados[nPosic,13] := aDados[nPosic,13] + ( aTot[nAux,4] - aTot[nAux,09] )       // Valor COFINS
+								aDados[nPosic,29] := aDados[nPosic,29] + ( aTot[nAux,5] - aTot[nAux,10] )       // Valor ADU
+								aDados[nPosic,30] := aDados[nPosic,30] + ( aTot[nAux,6] - aTot[nAux,11] )       // Valor II
+								aDados[nPosic,27] := aDados[nPosic,27] + ( aTot[nAux,5] - aTot[nAux,10] )       // Valor Desc
+								aDados[nPosic,28] := aDados[nPosic,28] + ( aTot[nAux,5] - aTot[nAux,10] )       // Valor BC Imp
+					EndIf
 	Next nAux
 
 	DbSelectArea('CD5')
 	DbSetOrder(4) //CD5_FILIAL+CD5_DOC+CD5_SERIE+CD5_FORNEC+CD5_LOJA+CD5_ITEM
 
 	For nAux := 1 To Len(aDados)
-
+						
 		IncProc()
 
 		If (CD5->(DbSeek(xFilial('CD5')+PadL(aDados[nAux,1],9)+PadL(aDados[nAux,2],3)+PadL(aDados[nAux,4],6)+PadL(aDados[nAux,5],2)+PadL(aDados[nAux,32],4))) )
 			CD5->( RecLock("CD5",.F.) )
 			CD5->( dbDelete() )
 			CD5->( MsUnlock() )
-		EndIf
-
+		EndIf	
+					
 		RecLock('CD5',.T.)
 		Replace CD5_FILIAL With xFilial('CD5')
 		Replace CD5_DOC    With aDados[nAux,1]
@@ -369,7 +344,7 @@ Static Function GeraComple()
 		Replace CD5_DTDES  With aDados[nAux,22]
 		Replace CD5_CODEXP With aDados[nAux,23]
 		Replace CD5_NADIC  With aDados[nAux,24]
-		Replace CD5_SQADIC With SUBSTR(aDados[nAux,25],2,3)//aDados[nAux,25]
+		Replace CD5_SQADIC With aDados[nAux,25]
 		Replace CD5_CODFAB With aDados[nAux,26]
 		Replace CD5_BCIMP  With aDados[nAux,28]
 		Replace CD5_DSPAD  With aDados[nAux,29]
@@ -378,37 +353,35 @@ Static Function GeraComple()
 		Replace CD5_ITEM   With aDados[nAux,32]
 		Replace CD5_VTRANS With aDados[nAux,34]
 		Replace CD5_INTERM With aDados[nAux,35]
-
+															
 		MsUnlock()
 
 		//Incluido esse código para gravar o valor do campo CD5_VLRII no campo D1_II, para corrigir valor na tag <vii> do xml
 		AREASD1 := GetArea('SD1')
-
+							
 		dbSelectArea('SD1')
 		dbSetOrder(1) //D1_FILIAL+D1_DOC+D1_SERIE+D1_FORNECE+D1_LOJA+D1_COD+D1_ITEM
-
+							
 		If dbSeek (xFilial('SD1') + CD5->CD5_DOC + CD5->CD5_SERIE + CD5->CD5_FORNEC + CD5->CD5_LOJA + aDados[nAux, 33] + CD5->CD5_ITEM)
-			RecLock('SD1',.F.)
-			Replace SD1->D1_II WITH CD5->CD5_VLRII
-			Replace SD1->D1_VALICM WITH ROUND(SD1->D1_BASEICM * SD1->D1_PICM,2) / 100
-			//Rodrigo Barreto da Silva
-			Replace SD1->D1_X_SEQAD WITH VAL(CD5->CD5_SQADIC)
-			MsUnlock()
+			RecLock('SD1',.F.)        
+			Replace SD1->D1_II WITH CD5->CD5_VLRII                                
+			Replace SD1->D1_VALICM WITH ROUND(SD1->D1_BASEICM * SD1->D1_PICM,2) / 100 
+			MsUnlock()  
 		Else
-			ALERT('Atenção! Não foi encontrado o Item: '+ CD5->CD5_ITEM + ' da Nota: ' + CD5->CD5_DOCIMP + ' !')
+			ALERT('Atenção! Não foi encontrado o Item: '+ CD5->CD5_ITEM + ' da Nota: ' + CD5->CD5_DOCIMP + ' !')                
 		Endif
-
+								
 		restArea(AREASD1)
-
+		
 		dbSelectArea('CD5')
 
 	Next nAux
 
-	CD5->(DbCloseArea())
+	CD5->(DbCloseArea()) 
 
 	RestArea(aArea)
 
-Return
+Return      
 
 //Chamada das rotinas de gravação de Observaçães na SF1 e complementos na CD5, quando for DI.
 Static Function ActFunc(cSituacao)
@@ -423,12 +396,12 @@ Static Function ActFunc(cSituacao)
 
 	GravaObs()
 	RestArea(aArea)
-
+    
 	aArea := GetArea()
 	Processa( {|| GeraComple()},"Gerando Complementos DI .......")
 	RestArea(aArea)
 
-Return
+Return                                        
 
 //Grava observação
 Static Function GravaObs()
@@ -455,55 +428,49 @@ Static Function GravaObs()
 	Replace F1_X_UFDES		With UFDesemb
 	Replace F1_X_DTDES		With dDesemb
 	Replace F1_X_MARCA		With c_Marca
-	Replace F1_X_NMRCAO		With c_Num
+	Replace F1_X_NMRCAO		With c_Num 
 	Replace F1_X_TIMPO		With n_VlTot
-	//RODRIGO BARRETO 19/12/2022
-	Replace F1_X_VLCOF     With n_VlCOF
-	Replace F1_X_VLPIS	   With n_VlPIS
-	Replace F1_X_SISCO	   With n_SisCo
-	Replace F1_X_NRRE	   With cNrRef
-	Replace F1_X_CNBR 	   With cNbr
 	MsUnlock()
-
+	
 	//BUSCA A DIFERENÇA DO FINANCEIRO GERADO E O VALOR TOTAL INFORMADO, E FAZ O ACERTO DO CONTAS A PAGAR
 	strSQL:="SELECT SUM(E2_VALOR) AS VALOR FROM " + RetSqlName("SE2") + " "
 	strSQL+="WHERE E2_FILIAL = '"+SF1->F1_FILIAL+"' "
 	strSQL+="AND E2_PREFIXO = '"+SF1->F1_SERIE+"' "
-	strSQL+="AND E2_NUM = '"+SF1->F1_DOC+"' "
+	strSQL+="AND E2_NUM = '"+SF1->F1_DOC+"' " 
 	strSQL+="AND E2_FORNECE = '"+SF1->F1_FORNECE+"' "
-	strSQL+="AND E2_LOJA = '"+SF1->F1_LOJA+"' "
-	strSQL+="AND D_E_L_E_T_ <> '*' "
-
+	strSQL+="AND E2_LOJA = '"+SF1->F1_LOJA+"' "  
+	strSQL+="AND D_E_L_E_T_ <> '*' " 
+	
 	If Select("ORS") <> 0
 		ORS->(DbCloseArea())
-	EndIF
-
+	EndIF 
+	
 	TcQuery strSQL New Alias "ORS"
-
-	If ORS->(!EOF())
+	
+	If ORS->(!EOF()) 	                       
 
 		xVlSE2:=ORS->VALOR
 		xVlSE2:=n_VlTot-xVlSE2
-		If xVlSE2 > 0
-			DbSelectArea("SE2")
+		If xVlSE2 > 0  
+			DbSelectArea("SE2")	
 			DbSetOrder(1)
 			//POSICIONA NA PRIMEIRA PARCELA
 			If DbSeek(SF1->F1_FILIAL+SF1->F1_SERIE+SF1->F1_DOC+'1  '+'NF '+SF1->F1_FORNECE+SF1->F1_LOJA)
-
+			
 				RecLock("SE2", .F.)
 				Replace E2_ACRESC		With xVlSE2
 				MsUnlock()
 
-				//OU POSICIONA NA UNICA PARCELA
-			ElseIf DbSeek(SF1->F1_FILIAL+SF1->F1_SERIE+SF1->F1_DOC+'   '+'NF '+SF1->F1_FORNECE+SF1->F1_LOJA)
-
+			//OU POSICIONA NA UNICA PARCELA
+			ElseIf DbSeek(SF1->F1_FILIAL+SF1->F1_SERIE+SF1->F1_DOC+'   '+'NF '+SF1->F1_FORNECE+SF1->F1_LOJA) 		
+			
 				RecLock("SE2", .F.)
 				Replace E2_ACRESC		With  xVlSE2
 				MsUnlock()
-
-			EndIf
-		EndIf
-	EndIf
+				
+		    EndIf                                                           
+	    EndIf
+	EndIf	
 
 	Close(oDlgObs)
 
@@ -533,68 +500,68 @@ return(.t.)
 
 //*******************************************************************************************
 //PONTO DE ENTRADA NO PEDIDO DE COMPRAS PARA ADICIONAR AS INFORMAÇÕES DO PEDIDO DE IMPORTAÇÃO
-//*******************************************************************************************
-User Function MT120BRW()
+//*******************************************************************************************                                               
+User Function MT120BRW() 
 
-	aAdd(aRotina,{"Dados Importacao","U_XIMPOR",4,0,4})
+	aAdd(aRotina,{"Dados Importacao","U_XIMPOR",4,0,4}) 
 
-Return Nil
-
+Return Nil 
+      
 //*******************************************************************************************
 //TELA PARA PREENCHIMENTO DE INFORMAÇÕES NO PEDIDO DE COMPRAS DE IMPORTAÇÃO
-//*******************************************************************************************
+//*******************************************************************************************                                               
 User Function xImpor()
 
 	// Local aBkArea := GetArea()
 	Private nPerc:=1
 
 	@000,000 TO 300,540 DIALOG oDlgObs TITLE OemToAnsi("Dados Adicionais da Importação - Pedido: " + SC7->C7_NUM)
-	@002,002 TO 147,270
+	@002,002 TO 147,270   
 	@127,230 BMPBUTTON TYPE 1 ACTION xGravaPed()
-
-	@007,004 SAY "Percentual.:"
-	@006,047 GET nPerc  Picture "@e 99.9999999" SIZE 40,50
-
-	ACTIVATE DIALOG oDlgObs CENTERED
-
+    
+    @007,004 SAY "Percentual.:"
+    @006,047 GET nPerc  Picture "@e 99.9999999" SIZE 40,50
+                      
+    ACTIVATE DIALOG oDlgObs CENTERED
+                
 Return
 
 Static Function xGravaPed()
 
-	Local strSQL	:=""
+	Local strSQL	:=""               
 	Local nAdicaox	:=1
 	Local nSeqx		:=1
-
+	
 	strSQL:="SELECT C7_FILIAL+C7_NUM+C7_ITEM+C7_SEQUEN AS CHAVE "
 	strSQL+="FROM "+RetSqlName("SC7")+" WITH (NOLOCK) "
 	strSQL+="WHERE C7_FILIAL = '"+CFILANT+"' "
 	strSQL+="AND C7_NUM = '"+SC7->C7_NUM+"' "
 	strSQL+="ORDER BY C7_ITEM ASC "
-
+	
 	If Select("ORSSC7") > 0
 		ORSSC7->(DbCloseArea())
 	EndIf
-
-	TcQuery strSQL new alias "ORSSC7"
-
-	While !ORSSC7->(EOF())
+	 
+	TcQuery strSQL new alias "ORSSC7"                                   
+	
+	While !ORSSC7->(EOF()) 
 		dbSelectarea("SC7")
 		dbSetOrder(1)
-		If dbSeek(ORSSC7->CHAVE)
+		If dbSeek(ORSSC7->CHAVE)            
 			RecLock("SC7",.F.)
 			SC7->C7_X_FATOR := nPerc
 			SC7->C7_X_ADIC	:= nAdicaox
 			SC7->C7_X_SEQ	:= nSeqx
 			SC7->C7_PRECO	:= SC7->C7_X_VLEXT * SC7->C7_X_FATOR
-			SC7->C7_TOTAL	:= SC7->C7_PRECO * SC7->C7_QUANT
+			SC7->C7_TOTAL	:= SC7->C7_PRECO * SC7->C7_QUANT			
 			MsUnLock()
-		End if
+		End if                      
 		nSeqx:= nSeqx + 1
 		ORSSC7->(dbSkip())
 	EndDo
-
+ 
 	ORSSC7->(DbCloseArea())
-
+	
 	msgInfo("Atualização efetuada com sucesso!")
 	Close(oDlgObs)
 
