@@ -243,8 +243,8 @@ oTMenuIte1 := TMenuItem():New(oDlg1,"Procurar",,,,{|| procurar()},,,,,,,,,.T.)
 oTMenuIte2 := TMenuItem():New(oDlg1,"Listar-Faturamento",,,,{|| Processa({||PreFat(),"Aguarde"})} ,,,,,,,,,.T.)
 oTMenuIte3 := TMenuItem():New(oDlg1,"Faturar",,,,{|| Processa({||GeraPv(0),"Aguarde"})} ,,,,,,,,,.T.)
 oTMenuIte4 := TMenuItem():New(oDlg1,"Envio NF/Boleto",,,,{|| NFBol()} ,,,,,,,,,.T.)
-oTMenuIte5 := TMenuItem():New(oDlg1,"Fechamento Mensal",,,,{|| Fechamento()} ,,,,,,,,,.T.)
-oTMenuIte6 := TMenuItem():New(oDlg1,"Rescisão Contrato",,,,{|| Rescisao(oList:nAt)} ,,,,,,,,,.T.)
+//oTMenuIte5 := TMenuItem():New(oDlg1,"Fechamento Mensal",,,,{|| Fechamento()} ,,,,,,,,,.T.)
+//oTMenuIte6 := TMenuItem():New(oDlg1,"Rescisão Contrato",,,,{|| Rescisao(oList:nAt)} ,,,,,,,,,.T.)
 oTMenuIte7 := TMenuItem():New(oDlg1,"Impressoes",,,,{|| Processa({||U_CONFSR02(aList,alist2,aList3,aList4,aList5,oSay6:cTitle),"Aguarde"})} ,,,,,,,,,.T.)
 
 
@@ -252,8 +252,8 @@ oMenu:Add(oTMenuIte1)
 oMenu:Add(oTMenuIte2)
 oMenu:Add(oTMenuIte3)
 oMenu:Add(oTMenuIte4)
-oMenu:Add(oTMenuIte5)
-oMenu:Add(oTMenuIte6)
+//oMenu:Add(oTMenuIte5)
+//oMenu:Add(oTMenuIte6)
 oMenu:Add(oTMenuIte7)
 
 // Cria botão que sera usado no Menu  
