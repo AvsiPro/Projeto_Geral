@@ -4443,15 +4443,20 @@ Else
 				nPosCpoVol := SF1->(ColumnPos("F1_VOLUME"+cScan))
 				nPosCpoMrc := 0
 				nPosCpoNum := 0
-				if !empty(cMRCVLMSF1)
+				//Rodrigo Barreto 20/12/2022F					
+				nPosCpoMrc := FieldPos("F1_X_MARCA")
+				nPosCpoNum := FieldPos("F1_X_NMRCA")
+				/*if !empty(cMRCVLMSF1)
 					aCpoMarVol := StrTokArr2(cMRCVLMSF1, ";" ) 
 					if len(aCpoMarVol) == 2
-						cCpoMarca := alltrim(aCpoMarVol[1])
-						cCpoNumer := alltrim(aCpoMarVol[2])
+					cCpoMarca := alltrim(aCpoMarVol[1])
+					cCpoNumer := alltrim(aCpoMarVol[2])
+					
+						
 						nPosCpoMrc := SF1->(ColumnPos(cCpoMarca + cScan)) 
 						nPosCpoNum := SF1->(ColumnPos(cCpoNumer + cScan))
 					endif
-				endif
+				endif*/
 
 				While ( !Empty(cScan) )
 					cEspecie := ""

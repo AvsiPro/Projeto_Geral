@@ -27,9 +27,11 @@ User Function ROBEST04(lDnfB)
     Local aItens := {}
 
     Private aEtiqueta := {}
+    Private aParamBox := {}
     Private cTpFrete  := ''
     Private cPedido   := ''
     Private Imprime   := IMP_SPOOL
+    Private lFator    := .F.
 
     Default lDnfB     := .F.
 
@@ -55,7 +57,7 @@ User Function ROBEST04(lDnfB)
     ELSE
         Processa({|| aItens := buscanf()},"Aguarde, buscando Notas")
         IF len(aItens) > 0
-            Processa({|| ImpEtiq(aItens)},"Impressao de etiqueta","Aguarde...")
+                Processa({|| ImpEtiq(aItens)},"Impressao de etiqueta","Aguarde...")
         ENDIF
     ENDIF 
    
@@ -208,11 +210,6 @@ Static Function ImpEtiq(aItens)
     Local cSimCor          := "\system\img\correio.bmp"
     // Local cSimBras         := "\system\img\braspress-logo2.bmp"
     Local cRobsol          := "\system\img\robsol.bmp"
-    Local oFont6           := TFont():New('Arial',5,5,,.F.,,,,.F.,.F.,.F.)
-    Local oFont8           := TFont():New('Arial',5,5,,.F.,,,,.F.,.F.,.F.)
-    Local oFont8N          := TFont():New('Arial',8,8,,.F.,,,,.T.,.F.,.F.)
-    Local oFont10          := TFont():New('Arial',8,8,,.F.,,,,.F.,.F.,.F.)
-    Local oFontBras        := TFont():New('Arial',15,15,,.F.,,,,.F.,.F.,.F.)
     Local lAdjustToLegacy  := .F.
     Local lDisableSetup    := .T.
     Local nLin             := 0
@@ -228,6 +225,40 @@ Static Function ImpEtiq(aItens)
     Local cMunE            := ""
     Local cEstE            := ""
     Local lTransp
+
+	//Fontes
+	Local oF5FFF          := TFont():New('Arial' /*Fonte*/,,5 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
+	// Local oF5TFF          := TFont():New('Arial' /*Fonte*/,,5 /*Tamanho*/,,.T. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
+	// Local oF5FTF          := TFont():New('Arial' /*Fonte*/,,5 /*Tamanho*/,,.F. /*Negrito*/,,,,,.T. /*Sublinhado*/,.F. /*Italico*/ )
+	// Local oF5FFT          := TFont():New('Arial' /*Fonte*/,,5 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.T. /*Italico*/ )
+	Local oF8FFF          := TFont():New('Arial' /*Fonte*/,,8 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
+	// Local oF8TFF          := TFont():New('Arial' /*Fonte*/,,8 /*Tamanho*/,,.T. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
+	// Local oF8FTF          := TFont():New('Arial' /*Fonte*/,,8 /*Tamanho*/,,.F. /*Negrito*/,,,,,.T. /*Sublinhado*/,.F. /*Italico*/ )
+	// Local oF8FFT          := TFont():New('Arial' /*Fonte*/,,8 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.T. /*Italico*/ )
+	Local oF10FFF          := TFont():New('Arial' /*Fonte*/,,10 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
+	// Local oF10TFF          := TFont():New('Arial' /*Fonte*/,,10 /*Tamanho*/,,.T. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
+	// Local oF10FTF          := TFont():New('Arial' /*Fonte*/,,10 /*Tamanho*/,,.F. /*Negrito*/,,,,,.T. /*Sublinhado*/,.F. /*Italico*/ )
+	// Local oF10FFT          := TFont():New('Arial' /*Fonte*/,,10 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.T. /*Italico*/ )
+	Local oF12FFF          := TFont():New('Arial' /*Fonte*/,,12 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
+	// Local oF12TFF          := TFont():New('Arial' /*Fonte*/,,12 /*Tamanho*/,,.T. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
+	// Local oF12FTF          := TFont():New('Arial' /*Fonte*/,,12 /*Tamanho*/,,.F. /*Negrito*/,,,,,.T. /*Sublinhado*/,.F. /*Italico*/ )
+	// Local oF12FFT          := TFont():New('Arial' /*Fonte*/,,12 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.T. /*Italico*/ )
+	// Local oF13FFF          := TFont():New('Arial' /*Fonte*/,,12 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
+	// Local oF13TFF          := TFont():New('Arial' /*Fonte*/,,12 /*Tamanho*/,,.T. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
+	// Local oF13FTF          := TFont():New('Arial' /*Fonte*/,,12 /*Tamanho*/,,.F. /*Negrito*/,,,,,.T. /*Sublinhado*/,.F. /*Italico*/ )
+	// Local oF13FFT          := TFont():New('Arial' /*Fonte*/,,12 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.T. /*Italico*/ )
+	Local oF15FFF          := TFont():New('Arial' /*Fonte*/,,15 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
+	// Local oF15TFF          := TFont():New('Arial' /*Fonte*/,,15 /*Tamanho*/,,.T. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
+	// Local oF15FTF          := TFont():New('Arial' /*Fonte*/,,15 /*Tamanho*/,,.F. /*Negrito*/,,,,,.T. /*Sublinhado*/,.F. /*Italico*/ )
+	// Local oF15FFT          := TFont():New('Arial' /*Fonte*/,,15 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.T. /*Italico*/ )
+	Local oF20FFF          := TFont():New('Arial' /*Fonte*/,,20 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
+	// Local oF20TFF          := TFont():New('Arial' /*Fonte*/,,20 /*Tamanho*/,,.T. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
+	// Local oF20FTF          := TFont():New('Arial' /*Fonte*/,,20 /*Tamanho*/,,.F. /*Negrito*/,,,,,.T. /*Sublinhado*/,.F. /*Italico*/ )
+	// Local oF20FFT          := TFont():New('Arial' /*Fonte*/,,20 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.T. /*Italico*/ )
+	// Local oF25FFF          := TFont():New('Arial' /*Fonte*/,,25 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
+	// Local oF25TFF          := TFont():New('Arial' /*Fonte*/,,25 /*Tamanho*/,,.T. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
+	// Local oF25FTF          := TFont():New('Arial' /*Fonte*/,,25 /*Tamanho*/,,.F. /*Negrito*/,,,,,.T. /*Sublinhado*/,.F. /*Italico*/ )
+	// Local oF25FFT          := TFont():New('Arial' /*Fonte*/,,25 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.T. /*Italico*/ )
 
     Private oPrinter       := NIL                 
 
@@ -254,19 +285,37 @@ Static Function ImpEtiq(aItens)
             
             oPrinter:StartPage()
             oPrinter:SetMargin(000,000,000,000)
-            oPrinter:SetPaperSize(0,100,150)
+            oPrinter:SetPaperSize(0,IF(lFator,100*2,100),IF(lFator,150*2,150))
+
+            // oPrinter:Box(0,0,700,600,"-6")
+            // oPrinter:Box(0,0,600,500,"-6")
+            // oPrinter:Box(0,0,575,475,"-6")
+            // oPrinter:Box(0,0,550,450,"-6")
+            // oPrinter:Box(0,0,525,425,"-6")
+            // oPrinter:Box(0,0,500,400,"-6")
+            // oPrinter:Box(0,0,475,375,"-6")
+            // oPrinter:Box(0,0,450,350,"-6")
+            // oPrinter:Box(0,0,425,325,"-6")
+            // oPrinter:Box(0,0,400,300,"-6")
+            // oPrinter:Box(0,0,375,275,"-6")
+            // oPrinter:Box(0,0,350,250,"-6")
+            // oPrinter:Box(0,0,325,225,"-6")
+            // oPrinter:Box(0,0,300,200,"-6")
+
+            //Linha: 425
+            //Coluna: 275
+
+            // oPrinter:Box(0,0,425,275,"-6")
 
             // IF nEtiq > 4 //.Or. Mod(nZ,4) == 4 Mod(nR,4)
             //     //oPrinter:EndPage()
             //     nEtiq := 1
 
             // ENDIF
-            
 
             // ************  SUPERIOR  ***********************//
             // oBrush1 := TBrush():New( , CLR_HRED)
             
-
            // cCepAux := strtokarr(SA1->A1_CEP,'')
             nValidador := 0
 
@@ -312,30 +361,29 @@ Static Function ImpEtiq(aItens)
             nCl1 := 10
             nCl2 := 290 
             
-            
             nLl1 := 140
             nLl2 := 155
 
             // oPrinter:Fillrect( {nLl1,nCl1,nLl2,nCl2}, oBrush1, "-2")  
             //oPrinter:SayBitmap(nLin ,IF(Mod(nZ,4) == 1 .or. Mod(nZ,4) == 3,nCol,nCol+300) ,cLogo,70,030) 
             if lTransp
-                oPrinter:Say(nLin+15,nCol+030,"BRASPRESS",oFontBras)
+                // oPrinter:Say(nLin+15,nCol+030,"BRASPRESS",oF15FFF)
+                oPrinter:Say(IF(lFator,nLin+15*2,nLin+15),IF(lFator,nCol+120,nCol+30),"BRASPRESS",IF(lFator,oF20FFF,oF15FFF))
                 // oPrinter:SayBitmap(nLin-5,nCol+045,cSimBras,50,20) 
             else
-                oPrinter:SayBitmap(nLin-5,nCol+045,cSimCor,50,20)
+                // oPrinter:SayBitmap(nLin-5,nCol+045,cSimCor,50,20)
+                oPrinter:SayBitmap(IF(lFator,nLin+7,nLin-5),IF(lFator,nCol+45*2.5,nCol+045),cSimCor,IF(lFator,50*2,50),IF(lFator,20*2,20))
             endif
             
-            oPrinter:SayBitmap(nLin+220,nCol+115,cRobsol,45,45) 
+            oPrinter:SayBitmap(IF(lFator,nLin+170*2,nLin+220),IF(lFator,nCol+90*2,nCol+115),cRobsol,IF(lFator,35*2,45),IF(lFator,35*2,45)) 
 
             // oPrinter:SayBitmap(nLin ,nCol+130,cSedex,35,30) 
             //oPrinter:SayBitmap(nLin ,IF(nEtiq == 1 .or. nEtiq == 3,nCol+190,nCol+490) ,cExpr,40,40) 
             
-            
             nLl1 := 175 - 15
             nLl2 := 230 - 15
 
-            oPrinter:Box(nLl1-25,nCl1-5,nLl2-25,nCl2 - 100,"-6")
-            
+            oPrinter:Box(IF(lFator,nLl1+65,nLl1-25),nCl1-5,IF(lFator,nLl2+70,nLl2-25),IF(lFator,nCl2-20,nCl2 - 100),"-6")
 
             nLl1 := 175
             nLl2 := 230
@@ -345,7 +393,7 @@ Static Function ImpEtiq(aItens)
             nCl1 := 5
             nLl1 := 65
             If !lTransp
-                oPrinter:QRCode(nLl1,nCl1,cCodigo,60) //60
+                oPrinter:QRCode(IF(lFator,nLl1+50,nLl1),nCl1,cCodigo,IF(lFator,110,60)) //60
             endif
             //nCl1 := IF(nEtiq == 1 .or. nEtiq == 3,3.5,28.5)
             nCl1 := 1 
@@ -356,68 +404,65 @@ Static Function ImpEtiq(aItens)
             nLl2 := 22 
 
             IF AllTrim(aItens[nZ,2,nR]) != "" .and. !lTransp
-                oPrinter:FwMSBAR("CODE128",nLl1,nCl2,aItens[nZ,2,nR],oPrinter,.F.,Nil,Nil,0.045,0.7,Nil,Nil,"A",.F.)
+                oPrinter:FwMSBAR("CODE128",IF(lFator,12,nLl1),nCl2,aItens[nZ,2,nR],oPrinter,.F.,Nil,Nil,IF(lFator,0.045,0.045),IF(lFator,0.7*2,0.7),Nil,Nil,"A",.F.)
             ENDIF
 
-            oPrinter:FwMSBAR("CODE128",nLl2-5,nCl2+0,SA1->A1_CEP,oPrinter,.F.,Nil,Nil,0.0164,0.7,Nil,Nil,"A",.F.)
+            oPrinter:FwMSBAR("CODE128",IF(lFator,25,nLl2-5),nCl2+0,SA1->A1_CEP,oPrinter,.F.,Nil,Nil,IF(lFator,0.045*1.5,0.045),IF(lFator,0.7*2,0.7),Nil,Nil,"A",.F.)
             // oPrinter:FwMSBAR("INT25",nLl2-5,nCl2+10,SA1->A1_CEP,oPrinter,.F.,Nil,Nil,0.025,0.7,Nil,Nil,"A",.F.)
 
             // oPrinter:FwMSBAR("CODABAR",nLl1,nCl2,aItens[nZ,2,nR],oPrinter,.F.,Nil,Nil,0.060,0.8,Nil,Nil,"A",.F.)
             
             // oPrinter:FwMSBAR("INT25",nLl2-5,nCl2+15,SA1->A1_CEP,oPrinter,.F.,Nil,Nil,0.025,0.7,Nil,Nil,"A",.F.)
 
-
             //****************  TEXTOS    ***********************//
             nLin += 10 //45
 
-            oPrinter:Say(nLin,nCol+90+20,"NF: "+SF2->F2_DOC,oFont8)
+            oPrinter:Say(IF(lFator,nLin+60,nLin),IF(lFator,nCol+180,nCol+110),"NF: "+SF2->F2_DOC,IF(lFator,oF10FFF,oF5FFF))
             nLin += 10
             DbSelectArea("SC5")
             DbGoto(aItens[nZ,04])
-            oPrinter:Say(nLin,nCol+90+20,"Pedido: "+SC5->C5_NUM,oFont8)
+            oPrinter:Say(IF(lFator,nLin+60,nLin),IF(lFator,nCol+180,nCol+110),"Pedido: "+SC5->C5_NUM,IF(lFator,oF10FFF,oF5FFF))
             
             nLin += 10
-            oPrinter:Say(nLin,nCol+90+20,"Volume: "+cvaltochar(aItens[nZ,3]),oFont8)
+            oPrinter:Say(IF(lFator,nLin+60,nLin),IF(lFator,nCol+180,nCol+110),"Volume: "+cvaltochar(aItens[nZ,3]),IF(lFator,oF10FFF,oF5FFF))
             nLin += 10
-            oPrinter:Say(nLin,nCol+90+20,"Peso (g): "+cvaltochar(aItens[nZ,6]*1000),oFont8)
+            oPrinter:Say(IF(lFator,nLin+60,nLin),IF(lFator,nCol+180,nCol+110),"Peso (g): "+cvaltochar(aItens[nZ,6]*1000),IF(lFator,oF10FFF,oF5FFF))
             
             nLin := 35
             if !lTransp
-                oPrinter:Say(nLin,nCol+42,"Contrato: "+cCorrCont,oFont8)
+                oPrinter:Say(IF(lFator,nLin+55,nLin),IF(lFator,nCol+95,nCol+42),"Contrato: "+cCorrCont,IF(lFator,oF10FFF,oF5FFF))
             endif
             nLin += 10
             
             if !lTransp
-                oPrinter:Say(nLin ,nCol+50,Iif(cTpFrete == '03220','SEDEX','PAC'),oFont10)
+                oPrinter:Say(IF(lFator,nLin+55,nLin) ,IF(lFator,nCol+115,nCol+50),Iif(cTpFrete == '03220','SEDEX','PAC'),IF(lFator,oF12FFF,oF8FFF))
             endif
                 
-            //oPrinter:Say(nLin + 30,nCol,"PP: 561374",oFont8)
+            //oPrinter:Say(nLin + 30,nCol,"PP: 561374",oF5FFF)
             
             //oPrinter:Say(nLin + IF(Mod(nR,4) == 1 .or. Mod(nR,4) ==2,38,46),IF(nEtiq == 1 .or. nEtiq == 3,nCol+100,nCol+400),aItens[nR,2,nR],oFont8n)
             if !lTransp
-                oPrinter:Say(nLin +29, nCol+40,aItens[nZ,2,nR],oFont10)
+                oPrinter:Say(IF(lFator,nLin+90,nLin+29), IF(lFator,nCol+20,nCol+40),aItens[nZ,2,nR],IF(lFator,oF15FFF,oF12FFF))
             ENDIF
             nLin += 65
             nCol := 5
 
-
-            oPrinter:Say(nLin + 10,nCol,"Recebedor: ",oFont6)
-            oPrinter:Say(nLin + 20,nCol,"Assinatura: ",oFont6)
-            oPrinter:Say(nLin + 20,nCol+100,"Documento: ",oFont6)
-            
+            oPrinter:Say(IF(lFator,nLin+100,nLin + 10),nCol,"Recebedor: ",IF(lFator,oF10FFF,oF5FFF))
+            oPrinter:Say(IF(lFator,nLin+110,nLin + 20),nCol,"Assinatura: ",IF(lFator,oF10FFF,oF5FFF))
+            oPrinter:Say(IF(lFator,nLin+110,nLin + 20),nCol+100,"Documento: ",IF(lFator,oF10FFF,oF5FFF))
 
             // *****    LINHAS ASSINATURAS  ******  //
             
-            FOR nX := nCol+28 TO 100
-                oPrinter:Say(nLin+20,nX,'_',oFont6)
+            FOR nX := IF(lFator,nCol+40,nCol+25) TO IF(lFator,100,100)
+                oPrinter:Say(IF(lFator,nLin+110,nLin+20),nX,'_',oF5FFF)
             NEXT nX
             
-            FOR nX := nCol+125 TO 190
-                oPrinter:Say(nLin+20,nX,'_',oFont6)
+            FOR nX := IF(lFator,nCol+144,nCol+125) TO IF(lFator,270,190)
+                oPrinter:Say(IF(lFator,nLin+110,nLin+20),nX,'_',oF5FFF)
             NEXT nX
 
-            FOR nX := nCol+26 TO 190
-                oPrinter:Say(nLin+10,nX,'_',oFont6)
+            FOR nX := IF(lFator,nCol+41,nCol+25) TO IF(lFator,270,190)
+                oPrinter:Say(IF(lFator,nLin+100,nLin+10),nX,'_',oF5FFF)
             NEXT nX
 
             // *****  FIM  LINHAS ASSINATURAS  ******  //
@@ -425,19 +470,19 @@ Static Function ImpEtiq(aItens)
             nLin += 30
             nCol := 12
             
-            // oPrinter:Say(nLin,nCol,"ENTREGA NO VIZINHO: ",oFont6)
-            // oPrinter:Say(nLin + 15,nCol,"NAO AUTORIZADA",oFont6)
+            // oPrinter:Say(nLin,nCol,"ENTREGA NO VIZINHO: ",oF5FFF)
+            // oPrinter:Say(nLin + 15,nCol,"NAO AUTORIZADA",oF5FFF)
 
             nLin += 40
             nCol := 10
 
-            oPrinter:Say(nLin - 35 ,nCol," DESTINATARIO: ",oFont8N)
+            oPrinter:Say(IF(lFator,nLin+60,nLin - 35) ,nCol," DESTINATARIO: ",IF(lFator,oF12FFF,oF8FFF))
 
             nLin += 15
             nCol := 10
             
             cnpj := IF(len(SA1->A1_CGC)<=11,Transform(SA1->A1_CGC,"@R 999.999.999-99"),Transform(SA1->A1_CGC,"@R 99.999.999/9999-99"))
-            oPrinter:Say(nLin - 15 - 28 + 2 ,nCol,Alltrim(SA1->A1_NOME),oFont6)
+            oPrinter:Say(IF(lFator,nLin+55,nLin-41) ,nCol,Alltrim(SA1->A1_NOME),IF(lFator,oF10FFF,oF5FFF))
 
             IF (AllTrim(SA1->A1_ENDENT) != "")
                 cEndE      := AllTrim(SA1->A1_ENDENT) + " " + AllTrim(SA1->A1_COMPENT)
@@ -453,41 +498,38 @@ Static Function ImpEtiq(aItens)
                 cEstE      := SA1->A1_EST
             ENDIF
 
-            oPrinter:Say(nLin+ 10 - 15 - 28 + 2,nCol,Alltrim(cEndE),oFont6) //Endereço
-            oPrinter:Say(nLin+ 20 - 15 - 28 + 2,nCol,Alltrim(cBairroE),oFont6) //Bairro
-            oPrinter:Say(nLin+ 30 - 15 - 28 + 2,nCol,"CEP: "+Transform(cCepE,"@R 99999-999"),oFont6) //CEP
-            oPrinter:Say(nLin+ 30 - 15 - 28 + 2,nCol+50,Alltrim(cMunE) + " / " +cEstE,oFont6) //Municipio/Estado
-            //oPrinter:Say(nLin+ 50,IF(Mod(nZ,4) == 1 .or. Mod(nZ,4) == 3,nCol+140,nCol+440),"BRASIL: ",oFont6)
-            //oPrinter:Say(nLin+ 60,IF(Mod(nZ,4) == 1 .or. Mod(nZ,4) == 3,nCol+140,nCol+440),"CNPJ: "+cnpj,oFont6)
-            //oPrinter:Say(nLin+ 70,IF(Mod(nZ,4) == 1 .or. Mod(nZ,4) == 3,nCol+140,nCol+440),"OBS.: ",oFont6)
-            //oPrinter:Say(nLin+ 60,IF(Mod(nZ,4) == 1 .or. Mod(nZ,4) == 3,nCol+140,nCol+440),"OBS.: ",oFont6)
-
+            oPrinter:Say(IF(lFator,nLin + 65,nLin + 10 - 41),nCol,Alltrim(cEndE),IF(lFator,oF10FFF,oF5FFF)) //Endereço
+            oPrinter:Say(IF(lFator,nLin + 75,nLin + 20 - 41),nCol,Alltrim(cBairroE),IF(lFator,oF10FFF,oF5FFF)) //Bairro
+            oPrinter:Say(IF(lFator,nLin + 85,nLin + 30 - 41),nCol,"CEP: "+Transform(cCepE,"@R 99999-999"),IF(lFator,oF10FFF,oF5FFF)) //CEP
+            oPrinter:Say(IF(lFator,nLin + 85,nLin + 30 - 41),nCol+70,Alltrim(cMunE) + " / " +cEstE,IF(lFator,oF10FFF,oF5FFF)) //Municipio/Estado
+            //oPrinter:Say(nLin+ 50,IF(Mod(nZ,4) == 1 .or. Mod(nZ,4) == 3,nCol+140,nCol+440),"BRASIL: ",oF5FFF)
+            //oPrinter:Say(nLin+ 60,IF(Mod(nZ,4) == 1 .or. Mod(nZ,4) == 3,nCol+140,nCol+440),"CNPJ: "+cnpj,oF5FFF)
+            //oPrinter:Say(nLin+ 70,IF(Mod(nZ,4) == 1 .or. Mod(nZ,4) == 3,nCol+140,nCol+440),"OBS.: ",oF5FFF)
+            //oPrinter:Say(nLin+ 60,IF(Mod(nZ,4) == 1 .or. Mod(nZ,4) == 3,nCol+140,nCol+440),"OBS.: ",oF5FFF)
 
             nLin += 45
             nCol := 5
 
             //ESQUERDA
-            oPrinter:Say(nLin,nCol,"REMETENTE ",oFont8N)
-            oPrinter:Say(nLin+7,nCol,Alltrim(SM0->M0_NOMECOM),oFont6)
-            oPrinter:Say(nLin+14,nCol,Alltrim(SM0->M0_FILIAL),oFont6)
-            oPrinter:Say(nLin+21,nCol,Alltrim(SM0->M0_ENDENT)+", "+Alltrim(SM0->M0_COMPENT),oFont6)
-            oPrinter:Say(nLin+28,nCol,Alltrim(SM0->M0_BAIRENT),oFont6)
-            oPrinter:Say(nLin+35,nCol,Transform(SM0->M0_CEPENT,"@R 99999-999"),oFont6)
-            oPrinter:Say(nLin+35,nCol+50,Alltrim(SM0->M0_CIDENT)+" / "+Alltrim(SM0->M0_ESTENT),oFont6)
+            oPrinter:Say(IF(lFator,nLin+120,nLin),nCol,"REMETENTE ",IF(lFator,oF12FFF,oF8FFF))
+            oPrinter:Say(IF(lFator,nLin+130,nLin+7),nCol,Alltrim(SM0->M0_NOMECOM),IF(lFator,oF10FFF,oF5FFF))
+            oPrinter:Say(IF(lFator,nLin+140,nLin+14),nCol,Alltrim(SM0->M0_FILIAL),IF(lFator,oF10FFF,oF5FFF))
+            oPrinter:Say(IF(lFator,nLin+150,nLin+21),nCol,Alltrim(SM0->M0_ENDENT)+", "+Alltrim(SM0->M0_COMPENT),IF(lFator,oF10FFF,oF5FFF))
+            oPrinter:Say(IF(lFator,nLin+160,nLin+28),nCol,Alltrim(SM0->M0_BAIRENT),IF(lFator,oF10FFF,oF5FFF))
+            oPrinter:Say(IF(lFator,nLin+170,nLin+35),nCol,Transform(SM0->M0_CEPENT,"@R 99999-999"),IF(lFator,oF10FFF,oF5FFF))
+            oPrinter:Say(IF(lFator,nLin+170,nLin+35),nCol+50,Alltrim(SM0->M0_CIDENT)+" / "+Alltrim(SM0->M0_ESTENT),IF(lFator,oF10FFF,oF5FFF))
 
-              
-            
             // *****   LINHAS DIVISORIAS  ******  //
             // nLin := 400
             // FOR nX := 1 TO 600 step 8
-            //     oPrinter:Say(nLin,nX+4,'_',oFont8)
+            //     oPrinter:Say(nLin,nX+4,'_',oF5FFF)
             // NEXT nX
             
             // nLin := 1
             // nCol := 300
             
             // FOR nX := 1 TO 1600 step 10
-            //     oPrinter:Say(nLin,nCol,'|',oFont10)
+            //     oPrinter:Say(nLin,nCol,'|',oF8FFF)
             //     nLin += 15
             // NEXT nX
             // *****  FIM  LINHAS DIVISORIAS  ******  //
@@ -501,7 +543,6 @@ Static Function ImpEtiq(aItens)
             ENDIF*/
         NEXT nR
     NEXT nZ
-
     
 Return
 
@@ -519,13 +560,14 @@ Static Function ValidPerg()
     Local cNotaAt      := space(TamSX3("F2_DOC")[1])
     Local cSerie       := space(TamSX3("F2_SERIE")[1])
         
-    aAdd(aParamBox,{01,"Nota de"             ,cNotaDe    ,""            ,"","SF2"    ,"", 60,.F.})    // MV_PAR01
-    aAdd(aParamBox,{01,"Nota Ate"            ,cNotaAt    ,""            ,"","SF2"    ,"", 60,.F.})    // MV_PAR02
-    aAdd(aParamBox,{01,"Serie"               ,cSerie     ,""            ,"",""       ,"", 60,.F.})    // MV_PAR03
-    //aAdd(aParamBox,{01,"Quantidade Etiqueta" ,1          ,"@E 9999"     ,"",""       ,"", 60,.F.})    // MV_PAR04
+    aAdd(aParamBox,{01,"Nota de"                       ,cNotaDe    ,""              ,"","SF2"    ,"", 60,.F.})    // MV_PAR01
+    aAdd(aParamBox,{01,"Nota Ate"                      ,cNotaAt    ,""              ,"","SF2"    ,"", 60,.F.})    // MV_PAR02
+    aAdd(aParamBox,{01,"Serie"                         ,cSerie     ,""              ,"",""       ,"", 60,.F.})    // MV_PAR03
+    aAdd(aParamBox,{04,"Aumentar tamanho da impressão?",.F.        ,"Marcar se sim.",90,""       ,.F.})           // MV_PAR04
     
     IF ParamBox(aParamBox,"Etiqueta de Produtos X NF",/*aRet*/,/*bOk*/,/*aButtons*/,.T.,,,,FUNNAME(),.T.,.T.)
         lRet := .T.
+        lFator := MV_PAR04
     ENDIF
     
 Return lRet
