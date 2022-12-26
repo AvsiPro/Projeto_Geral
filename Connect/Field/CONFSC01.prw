@@ -656,6 +656,7 @@ Next nCont
 	Next nCont 
 //EndIf 
 
+
 RestArea(aArea)
 
 Return                   
@@ -756,6 +757,7 @@ Else
 	EndIf
 EndIf            
 
+Asort(aList3,,,{|x,y| x[1] > y[1]})
     
 oList2:SetArray(aList2)
 oList2:bLine := {||{ Alltrim(aList2[oList2:nAt,01]),;
@@ -2022,7 +2024,7 @@ ElseIf nOpcG == 1
 								Posicione("DA1",1,xFilial("DA1")+AAM->AAM_XCODTA+aList[oList:nAt,22],"DA1_PRCVEN")})
 			EndIf 
 			cAtFat := Alltrim(aList2[nX,01])
-			If (len(aItens) > 0 .And. cQuinze == "2") .OR.(cForFat=="1" .AND. cTipFat=="2" .And. len(aItens) > 0)
+			If len(aItens) > 0 //(len(aItens) > 0 .And. cQuinze == "2") .OR.(cForFat=="1" .AND. cTipFat=="2" .And. len(aItens) > 0)
 				Processa({|| Pedido(cAtFat,aItens)},"Aguarde")
 				aItens := {}
 			EndIF
