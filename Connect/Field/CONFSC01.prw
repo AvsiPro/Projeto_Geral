@@ -245,9 +245,7 @@ oTMenuIte3 := TMenuItem():New(oDlg1,"Faturar",,,,{|| Processa({||GeraPv(0),"Agua
 oTMenuIte4 := TMenuItem():New(oDlg1,"Envio NF/Boleto",,,,{|| NFBol()} ,,,,,,,,,.T.)
 oTMenuIte5 := TMenuItem():New(oDlg1,"Fechamento Mensal",,,,{|| Fechamento()} ,,,,,,,,,.T.)
 oTMenuIte6 := TMenuItem():New(oDlg1,"Rescisão Contrato",,,,{|| Rescisao(oList:nAt)} ,,,,,,,,,.T.)
-oTMenuIte7 := TMenuItem():New(oDlg1,"Recibo Locacao",,,,{|| Processa({||ReciboLoc(),"Aguarde"})} ,,,,,,,,,.T.)
-oTMenuIte8 := TMenuItem():New(oDlg1,"Extrato Leitura",,,,{|| Processa({||ExtLeitura(),"Aguarde"})} ,,,,,,,,,.T.)
-oTMenuIte9 := TMenuItem():New(oDlg1,"Demonstrativo de Consumo",,,,{|| Processa({||DemonsCon(),"Aguarde"})} ,,,,,,,,,.T.)
+oTMenuIte7 := TMenuItem():New(oDlg1,"Impressoes",,,,{|| Processa({||U_CONFSR02(aList,alist2,aList3,aList4,aList5,oSay6:cTitle),"Aguarde"})} ,,,,,,,,,.T.)
 
 
 oMenu:Add(oTMenuIte1)
@@ -257,8 +255,6 @@ oMenu:Add(oTMenuIte4)
 oMenu:Add(oTMenuIte5)
 oMenu:Add(oTMenuIte6)
 oMenu:Add(oTMenuIte7)
-oMenu:Add(oTMenuIte8)
-oMenu:Add(oTMenuIte9)
 
 // Cria botão que sera usado no Menu  
 oTButton1 := TButton():New( 025, 640, "Opções",oDlg1,{||},40,10,,,.F.,.T.,.F.,,.F.,,,.F. )
