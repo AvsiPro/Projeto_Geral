@@ -5,7 +5,9 @@ USER FUNCTION zCNPJSA1()
 
 	LOCAL oModelx        :=    FWModelActive()
 	LOCAL oRestClient    :=    FWRest():New("https://brasilapi.com.br/api")
+	LOCAL o1RestClient   :=    FWRest():New("https://publica.cnpj.ws/cnpj")
 	LOCAL oJson          :=    JsonObject():New()
+	LOCAL oJson1         :=    JsonObject():New()
 	LOCAL cCnpj          :=    M->A1_CGC
 	LOCAL aAdependency
 
@@ -15,6 +17,7 @@ USER FUNCTION zCNPJSA1()
 	cCnpj := StrTran(StrTran(StrTran(StrTran(cCnpj, " ", ""), "-", ""), ".", ""), "/", "")
 
 	oRestClient:setPath("/cnpj/v1/" + cCnpj)
+	o1RestClient:setPath("/" + cCnpj)
 	IF oRestClient:Get()
 
 		oJson:FromJson(oRestClient:CRESULT)
@@ -29,6 +32,16 @@ USER FUNCTION zCNPJSA1()
 		oModelxDet:SetValue('A1_MUN',oJson["municipio"])
 		oModelxDet:SetValue('A1_TEL',substr(oJson["ddd_telefone_1"], 3))
 		oModelxDet:SetValue('A1_DDD',substr(oJson["ddd_telefone_1"], 1, 2))
+		oModelxDet:SetValue('A1_COD_MUN',SubStr(cValToChar(oJson["codigo_municipio_ibge"]), 3))
+		oModelxDet:SetValue('A1_TIPO',"F")
+
+		if o1RestClient:Get()
+
+			oJson1:FromJson(o1RestClient:CRESULT)
+
+			oModelxDet:SetValue('A1_INSCR',oJson1["estabelecimento","inscricoes_estaduais",1,"inscricao_estadual"])
+					
+		endif
 
 	ELSE
 		MsgAlert("Não foi possível consultar o CNPJ:" + cCnpj + ".", "Erro!")
