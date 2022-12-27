@@ -127,6 +127,7 @@ User Function ROBFAT07()
 	oBtn5      := TButton():New( nLinha+100,  564,  "Ir ao Início",         oGrp1, {|| oList3:GoTop()},          nLarg,    nAlt,,,,.T.,,"",,,,.F. )
 	oBtn6      := TButton():New( nLinha+125,  564,  "Ir ao Fim",            oGrp1, {|| oList3:GoBottom()},       nLarg,    nAlt,,,,.T.,,"",,,,.F. )
 	oBtn4      := TButton():New( nLinha+150,  564,  "Sair",                 oGrp1, {|| oDlg1:end(nOpc:=0)},      nLarg,    nAlt,,,,.T.,,"",,,,.F. )
+	oBtn8      := TButton():New( nLinha+175,  564,  "Filtra Notas",         oGrp1, {|| filtraNotas()},      nLarg,    nAlt,,,,.T.,,"",,,,.F. )
 
 	oSay1:= TSay():New( nLinha+180, 10, {||'Quantidade total de produtos: '}, oDlg1,,      ,,,, .T., CLR_BLACK,, 200, 20 )
 	oSay2:= TSay():New( nLinha+177, 85, {||''},                               oDlg1,,oFont1,,,, .T., CLR_BLACK,, 200, 20 )
@@ -197,18 +198,6 @@ User Function ROBFAT07()
 
 Return
 
-/*/{Protheus.doc} Fhelp
-	(long_description)
-	@type  Static Function
-	@author user
-	@since 22/11/2022
-	@version version
-	@param param_name, param_type, param_descr
-	@return return_var, return_type, return_description
-	@example
-	(examples)
-	@see (links_or_references)
-/*/
 Static Function Fhelp(nLinha,nOpc)
 
 Local aArea := GetArea()
@@ -298,18 +287,6 @@ RestArea(aArea)
 	
 Return
 
-/*/{Protheus.doc} editcol
-	(long_description)
-	@type  Static Function
-	@author user
-	@since 22/11/2022
-	@version version
-	@param param_name, param_type, param_descr
-	@return return_var, return_type, return_description
-	@example
-	(examples)
-	@see (links_or_references)
-/*/
 Static Function editcol(nLinha)
 
 Local aArea :=	GetArea()
@@ -333,18 +310,6 @@ RestArea(aArea)
 	
 Return
 
-/*/{Protheus.doc} buscaGeren
-	(long_description)
-	@type  Static Function
-	@author user
-	@since 22/11/2022
-	@version version
-	@param param_name, param_type, param_descr
-	@return return_var, return_type, return_description
-	@example
-	(examples)
-	@see (links_or_references)
-/*/
 Static Function buscaGeren()
 
 	Local cQuery := ''
@@ -371,19 +336,6 @@ Static Function buscaGeren()
 	End
 
 Return
-
-/*/{Protheus.doc} buscaVend
-	(long_description)
-	@type  Static Function
-	@author user
-	@since 22/11/2022
-	@version version
-	@param param_name, param_type, param_descr
-	@return return_var, return_type, return_description
-	@example
-	(examples)
-	@see (links_or_references)
-/*/
 
 Static Function buscaVend()
 
@@ -428,19 +380,6 @@ Static Function buscaVend()
 	End
 
 Return
-
-/*/{Protheus.doc} buscaRepre
-	(long_description)
-	@type  Static Function
-	@author user
-	@since 22/11/2022
-	@version version
-	@param param_name, param_type, param_descr
-	@return return_var, return_type, return_description
-	@example
-	(examples)
-	@see (links_or_references)
-/*/
 
 Static Function buscaRepre(nLinha)
 
@@ -508,18 +447,6 @@ Static Function buscaRepre(nLinha)
 
 Return
 
-/*/{Protheus.doc} buscaProd
-	(long_description)
-	@type  Static Function
-	@author user
-	@since 22/11/2022
-	@version version
-	@param param_name, param_type, param_descr
-	@return return_var, return_type, return_description
-	@example
-	(examples)
-	@see (links_or_references)
-/*/
 Static Function buscaProd(cCli)
 
 	Local cQuery    :=  ""
@@ -609,18 +536,6 @@ Static Function buscaProd(cCli)
 
 Return
 
-/*/{Protheus.doc} selecProd
-	(long_description)
-	@type  Static Function
-	@author user
-	@since 22/11/2022
-	@version version
-	@param param_name, param_type, param_descr
-	@return return_var, return_type, return_description
-	@example
-	(examples)
-	@see (links_or_references)
-/*/
 Static Function selecProd(nLinha)
 
 	Local nX
@@ -691,18 +606,7 @@ Static Function selecProd(nLinha)
 	//qtdTot()
 
 Return
-/*/{Protheus.doc} marcaTodos
-	(long_description)
-	@type  Static Function
-	@author user
-	@since 22/11/2022
-	@version version
-	@param param_name, param_type, param_descr
-	@return return_var, return_type, return_description
-	@example
-	(examples)
-	@see (links_or_references)
-/*/
+
 Static Function marcaTodos()
 
 	Local nX
@@ -746,18 +650,6 @@ Static Function marcaTodos()
 
 Return
 
-/*/{Protheus.doc} filtraLista
-	(long_description)
-	@type  Static Function
-	@author user
-	@since 22/11/2022
-	@version version
-	@param param_name, param_type, param_descr
-	@return return_var, return_type, return_description
-	@example
-	(examples)
-	@see (links_or_references)
-/*/
 Static Function filtraLista()
 
 	Local nX
@@ -802,18 +694,6 @@ Static Function filtraLista()
 
 Return
 
-/*/{Protheus.doc} geraPV
-	(long_description)
-	@type  Static Function
-	@author user
-	@since 22/11/2022
-	@version version
-	@param param_name, param_type, param_descr
-	@return return_var, return_type, return_description
-	@example
-	(examples)
-	@see (links_or_references)
-/*/
 Static Function geraPV(aRet,aItQb,cFilGer)
 
 	Local aArea     :=    GetArea()
@@ -822,11 +702,9 @@ Static Function geraPV(aRet,aItQb,cFilGer)
 	Local aLinha    :=    {}
 	Local cDoc      :=    GetSxeNum("SC5", "C5_NUM")
 	Local nPos        :=    1
-	//Local nPos      :=    3
 	Local cItem     :=    '01'
 	Local cPathL    :=    'C:\Temp\'
-	//Local cValid
-
+	//046279
 	aadd(aCabec, { "C5_NUM"     ,cDoc       ,Nil })
 	aadd(aCabec, { "C5_TIPO"    ,"N"        ,Nil })
 	aadd(aCabec, { "C5_CLIENTE" ,aRet[1,6]  ,Nil })
@@ -868,7 +746,6 @@ Static Function geraPV(aRet,aItQb,cFilGer)
 		lRet := .F.
 	Else
 		ConOut("Incluído com sucesso! " + cDoc)
-		//ConfirmSX8()
 		cPedGer += cDoc + " / "
 		lRet := .T.
 	EndIf
@@ -877,113 +754,6 @@ Static Function geraPV(aRet,aItQb,cFilGer)
 
 Return
 
-/*/{Protheus.doc} geraPDEeDE
-	(long_description)
-	@type  Static Function
-	@author user
-	@since 22/11/2022
-	@version version
-	@param param_name, param_type, param_descr
-	@return return_var, return_type, return_description
-	@example
-	(examples)
-	@see (links_or_references)
-/*/
-Static Function geraPDEeDE(aRet)
-
-	Local nX
-	Local nPos        := 3
-	Local cItem       := '01'
-	Local aCabec      := {}
-	Local aItens      := {}
-	Local aLinha      := {}
-	Local lMsErroAuto := .F.
-	Local cDoc        := GetSxeNum("SF1","F1_DOC")
-	Local cValid
-
-	// [2]aList2 [1].F. [2]TRB->A3_COD [3]AllTrim(TRB->A3_NOME) [4]AllTrim(TRB->Z30_MALA) [5]AllTrim(TRB->Z30_REGIAO) [6]TRB->A1_COD [7]TRB->A1_LOJA [8]TRB->A1_TIPO
-	// [3+]aList3 [1].F. [2]AllTrim(TRB->B1_COD) [3]AllTrim(TRB->B1_DESC) [4]0001 [5]TRB->B2_QATU [6]TRB->B1_PRV1 [7]TRB->BM_XMODELO [8]TRB->B1_LOCPAD
-
-	aAdd( aCabec, {'F1_TIPO'    ,'N'       ,NIL} )
-	aAdd( aCabec, {'F1_FORMUL'  ,'N'       ,NIL} )
-	aAdd( aCabec, {'F1_DOC'     ,cDoc      ,NIL} )
-	aAdd( aCabec, {"F1_SERIE"   ,"01"      ,NIL} )
-	aAdd( aCabec, {"F1_EMISSAO" ,dDataBase ,NIL} )
-	aAdd( aCabec, {'F1_FORNECE' ,aRet[2,6] ,NIL} )
-	aAdd( aCabec, {'F1_LOJA'    ,aRet[2,7] ,NIL} )
-	aAdd( aCabec, {"F1_ESPECIE" ,"NF"      ,NIL} )
-	aAdd( aCabec, {"F1_COND"    ,'001'     ,NIL} )
-	aAdd( aCabec, {"F1_STATUS"  ,''        ,NIL} )
-
-	cValid := SubStr(aRet[nPos,2], 1, 2)
-
-	if nnXG2 != 0
-		nnXG2 := nnXG2 - 3
-	endif
-
-	For nX := 3 to Len(aRet)
-
-		nPos := nnXG2 + nX
-
-		if nPos > len(aRet) .OR. cValid != SubStr(aRet[nPos,2], 1, 2)
-			if cValid == "MA"
-			else
-				EXIT
-			endif
-		endif
-
-		aItens := {}
-
-		aAdd( aItens ,{'D1_ITEM'  ,cItem                     ,NIL} )
-		aAdd( aItens ,{'D1_COD'   ,aRet[nPos,2]              ,NIL} )
-		aAdd( aItens ,{"D1_QUANT" ,aRet[nPos,4]              ,Nil} )
-		aAdd( aItens ,{"D1_VUNIT" ,aRet[nPos,6]              ,Nil} )
-		aAdd( aItens ,{"D1_TOTAL" ,aRet[nPos,4]*aRet[nPos,6] ,Nil} )
-		aAdd( aItens ,{"D1_TES"   ,'632'                     ,NIL} )
-
-		cItem := Soma1(cItem)
-		aAdd( aLinha ,aItens )
-
-		cValid := SubStr(aRet[nnXG2 + nX,2], 1, 2)
-
-	NEXT nX
-
-	nnXG2 += nX
-
-	// lMsErroAuto := .F.
-
-	// MSExecAuto( {|x,y,z,a,b| MATA140(x,y,z,a,b)} ,aCabec ,aLinha ,3 , , )
-
-	// If lMsErroAuto
-	//     MostraErro(cPathL,"02_erro.txt")
-	// Else
-	//     MsgInfo("Pré - Documento de Entrada concluído com sucesso!", "Êxito!")
-	// EndIf
-
-	lMsErroAuto := .F.
-
-	MSExecAuto( {|x,y,z| MATA103(x,y,z)} ,aCabec ,aLinha ,3 )
-
-	If lMsErroAuto
-		MostraErro(cPathL,"03_erro.txt")
-	Else
-		MsgInfo("Documento de Entrada concluído com sucesso!", "Êxito!")
-	EndIf
-
-Return
-
-/*/{Protheus.doc} qtdTot
-	(long_description)
-	@type  Static Function
-	@author user
-	@since 22/11/2022
-	@version version
-	@param param_name, param_type, param_descr
-	@return return_var, return_type, return_description
-	@example
-	(examples)
-	@see (links_or_references)
-/*/
 Static Function qtdTot()
 
 	Local nX
@@ -1031,18 +801,6 @@ Static Function qtdTot()
 
 Return
 
-/*/{Protheus.doc} tipoDeMala
-	(long_description)
-	@type  Static Function
-	@author user
-	@since 22/11/2022
-	@version version
-	@param param_name, param_type, param_descr
-	@return return_var, return_type, return_description
-	@example
-	(examples)
-	@see (links_or_references)
-/*/
 Static Function tipoDeMala()
 
 	Local cQuery := ""
@@ -1119,61 +877,115 @@ Static Function tipoDeMala()
     
 Return
 
-/*/{Protheus.doc} fExcel()
-	(long_description)
-	@type  Static Function
-	@author user
-	@since 22/11/2022
-	@version version
-	@param param_name, param_type, param_descr
-	@return return_var, return_type, return_description
-	@example
-	(examples)
-	@see (links_or_references)
-/*/
 Static Function fExcel()
 
-Local oExcel 	:= FWMSEXCEL():New()
-//Local cTitulo 	:= "Conferencia Comissao"
-Local cDir 		:= ""
-Local nX 
-Local cArqXls 	:= "conferencia_"+dtos(ddatabase)+strtran(time(),":")+".xls" 
+	Local oExcel 	:= FWMSEXCEL():New()
+	//Local cTitulo 	:= "Conferencia Comissao"
+	Local cDir 		:= ""
+	Local nX 
+	Local cArqXls 	:= "conferencia_"+dtos(ddatabase)+strtran(time(),":")+".xls" 
 
-cDir := cGetFile(, OemToAnsi("Selecione o diretório de destino"), 0, "C:\", .T., GETF_LOCALHARD+GETF_NETWORKDRIVE+GETF_RETDIRECTORY, .F., .F.) 
+	cDir := cGetFile(, OemToAnsi("Selecione o diretório de destino"), 0, "C:\", .T., GETF_LOCALHARD+GETF_NETWORKDRIVE+GETF_RETDIRECTORY, .F., .F.) 
 
-If Empty(cDir)
-	Return
-EndIf
-
-oExcel:AddworkSheet("Conferencia") 
-
-oExcel:AddTable ("Conferencia","Representantes")
-
-oExcel:AddColumn("Conferencia","Representantes","Mala",1,1)        //01
-oExcel:AddColumn("Conferencia","Representantes","Descricao",1,1)            //02
-oExcel:AddColumn("Conferencia","Representantes","Saldo Terc",1,1)      //10
-oExcel:AddColumn("Conferencia","Representantes","Saldo Est",1,1)      //10
-oExcel:AddColumn("Conferencia","Representantes","Preco",1,1)      //10
-oExcel:AddColumn("Conferencia","Representantes","Emissao",1,1)      //10
-
-For nX := 1 to len(aList3)
-	If aList3[nX,01]
-		oExcel:AddRow("Conferencia","Representantes",{  aList3[nX,02],;
-														aList3[nX,03],;
-														aList3[nX,04],;
-														aList3[nX,05],;
-														aList3[nX,06],;
-														aList3[nX,07]})
+	If Empty(cDir)
+		Return
 	EndIf
-Next nX
 
-oExcel:Activate()
+	oExcel:AddworkSheet("Conferencia") 
 
-oExcel:GetXMLFile(cDir +cArqXls)
+	oExcel:AddTable ("Conferencia","Representantes")
 
-WinExec('Explorer.exe /select,"' + substr(cDir,1,len(cDir)-1) + '"', 1)
+	oExcel:AddColumn("Conferencia","Representantes","Mala",1,1)        //01
+	oExcel:AddColumn("Conferencia","Representantes","Descricao",1,1)            //02
+	oExcel:AddColumn("Conferencia","Representantes","Saldo Terc",1,1)      //10
+	oExcel:AddColumn("Conferencia","Representantes","Saldo Est",1,1)      //10
+	oExcel:AddColumn("Conferencia","Representantes","Preco",1,1)      //10
+	oExcel:AddColumn("Conferencia","Representantes","Emissao",1,1)      //10
 
-oExcelApp := MsExcel():New()
-oExcelApp:Destroy()
+	For nX := 1 to len(aList3)
+		If aList3[nX,01]
+			oExcel:AddRow("Conferencia","Representantes",{  aList3[nX,02],;
+															aList3[nX,03],;
+															aList3[nX,04],;
+															aList3[nX,05],;
+															aList3[nX,06],;
+															aList3[nX,07]})
+		EndIf
+	Next nX
+
+	oExcel:Activate()
+
+	oExcel:GetXMLFile(cDir +cArqXls)
+
+	WinExec('Explorer.exe /select,"' + substr(cDir,1,len(cDir)-1) + '"', 1)
+
+	oExcelApp := MsExcel():New()
+	oExcelApp:Destroy()
 
 Return
+
+Static Function filtraNotas()
+
+    Local aPerg  := {}
+    Local aPerg1 := {}
+    Local aAux   := {}
+	Local nX     := 1
+	Local cAux   := ""
+
+    aAdd(aPerg, {1, "Notas: " ,   Space(50),  "", ".T.", "",    ".T.",    90,  .T.})
+    aAdd(aPerg, {9, "Adicionar as notas no formato '1111,2222,3333,4444'", 250, 7, .F.})
+    aAdd(aPerg, {9, "Sem zeros a esquerda", 250, 7, .F.})
+
+    If ParamBox(aPerg, "Informe as notas que serão retiradas!")
+        
+        aPerg1  := STRTOKARR( AllTrim(MV_PAR01), "," )
+		
+		for nX := 1 to len(aPerg1)
+			cAux += StrZero(val(aPerg1[nX]), 9)
+			cAux += "/"
+		next
+
+		cAux := SubStr(cAux, 1, len(cAux)-1)
+
+		for nX := 1 to len(aList3)
+			
+			if !(aList3[nX,11] $ cAux)
+				Aadd(aAux, aList3[nX])
+			endif
+
+		next
+
+		aList3 := aAux
+		aList3B := aList3
+
+    ENDIF
+
+	if oList3:nAt > len(aList3)
+		oList3:nAt := len(aList3)
+	endif
+
+	oList3:SetArray(aList3)
+	oList3:bLine := {||{If(aList3[oList3:nAt,01],oOk,oNo),;
+							aList3[oList3:nAt,2],;
+							aList3[oList3:nAt,3],;
+							aList3[oList3:nAt,4],;
+							aList3[oList3:nAt,5],;
+							aList3[oList3:nAt,6],;
+							aList3[oList3:nAt,11],;
+							SubStr(aList3[oList3:nAt,9], 7, 2) + "/" + SubStr(aList3[oList3:nAt,9], 5, 2) + "/" + SubStr(aList3[oList3:nAt,9],1,4)}}
+	
+	oList3:Refresh()
+
+	nQtdTot   := 0
+	nQtdNotas := 0
+
+	Aeval(aList3,{|x| nQtdTot += If(x[1],x[4],0)})
+
+	nQtdNotas := round(nQtdTot / 480,0)
+
+	oSay2:SetText("")
+	oSay2:SetText(nQtdTot)
+	oSay4:SetText("")
+	oSay4:SetText(nQtdNotas)
+
+Return 

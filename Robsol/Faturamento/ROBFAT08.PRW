@@ -425,8 +425,8 @@ Static Function geraDE()
     aadd( aCab,{"F1_SERIE"   ,"1 "                    ,NIL} )
     aadd( aCab,{"F1_EMISSAO" ,DDATABASE               ,NIL} )
     aadd( aCab,{"F1_DTDIGIT" ,DDATABASE               ,NIL} )
-    aadd( aCab,{"F1_FORNECE" ,PadR(aAux[1,9],TamSX3("A2_COD")[1]) ,NIL} )
-    aadd( aCab,{"F1_LOJA"    ,PadR(aAux[1,10],TamSX3("A2_LOJA")[1])              ,NIL} )
+    aadd( aCab,{"F1_FORNECE" ,aAux[1,9]               ,NIL} )
+    aadd( aCab,{"F1_LOJA"    ,aAux[1,10]              ,NIL} )
     aadd( aCab,{"F1_ESPECIE" ,"SPED"                  ,NIL} )
     // aadd( aCab,{"F1_COND"    ,"001"                  ,NIL} )
     // aadd( aCab,{"F1_DESPESA" ,10                     ,NIL} )
@@ -449,7 +449,7 @@ Static Function geraDE()
         aadd( aItem,{"D1_VUNIT"  ,aAux[nX,6]        ,NIL} )
         aadd( aItem,{"D1_TOTAL"  ,aAux[nX,6]        ,NIL} )
         aadd( aItem,{"D1_TES"    ,"131"             ,NIL} )
-        aadd( aItem,{"D1_RATEIO" ,"2"               ,NIL} )
+        // aadd( aItem,{"D1_RATEIO" ,"2"               ,NIL} )
         aAdd( aItens, aItem )
         
     Next nX
@@ -480,14 +480,14 @@ Static Function geraDE()
 
     //3-Inclusão / 4-Classificação / 5-Exclusão
     MSExecAuto({|x,y,z,a,b| MATA103(x,y,z,,,,,/*a*/,,,/*b*/)},aCab,aItens,nOpc,/*aItensRat*/,/*aCodRet*/)
+    // MSExecAuto({|x,y,z,a,b| MATA140(x,y,z,,,,,/*a*/,,,/*b*/)},aCab,aItens,nOpc,/*aItensRat*/,/*aCodRet*/)
 
     If !lMsErroAuto
         MsgInfo("Incluido NF: " + cNum, "Informa")
     Else
         MostraErro()
+        RollBackSX8()
         MsgAlert("Erro ao incluir nota", "Erro")
     EndIf
 
 Return
-
-//414070014
