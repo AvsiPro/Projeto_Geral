@@ -755,6 +755,7 @@ EndIf
 
 Asort(aList3,,,{|x,y| x[1] > y[1]})
     
+	
 oList2:SetArray(aList2)
 oList2:bLine := {||{ Alltrim(aList2[oList2:nAt,01]),;
 					Alltrim(aList2[oList2:nAt,02]),;
@@ -765,6 +766,8 @@ oList2:bLine := {||{ Alltrim(aList2[oList2:nAt,01]),;
 					If(aList2[oList2:nAt,10]>0,Transform(aList2[oList2:nAt,10],"@E 999,999,999.99"),'S/Vlr'),;
 					aList2[oList2:nAt,11]}}
 
+//oList2:gotop()
+
 oList3:SetArray(aList3)
 oList3:bLine := {||{ Alltrim(aList3[oList3:nAt,01]),;
 							 aList3[oList3:nAt,02],;
@@ -772,6 +775,7 @@ oList3:bLine := {||{ Alltrim(aList3[oList3:nAt,01]),;
 		 					 Transform(aList3[oList3:nAt,03],"@E 999,999,999.99")}}
 
 oList2:nAt := len(aList2)
+
 
 oList:refresh()
 oList2:refresh()
@@ -1988,7 +1992,7 @@ ElseIf nOpcG == 1
 			EndIf
 		Next nCont
 	
-		If aList[oList:nAt,20] > 0
+		If aList[oList:nAt,20] > 0 .And. len(aItens) > 0
 			Aadd(aItens,{aList[oList:nAt,22],;
 						aList[oList:nAt,20],;
 						aList[oList:nAt,21]})
