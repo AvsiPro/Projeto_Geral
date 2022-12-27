@@ -59,7 +59,7 @@ oDlg1      := MSDialog():New( 057,187,748,993,"Cadastro de Leiautes",,,.F.,,,,,,
 oGrp1      := TGroup():New( 004,016,108,380,"Cadastro",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
     
     oSay1      := TSay():New( 012,116,{||"Patrimonio"},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
-    oGet1      := TGet():New( 012,168,{|u| If(PCount()>0,cPatr:=u,cPatr)},oGrp1,060,008,'',{|| Basexcli()},CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"AA3VMP","",,)
+    oGet1      := TGet():New( 012,168,{|u| If(PCount()>0,cPatr:=u,cPatr)},oGrp1,060,008,'',{|| Basexcli()},CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"SN1X","",,)
 
     oSay2      := TSay():New( 032,032,{||"Cliente"},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
     oGet2      := TGet():New( 032,068,{|u| If(PCount()>0,cCli:=u,cCli)},oGrp1,060,008,'',{|| Fcadcli()},CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"SA1","",,)
@@ -71,7 +71,7 @@ oGrp1      := TGroup():New( 004,016,108,380,"Cadastro",oDlg1,CLR_BLACK,CLR_WHITE
     oSay6      := TSay():New( 056,068,{||""},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,304,008)
     
     oSay7      := TSay():New( 076,032,{||"Local de Instalação"},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,048,008)
-    oGet4      := TGet():New( 076,084,{|u| If(PCount()>0,cLocIn:=u,cLocIn)},oGrp1,060,008,'',{||oSay8:settext(NNR->NNR_DESCRI)},CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"NNR","",,)
+    oGet4      := TGet():New( 076,084,{|u| If(PCount()>0,cLocIn:=u,cLocIn)},oGrp1,060,008,'',{||oSay8:settext(NNR->NNR_DESCRI)},CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"NNR1","",,)
     oSay8      := TSay():New( 076,152,{||""},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,220,008)
     
     oGrp3      := TGroup():New( 112,040,312,360,"Leiaute",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
