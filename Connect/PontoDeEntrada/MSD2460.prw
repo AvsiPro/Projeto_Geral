@@ -205,6 +205,14 @@ If TRB->QTD == 0
 	SC6->(MsUnlock())
 EndIf 
 
+if AllTrim(POSICIONE("AAN",1,XFILIAL("AAN")+cContr+"01","AAN_CODPRO")) == "CONTRATO"
+	DbSelectArea("AAN")
+	DbSeek(xFilial("AAN")+cContr+"01")		
+	Reclock("AAN",.F.)
+	Dbdelete()
+	AAN->(Msunlock())
+endif
+
 RestArea(aArea)
 
 Return

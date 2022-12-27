@@ -108,7 +108,9 @@ Return
 /*/
 Static Function atucontr(cContrt,cItCont)
 
-Local aArea :=	GetArea()
+Local aArea  :=	GetArea()
+Local cQuery :=	""
+Local lOK :=	.T.
 
 DbSelectArea("AAN")
 DbSetOrder(1)
@@ -117,6 +119,52 @@ If Dbseek(xFilial("AAN")+cContrt+cItCont)
 	DBDelete()
 	AAN->(MsUnlock())
 EndIf 
+
+cQuery := " SELECT * FROM AAN010 WHERE AAN_CONTRT = '" + cContrt + "' "
+cQuery += " AND D_E_L_E_T_ = ' ' "
+cQuery += " AND AAN_FILIAL = '" + xFilial("AAN") + "' "
+
+If Select("TRB") > 0
+	dbSelectArea("TRB")
+	dbCloseArea()
+EndIf
+  
+MemoWrite("MSD2520.SQL",cQuery)
+cQuery:= ChangeQuery(cQuery)
+DbUseArea(.T.,"TOPCONN",TcGenQry(,,cQuery),'TRB',.F.,.T.)   
+DbSelectArea("TRB")   
+
+while !EOF()
+	lOK := .F.
+end
+
+if lOK
+	cQuery := " SELECT * FROM AAN010 WHERE AAN_CONTRT = '" + cContrt + "'"
+
+	If Select("TRB") > 0
+		dbSelectArea("TRB")
+		dbCloseArea()
+	EndIf
+	
+	MemoWrite("MSD2520.SQL",cQuery)
+	cQuery:= ChangeQuery(cQuery)
+	DbUseArea(.T.,"TOPCONN",TcGenQry(,,cQuery),'TRB',.F.,.T.)   
+	DbSelectArea("TRB")   
+
+	while !EOF()
+		if AllTrim(TRB->AAN_CODPRO) == "CONTRATO"
+			nRecno := TRB->R_E_C_N_O_
+		endif
+		DBSKIP()
+	end
+
+	DbSelectArea("AAN")
+	DBGOTO( nRecno )
+	RecLock("AAN", .F.)
+	DBRecall()
+	AAN->(MsUnlock())
+
+endif
 
 RestArea(aArea)
 
