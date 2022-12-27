@@ -21,8 +21,12 @@ dbUseArea(.T.,"TOPCONN",TCGENQRY(,,cQuery),"TRB",.F.,.T.)
 dbSelectArea("TRB")
 
 If !Empty(TRB->CODIGO)
-    cAux := Soma1(Alltrim(TRB->CODIGO))
-    cCod := cAux
+    if len(AllTrim(TRB->CODIGO)) > 8
+        cAux := Soma1(Alltrim(TRB->CODIGO))
+        cCod := cAux
+    else
+        MsgAlert(TRB->CODIGO + " ja existe!", "Erro!")
+    endif
 Else 
     cCod := cCod+'01'
 EndIf
