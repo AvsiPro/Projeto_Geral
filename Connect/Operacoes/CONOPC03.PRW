@@ -52,7 +52,7 @@ cCli    := space(TamSX3("A1_COD")[1])
 cLj     := space(TamSX3("A1_LOJA")[1])
 cLocIn  := space(TamSX3("NNR_CODIGO")[1])
 
-Aadd(aCols,{'','','','',0,.f.})
+Aadd(aCols,{'','','','',0,0,.f.})
 
 oDlg1      := MSDialog():New( 057,187,748,993,"Cadastro de Leiautes",,,.F.,,,,,,.T.,,,.T. )
 
@@ -76,14 +76,15 @@ oGrp1      := TGroup():New( 004,016,108,380,"Cadastro",oDlg1,CLR_BLACK,CLR_WHITE
     
     oGrp3      := TGroup():New( 112,040,312,360,"Leiaute",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
     //oBrw1      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{124,048,304,352},,, oGrp3 ) 
-    oList1            := TCBrowse():New(124,048,305,180,, {'','Selecao','Produto','Descrição','Valor'},{10,30,40,50,50},;
+    oList1            := TCBrowse():New(124,048,305,180,, {'','Selecao','Produto','Descrição','R$ Subsid.','R$ Consum.'},{10,30,40,50,50,50},;
                                 oGrp3,,,,{|| },{|| editcol(oList1:nAt)},, ,,,  ,,.F.,,.T.,,.F.,,,)
     oList1:SetArray(aCols)
     oList1:bLine := {||{aCols[oList1:nAt,01],; 
                         aCols[oList1:nAt,02],;
                         aCols[oList1:nAt,03],; 
                         aCols[oList1:nAt,04],;
-                        Transform(aCols[oList1:nAt,05],"@E 999,999.99")}} 
+                        Transform(aCols[oList1:nAt,05],"@E 999,999.99"),;
+                        Transform(aCols[oList1:nAt,06],"@E 999,999.99")}} 
 
     oBtn1      := TButton():New( 316,112,"Confirmar",oDlg1,{|| oDlg1:end(nOpc:=1)},037,012,,,,.T.,,"",,,,.F. )
     oBtn2      := TButton():New( 316,240,"Cancelar",oDlg1,{|| oDlg1:end(nOpc:=0)},037,012,,,,.T.,,"",,,,.F. )
@@ -109,6 +110,7 @@ If nOpc == 1
         Z07->Z07_SELECA :=  aCols[nX,02]
         Z07->Z07_CODPRO :=  aCols[nX,03]
         Z07->Z07_VLRVND :=  aCols[nX,05]
+        Z07->Z07_CONSUM :=  aCols[nX,06]
         Z07->(MsUnlock())
     Next nX 
 EndIf 
@@ -131,14 +133,15 @@ Static Function inclin()
 
 Local aArea :=  GetArea()
 
-Aadd(aCols,{'','','','',0,.f.})
+Aadd(aCols,{'','','','',0,0,.f.})
 
 oList1:SetArray(aCols)
 oList1:bLine := {||{aCols[oList1:nAt,01],; 
-                    aCols[oList1:nAt,02],;
-                    aCols[oList1:nAt,03],; 
-                    aCols[oList1:nAt,04],;
-                    Transform(aCols[oList1:nAt,05],"@E 999,999.99")}}
+                        aCols[oList1:nAt,02],;
+                        aCols[oList1:nAt,03],; 
+                        aCols[oList1:nAt,04],;
+                        Transform(aCols[oList1:nAt,05],"@E 999,999.99"),;
+                        Transform(aCols[oList1:nAt,06],"@E 999,999.99")}} 
 
 oList1:refresh()
 oDlg1:refresh()
@@ -168,14 +171,15 @@ Adel(aCols,nLin)
 ASize(aCols,len(aCols)-1)
 
 If len(aCols) < 1
-    Aadd(aCols,{'','','','',0,.f.})
+    Aadd(aCols,{'','','','',0,0,.f.})
 
     oList1:SetArray(aCols)
     oList1:bLine := {||{aCols[oList1:nAt,01],; 
                         aCols[oList1:nAt,02],;
                         aCols[oList1:nAt,03],; 
                         aCols[oList1:nAt,04],;
-                        Transform(aCols[oList1:nAt,05],"@E 999,999.99")}}
+                        Transform(aCols[oList1:nAt,05],"@E 999,999.99"),;
+                        Transform(aCols[oList1:nAt,06],"@E 999,999.99")}} 
 EndIf 
 
 oList1:refresh()
@@ -224,7 +228,7 @@ ElseIf nPosic == 3
         lEditCell( aCols, oList1, "@!", nPosic)
     EndIf
     
-ElseIf nPosic == 5
+ElseIf nPosic >= 5
     If aCols[nLin,nPosic] <= 0
         aCols[nLin,nPosic] := 0
     EndIf 
@@ -284,8 +288,17 @@ Local aArea     :=  GetArea()
 If !Empty(cPatr)
     aCols := {}
     // '','Selecao','Produto','Descrição','Valor'
-    cQuery := 'SELECT Z07_CHAPA,Z07_SELECA,Z07_CODPRO,B1_DESC,Z07_VLRVND,Z07_CLIENT,Z07_LOJA'
+    /*cQuery := 'SELECT Z07_CHAPA,Z07_SELECA,Z07_CODPRO,B1_DESC,Z07_VLRVND,Z07_CONSUM,Z07_CLIENT,Z07_LOJA'
     cQuery += " FROM "+RetSQLName("Z07")+" Z07"
+    cQuery += " INNER JOIN "+RetSQLName("SB1")+ " B1 ON B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD=Z07_CODPRO AND B1.D_E_L_E_T_=' '"
+    cQuery += " WHERE Z07_FILIAL='"+xFilial("Z07")+"' AND Z07_CHAPA='"+cPatr+"' AND Z07.D_E_L_E_T_=' '"*/
+    
+    cQuery := "SELECT Z07_CHAPA,Z07_SELECA,Z07_CODPRO,B1_DESC,Z07_VLRVND,Z07_CONSUM,"
+    cQuery += " Z07_CLIENT,Z07_LOJA,AAM_XCODTA,DA1_PRCVEN,DA1_XCONSU"
+    cQuery += " FROM "+RetSQLName("Z07")+" Z07"
+    cQuery += " INNER JOIN "+RetSQLName("AAN")+" AAN ON AAN_FILIAL='01 ' AND AAN_XCBASE=Z07_CHAPA AND AAN.D_E_L_E_T_=' ' "
+    cQuery += " INNER JOIN "+RetSQLName("AAM")+" AAM ON AAM_FILIAL=AAN_FILIAL AND AAM_CONTRT=AAN_CONTRT AND AAM.D_E_L_E_T_=' '"
+    cQuery += " LEFT JOIN "+RetSQLName("DA1")+" DA1 ON DA1_FILIAL=AAN_FILIAL AND DA1_CODTAB=AAM_XCODTA AND DA1_CODPRO=Z07_CODPRO AND DA1.D_E_L_E_T_=' '"
     cQuery += " INNER JOIN "+RetSQLName("SB1")+ " B1 ON B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD=Z07_CODPRO AND B1.D_E_L_E_T_=' '"
     cQuery += " WHERE Z07_FILIAL='"+xFilial("Z07")+"' AND Z07_CHAPA='"+cPatr+"' AND Z07.D_E_L_E_T_=' '"
     
@@ -304,15 +317,17 @@ If !Empty(cPatr)
                     TRB->Z07_SELECA,;
                     TRB->Z07_CODPRO,;
                     TRB->B1_DESC,;
-                    TRB->Z07_VLRVND,;
+                    TRB->DA1_PRCVEN,;
+                    TRB->DA1_XCONSU,;
                     .F.})
+
         cCli := TRB->Z07_CLIENT
         cLj  := TRB->Z07_LOJA
         Dbskip()
     EndDo 
 
     If len(aCols) < 1
-        Aadd(aCols,{'','','','',0,.f.})
+        Aadd(aCols,{'','','','',0,0,.f.})
     EndIf 
 
     oList1:SetArray(aCols)
@@ -320,7 +335,8 @@ If !Empty(cPatr)
                         aCols[oList1:nAt,02],;
                         aCols[oList1:nAt,03],; 
                         aCols[oList1:nAt,04],;
-                        Transform(aCols[oList1:nAt,05],"@E 999,999.99")}}
+                        Transform(aCols[oList1:nAt,05],"@E 999,999.99"),;
+                        Transform(aCols[oList1:nAt,06],"@E 999,999.99")}} 
 EndIf 
 
 If !Empty(cCli)
