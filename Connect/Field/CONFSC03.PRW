@@ -42,14 +42,14 @@ oDlg1      := MSDialog():New( 092,232,479,932,"Preparar Ativo para contrato",,,.
     oGrp1      := TGroup():New( 004,012,164,332,"Ativo",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
     
         oSay1      := TSay():New( 020,092,{||"Código do Ativo"},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,040,008)
-        oGet1      := TGet():New( 020,152,{|u| If(pcount()>0,cAtivo:=u,cAtivo)},oGrp1,060,008,'',{|| xatuatv(1)},CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"SN1","",,)
+        oGet1      := TGet():New( 020,152,{|u| If(pcount()>0,cAtivo:=u,cAtivo)},oGrp1,060,008,'',{|| xatuatv(1)},CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"SN1X","",,)
         
-        oSay2      := TSay():New( 044,092,{||"Cliente"},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
-        oGet2      := TGet():New( 044,152,{|u| If(pcount()>0,cCodCli:=u,cCodCli)},oGrp1,060,008,'',{|| xatuatv(2)},CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"SA1","",,)
-        oGet3      := TGet():New( 044,224,{|u| If(pcount()>0,cLojCli:=u,cLojCli)},oGrp1,028,008,'',{|| xatuatv(2)},CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"","",,)
-    
-        oSay3      := TSay():New( 068,092,{||"Contrato"},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
-        oGet4      := TGet():New( 068,152,{|u| If(pcount()>0,cContrt:=u,cContrt)},oGrp1,060,008,'',,CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"AAM","",,)
+        oSay3      := TSay():New( 044,092,{||"Contrato"},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
+        oGet4      := TGet():New( 044,152,{|u| If(pcount()>0,cContrt:=u,cContrt)},oGrp1,060,008,'',{|| xatuatv(3)},CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"AAM","",,)
+        
+        oSay2      := TSay():New( 068,092,{||"Cliente"},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
+        oGet2      := TGet():New( 068,152,{|u| If(pcount()>0,cCodCli:=u,cCodCli)},oGrp1,060,008,'',{|| xatuatv(2)},CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"SA1","",,)
+        oGet3      := TGet():New( 068,224,{|u| If(pcount()>0,cLojCli:=u,cLojCli)},oGrp1,028,008,'',{|| xatuatv(2)},CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"","",,)
         
         oSay4      := TSay():New( 096,024,{||"Informações Ativo"},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,062,008)
         oSay5      := TSay():New( 096,092,{||""},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,252,008)
@@ -99,9 +99,11 @@ Return
 /*/
 Static Function xatuatv(nTip)
 
-Local aArea :=  GetArea()
+Local aArea  :=  GetArea()
+Local cQuery := ""
 
 If nTip == 1
+
     oSay5:settext("")
 
     DbSelectArea("SN1")
@@ -129,7 +131,40 @@ ElseIf nTip == 2
     If DbSeek(xFilial("SA1")+cCodCli+cLojCli)
         oSay7:settext(Alltrim(SA1->A1_NOME)+' / '+Alltrim(SA1->A1_NREDUZ))
         oSay9:settext(Alltrim(SA1->A1_END)+' - '+Alltrim(SA1->A1_BAIRRO)+' - '+Alltrim(SA1->A1_MUN)+' - '+SA1->A1_EST)
+        if len(Alltrim(SA1->A1_END)+' - '+Alltrim(SA1->A1_BAIRRO)+' - '+Alltrim(SA1->A1_MUN)+' - '+SA1->A1_EST) > 75
+            oSay10:settext(SubStr(Alltrim(SA1->A1_END)+' - '+Alltrim(SA1->A1_BAIRRO)+' - '+Alltrim(SA1->A1_MUN)+' - '+SA1->A1_EST,75))
+        endif
     EndIf 
+    
+elseif nTip == 3
+    
+    cQuery := " "
+    cQuery += " SELECT DISTINCT AAM_CODCLI,AAM_LOJA   " 
+    cQuery += " FROM   " + RetSQLName("AAN") + " AAN   " 
+    cQuery += " INNER JOIN " + RetSQLName("AAM") + " AAM ON AAM_CONTRT = AAN_CONTRT   " 
+    cQuery += " WHERE  AAN_CONTRT = '" + cContrt + "'   " 
+    cQuery += "        AND AAN.D_E_L_E_T_ = ' '   " 
+    cQuery += "        AND AAM.D_E_L_E_T_ = ' '   " 
+
+	If Select("TRB") > 0
+		dbSelectArea("TRB")
+		dbCloseArea()
+	EndIf
+
+	cQuery := ChangeQuery(cQuery)
+
+	DbUseArea(.T.,"TOPCONN",TcGenQry(,,cQuery),'TRB',.F.,.T.)
+
+	while !EOF()
+
+        cCodCli := TRB->AAM_CODCLI
+        cLojCli := TRB->AAM_LOJA
+
+		DBSKIP()
+	end
+
+    oGet2:disable()
+    oGet3:disable()
     
 EndIf 
 
