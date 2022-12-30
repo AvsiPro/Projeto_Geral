@@ -8,7 +8,7 @@
     @since 27/12/2022
     @version 1
     /*/
-User Function CONEXEC020()
+User Function CONESA2()
 
 	LOCAL oRestClient  := FWRest():New("https://brasilapi.com.br/api")
 	LOCAL oJson        := JsonObject():New()
