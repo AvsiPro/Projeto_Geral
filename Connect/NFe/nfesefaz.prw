@@ -2393,11 +2393,7 @@ If cTipo == "1"
 							endif
 						ElseIf !Empty(SF4->F4_FORMULA) .and. ( cMVNFEMSF4 == "C" .or. cMVNFEMSF4 == "F" )
 							cRetForm := Formula(SF4->F4_FORMULA)
-							//Exclusivo Robsol
-							If !Empty(SF4->F4_XFORMU2)
-								cRetForm += Alltrim(cRetForm) + ' ' + Formula(SF4->F4_XFORMU2)
-							EndIf 
-
+							
 							if cRetForm <> NIL .And. ( ( cMVNFEMSF4=="C" .And. !AllTrim(cRetForm) $ cMensCli ) .Or. (cMVNFEMSF4=="F" .And. !AllTrim(cRetForm)$cMensFis) )
 								If cMVNFEMSF4=="C"
 									If Len(cMensCli) > 0 .And. SubStr(cMensCli, Len(cMensCli), 1) <> " "
@@ -4759,11 +4755,7 @@ Else
 						endif
 					ElseIf !Empty(SF4->F4_FORMULA) .and. ( cMVNFEMSF4 == "C" .or. cMVNFEMSF4 == "F" )
 						cRetForm := Formula(SF4->F4_FORMULA)
-						//Exclusivo Robsol
-							If !Empty(SF4->F4_XFORMU2)
-								cRetForm += Alltrim(cRetForm) + ' ' + Formula(SF4->F4_XFORMU2)
-							EndIf 
-
+						
 						if cRetForm <> NIL .And. ( ( cMVNFEMSF4 == "C" .And. !AllTrim(cRetForm) $ cMensCli ) .Or. (cMVNFEMSF4 == "F" .And. !AllTrim(cRetForm)$cMensFis) )
 							If cMVNFEMSF4=="C"
 								If Len(cMensCli) > 0 .And. SubStr(cMensCli, Len(cMensCli), 1) <> " "

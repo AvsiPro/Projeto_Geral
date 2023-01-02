@@ -61,21 +61,21 @@ cNomeArq := 'c:\temp\_avisos\'+dtos(ddatabase)+'.txt'
 
 Aadd(aArquivos,{"\system\LGMID.png",'Content-ID: <ID_LGMID,png>'})
 
-// Validação para 05 dias 
+// Validação para 03 dias 
 
 IF DOW(dDataBase) == 2         
-	dDtFour := datavalida(dDataBase+5,.T.) //Condição para Segunda                         
+	dDtFour := datavalida(dDataBase+3,.T.) //Condição para Segunda                         
 ELSEIF DOW(dDataBase) == 3
-	dDtFour := datavalida(dDataBase+5,.T.)+1 //Condição para Terça
+	dDtFour := datavalida(dDataBase+3,.T.)+1 //Condição para Terça
 ELSEIF DOW(dDataBase) == 4
-	dDtFour := datavalida(dDataBase+5,.T.)+2 //Condição para Quarta
+	dDtFour := datavalida(dDataBase+3,.T.)+2 //Condição para Quarta
 ELSEIF DOW(dDataBase) == 5
-	dDtFour := datavalida(dDataBase+5,.T.)+2 //Condição para Quinta	
+	dDtFour := datavalida(dDataBase+3,.T.)+2 //Condição para Quinta	
 ELSE
-	dDtFour := datavalida(dDataBase+5,.T.)+2
+	dDtFour := datavalida(dDataBase+3,.T.)+2
 ENDIF
 
-cQuery := "SELECT TOP 1 E1_FILIAL,E1_PREFIXO,E1_NUM,E1_TIPO,E1_NATUREZ,ED_DESCRIC,"
+cQuery := "SELECT E1_FILIAL,E1_PREFIXO,E1_NUM,E1_TIPO,E1_NATUREZ,ED_DESCRIC,"
 cQuery += " E1_CLIENTE,E1_LOJA,A1_NOME,E1_VENCREA,E1_VALOR,A1_EMAIL,E1_PARCELA,A1_CGC,"
 cQuery += " E1_PORTADO,E1.R_E_C_N_O_ AS REGE1"
 cQuery += " FROM "+RetSQLName("SE1")+" E1"
@@ -103,8 +103,8 @@ Fwrite(nArq, '|                       Avisos de Vencimentos transmitidos em '+cv
 FWrite(nArq, '*************************************************************************************************************'+CRLF)
                
 While !EOF()
-	//cDestino 	:=	Alltrim(TRB->A1_EMAIL)
-    cDestino 	:=	"alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br" //;adm@robsol.com.br;cnoculos@hotmail.com" //Alltrim(TRB->A1_EMAIL)    
+	cDestino 	:=	Alltrim(TRB->A1_EMAIL)
+    //cDestino 	:=	"alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br" //;adm@robsol.com.br;cnoculos@hotmail.com" //Alltrim(TRB->A1_EMAIL)    
 	MV_PAR01	:=	TRB->E1_PREFIXO
 	MV_PAR02	:=	TRB->E1_NUM
 	MV_PAR03	:=	TRB->E1_PARCELA
