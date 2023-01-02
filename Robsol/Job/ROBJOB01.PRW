@@ -213,7 +213,7 @@ ELSE
 	dDtOne := datavalida(dDataBase-3,.F.)
 ENDIF
  
-cQuery := "SELECT TOP 1 E1_PREFIXO,E1_NUM,E1_TIPO,E1_EMISSAO,E1_NATUREZ,ED_DESCRIC,"
+cQuery := "SELECT E1_PREFIXO,E1_NUM,E1_TIPO,E1_EMISSAO,E1_NATUREZ,ED_DESCRIC,"
 cQuery += " E1_PARCELA,E1_CLIENTE,E1_LOJA,A1_NOME,E1_VENCREA,E1_VALOR,A1_EMAIL,"
 cQuery += " E1_VALJUR,E1.R_E_C_N_O_ AS REGE1" 
 cQuery += " FROM "+RetSQLName("SE1")+" E1"
@@ -252,8 +252,8 @@ While !EOF()
 				cBody := Cobranca1()
 				U_robmail(cRemete,cDestino,cSubject,cBody,aArquivos,.T.)
 				aTitCli := {}		          
-				//cDestino := Alltrim(TRB->A1_EMAIL)                           
-				cDestino := "alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br" //Alltrim(TRB->A1_EMAIL) //
+				cDestino := Alltrim(TRB->A1_EMAIL)                           
+				//cDestino := "alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br" //Alltrim(TRB->A1_EMAIL) //
 				nCont++
 			Else
 				If aScan(aTitCli,{|x| x[1] = TRB->E1_NUM}) == 0
@@ -263,8 +263,8 @@ While !EOF()
 							TRB->E1_PREFIXO,TRB->E1_CLIENTE+TRB->E1_LOJA})	
 
 				EndIf
-				//cDestino := Alltrim(TRB->A1_EMAIL)                           
-				cDestino := "alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br" //Alltrim(TRB->A1_EMAIL) //
+				cDestino := Alltrim(TRB->A1_EMAIL)                           
+				//cDestino := "alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br" //Alltrim(TRB->A1_EMAIL) //
 			EndIf
 		Else
 			If aScan(aTitCli,{|x| x[1] = TRB->E1_NUM}) == 0
@@ -273,8 +273,8 @@ While !EOF()
 							Transform(TRB->E1_VALOR+(TRB->E1_VALJUR*(DDATABASE-STOD(TRB->E1_VENCREA))),"@E 999,999,999.99"),;
 							TRB->E1_PREFIXO,TRB->E1_CLIENTE+TRB->E1_LOJA})	
 			EndIf
-			//cDestino := Alltrim(TRB->A1_EMAIL)                           
-			cDestino := "alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br" //Alltrim(TRB->A1_EMAIL) //
+			cDestino := Alltrim(TRB->A1_EMAIL)                           
+			//cDestino := "alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br" //Alltrim(TRB->A1_EMAIL) //
 		EndIf
         
 		nPsi := Ascan(aCumula,{|x| Alltrim(x[1]) == Alltrim(TRB->A1_NOME)})
@@ -323,7 +323,7 @@ ELSE
 ENDIF
 
 
-cQuery := "SELECT TOP 1 E1_PREFIXO,E1_NUM,E1_TIPO,E1_EMISSAO,E1_NATUREZ,ED_DESCRIC,"
+cQuery := "SELECT E1_PREFIXO,E1_NUM,E1_TIPO,E1_EMISSAO,E1_NATUREZ,ED_DESCRIC,"
 cQuery += " E1_PARCELA,E1_CLIENTE,E1_LOJA,A1_NOME,E1_VENCREA,E1_VALOR,A1_EMAIL,"
 cQuery += " E1_VALJUR,E1.R_E_C_N_O_ AS REGE1" 
 cQuery += " FROM "+RetSQLName("SE1")+" E1"
@@ -363,8 +363,8 @@ While !EOF()
 				U_robmail(cRemete,cDestino,cSubject,cBody,aArquivos,.T.)
 				aTitCli := {}		                                     
 				
-                //cDestino := Alltrim(TRB->A1_EMAIL) 
-				cDestino := "alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br"
+                cDestino := Alltrim(TRB->A1_EMAIL) 
+				//cDestino := "alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br"
                 nCont++
 			Else
 				If aScan(aTitCli,{|x| x[1] = TRB->E1_NUM}) == 0
@@ -374,8 +374,8 @@ While !EOF()
 							TRB->E1_PREFIXO,TRB->E1_CLIENTE+TRB->E1_LOJA})	
 
 				EndIf
-				cDestino := "alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br"
-                //cDestino := Alltrim(TRB->A1_EMAIL)
+				//cDestino := "alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br"
+                cDestino := Alltrim(TRB->A1_EMAIL)
 			EndIf
 		Else
 			If aScan(aTitCli,{|x| x[1] = TRB->E1_NUM}) == 0
@@ -384,8 +384,8 @@ While !EOF()
 							Transform(TRB->E1_VALOR+(TRB->E1_VALJUR*(DDATABASE-STOD(TRB->E1_VENCREA))),"@E 999,999,999.99"),;
 							TRB->E1_PREFIXO,TRB->E1_CLIENTE+TRB->E1_LOJA})	
 			EndIf
-			cDestino := "alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br"
-            //cDestino := Alltrim(TRB->A1_EMAIL)
+			//cDestino := "alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br"
+            cDestino := Alltrim(TRB->A1_EMAIL)
 		EndIf	
 				
 				nPsi := Ascan(aCumula,{|x| Alltrim(x[1]) == Alltrim(TRB->A1_NOME)})
@@ -433,7 +433,7 @@ ELSE //DOW(dDataBase) == 6
 	dDtTree := datavalida(dDataBase-7,.F.)-2 //Condição para Sexta
 ENDIF
 
-cQuery := "SELECT TOP 1 E1_PREFIXO,E1_NUM,E1_TIPO,E1_EMISSAO,E1_NATUREZ,ED_DESCRIC,"
+cQuery := "SELECT E1_PREFIXO,E1_NUM,E1_TIPO,E1_EMISSAO,E1_NATUREZ,ED_DESCRIC,"
 cQuery += " E1_PARCELA,E1_CLIENTE,E1_LOJA,A1_NOME,E1_VENCREA,E1_VALOR,A1_EMAIL,"
 cQuery += " E1_VALJUR,E1.R_E_C_N_O_ AS REGE1" 
 cQuery += " FROM "+RetSQLName("SE1")+" E1"
@@ -466,8 +466,8 @@ While !EOF()
 				cBody := Cobranca3()
 				U_robmail(cRemete,cDestino,cSubject,cBody,aArquivos,.T.)
 				aTitCli := {}		                                     
-				//cDestino := Alltrim(TRB->A1_EMAIL) //
-                cDestino := "alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br"
+				cDestino := Alltrim(TRB->A1_EMAIL) //
+                //cDestino := "alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br"
 				nCont++
 			Else
 				If aScan(aTitCli,{|x| x[1] = TRB->E1_NUM}) == 0
@@ -477,8 +477,8 @@ While !EOF()
 							TRB->E1_PREFIXO,TRB->E1_CLIENTE+TRB->E1_LOJA})	
 
 				EndIf
-				//cDestino := Alltrim(TRB->A1_EMAIL) //
-                cDestino := "alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br"
+				cDestino := Alltrim(TRB->A1_EMAIL) //
+                //cDestino := "alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br"
 			EndIf
 		Else
 		    If aScan(aTitCli,{|x| x[1] = TRB->E1_NUM}) == 0
@@ -488,8 +488,8 @@ While !EOF()
 							TRB->E1_PREFIXO,TRB->E1_CLIENTE+TRB->E1_LOJA})	
 			EndIf
 			
-            //cDestino := Alltrim(TRB->A1_EMAIL) //
-            cDestino := "alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br"
+            cDestino := Alltrim(TRB->A1_EMAIL) //
+            //cDestino := "alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br"
 		EndIf
         
 		nPsi := Ascan(aCumula,{|x| Alltrim(x[1]) == Alltrim(TRB->A1_NOME)})
