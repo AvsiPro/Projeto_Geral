@@ -1811,7 +1811,7 @@ For nZ := 1 To nLenDet
 	
 	// Tratamento para quebrar os digitos dos valores
 	aAux := {}
-	AADD(aAux, AllTrim(TransForm(nQtd,TM(nQtd,15,4))))
+	AADD(aAux, AllTrim(TransForm(nQtd,TM(nQtd,15,2))))
 	AADD(aAux, AllTrim(TransForm(nVUnit,TM(nVUnit,TamSX3("D2_PRCVEN")[1],TamSX3("D2_PRCVEN")[2]))))
 	AADD(aAux, AllTrim(TransForm(nVTotal,TM(nVTotal,TamSX3("D2_TOTAL")[1],TamSX3("D2_TOTAL")[2]))))
 	AADD(aAux, AllTrim(TransForm(nBaseICM,TM(nBaseICM,TamSX3("D2_BASEICM")[1],TamSX3("D2_BASEICM")[2]))))
@@ -1935,7 +1935,7 @@ For nZ := 1 To nLenDet
 	    nVUnitTrib	:= Val(oDet[nX]:_Prod:_vUnTrib:TEXT)
 
 		aAuxCom := {}
-		AADD(aAuxCom, AllTrim(TransForm(nQtdTrib,TM(nQtdTrib,15,4) )))
+		AADD(aAuxCom, AllTrim(TransForm(nQtdTrib,TM(nQtdTrib,15,2) )))
 		AADD(aAuxCom, AllTrim(TransForm(nVUnitTrib,TM(nVUnitTrib,TamSX3("D2_PRCVEN")[1],TamSX3("D2_PRCVEN")[2]))))
 
 		If lUf_MG
@@ -5082,7 +5082,7 @@ aadd(aUF,{"EX","99"})
 
 		// Tratamento para quebrar os digitos dos valores
 		aAux := {}
-		AADD(aAux, AllTrim(TransForm(nQtd,TM(nQtd,15,4))))
+		AADD(aAux, AllTrim(TransForm(nQtd,TM(nQtd,15,2))))
 		AADD(aAux, AllTrim(TransForm(nVUnit,TM(nVUnit,TamSX3("D2_PRCVEN")[1],TamSX3("D2_PRCVEN")[2]))))
 		AADD(aAux, AllTrim(TransForm(nVTotal,TM(nVTotal,TamSX3("D2_TOTAL")[1],TamSX3("D2_TOTAL")[2]))))
 
