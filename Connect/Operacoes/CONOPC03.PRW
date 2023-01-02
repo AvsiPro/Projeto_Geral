@@ -30,10 +30,13 @@
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
 ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß*/
 
-User Function CONOPC03
+User Function CONOPC03(cXPatr)
 
 Local nOpc      :=  0
 Local nX 
+
+DEFAULT cXPatr := space(TamSX3("AA3_CBASE")[1])
+
 Private aCols   :=  {}
 Private oDlg1,oGrp1,oSay1,oSay2,oSay3,oSay4,oSay5,oSay6
 Private oSay7,oSay8,oGet1,oGet2,oGet4,oGrp3,oBtn1,oBtn2
@@ -47,7 +50,7 @@ IF Select("SM0") == 0
     RPCSetEnv("01","0101")
 ENDIF
 
-cPatr   := space(TamSX3("AA3_CBASE")[1])
+cPatr   := cXPatr
 cCli    := space(TamSX3("A1_COD")[1])
 cLj     := space(TamSX3("A1_LOJA")[1])
 cLocIn  := space(TamSX3("NNR_CODIGO")[1])
@@ -265,7 +268,6 @@ If !Empty(cCli)
 ENDIF
 
 oDlg1:refresh()
-
 
 Return
 

@@ -16,7 +16,7 @@
 北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北
 哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌
 /*/
-User Function CONFSC03()
+User Function CONFSC03(cXContrato)
 
 Local aArea :=  GetArea()
 Local nOpc  :=  0
@@ -26,10 +26,12 @@ Local cCham :=  ""
 SetPrvt("oDlg1","oGrp1","oSay1","oSay2","oSay3","oSay4","oSay5","oSay6","oSay7","oSay8","oSay9","oSay10")
 SetPrvt("oGet1","oGet2","oGet3","oGet4","oBtn1","oBtn2")
 
+DEFAULT cXContrato := Space(20)
+
 Private cAtivo  :=  space(10)
 Private cCodCli :=  space(9)
 Private cLojCli :=  space(4)
-Private cContrt :=  space(20)
+Private cContrt :=  cXContrato
 Private cCodPro :=  ""
 
 If Empty(FunName())
@@ -75,6 +77,11 @@ If nOpc == 1
         
         If !Empty(cCham)
             MsgAlert("Gerado o chamado t閏nico "+cCham+" para atender esta solicita玢o de prepara玢o da maquina.")
+
+            RecLock("Z15", .F.)
+                Z15->Z15_STATUS := "B"
+            MsUnlock()
+
         EndIf 
     EndIf 
 
@@ -166,6 +173,8 @@ elseif nTip == 3
     oGet2:disable()
     oGet3:disable()
     
+    xatuatv(2)
+
 EndIf 
 
 RestArea(aArea)
@@ -292,7 +301,6 @@ aAdd(aItem,{ "AB2_NUMSER"   ,cAtivo             ,Nil})
 aAdd(aItem,{ "AB2_CODPRB"   ,'000002'           ,Nil}) //AAG->AAG_CODPRB
 aAdd(aItem,{ "AB2_XCONTR"   ,cContrt            ,Nil})
 
-    
 aAdd(aItens,aItem)
 
 TECA300(,,aCabec,aItens,3)
