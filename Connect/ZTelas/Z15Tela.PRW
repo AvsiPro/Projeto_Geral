@@ -23,8 +23,8 @@ USER FUNCTION Z15Tela()
     oBrowse:SetDescription(cTitulo)
      
     //Legendas
-    oBrowse:AddLegend( "Z15->Z15_STATU = 'A'", "GREEN", "Ativo" )
-    oBrowse:AddLegend( "Z15->Z15_STATU = 'B'", "RED",   "Encerrado" )
+    oBrowse:AddLegend( "Z15->Z15_STATUS = 'A'", "GREEN", "Ativo" )
+    oBrowse:AddLegend( "Z15->Z15_STATUS = 'B'", "RED",   "Encerrado" )
      
     //Filtrando
     //oBrowse:SetFilterDefault("Z15->Z15_CODIGO >= '000000' .And. Z15->Z15_CODIGO <= 'ZZZZZZ'")
@@ -35,21 +35,20 @@ USER FUNCTION Z15Tela()
     SetFunName(cFunBkp)
     RestArea(aArea)
 RETURN Nil
-
  
 STATIC FUNCTION MenuDef()
 
     LOCAL aRot    :=    {}
      
     //Adicionando opções
-    ADD OPTION aRot TITLE 'Visualizar' ACTION 'VIEWDEF.Z15Tela' OPERATION MODEL_OPERATION_VIEW   ACCESS 0 //OPERATION 1
-    ADD OPTION aRot TITLE 'Legenda'    ACTION 'U_Z15Leg'        OPERATION 6                      ACCESS 0 //OPERATION X
-    ADD OPTION aRot TITLE 'Incluir'    ACTION 'VIEWDEF.Z15Tela' OPERATION MODEL_OPERATION_INSERT ACCESS 0 //OPERATION 3
-    ADD OPTION aRot TITLE 'Alterar'    ACTION 'VIEWDEF.Z15Tela' OPERATION MODEL_OPERATION_UPDATE ACCESS 0 //OPERATION 4
-    ADD OPTION aRot TITLE 'Excluir'    ACTION 'VIEWDEF.Z15Tela' OPERATION MODEL_OPERATION_DELETE ACCESS 0 //OPERATION 5
+    ADD OPTION aRot TITLE 'Visualizar'        ACTION 'VIEWDEF.Z15Tela' OPERATION MODEL_OPERATION_VIEW   ACCESS 0 //OPERATION 1
+    ADD OPTION aRot TITLE 'Legenda'           ACTION 'U_Z15Leg'        OPERATION 6                      ACCESS 0 //OPERATION X
+    ADD OPTION aRot TITLE 'Incluir'           ACTION 'VIEWDEF.Z15Tela' OPERATION MODEL_OPERATION_INSERT ACCESS 0 //OPERATION 3
+    ADD OPTION aRot TITLE 'Alterar'           ACTION 'VIEWDEF.Z15Tela' OPERATION MODEL_OPERATION_UPDATE ACCESS 0 //OPERATION 4
+    ADD OPTION aRot TITLE 'Excluir'           ACTION 'VIEWDEF.Z15Tela' OPERATION MODEL_OPERATION_DELETE ACCESS 0 //OPERATION 5
+    ADD OPTION aRot TITLE 'Atribuir Ativo'    ACTION 'U_Z15Chama()'    OPERATION 7                      ACCESS 0 //OPERATION 7
  
 RETURN aRot
-
  
 STATIC FUNCTION ModelDef()
 
@@ -125,7 +124,6 @@ STATIC FUNCTION ViewDef()
     NEXT
     */
 RETURN oView
-
  
 USER FUNCTION Z15Leg()
 
@@ -137,3 +135,7 @@ USER FUNCTION Z15Leg()
      
     BrwLegenda(cTitulo, "Status", aLegenda)
 RETURN
+
+User Function Z15Chama()
+    U_CONFSC03(Z15->Z15_CONTRA)
+Return 
