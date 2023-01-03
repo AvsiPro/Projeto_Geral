@@ -15,10 +15,6 @@ User Function ROBWS05()
         RPCSetEnv("01","0103")
     EndIf
 
-    SetPrvt("oDlg1","oGrp1","oGrp2","oList","oMGet1","oBtn1")
-
-    cRastro  := ''
-    aList    := {}
     aPergs   := {}
     cPedDe   := Space(TamSX3('C5_NUM')[01])
     cPedAt   := Space(TamSX3('C5_NUM')[01])
@@ -35,65 +31,74 @@ User Function ROBWS05()
     aAdd(aPergs, {1, "Emissão Até",dDataAt, "", ".T.", ""   , ".T.", 80,.T.})
     
     If ParamBox(aPergs, "Informe os parâmetros")
-
-        cQuery := " SELECT * FROM " + RetSQLName("SC5") + "  " 
-        cQuery += " WHERE D_E_L_E_T_=''  " 
-        cQuery += " AND C5_XETIQUE != ''  " 
-        cQuery += " AND C5_NUM BETWEEN '"+mv_par01+"' AND '"+mv_par02+"'  " 
-        cQuery += " AND C5_NOTA BETWEEN '"+mv_par03+"' AND '"+mv_par04+"'  
-        cQuery += " AND C5_EMISSAO BETWEEN '"+DToS(mv_par05)+"' AND '"+DToS(mv_par06)+"'  " 
-
-        cAliasTMP := GetNextAlias()
-        MPSysOpenQuery(cQuery, cAliasTMP)
-
-        While (cAliasTMP)->(!EoF())
-            Aadd(aList, {;
-                Alltrim((cAliasTMP)->C5_FILIAL),;
-                Alltrim((cAliasTMP)->C5_NUM),;
-                DToC(SToD((cAliasTMP)->C5_EMISSAO)),;
-                Alltrim((cAliasTMP)->C5_XETIQUE),;
-                Alltrim((cAliasTMP)->C5_CLIENTE),;
-                Alltrim(Posicione("SA1",1,xFilial("SA1")+(cAliasTMP)->C5_CLIENTE+(cAliasTMP)->C5_LOJACLI,"A1_NOME")),;
-                Alltrim((cAliasTMP)->C5_VEND1),;
-                Alltrim(Posicione("SA3",1,xFilial("SA3")+(cAliasTMP)->C5_VEND1,"A3_NOME")),;
-                Alltrim((cAliasTMP)->C5_CONDPAG),;
-                Alltrim((cAliasTMP)->C5_NOTA),;
-                Alltrim((cAliasTMP)->C5_SERIE);
-            })
-
-            (cAliasTMP) ->(DbSkip())
-        EndDo
-
-        If Len(aList) > 0
-            oDlg1  := MSDialog():New( 092,217,732,1413,"Rastro",,,.F.,,,,,,.T.,,,.T. )
-            oGrp1  := TGroup():New( 008,008,300,380,"Documentos",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
-            oGrp2  := TGroup():New( 008,388,280,584,"Rastro",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
-            oMGet1 := TMultiGet():New( 020,396,{|u| Alltrim(cRastro) },oGrp2,176,252,,,CLR_BLACK,CLR_WHITE,,.T.,"",,,.F.,.F.,.T.,,,.F.,,  )
-            oBtn1  := TButton():New( 284,546,"Gravar",oDlg1,{|| fGravaRastro(aList[oList:nAt,01],aList[oList:nAt,02])},037,016,,,,.T.,,"",,,,.F. )
-
-            oList := TCBrowse():New(020,016,352,272,,{'Filial','Documento','Emissão','Etiqueta','Cliente','Nome Cliente','Vendedor','Nome Vendedor','Cond Pgto','Nota','Serie'},;
-            {40,40,40,40,40,60,40,60,40,40,40},oGrp1,,,,{|| fGetRastro(aList[oList:nAt,04])},{|| },,,,,,,.F.,,.T.,,.F.,,,)
-        
-            oList:SetArray(aList)
-            oList:bLine := {||{;
-                aList[oList:nAt,01],;
-                aList[oList:nAt,02],;
-                aList[oList:nAt,03],;
-                aList[oList:nAt,04],;
-                aList[oList:nAt,05],;
-                aList[oList:nAt,06],;
-                aList[oList:nAt,07],;
-                aList[oList:nAt,08],;
-                aList[oList:nAt,09],;
-                aList[oList:nAt,10],;
-                aList[oList:nAt,11]}}
-
-            oDlg1:Activate(,,,.T.)
-        EndIf
+        Processa({|| fQueryPro()},"Aguarde, efetuando rastreamento")
     EndIf
 
 Return
 
+
+Static Function fQueryPro()
+
+    SetPrvt("oDlg1","oGrp1","oGrp2","oList","oMGet1","oBtn1","oBtn2","oBtn3")
+
+    cRastro  := ''
+    aList    := {}
+
+    cQuery := " SELECT * FROM " + RetSQLName("SC5") + "  " 
+    cQuery += " WHERE D_E_L_E_T_=''  " 
+    cQuery += " AND C5_XETIQUE != ''  " 
+    cQuery += " AND C5_NUM BETWEEN '"+mv_par01+"' AND '"+mv_par02+"'  " 
+    cQuery += " AND C5_NOTA BETWEEN '"+mv_par03+"' AND '"+mv_par04+"'  
+    cQuery += " AND C5_EMISSAO BETWEEN '"+DToS(mv_par05)+"' AND '"+DToS(mv_par06)+"'  " 
+
+    cAliasTMP := GetNextAlias()
+    MPSysOpenQuery(cQuery, cAliasTMP)
+
+    While (cAliasTMP)->(!EoF())
+        Aadd(aList, {;
+            Alltrim((cAliasTMP)->C5_FILIAL),;
+            Alltrim((cAliasTMP)->C5_NOTA)+'-'+Alltrim((cAliasTMP)->C5_SERIE),;
+            Alltrim((cAliasTMP)->C5_NUM),;
+            DToC(SToD((cAliasTMP)->C5_EMISSAO)),;
+            Alltrim((cAliasTMP)->C5_XETIQUE),;
+            Alltrim((cAliasTMP)->C5_CLIENTE),;
+            Alltrim(Posicione("SA1",1,xFilial("SA1")+(cAliasTMP)->C5_CLIENTE+(cAliasTMP)->C5_LOJACLI,"A1_NOME")),;
+            fGetRastro(Alltrim((cAliasTMP)->C5_XETIQUE),.F.),;
+            Alltrim(Posicione("SA3",1,xFilial("SA3")+(cAliasTMP)->C5_VEND1,"A3_NOME")),;
+            Alltrim((cAliasTMP)->C5_CONDPAG);
+        })
+        (cAliasTMP) ->(DbSkip())
+    EndDo
+
+    If Len(aList) > 0
+        oDlg1  := MSDialog():New( 092,217,732,1413,"Rastreio de Etiquetas",,,.F.,,,,,,.T.,,,.T. )
+        oGrp1  := TGroup():New( 008,008,300,380,"Documentos",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
+        oGrp2  := TGroup():New( 008,388,280,584,"Rastreio",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
+        oMGet1 := TMultiGet():New( 020,396,{|u| Alltrim(cRastro) },oGrp2,176,252,,,CLR_BLACK,CLR_WHITE,,.T.,"",,,.F.,.F.,.T.,,,.F.,,  )
+        oBtn1  := TButton():New( 284,450,"Gerar Relatório",oDlg1,{|| Processa({|| GeraPlan(aList)},"Aguarde, gerando relatório")},042,016,,,,.T.,,"",,,,.F. )
+        oBtn2  := TButton():New( 284,500,"Fechar",oDlg1,{|| oDlg1:End()},037,016,,,,.T.,,"",,,,.F. )
+        oBtn3  := TButton():New( 284,546,"Gravar",oDlg1,{|| fGravaRastro(aList[oList:nAt,01],aList[oList:nAt,02],aList[oList:nAt,08])},037,016,,,,.T.,,"",,,,.F. )
+
+        oList := TCBrowse():New(020,016,352,272,,{'Filial','Nota','Pedido','Emissão','Etiqueta','Cliente','Nome Cliente','Ultimo Status','Vendedor','Cond Pgto'},;
+        {40,40,40,40,40,60,40,60,40,40,40},oGrp1,,,,{|| fGetRastro(aList[oList:nAt,05],.T.)},{|| },,,,,,,.F.,,.T.,,.F.,,,)
+    
+        oList:SetArray(aList)
+        oList:bLine := {||{;
+            aList[oList:nAt,01],;
+            aList[oList:nAt,02],;
+            aList[oList:nAt,03],;
+            aList[oList:nAt,04],;
+            aList[oList:nAt,05],;
+            aList[oList:nAt,06],;
+            aList[oList:nAt,07],;
+            aList[oList:nAt,08],;
+            aList[oList:nAt,09],;
+            aList[oList:nAt,10]}}
+
+        oDlg1:Activate(,,,.T.)
+    EndIf
+
+Return
 
 /*/{Protheus.doc} fGetRastro
     @long_description Consulta o rastro
@@ -102,12 +107,13 @@ Return
     @since 13/12/2022
     @version 1
 /*/
-Static Function fGetRastro(cEtiqueta)
+Static Function fGetRastro(cEtiqueta,lRastrAll)
 
 Local aHeader  := {}
 Local aResult  := {}
 Local aAux     := {}
 Local nX       := 0
+Local cRet     := ''
 Local oRest    := FWRest():New("https://api.correios.com.br/srorastro/")
 Local jJSON    := JsonObject():New()
    
@@ -128,36 +134,50 @@ Local jJSON    := JsonObject():New()
             aResult := aClone(aAux)
             cRastro := ''
         EndIf
+
+        If !lRastrAll
+            If Empty(cRastro)
+                If aResult[01]['unidade'] != nil
+                    cRet := Alltrim(aResult[01]['descricao'])
+                EndIf
+            Else
+                cRet := cRastro
+            EndIf
+        EndIf
         
-        For nX := 1 To Len(aResult)
-            If aResult[nX]['unidade'] != nil
-                cRastro += aResult[nX]['descricao']+CRLF+CRLF
-                cRastro += 'de: ' + aResult[nX]['unidade']['tipo']+','
-                cRastro += aResult[nX]['unidade']['endereco']['cidade'] + ' - '+ aResult[nX]['unidade']['endereco']['uf']+CRLF
-            EndIf
+        If lRastrAll
+            For nX := 1 To Len(aResult)
 
-            If aResult[nX]['unidadeDestino'] != nil
-                cRastro += 'para: ' + aResult[nX]['unidadeDestino']['tipo']+','
-                cRastro += aResult[nX]['unidadeDestino']['endereco']['cidade'] + ' - '+ aResult[nX]['unidadeDestino']['endereco']['uf']+CRLF
-            EndIf
+                If aResult[nX]['unidade'] != nil
+                    cRastro += aResult[nX]['descricao']+CRLF+CRLF
+                    cRastro += 'de: ' + aResult[nX]['unidade']['tipo']+','
+                    cRastro += aResult[nX]['unidade']['endereco']['cidade'] + ' - '+ aResult[nX]['unidade']['endereco']['uf']+CRLF
+                EndIf
 
-            If aResult[nX]['dtHrCriado'] != nil
-                cRastro += SubsTr(aResult[nX]['dtHrCriado'],9,2)+'/'
-                cRastro += SubsTr(aResult[nX]['dtHrCriado'],6,2)+'/'
-                cRastro += SubsTr(aResult[nX]['dtHrCriado'],1,4)+'  '
-                cRastro += SubsTr(aResult[nX]['dtHrCriado'],12,8)
-            EndIf
+                If aResult[nX]['unidadeDestino'] != nil
+                    cRastro += 'para: ' + aResult[nX]['unidadeDestino']['tipo']+','
+                    cRastro += aResult[nX]['unidadeDestino']['endereco']['cidade'] + ' - '+ aResult[nX]['unidadeDestino']['endereco']['uf']+CRLF
+                EndIf
 
-            If nX < Len(aResult)
-                cRastro += CRLF+CRLF+CRLF
-            EndIf
-        Next nX
+                If aResult[nX]['dtHrCriado'] != nil
+                    cRastro += SubsTr(aResult[nX]['dtHrCriado'],9,2)+'/'
+                    cRastro += SubsTr(aResult[nX]['dtHrCriado'],6,2)+'/'
+                    cRastro += SubsTr(aResult[nX]['dtHrCriado'],1,4)+'  '
+                    cRastro += SubsTr(aResult[nX]['dtHrCriado'],12,8)
+                EndIf
+
+                If nX < Len(aResult)
+                    cRastro += CRLF+CRLF+CRLF
+                EndIf
+            Next nX
+
+            cRet := cRastro
+            oMGet1:Refresh()
+            oDlg1:Refresh()
+        EndIf
     EndIf
 
-    oMGet1:Refresh()
-    oDlg1:Refresh()
-
-Return
+Return cRet
 
 
 /*/{Protheus.doc} fGeraToken
@@ -203,21 +223,76 @@ Return cToken
     @since 13/12/2022
     @version 1
 /*/
-Static Function fGravaRastro(cFilC5,cPedido)
+Static Function fGravaRastro(cFilC5,cPedido,cUltSts)
 
 Default cPedido := ''
 
-    If !Empty(cRastro)
+    If !Empty(cUltSts)
         DbSelectArea('SC5')
         SC5->(DbSetOrder(1))
 
         If SC5->(DbSeek(AvKey(cFilC5,'C5_FILIAL')+AvKey(cPedido,'C5_NUM')))
             RecLock('SC5',.F.)
-                SC5->C5_XRASTRO := cRastro
+                SC5->C5_XRASTRO := cUltSts
             SC5->(MsUnlock())
 
-            MsgInfo('Rastro gravado com sucesso!')
+            MsgInfo('Status do rastreio gravado com sucesso!')
         EndIf
     EndIf
     
+Return
+
+
+
+Static Function GeraPlan(aList)
+
+Local oExcel 	:= FWMSEXCEL():New()
+Local cDir 		:= cGetFile(, OemToAnsi("Selecione o diretório de destino"), 0, "C:\", .T., GETF_LOCALHARD+GETF_NETWORKDRIVE+GETF_RETDIRECTORY, .F., .F.) 
+Local cArqXls 	:= "rastreio_"+dtos(ddatabase)+strtran(time(),":")+".xls" 
+Local nX        := 0
+Local cTitle    := 'Rastreio_Correrios'
+
+    If Empty(cDir)
+        Return
+    EndIf
+
+    oExcel:AddworkSheet('rastreio') 
+    oExcel:AddTable('rastreio',cTitle)
+    oExcel:AddColumn('rastreio',cTitle,"Filial",1,1)
+    oExcel:AddColumn('rastreio',cTitle,"Nota",1,1) 
+    oExcel:AddColumn('rastreio',cTitle,"Pedido",1,1) 
+    oExcel:AddColumn('rastreio',cTitle,"Emissão",1,1) 
+    oExcel:AddColumn('rastreio',cTitle,"Etiqueta",1,1) 
+    oExcel:AddColumn('rastreio',cTitle,"Cliente",1,1)
+    oExcel:AddColumn('rastreio',cTitle,"Nome Cliente",1,1)
+    oExcel:AddColumn('rastreio',cTitle,"Ultimo Status",1,1)
+    oExcel:AddColumn('rastreio',cTitle,"Vendedor",1,1)
+    oExcel:AddColumn('rastreio',cTitle,"Cond Pgto",1,1)
+
+    For nX := 1 to len(aList) 
+            oExcel:AddRow('rastreio',cTitle,{;
+                aList[nX,01],;
+                aList[nX,02],;
+                aList[nX,03],; 
+                aList[nX,04],;
+                aList[nX,05],;
+                aList[nX,06],;
+                aList[nX,07],;
+                aList[nX,08],;
+                aList[nX,09],;
+                aList[nX,10];
+            }) 
+    Next nX
+
+    oExcel:Activate()
+    oExcel:GetXMLFile(cDir+cArqXls)
+
+    oExcelApp := MsExcel():New()
+    oExcelApp:Destroy()
+
+    If File(cDir+cArqXls)
+        MsgInfo('Relatório gerado com sucesso!<br><b>'+cDir+cArqXls+'</b>')
+    EndIf
+
+	
 Return
