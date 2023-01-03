@@ -12,6 +12,7 @@ import { PoStorageModule } from '@po-ui/ng-storage';
 import { ClientesComponent } from './cadastrais/clientes/clientes.component';
 import { ProdutosComponent } from './cadastrais/produtos/produtos.component';
 import { TitulosComponent } from './financial/titulos/titulos.component';
+import { FaturamentoComponent } from './financial/faturamento/faturamento.component';
 import { ComissoesComponent } from './gerenciais/comissoes/comissoes.component';
 import { NotasComponent } from './vendas/notas/notas.component';
 import { PedidosComponent } from './vendas/pedidos/pedidos.component';
@@ -46,6 +47,7 @@ import {trocasenha} from './trocasenha/trocasenha.component'
     ClientesComponent,
     ProdutosComponent,
     TitulosComponent,
+    FaturamentoComponent,
     ComissoesComponent,
     NotasComponent,
     PedidosComponent,

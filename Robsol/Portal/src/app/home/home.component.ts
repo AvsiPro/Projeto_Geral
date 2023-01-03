@@ -106,7 +106,6 @@ export class HomeComponent {
 
     const url_graph = environment.api + 'Metas'
     this.http.get(url_graph).subscribe((response: any) =>{
-      console.log(response)
       let mensalC: any[] = []
       let mensalS: any[] = []
 
@@ -129,7 +128,6 @@ export class HomeComponent {
 
       })
       response['items'][2].forEach((element: any) =>{
-        console.log(element)
         quadrimensalS.push(parseFloat(element['venda'].trim().replace(',', '.')))
         quadrimensalC.push(element['mes'])
         mes = element['meta']
@@ -175,8 +173,9 @@ export class HomeComponent {
 
     const menu = localStorage.getItem('menu_acesso')
     const url = environment.api + `MenusPrt/?CODIGOMENU=${menu}`
-
+ 
     this.http.get(url).subscribe((res: any)=>{
+      console.log(res)
       res.forEach((element: any) => {
         this.menus.push(element)
       });
@@ -196,7 +195,6 @@ export class HomeComponent {
         }
       )
 
-      console.log(this.menus)
     })
   }
 

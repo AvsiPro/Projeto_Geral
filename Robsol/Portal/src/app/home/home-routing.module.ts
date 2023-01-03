@@ -18,6 +18,7 @@ const homeRoutes: Routes = [
     {path: 'COMISSION', loadChildren: () => import('../gerenciais/comissoes/comissoes.module').then(m => m.ComissoesModule)},
     {path: 'SALES', loadChildren: () => import('../vendas/pedidos/pedidos.module').then(m => m.PedidosModule)},
     {path: 'FINANCIAL', loadChildren: () => import('../financial/titulos/titulos.module').then(m => m.TitulosModule)},
+    {path: 'FATURAMENTO', loadChildren: () => import('../financial/faturamento/faturamento.module').then(m => m.FaturamentoModule)},
     {path: 'CATALOG', loadChildren: () => import('../catalog/catalog.module').then(m => m.CatalogModule)},
     {path: 'WARRANTY', loadChildren: () => import('../warranty/warranty.module').then(m => m.WarrantyModule)},
     {path: 'FORMULARIO', loadChildren: () => import('../warranty/formulario/formulario.module').then(m => m.FormularioModule)},
