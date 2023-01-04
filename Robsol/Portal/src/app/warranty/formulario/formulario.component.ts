@@ -125,6 +125,7 @@ export class FormularioComponent implements OnInit {
     }
   ]
   columns: Array<PoTableColumn> = [
+    { property: 'filial_faturamento'},
     { property: 'nota'},
     { property: 'item'},
     { property: 'cod_produto'},
@@ -351,6 +352,7 @@ export class FormularioComponent implements OnInit {
 
   insertItem(element: any){
     this.items.push({
+      filial_faturamento: element['filial_faturamento'],
       nota: element['nota'],
       item: element['item'],
       cod_produto: element['cod_produto'],
@@ -361,7 +363,7 @@ export class FormularioComponent implements OnInit {
   }
 
   private onClickProdutoDetail(user: any) {
-    let url = environment.api + `FieldService/?codigo=${user['cod_produto']}&cod_cliente=${localStorage.getItem('cod_cliente')}&loja_cliente=${localStorage.getItem('loja_cliente')}`
+    let url = environment.api + `FieldService/?nota=${user['nota']}&codigo=${user['cod_produto']}&cod_cliente=${localStorage.getItem('cod_cliente')}&loja_cliente=${localStorage.getItem('loja_cliente')}`
     
       this.http.get(url).subscribe((res: any)=>{
       this.detailedProduto = res['items'][0]
@@ -380,6 +382,7 @@ export class FormularioComponent implements OnInit {
       Authorization: 'Basic YWRtaW46QVZTSTIwMjI=' });
 
     body = {
+        filial_faturamento: this.itemChamado.filial_faturamento,
         nota: this.itemChamado.nota,
         item: this.itemChamado.item,
         cod_produto: this.itemChamado.cod_produto,
