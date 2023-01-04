@@ -36,7 +36,7 @@ User Function ROBEST06(lDnfB)
 
     IF Select("SM0") == 0
         RpcSetType(3)
-        RPCSetEnv("01","0103")
+        RPCSetEnv("01","0101")
     ENDIF
 
     IF !lDnfB
