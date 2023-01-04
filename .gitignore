@@ -17,3 +17,7 @@ Robsol/APPA/.DS_Store
 .DS_Store
 .DS_Store.*
 .vscode/launch.json
+Robsol/Portal/.angular/cache/
+Robsol/Portal/node_modules/
+Robsol/Portal/.DS_Store*
+.DS_Store
