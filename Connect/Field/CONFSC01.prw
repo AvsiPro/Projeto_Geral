@@ -2690,8 +2690,12 @@ Local aArea 	:=	GetArea()
 Local cQuery
 Local aAux5 	:=	{}
 Local nY 
-Local aLeitura 	:=	LeiAntr(aArray[01],aArray[02],aArray[5,11])
+Local aLeitura 	:=	If(len(aArray)>4,LeiAntr(aArray[01],aArray[02],aArray[5,11]),{})
 Local cTipFat	:=	alist[ascan(aList,{|x| x[1] == aarray[1]}),14]
+
+If len(aArray)  < 5
+	Return  
+EndIf 
 
 cQuery := "  SELECT Z08_COD,Z08_SEQUEN,Z08_SELECA,Z08_PRODUT,B1_DESC,Z08_QTDLID,Z08_DATA,Z08_CONTRT,Z08_FATURA" 
 cQuery += "  FROM "+RetSQLname("Z08")+" Z08"

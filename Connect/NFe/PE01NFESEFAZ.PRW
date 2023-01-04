@@ -44,16 +44,23 @@ USER FUNCTION PE01NFESEFAZ()
         DbSelectArea("NNR")
         DbSetOrder(1)
         If DbSeek(xfilial("NNR")+cCodPA)
-            DbSelectArea("SA1")
-            DbSetOrder(1)
-            DbSeek(xFilial("SA1")+NNR->NNR_CODCLI+NNR->NNR_LOJCLI)
-			cMensCli += CRLF + 'Cliente de Entrega '
-			cMensCli += Alltrim(SA1->A1_NOME)+' '
-			cMensCli += Alltrim(SA1->A1_NREDUZ)+' '
-			cMensCli += Alltrim(SA1->A1_END)+' '
-			cMensCli += Alltrim(SA1->A1_BAIRRO)+' '
-			cMensCli += Alltrim(SA1->A1_MUN)
-        
+			If !Empty(NNR->NNR_XEND)
+				cMensCli += CRLF + 'Local de Entrega '
+				cMensCli += Alltrim(NNR->NNR_DESCRI)+' '
+				cMensCli += Alltrim(NNR->NNR_XEND)+' '
+				cMensCli += Alltrim(NNR->NNR_XBAIRR)+' '
+				cMensCli += Alltrim(NNR->NNR_XMUN)+' '
+			Else
+				DbSelectArea("SA1")
+				DbSetOrder(1)
+				DbSeek(xFilial("SA1")+NNR->NNR_CODCLI+NNR->NNR_LOJCLI)
+				cMensCli += CRLF + 'Local de Entrega '
+				cMensCli += Alltrim(SA1->A1_NOME)+' '
+				cMensCli += Alltrim(SA1->A1_NREDUZ)+' '
+				cMensCli += Alltrim(SA1->A1_END)+' '
+				cMensCli += Alltrim(SA1->A1_BAIRRO)+' '
+				cMensCli += Alltrim(SA1->A1_MUN)
+			EndIf 
         EndIF 
     EndIf 
 

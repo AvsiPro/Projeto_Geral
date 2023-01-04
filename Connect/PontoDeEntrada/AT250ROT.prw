@@ -19,7 +19,7 @@ User Function AT250ROT()
 
 Local aRet := { }
 
-aAdd(aRet, {'Faturamento','U_CONFSC01', 0 , 2} )
-aAdd(aRet, {'Leiaute de Maquina','U_CONOPC03', 0 , 2} )
+aAdd(aRet, {'Faturamento','U_CONFSC01()', 0 , 2} )
+aAdd(aRet, {'Leiaute de Maquina','U_CONOPC03()', 0 , 2} )
 
 Return aRet
