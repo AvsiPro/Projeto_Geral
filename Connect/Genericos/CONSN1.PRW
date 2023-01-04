@@ -23,7 +23,7 @@ User Function CONESN1()
     // Local nY           := 1
     Local nLast        := 0
 
-	Private cCod       := ""
+	Private cChapa       := ""
 
 	If Empty(FunName())
 		RpcSetType(3)
@@ -92,6 +92,12 @@ Return
 
 Static Function EXECSN1(aAux)
     
+	if aAux[1] $ cChapa
+		return
+	endif
+
+	cChapa += aAux[1] + "/"
+
     DbSelectArea("SN1")
     RecLock("SN1", .T.)
         SN1->N1_FILIAL  := xFilial("SN1")   
@@ -102,11 +108,13 @@ Static Function EXECSN1(aAux)
         SN1->N1_DESCRIC := aAux[2]  
         SN1->N1_CHAPA   := aAux[1]
         SN1->N1_PRODUTO := aAux[3]  
+        SN1->N1_XNUMSER := aAux[5]
+        SN1->N1_XALUGAD := IF(aAux[6] == "1", "S", "N")
     MsUnlock()
     DBCLOSEAREA()
 
     DbSelectArea("SN3")
-    RecLock("SN1", .T.)
+    RecLock("SN3", .T.)
         SN3->N3_FILIAL  := xFilial("SN3")
         SN3->N3_CBASE   := aAux[1]
         SN3->N3_ITEM    := "0001"
@@ -114,7 +122,7 @@ Static Function EXECSN1(aAux)
         SN3->N3_DINDEPR := dDataBase
         SN3->N3_HISTOR  := "INICIO"
         SN3->N3_CCONTAB := "1000"
-        SN3->N3_VORIG   := aAux[4]
+        SN3->N3_VORIG1  := val(aAux[4])
     MsUnlock()
     DBCLOSEAREA()
 

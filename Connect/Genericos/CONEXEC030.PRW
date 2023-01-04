@@ -116,32 +116,32 @@ Static Function EXEC030(aAux)
 
     //Cabeçalho
 	oSA1Mod:= oModel:getModel("MATA030_SA1")
-    oSA1Mod:setValue("A1_COD",       SubStr(aAux[1],1,9)        ) // Codigo 
-    oSA1Mod:setValue("A1_LOJA",      StrZero(val(aAux[2]), 4)       ) // Loja
-    oSA1Mod:setValue("A1_NOME",      SubStr(aAux[3],1,40)       ) // Nome             
-    oSA1Mod:setValue("A1_PESSOA",    aAux[4]   ) // Nome reduz. 
-    oSA1Mod:setValue("A1_NREDUZ",    SubStr(aAux[5],1,20)   ) // Nome reduz. 
-    oSA1Mod:setValue("A1_END",       aAux[6]   ) // Endereco
-    oSA1Mod:setValue("A1_BAIRRO",    aAux[7]     ) // Bairro
-    oSA1Mod:setValue("A1_TIPO",      aAux[8]         ) // Tipo 
-    oSA1Mod:setValue("A1_EST",       aAux[9]        ) // Estado
-    oSA1Mod:setValue("A1_COD_MUN",   Posicione("CC2",2,xFilial("CC2")+aAux[12],"CC2_CODMUN")     ) // Codigo Municipio                
-    oSA1Mod:setValue("A1_MUN",       aAux[12]    ) // Municipio
-    oSA1Mod:setValue("A1_CEP",       aAux[10]        ) // CEP
-    oSA1Mod:setValue("A1_INSCR",     IF(aAux[19] == '',"ISENTO",aAux[19])         ) // Inscricao Estadual
-    oSA1Mod:setValue("A1_CGC",       aAux[17]       ) // CNPJ/CPF            
-    oSA1Mod:setValue("A1_PAIS",      "105"    ) // Pais            
-    oSA1Mod:setValue("A1_EMAIL",     IF(aAux[30] == "","SEM EMAIL",aAux[30])      ) // E-Mail
-    oSA1Mod:setValue("A1_DDD",       SubStr(IF(aAux[16] == '',"99999999",aAux[16]),1,2)        ) // DDD            
-    oSA1Mod:setValue("A1_TEL",       IF(aAux[16] == '',"99999999",SubStr(aAux[16],1,15))   ) // Fone                 
-    oSA1Mod:setValue("A1_BAIRROC",    SubStr(aAux[22],1,30)  ) // Tipo Pessoa
-    oSA1Mod:setValue("A1_CEPC",    aAux[23]  ) // Tipo Pessoa
-    oSA1Mod:setValue("A1_MUNC",    SubStr(aAux[24],1,15)  ) // Tipo Pessoa
-    oSA1Mod:setValue("A1_ESTC",    aAux[25]  ) // Tipo Pessoa
-    oSA1Mod:setValue("A1_CEPE",    aAux[26]  ) // Tipo Pessoa
-    oSA1Mod:setValue("A1_BAIRROE",    SubStr(aAux[27],1,20)  ) // Tipo Pessoa
-    oSA1Mod:setValue("A1_MUNE",    SubStr(aAux[28],1,15)  ) // Tipo Pessoa
-    oSA1Mod:setValue("A1_ESTE",    aAux[29]  ) // Tipo Pessoa
+    oSA1Mod:setValue( "A1_COD",     SubStr(aAux[1],1,9) )                                     // Codigo 
+    oSA1Mod:setValue( "A1_LOJA",    StrZero(val(aAux[2]), 4) )                                // Loja
+    oSA1Mod:setValue( "A1_NOME",    SubStr(aAux[3],1,40) )                                    // Nome             
+    oSA1Mod:setValue( "A1_PESSOA",  aAux[4] )                                                 // Pessoa F ou J
+    oSA1Mod:setValue( "A1_NREDUZ",  SubStr(aAux[5],1,20) )                                    // Nome reduz. 
+    oSA1Mod:setValue( "A1_END",     aAux[6] )                                                 // Endereco
+    oSA1Mod:setValue( "A1_BAIRRO",  aAux[7] )                                                 // Bairro
+    oSA1Mod:setValue( "A1_TIPO",    aAux[8] )                                                 // Tipo 
+    oSA1Mod:setValue( "A1_EST",     aAux[9] )                                                 // Estado
+    oSA1Mod:setValue( "A1_COD_MUN", Posicione("CC2",2,xFilial("CC2")+aAux[12],"CC2_CODMUN") ) // Codigo Municipio                
+    oSA1Mod:setValue( "A1_MUN",     aAux[12] )                                                // Municipio
+    oSA1Mod:setValue( "A1_CEP",     aAux[10] )                                                // CEP
+    oSA1Mod:setValue( "A1_INSCR",   IF(aAux[19] == '',"ISENTO",aAux[19]) )                    // Inscricao Estadual
+    oSA1Mod:setValue( "A1_CGC",     aAux[17] )                                                // CNPJ/CPF            
+    oSA1Mod:setValue( "A1_PAIS",    "105" )                                                   // Pais            
+    oSA1Mod:setValue( "A1_EMAIL",   IF(aAux[30] == "","SEM EMAIL",aAux[30]) )                 // E-Mail
+    oSA1Mod:setValue( "A1_DDD",     SubStr(IF(aAux[16] == '',"99999999",aAux[16]),1,2) )      // DDD            
+    oSA1Mod:setValue( "A1_TEL",     IF(aAux[16] == '',"99999999",SubStr(aAux[16],1,15)) )     // Fone                 
+    oSA1Mod:setValue( "A1_BAIRROC", SubStr(aAux[22],1,30) )                                   // Bairro Cobrança
+    oSA1Mod:setValue( "A1_CEPC",    aAux[23] )                                                // CEP Cobrança
+    oSA1Mod:setValue( "A1_MUNC",    SubStr(aAux[24],1,15) )                                   // Município Cobrança
+    oSA1Mod:setValue( "A1_ESTC",    aAux[25] )                                                // Estado Cobrança
+    oSA1Mod:setValue( "A1_CEPE",    aAux[26] )                                                // CEP Entrega
+    oSA1Mod:setValue( "A1_BAIRROE", SubStr(aAux[27],1,20) )                                   // Bairro Entrega
+    oSA1Mod:setValue( "A1_MUNE",    SubStr(aAux[28],1,15) )                                   // Município Entrega
+    oSA1Mod:setValue( "A1_ESTE",    aAux[29] )                                                // Estado Entrega
 
 	If oModel:VldData()
 		oModel:CommitData()

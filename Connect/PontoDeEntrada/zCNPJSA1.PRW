@@ -38,8 +38,9 @@ USER FUNCTION zCNPJSA1()
 		if o1RestClient:Get()
 
 			oJson1:FromJson(o1RestClient:CRESULT)
-
-			oModelxDet:SetValue('A1_INSCR',oJson1["estabelecimento","inscricoes_estaduais",1,"inscricao_estadual"])
+			if len(oJson1["estabelecimento","inscricoes_estaduais"]) > 0
+				oModelxDet:SetValue('A1_INSCR',oJson1["estabelecimento","inscricoes_estaduais",1,"inscricao_estadual"])	
+			endif
 					
 		endif
 
