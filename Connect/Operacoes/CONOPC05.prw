@@ -49,7 +49,6 @@ User Function CONOPC05()
         oSay8      := TSay():New( 098,150,{||"Data da leitura Atual"},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,332,018)
         oGet2      := TGet():New( 096,215,{|u| If(PCount()>0,dDtLei:=u,dDtLei)},oGrp1,060,008,'',{|| dDtLei > dDiaLei},CLR_BLACK,CLR_WHITE,,,,.T.,,,,,,,,,,,,)
 
-        
     oGrp3      := TGroup():New( 112,016,312,380,"Leituras",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
     
         //oBrw1      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{124,048,304,352},,, oGrp3 ) 
@@ -200,7 +199,6 @@ If !Empty(cPatr)
         oSay5:settext('Modelo maquina '+Alltrim(Posicione("SB1",1,xFilial("SB1")+aCols[len(aCols),14],"B1_DESC")))
         oSay7:settext("Data da ultima leitura "+cvaltochar(dDiaLei))
     EndIf 
-
 
     oList1:SetArray(aCols)
     oList1:bLine := {||{aCols[oList1:nAt,01],; 

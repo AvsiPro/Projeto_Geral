@@ -39,6 +39,11 @@ If Empty(FunName())
     RPCSetEnv("01","0101")
 EndIf
 
+if Z15->Z15_TIPO != "A"
+    MsgAlert("Não é possível abrir a rotina de atribuição de ativos para uma solicitação de retirada!", "Erro!")
+    Return
+endif
+
 oDlg1      := MSDialog():New( 092,232,479,932,"Preparar Ativo para contrato",,,.F.,,,,,,.T.,,,.T. )
     
     oGrp1      := TGroup():New( 004,012,164,332,"Ativo",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
@@ -64,6 +69,11 @@ oDlg1      := MSDialog():New( 092,232,479,932,"Preparar Ativo para contrato",,,.
     
 oBtn1      := TButton():New( 169,100,"Confirmar",oDlg1,{|| oDlg1:end(nOpc:=1)},037,012,,,,.T.,,"",,,,.F. )
 oBtn2      := TButton():New( 169,208,"Cancelar",oDlg1,{|| oDlg1:end(nOpc:=0)},037,012,,,,.T.,,"",,,,.F. )
+
+        if AllTrim(cXContrato) != ""
+            xatuatv(3)
+            oGet4:Disable()
+        endif        
 
 oDlg1:Activate(,,,.T.)
 
@@ -307,11 +317,11 @@ TECA300(,,aCabec,aItens,3)
 
 If !lMsErroAuto
     ConfirmSx8()
+    TECR300(cChamado)
 Else
     MostraErro() 
     RollBackSx8()
     lOk := .F.
 EndIf
-
 
 Return cChamado

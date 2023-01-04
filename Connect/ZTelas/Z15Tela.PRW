@@ -46,7 +46,8 @@ STATIC FUNCTION MenuDef()
     ADD OPTION aRot TITLE 'Incluir'           ACTION 'VIEWDEF.Z15Tela' OPERATION MODEL_OPERATION_INSERT ACCESS 0 //OPERATION 3
     ADD OPTION aRot TITLE 'Alterar'           ACTION 'VIEWDEF.Z15Tela' OPERATION MODEL_OPERATION_UPDATE ACCESS 0 //OPERATION 4
     ADD OPTION aRot TITLE 'Excluir'           ACTION 'VIEWDEF.Z15Tela' OPERATION MODEL_OPERATION_DELETE ACCESS 0 //OPERATION 5
-    ADD OPTION aRot TITLE 'Atribuir Ativo'    ACTION 'U_Z15Chama()'    OPERATION 7                      ACCESS 0 //OPERATION 7
+    ADD OPTION aRot TITLE 'Atribuir Ativo'    ACTION 'U_Z15Chama(1)'   OPERATION 7                      ACCESS 0 //OPERATION 7
+    ADD OPTION aRot TITLE 'Retirar Ativo'     ACTION 'U_Z15Chama(2)'   OPERATION MODEL_OPERATION_UPDATE ACCESS 0 //OPERATION 7
  
 RETURN aRot
  
@@ -136,6 +137,12 @@ USER FUNCTION Z15Leg()
     BrwLegenda(cTitulo, "Status", aLegenda)
 RETURN
 
-User Function Z15Chama()
-    U_CONFSC03(Z15->Z15_CONTRA)
+User Function Z15Chama(nOpc)
+
+    if nOpc == 1
+        U_CONFSC03(Z15->Z15_CONTRA)
+    elseif nOpc == 2
+        U_CONFSC04(Z15->Z15_CONTRA)
+    endif
+
 Return 

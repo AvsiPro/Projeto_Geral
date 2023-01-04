@@ -24,16 +24,16 @@ User Function MSD2520()
 	Local _aCab1 		:= 	{}
 	Local _aItem 		:= 	{}
 	Local _atotitem		:=	{}
-	Local n := 0
+	Local n             :=  0
 
 	Private aEst 		:=	{} //estrutura produto
 	Private aAuxest 	:=	{}
-	Private lMsHelpAuto := 	.t. // se .t. direciona as mensagens de help
-	Private lMsErroAuto := 	.f. //necessario a criacao
+	Private lMsHelpAuto := 	.T. // se .t. direciona as mensagens de help
+	Private lMsErroAuto := 	.F. //necessario a criacao
 	
 	dbSelectArea("SC5")
 	SC5->(dbSetOrder(1))
-	If SC5->(dbSeek(xFilial("SC5")+SD2->D2_PEDIDO )) .And. !Empty(SC5->C5_XCODPA) .And. SC5->C5_XTPPED == "A"
+	If SC5->(dbSeek(xFilial("SC5")+SD2->D2_PEDIDO )) .AND. !Empty(SC5->C5_XCODPA) .AND. SC5->C5_XTPPED == "A"
 
 		_aCab1 := {{"D3_DOC" ,SD2->D2_DOC, NIL},;
 					{"D3_TM" ,cTMEst , NIL},;
@@ -50,7 +50,7 @@ User Function MSD2520()
 		aadd(_atotitem,_aitem)
 
 
-	ElseIf SC5->(dbSeek(xFilial("SC5")+SD2->D2_PEDIDO )) .And. !Empty(SC5->C5_XCODPA) .And. SC5->C5_XTPPED == "F"
+	ElseIf SC5->(dbSeek(xFilial("SC5")+SD2->D2_PEDIDO )) .AND. !Empty(SC5->C5_XCODPA) .AND. SC5->C5_XTPPED == "F"
 
 		U_BusSG1(SD2->D2_COD,SD2->D2_QUANT)
 
@@ -80,7 +80,7 @@ User Function MSD2520()
 
 	SC5->(DBCloseArea())
 
-	If len(_aCab1) > 0 .And. len(_atotitem) > 0
+	If len(_aCab1) > 0 .AND. len(_atotitem) > 0
 		MSExecAuto({|x,y,z| MATA241(x,y,z)},_aCab1,_atotitem,3)
 		
 		If lMsErroAuto
@@ -110,15 +110,26 @@ Static Function atucontr(cContrt,cItCont)
 
 Local aArea  :=	GetArea()
 Local cQuery :=	""
-Local lOK :=	.T.
+Local cMaq   :=	""
+Local lOK    :=	.T.
 
 DbSelectArea("AAN")
 DbSetOrder(1)
 If Dbseek(xFilial("AAN")+cContrt+cItCont)
 	RecLock("AAN", .F.)
+	cMaq := AAN->AAN_XCBASE
 	DBDelete()
 	AAN->(MsUnlock())
 EndIf 
+
+DbSelectArea("SN1")
+DbSetOrder(2)
+if DBSEEK(xFilial("SN1")+cMaq)
+	RecLock("SN1", .F.)
+		SN1->N1_XCLIENT := ""
+		SN1->N1_XLOJA   := ""	
+	MsUnlock()
+endif
 
 cQuery := " SELECT * FROM AAN010 WHERE AAN_CONTRT = '" + cContrt + "' "
 cQuery += " AND D_E_L_E_T_ = ' ' "
