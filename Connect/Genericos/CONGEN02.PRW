@@ -88,18 +88,30 @@ While !FT_FEOF()
 
         aCabec := {}
         aItens := {}
-            
+        aAux   := {}
+        cItem := "01"
+        
         IF lMsErroAuto  
             MostraErro()
         ELSE
             cPedidos += SC5->C5_NUM + CRLF 
         EndIf 
     Else 
+        DbSelectArea("SB1")
+        DbSetOrder(1)
+        cTes := ""
+        If Dbseek(xFilial("SB1")+aLinha[1])
+            If !Empty(SB1->B1_TS)
+                cTes := SB1->B1_TS
+            Else 
+                cTes := aLinha[5] 
+            EndIf 
+        EndIF 
         Aadd(aItens,{{"C6_ITEM",cItem,NIL},;
                     {"C6_PRODUTO",aLinha[1],NIL},;
                     {"C6_QTDVEN",val(aLinha[2]),NIL},;
                     {"C6_PRCVEN",val(strtran(aLinha[4],",",".")),NIL},;
-                    {"C6_TES",aLinha[5],NIL}})
+                    {"C6_TES",cTes,NIL}})
 
         cItem := soma1(cItem)
     EndIf 

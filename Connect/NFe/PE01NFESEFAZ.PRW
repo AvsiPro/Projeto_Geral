@@ -65,8 +65,8 @@ USER FUNCTION PE01NFESEFAZ()
     EndIf 
 
 	aadd(aRetorno,aProd)
-	aadd(aRetorno,cMensCli)
 	aadd(aRetorno,cMensFis)
+	aadd(aRetorno,cMensCli)
 	aadd(aRetorno,aDest)
 	aadd(aRetorno,aNota)
 	aadd(aRetorno,aInfoItem)
