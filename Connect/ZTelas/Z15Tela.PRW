@@ -25,6 +25,7 @@ USER FUNCTION Z15Tela()
     //Legendas
     oBrowse:AddLegend( "Z15->Z15_STATUS = 'A'", "GREEN", "Ativo" )
     oBrowse:AddLegend( "Z15->Z15_STATUS = 'B'", "RED",   "Encerrado" )
+    oBrowse:AddLegend( "Z15->Z15_STATUS = 'B'", "YELLOW",   "Em Preparacao" )
      
     //Filtrando
     //oBrowse:SetFilterDefault("Z15->Z15_CODIGO >= '000000' .And. Z15->Z15_CODIGO <= 'ZZZZZZ'")
@@ -133,6 +134,7 @@ USER FUNCTION Z15Leg()
     //Monta as cores
     AADD(aLegenda,{"BR_VERDE",           "Ativo"     })
     AADD(aLegenda,{"BR_VERMELHO",        "Encerrado" })
+    AADD(aLegenda,{"BR_AMARELO",        "Em Preparacao" })
      
     BrwLegenda(cTitulo, "Status", aLegenda)
 RETURN

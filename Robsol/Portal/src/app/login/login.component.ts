@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { PoNotificationService, PoPageAction } from '@po-ui/ng-components';
-import { PoModalPasswordRecoveryType, PoPageLogin, PoPageLoginRecovery } from '@po-ui/ng-templates';
+import { PoModalPasswordRecoveryType, PoPageLogin, PoPageLoginRecovery,PoPageLoginLiterals } from '@po-ui/ng-templates';
 import { PoStorageService } from '@po-ui/ng-storage';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
@@ -21,6 +21,12 @@ export class LoginComponent {
   loginForm: FormGroup | undefined;
 
   private headers: HttpHeaders | undefined;
+  
+  customLiterals: PoPageLoginLiterals = {
+    loginPlaceholder: 'Insira seu usuário de acesso',
+  };
+
+  literals: string | any;
 
   constructor(
     private router: Router,
@@ -29,6 +35,7 @@ export class LoginComponent {
     private formBuilder: FormBuilder
 
     ) {}
+    
 
     ngOnInit(): void {
 
@@ -43,6 +50,8 @@ export class LoginComponent {
         ],
      });
     }
+
+
 
   loginSubmit(formData: PoPageLogin) {
 

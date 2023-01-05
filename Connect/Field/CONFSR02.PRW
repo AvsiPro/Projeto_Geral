@@ -50,15 +50,16 @@ Static Function ReciboLoc()
 
 	Local lAdjustToLegacy  := .F.
 	Local lDisableSetup    := .T.
-	Local cMes             := mesextenso(month(stod(aList5[1,6])))
-	Local cNum             := "XXXX" //Pendente numero
+	Local lOK              := .F.
+	Local cQuery           := ""
+	Local cMes             := ""
+	Local cNum             := "" 
 	Local cCli             := aList[oList:nAt,5]
 	Local cEnd             := aList[oList:nAt,06]+" / "+aList[oList:nAt,07]+" / "+aList[oList:nAt,08]
 	Local cCnpj            := AllTrim(aList[oList:nAt,3]) + "-" + AllTrim(aList[oList:nAt,4])
-	Local cValor1          := "R$" + Transform(aList2[oList2:nAt,10], "@E 999,999.99")
-	Local cValor2          := Transform(aList2[oList2:nAt,10], "@E 999,999.99")
+	Local cValor           := "R$ "
 	Local cPeriodo         := "Locação de máquina referente ao mês " + cValToChar(Month(stod(aList5[1,6]))) + "/" + cValToChar(Year(stod(aList5[1,6])))
-	Local cVencimento      := "P.O: " //Pendente PO
+	Local cVencimento      := "P.O: " 
 	Local cPonto           := AllTrim(StrToKarr(cTitle, "-")[2])
 	Local cEmitente        := AllTrim(SM0->M0_NOMECOM)+" (CNPJ:"+AllTrim(SubStr(SM0->M0_CGC,1,2)+"."+SubStr(SM0->M0_CGC,3,3)+"."+SubStr(SM0->M0_CGC,6,3)+"/"+SubStr(SM0->M0_CGC,9,4)+"-"+SubStr(SM0->M0_CGC,13,2))+" - IE:"+AllTrim(SM0->M0_INSC)+")"
 	Local cEndEmit         := AllTrim(SM0->M0_ENDENT)+" - "+AllTrim(SM0->M0_CIDENT)+"/"+AllTrim(SM0->M0_ESTENT)+" - "+StrTran(Transform(Val(AllTrim(SM0->M0_CEPENT)), "@E 99,999-999"), " ", "0")
@@ -90,6 +91,50 @@ Static Function ReciboLoc()
 	// Local oF25FTF          := TFont():New('Arial' /*Fonte*/,,25 /*Tamanho*/,,.F. /*Negrito*/,,,,,.T. /*Sublinhado*/,.F. /*Italico*/ )
 	// Local oF25FFT          := TFont():New('Arial' /*Fonte*/,,25 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.T. /*Italico*/ )
 
+	cQuery := " "
+	cQuery += " SELECT C5_NUM,C6_PRCVEN,C6_VALOR,C5_EMISSAO,C6_NOTA,C6_DATFAT,C6_PEDCLI " 
+	cQuery += " FROM " + RetSQLName("SC5") + " " 
+	cQuery += " INNER JOIN " + RetSQLName("SC6") + " ON C5_NUM = C6_NUM " 
+	cQuery += " AND C5_FILIAL=C6_FILIAL " 
+	cQuery += " WHERE  C5_XTPPED = 'L' "
+	cQuery += " AND C5_CLIENTE = '" + aList[oList:nAt,3] + "' " 
+	cQuery += " AND C5_LOJACLI = '" + aList[oList:nAt,4] + "' " 
+	cQuery += " AND C5_EMISSAO BETWEEN '" + "20" + substr(cPeri,3,2) + Substr(cPeri,1,2) + "01" + "' " 
+	cQuery += " AND '" + "20" + substr(cPeri,3,2) + Substr(cPeri,1,2) + "31" + "' " 
+	cQuery += " AND C6_NOTA != '' " 
+	cQuery += " AND C6_CONTRT == '" + aList[oList:nAt,contrato] + "' " 
+
+	If Select("TRB") > 0
+		dbSelectArea("TRB")
+		dbCloseArea()
+	EndIf
+
+	cQuery := ChangeQuery(cQuery)
+
+	DbUseArea(.T.,"TOPCONN",TcGenQry(,,cQuery),'TRB',.F.,.T.)
+
+	while !EOF()
+
+		aAux := {TRB->C5_NUM,TRB->C5_EMISSAO,TRB->C6_PRCVEN,TRB->C6_VALOR,TRB->C6_NOTA,TRB->C6_DATFAT,TRB->C6_PEDCLI}
+				//aAux[1]    aAux[2]         aAux[3]        aAux[4]       aAux[5]      aAux[6]        aAux[7]
+
+		lOK := .T.
+		DBSKIP()
+	end
+
+	if !lOK
+		MsgAlert("Maquina sem Pedido de Venda, nao foi possivel gerar o recibo!", "Erro!")
+		RETURN
+	endif
+
+	cNum := aAux[1]
+	cEmissao := dtoc(stod(aAux[2]))
+	cValor += cValToChar(aAux[3])
+	cValor += cValToChar(aAux[4])
+	cNota := aAux[5]
+	cMes := mesextenso(month(stod(aAux[6])))
+	cVencimento += AllTrim(aAux[7])
+
 	Private oPrinter := FWMSPrinter():New( "recibo_loc_"+cNum+".pdf",IMP_PDF,lAdjustToLegacy,"C:\temp\",lDisableSetup,,,,,,,, )
 
 	oPrinter:StartPage()
@@ -114,7 +159,7 @@ Static Function ReciboLoc()
 
 	oPrinter:Box( 150, 5, 150, 590,"-1" )
 	oPrinter:Say( 160, 10,"O VALOR DE", oF10FFF,, rgb(102, 102, 102)/*Cor*/ )
-	oPrinter:Say( 175, 10,cValor1, oF13FFF,, /*Cor*/ )
+	oPrinter:Say( 175, 10,cValor, oF13FFF,, /*Cor*/ )
 
 	oPrinter:Box( 200, 5, 200, 590,"-1" )
 	oPrinter:Say( 210, 10,"REFERENTES A", oF10FFF,, rgb(102, 102, 102)/*Cor*/ )
@@ -124,7 +169,7 @@ Static Function ReciboLoc()
 	oPrinter:Box( 250, 5, 250, 590,"-1" )
 	oPrinter:Say( 260, 10,"DETALHAMENTO", oF10FFF,, rgb(102, 102, 102)/*Cor*/ )
 	oPrinter:Say( 275, 10,cPonto, oF13FFF,, /*Cor*/ )
-	oPrinter:Say( 275, 500,cValor2, oF13FFF,, /*Cor*/ )
+	oPrinter:Say( 275, 500,cValor, oF13FFF,, /*Cor*/ )
 
 	oPrinter:Box( 300, 5, 300, 590,"-1" )
 	oPrinter:Say( 310, 10,"EMITENTE", oF10FFF,, rgb(102, 102, 102)/*Cor*/ )
@@ -172,6 +217,7 @@ Static Function ExtLeitura()
 	Local aProd            := {}
 	Local cEntre           := ""
 	Local cCon1            := ""
+	Local cQuery           := ""
 	Local nCon1            := 0
 	// Local cSub1            := ""
 	// Local nSub1            := 0
@@ -209,6 +255,37 @@ Static Function ExtLeitura()
 	// Local oF25FFT          := TFont():New('Arial' /*Fonte*/,,25 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.T. /*Italico*/ )
 
 	Private oPrinter := FWMSPrinter():New( "extrato_leitura_.pdf",IMP_PDF,lAdjustToLegacy,"C:\temp\",lDisableSetup,,,,,,,, )
+
+	//SELECT Z08_COD,Z07_CHAPA,Z08_NUMSER,Z08_QTDLID,Z07_VLRVND,Z07_CONSUM,Z08_PRODUT,Z07_CODPRO,Z08_SELECA FROM Z08010 INNER JOIN Z07010 ON Z08_NUMSER = Z07_CHAPA AND Z08_SELECA = Z07_SELECA WHERE  Z07_CHAPA IN ('0669','0564') AND Z08_PERIOD = '1122'
+
+	cQuery := " "
+	cQuery += " SELECT Z08_COD,Z07_CHAPA,Z08_NUMSER,Z08_QTDLID,Z07_VLRVND,Z07_CONSUM,Z08_PRODUT,Z07_CODPRO,Z08_SELECA,AAN_CONTRT,AAN_ITEM   " 
+	cQuery += " FROM   " + RetSQLName("Z08") + " Z08   " 
+	cQuery += " INNER JOIN " + RetSQLName("Z07") + " Z07 ON Z08_NUMSER = Z07_CHAPA   " 
+	cQuery += "        AND Z08_SELECA = Z07_SELECA   " 
+	cQuery += " INNER JOIN " + RetSQLName("AAN") + " AAN ON Z07_CHAPA = AAN_XCBASE   " 
+	cQuery += " WHERE  Z07_CHAPA IN (" + aChapas + ")   " 
+	cQuery += "        AND Z08_PERIOD = '" + cPeri + "'   " 
+	cQuery += "        AND Z07.D_E_L_E_T_ = ' '   " 
+	cQuery += "        AND Z08.D_E_L_E_T_ = ' '   " 
+	cQuery += "        AND AAN.D_E_L_E_T_ = ' '   " 
+	cQuery += " ORDER BY  Z08_COD,Z07_CHAPA,Z08_SELECA   " 
+
+	If Select("TRB") > 0
+		dbSelectArea("TRB")
+		dbCloseArea()
+	EndIf
+
+	cQuery := ChangeQuery(cQuery)
+
+	DbUseArea(.T.,"TOPCONN",TcGenQry(,,cQuery),'TRB',.F.,.T.)
+
+	while !EOF()
+		Aadd(aAux, {TRB->Z08_COD,TRB->Z07_CHAPA,TRB->Z08_QTDLID,TRB->Z07_VLRVND,TRB->Z07_CONSUM,TRB->Z08_PRODUT,TRB->Z08_SELECA,TRB->AAN_CONTRT,AAN_ITEM})
+		DBSKIP()
+	end
+
+	//Replicar aPontos por meio da query para trazer dados faltantes
 
 	for nX := 1 to len(aList5B)
 		if len(aList5B[nX]) > 4
@@ -298,6 +375,33 @@ Static Function ExtLeitura()
 		endif
 	next
 
+	// for nX := 1 to len(aProd)
+		
+	// 	cQuery := " "
+	// 	cQuery += " SELECT DA1_CODPRO,DA1_PRCVEN,DA1_XCONSU " 
+	// 	cQuery += " FROM " + RetSQLName("DA1") + " INNER JOIN " + RetSQLName("AAM") + " ON AAM_XCODTA = DA1_CODTAB " 
+	// 	cQuery += " AND AAM_FILIAL = '" + xFilial("AAM") + "' " 
+	// 	cQuery += " WHERE AAM_CONTRT = '" + aList3[1,5] + "' " 
+	// 	cQuery += " AND DA1_CODPRO = '" + aProd[nX,2] + "' " 
+	// 	cQuery += " AND DA1_FILIAL = '" + xFilial("DA1") + "' " 
+
+	// 	If Select("TRB") > 0
+	// 		dbSelectArea("TRB")
+	// 		dbCloseArea()
+	// 	EndIf
+
+	// 	cQuery := ChangeQuery(cQuery)
+
+	// 	DbUseArea(.T.,"TOPCONN",TcGenQry(,,cQuery),'TRB',.F.,.T.)
+
+	// 	while !EOF()
+	// 		Aadd(aProd[nX], TRB->DA1_PRCVEN)
+	// 		Aadd(aProd[nX], TRB->DA1_XCONSU)
+	// 		DBSKIP()
+	// 	end
+
+	// next
+		
 	nCon1 := 0
 	// nSub1 := 0
 	// nConRS1 := 0
@@ -568,7 +672,7 @@ Static Function DemonsCon()
 	oPrinter:Say( nLin+44, 35,aList[oList:nAt,6], oF15FFF,, rgb(0, 0, 0) )
 	oPrinter:Say( nLin+56, 35,Transform(val(aAux[1]), "@E 99999-999") + " - " + AllTrim(aAux[3]) + "-" + aAux[4], oF15FFF,, rgb(0, 0, 0) )
 	oPrinter:Say( nLin+68, 35,"Este é o seu demonstrativo de consumo para o período", oF15FFF,, rgb(0, 0, 0) )
-	oPrinter:Say( nLin+80, 35,"de 08/11/2022 e 21/11/2022", oF15FFF,, rgb(0, 0, 0) ) //Pendente periodo
+	oPrinter:Say( nLin+80, 35,"de " + dtoc(stod(aProd[1,4])) + " a " + dtoc(stod(aProd[1,6])) + " ", oF15FFF,, rgb(0, 0, 0) )
 
 	oPrinter:Fillrect( { nLin, 360, nLin+100, 570 }, oBrush2, "-1")
 
@@ -624,9 +728,9 @@ Static Function DemonsCon()
 		//Totalizadores
 		oPrinter:Fillrect( { nLin+5, 10, nLin+25, 590 }, oBrush2, "-1")
 		oPrinter:Say( nLin+=20, 30,AllTrim(aAux[nX,1,3]), oF15FFF,, rgb(0, 0, 0) )
-		oPrinter:Say( nLin, 400,cCon1, oF15FFF,, rgb(0, 0, 0) )
-		oPrinter:Say( nLin, 400+70,cUni1, oF15FFF,, rgb(0, 0, 0) )
-		oPrinter:Say( nLin, 400+70+70,cTot1, oF15FFF,, rgb(0, 0, 0) )
+		oPrinter:Say( nLin, 400,Transform(val(cCon1), "@E 999,999"), oF15FFF,, rgb(0, 0, 0) )
+		oPrinter:Say( nLin, 400+70,Transform(val(cUni1), "@E 999,999.99"), oF15FFF,, rgb(0, 0, 0) )
+		oPrinter:Say( nLin, 400+70+70,Transform(val(cTot1), "@E 999,999.99"), oF15FFF,, rgb(0, 0, 0) )
 
 		for nY := 1 to len(aAux[nX])
 
@@ -635,10 +739,10 @@ Static Function DemonsCon()
 				oPrinter:StartPage()
 			endif
 
-			oPrinter:Say( nLin+=20, 30,dtoc(stod(aAux[nX,nY,6])) + " em " + aAux[nX,nY,13] + " - MÁQ " + aAux[nX,nY,13], oF10FFF,, rgb(0, 0, 0) )
-			oPrinter:Say( nLin, 400,cValToChar(aAux[nX,nY,8]), oF10FFF,, rgb(0, 0, 0) )
-			oPrinter:Say( nLin, 400+70,cValToChar(aAux[nX,nY,9]), oF10FFF,, rgb(0, 0, 0) )
-			oPrinter:Say( nLin, 400+70+70,cValToChar(aAux[nX,nY,10]), oF10FFF,, rgb(0, 0, 0) )
+			oPrinter:Say( nLin+=20, 30,dtoc(stod(aAux[nX,nY,6])) + " em " + aAux[nX,nY,15] + " - MÁQ " + aAux[nX,nY,15], oF10FFF,, rgb(0, 0, 0) )
+			oPrinter:Say( nLin, 400,Transform(aAux[nX,nY,8], "@E 999,999"), oF10FFF,, rgb(0, 0, 0) )
+			oPrinter:Say( nLin, 400+70,Transform(aAux[nX,nY,9], "@E 999,999.99"), oF10FFF,, rgb(0, 0, 0) )
+			oPrinter:Say( nLin, 400+70+70,Transform(aAux[nX,nY,10], "@E 999,999.99"), oF10FFF,, rgb(0, 0, 0) )
 		next
 	next
 
