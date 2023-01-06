@@ -603,7 +603,7 @@ For nCont := 1 to len(aList5b)
 	cQuery += "  LEFT JOIN "+RetSQLname("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"'"
 	cQuery += "		AND B1_COD=Z08_PRODUT AND B1.D_E_L_E_T_=' '" 
 	
-	If len(aLeitura) > 0
+	If len(aLeitura) > 1
 		cQuery += " WHERE Z08_COD='"+aLeitura[2]+"'"
 		cQuery += "  AND Z08.D_E_L_E_T_=' '"
 	Else 
@@ -1372,14 +1372,11 @@ For nAkacio := 1 to len(aEmail)
 				cMailenv := ''
 				cPV	:=	''
 				For nPtro := 1 to len(aAxM)
-					//lRetorno := U_TTMAILN('nfe-amc@toktake.com.br',Alltrim(aEmail[nAkacio,05])+';nfe-amc@toktake.com.br','Nota de Debito',cMsg,aArquivos,.T.)				
-					//lRetorno := U_TTMAILN('nfe-amc@toktake.com.br',Alltrim(aAxM[nPtro]),'Nota de Debito '+aEmail[nAkacio,02],cMsg,aArquivos,.T.)				
 					cMailenv += cPV +Alltrim(aAxM[nPtro])
 					cPV := ";"
 				Next nPtro    
 				lRetorno := U_TTMAILN('nfe.amc@toktake.com.br',cMailenv+';nfe.amc@toktake.com.br','Nota de Debito '+aEmail[nAkacio,02]+' Serie '+aEmail[nAkacio,11],cMsg,aArquivos,.T.)				                                                                                              
 				
-				//lRetorno := U_TTMAILN('nfe-amc@toktake.com.br',Alltrim(aEmail[nAkacio,05])+';nfe-amc@toktake.com.br','Nota de Debito',cMsg,aArquivos,.T.)				
 				aEmail[nX,04] := 'Enviado'				
 			Endif	
 		Else
@@ -1398,20 +1395,17 @@ For nAkacio := 1 to len(aEmail)
 				
 				cMsg := cHtml(aEmail[nAkacio,12],aEmail[nAkacio,2])                                                    //+aEmail[nAkacio,09]+aEmail[nAkacio,10]
 				Aadd(aArquivos,{"\_AMC\Nota_Debito\"+cFilAnt+"\"+aEmail[nAkacio,02]+".pdf",''})
-				//lRetorno := U_TTMAILN('nfe-amc@toktake.com.br',Alltrim(aEmail[nAkacio,05])+';nfe-amc@toktake.com.br','Nota de Debito',cMsg,aArquivos,.T.)				
+
 				aAxM := strtokarr(Alltrim(aEmail[nAkacio,05]),";")
 				cMailenv := ''
 				cPV	:=	''
 				For nPtro := 1 to len(aAxM)
-					//lRetorno := U_TTMAILN('nfe-amc@toktake.com.br',Alltrim(aEmail[nAkacio,05])+';nfe-amc@toktake.com.br','Nota de Debito',cMsg,aArquivos,.T.)				
-					//lRetorno := U_TTMAILN('nfe-amc@toktake.com.br',Alltrim(aAxM[nPtro]),'Nota de Debito '+aEmail[nAkacio,02],cMsg,aArquivos,.T.)				
 					cMailenv += cPV + Alltrim(aAxM[nPtro])
 					cPV := ";"
 				Next nPtro 				
 				
 				lRetorno := U_TTMAILN('nfe.amc@toktake.com.br',cMailenv+';nfe.amc@toktake.com.br','Nota de Debito '+aEmail[nAkacio,02]+' Serie '+aEmail[nAkacio,11],cMsg,aArquivos,.T.)				                                                                                              
 				
-				//lRetorno := U_TTMAILN('nfe-amc@toktake.com.br','cpereira@toktake.com.br','Nota de Debito',cMsg,aArquivos,.T.)
 			EndIf	
 		EndIf
 	EndIf
@@ -1798,28 +1792,6 @@ Private oRes1,oGres1,oGres2,oBrw1,oGres3,oBRes1,oBRes2,oSayR1,oSayR2,oSayR3,oSay
 Private oResci
 Private aResci	:=	{}  
 
-/*                             
-alist                                               aList2b							aList3b            		aList4b
-
-1 - Número do Contrato             	pk				1 - Ativo						1 - Numero Pedido	fk	1 - Nota			
-2 - Valor Total do Contrato							2 - Descrição					2 - Data Emissao		2 - Desricao
-3 - Código Cliente									3 - Valor Locacao				3 - Valor Total         3 - Valor
-4 - Loja Cliente									4 - Contrato 		pk			4 - Nota                4 - Numero Pedido fk
-5 - Nome Cliente / Nome Reduzido					5 - Inicio Cobranca				5 - contrato 		pk	5 - Item Pedido
-6 - Endereço Cliente								6 - Fim Cobranca				6 - Codigo Cliente      6 - Contrato
-7 - Bairro                                                                          7 - Loja Cliente        7 - Codigo Cliente
-8 - Cidade                                                                                                  8 - Loja Cliente 
-9 - Condição de Pagamento                                                                                   9 - Quantidade
-10- Descricao da condicao
-11- Inicio Vigencia
-12- Fim Vigencia
-13- Email Cliente 
-14- Inicio Multa
-15- Prazo
-16- Percentual Multa
-17- Renovacao Automatica
-*/  
-//'Ativo','Modelo','Instalado em','Valor'
 
 For nX := 1 to len(aList2b)
 	If aList[nLinha,01] == aList2b[nX,04]
@@ -2717,7 +2689,7 @@ Local nY
 Local aLeitura 	:=	If(len(aArray)>4,LeiAntr(aArray[01],aArray[02],aArray[5,11]),{})
 Local cTipFat	:=	alist[ascan(aList,{|x| x[1] == aarray[1]}),14]
 
-If len(aArray)  < 5
+If len(aArray)  < 5 .or. len(aLeitura) < 1
 	Return  
 EndIf 
 
@@ -2725,9 +2697,6 @@ cQuery := "  SELECT Z08_COD,Z08_SEQUEN,Z08_SELECA,Z08_PRODUT,B1_DESC,Z08_QTDLID,
 cQuery += "  FROM "+RetSQLname("Z08")+" Z08"
 cQuery += "  LEFT JOIN "+RetSQLname("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"'"
 cQuery += "		AND B1_COD=Z08_PRODUT AND B1.D_E_L_E_T_=' '" 
-/*cQuery += "  WHERE  Z08_COD IN(SELECT MAX(Z08_COD)-1 FROM "+RetSQLname("Z08")
-cQuery += "		WHERE  Z08_FILIAL='"+xFilial("Z08")+"' AND Z08_NUMSER='"+aArray[02]+"'" 
-cQuery += "  	AND Z08_CONTRT='"+aArray[01]+"' AND D_E_L_E_T_=' ')"*/
 cQuery += " WHERE Z08_COD='"+aLeitura[1]+"'"
 cQuery += "  AND Z08.D_E_L_E_T_=' '"
 cQuery += " UNION "
@@ -2735,9 +2704,6 @@ cQuery += "  SELECT Z08_COD,Z08_SEQUEN,Z08_SELECA,Z08_PRODUT,B1_DESC,Z08_QTDLID,
 cQuery += "  FROM "+RetSQLname("Z08")+" Z08"
 cQuery += "  LEFT JOIN "+RetSQLname("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"'"
 cQuery += "		AND B1_COD=Z08_PRODUT AND B1.D_E_L_E_T_=' '" 
-/*cQuery += "  WHERE  Z08_COD IN(SELECT MAX(Z08_COD)-2 FROM "+RetSQLname("Z08")
-cQuery += "		WHERE  Z08_FILIAL='"+xFilial("Z08")+"' AND Z08_NUMSER='"+aArray[02]+"'" 
-cQuery += "  	AND Z08_CONTRT='"+aArray[01]+"' AND D_E_L_E_T_=' ')"*/
 cQuery += " WHERE Z08_COD='"+aLeitura[2]+"'"
 cQuery += "  AND Z08.D_E_L_E_T_=' '"
 cQuery += "  ORDER BY Z08_COD DESC"
