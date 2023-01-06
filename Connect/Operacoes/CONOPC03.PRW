@@ -289,12 +289,7 @@ Local aArea     :=  GetArea()
 
 If !Empty(cPatr)
     aCols := {}
-    // '','Selecao','Produto','Descrição','Valor'
-    /*cQuery := 'SELECT Z07_CHAPA,Z07_SELECA,Z07_CODPRO,B1_DESC,Z07_VLRVND,Z07_CONSUM,Z07_CLIENT,Z07_LOJA'
-    cQuery += " FROM "+RetSQLName("Z07")+" Z07"
-    cQuery += " INNER JOIN "+RetSQLName("SB1")+ " B1 ON B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD=Z07_CODPRO AND B1.D_E_L_E_T_=' '"
-    cQuery += " WHERE Z07_FILIAL='"+xFilial("Z07")+"' AND Z07_CHAPA='"+cPatr+"' AND Z07.D_E_L_E_T_=' '"*/
-    
+   
     cQuery := "SELECT Z07_CHAPA,Z07_SELECA,Z07_CODPRO,B1_DESC,Z07_VLRVND,Z07_CONSUM,"
     cQuery += " Z07_CLIENT,Z07_LOJA,AAM_XCODTA,DA1_PRCVEN,DA1_XCONSU"
     cQuery += " FROM "+RetSQLName("Z07")+" Z07"
@@ -330,6 +325,12 @@ If !Empty(cPatr)
 
     If len(aCols) < 1
         Aadd(aCols,{'','','','',0,0,.f.})
+        DbSelectArea("AA3")
+        DbSetOrder(7)
+        If Dbseek(xFilial("AA3")+cPatr)
+            cCli := AA3->AA3_CODCLI
+            cLj  := AA3->AA3_LOJA
+        EndIf
     EndIf 
 
     oList1:SetArray(aCols)

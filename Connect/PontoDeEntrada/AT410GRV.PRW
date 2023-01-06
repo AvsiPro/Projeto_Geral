@@ -30,7 +30,7 @@ While !Empty(procname(nPos))
 EndDo
 
 If lTeca
-    cCham := Alltrim(AB7->AB7_NRCHAM) //substr(AB7->AB7_NRCHAM,1,8)+Strzero(val(substr(AB7->AB7_NRCHAM,8)),2)
+    cCham := Alltrim(AB7->AB7_NRCHAM) 
     DbSelectArea("AB2")
     DbSetOrder(1)
     If Dbseek(xFilial("AB2")+cCham+aCols[nAcols,nPosPr]+AB7->AB7_NUMSER)

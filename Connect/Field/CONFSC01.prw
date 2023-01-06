@@ -41,6 +41,11 @@ Local nCont
 Local nJ 
 
 Private cPeri		:=	space(4)
+Private cCont1		:=	space(15)
+Private cCont2		:=	'ZZZZZZZZZZZZZZZ'
+Private cCli1		:=	space(9)
+Private cCli2		:=	'ZZZZZZZZZ'
+Private cTpCnt		:=	space(3)
 
 Private oDlg1,oGrp1,oGrp2,oSay1,oSay2,oSay6,oGrp3,oBrw1
 Private oGrp5,oBrw3,oBtn1,oMenu,oGrp6,oSay3,oSay4,oSay5
@@ -123,17 +128,28 @@ aQtdH := {'Numero_Contrato',;
 aAdd( aPergs ,{1,"Data de Faturamento : ",cCond,"@!",'.T.',"SE4",'.T.',40,.F.})  
 aAdd( aPergs ,{1,"Período Faturamento 'MMAA' : ",cPeri,"@E 9999",'.T.',"",'.T.',40,.F.})  
 aAdd( aPergs ,{2,"Faturamento Quinzenal?","1",{"1=Primeira","2=Segunda"},080,'',.T.})
+aAdd( aPergs ,{1,"Contrato de : ",cCont1,"@!",'.T.',"AAM",'.T.',80,.F.})  
+aAdd( aPergs ,{1,"Contrato Ate: ",cCont2,"@!",'.T.',"AAM",'.T.',80,.F.})  
+aAdd( aPergs ,{1,"Cliente de : " ,cCli1,"@!",'.T.',"SA1",'.T.',60,.F.})  
+aAdd( aPergs ,{1,"Cliente Ate: " ,cCli2,"@!",'.T.',"SA1",'.T.',60,.F.})  
+aAdd( aPergs ,{1,"Tipo Contrato:",cTpCnt,"@!",'.T.',"A7",'.T.',40,.F.})  
         
+		
 If !ParamBox(aPergs ,"Parametros ",aRet)
 	Return
 Else
-	cCond := aRet[1]
-	cPeri := aRet[2]
+	cCond 	:= aRet[1]
+	cPeri 	:= aRet[2]
 	cQuinze := aRet[3]
+	cCont1	:= aRet[4]
+	cCont2	:= aRet[5]
+	cCli1	:= aRet[6]
+	cCli2	:= aRet[7]
+	cTpCnt	:= aRet[8]
 EndIf
 
 Processa( { || Busca(cCond,cQuinze),"Aguarde"})
-//Aadd(aList,{'',0,'',})
+
 Aadd(aList2,{'','',0})
 Aadd(aList3,{'','',0})
 Aadd(aList4,{'','',0})
@@ -210,10 +226,7 @@ oGrp1      := TGroup():New( 002,004,336,710,"",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F.
 							 aList3[oList3:nAt,04],;
 		 					 Transform(aList3[oList3:nAt,03],"@E 999,999,999.99")}}
 	
-	For nCont := 1 to len(aList)
-		oList:nAt := nCont
-		Fhelp(nCont)
-	Next nCont
+	Processa({|| atugrid()},"Atualizando totais")
 
 	For nCont := 1 to len(aList)
 		nPos := Ascan(aList5B,{|x| x[1] == aList[nCont,01]})
@@ -280,7 +293,30 @@ oDlg1:Activate(,,,.T.)
 //Reset Environment
 
 Return                                
-                                                  
+
+/*/{Protheus.doc} atugrid
+	(long_description)
+	@type  Static Function
+	@author user
+	@since 05/01/2023
+	@version version
+	@param param_name, param_type, param_descr
+	@return return_var, return_type, return_description
+	@example
+	(examples)
+	@see (links_or_references)
+/*/
+Static Function atugrid()
+
+Local nCont := 0
+
+For nCont := 1 to len(aList)
+	oList:nAt := nCont
+	Fhelp(nCont)
+Next nCont
+
+Return
+
 /*
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
@@ -331,6 +367,13 @@ cQuery += " WHERE AAN_FILIAL='"+xFilial("AAN")+"' AND AAN.D_E_L_E_T_=''"
 If !Empty(cCond)
 	cQuery += " AND AAN_CONPAG='"+cCond+"'" 
 EndIf
+
+cQuery += " AND AAM_CONTRT BETWEEN '"+cCont1+"' AND '"+cCont2+"'"
+cQuery += " AND AAM_CODCLI BETWEEN '"+cCli1+"' AND '"+cCli2+"'"
+
+If !Empty(cTpCnt)
+	cQuery += " AND AAM_CLASSI='"+cTpCnt+"'"
+EndIF 
 
 If Select("TRB") > 0
 	dbSelectArea("TRB")
@@ -452,7 +495,8 @@ For nCont := 1 to len(aAux3)
 	cQuery += " C6_DESCRI,C6_ITEM,C6_QTDVEN,C6_SERIE,C6_FILIAL"
 	cQuery += " FROM "+RetSQLName("SC6")+" C6"
 	cQuery += " INNER JOIN "+RetSQLName("SC5")+" C5 ON C5_FILIAL=C6_FILIAL "
-	cQuery += " AND C5_NUM=C6_NUM AND C5_CLIENTE=C6_CLI AND C5.D_E_L_E_T_=''"
+	cQuery += " AND C5_NUM=C6_NUM AND C5_CLIENTE=C6_CLI AND C5.D_E_L_E_T_=' '"
+	cQuery += " AND C5_XTPPED IN('F','L')"
 	cQuery += " WHERE C6_FILIAL='"+xFilial("SC6")+"'"
 	cQuery += " AND C6_CONTRT='"+aAux3[nCont,01]+"' "
 	cQuery += " AND C6_CLI='"+aAux3[nCont,02]+"' AND C6.D_E_L_E_T_=''"
@@ -640,17 +684,15 @@ For nCont := 1 to len(aList5b)
 
 Next nCont
 
-//If cQuinze == "2"
-	For nCont := 1 to len(aList)
-		If (aList[nCont,14] == "2" .And. cQuinze == "2") .Or. (aList[nCont,14] == "1")
-			For nAux := 1 to len(aList5B)
-				If aList5B[nAux,01] == aList[nCont,01]
-					Recalc(aList5B[nAux],nAux)
-				EndIf 
-			Next nAux 
-		EndIf 
-	Next nCont 
-//EndIf 
+For nCont := 1 to len(aList)
+	If (aList[nCont,14] == "2" .And. cQuinze == "2") .Or. (aList[nCont,14] == "1")
+		For nAux := 1 to len(aList5B)
+			If aList5B[nAux,01] == aList[nCont,01]
+				Recalc(aList5B[nAux],nAux)
+			EndIf 
+		Next nAux 
+	EndIf 
+Next nCont 
 
 
 RestArea(aArea)
@@ -685,33 +727,9 @@ oSay7:settext("")
 aList2 := {}
 aList3 := {}
 aList4 := {}              
-/*                             
-alist                                               aList2b							aList3b            		aList4b
-
-1 - Número do Contrato             	pk				1 - Ativo						1 - Numero Pedido	fk	1 - Nota			
-2 - Valor Total do Contrato							2 - Descrição					2 - Data Emissao		2 - Desricao
-3 - Código Cliente									3 - Valor Locacao				3 - Valor Total         3 - Valor
-4 - Loja Cliente									4 - Contrato 		pk			4 - Nota                4 - Numero Pedido fk
-5 - Nome Cliente / Nome Reduzido					5 - Inicio Cobranca				5 - contrato 		pk	5 - Item Pedido
-6 - Endereço Cliente								6 - Fim Cobranca				6 - Codigo Cliente      6 - Contrato
-7 - Bairro                                                                          7 - Loja Cliente        7 - Codigo Cliente
-8 - Cidade                                                                                                  8 - Loja Cliente 
-9 - Condição de Pagamento                                                                                   9 - Quantidade
-10- Descricao da condicao
-11- Inicio Vigencia
-12- Fim Vigencia
-13- Email Cliente 
-14- Inicio Multa
-15- Prazo
-16- Percentual Multa
-17- Renovacao Automatica
-*/                   
 
 oSay2:settext(aList[nLinha,03]+'-'+aList[nLinha,04]+' - '+aList[nLinha,05]+' - Contrato '+aList[nLinha,01])    
 oSay4:settext(aList[nLinha,06]+' - '+aList[nLinha,07]+' - '+aList[nLinha,08])
-
-
-//oSay6:settext("Dia de Fat. "+Alltrim(cvaltochar(aList[nLinha,09]))+" - Vigência "+cvaltochar(aList[nLinha,11])+" a "+cvaltochar(aList[nLinha,12]))           
 
 //PReenche o grid de ativos do contrato
 For nCont := 1 to len(aList2b)
