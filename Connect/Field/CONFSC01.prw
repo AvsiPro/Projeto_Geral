@@ -125,14 +125,14 @@ aQtdH := {'Numero_Contrato',;
 			'Perc_Multa',;
 			'Renovacao'}
  
-aAdd( aPergs ,{1,"Data de Faturamento : ",cCond,"@!",'.T.',"SE4",'.T.',40,.F.})  
-aAdd( aPergs ,{1,"Período Faturamento 'MMAA' : ",cPeri,"@E 9999",'.T.',"",'.T.',40,.F.})  
-aAdd( aPergs ,{2,"Faturamento Quinzenal?","1",{"1=Primeira","2=Segunda"},080,'',.T.})
-aAdd( aPergs ,{1,"Contrato de : ",cCont1,"@!",'.T.',"AAM",'.T.',80,.F.})  
-aAdd( aPergs ,{1,"Contrato Ate: ",cCont2,"@!",'.T.',"AAM",'.T.',80,.F.})  
-aAdd( aPergs ,{1,"Cliente de : " ,cCli1,"@!",'.T.',"SA1",'.T.',60,.F.})  
-aAdd( aPergs ,{1,"Cliente Ate: " ,cCli2,"@!",'.T.',"SA1",'.T.',60,.F.})  
-aAdd( aPergs ,{1,"Tipo Contrato:",cTpCnt,"@!",'.T.',"A7",'.T.',40,.F.})  
+aAdd( aPergs ,{1,"Data de Faturamento : "		,cCond	,"@!",'.T.',"SE4",'.T.',40,.F.})  
+aAdd( aPergs ,{1,"Período Faturamento 'MMAA' : ",cPeri	,"@E 9999",'.T.',"",'.T.',40,.F.})  
+aAdd( aPergs ,{2,"Faturamento Quinzenal?"		,"1"	,{"1=Primeira","2=Segunda"},080,'',.T.})
+aAdd( aPergs ,{1,"Contrato de : "				,cCont1	,"@!",'.T.',"AAM",'.T.',80,.F.})  
+aAdd( aPergs ,{1,"Contrato Ate: "				,cCont2	,"@!",'.T.',"AAM",'.T.',80,.F.})  
+aAdd( aPergs ,{1,"Cliente de : " 				,cCli1	,"@!",'.T.',"SA1",'.T.',60,.F.})  
+aAdd( aPergs ,{1,"Cliente Ate: " 				,cCli2	,"@!",'.T.',"SA1",'.T.',60,.F.})  
+aAdd( aPergs ,{1,"Tipo Contrato:"				,cTpCnt	,"@!",'.T.',"A7",'.T.',40,.F.})  
         
 		
 If !ParamBox(aPergs ,"Parametros ",aRet)
