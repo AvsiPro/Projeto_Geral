@@ -467,7 +467,8 @@ While !EOF()
 					TRB->AAN_XVLRMI,;				//08
 					0,;								//09
 					0,;								//10
-					0})								//11
+					0,;								//11
+					TRB->AAN_CONPAG})				//12
 
     //Itens referente aos pedidos faturados para o contrato.
     If nPos3 == 0
@@ -1985,7 +1986,8 @@ ElseIf nOpcG == 1
 			cBarra := "/"
 			If aList2B[nCont,03] > 1
 				Aadd(aLocac,{aList2B[nCont,01],;
-							aList2B[nCont,03]})
+							aList2B[nCont,03],;
+							aList2B[nCont,12]})
 			EndIf 
 		EndIf 
 	Next nCont
@@ -2134,10 +2136,10 @@ If len(aLocac) > 0
 	aAdd( aCabec , { "C5_FILIAL"    , xFilial("SC5")      	, Nil } ) 
 	aAdd( aCabec , { "C5_XTPPED"    , 'L'                 	, Nil } )
 	aAdd( aCabec , { "C5_TIPO"      , 'N'                 	, Nil } )
-	aAdd( aCabec , { "C5_CLIENTE"   , aList[oList:nAt,03]    , Nil } )
-	aAdd( aCabec , { "C5_LOJACLI"   , aList[oList:nAt,04]    , Nil } )
+	aAdd( aCabec , { "C5_CLIENTE"   , aList[oList:nAt,03]   , Nil } )
+	aAdd( aCabec , { "C5_LOJACLI"   , aList[oList:nAt,04]   , Nil } )
 	Aadd( aCabec , { "C5_MENNOTA"   , 'Locacao de Maquinas Ref. Patrimonio(s) '+cAtLoc    , Nil } )
-	aAdd( aCabec , { "C5_CONDPAG"   , AAM->AAM_CPAGPV     	, Nil } )    
+	aAdd( aCabec , { "C5_CONDPAG"   , aLocac[1,3]     		, Nil } )    //AAM->AAM_CPAGPV
 	aAdd( aCabec , { "C5_NATUREZ"   , cNaturez     			, Nil } )
 	
 	For nCont := 1 to len(aLocac)

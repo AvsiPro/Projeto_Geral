@@ -138,7 +138,7 @@ cDoc := ultnota() //GetSXenum("SF1","F1_DOC")
 aadd(aCabecNf,{"F1_TIPO"   		,"N"})		
 aadd(aCabecNf,{"F1_FORMUL" 		,"S"})		
 aadd(aCabecNf,{"F1_DOC"    		,cDoc})		
-aadd(aCabecNf,{"F1_SERIE"  		,"005"})		
+aadd(aCabecNf,{"F1_SERIE"  		,"001"})		
 aadd(aCabecNf,{"F1_EMISSAO"		,dDataBase})		
 aadd(aCabecNf,{"F1_FORNECE"		,cCodFor})		
 aadd(aCabecNf,{"F1_LOJA"   		,cLojFor})		
@@ -279,7 +279,7 @@ cDoc := ultnota() //GetSXenum("SF1","F1_DOC")
 aadd(aCabec,{"F1_TIPO"   		,"N"})		
 aadd(aCabec,{"F1_FORMUL" 		,"S"})		
 aadd(aCabec,{"F1_DOC"    		,cDoc})		
-aadd(aCabec,{"F1_SERIE"  		,"005"})		
+aadd(aCabec,{"F1_SERIE"  		,"001"})		
 aadd(aCabec,{"F1_EMISSAO"		,dDataBase})		
 aadd(aCabec,{"F1_FORNECE"		,cCodFor})		
 aadd(aCabec,{"F1_LOJA"   		,cLojFor})		
@@ -419,11 +419,11 @@ Local aAux		:=	{}
 
 cQuery := "SELECT MAX(D2_DOC) AS SAIDA,'S' AS TIPO"
 cQuery += " FROM "+RetSQLName("SD2")+" D2"
-cQuery += " WHERE D2_FILIAL='"+xFilial("SD2")+"' AND D2_SERIE='005' AND D2.D_E_L_E_T_=''"
+cQuery += " WHERE D2_FILIAL='"+xFilial("SD2")+"' AND D2_SERIE='001' AND D2.D_E_L_E_T_=''"
 cQuery += " UNION"
 cQuery += " SELECT MAX(D1_DOC) AS SAIDA,'E' AS TIPO"
 cQuery += " FROM "+RetSQLName("SD1")+" D1"
-cQuery += " WHERE D1_FILIAL='"+xFilial("SD1")+"' AND D1_SERIE='005' AND D1.D_E_L_E_T_='' AND D1_DOC LIKE '0%' AND D1_FORMUL='S'"
+cQuery += " WHERE D1_FILIAL='"+xFilial("SD1")+"' AND D1_SERIE='001' AND D1.D_E_L_E_T_='' AND D1_DOC LIKE '0%' AND D1_FORMUL='S'"
 
 If Select('TRB') > 0
 	dbSelectArea('TRB')
