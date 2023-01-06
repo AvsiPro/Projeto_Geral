@@ -17,61 +17,48 @@ User Function CONGEN03()
     Local cNum := ""
 	Local cEmissao := ""
 	Local cValor := ""
-	Local cNota := ""
 	Local cMes := ""
 	Local cVencimento := ""
 	Local cLogoD := ""
+	Local cNotD 	:=	space(9)
+	Local cNotA 	:=	'ZZZZZZZZZ'
+	Local cFilD 	:=	space(4)
+	Local cFilA 	:=	'ZZZZ'
 
 	//Fontes
 	Local oF10FFF          := TFont():New('Arial' /*Fonte*/,,10 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
 	Local oF10TFF          := TFont():New('Arial' /*Fonte*/,,10 /*Tamanho*/,,.T. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF10FTF          := TFont():New('Arial' /*Fonte*/,,10 /*Tamanho*/,,.F. /*Negrito*/,,,,,.T. /*Sublinhado*/,.F. /*Italico*/ )
 	Local oF10FFT          := TFont():New('Arial' /*Fonte*/,,10 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.T. /*Italico*/ )
-	// Local oF12FFF          := TFont():New('Arial' /*Fonte*/,,12 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF12TFF          := TFont():New('Arial' /*Fonte*/,,12 /*Tamanho*/,,.T. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF12FTF          := TFont():New('Arial' /*Fonte*/,,12 /*Tamanho*/,,.F. /*Negrito*/,,,,,.T. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF12FFT          := TFont():New('Arial' /*Fonte*/,,12 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.T. /*Italico*/ )
 	Local oF13FFF          := TFont():New('Arial' /*Fonte*/,,12 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF13TFF          := TFont():New('Arial' /*Fonte*/,,12 /*Tamanho*/,,.T. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF13FTF          := TFont():New('Arial' /*Fonte*/,,12 /*Tamanho*/,,.F. /*Negrito*/,,,,,.T. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF13FFT          := TFont():New('Arial' /*Fonte*/,,12 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.T. /*Italico*/ )
-	// Local oF15FFF          := TFont():New('Arial' /*Fonte*/,,15 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF15TFF          := TFont():New('Arial' /*Fonte*/,,15 /*Tamanho*/,,.T. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF15FTF          := TFont():New('Arial' /*Fonte*/,,15 /*Tamanho*/,,.F. /*Negrito*/,,,,,.T. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF15FFT          := TFont():New('Arial' /*Fonte*/,,15 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.T. /*Italico*/ )
-	// Local oF20FFF          := TFont():New('Arial' /*Fonte*/,,20 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
 	Local oF20TFF          := TFont():New('Arial' /*Fonte*/,,20 /*Tamanho*/,,.T. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF20FTF          := TFont():New('Arial' /*Fonte*/,,20 /*Tamanho*/,,.F. /*Negrito*/,,,,,.T. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF20FFT          := TFont():New('Arial' /*Fonte*/,,20 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.T. /*Italico*/ )
-	// Local oF25FFF          := TFont():New('Arial' /*Fonte*/,,25 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF25TFF          := TFont():New('Arial' /*Fonte*/,,25 /*Tamanho*/,,.T. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF25FTF          := TFont():New('Arial' /*Fonte*/,,25 /*Tamanho*/,,.F. /*Negrito*/,,,,,.T. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF25FFT          := TFont():New('Arial' /*Fonte*/,,25 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.T. /*Italico*/ )
-
+	
 	Local aPergs := {}
 
 	If Select("SM0") == 0
 		RpcSetType(3)
-		RPCSetEnv("01","01")
+		RPCSetEnv("01","0101")
 	EndIf
 
-	cLogoD := "\SYSTEM\blogo_connect.bmp"
+	cLogoD := "\SYSTEM\lgrl01.bmp"
 
-    aAdd( aPergs ,{01,"Pedido de"                  ,"                          "     ,""                    ,"","SC5"    ,"", 60,.F.})  
+    aAdd( aPergs ,{01,"Nota de"   ,cNotD   ,"@!"       ,".T.","SF2"    ,".T.", 80,.F.})  
+	aAdd( aPergs ,{01,"Nota Ate"  ,cNotA   ,"@!"       ,".T.","SF2"    ,".T.", 80,.F.})  
+
+	aAdd( aPergs ,{01,"Filial de"   ,cFilD   ,"@!"       ,".T.",""    ,".T.", 80,.F.})  
+	aAdd( aPergs ,{01,"Filial Ate"  ,cFilA   ,"@!"       ,".T.",""    ,".T.", 80,.F.})  
 
 	If !ParamBox(aPergs ,"Parametros ")
 		Return
 	EndIf
 
-    cNum := MV_PAR01
-
-	cQuery := " "
-	cQuery += " SELECT C5_NUM,C6_PRCVEN,C6_VALOR,C5_EMISSAO,C6_NOTA,C6_DATFAT,C6_PEDCLI,A1_NOME,A1_CGC,A1_END,A1_NREDUZ,C6_DESCRI " 
-	cQuery += " FROM " + RetSQLName("SC5") + " " 
-	cQuery += " INNER JOIN " + RetSQLName("SC6") + " ON C5_NUM = C6_NUM " 
-	cQuery += " AND C5_FILIAL=C6_FILIAL " 
-	cQuery += " INNER JOIN " + RetSQLName("SA1") + " ON A1_COD = C5_CLIENTE AND C5_LOJACLI = A1_LOJA" 
-	cQuery += " WHERE  C5_NUM = '" + AllTrim(cNum) + "' "
+    cQuery := "SELECT D2_PEDIDO,D2_PRCVEN,D2_TOTAL,F2_EMISSAO,F2_DOC,F2_EMISSAO,C6_PEDCLI,A1_NOME,A1_CGC,A1_END,A1_NREDUZ,B1_DESC"
+	cQuery += " FROM "+RetSQLName("SF2")+" F2 "
+	cQuery += " INNER JOIN "+RetSQLName("SD2")+" D2 ON D2_FILIAL=F2_FILIAL AND D2_DOC=F2_DOC AND D2_SERIE=F2_SERIE AND D2.D_E_L_E_T_=' '"
+	cQuery += " INNER JOIN "+RetSQLName("SC6")+" C6 ON C6_FILIAL=D2_FILIAL AND C6_NUM=D2_PEDIDO AND C6_ITEM=D2_ITEMPV AND C6.D_E_L_E_T_=' '"
+	cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_COD=F2_CLIENTE AND A1_LOJA=F2_LOJA AND A1.D_E_L_E_T_=' '"
+	cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD=D2_COD AND B1.D_E_L_E_T_=' '"
+	cQuery += " WHERE F2_FILIAL BETWEEN '"+MV_PAR03+"' AND '"+MV_PAR04+"' AND F2_SERIE='LOC' AND F2.D_E_L_E_T_=' '"
+	cQuery += " AND F2_DOC BETWEEN '"+MV_PAR01+"' AND '"+MV_PAR02+"'"
 
 	If Select("TRB") > 0
 		dbSelectArea("TRB")
@@ -83,10 +70,20 @@ User Function CONGEN03()
 	DbUseArea(.T.,"TOPCONN",TcGenQry(,,cQuery),'TRB',.F.,.T.)
 
 	while !EOF()
-
-		aAux := {TRB->C5_NUM,TRB->C5_EMISSAO,TRB->C6_PRCVEN,TRB->C6_VALOR,TRB->C6_NOTA,TRB->C6_DATFAT,TRB->C6_PEDCLI,TRB->A1_NOME,TRB->A1_CGC,TRB->A1_END,TRB->A1_NREDUZ,TRB->C6_NOTA,TRB->C6_DESCRI}
-				//aAux[1]    aAux[2]         aAux[3]        aAux[4]       aAux[5]      aAux[6]        aAux[7]
-
+		aAux := {TRB->D2_PEDIDO,;	//01
+				TRB->F2_EMISSAO,;	//02
+				TRB->D2_PRCVEN,;	//03
+				TRB->D2_TOTAL,;		//04
+				TRB->F2_DOC,;		//05
+				TRB->F2_EMISSAO,;	//06
+				TRB->C6_PEDCLI,;	//07
+				TRB->A1_NOME,;		//08
+				TRB->A1_CGC,;		//09
+				TRB->A1_END,;		//10
+				TRB->A1_NREDUZ,;	//11
+				TRB->F2_DOC,;		//12
+				TRB->B1_DESC}		//13
+				
 		lOK := .T.
 		DBSKIP()
 	end
@@ -96,7 +93,7 @@ User Function CONGEN03()
 		RETURN
 	endif
 
-	cNum := zTiraZeros(aAux[12])
+	cNum := cvaltochar(val(aAux[12]))
 	cEmissao := dtoc(stod(aAux[2]))
 	cValor := "R$ " + Transform(aAux[3], "@E 999,999.99")
 	cValor1 := Transform(aAux[3], "@E 999,999.99")
@@ -120,7 +117,7 @@ User Function CONGEN03()
 	oBrush1 := TBrush():New( , rgb(237, 237, 237) )
 	oPrinter:Fillrect( { 26, 500, 74, 590 }, oBrush1, "-2")
 
-	// oPrinter:SayBitmap(045,003,cLogoD,200,200)
+	oPrinter:SayBitmap(031,013,cLogoD,040,040)
 
 	oPrinter:Box( 25, 5, 25, 590, "-9" )
 	oPrinter:Say( 55, 125,"FATURA " + cNum + " - LOCAÇÃO DE " + Upper(cMes), oF20TFF )
@@ -191,28 +188,3 @@ User Function CONGEN03()
 	oPrinter:Print()
 
 Return
-
-Static Function zTiraZeros(cTexto)
-    Local aArea     := GetArea()
-    Local cRetorno  := ""
-    Local lContinua := .T.
-    Default cTexto  := ""
- 
-    //Pegando o texto atual
-    cRetorno := Alltrim(cTexto)
- 
-    //Enquanto existir zeros a esquerda
-    While lContinua
-        //Se a priemira posição for diferente de 0 ou não existir mais texto de retorno, encerra o laço
-        If SubStr(cRetorno, 1, 1) <> "0" .Or. Len(cRetorno) ==0
-            lContinua := .f.
-        EndIf
-         
-        //Se for continuar o processo, pega da próxima posição até o fim
-        If lContinua
-            cRetorno := Substr(cRetorno, 2, Len(cRetorno))
-        EndIf
-    EndDo
-     
-    RestArea(aArea)
-Return cRetorno
