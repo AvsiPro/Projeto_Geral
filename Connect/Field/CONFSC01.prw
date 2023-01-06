@@ -41,6 +41,11 @@ Local nCont
 Local nJ 
 
 Private cPeri		:=	space(4)
+Private cCont1		:=	space(15)
+Private cCont2		:=	'ZZZZZZZZZZZZZZZ'
+Private cCli1		:=	space(9)
+Private cCli2		:=	'ZZZZZZZZZ'
+Private cTpCnt		:=	space(3)
 
 Private oDlg1,oGrp1,oGrp2,oSay1,oSay2,oSay6,oGrp3,oBrw1
 Private oGrp5,oBrw3,oBtn1,oMenu,oGrp6,oSay3,oSay4,oSay5
@@ -123,13 +128,24 @@ aQtdH := {'Numero_Contrato',;
 aAdd( aPergs ,{1,"Data de Faturamento : ",cCond,"@!",'.T.',"SE4",'.T.',40,.F.})  
 aAdd( aPergs ,{1,"Período Faturamento 'MMAA' : ",cPeri,"@E 9999",'.T.',"",'.T.',40,.F.})  
 aAdd( aPergs ,{2,"Faturamento Quinzenal?","1",{"1=Primeira","2=Segunda"},080,'',.T.})
+aAdd( aPergs ,{1,"Contrato de : ",cCont1,"@!",'.T.',"AAM",'.T.',80,.F.})  
+aAdd( aPergs ,{1,"Contrato Ate: ",cCont2,"@!",'.T.',"AAM",'.T.',80,.F.})  
+aAdd( aPergs ,{1,"Cliente de : " ,cCli1,"@!",'.T.',"SA1",'.T.',60,.F.})  
+aAdd( aPergs ,{1,"Cliente Ate: " ,cCli2,"@!",'.T.',"SA1",'.T.',60,.F.})  
+aAdd( aPergs ,{1,"Tipo Contrato:",cTpCnt,"@!",'.T.',"A7",'.T.',40,.F.})  
         
+		
 If !ParamBox(aPergs ,"Parametros ",aRet)
 	Return
 Else
-	cCond := aRet[1]
-	cPeri := aRet[2]
+	cCond 	:= aRet[1]
+	cPeri 	:= aRet[2]
 	cQuinze := aRet[3]
+	cCont1	:= aRet[4]
+	cCont2	:= aRet[5]
+	cCli1	:= aRet[6]
+	cCli2	:= aRet[7]
+	cTpCnt	:= aRet[8]
 EndIf
 
 Processa( { || Busca(cCond,cQuinze),"Aguarde"})
@@ -210,10 +226,11 @@ oGrp1      := TGroup():New( 002,004,336,710,"",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F.
 							 aList3[oList3:nAt,04],;
 		 					 Transform(aList3[oList3:nAt,03],"@E 999,999,999.99")}}
 	
-	For nCont := 1 to len(aList)
+	/*For nCont := 1 to len(aList)
 		oList:nAt := nCont
-		Fhelp(nCont)
-	Next nCont
+		Processa({|| Fhelp(nCont)},"Atualizando totais")
+	Next nCont*/
+	Processa({|| atugrid()},"Atualizando totais")
 
 	For nCont := 1 to len(aList)
 		nPos := Ascan(aList5B,{|x| x[1] == aList[nCont,01]})
@@ -280,7 +297,30 @@ oDlg1:Activate(,,,.T.)
 //Reset Environment
 
 Return                                
-                                                  
+
+/*/{Protheus.doc} atugrid
+	(long_description)
+	@type  Static Function
+	@author user
+	@since 05/01/2023
+	@version version
+	@param param_name, param_type, param_descr
+	@return return_var, return_type, return_description
+	@example
+	(examples)
+	@see (links_or_references)
+/*/
+Static Function atugrid()
+
+Local nCont := 0
+
+For nCont := 1 to len(aList)
+	oList:nAt := nCont
+	Fhelp(nCont)
+Next nCont
+
+Return
+
 /*
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
@@ -331,6 +371,13 @@ cQuery += " WHERE AAN_FILIAL='"+xFilial("AAN")+"' AND AAN.D_E_L_E_T_=''"
 If !Empty(cCond)
 	cQuery += " AND AAN_CONPAG='"+cCond+"'" 
 EndIf
+
+cQuery += " AND AAM_CONTRT BETWEEN '"+cCont1+"' AND '"+cCont2+"'"
+cQuery += " AND AAM_CODCLI BETWEEN '"+cCli1+"' AND '"+cCli2+"'"
+
+If !Empty(cTpCnt)
+	cQuery += " AND AAM_CLASSI='"+cTpCnt+"'"
+EndIF 
 
 If Select("TRB") > 0
 	dbSelectArea("TRB")
@@ -452,7 +499,8 @@ For nCont := 1 to len(aAux3)
 	cQuery += " C6_DESCRI,C6_ITEM,C6_QTDVEN,C6_SERIE,C6_FILIAL"
 	cQuery += " FROM "+RetSQLName("SC6")+" C6"
 	cQuery += " INNER JOIN "+RetSQLName("SC5")+" C5 ON C5_FILIAL=C6_FILIAL "
-	cQuery += " AND C5_NUM=C6_NUM AND C5_CLIENTE=C6_CLI AND C5.D_E_L_E_T_=''"
+	cQuery += " AND C5_NUM=C6_NUM AND C5_CLIENTE=C6_CLI AND C5.D_E_L_E_T_=' '"
+	cQuery += " AND C5_XTPPED IN('F','L')"
 	cQuery += " WHERE C6_FILIAL='"+xFilial("SC6")+"'"
 	cQuery += " AND C6_CONTRT='"+aAux3[nCont,01]+"' "
 	cQuery += " AND C6_CLI='"+aAux3[nCont,02]+"' AND C6.D_E_L_E_T_=''"
