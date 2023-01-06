@@ -149,7 +149,7 @@ Else
 EndIf
 
 Processa( { || Busca(cCond,cQuinze),"Aguarde"})
-//Aadd(aList,{'',0,'',})
+
 Aadd(aList2,{'','',0})
 Aadd(aList3,{'','',0})
 Aadd(aList4,{'','',0})
@@ -226,10 +226,6 @@ oGrp1      := TGroup():New( 002,004,336,710,"",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F.
 							 aList3[oList3:nAt,04],;
 		 					 Transform(aList3[oList3:nAt,03],"@E 999,999,999.99")}}
 	
-	/*For nCont := 1 to len(aList)
-		oList:nAt := nCont
-		Processa({|| Fhelp(nCont)},"Atualizando totais")
-	Next nCont*/
 	Processa({|| atugrid()},"Atualizando totais")
 
 	For nCont := 1 to len(aList)
@@ -688,17 +684,15 @@ For nCont := 1 to len(aList5b)
 
 Next nCont
 
-//If cQuinze == "2"
-	For nCont := 1 to len(aList)
-		If (aList[nCont,14] == "2" .And. cQuinze == "2") .Or. (aList[nCont,14] == "1")
-			For nAux := 1 to len(aList5B)
-				If aList5B[nAux,01] == aList[nCont,01]
-					Recalc(aList5B[nAux],nAux)
-				EndIf 
-			Next nAux 
-		EndIf 
-	Next nCont 
-//EndIf 
+For nCont := 1 to len(aList)
+	If (aList[nCont,14] == "2" .And. cQuinze == "2") .Or. (aList[nCont,14] == "1")
+		For nAux := 1 to len(aList5B)
+			If aList5B[nAux,01] == aList[nCont,01]
+				Recalc(aList5B[nAux],nAux)
+			EndIf 
+		Next nAux 
+	EndIf 
+Next nCont 
 
 
 RestArea(aArea)
@@ -733,33 +727,9 @@ oSay7:settext("")
 aList2 := {}
 aList3 := {}
 aList4 := {}              
-/*                             
-alist                                               aList2b							aList3b            		aList4b
-
-1 - Número do Contrato             	pk				1 - Ativo						1 - Numero Pedido	fk	1 - Nota			
-2 - Valor Total do Contrato							2 - Descrição					2 - Data Emissao		2 - Desricao
-3 - Código Cliente									3 - Valor Locacao				3 - Valor Total         3 - Valor
-4 - Loja Cliente									4 - Contrato 		pk			4 - Nota                4 - Numero Pedido fk
-5 - Nome Cliente / Nome Reduzido					5 - Inicio Cobranca				5 - contrato 		pk	5 - Item Pedido
-6 - Endereço Cliente								6 - Fim Cobranca				6 - Codigo Cliente      6 - Contrato
-7 - Bairro                                                                          7 - Loja Cliente        7 - Codigo Cliente
-8 - Cidade                                                                                                  8 - Loja Cliente 
-9 - Condição de Pagamento                                                                                   9 - Quantidade
-10- Descricao da condicao
-11- Inicio Vigencia
-12- Fim Vigencia
-13- Email Cliente 
-14- Inicio Multa
-15- Prazo
-16- Percentual Multa
-17- Renovacao Automatica
-*/                   
 
 oSay2:settext(aList[nLinha,03]+'-'+aList[nLinha,04]+' - '+aList[nLinha,05]+' - Contrato '+aList[nLinha,01])    
 oSay4:settext(aList[nLinha,06]+' - '+aList[nLinha,07]+' - '+aList[nLinha,08])
-
-
-//oSay6:settext("Dia de Fat. "+Alltrim(cvaltochar(aList[nLinha,09]))+" - Vigência "+cvaltochar(aList[nLinha,11])+" a "+cvaltochar(aList[nLinha,12]))           
 
 //PReenche o grid de ativos do contrato
 For nCont := 1 to len(aList2b)
