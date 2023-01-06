@@ -496,7 +496,7 @@ For nCont := 1 to len(aAux3)
 	cQuery += " FROM "+RetSQLName("SC6")+" C6"
 	cQuery += " INNER JOIN "+RetSQLName("SC5")+" C5 ON C5_FILIAL=C6_FILIAL "
 	cQuery += " AND C5_NUM=C6_NUM AND C5_CLIENTE=C6_CLI AND C5.D_E_L_E_T_=' '"
-	cQuery += " AND C5_XTPPED IN('F','L')"
+	cQuery += " AND C5_XTPPED IN('F','L','V')"
 	cQuery += " WHERE C6_FILIAL='"+xFilial("SC6")+"'"
 	cQuery += " AND C6_CONTRT='"+aAux3[nCont,01]+"' "
 	cQuery += " AND C6_CLI='"+aAux3[nCont,02]+"' AND C6.D_E_L_E_T_=''"
@@ -2036,7 +2036,7 @@ ElseIf nOpcG == 1
 				EndIf
 			Next nCont
 
-			If (aList2[nX,11] > 0 .And. cQuinze == "2") .OR.(cForFat=="1" .AND. cTipFat=="2") //cCond == "2"
+			If (aList2[nX,11] > 0 .And. cQuinze == "2") .OR.(cForFat=="1" .AND. cTipFat=="2" .and. aList2[nX,11] > 0) //cCond == "2"
 				Aadd(aItens,{	aList[oList:nAt,22],;
 								aList2[nX,11],;
 								Posicione("DA1",1,xFilial("DA1")+AAM->AAM_XCODTA+aList[oList:nAt,22],"DA1_PRCVEN")})
@@ -2121,6 +2121,9 @@ EndIF
 
 //Faturamento locacao
 If len(aLocac) > 0
+	cProdLoc := SuperGetMV("TI_PRODLOC",.F.,"SLOC000001")
+	cNaturez := SuperGetMV("TI_NATRLOC",.F.,"31101003  ")
+	cTesLoc  := Posicione("SB1",1,xFilial("SB1")+cProdLoc,"B1_TS")
 	DbSelectArea("AAM")
 	DbSetOrder(1)
 	DbSeek(xFilial("AAM")+aList[oList:nAt,01])
@@ -2128,22 +2131,23 @@ If len(aLocac) > 0
 	aItC6  := {}
 	cItem  := '01'
 
-	aAdd( aCabec , { "C5_FILIAL"    , xFilial("SC5")      , Nil } ) 
-	aAdd( aCabec , { "C5_XTPPED"    , 'L'                 , Nil } )
-	aAdd( aCabec , { "C5_TIPO"      , 'N'                 , Nil } )
+	aAdd( aCabec , { "C5_FILIAL"    , xFilial("SC5")      	, Nil } ) 
+	aAdd( aCabec , { "C5_XTPPED"    , 'L'                 	, Nil } )
+	aAdd( aCabec , { "C5_TIPO"      , 'N'                 	, Nil } )
 	aAdd( aCabec , { "C5_CLIENTE"   , aList[oList:nAt,03]    , Nil } )
 	aAdd( aCabec , { "C5_LOJACLI"   , aList[oList:nAt,04]    , Nil } )
 	Aadd( aCabec , { "C5_MENNOTA"   , 'Locacao de Maquinas Ref. Patrimonio(s) '+cAtLoc    , Nil } )
-	aAdd( aCabec , { "C5_CONDPAG"   , AAM->AAM_CPAGPV     , Nil } )    
-
+	aAdd( aCabec , { "C5_CONDPAG"   , AAM->AAM_CPAGPV     	, Nil } )    
+	aAdd( aCabec , { "C5_NATUREZ"   , cNaturez     			, Nil } )
+	
 	For nCont := 1 to len(aLocac)
 		aLinha := {}
 		aAdd( aLinha , { "C6_FILIAL"     , xFilial("SC6")                         , Nil })
 		aAdd( aLinha , { "C6_ITEM"       , cItem 							      , Nil })
-		aAdd( aLinha , { "C6_PRODUTO"    , 'SLOC680001'                           , Nil })
+		aAdd( aLinha , { "C6_PRODUTO"    , cProdLoc		                          , Nil })
 		aAdd( aLinha , { "C6_QTDVEN"     , 1				                      , Nil })
 		aAdd( aLinha , { "C6_PRCVEN"     , aLocac[nCont,02]                       , Nil })
-		aAdd( aLinha , { "C6_TES"        , '523'                                  , Nil })  
+		aAdd( aLinha , { "C6_TES"        , cTesLoc                                , Nil })  
 		aAdd( aLinha , { "C6_QTDLIB"     , 1			    	                  , Nil })
 		aAdd( aLinha , { "C6_CONTRT" 	 , AAM->AAM_CONTRT						  , Nil })
 
