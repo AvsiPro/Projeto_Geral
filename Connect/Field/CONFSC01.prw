@@ -553,7 +553,7 @@ For nCont := 1 to len(aList3b)
 Next nCont
 
 
-cQuery := "SELECT AAM_CONTRT,DA1_CODPRO,B1_DESC,DA1_PRCVEN"
+cQuery := "SELECT AAM_CONTRT,DA1_CODPRO,B1_DESC,DA1_PRCVEN,DA1_XCONSU"
 cQuery += " FROM "+RetSQLName("AAM")+" AAM"
 cQuery += "  INNER JOIN "+RetSQLName("DA1")+" DA1 ON DA1_FILIAL='"+xFilial("DA1")+"' AND DA1_CODTAB=AAM_XCODTA AND DA1.D_E_L_E_T_=' '"
 cQuery += "  INNER JOIN "+RetSQLName("SB1")+" SB1 ON B1_FILIAL=DA1_FILIAL AND B1_COD=DA1_CODPRO AND SB1.D_E_L_E_T_=' '"
@@ -573,7 +573,8 @@ While !EOF()
 	Aadd(aTabPrc,{	TRB->AAM_CONTRT,;
 					TRB->DA1_CODPRO,;
 					TRB->B1_DESC,;
-					TRB->DA1_PRCVEN})
+					TRB->DA1_PRCVEN,;
+					TRB->DA1_XCONSU})
 	Dbskip()
 EndDo 
 
@@ -647,7 +648,6 @@ For nCont := 1 to len(aList5b)
 				Aadd(aAuxL5,aTabPrc[nPos2,04])
 			Else 
 				Aadd(aAuxL5,0)
-				
 			EndIf 
 
 			Aadd(aAuxL5,0)
@@ -661,6 +661,13 @@ For nCont := 1 to len(aList5b)
 			If len(aAuxL5) > 0
 				Aadd(aAux5,aAuxL5)
 			EndIf
+			
+			If nPos2 > 0
+				Aadd(aAuxL5,aTabPrc[nPos2,05])
+			Else 
+				Aadd(aAuxL5,0)
+			EndIf 
+
 		Else 
 			If Empty(aAux5[nPos,04])
 				aAux5[nPos,04] := TRB->Z08_DATA
@@ -673,6 +680,11 @@ For nCont := 1 to len(aList5b)
 			If nPos2 > 0 .And. aAux5[nPos,09] == 0
 				aAux5[nPos,09] := aTabPrc[nPos2,04]
 			EndIf 
+
+			If nPos2 > 0 .And. aAux5[nPos,15] == 0
+				aAux5[nPos,15] := aTabPrc[nPos2,05]
+			EndIf 
+
 		EndIf 
 		Dbskip()
 	EndDo 
