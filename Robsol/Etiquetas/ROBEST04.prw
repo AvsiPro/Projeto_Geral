@@ -143,7 +143,6 @@ FOR nCont := 1 TO len(aRet)
         DbSelectArea("SC5")
         SC5->(DbGoto(aRet[nCont,04]))
 
-
         DbSelectArea("Z51")
         Z51->(DbSetOrder(1))
         IF Z51->(Dbseek(SC5->C5_FILIAL+SC5->C5_NUM+SC5->C5_CLIENTE+SC5->C5_LOJACLI))
@@ -225,6 +224,10 @@ Static Function ImpEtiq(aItens)
     Local cMunE            := ""
     Local cEstE            := ""
     Local lTransp
+    Local nPosIni          := 0
+    Local nPosFim          := 0
+    Local nLeitura         := 0
+    Local lTpFret          := .F.
 
 	//Fontes
 	Local oF5FFF          := TFont():New('Arial' /*Fonte*/,,5 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
@@ -264,6 +267,18 @@ Static Function ImpEtiq(aItens)
 
     nEtiq := 1
     FOR nZ := 1 TO len(aItens)
+
+        nPosIni  := At("<TPFRETE>",  Upper(aItens[nZ,7])) + Len('<TPFRETE>')
+        nPosFim  := At("</TPFRETE>", Upper(aItens[nZ,7]))
+        nLeitura := nPosFim - nPosIni
+
+        IF At("<TPFRETE>",  Upper(aItens[nZ,7])) == 0
+            cTpFrete := '03220'
+            lTpFret := .T.
+        ELSE
+            cTpFrete := SubStr(Upper(aItens[nZ,7]), nPosIni, nLeitura)
+        ENDIF
+
         FOR nR := 1 TO len(aItens[nZ,2])
 
             if aItens[nZ,9] $ 'T1/T16'

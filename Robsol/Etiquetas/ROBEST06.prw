@@ -200,7 +200,7 @@ Static Function ImpEtiq(aItens)
    
     // Local cSedex        := "\system\img\"+Iif(cTpFrete == '03220','expressa','pac')+".bmp"
     Local cSimCor          := "\system\img\correio.bmp"
-    Local cRobsol          := "\system\img\robsol.bmp"
+    // Local cRobsol          := "\system\img\robsol.bmp"
     Local oFont6           := TFont():New('Arial',5,5,,.F.,,,,.F.,.F.,.F.)
     Local oFont8           := TFont():New('Arial',5,5,,.F.,,,,.F.,.F.,.F.)
     Local oFont8N          := TFont():New('Arial',8,8,,.F.,,,,.T.,.F.,.F.)
@@ -220,6 +220,10 @@ Static Function ImpEtiq(aItens)
     Local cCepE            := ""
     Local cMunE            := ""
     Local cEstE            := ""
+    Local nPosIni          := 0
+    Local nPosFim          := 0
+    Local nLeitura         := 0
+    Local lTpFret          := .F.
 
     Private oPrinter := FWMSPrinter():New("correios_"+dtos(ddatabase)+strtran(time(),":")+".pdf",IMP_PDF,lAdjustToLegacy,"c:\temp\",lDisableSetup,,,Alltrim(cImpress),,,,, /*parametro que recebe a impressora*/)
     
@@ -229,6 +233,18 @@ Static Function ImpEtiq(aItens)
     nEtiq := 1
 
     FOR nZ := 1 TO len(aItens)
+
+        nPosIni  := At("<TPFRETE>",  Upper(aItens[nZ,7])) + Len('<TPFRETE>')
+        nPosFim  := At("</TPFRETE>", Upper(aItens[nZ,7]))
+        nLeitura := nPosFim - nPosIni
+
+        IF At("<TPFRETE>",  Upper(aItens[nZ,7])) == 0
+            cTpFrete := '03220'
+            lTpFret := .T.
+        ELSE
+            cTpFrete := SubStr(Upper(aItens[nZ,7]), nPosIni, nLeitura)
+        ENDIF
+
         FOR nR := 1 TO len(aItens[nZ,2])
 
             if aItens[nZ,9] $ 'T1/T16'
