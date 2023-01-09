@@ -168,12 +168,14 @@ User Function Z08IMP()
     
     Local aPerg  := {}
     Local aAux   := {}
+    Local aAux2  := {}
     Local aItens := {}
     Local cArqT  :=	"C:\00\" + dtos(dDataBase) + StrTran(Time(),":","") + ".txt"
     Local nX     := 0
     Local lErro  := .F.
     Local cErro  := ""
     Local cMsg   := ""
+    Local cAux   := ""
     Local nHandle
     Local nLast
     Local cLine
@@ -223,6 +225,8 @@ User Function Z08IMP()
         FT_FSKIP()
 
     End
+
+    aAux := {}
 
     // Fecha o Arquivo
     FT_FUSE()
@@ -356,7 +360,6 @@ User Function Z08IMP()
             endif
             lErro := .F.
         endif
-        aAux := {}
 
         //SELECT Z07_CODPRO,Z07_CLIENT,Z07_LOJA,Z07_CODMAQ FROM Z07010 WHERE Z07_CHAPA = '0669' AND Z07_SELECA = '01'
         //SELECT AAM_CONTRT,AAN_ITEM,AAM_CODCLI,AAM_LOJA FROM AAM010 IINER JOIN AAN010 ON AAN_CONTRT = AAM_CONTRT WHERE AAN_XCBASE = '0669'    
@@ -411,35 +414,52 @@ User Function Z08IMP()
         FCLOSE(nHandle3)
     endif
 
-    oDlg1      := MSDialog():New( 050,100,600,1000,"Importacao de Leituras",,,.F.,,,,,,.T.,,,.T. )
+    cAux := aAux[1,1]
+    Aadd(aAux2, {})
+
+    for nX := 1 to len(aAux)
+        if aAux[nX,1] == cAux
+            Aadd(aAux2[len(aAux2)], aAux[nX])
+        else
+            Aadd(aAux2, {})
+            Aadd(aAux2[len(aAux2)], aAux[nX])
+        endif
+        cAux := aAux[nX,1]
+    next
+
+    for nX := 1 to len(aAux2)
+
+        oDlg1      := MSDialog():New( 050,100,600,1000,"Importacao de Leituras",,,.F.,,,,,,.T.,,,.T. )
+            
+        oGrp1      := TGroup():New( 05,05,225,450,"Leituras",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
         
-    oGrp1      := TGroup():New( 05,05,225,450,"Leituras",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
-    
-        //oBrw1      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{124,048,304,352},,, oGrp3 ) 
-        oList1            := TCBrowse():New(15,15,425,200,, {'Numero de Serie','Data','Selecao','Qtd Lida','Cod Produto','Cod Contrato','Item Contrato','Cod Maquina','Cod Cliente','Loja CLiente','Cod Cliente Pag','Loja Cliente Pag'},,oGrp1,,,,,,, ,,,  ,,.F.,,.T.,,.F.,,,)
-        
-        oList1:SetArray(aAux)
-        oList1:bLine := {||{aAux[oList1:nAt,01],; 
-                            aAux[oList1:nAt,02],;
-                            aAux[oList1:nAt,03],; 
-                            aAux[oList1:nAt,04],;
-                            aAux[oList1:nAt,05],;
-                            aAux[oList1:nAt,06],;
-                            aAux[oList1:nAt,07],;
-                            aAux[oList1:nAt,08],;
-                            aAux[oList1:nAt,09],;
-                            aAux[oList1:nAt,10],;
-                            aAux[oList1:nAt,11],;
-                            aAux[oList1:nAt,12]}} 
+            //oBrw1      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{124,048,304,352},,, oGrp3 ) 
+            oList1            := TCBrowse():New(15,15,425,200,, {'Numero de Serie','Data','Selecao','Qtd Lida','Cod Produto','Cod Contrato','Item Contrato','Cod Maquina','Cod Cliente','Loja CLiente','Cod Cliente Pag','Loja Cliente Pag'},,oGrp1,,,,,,, ,,,  ,,.F.,,.T.,,.F.,,,)
+            
+            oList1:SetArray(aAux2[nX])
+            oList1:bLine := {||{aAux2[nX,oList1:nAt,01],; 
+                                aAux2[nX,oList1:nAt,02],;
+                                aAux2[nX,oList1:nAt,03],; 
+                                aAux2[nX,oList1:nAt,04],;
+                                aAux2[nX,oList1:nAt,05],;
+                                aAux2[nX,oList1:nAt,06],;
+                                aAux2[nX,oList1:nAt,07],;
+                                aAux2[nX,oList1:nAt,08],;
+                                aAux2[nX,oList1:nAt,09],;
+                                aAux2[nX,oList1:nAt,10],;
+                                aAux2[nX,oList1:nAt,11],;
+                                aAux2[nX,oList1:nAt,12]}} 
 
-        oBtn1      := TButton():New( 250,200,"Salvar Leitura",oDlg1,{|| oDlg1:end(nOpc:=1)},037,012,,,,.T.,,"",,,,.F. )
-        oBtn2      := TButton():New( 250,250,"Cancelar",oDlg1,{|| oDlg1:end(nOpc:=0)},037,012,,,,.T.,,"",,,,.F. )
+            oBtn1      := TButton():New( 250,200,"Salvar Leitura",oDlg1,{|| oDlg1:end(nOpc:=1)},037,012,,,,.T.,,"",,,,.F. )
+            oBtn2      := TButton():New( 250,250,"Cancelar",oDlg1,{|| oDlg1:end(nOpc:=0)},037,012,,,,.T.,,"",,,,.F. )
 
-    oDlg1:Activate(,,,.T.)
+        oDlg1:Activate(,,,.T.)
 
-    if nOpc == 1
-        Z08SALVA(aAux)
-    endif
+        if nOpc == 1
+            Z08SALVA(aAux2[nX])
+        endif
+
+    next
 
 Return 
 
