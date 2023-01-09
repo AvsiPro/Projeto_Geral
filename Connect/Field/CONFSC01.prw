@@ -611,6 +611,7 @@ For nCont := 1 to len(aList5b)
 		cQuery += "		WHERE  Z08_FILIAL='"+xFilial("Z08")+"' AND Z08_NUMSER='"+aList5b[nCont,02]+"'" 
 		cQuery += "  	AND Z08_CONTRT='"+aList5b[nCont,01]+"' AND D_E_L_E_T_=' ')"
 		cQuery += " AND Z08.D_E_L_E_T_=' '"
+		cQuery += " AND Z08_NUMSER='"+aList5b[nCont,02]+"' AND Z08_CONTRT='"+aList5b[nCont,01]+"'"
 	EndIf 
 
 	cQuery += "  ORDER BY Z08_COD DESC"
