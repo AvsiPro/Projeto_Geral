@@ -785,7 +785,6 @@ oList2:bLine := {||{ Alltrim(aList2[oList2:nAt,01]),;
 					If(aList2[oList2:nAt,10]>0,Transform(aList2[oList2:nAt,10],"@E 999,999,999.99"),'S/Vlr'),;
 					aList2[oList2:nAt,11]}}
 
-//oList2:gotop()
 
 oList3:SetArray(aList3)
 oList3:bLine := {||{ Alltrim(aList3[oList3:nAt,01]),;
@@ -804,6 +803,10 @@ oDlg1:refresh()
 For nCont := 1 to len(aList2)
 	Fhelp3(nCont,oList:nAt)
 Next nCont 
+
+oList2:gotop()
+oList2:refresh()
+oDlg1:refresh()
 
 RestArea(aArea)
 
