@@ -23,7 +23,7 @@ USER FUNCTION CONFATC01(contrato)
 
 LOCAL   nCont      :=    0
 LOCAL   lTeca      :=    .F.
-PRIVATE aItens     :=    {'1=Ativo','2=Numero Serie','3=Produto (desc.)','4=Cliente','5=Pick-Lists','6=Linha'}
+PRIVATE aItens     :=    {'1=Ativo','2=Numero Serie','3=Produto (desc.)','4=Cliente','5=Pick-Lists','6=Linha','7=Contrato'}
 PRIVATE aCateg     :=    {} //{'1=BEBIDAS QUENTES','2=BEBIDAS GELADAS','3=SNACKS','4=LANCHES QUENTES','5=CONGELADOS','6=COMBINADA','7=AUTOATENDIMENTO'}
 PRIVATE cCombo1    :=    aItens[1]     
 PRIVATE cBusca     :=    space(35)
@@ -128,7 +128,7 @@ If len(aList) > 0
 
             oList8:SetArray(aList8)
             oList8:bLine := {||{aList8[oList8:nAt,01],;
-                                strzero(val(aList8[oList8:nAt,02]),2),; 
+                                strzero(val(aList8[oList8:nAt,02]),3),; 
                                 aList8[oList8:nAt,03],;
                                 aList8[oList8:nAt,04],;
                                 aList8[oList8:nAt,05],;
@@ -162,7 +162,7 @@ If len(aList) > 0
             oList3:SetArray(aList3)
             oList3:bLine := {||{ IF(aList3[oList3:nAt,01],oOk,oNo),; 
                                     Alltrim(aList3[oList3:nAt,02]),;
-                                    Strzero(val(aList3[oList3:nAt,03]),2),;
+                                    Strzero(val(aList3[oList3:nAt,03]),3),;
                                     aList3[oList3:nAt,04],;
                                     aList3[oList3:nAt,05],;
                                     Transform(aList3[oList3:nAt,06],"@E 999,999.99")}}    
@@ -265,10 +265,10 @@ If len(aList) > 0
             // Menu popup grid 3
             MENU oMenuP POPUP 
             MENUITEM "Salvar LAYOUT"   ACTION (saveplan())
-            MENUITEM "Incluir LAYOUT"  ACTION (incplan(1))
+            /*MENUITEM "Incluir LAYOUT"  ACTION (incplan(1))
             MENUITEM "Alterar LAYOUT"  ACTION (incplan(2))
             MENUITEM "Excluir LAYOUT"  ACTION (excplan())
-            MENUITEM "Replicar LAYOUT" ACTION (repplan())
+            MENUITEM "Replicar LAYOUT" ACTION (repplan())*/
             
             ENDMENU                                                                           
         
@@ -304,11 +304,11 @@ LOCAL aAtivos   :=  {}
 LOCAL nX
 Local cAtivos   :=  ''
 
-cQuery := "SELECT AA3_CHAPA,B1_DESC,AA3_NUMSER,AA3_CODCLI,AA3_LOJA,AA3_HORDIA,B1_GRUPO AS AA3_XCATEG,AA3_CODLOC,"
-cQuery += " A1_NOME,A1_NREDUZ,A1_END,A1_BAIRRO,A1_MUN,A1_EST,A1_CEP,AA3_CODPRO"
+cQuery := "SELECT AA3_CHAPA,B1_DESC,AA3_CBASE,AA3_CODCLI,AA3_LOJA,AA3_HORDIA,B1_GRUPO AS AA3_XCATEG,AA3_CODLOC,"
+cQuery += " A1_NOME,A1_NREDUZ,A1_END,A1_BAIRRO,A1_MUN,A1_EST,A1_CEP,AA3_CODPRO,AAN_CONTRT"
 cQuery += " FROM "+RetSQLName("AA3")+" AA3 "
 cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_COD=AA3_CODPRO AND B1.D_E_L_E_T_=''"
-cQuery += " INNER JOIN "+RetSQLName("AAN")+" AAN ON AAN_FILIAL=AA3_FILIAL AND AAN_XCBASE=AA3_CBASE AND AAN.D_E_L_E_T_=''" //AA3_NUMSER
+cQuery += " INNER JOIN "+RetSQLName("AAN")+" AAN ON AAN_FILIAL=AA3_FILIAL AND AAN_XCBASE=AA3_CBASE AND AAN.D_E_L_E_T_=''" //AA3_CBASE
 
 IF !Empty(contrato)
     //Puxar leituras para faturamento
@@ -331,16 +331,55 @@ DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
 DbSelectArea("TRB")  
 
 WHILE !EOF() 
-    IF !Empty(TRB->AA3_NUMSER) 
+    IF !Empty(TRB->AA3_CBASE) 
 
         nPos := Ascan(aCateg,{|x| x[1] == Alltrim(TRB->AA3_XCATEG)})
                          
-        Aadd(aList,{.T.,TRB->AA3_NUMSER,TRB->B1_DESC,TRB->AA3_NUMSER,;
-                    TRB->A1_NOME,TRB->A1_NREDUZ,TRB->A1_END,TRB->A1_BAIRRO,TRB->A1_MUN,TRB->A1_EST,TRB->A1_CEP,;
-                    '','','','',.F.,TRB->AA3_CODCLI,TRB->AA3_LOJA,IF(nPos>0,aCateg[nPos,2],''),TRB->AA3_CODLOC,TRB->AA3_CODPRO})
-        Aadd(aListB,{.T.,TRB->AA3_NUMSER,TRB->B1_DESC,TRB->AA3_NUMSER,;
-                    TRB->A1_NOME,TRB->A1_NREDUZ,TRB->A1_END,TRB->A1_BAIRRO,TRB->A1_MUN,TRB->A1_EST,TRB->A1_CEP,;
-                    '','','','',.F.,TRB->AA3_CODCLI,TRB->AA3_LOJA,IF(nPos>0,aCateg[nPos,2],''),TRB->AA3_CODLOC,TRB->AA3_CODPRO})
+        Aadd(aList,{.T.,;                   //1
+                    TRB->AA3_CBASE,;        //2
+                    TRB->B1_DESC,;          //3
+                    TRB->AA3_CBASE,;        //4
+                    TRB->A1_NOME,;          //5
+                    TRB->A1_NREDUZ,;        //6
+                    TRB->A1_END,;           //7
+                    TRB->A1_BAIRRO,;        //8
+                    TRB->A1_MUN,;           //9
+                    TRB->A1_EST,;           //10
+                    TRB->A1_CEP,;           //11
+                    '',;                    //12
+                    '',;                    //13
+                    '',;                    //14
+                    '',;                    //15
+                    .F.,;                   //16
+                    TRB->AA3_CODCLI,;       //17
+                    TRB->AA3_LOJA,;         //18
+                    IF(nPos>0,aCateg[nPos,2],''),; //19
+                    TRB->AA3_CODLOC,;       //20
+                    TRB->AA3_CODPRO,;       //21
+                    TRB->AAN_CONTRT})       //22
+
+        Aadd(aListB,{.T.,;
+                    TRB->AA3_CBASE,;
+                    TRB->B1_DESC,;
+                    TRB->AA3_CBASE,;
+                    TRB->A1_NOME,;
+                    TRB->A1_NREDUZ,;
+                    TRB->A1_END,;
+                    TRB->A1_BAIRRO,;
+                    TRB->A1_MUN,;
+                    TRB->A1_EST,;
+                    TRB->A1_CEP,;
+                    '',;
+                    '',;
+                    '',;
+                    '',;
+                    .F.,;
+                    TRB->AA3_CODCLI,;
+                    TRB->AA3_LOJA,;
+                    IF(nPos>0,aCateg[nPos,2],''),;
+                    TRB->AA3_CODLOC,;
+                    TRB->AA3_CODPRO,;
+                    TRB->AAN_CONTRT})
                     
         IF Ascan(aAtivos,{|x| Alltrim(x) == Alltrim(TRB->AA3_CHAPA)}) == 0
             Aadd(aAtivos,TRB->AA3_CHAPA)
@@ -487,6 +526,7 @@ IF cCombo1 == "1"
         ENDIF              
     ELSE
         aList := {}
+        oList:nAt := 1
         FOR nX := 1 TO len(aListB)
             IF Alltrim(aListB[nX,02]) == Alltrim(cBusca)
                 Aadd(aList,aListB[nX])
@@ -663,6 +703,33 @@ ElseIf cCombo1 == "6"
 
     //oList:refresh()
     //oDlg1:refresh()
+ElseIf cCombo1 == "7"
+    aList := {}
+    oList1:nAt := 1
+    FOR nX := 1 TO len(aListB)
+        IF Alltrim(UPPER(cBusca)) $ Alltrim(aListB[nX,22])
+            Aadd(aList,aListB[nX])
+        ENDIF
+    NEXT nX
+    
+    IF len(aList) < 1
+        IF !Empty(cBusca)
+            MsgAlert("Não encontrado Ativos com a Linha pesquisada.","busca2 - CONFATC01")
+        ENDIF
+        FOR nX := 1 TO len(aListB)
+            Aadd(aList,aListB[nX])
+        NEXT nX    
+    ENDIF
+
+    oList:SetArray(aList)
+    oList:bLine := {||{ IF(aList[oList:nAt,01],oOk,oNo),; 
+                           Alltrim(aList[oList:nAt,02]),;
+                           aList[oList:nAt,03],;
+                           aList[oList:nAt,04],;
+                           aList[oList:nAt,19]}}
+
+    oList:refresh()
+    oDlg1:refresh()
 ENDIF
 
 // Fhelp()
@@ -694,7 +761,7 @@ oSay6:settext("")
 oSay7:settext("")
 oSay8:settext("")
 
-oSay4:settext('Cliente  - '+Alltrim(aList[oList:nAT,05])+" / "+Alltrim(aList[oList:nAT,06]))
+oSay4:settext('Cliente  - '+Alltrim(aList[oList:nAT,05])+" / "+Alltrim(aList[oList:nAT,06])+" - Contrato "+Alltrim(aList[oList:nAT,22]))
 oSay5:settext('Endereço - '+Alltrim(aList[oList:nAT,07])+" / "+Alltrim(aList[oList:nAT,08])+" / "+Alltrim(aList[oList:nAT,09])+" / "+Alltrim(aList[oList:nAT,10])+" / "+Alltrim(aList[oList:nAT,11]))
 
 aList1 := {}
@@ -718,7 +785,7 @@ oList3:nAt := 1
 oList3:SetArray(aList3)
 oList3:bLine := {||{ IF(aList3[oList3:nAt,01],oOk,oNo),; 
                         Alltrim(aList3[oList3:nAt,02]),;
-                        Strzero(val(aList3[oList3:nAt,03]),2),;
+                        Strzero(val(aList3[oList3:nAt,03]),3),;
                         aList3[oList3:nAt,04],;
                         aList3[oList3:nAt,05],;
                         Transform(aList3[oList3:nAt,06],"@E 999,999.99")}}   
@@ -767,9 +834,9 @@ oList4:bLine := {||{ IF(aList4[oList4:nAt,01],oOk,oNo),;
                                  aList4[oList4:nAt,03],;
                                  aList4[oList4:nAt,04]}}   
 if len(aList8B) > 0     
-    FOR nX := 1 TO len(aList8B[oList:nAt,1])
-        IF Alltrim(aList8B[oList:nAt,1,nX,6]) == Alltrim(aList[oList:nAt,02])
-            Aadd(aList8,aList8B[oList:nAt,1])
+    FOR nX := 1 TO len(aList8B[oList8:nAt,1])
+        IF Alltrim(aList8B[oList8:nAt,1,nX,6]) == Alltrim(aList[oList:nAt,02])
+            Aadd(aList8,aList8B[oList8:nAt,1])
             nPos := Ascan(aList3B,{|x| Alltrim(x[2])+Alltrim(x[3]) == Alltrim(aList8B[nX,06])+Alltrim(aList8B[nX,02])})
             IF nPos > 0  
                 aList8[len(aList8),03] := aList3B[nPos,04]
@@ -785,7 +852,7 @@ IF len(aList8) < 1
     oList8:nAt := 1
     oList8:SetArray(aList8)
     oList8:bLine := {||{aList8[oList8:nAt,01],;
-                        strzero(val(aList8[oList8:nAt,02]),2),; 
+                        strzero(val(aList8[oList8:nAt,02]),3),; 
                         aList8[oList8:nAt,03],;
                         aList8[oList8:nAt,04],;
                         aList8[oList8:nAt,05],;
@@ -2329,11 +2396,17 @@ RETURN(aRet)
 
 STATIC FUNCTION Vendaspay()
 
-LOCAL aArea    :=    GetArea()
-LOCAL dDtD     :=    FirstDate(Date()) 
-LOCAL dDtA     :=    LastDate(Date())    
-LOCAL cHri     :=    space(5)
-// LOCAL cHrf    :=    space(5)
+LOCAL aArea    :=   GetArea()
+LOCAL dDtD     :=   FirstDate(Date()) 
+LOCAL dDtA     :=   LastDate(Date())    
+LOCAL cHri     :=   '00:00'
+Local cHrf     :=   '23:59'
+Local cAtde    :=   space(15)
+Local cAtAt    :=   space(15)
+Local cCnde    :=   space(15)
+Local cCnAt    :=   space(15)
+
+
 LOCAL cData    :=    ''
 LOCAL nX
 LOCAL nY
@@ -2342,14 +2415,22 @@ PRIVATE aPergs     :=    {}
 PRIVATE aRet       :=    {}
 PRIVATE aVendas    :=    {}
 
-aAdd(aPergs ,{1, "Data Inicial?", dDtD, "", "", "", "", 070, .T.})    
-aAdd(aPergs ,{1, "Data Final?",   dDtA, "", "", "", "", 070, .T.})    
-aAdd(aPergs ,{1, "Hora Inicial?", cHri, "", "", "", "", 070, .T.})    
-aAdd(aPergs ,{1, "Hora Final?",   cHri, "", "", "", "", 070, .T.})    
+aAdd(aPergs ,{1, "Data Inicial?",   dDtD, "", "", "", "", 070, .T.})    
+aAdd(aPergs ,{1, "Data Final?",     dDtA, "", "", "", "", 070, .T.})    
+aAdd(aPergs ,{1, "Hora Inicial?",   cHri, "", "", "", "", 070, .F.})    
+aAdd(aPergs ,{1, "Hora Final?",     cHrf, "", "", "", "", 070, .F.})    
+aAdd(aPergs ,{1, "Ativo de?",       cAtde, "", "", "", "", 070, .F.})    
+aAdd(aPergs ,{1, "Ativo Até?",      cAtAt, "", "", "", "", 070, .F.})    
+aAdd(aPergs ,{1, "Contrato de?",    cCnde, "", "", "", "", 070, .F.})    
+aAdd(aPergs ,{1, "Contrato Até?",   cCnAt, "", "", "", "", 070, .F.})    
+
 
 IF ParamBox(aPergs ,"Periodo de vendas",@aRet)
     for nX := 1 to len(aList)
-        Aadd(aVendas, U_CONWSC03(aList[nX,02],2,aRet[1],aRet[2],aRet[3],aRet[4]))
+        If Alltrim(aList[nX,02]) >= Alltrim(MV_PAR05) .AND. Alltrim(aList[nX,02]) <= Alltrim(MV_PAR06) .AND. ;
+            Alltrim(aList[nX,22]) >= Alltrim(MV_PAR07) .AND. Alltrim(aList[nX,22]) <= Alltrim(MV_PAR08)
+            Aadd(aVendas, U_CONWSC03(aList[nX,02],2,aRet[1],aRet[2],aRet[3],aRet[4]))
+        EndIf
     next
 
     IF len(aVendas) > 0
@@ -2357,36 +2438,46 @@ IF ParamBox(aPergs ,"Periodo de vendas",@aRet)
     //'Data','Seleção','Produto','Descrição','Quant. Apont.',chapa,codigo cliente
         FOR nX := 1 TO len(aVendas) 
             aList8 := {}
-            for nY := 3 to len(aVendas[nX])
-                cCodProt := ''
-                IF aVendas[nX,nY,05] == "null"
-                    cCodProt := "Nao Consta"
-                ELSE
-                    cCodProt := aVendas[nX,nY,05]
-                ENDIF
-                
-                if cCodProt != "Nao Consta"
-                    cDesc := Posicione("SB1",1,xFilial("SB1")+cCodProt,"B1_DESC")
-                else
-                    cDesc := "Codigo do produto nao se encontra no VMPay"
-                endif
+            If aVendas[nX] != NIL
+                If len(aVendas[nX]) > 2
+                    for nY := 3 to len(aVendas[nX])
+                        cCodProt := ''
+                        IF aVendas[nX,nY,05] == "null"
+                            cCodProt := "Nao Consta"
+                        ELSE
+                            cCodProt := aVendas[nX,nY,05]
+                        ENDIF
+                        
+                        if cCodProt != "Nao Consta"
+                            cDesc := Posicione("SB1",1,xFilial("SB1")+cCodProt,"B1_DESC")
+                        else
+                            cDesc := "Codigo do produto nao se encontra no VMPay"
+                        endif
 
-                nPosit := Ascan(aList8,{|x| x[2] == aVendas[nX,nY,01]})
-                IF nPosit == 0
-                    cData := ddatabase //stod(StrTran(SubStr(aVendas[nX,nY,02], 1, 10), '-')) //StrTran(StrTran(SubStr(aVendas[nX,nY,02], 1, 10), '-', '/'), 'T', ' ')
-                    Aadd(aList8,{cvaltochar(cData),;
-                                aVendas[nX,nY,01],;
-                                cCodProt,;
-                                cDesc,;
-                                val(aVendas[nX,nY,03]),;
-                                aVendas[nX,2],;
-                                aList[nX,17],;
-                                IF(val(aVendas[nX,nY,03])>1,val(aVendas[nX,nY,04])/val(aVendas[nX,nY,03]),val(aVendas[nX,nY,04]))})
-                ELSE
-                    aList8[nPosit,05] += val(aVendas[nX,nY,03])
-                ENDIF
-            next nY
+                        nPosit := Ascan(aList8,{|x| x[2] == aVendas[nX,nY,01]})
+                        IF nPosit == 0
+                            cData := ddatabase //stod(StrTran(SubStr(aVendas[nX,nY,02], 1, 10), '-')) //StrTran(StrTran(SubStr(aVendas[nX,nY,02], 1, 10), '-', '/'), 'T', ' ')
+                            Aadd(aList8,{cvaltochar(cData),;
+                                        aVendas[nX,nY,01],;
+                                        cCodProt,;
+                                        cDesc,;
+                                        val(aVendas[nX,nY,03]),;
+                                        aVendas[nX,2],;
+                                        aList[nX,17],;
+                                        IF(val(aVendas[nX,nY,03])>1,val(aVendas[nX,nY,04])/val(aVendas[nX,nY,03]),val(aVendas[nX,nY,04]))})
+                        ELSE
+                            aList8[nPosit,05] += val(aVendas[nX,nY,03])
+                        ENDIF
+                    next nY
+                EndIf
+            EndIf 
+            
+            If len(aList8) < 1
+                Aadd(aList8,{'','','','','','','','','','','','','','','','','','',''})
+            EndIf 
+            
             Aadd(aList8B, {})
+            
             Aadd(aList8B[nX], aList8)
         NEXT nX
         
@@ -2394,7 +2485,7 @@ IF ParamBox(aPergs ,"Periodo de vendas",@aRet)
             Asort(aList8,,,{|x,y| strzero(val(x[2]),2)+x[1] < strzero(val(y[2]),2)+y[1]})
             oList8:SetArray(aList8)
             oList8:bLine := {||{aList8[oList8:nAt,01],;
-                                strzero(val(aList8[oList8:nAt,02]),2),; 
+                                strzero(val(aList8[oList8:nAt,02]),3),; 
                                 aList8[oList8:nAt,03],;
                                 aList8[oList8:nAt,04],;
                                 aList8[oList8:nAt,05],;

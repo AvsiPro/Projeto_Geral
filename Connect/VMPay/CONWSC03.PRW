@@ -81,7 +81,7 @@ IF nPosMaq > 0
         oList3:SetArray(aList3)
         oList3:bLine := {||{ IF(aList3[oList3:nAt,01],oOk,oNo),; 
                               Alltrim(aList3[oList3:nAt,02]),;
-                              Strzero(val(aList3[oList3:nAt,03]),2),;
+                              Strzero(val(aList3[oList3:nAt,03]),3),;
                               aList3[oList3:nAt,04],;
                               aList3[oList3:nAt,05],;
                               aList3[oList3:nAt,06],;
