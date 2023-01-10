@@ -631,11 +631,11 @@ For nCont := 1 to len(aList5b)
 
 	While !EOF() 
 		aAuxL5 := {}
-		nPos := Ascan(aAux5,{|x| Alltrim(x[1]) == strzero(val(TRB->Z08_SELECA),2)})
+		nPos := Ascan(aAux5,{|x| Alltrim(x[1]) == strzero(val(TRB->Z08_SELECA),3)})
 		nPos2 := Ascan(aTabPrc,{|x| x[1]+x[2] == TRB->Z08_CONTRT+TRB->Z08_PRODUT})
 
 		If nPos == 0
-			Aadd(aAuxL5,strzero(val(TRB->Z08_SELECA),2))
+			Aadd(aAuxL5,strzero(val(TRB->Z08_SELECA),3))
 			Aadd(aAuxL5,TRB->Z08_PRODUT)
 			Aadd(aAuxL5,TRB->B1_DESC)
 			Aadd(aAuxL5,'')
@@ -2738,11 +2738,11 @@ aAux5 := {}
 
 While !EOF() 
 	aAuxL5 := {}
-	nPos := Ascan(aAux5,{|x| Alltrim(x[1]) == strzero(val(TRB->Z08_SELECA),2)})
+	nPos := Ascan(aAux5,{|x| Alltrim(x[1]) == strzero(val(TRB->Z08_SELECA),3)})
 	nPos2 := Ascan(aTabPrc,{|x| x[1]+x[2] == TRB->Z08_CONTRT+TRB->Z08_PRODUT})
 
 	If nPos == 0
-		Aadd(aAuxL5,strzero(val(TRB->Z08_SELECA),2))
+		Aadd(aAuxL5,strzero(val(TRB->Z08_SELECA),3))
 		Aadd(aAuxL5,TRB->Z08_PRODUT)
 		Aadd(aAuxL5,TRB->B1_DESC)
 		Aadd(aAuxL5,'')
