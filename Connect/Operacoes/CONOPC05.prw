@@ -176,7 +176,7 @@ If !Empty(cPatr)
 
     While !EOF()
         dDiaLei := stod(TRB->Z08_DATA)
-        nPos := Ascan(aCols,{|x| Alltrim(x[1]) == Strzero(val(TRB->Z08_SELECA),2)})
+        nPos := Ascan(aCols,{|x| Alltrim(x[1]) == Strzero(val(TRB->Z08_SELECA),3)})
         If nPos > 0
             aCols[nPos,04] := TRB->Z08_QTDLID
         EndIf 

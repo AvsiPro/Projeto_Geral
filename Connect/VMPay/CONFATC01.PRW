@@ -853,7 +853,7 @@ else
     oList8:nAt := 1
     oList8:SetArray(aList8)
     oList8:bLine := {||{aList8[oList:nAt,oList8:nAt,01],;
-                        strzero(val(aList8[oList:nAt,oList8:nAt,02]),2),; 
+                        strzero(val(aList8[oList:nAt,oList8:nAt,02]),3),; 
                         aList8[oList:nAt,oList8:nAt,03],;
                         aList8[oList:nAt,oList8:nAt,04],;
                         aList8[oList:nAt,oList8:nAt,05],;
@@ -1728,7 +1728,7 @@ FOR nX := 1 TO len(aList3)
         DbSelectArea("Z07")     
         DbSetOrder(1)
 
-        IF !DbSeek(xFilial("Z07")+Avkey(aList3[nX,02],"Z07_CHAPA")+Avkey(aList[oList:nAt,17],"Z07_CLIENT")+Avkey(aList[oList:nAt,18],"Z07_LOJA")+Avkey(strzero(val(aList3[nX,03]),2),"Z07_SELECA"))
+        IF !DbSeek(xFilial("Z07")+Avkey(aList3[nX,02],"Z07_CHAPA")+Avkey(aList[oList:nAt,17],"Z07_CLIENT")+Avkey(aList[oList:nAt,18],"Z07_LOJA")+Avkey(strzero(val(aList3[nX,03]),3),"Z07_SELECA"))
             Reclock("Z07",.T.)
         else
             Reclock("Z07",.T.)
@@ -1740,7 +1740,7 @@ FOR nX := 1 TO len(aList3)
         Z07->Z07_CHAPA      :=  aList3[nX,02]
         Z07->Z07_CODMAQ     :=  Posicione("AA3",7,xFilial("AA3")+aList3[nX,02],"AA3_CODPRO")
         Z07->Z07_CODPROD    :=  aList3[nX,04]
-        Z07->Z07_SELECA     :=  strzero(val(aList3[nX,03]),2)
+        Z07->Z07_SELECA     :=  strzero(val(aList3[nX,03]),3)
         Z07->Z07_DINICIO    :=  dDataBase
         //Z07->Z07_QUANT      :=  IF(Valtype(aList3[nX,06])<>"N",val(aList3[nX,06]),aList3[nX,06])
         Z07->(Msunlock())
@@ -1928,7 +1928,7 @@ STATIC FUNCTION IncLin(nOpc)
 LOCAL aArea    :=    GetArea()
 
 IF nOpc == 1
-    aadd(aPlanog,{.F.,space(2),'','','','','','',0.0000,'',0.0000,'',0.0000,'',0.0000,'',0.0000,'',0.0000,'',0.0000,'',0.0000,;
+    aadd(aPlanog,{.F.,space(3),'','','','','','',0.0000,'',0.0000,'',0.0000,'',0.0000,'',0.0000,'',0.0000,'',0.0000,'',0.0000,;
                 '',0.0000,'',0.0000,'',0.0000,'',0.0000,'',0.0000,'',0.0000,aList[oList:nAt,17],aList[oList:nAt,18],aList[oList:nAt,02],,aList[oList:nAt,21]})
 ELSE
     DbSelectArea("Z06")
@@ -1947,7 +1947,7 @@ ELSE
     Asize(aPlanog,len(aPlanog)-1)
     
     IF len(aPlanog) < 1
-        aadd(aPlanog,{.F.,space(2),'','','','','','',0.0000,'',0.0000,'',0.0000,'',0.0000,'',0.0000,'',0.0000,'',0.0000,'',0.0000,;
+        aadd(aPlanog,{.F.,space(3),'','','','','','',0.0000,'',0.0000,'',0.0000,'',0.0000,'',0.0000,'',0.0000,'',0.0000,'',0.0000,;
             '',0.0000,'',0.0000,'',0.0000,'',0.0000,'',0.0000,'',0.0000,aList[oList:nAt,17],aList[oList:nAt,18],aList[oList:nAt,02],,aList[oList:nAt,21]})
     ENDIF
 ENDIF
@@ -2363,7 +2363,7 @@ WHILE !EOF()
 ENDDO
 
 IF len(aRet) < 1
-    aadd(aRet,{.F.,space(2),'','','','','','',0.0000,'',0.0000,'',0.0000,'',0.0000,'',0.0000,'',0.0000,'',0.0000,'',0.0000,;
+    aadd(aRet,{.F.,space(3),'','','','','','',0.0000,'',0.0000,'',0.0000,'',0.0000,'',0.0000,'',0.0000,'',0.0000,'',0.0000,;
                 '',0.0000,'',0.0000,'',0.0000,'',0.0000,'',0.0000,'',0.0000,aList[oList:nAt,17],aList[oList:nAt,18],aList[oList:nAt,02],,aList[oList:nAt,21]})
 ENDIF
 
@@ -2474,7 +2474,7 @@ IF ParamBox(aPergs ,"Periodo de vendas",@aRet)
         NEXT nX
         
         IF len(aList8) > 0
-            Asort(aList8,,,{|x,y| strzero(val(x[2]),2)+x[1] < strzero(val(y[2]),2)+y[1]})
+            Asort(aList8,,,{|x,y| strzero(val(x[2]),3)+x[1] < strzero(val(y[2]),3)+y[1]})
             oList8:SetArray(aList8)
             oList8:bLine := {||{aList8[oList8:nAt,01],;
                                 strzero(val(aList8[oList8:nAt,02]),3),; 
