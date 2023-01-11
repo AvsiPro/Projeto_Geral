@@ -2383,8 +2383,9 @@ RETURN(aRet)
 STATIC FUNCTION Vendaspay()
 
 LOCAL aArea    :=   GetArea()
-LOCAL dDtD     :=   FirstDate(Date()) 
+/*LOCAL dDtD     :=   FirstDate(Date()) 
 LOCAL dDtA     :=   LastDate(Date())    
+*/
 LOCAL cHri     :=   '00:00'
 Local cHrf     :=   '23:59'
 Local cAtde    :=   space(15)
@@ -2401,21 +2402,25 @@ PRIVATE aPergs     :=    {}
 PRIVATE aRet       :=    {}
 PRIVATE aVendas    :=    {}
 
-aAdd(aPergs ,{1, "Data Inicial?",   dDtD, "", "", "", "", 070, .T.})    
+/*aAdd(aPergs ,{1, "Data Inicial?",   dDtD, "", "", "", "", 070, .T.})    
 aAdd(aPergs ,{1, "Data Final?",     dDtA, "", "", "", "", 070, .T.})    
 aAdd(aPergs ,{1, "Hora Inicial?",   cHri, "", "", "", "", 070, .F.})    
-aAdd(aPergs ,{1, "Hora Final?",     cHrf, "", "", "", "", 070, .F.})    
-aAdd(aPergs ,{1, "Ativo de?",       cAtde, "", "", "", "", 070, .F.})    
-aAdd(aPergs ,{1, "Ativo Até?",      cAtAt, "", "", "", "", 070, .F.})    
-aAdd(aPergs ,{1, "Contrato de?",    cCnde, "", "", "", "", 070, .F.})    
-aAdd(aPergs ,{1, "Contrato Até?",   cCnAt, "", "", "", "", 070, .F.})    
+aAdd(aPergs ,{1, "Hora Final?",     cHrf, "", "", "", "", 070, .F.})    */
+aAdd(aPergs ,{1, "Ativo de?",       cAtde, "", "", "AA3", "", 070, .F.})    
+aAdd(aPergs ,{1, "Ativo Até?",      cAtAt, "", "", "AA3", "", 070, .F.})    
+aAdd(aPergs ,{1, "Contrato de?",    cCnde, "", "", "AAM", "", 070, .F.})    
+aAdd(aPergs ,{1, "Contrato Até?",   cCnAt, "", "", "AAM", "", 070, .F.})    
 
 
 IF ParamBox(aPergs ,"Periodo de vendas",@aRet)
     for nX := 1 to len(aList)
-        If Alltrim(aList[nX,02]) >= Alltrim(MV_PAR05) .AND. Alltrim(aList[nX,02]) <= Alltrim(MV_PAR06) .AND. ;
-            Alltrim(aList[nX,22]) >= Alltrim(MV_PAR07) .AND. Alltrim(aList[nX,22]) <= Alltrim(MV_PAR08)
-            Aadd(aVendas, U_CONWSC03(aList[nX,02],2,aRet[1],aRet[2],aRet[3],aRet[4]))
+        If Alltrim(aList[nX,02]) >= Alltrim(MV_PAR01) .AND. Alltrim(aList[nX,02]) <= Alltrim(MV_PAR02) .AND. ;
+            Alltrim(aList[nX,22]) >= Alltrim(MV_PAR03) .AND. Alltrim(aList[nX,22]) <= Alltrim(MV_PAR04)
+            dUltLei := UltLei(aList[nX,02])
+            If Empty(dtos(dUltLei))
+                dUltLei := ddatabase-30
+            EndIf 
+            Aadd(aVendas, U_CONWSC03(aList[nX,02],2,dUltLei,ddatabase,cHri,cHrf))
         EndIf
     next
 
@@ -2503,11 +2508,11 @@ RETURN
 
 STATIC FUNCTION savevend()
     
-    LOCAL aArea        :=    GetArea()  
-    LOCAL aGravarP     :=    {} 
-    LOCAL cCod         := GetSXENum("Z08", "Z08_COD") 
-    LOCAL cSeq         :=    "01" 
-    LOCAL aContrato    :=    Contrato()
+    LOCAL aArea        :=   GetArea()  
+    LOCAL aGravarP     :=   {} 
+    LOCAL cCod         :=   GetSXENum("Z08", "Z08_COD") 
+    LOCAL cSeq         :=   "01" 
+    LOCAL aContrato    :=   Contrato()
     LOCAL nX   
     LOCAL nY   
     
@@ -2546,7 +2551,6 @@ STATIC FUNCTION savevend()
 
             Z08->(Msunlock())
             
-            MsgAlert("Leitura salva com sucesso!")
             
         ENDIF
 
@@ -2554,6 +2558,8 @@ STATIC FUNCTION savevend()
 
     next nX
 
+    MsgAlert("Leitura salva com sucesso!")
+            
     RestArea(aArea)
 
 RETURN
@@ -2744,3 +2750,39 @@ oRepPl:refresh()
 RestArea(aArea)
 
 RETURN
+
+
+/*/{Protheus.doc} UltLei(aList[nX,02])
+    (long_description)
+    @type  Static Function
+    @author user
+    @since 11/01/2023
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function UltLei(cAtivo)
+
+Local aArea :=  GetArea()
+Local cQuery 
+Local dRet 
+
+cQuery := "SELECT MAX(Z08_DATA) AS ULTIMA FROM "+RetSQLName("Z08")
+cQuery += " WHERE Z08_FILIAL BETWEEN ' ' AND 'ZZ' AND D_E_L_E_T_=' '
+cQuery += " AND Z08_NUMSER='"+cAtivo+"'"
+
+if Select("TRB") > 0
+    DBSELECTAREA("TRB")
+    DBCLOSEAREA()
+endif
+
+DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
+
+dRet := stod(TRB->ULTIMA)
+
+RestArea(aArea)
+
+Return(dRet)

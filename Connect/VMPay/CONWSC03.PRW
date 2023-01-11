@@ -438,7 +438,10 @@ WHILE nPage > 0
             Aadd(aAux,aAux2[nX]:OCCURRED_AT)
             Aadd(aAux,cvaltochar(aAux2[nX]:QUANTITY))
             Aadd(aAux,cvaltochar(aAux2[nX]:VALUE))
-            Aadd(aAux,If(aAux2[nX]:GOOD:UPC_CODE==nil,'null',aAux2[nX]:GOOD:UPC_CODE))
+            
+            aCod := separa(aAux2[nX]:GOOD:NAME,"#")
+            //Aadd(aAux,If(aAux2[nX]:GOOD:UPC_CODE==nil,'null',aAux2[nX]:GOOD:UPC_CODE))
+            Aadd(aAux,Alltrim(aCod[2]))
             Aadd(aHeader[nPos],aAux)
             aAux := {}
         Next nX       
