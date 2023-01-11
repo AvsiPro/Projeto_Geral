@@ -496,4 +496,6 @@ Static Function Z08SALVA(aItens)
 
     next
 
+    Confirmsx8()
+
 Return 

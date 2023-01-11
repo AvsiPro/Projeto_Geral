@@ -92,6 +92,7 @@ User Function CONOPC05()
                 Z08->Z08_MSBLQL := "2"
                 Z08->(MsUnlock())
             Next nCont
+            ConfirmSX8()
         EndIF 
     endif
 
