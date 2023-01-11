@@ -439,9 +439,13 @@ WHILE nPage > 0
             Aadd(aAux,cvaltochar(aAux2[nX]:QUANTITY))
             Aadd(aAux,cvaltochar(aAux2[nX]:VALUE))
             
-            aCod := separa(aAux2[nX]:GOOD:NAME,"#")
-            //Aadd(aAux,If(aAux2[nX]:GOOD:UPC_CODE==nil,'null',aAux2[nX]:GOOD:UPC_CODE))
-            Aadd(aAux,Alltrim(aCod[2]))
+            If aAux2[nX]:GOOD:NAME != NIL
+                aCod := separa(aAux2[nX]:GOOD:NAME,"#")
+                //Aadd(aAux,If(aAux2[nX]:GOOD:UPC_CODE==nil,'null',aAux2[nX]:GOOD:UPC_CODE))
+                Aadd(aAux,Alltrim(aCod[2]))
+            Else 
+                Aadd(aAux,'Sem Codigo')
+            EndIf 
             Aadd(aHeader[nPos],aAux)
             aAux := {}
         Next nX       

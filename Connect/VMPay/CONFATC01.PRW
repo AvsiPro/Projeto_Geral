@@ -2534,9 +2534,10 @@ STATIC FUNCTION savevend()
         Aadd( aGravarP, {"Z08_DTDIGIT" ,dDataBase}) 
         Aadd( aGravarP, {"Z08_PERIODO" ,Strtokarr(aList8[nX,1], "/")[2] + Strtokarr(aList8[nX,1], "/")[3] })
         Aadd( aGravarP, {"Z08_MAQUINA" ,aList[oList:nAt,21]}) 
-        Aadd( aGravarP, {"Z08_CODCLI"  ,aList[oList:nAt,17]+aList[oList:nAt,18]})  
-        Aadd( aGravarP, {"Z08_CLIPAG"  ,aList[oList:nAt,17]+aList[oList:nAt,18]})
-
+        Aadd( aGravarP, {"Z08_CODCLI"  ,aList[oList:nAt,17]})  
+        Aadd( aGravarP, {"Z08_LOJACL"  ,aList[oList:nAt,18]})
+        Aadd( aGravarP, {"Z08_MSBLQL"  ,'2'})
+    
         IF len(aGravarP) > 0
 
             DbSelectArea("Z08") 
@@ -2558,6 +2559,7 @@ STATIC FUNCTION savevend()
 
     next nX
 
+    ConfirmSx8()
     MsgAlert("Leitura salva com sucesso!")
             
     RestArea(aArea)
