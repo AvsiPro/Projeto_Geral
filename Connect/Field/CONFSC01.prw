@@ -254,7 +254,7 @@ oMenu := TMenu():New(0,0,0,0,.T.)
 // Adiciona itens no Menu
 oTMenuIte1 := TMenuItem():New(oDlg1,"Procurar",,,,{|| procurar()},,,,,,,,,.T.)
 oTMenuIte2 := TMenuItem():New(oDlg1,"Listar-Faturamento",,,,{|| Processa({||PreFat(),"Aguarde"})} ,,,,,,,,,.T.)
-oTMenuIte3 := TMenuItem():New(oDlg1,"Faturar",,,,{|| Processa({||GeraPv(0),"Aguarde"})} ,,,,,,,,,.T.)
+// oTMenuIte3 := TMenuItem():New(oDlg1,"Faturar",,,,{|| Processa({||GeraPv(0),"Aguarde"})} ,,,,,,,,,.T.)
 oTMenuIte4 := TMenuItem():New(oDlg1,"Envio NF/Boleto",,,,{|| NFBol()} ,,,,,,,,,.T.)
 //oTMenuIte5 := TMenuItem():New(oDlg1,"Fechamento Mensal",,,,{|| Fechamento()} ,,,,,,,,,.T.)
 //oTMenuIte6 := TMenuItem():New(oDlg1,"Rescisão Contrato",,,,{|| Rescisao(oList:nAt)} ,,,,,,,,,.T.)
@@ -263,7 +263,7 @@ oTMenuIte7 := TMenuItem():New(oDlg1,"Impressoes",,,,{|| Processa({||U_CONFSR02(a
 
 oMenu:Add(oTMenuIte1)
 oMenu:Add(oTMenuIte2)
-oMenu:Add(oTMenuIte3)
+// oMenu:Add(oTMenuIte3)
 oMenu:Add(oTMenuIte4)
 //oMenu:Add(oTMenuIte5)
 //oMenu:Add(oTMenuIte6)
@@ -607,7 +607,7 @@ For nCont := 1 to len(aList5b)
 	If len(aLeitura) > 1
 		cQuery += " WHERE Z08_COD='"+aLeitura[2]+"'"
 		cQuery += "  AND Z08.D_E_L_E_T_=' '"
-	Else 
+	Else
 		cQuery += "  WHERE  Z08_COD IN(SELECT MAX(Z08_COD)-1 FROM "+RetSQLname("Z08")
 		cQuery += "		WHERE  Z08_FILIAL='"+xFilial("Z08")+"' AND Z08_NUMSER='"+aList5b[nCont,02]+"'" 
 		cQuery += "  	AND Z08_CONTRT='"+aList5b[nCont,01]+"' AND D_E_L_E_T_=' ')"
@@ -634,38 +634,38 @@ For nCont := 1 to len(aList5b)
 		nPos := Ascan(aAux5,{|x| Alltrim(x[1]) == strzero(val(TRB->Z08_SELECA),3)})
 		nPos2 := Ascan(aTabPrc,{|x| x[1]+x[2] == TRB->Z08_CONTRT+TRB->Z08_PRODUT})
 
-		If nPos == 0
-			Aadd(aAuxL5,strzero(val(TRB->Z08_SELECA),3))
-			Aadd(aAuxL5,TRB->Z08_PRODUT)
-			Aadd(aAuxL5,TRB->B1_DESC)
-			Aadd(aAuxL5,'')
-			Aadd(aAuxL5,0)			
-			Aadd(aAuxL5,TRB->Z08_DATA)
-			Aadd(aAuxL5,TRB->Z08_QTDLID)
-			Aadd(aAuxL5,0)
+		If nPos == 0 .OR. TRB->Z08_PRODUT != aAux5[nPos,2]
+			Aadd(aAuxL5,strzero(val(TRB->Z08_SELECA),3)) //1
+			Aadd(aAuxL5,TRB->Z08_PRODUT) //2
+			Aadd(aAuxL5,TRB->B1_DESC) //3
+			Aadd(aAuxL5,'') //4
+			Aadd(aAuxL5,0) //5	
+			Aadd(aAuxL5,TRB->Z08_DATA) //6
+			Aadd(aAuxL5,TRB->Z08_QTDLID) //7
+			Aadd(aAuxL5,0) //8
 			
 			If nPos2 > 0
-				Aadd(aAuxL5,aTabPrc[nPos2,04])
+				Aadd(aAuxL5,aTabPrc[nPos2,04]) //9
 			Else 
-				Aadd(aAuxL5,0)
+				Aadd(aAuxL5,0) //9
 			EndIf 
 
-			Aadd(aAuxL5,0)
+			Aadd(aAuxL5,0) //10
 			
-			Aadd(aAuxL5,Z08_COD)
-			Aadd(aAuxL5,Z08_FATURA)
+			Aadd(aAuxL5,Z08_COD) //11
+			Aadd(aAuxL5,Z08_FATURA) //12
 
-			Aadd(aAuxL5,'')
-			Aadd(aAuxL5,'')
+			Aadd(aAuxL5,'') //13
+			Aadd(aAuxL5,'') //14
 			
 			If len(aAuxL5) > 0
-				Aadd(aAux5,aAuxL5)
+				Aadd(aAux5,aAuxL5) 
 			EndIf
 			
 			If nPos2 > 0
-				Aadd(aAuxL5,aTabPrc[nPos2,05])
+				Aadd(aAuxL5,aTabPrc[nPos2,05]) //15
 			Else 
-				Aadd(aAuxL5,0)
+				Aadd(aAuxL5,0) //15
 			EndIf 
 
 		Else 
@@ -707,7 +707,6 @@ For nCont := 1 to len(aList)
 		Next nAux 
 	EndIf 
 Next nCont 
-
 
 RestArea(aArea)
 
@@ -2176,107 +2175,6 @@ RestArea(aArea)
 
 Return
 
-/*
-	Impressão do Recibo de locação de maquinas
-
-*/
-Static Function ReciboLoc()
-	
-    Local lAdjustToLegacy  := .F.
-    Local lDisableSetup    := .T.
-	Local cMes             := "XXXXXXXX"
-	Local cNum             := "XXXX"
-	Local cCli             := "XXXXXXXX XXXXXXXX XXXXXXXX"
-	Local cEnd             := "XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX"
-	Local cCnpj            := "XX.XXX.XXX/XXXX-XX"
-	Local cValor1          := "R$XXX,XX (XXX reais e XX centavos)"
-	Local cValor2          := "XXX,XX"
-	Local cPeriodo         := "Locação de máquina referente ao mês XX/XXXX"
-	Local cVencimento      := "XX/XX/XXXX"
-	Local cPonto           := "Ponto de Venda XXXXXXXX XXXXXXXXX - XXXX"
-	Local cEmitente        := "CONNECT VENDING COMERCIO DE MAQUINAS AUTOMATIZADAS LTDA (CNPJ: 24.575.331/0001-18 - IE:"
-	Local cEndEmit         := "Rua Fortunato Ferraz, 1030 - Vila Anastacio - São Paulo/SP - 05093-000"
-	Local cEmissao         := "XX/XX/XXXX"
-    Local oFont            := TFont():New('Arial' /*Fonte*/,,10 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-    Local oFont1           := TFont():New('Arial' /*Fonte*/,,20 /*Tamanho*/,,.T. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-    Local oFont2           := TFont():New('Arial' /*Fonte*/,,10 /*Tamanho*/,,.T. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-    Local oFont3           := TFont():New('Arial' /*Fonte*/,,10 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.T. /*Italico*/ )
-    Local oFont4           := TFont():New('Arial' /*Fonte*/,,13 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-
-	Private oPrinter := FWMSPrinter():New( "recibo_loc_"+cNum+".pdf",IMP_PDF,lAdjustToLegacy,"c:\temp\",lDisableSetup,,,,,,,, )
-    
-    oPrinter:StartPage()
-    oPrinter:SetMargin( 000, 000, 000, 000 )
-	
-	oBrush1 := TBrush():New( , rgb(237, 237, 237) )
-	oPrinter:Fillrect( { 26, 500, 74, 590 }, oBrush1, "-2")
-	
-	oPrinter:Box( 25, 5, 25, 590, "-9" )
-	// oPrinter:SayBitmap( nLin, nCol, cConnect, 50, 20 ) 
-	oPrinter:Say( 55, 125,"FATURA " + cNum + " - LOCAÇÃO DE " + cMes, oFont1 )
-	oPrinter:Say( 35, 510,"NÚMERO", oFont,, rgb(102, 102, 102)/*Cor*/ )
-	oPrinter:Say( 55, 530,cNum, oFont1 )
-	oPrinter:Box( 75, 5, 75, 590, "-9" )
-	oPrinter:Box( 25, 500, 75, 500, "-9" )
-
-	oPrinter:Box( 75, 500, 150, 500, "-1" )
-	oPrinter:Say( 85, 10,"RECEBEMOS DE", oFont,, rgb(102, 102, 102)/*Cor*/ )
-	oPrinter:Say( 100, 10,cCli, oFont4,, /*Cor*/ )
-	oPrinter:Say( 115, 10,cEnd, oFont4,, rgb(102, 102, 102)/*Cor*/ )
-	oPrinter:Say( 85, 510,"CNPJ OU CPF", oFont,, rgb(102, 102, 102)/*Cor*/ )
-	oPrinter:Say( 95, 510,cCnpj, oFont4,, /*Cor*/ )
-
-	oPrinter:Box( 150, 5, 150, 590,"-1" )
-	oPrinter:Say( 160, 10,"O VALOR DE", oFont,, rgb(102, 102, 102)/*Cor*/ )
-	oPrinter:Say( 175, 10,cValor1, oFont4,, /*Cor*/ )
-
-	oPrinter:Box( 200, 5, 200, 590,"-1" )
-	oPrinter:Say( 210, 10,"REFERENTES A", oFont,, rgb(102, 102, 102)/*Cor*/ )
-	oPrinter:Say( 225, 10,cPeriodo, oFont4,, /*Cor*/ )
-	oPrinter:Say( 240, 10,cVencimento, oFont4,, /*Cor*/ )
-
-	oPrinter:Box( 250, 5, 250, 590,"-1" )
-	oPrinter:Say( 260, 10,"DETALHAMENTO", oFont,, rgb(102, 102, 102)/*Cor*/ )
-	oPrinter:Say( 275, 10,cPonto, oFont4,, /*Cor*/ )
-	oPrinter:Say( 275, 500,cValor2, oFont4,, /*Cor*/ )
-
-	oPrinter:Box( 300, 5, 300, 590,"-1" )
-	oPrinter:Say( 310, 10,"EMITENTE", oFont,, rgb(102, 102, 102)/*Cor*/ )
-	oPrinter:Say( 325, 10,cEmitente, oFont4,, /*Cor*/ )
-	oPrinter:Say( 340, 10,cEndEmit, oFont4,, rgb(102, 102, 102)/*Cor*/ )
-
-	oPrinter:Fillrect( { 350, 300, 400, 590 }, oBrush1, "-2")
-	oPrinter:Box( 350, 5, 350, 590,"-1" )
-	oPrinter:Box( 350, 300, 400, 300,"-1" )
-	oPrinter:Box( 400, 5, 400, 590,"-1" )
-	oPrinter:Say( 360, 10,"DATA DE EMISSÃO", oFont,, rgb(102, 102, 102)/*Cor*/ )
-	oPrinter:Say( 375, 10,cEmissao, oFont4,, /*Cor*/ )
-	oPrinter:Say( 360, 310,"ASSINATURA", oFont,, rgb(102, 102, 102)/*Cor*/ )
-
-	oPrinter:Say( 735, 5,"_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ ", oFont )
-	oPrinter:Box( 750, 100, 750, 590,"-1" )
-	oPrinter:Box( 785, 100, 785, 590,"-1" )
-	oPrinter:Box( 825, 100, 825, 590,"-1" )
-	oPrinter:Box( 750, 300, 785, 420,"-1" )
-	oPrinter:Box( 750, 420, 785, 500,"-1" )
-	oPrinter:Box( 750, 420, 825, 420,"-1" )
-	oPrinter:Fillrect( { 750, 30, 825, 85 }, oBrush1, "-2")
-	oPrinter:Say( 760, 43,"NÚMERO", oFont2,, rgb(102, 102, 102)/*Cor*/ )
-	oPrinter:Say( 820, 12,"COMPROVANTE", oFont,, /*Cor*/, 270 /*Angulo*/ )
-	oPrinter:Say( 820, 22,"   DE ENTREGA", oFont,, /*Cor*/, 270 /*Angulo*/ )
-	oPrinter:Say( 760, 110,"DESTINATÁRIO", oFont,, rgb(102, 102, 102)/*Cor*/ )
-	oPrinter:Say( 760, 305,"CNPJ OU CPF", oFont,, rgb(102, 102, 102)/*Cor*/ )
-	oPrinter:Say( 760, 425,"EMISSÃO", oFont,, rgb(102, 102, 102)/*Cor*/ )
-	oPrinter:Say( 760, 505,"VALOR", oFont,, rgb(102, 102, 102)/*Cor*/ )
-	oPrinter:Say( 795, 110,"RECEBIDO POR", oFont2,, rgb(102, 102, 102)/*Cor*/ )
-	oPrinter:Say( 795, 175,"(nome e assinatura, por gentileza)", oFont3,, rgb(102, 102, 102)/*Cor*/ )
-	oPrinter:Say( 795, 425,"DATA", oFont2,, rgb(102, 102, 102)/*Cor*/ )
-
-	oPrinter:EndPage()
-	oPrinter:Print()
-
-Return 
-
 /*/{Protheus.doc} ItensPv
 	(long_description)
 	@type  Static Function
@@ -2448,242 +2346,6 @@ RestArea(aArea)
 
 Return
 
-Static Function ExtLeitura()
-	
-    Local lAdjustToLegacy  := .F.
-    Local lDisableSetup    := .T.
-    Local nX               := 0
-    Local nY               := 0
-	Local nLin             := 0
-    Local oFont1           := TFont():New('Arial' /*Fonte*/,,10 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-    // Local oFont2           := TFont():New('Arial' /*Fonte*/,,12 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-    Local oFont3           := TFont():New('Arial' /*Fonte*/,,12 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.T. /*Italico*/ )
-    Local oFont4           := TFont():New('Arial' /*Fonte*/,,15 /*Tamanho*/,,.T. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-    Local oFont6           := TFont():New('Arial' /*Fonte*/,,15 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-    Local oFont5           := TFont():New('Arial' /*Fonte*/,,25 /*Tamanho*/,,.T. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-
-	Private oPrinter := FWMSPrinter():New( "extrato_leitura_.pdf",IMP_PDF,lAdjustToLegacy,"c:\temp\",lDisableSetup,,,,,,,, )
-    
-    oPrinter:StartPage()
-    oPrinter:SetMargin( 005, 005, 005, 005 )
-
-	oBrush1 := TBrush():New( , rgb(0, 0, 0) )
-	oBrush2 := TBrush():New( , rgb(238, 238, 238) )
-	oBrush3 := TBrush():New( , rgb(0, 99, 125) )
-
-	oPrinter:Say( nLin+=40, 10,"Extrato de Leituras", oFont5,, rgb(0, 99, 125) )
-	oPrinter:Say( nLin+=10, 10,"Realizadas entre ", oFont3,, rgb(102, 102, 102) )
-
-	oPrinter:Fillrect( { nLin+=30, 10, nLin+30, 590 }, oBrush2, "-2")
-	oPrinter:Fillrect( { nLin+=10, 20, nLin+10, 30 }, oBrush1, "-2")
-	oPrinter:Say( nLin+5, 45,"TOTAL GERAL", oFont4 )
-	oPrinter:Say( nLin+15, 45,"Totalizando 1 Cliente", oFont1 )
-
-	oPrinter:Say( nLin+=10, 400,"0001", oFont1 )
-	oPrinter:Say( nLin, 450,"0002", oFont1 )
-	oPrinter:Say( nLin, 500,"0003", oFont1 )
-	oPrinter:Say( nLin, 550,"0004", oFont1 )
-
-	oPrinter:Say( nLin+=30, 45,"Produto", oFont1 )
-	oPrinter:Say( nLin, 100,"Descrição", oFont1 )
-	oPrinter:Say( nLin, 360,"Consumo", oFont1 )
-	oPrinter:Say( nLin, 410,"Subsidiado R$", oFont1 )
-	oPrinter:Say( nLin, 480,"Ao Consumidor R$", oFont1 )
-	oPrinter:Say( nLin, 550,"Total R$", oFont1 )
-
-	for nX := 1 to 10
-		oPrinter:Say( nLin+=20, 45,"D01010101", oFont1 )
-		oPrinter:Say( nLin, 100,"CAFE NORMAL COM ACUCAR NORMAL", oFont1 )
-		oPrinter:Say( nLin, 360,"15", oFont1 )
-		oPrinter:Say( nLin, 410,"1000", oFont1 )
-		oPrinter:Say( nLin, 480,"2000", oFont1 )
-		oPrinter:Say( nLin, 550,"3000", oFont1 )
-		oPrinter:Fillrect( { nLin+5, 10, nLin+5, 590 }, oBrush2, "-2")
-	next
-
-	oPrinter:Fillrect( { nLin+=20, 10, nLin+30, 590 }, oBrush3, "-2")
-
-	oPrinter:Say( nLin+12, 30,"354 - AFIP", oFont4,, rgb(238, 238, 238) )
-	oPrinter:Say( nLin+24, 30,"47.673.793/0102-17", oFont6,, rgb(238, 238, 238) )
-
-	oPrinter:Say( nLin+=60, 10,"CONSOLIDADO", oFont6 )
-	oPrinter:Fillrect( { nLin+=5, 10, nLin, 590 }, oBrush1, "-2")
-	oPrinter:Fillrect( { nLin+=15, 10, nLin+30, 590 }, oBrush2, "-2")
-	oPrinter:Fillrect( { nLin+10, 20, nLin+20, 30 }, oBrush3, "-2")
-	oPrinter:Say( nLin+15, 40,"cCliente", oFont4 )
-	oPrinter:Say( nLin+25, 40,"Totalizando " + "cNum" + " Pontos de Venda", oFont1 )
-	oPrinter:Say( nLin+=15, 360,"cTotCons", oFont1 )
-	oPrinter:Say( nLin, 410,"cTotSub", oFont1 )
-	oPrinter:Say( nLin, 480,"cTotConsu", oFont1 )
-	oPrinter:Say( nLin, 550,"cTotal", oFont1 )
-	
-	oPrinter:Say( nLin+=30, 45,"Produto", oFont1 )
-	oPrinter:Say( nLin, 100,"Descrição", oFont1 )
-	oPrinter:Say( nLin, 360,"Consumo", oFont1 )
-	oPrinter:Say( nLin, 410,"Subsidiado R$", oFont1 )
-	oPrinter:Say( nLin, 480,"Ao Consumidor R$", oFont1 )
-	oPrinter:Say( nLin, 550,"Total R$", oFont1 )
-
-	for nX := 1 to 10
-		oPrinter:Say( nLin+=20, 45,"D01010101", oFont1 )
-		oPrinter:Say( nLin, 100,"CAFE NORMAL COM ACUCAR NORMAL", oFont1 )
-		oPrinter:Say( nLin, 360,"15", oFont1 )
-		oPrinter:Say( nLin, 410,"1000", oFont1 )
-		oPrinter:Say( nLin, 480,"2000", oFont1 )
-		oPrinter:Say( nLin, 550,"3000", oFont1 )
-		oPrinter:Fillrect( { nLin+5, 10, nLin+5, 590 }, oBrush2, "-2")
-	next
-	
-
-	for nX := 1 to 2
-	
-		oPrinter:StartPage()
-
-		oPrinter:Say( nLin:=20, 10,". . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .", oFont5,, rgb(0, 99, 125) )
-		oPrinter:Say( nLin+=15, 10,"PONTO DE VENDA", oFont6 )
-		oPrinter:Fillrect( { nLin+5, 10, nLin+5, 590 }, oBrush1, "-2")
-		oPrinter:Fillrect( { nLin+10, 10, nLin+40, 590 }, oBrush2, "-2")
-		oPrinter:Fillrect( { nLin+20, 30, nLin+30, 20 }, oBrush1, "-2")
-		oPrinter:Say( nLin+25, 40,"cCliente + cEnd", oFont4 )
-		oPrinter:Say( nLin+35, 40,"cMaq", oFont1 )
-		oPrinter:Say( nLin+25, 360,"cTotCons", oFont1 )
-		oPrinter:Say( nLin+25, 410,"cTotSub", oFont1 )
-		oPrinter:Say( nLin+25, 480,"cTotConsu", oFont1 )
-		oPrinter:Say( nLin+25, 550,"cTotal", oFont1 )
-		
-		oPrinter:Say( nLin+=50, 25,"Mola", oFont1 )
-		oPrinter:Say( nLin, 50,"Produto", oFont1 )
-		oPrinter:Say( nLin, 100,"Descrição", oFont1 )
-		oPrinter:Say( nLin, 360,"Consumo", oFont1 )
-		oPrinter:Say( nLin, 410,"Subsidiado R$", oFont1 )
-		oPrinter:Say( nLin, 480,"Ao Consumidor R$", oFont1 )
-		oPrinter:Say( nLin, 550,"Total R$", oFont1 )
-
-		for nY := 1 to 10
-
-			if nY == 37
-				oPrinter:StartPage()
-				nLin:=0
-			endif
-
-			oPrinter:Say( nLin+=20, 25,"cMola", oFont1 )
-			oPrinter:Say( nLin, 50,"cProduto", oFont1 )
-			oPrinter:Say( nLin, 100,"cDescri", oFont1 )
-			oPrinter:Say( nLin, 360,"cConsumo", oFont1 )
-			oPrinter:Say( nLin, 410,"cSubsidi", oFont1 )
-			oPrinter:Say( nLin, 480,"cConsumi", oFont1 )
-			oPrinter:Say( nLin, 550,"cTotal", oFont1 )
-			oPrinter:Fillrect( { nLin+5, 10, nLin+5, 590 }, oBrush2, "-2")
-		next
-
-		oPrinter:Say( nLin+=30, 10,"Leituras no Período", oFont6 )
-		oPrinter:Fillrect( { nLin-2.5, 120, nLin, 590 }, oBrush1, "-6")
-		oPrinter:Fillrect( { nLin+10, 10, nLin+40, 590 }, oBrush2, "-2")
-		oPrinter:Say( nLin+=25, 15,"22/11/22 10:00", oFont4 )
-		oPrinter:Say( nLin, 100,"cCod", oFont1 )
-		oPrinter:Say( nLin, 360,"cTotCons", oFont1 )
-		oPrinter:Say( nLin, 410,"cTotSub", oFont1 )
-		oPrinter:Say( nLin, 480,"cTotConsu", oFont1 )
-		oPrinter:Say( nLin, 550,"cTotal", oFont1 )
-		
-		oPrinter:Say( nLin+=30, 25,"Mola", oFont1 )
-		oPrinter:Say( nLin, 50,"Produto", oFont1 )
-		oPrinter:Say( nLin, 100,"Descrição", oFont1 )
-		oPrinter:Say( nLin, 360,"Consumo", oFont1 )
-		oPrinter:Say( nLin, 410,"Subsidiado R$", oFont1 )
-		oPrinter:Say( nLin, 480,"Ao Consumidor R$", oFont1 )
-		oPrinter:Say( nLin, 550,"Total R$", oFont1 )
-		
-		for nY := 1 to 10
-			oPrinter:Say( nLin+=20, 25,"cMola", oFont1 )
-			oPrinter:Say( nLin, 50,"cProduto", oFont1 )
-			oPrinter:Say( nLin, 100,"cDescri", oFont1 )
-			oPrinter:Say( nLin, 360,"cConsumo", oFont1 )
-			oPrinter:Say( nLin, 410,"cSubsidi", oFont1 )
-			oPrinter:Say( nLin, 480,"cConsumi", oFont1 )
-			oPrinter:Say( nLin, 550,"cTotal", oFont1 )
-			oPrinter:Fillrect( { nLin+5, 10, nLin+5, 590 }, oBrush2, "-2")
-		next
-	next
-
-	oPrinter:EndPage()
-	oPrinter:Print()
-
-Return 
-
-Static Function DemonsCon()
-	
-    Local lAdjustToLegacy  := .F.
-    Local lDisableSetup    := .T.
-    Local nX               := 0
-    Local nY               := 0
-	Local nLin             := 0
-    //Local oFont1           := TFont():New('Arial' /*Fonte*/,,10 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-    //Local oFont2           := TFont():New('Arial' /*Fonte*/,,12 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-    //Local oFont3           := TFont():New('Arial' /*Fonte*/,,12 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.T. /*Italico*/ )
-    //Local oFont4           := TFont():New('Arial' /*Fonte*/,,15 /*Tamanho*/,,.T. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-    Local oFont5           := TFont():New('Arial' /*Fonte*/,,15 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-    Local oFont6           := TFont():New('Arial' /*Fonte*/,,20 /*Tamanho*/,,.T. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-    Local oFont7           := TFont():New('Arial' /*Fonte*/,,25 /*Tamanho*/,,.T. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-
-	Private oPrinter := FWMSPrinter():New( "extrato_leitura_.pdf",IMP_PDF,lAdjustToLegacy,"c:\temp\",lDisableSetup,,,,,,,, )
-    
-    oPrinter:StartPage()
-    oPrinter:SetMargin( 005, 005, 005, 005 )
-	
-	oBrush1 := TBrush():New( , rgb(0, 0, 0) )
-	oBrush2 := TBrush():New( , rgb(238, 238, 238) )
-	oBrush3 := TBrush():New( , rgb(0, 99, 125) )
-
-	oPrinter:Say( nLin+=20, 125,"CONNECT VENDING COMERCIO DE MAQUINAS", oFont6,, rgb(0, 0, 0) )
-	oPrinter:Say( nLin+12, 125,"24.575.331/0001-18", oFont5,, rgb(0, 0, 0) )
-	oPrinter:Say( nLin+24, 125,"R Dom João V, 417", oFont5,, rgb(0, 0, 0) )
-	oPrinter:Say( nLin+36, 125,"05.075-060 - São Paulo - SP", oFont5,, rgb(0, 0, 0) )
-	oPrinter:Say( nLin+48, 125,"(11) 4323-2212", oFont5,, rgb(0, 0, 0) )
-
-	oPrinter:Fillrect( { nLin+=55, 10, nLin, 590 }, oBrush1, "-2")
-
-	oPrinter:Box( nLin+=20, 30, nLin+100, 350,"-1" )
-
-	oPrinter:Say( nLin+20, 35,"ASSOCICAO FUNDO DE INCENTIVO A", oFont6,, rgb(0, 0, 0) )
-	oPrinter:Say( nLin+32, 35,"47.673.793/0102-17", oFont5,, rgb(0, 0, 0) )
-	oPrinter:Say( nLin+44, 35,"Rua Padre Machado, 1040 - 1100", oFont5,, rgb(0, 0, 0) )
-	oPrinter:Say( nLin+56, 35,"04127-001 - São Paulo - SP", oFont5,, rgb(0, 0, 0) )
-	oPrinter:Say( nLin+68, 35,"Este é o seu demonstrativo de consumo para o período", oFont5,, rgb(0, 0, 0) )
-	oPrinter:Say( nLin+80, 35,"de 08/11/2022 e 21/11/2022", oFont5,, rgb(0, 0, 0) )
-
-	oPrinter:Fillrect( { nLin, 360, nLin+100, 570 }, oBrush2, "-1")
-
-	oPrinter:Say( nLin+40, 430,"6.530,04", oFont7,, rgb(0, 0, 0) )
-	oPrinter:Say( nLin+52, 400,"vencimento em 22/12/22", oFont5,, rgb(0, 0, 0) )
-	oPrinter:Say( nLin+64, 410,"pagamento via Boleto", oFont5,, rgb(0, 0, 0) )
-
-	
-	oPrinter:Fillrect( { nLin+=100, 10, nLin, 590 }, oBrush2, "-1")
-
-
-	for nX := 1 to 10
-		oPrinter:Say( nLin+90, 400,"Consumo", oFont5,, rgb(0, 0, 0) )
-		oPrinter:Say( nLin+90, 400+70,"Unitário (R$)", oFont5,, rgb(0, 0, 0) )
-		oPrinter:Say( nLin+90, 400+70+70,"Total (R$)", oFont5,, rgb(0, 0, 0) )
-		oPrinter:Fillrect( { nLin+=100, 10, nLin+20, 590 }, oBrush2, "-1")
-		oPrinter:Say( nLin+=15, 30,"CAFE COM LEITE (DOSE)", oFont5,, rgb(0, 0, 0) )
-		oPrinter:Say( nLin, 400,"2.306", oFont5,, rgb(0, 0, 0) )
-		oPrinter:Say( nLin, 400+70,"0,99", oFont5,, rgb(0, 0, 0) )
-		oPrinter:Say( nLin, 400+70+70,"2.282,94", oFont5,, rgb(0, 0, 0) )
-		for nY := 1 to 10
-			oPrinter:Say( nLin+=20, 30,"21/11/22 em 0730 - AFIP - MÁQ 0730", oFont5,, rgb(0, 0, 0) )
-			oPrinter:Say( nLin, 400,"1.019", oFont5,, rgb(0, 0, 0) )
-			oPrinter:Say( nLin, 400+70,"0,99", oFont5,, rgb(0, 0, 0) )
-			oPrinter:Say( nLin, 400+70+70,"1.008,81", oFont5,, rgb(0, 0, 0) )
-		next
-	next
-
-	oPrinter:EndPage()
-	oPrinter:Print()
-
-Return 
-
 /*/{Protheus.doc} Recalc
 	(long_description)
 	@type  Static Function
@@ -2705,7 +2367,7 @@ Local nY
 Local aLeitura 	:=	If(len(aArray)>4,LeiAntr(aArray[01],aArray[02],aArray[5,11]),{})
 Local cTipFat	:=	alist[ascan(aList,{|x| x[1] == aarray[1]}),14]
 
-If len(aArray)  < 5 .or. len(aLeitura) < 1
+If len(aArray)  < 5 .or. len(aLeitura) < 2
 	Return  
 EndIf 
 
@@ -2738,30 +2400,30 @@ aAux5 := {}
 
 While !EOF() 
 	aAuxL5 := {}
-	nPos := Ascan(aAux5,{|x| Alltrim(x[1]) == strzero(val(TRB->Z08_SELECA),3)})
+	nPos := Ascan(aAux5,{|x| x[2] == TRB->Z08_PRODUT})
 	nPos2 := Ascan(aTabPrc,{|x| x[1]+x[2] == TRB->Z08_CONTRT+TRB->Z08_PRODUT})
 
 	If nPos == 0
-		Aadd(aAuxL5,strzero(val(TRB->Z08_SELECA),3))
-		Aadd(aAuxL5,TRB->Z08_PRODUT)
-		Aadd(aAuxL5,TRB->B1_DESC)
-		Aadd(aAuxL5,'')
-		Aadd(aAuxL5,0)			
-		Aadd(aAuxL5,TRB->Z08_DATA)
-		Aadd(aAuxL5,TRB->Z08_QTDLID)
-		Aadd(aAuxL5,0)
+		Aadd(aAuxL5,strzero(val(TRB->Z08_SELECA),3)) //1
+		Aadd(aAuxL5,TRB->Z08_PRODUT) //2
+		Aadd(aAuxL5,TRB->B1_DESC) //3
+		Aadd(aAuxL5,'') //4
+		Aadd(aAuxL5,0) //5	
+		Aadd(aAuxL5,TRB->Z08_DATA) //6
+		Aadd(aAuxL5,TRB->Z08_QTDLID) //7
+		Aadd(aAuxL5,0) //8
 		
 		If nPos2 > 0
-			Aadd(aAuxL5,aTabPrc[nPos2,04])
+			Aadd(aAuxL5,aTabPrc[nPos2,04]) //9
 		Else 
-			Aadd(aAuxL5,0)
+			Aadd(aAuxL5,0) //9
 			
 		EndIf 
 
-		Aadd(aAuxL5,0)
+		Aadd(aAuxL5,0) //10
 		
-		Aadd(aAuxL5,Z08_COD)
-		Aadd(aAuxL5,Z08_FATURA)
+		Aadd(aAuxL5,Z08_COD) //11
+		Aadd(aAuxL5,Z08_FATURA) //12
 
 		If len(aAuxL5) > 0
 			Aadd(aAux5,aAuxL5)
@@ -2787,12 +2449,17 @@ Aeval(aAux5,{|x| x[10] := x[9] * x[8]})
 
 For nY :=  5 to len(aList5B[nLin])
 	If cTipFat == "1"
-		nPL5 := Ascan(aAux5,{|x| x[1] == aList5B[nLin,nY,01]})
+		nPL5 := Ascan(aAux5,{|x| x[2] == aList5B[nLin,nY,02]})
 		If nPL5 > 0
 			nQtdT := aAux5[nPL5,7] - aAux5[nPL5,5]
 			aList5B[nLin,nY,08] := aList5B[nLin,nY,07] - nQtdT
 			aList5B[nLin,nY,13] := stod(aAux5[nPL5,4])
 			aList5B[nLin,nY,14] := aAux5[nPL5,5]
+			aList5B[nLin,nY,10] := aList5B[nLin,nY,10] - aAux5[nPL5,10]
+			if Empty(aList5B[nLin,nY,04])
+				aList5B[nLin,nY,04] := aAux5[nPL5,6]
+				aList5B[nLin,nY,05] := aAux5[nPL5,7]
+			endif
 		EndIF
 	Else 
 		nPL5 := Ascan(aAux5,{|x| x[1]+x[6] == aList5B[nLin,nY,01]+aList5B[nLin,nY,04]})
@@ -2824,37 +2491,37 @@ Return
 /*/
 Static Function LeiAntr(cCont,cAtv,cLei)
 
-Local aArea := GetArea()
-Local aRet  := {}
-Local cQry  := ""
-Local nLei  := 0
+	Local aArea := GetArea()
+	Local aRet  := {}
+	Local cQry  := ""
+	Local nLei  := 0
 
-cQry := "SELECT Z08_COD,COUNT(*) FROM "+RetSQLName("Z08")
-cQry += " WHERE Z08_NUMSER='"+cAtv+"' AND Z08_CONTRT='"+cCont+"' AND D_E_L_E_T_=' '"
+	cQry := "SELECT Z08_COD,COUNT(*) FROM "+RetSQLName("Z08")
+	cQry += " WHERE Z08_NUMSER='"+cAtv+"' AND Z08_CONTRT='"+cCont+"' AND D_E_L_E_T_=' '"
 
-IF !Empty(cLei)
-	cQry += " AND Z08_COD NOT IN('"+cLei+"')"
-EndIf 
+	IF !Empty(cLei)
+		cQry += " AND Z08_COD NOT IN('"+cLei+"')"
+	EndIf 
 
-cQry += " GROUP BY Z08_COD"
-cQry += " ORDER BY Z08_COD DESC"
+	cQry += " GROUP BY Z08_COD"
+	cQry += " ORDER BY Z08_COD DESC"
 
-If Select("QUERY") > 0
-	dbSelectArea("QUERY")
-	dbCloseArea()
-EndIf                                                                                 
-	
-MemoWrite("CONFSC01.SQL",cQry)
+	If Select("QUERY") > 0
+		dbSelectArea("QUERY")
+		dbCloseArea()
+	EndIf
+		
+	MemoWrite("CONFSC01.SQL",cQry)
 
-cQry:= ChangeQuery(cQry)
-DbUseArea(.T.,"TOPCONN",TcGenQry(,,cQry),'QUERY',.F.,.T.)   
+	cQry:= ChangeQuery(cQry)
+	DbUseArea(.T.,"TOPCONN",TcGenQry(,,cQry),'QUERY',.F.,.T.)   
 
-While !EOF() .And. nLei < 2
-	Aadd(aRet,QUERY->Z08_COD)
-	nLei++
-	Dbskip()
-EndDo 
+	While !EOF() .And. nLei < 2
+		Aadd(aRet,QUERY->Z08_COD)
+		nLei++
+		Dbskip()
+	EndDo 
 
-RestArea(aArea)
+	RestArea(aArea)
 
 Return(aRet)

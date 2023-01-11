@@ -79,15 +79,15 @@ oGrp1      := TGroup():New( 004,016,108,380,"Cadastro",oDlg1,CLR_BLACK,CLR_WHITE
     
     oGrp3      := TGroup():New( 112,040,312,360,"Leiaute",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
     //oBrw1      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{124,048,304,352},,, oGrp3 ) 
-    oList1            := TCBrowse():New(124,048,305,180,, {'','Selecao','Produto','Descrição','R$ Subsid.','R$ Consum.'},{10,30,40,50,50,50},;
+    oList1            := TCBrowse():New(124,048,305,180,, {'','Selecao','Produto','Descrição'/*,'R$ Subsid.','R$ Consum.'*/},{10,30,40,50/*,50,50*/},;
                                 oGrp3,,,,{|| },{|| editcol(oList1:nAt)},, ,,,  ,,.F.,,.T.,,.F.,,,)
     oList1:SetArray(aCols)
     oList1:bLine := {||{aCols[oList1:nAt,01],; 
                         aCols[oList1:nAt,02],;
                         aCols[oList1:nAt,03],; 
-                        aCols[oList1:nAt,04],;
-                        Transform(aCols[oList1:nAt,05],"@E 999,999.99"),;
-                        Transform(aCols[oList1:nAt,06],"@E 999,999.99")}} 
+                        aCols[oList1:nAt,04]}}
+                        // Transform(aCols[oList1:nAt,05],"@E 999,999.99"),;
+                        // Transform(aCols[oList1:nAt,06],"@E 999,999.99")}} 
 
     oBtn1      := TButton():New( 316,112,"Confirmar",oDlg1,{|| oDlg1:end(nOpc:=1)},037,012,,,,.T.,,"",,,,.F. )
     oBtn2      := TButton():New( 316,240,"Cancelar",oDlg1,{|| oDlg1:end(nOpc:=0)},037,012,,,,.T.,,"",,,,.F. )
@@ -104,7 +104,14 @@ If nOpc == 1
         If !Dbseek(xFilial("Z07")+Avkey(cPatr,"Z07_CHAPA")+Avkey(cCli,"Z07_CLIENT")+Avkey(cLj,"Z07_LOJA")+Avkey(aCols[nX,02],"Z07_SELECA"))
             Reclock("Z07",.T.)
         Else 
+
             RecLock("Z07",.F.)
+            if Z07->Z07_CODPRO != aCols[nX,03] /*.OR. Z07->Z07_VLRVND != aCols[nX,05]*/
+                Dbdelete()
+                Z07->(MsUnlock())
+                RecLock("Z07",.T.)
+            endif
+
         ENDIF
         Z07->Z07_FILIAL :=  xFilial("Z07")
         Z07->Z07_CHAPA  :=  cPatr
@@ -112,8 +119,8 @@ If nOpc == 1
         Z07->Z07_LOJA   :=  cLj
         Z07->Z07_SELECA :=  aCols[nX,02]
         Z07->Z07_CODPRO :=  aCols[nX,03]
-        Z07->Z07_VLRVND :=  aCols[nX,05]
-        Z07->Z07_CONSUM :=  aCols[nX,06]
+        // Z07->Z07_VLRVND :=  aCols[nX,05]
+        // Z07->Z07_CONSUM :=  aCols[nX,06]
         Z07->(MsUnlock())
     Next nX 
 EndIf 
@@ -231,11 +238,11 @@ ElseIf nPosic == 3
         lEditCell( aCols, oList1, "@!", nPosic)
     EndIf
     
-ElseIf nPosic >= 5
-    If aCols[nLin,nPosic] <= 0
-        aCols[nLin,nPosic] := 0
-    EndIf 
-    lEditCell( aCols, oList1, "@E 999,999.99", nPosic)
+// ElseIf nPosic >= 5
+//     If aCols[nLin,nPosic] <= 0
+//         aCols[nLin,nPosic] := 0
+//     EndIf 
+//     lEditCell( aCols, oList1, "@E 999,999.99", nPosic)
 EndIf
 
 oList1:refresh()
@@ -304,7 +311,7 @@ If !Empty(cPatr)
         dbCloseArea()
     ENDIF
 
-    MemoWrite("CONFATC01.SQL",cQuery)
+    MemoWrite("CONOPC03.SQL",cQuery)
     DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
 
     DbSelectArea("TRB")  
@@ -331,7 +338,14 @@ If !Empty(cPatr)
             cCli := AA3->AA3_CODCLI
             cLj  := AA3->AA3_LOJA
         EndIf
+
+        DbSelectArea("SA1")
+        DbSetOrder(1)
+        Dbseek(xFilial("SA1")+Avkey(cCli, "A1_COD") + Avkey(cLj, "A1_LOJA"))
+
     EndIf 
+
+    Asort(aCols,,,{|x,y| x[2] < y[2]})
 
     oList1:SetArray(aCols)
     oList1:bLine := {||{aCols[oList1:nAt,01],; 
