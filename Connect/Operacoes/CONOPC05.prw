@@ -111,7 +111,7 @@ Return
 Static Function Basexcli()
 
 Local aArea     :=  GetArea()
-
+ 
 If !Empty(cPatr)
     aCols := {}
     // '','Selecao','Produto','Descrição','Valor'
@@ -133,7 +133,7 @@ If !Empty(cPatr)
         dbCloseArea()
     ENDIF
 
-    MemoWrite("CONFATC01.SQL",cQuery)
+    MemoWrite("CONOPC05.SQL",cQuery)
     DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
 
     DbSelectArea("TRB")  
@@ -158,25 +158,25 @@ If !Empty(cPatr)
         Dbskip()
     EndDo 
 
-    cQuery := "SELECT Z08_DATA,Z08_SELECA,Z08_QTDLID FROM "+RetSQLName("Z08")
+    cQuery := "SELECT Z08_DATA,Z08_SELECA,Z08_PRODUT,Z08_QTDLID FROM "+RetSQLName("Z08")
     cQuery += " WHERE Z08_FILIAL='"+xFilial("Z08")+"' AND Z08_NUMSER='"+cPatr+"'"
-    cQuery += " AND Z08_DATA+Z08_COD IN(SELECT MAX(Z08_DATA)+MAX(Z08_COD) FROM "+RetSQLName("Z08")
+    cQuery += " AND Z08_COD IN(SELECT Z08_COD FROM "+RetSQLName("Z08")
     cQuery += " WHERE Z08_FILIAL='"+xFilial("Z08")+"' AND Z08_NUMSER='"+cPatr+"'"
-    cQuery += " AND D_E_L_E_T_=' ')"
+    cQuery += " AND D_E_L_E_T_=' ' AND Z08_FATURA = ' ')"
 
     IF Select('TRB') > 0
         dbSelectArea('TRB')
         dbCloseArea()
     ENDIF
 
-    MemoWrite("CONFATC01.SQL",cQuery)
+    MemoWrite("CONOPC05.SQL",cQuery)
     DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
 
     DbSelectArea("TRB")
 
     While !EOF()
         dDiaLei := stod(TRB->Z08_DATA)
-        nPos := Ascan(aCols,{|x| Alltrim(x[1]) == Strzero(val(TRB->Z08_SELECA),3)})
+        nPos := Ascan(aCols,{|x| x[2] == TRB->Z08_PRODUT})
         If nPos > 0
             aCols[nPos,04] := TRB->Z08_QTDLID
         EndIf 

@@ -229,7 +229,7 @@ For nI := 1 to nRegs
     Aadd(aCab040, { "AA3_CODCLI"    , cCodCli           , NIL } )               
     Aadd(aCab040, { "AA3_LOJA"      , cLojCli           , NIL } )               
     Aadd(aCab040, { "AA3_CODPRO"    , cCodPro           , NIL } )               
-    Aadd(aCab040, { "AA3_NUMSER"    , cAtivo            , NIL } )                
+    Aadd(aCab040, { "AA3_NUMSER"    , SN1->N1_XNUMSER            , NIL } )                
     Aadd(aCab040, { "AA3_CBASE"     , cAtivo            , NIL } )                
     Aadd(aCab040, { "AA3_ITEM"      , '0001'            , NIL } )                
     Aadd(aCab040, { "AA3_CHAPA"     , cAtivo            , NIL } )                
@@ -307,7 +307,7 @@ aAdd(aItem,{ "AB2_ITEM"     ,StrZero(nX,2)      ,Nil})
 aAdd(aItem,{ "AB2_TIPO"     ,"3"                ,Nil})
 aAdd(aItem,{ "AB2_CLASSI"   ,"003"              ,Nil})
 aAdd(aItem,{ "AB2_CODPRO"   ,cCodPro            ,Nil})
-aAdd(aItem,{ "AB2_NUMSER"   ,cAtivo             ,Nil})
+aAdd(aItem,{ "AB2_NUMSER"   ,SN1->N1_XNUMSER             ,Nil})
 aAdd(aItem,{ "AB2_CODPRB"   ,'000002'           ,Nil}) //AAG->AAG_CODPRB
 aAdd(aItem,{ "AB2_XCONTR"   ,cContrt            ,Nil})
 
