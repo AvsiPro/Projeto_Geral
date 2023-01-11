@@ -1,3 +1,4 @@
+
 #INCLUDE 'PROTHEUS.CH'
 #INCLUDE 'RESTFUL.CH'
 #INCLUDE "FWMVCDEF.CH"
@@ -50,7 +51,9 @@ WsMethod GET WsReceive CODIGOMENU WsService MenusPrt
 	Local cJson		:= ''
 	Local cVirg		:= ""
 	Local cCodBkp	:= ""
-	
+	Local cQuery 
+	Local lAchou	:=	.F.
+
 	lRet					:= .T.
 	
 	conout("chegou aqui PRTL002")
@@ -60,55 +63,79 @@ WsMethod GET WsReceive CODIGOMENU WsService MenusPrt
 	RpcSetType(3)
 	RPCSetEnv("01","0101")
 	
-	DbSelectArea("AI8")
-	DbsetOrder(1)
-	If Dbseek(xFilial("AI8")+cCode)
-		
-		cJson += '['
-		
-		
-		While !EOF() .and. AI8->AI8_PORTAL == cCode
+	cQuery := "SELECT AI8_CODMNU,AI8_PORTAL,AI8_CODPAI,AI8_TEXTO,AI8_XWSROB,AI8.R_E_C_N_O_ AS RECAI8"
+	cQuery += " FROM "+RetSQLName("AI8")+" AI8"
+	cQuery += " WHERE AI8_FILIAL BETWEEN ' ' AND 'ZZZ'"
+	cQuery += " AND AI8_PORTAL='"+cCode+"'"
+	cQuery += " AND AI8.D_E_L_E_T_=' '"
+	cQuery += " ORDER BY AI8_CODMNU,AI8_CODPAI"
 
-			If Empty(cCodBkp) .OR. (cCodBkp <> AI8->AI8_CODMNU .And. Empty(AI8->AI8_CODPAI))
+	If Select('TRB') > 0
+		dbSelectArea('TRB')
+		dbCloseArea()
+	EndIf
 
-				If Empty(AI8->AI8_CODPAI) .And. !Empty(cCodBkp)
+	DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
+
+	DbSelectArea("TRB")
+
+	
+	While !EOF()
+	//DbSelectArea("AI8")
+	//DbsetOrder(1)
+	//If Dbseek(xFilial("AI8")+cCode)
+		
+		If !lAchou	
+			cJson += '['
+		EndIf 
+
+		lAchou := .T.
+		
+		//While !EOF() .and. AI8->AI8_PORTAL == cCode
+
+			If Empty(cCodBkp) .OR. (cCodBkp <> TRB->AI8_CODMNU .And. Empty(TRB->AI8_CODPAI))
+
+				If Empty(TRB->AI8_CODPAI) .And. !Empty(cCodBkp)
 					cJson += ']'
 					cJson += '},'
 				EndIf
 
-				cCodBkp := AI8->AI8_CODMNU
+				cCodBkp := TRB->AI8_CODMNU
 
 				
 				cJson += '{'
-				cJson += '"label":"'+Alltrim(AI8->AI8_TEXTO)+'",'
+				cJson += '"label":"'+Alltrim(TRB->AI8_TEXTO)+'",'
 				cJson += '"icon":"",'
-				cJson += '"shortLabel":"'+Alltrim(AI8->AI8_TEXTO)+'",'
+				cJson += '"shortLabel":"'+Alltrim(TRB->AI8_TEXTO)+'",'
 				cJson += '"subItems": ['
 
 				cVirg := ''
 				
 			Else
-				cJson += cVirg + '{"label":"'+Alltrim(AI8->AI8_TEXTO)+'",'
-				cJson += '"link":"'+Alltrim(AI8->AI8_XWSROB)+'",'
-				cJson += '"id":"'+cvaltochar(Recno())+'"}'
+				cJson += cVirg + '{"label":"'+Alltrim(TRB->AI8_TEXTO)+'",'
+				cJson += '"link":"'+Alltrim(TRB->AI8_XWSROB)+'",'
+				cJson += '"id":"'+cvaltochar(TRB->RECAI8)+'"}'  //Recno()
 				cVirg := ','
 			EndIf
 
-			Dbskip()
-		EndDo
+//			Dbskip()
+//		EndDo
 
 		
+		Dbskip()	
+	EndDo 
+	
+	If lAchou
 		cJson += ']'
 		cJson += '}'
 		cJson += ']'
-		
-		
 	else
 		cJson += '{ "codigo":"#400",'
 		cJson += '"Erro": "Portal nao encontrado",}'
 		
 	EndIf
 	
+	conout(cJson)
 	::SetResponse(cJson)
 
 RestArea(aArea)

@@ -30,6 +30,12 @@ WsMethod GET WsReceive CODIGO,VENDEDOR WsService Faturamento
 	RPCSetEnv("01","0101")
 	
 	conout("chegou aqui PRTL048")
+	conout("Cliente "+cvaltochar(cCliente))
+	conout("Vendedor "+cvaltochar(cVendedor))
+	If Empty(cCliente)
+		cCliente := strtran(cVendedor,"?CODIGO=")
+		cVendedor := ''
+	EndIf 
 
 	DbSelectArea("SE1")
 	SE1->(DBSetOrder(1))
@@ -38,25 +44,30 @@ WsMethod GET WsReceive CODIGO,VENDEDOR WsService Faturamento
 	::SetResponse('{')
 	::SetResponse('"items": [')
 	
-	cQuery := " SELECT TOP 20 SF2.R_E_C_N_O_ RECF2,*  "
+	cQuery := " SELECT DISTINCT SF2.R_E_C_N_O_ RECF2,SF2.*,SC5.*  "
 	cQuery += " FROM " + RetSQLName("SF2") + " SF2 "
+	cQuery += " INNER JOIN "+RetSQLName("SD2")+" SD2 ON D2_FILIAL=F2_FILIAL AND D2_DOC=F2_DOC"
+	cQuery += "  AND D2_SERIE=F2_SERIE AND D2_CLIENTE=F2_CLIENTE AND D2_LOJA=F2_LOJA AND SD2.D_E_L_E_T_=' '"
+	cQuery += " INNER JOIN "+RetSQLName("SC6")+" SC6 ON C6_FILIAL=D2_FILIAL AND C6_NUM=D2_PEDIDO"
+	cQuery += "  AND C6_ITEM=D2_ITEMPV AND SC6.D_E_L_E_T_=' '"
 	cQuery += " INNER JOIN " + RetSQLName("SC5") + " SC5   " 
-	cQuery += " 	ON C5_FILIAL = F2_FILIAL  " 
-	cQuery += " 	AND C5_CLIENTE = F2_CLIENTE  " 
-	cQuery += " 	AND C5_LOJACLI = F2_LOJA  " 
-	cQuery += " 	AND C5_VEND1 = F2_VEND1  " 
-	cQuery += " 	AND C5_NOTA = F2_DOC  " 
-	cQuery += " 	AND C5_SERIE = F2_SERIE  " 
+	cQuery += " 	ON C5_FILIAL = C6_FILIAL  " 
+	cQuery += " 	AND C5_CLIENTE = C6_CLI  " 
+	cQuery += " 	AND C5_LOJACLI = C6_LOJA  " 
+	cQuery += " 	AND C5_NUM = C6_NUM "
 	cQuery += " 	AND SC5.D_E_L_E_T_=''  " 
-	cQuery += " WHERE SF2.D_E_L_E_T_=''  "
+	cQuery += " WHERE SF2.D_E_L_E_T_=' '  "
+	cQuery += " AND F2_FILIAL BETWEEN ' ' AND 'ZZ' AND F2_DOC BETWEEN ' ' AND 'ZZ' AND F2_SERIE BETWEEN ' ' AND 'ZZ'"
 
 	If !Empty(cCliente)
-		cQuery += " 	AND F2_CLIENTE = '"+cCliente+"'  "
+		cQuery += " 	AND F2_CLIENTE = '"+cvaltochar(cCliente)+"'  "
 	EndIf
 
 	If !Empty(cVendedor)
 		cQuery += " 	AND C5_VEND1 = '"+cVendedor+"'  "
 	EndIf
+
+	conout(cQuery)
 	
 	If Select('TRB') > 0
 		dbSelectArea('TRB')

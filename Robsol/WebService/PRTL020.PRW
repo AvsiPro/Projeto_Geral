@@ -142,7 +142,7 @@ WsMethod GET WsReceive CLIENTE,PAGINA,TITULO,PREFIXO,PARCELA,VENDEDOR,EMISSAO,VE
 			cQuery += " AND A1_COD = '"+cCliente+"'"
 		endIf	
 
-		cQuery += " WHERE E1.D_E_L_E_T_=' '"
+		cQuery += " WHERE E1_FILIAL BETWEEN ' ' AND 'ZZZZ' AND E1.D_E_L_E_T_=' '"
 
 		cTipVnd := Posicione("SA3",1,xFilial("SA3")+cVendedor,"A3_XFUNCAO")
 
@@ -152,6 +152,8 @@ WsMethod GET WsReceive CLIENTE,PAGINA,TITULO,PREFIXO,PARCELA,VENDEDOR,EMISSAO,VE
 		
 		If !Empty(cPrefixo)
 			cQuery += " AND E1_PREFIXO='"+cPrefixo+"'"
+		Else 
+			cQuery += " AND E1_PREFIXO BETWEEN ' ' AND 'ZZZ'"
 		EndIf
 		
 		If !Empty(cParcela)

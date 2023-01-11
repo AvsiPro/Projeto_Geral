@@ -58,7 +58,13 @@ IF nPosMaq > 0
                 Aadd(aAux2,aAuxP[nJ,02])
                 Aadd(aAux2,aAuxP[nJ,03])
                 Aadd(aAux2,aAuxP[nJ,04])
-                Aadd(aAux2,aAuxP[nJ,05])
+                DbSelectArea("SB1")
+                DbSetOrder(1)
+                If !Dbseek(xFilial("SB1")+aAuxP[nJ,04])
+                    Aadd(aAux2,"Produto nao encontrado")
+                Else 
+                    Aadd(aAux2,aAuxP[nJ,05])
+                EndIF 
                 Aadd(aAux2,aAuxP[nJ,06])
                 Aadd(aAux2,aAuxP[nJ,07])
                 Aadd(aAux2,aAuxP[nJ,08])

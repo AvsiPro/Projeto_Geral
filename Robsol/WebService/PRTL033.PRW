@@ -53,8 +53,11 @@ WsMethod GET WsReceive VENDEDOR WsService Metas
 	RPCSetEnv("01","0101")
 	
 	conout("chegou aqui PRTL033")
+	conout("vendedor "+cvaltochar(CodVend))
 
-    cJson := U_ROBMET01(CodVend)
+	If !Empty(CodVend)
+    	cJson := U_ROBMET01(CodVend)
+	EndIf 
 	
     If !Empty(cJson)
         ::SetResponse(cJson)

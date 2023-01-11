@@ -724,7 +724,7 @@ ElseIf cCombo1 == "7"
     oDlg1:refresh()
 ENDIF
 
-// Fhelp()
+ Fhelp()
 
 RETURN
 
@@ -1714,12 +1714,7 @@ RETURN
 STATIC FUNCTION Saveplan()
 
 LOCAL aArea    :=    GetArea()
-// LOCAL aCabec:=    {"Z07_CLIENT","Z07_LOJA","Z07_CHAPA","Z07_CODMAQ","Z07_CODPROD","Z07_SELECA","Z07_QUANT","Z07_NIVPAR","Z07_NIVALE","Z07_VALOR"}
-// LOCAL nPosB    :=    Ascan(aList3B,{|x| Alltrim(x[2]) == Alltrim(aList3[oList3:nAt,02])}) 
 LOCAL lAlt     :=    .F. 
-//LOCAL lMolD    :=    .F.
-//LOCAL aAuxD    :=    {}
-//LOCAL nPing
 LOCAL nX
 LOCAL nJ
 
@@ -1731,7 +1726,7 @@ FOR nX := 1 TO len(aList3)
         IF !DbSeek(xFilial("Z07")+Avkey(aList3[nX,02],"Z07_CHAPA")+Avkey(aList[oList:nAt,17],"Z07_CLIENT")+Avkey(aList[oList:nAt,18],"Z07_LOJA")+Avkey(strzero(val(aList3[nX,03]),3),"Z07_SELECA"))
             Reclock("Z07",.T.)
         else
-            Reclock("Z07",.T.)
+            Reclock("Z07",.F.)
         EndIF 
         
         Z07->Z07_FILIAL     :=  xFilial("Z07")
@@ -1742,7 +1737,6 @@ FOR nX := 1 TO len(aList3)
         Z07->Z07_CODPROD    :=  aList3[nX,04]
         Z07->Z07_SELECA     :=  strzero(val(aList3[nX,03]),3)
         Z07->Z07_DINICIO    :=  dDataBase
-        //Z07->Z07_QUANT      :=  IF(Valtype(aList3[nX,06])<>"N",val(aList3[nX,06]),aList3[nX,06])
         Z07->(Msunlock())
     ENDIF
 
@@ -1755,7 +1749,7 @@ IF lAlt
     FOR nX := 1 TO len(aList3)
         nPos := Ascan(aList3B,{|x| alltrim(x[2])+Alltrim(x[3]) == Alltrim(aList3[nX,02])+Alltrim(aList3[nX,03])})
         IF nPos > 0         
-            FOR nJ := 1 TO len(aList3[nX])
+            FOR nJ := 1 TO len(aList3B[nPos]) //len(aList3[nX])
                 aList3B[nPos,nJ] := aList3[nX,nJ]
             NEXT nJ
         ELSE
