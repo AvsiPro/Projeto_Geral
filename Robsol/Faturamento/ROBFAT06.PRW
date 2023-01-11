@@ -357,7 +357,7 @@ Local aItems:= {'Atende','Não atende'}
         
         ACTIVATE DIALOG oDlg CENTERED
 
-        cNFAtend := Posicione("SC5",1,Z50->Z50_FILPED+Z50->Z50_PEDVEN,"C5_NOTA")
+        cNFAtend := Posicione("SC5",1,If(Z50->Z50_FILPED<>"0102",Z50->Z50_FILPED,'0101')+Z50->Z50_PEDVEN,"C5_NOTA")
     
         If Empty(cNFAtend)
             lEncerra := .F.

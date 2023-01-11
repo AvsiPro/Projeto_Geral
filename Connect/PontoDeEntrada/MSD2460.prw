@@ -38,7 +38,7 @@ User Function MSD2460()
 
 	If SC5->C5_XTPPED == "A" 
 
-
+		/*
 		_aCab1 := {{"D3_DOC" ,SD2->D2_DOC, NIL},;
 					{"D3_TM" ,cTM , NIL},;
 					{"D3_CC" ,"        ", NIL},;
@@ -52,10 +52,10 @@ User Function MSD2460()
 				{"D3_LOCALIZ" , "",NIL}}
 
 			aadd(_atotitem,_aitem)
-
+		*/
 	//Faturamento de doses movimenta a SD3 pelos itens da estrutura
 	ElseIf SC5->C5_XTPPED == "F"
-		
+		/*
 		U_BusSG1(SD2->D2_COD,SD2->D2_QUANT)
 		
 		_aCab1 := {{"D3_DOC" ,SD2->D2_DOC, NIL},;
@@ -75,6 +75,7 @@ User Function MSD2460()
 
 			aadd(_atotitem,_aitem)
 		Next
+		*/
 	//Faturamento de pedidos de remessa de maquina
 	ElseIf SC5->C5_XTPPED == "I"
 		atucontr(SC6->C6_CONTRT,SC6->C6_PRODUTO,SC6->C6_NUMSERI)
@@ -84,7 +85,7 @@ User Function MSD2460()
 	EndIf
 
 	SC5->(DBCloseArea())
-	
+	/*
 	If len(_aCab1) > 0 .And. Len(_atotitem) > 0
 		MSExecAuto({|x,y,z| MATA241(x,y,z)},_aCab1,_atotitem,3)
 		
@@ -94,7 +95,7 @@ User Function MSD2460()
 			break
 		EndIf
 	EndIf 
-
+	*/
 	RestArea(aArea)
 
 Return

@@ -75,7 +75,7 @@ ELSE
 	dDtFour := datavalida(dDataBase+3,.T.)+2
 ENDIF
 
-cQuery := "SELECT E1_FILIAL,E1_PREFIXO,E1_NUM,E1_TIPO,E1_NATUREZ,ED_DESCRIC,"
+cQuery := "SELECT E1_FILIAL,E1_PREFIXO,E1_NUM,E1_TIPO,E1_NATUREZ,ED_DESCRIC,E1_FILORIG,"
 cQuery += " E1_CLIENTE,E1_LOJA,A1_NOME,E1_VENCREA,E1_VALOR,A1_EMAIL,E1_PARCELA,A1_CGC,"
 cQuery += " E1_PORTADO,E1.R_E_C_N_O_ AS REGE1"
 cQuery += " FROM "+RetSQLName("SE1")+" E1"
@@ -104,7 +104,7 @@ FWrite(nArq, '******************************************************************
                
 While !EOF()
 	cDestino 	:=	Alltrim(TRB->A1_EMAIL)
-    //cDestino 	:=	"alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br" //;adm@robsol.com.br;cnoculos@hotmail.com" //Alltrim(TRB->A1_EMAIL)    
+    //cDestino 	:=	"alexandre.venancio@avsipro.com.br" //;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br" //;adm@robsol.com.br;cnoculos@hotmail.com" //Alltrim(TRB->A1_EMAIL)    
 	MV_PAR01	:=	TRB->E1_PREFIXO
 	MV_PAR02	:=	TRB->E1_NUM
 	MV_PAR03	:=	TRB->E1_PARCELA
@@ -112,6 +112,15 @@ While !EOF()
 
 	If File(cPasta+Alltrim(TRB->A1_CGC)+"\boleto_"+Alltrim(TRB->E1_NUM)+"_"+Alltrim(TRB->E1_PARCELA)+".PDF")
         cBoleto := cPasta+Alltrim(TRB->A1_CGC)+"\boleto_"+Alltrim(TRB->E1_NUM)+"_"+Alltrim(TRB->E1_PARCELA)+".PDF"
+	else
+		aArBkp := GetArea()
+		U_ROBBOL(.T.,cPasta+alltrim(TRB->A1_CGC)+'\',TRB->E1_FILORIG,TRB->E1_PARCELA)
+		RestArea(aArBkp)
+		If File(cPasta+Alltrim(TRB->A1_CGC)+"\boleto_"+Alltrim(TRB->E1_NUM)+"_"+Alltrim(TRB->E1_PARCELA)+".PDF")
+			cBoleto := cPasta+Alltrim(TRB->A1_CGC)+"\boleto_"+Alltrim(TRB->E1_NUM)+"_"+Alltrim(TRB->E1_PARCELA)+".PDF"
+		else
+			cBoleto := ""
+		EndIf 
     ENDIF
 
 	cBody 		:=	Aviso_1(cBoleto) 
@@ -569,7 +578,7 @@ cHtml += "<table width='1078' border='0'>"
 cHtml += "  <tr>"
 cHtml += "    <td>Prezado (a), Cliente<br>" 
 cHtml += Alltrim(TRB->A1_NOME)+" Cnpj "+Transform(TRB->A1_CGC,'@R 99.999.999/9999-99')+"<br>"
-cHtml += "Lembramos do vencimento de seu boleto bancário do dia ( "+cvaltochar(stod(TRB->E1_VENCREA))+" ) , se encontra em anexo.<br>"
+cHtml += "Lembramos do vencimento de seu boleto bancário do dia ( "+cvaltochar(stod(TRB->E1_VENCREA))+" ) "+IF(!Empty(cBoleto),", se encontra em anexo.","")+"<br>"
 cHtml += "Essa é uma mensagem automática, caso já tenha efetuado o pagamento, por favor desconsiderar o e-mail</td>"
 cHtml += "  </tr><br>"
 
