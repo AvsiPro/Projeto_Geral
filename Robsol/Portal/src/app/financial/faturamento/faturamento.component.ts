@@ -14,11 +14,12 @@ export class FaturamentoComponent implements OnInit {
   @ViewChild('userDetailModal')
   userDetailModal!: PoModalComponent;
 
-  serviceApi = environment.api + `Faturamento/?VENDEDOR=${localStorage.getItem('cod_vendedor')}?CODIGO=${localStorage.getItem('cod_cliente')}`;
+  serviceApi = environment.api + `Faturamento/?VENDEDOR=${localStorage.getItem('cod_vendedor')}&CODIGO=${localStorage.getItem('cod_cliente')}`;
+
   quickSearchWidth: number = 3;
   rastro: String | any;
 
-
+ 
   readonly breadcrumb: PoBreadcrumb = {
     items: [{ label: 'Home', link: '/' }, { label: 'Faturamento'}]
   };
