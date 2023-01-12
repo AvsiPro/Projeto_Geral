@@ -326,53 +326,54 @@ WHILE !EOF()
     IF !Empty(TRB->AA3_CBASE) 
 
         nPos := Ascan(aCateg,{|x| x[1] == Alltrim(TRB->AA3_XCATEG)})
-                         
-        Aadd(aList,{.T.,;                   //1
-                    TRB->AA3_CBASE,;        //2
-                    TRB->B1_DESC,;          //3
-                    TRB->AA3_CBASE,;        //4
-                    TRB->A1_NOME,;          //5
-                    TRB->A1_NREDUZ,;        //6
-                    TRB->A1_END,;           //7
-                    TRB->A1_BAIRRO,;        //8
-                    TRB->A1_MUN,;           //9
-                    TRB->A1_EST,;           //10
-                    TRB->A1_CEP,;           //11
-                    '',;                    //12
-                    '',;                    //13
-                    '',;                    //14
-                    '',;                    //15
-                    .F.,;                   //16
-                    TRB->AA3_CODCLI,;       //17
-                    TRB->AA3_LOJA,;         //18
-                    IF(nPos>0,aCateg[nPos,2],''),; //19
-                    TRB->AA3_CODLOC,;       //20
-                    TRB->AA3_CODPRO,;       //21
-                    TRB->AAN_CONTRT})       //22
+        If Ascan(aList,{|x| Alltrim(x[2]) == Alltrim(TRB->AA3_CBASE)}) == 0              
+            Aadd(aList,{.T.,;                   //1
+                        TRB->AA3_CBASE,;        //2
+                        TRB->B1_DESC,;          //3
+                        TRB->AA3_CBASE,;        //4
+                        TRB->A1_NOME,;          //5
+                        TRB->A1_NREDUZ,;        //6
+                        TRB->A1_END,;           //7
+                        TRB->A1_BAIRRO,;        //8
+                        TRB->A1_MUN,;           //9
+                        TRB->A1_EST,;           //10
+                        TRB->A1_CEP,;           //11
+                        '',;                    //12
+                        '',;                    //13
+                        '',;                    //14
+                        '',;                    //15
+                        .F.,;                   //16
+                        TRB->AA3_CODCLI,;       //17
+                        TRB->AA3_LOJA,;         //18
+                        IF(nPos>0,aCateg[nPos,2],''),; //19
+                        TRB->AA3_CODLOC,;       //20
+                        TRB->AA3_CODPRO,;       //21
+                        TRB->AAN_CONTRT})       //22
 
-        Aadd(aListB,{.T.,;
-                    TRB->AA3_CBASE,;
-                    TRB->B1_DESC,;
-                    TRB->AA3_CBASE,;
-                    TRB->A1_NOME,;
-                    TRB->A1_NREDUZ,;
-                    TRB->A1_END,;
-                    TRB->A1_BAIRRO,;
-                    TRB->A1_MUN,;
-                    TRB->A1_EST,;
-                    TRB->A1_CEP,;
-                    '',;
-                    '',;
-                    '',;
-                    '',;
-                    .F.,;
-                    TRB->AA3_CODCLI,;
-                    TRB->AA3_LOJA,;
-                    IF(nPos>0,aCateg[nPos,2],''),;
-                    TRB->AA3_CODLOC,;
-                    TRB->AA3_CODPRO,;
-                    TRB->AAN_CONTRT})
-                    
+            Aadd(aListB,{.T.,;
+                        TRB->AA3_CBASE,;
+                        TRB->B1_DESC,;
+                        TRB->AA3_CBASE,;
+                        TRB->A1_NOME,;
+                        TRB->A1_NREDUZ,;
+                        TRB->A1_END,;
+                        TRB->A1_BAIRRO,;
+                        TRB->A1_MUN,;
+                        TRB->A1_EST,;
+                        TRB->A1_CEP,;
+                        '',;
+                        '',;
+                        '',;
+                        '',;
+                        .F.,;
+                        TRB->AA3_CODCLI,;
+                        TRB->AA3_LOJA,;
+                        IF(nPos>0,aCateg[nPos,2],''),;
+                        TRB->AA3_CODLOC,;
+                        TRB->AA3_CODPRO,;
+                        TRB->AAN_CONTRT})
+        EndIf 
+                   
         IF Ascan(aAtivos,{|x| Alltrim(x) == Alltrim(TRB->AA3_CHAPA)}) == 0
             Aadd(aAtivos,TRB->AA3_CHAPA)
         ENDIF
