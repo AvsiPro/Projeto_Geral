@@ -29,7 +29,7 @@ USER FUNCTION Z08Tela()
      
     //Legendas
     oBrowse:AddLegend( "Z08->Z08_MSBLQL = '2'", "GREEN",    "Não bloqueado" )
-    oBrowse:AddLegend( "Z08->Z08_MSBLQL =  '1'", "RED",    "Bloqueado" )
+    oBrowse:AddLegend( "Z08->Z08_MSBLQL = '1' .OR. Z08->Z08_MSBLQL = ' '", "RED",    "Bloqueado" )
      
     //Filtrando
     oBrowse:SetFilterDefault("Z08->Z08_SEQUEN = '01'")
@@ -54,7 +54,6 @@ STATIC FUNCTION MenuDef()
     ADD OPTION aRot TITLE 'Importar'   ACTION 'U_Z08IMP()'             OPERATION MODEL_OPERATION_INSERT ACCESS 0 //OPERATION 5
  
 RETURN aRot
-
  
 STATIC FUNCTION ModelDef()
     
