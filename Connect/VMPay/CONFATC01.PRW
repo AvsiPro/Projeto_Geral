@@ -747,6 +747,7 @@ RETURN
 STATIC FUNCTION FHelp()
 
 LOCAL nX
+Local nJ
 
 oSay4:settext("")
 oSay5:settext("")
@@ -827,7 +828,7 @@ oList4:bLine := {||{ IF(aList4[oList4:nAt,01],oOk,oNo),;
                                  aList4[oList4:nAt,03],;
                                  aList4[oList4:nAt,04]}}   
 if len(aList8B) > 0     
-    FOR nX := 1 TO len(aList8B[oList8:nAt,1])
+    /*FOR nX := 1 TO len(aList8B[oList8:nAt,1])
         IF Alltrim(aList8B[oList8:nAt,1,nX,6]) == Alltrim(aList[oList:nAt,02])
             Aadd(aList8,aList8B[oList8:nAt,1])
             nPos := Ascan(aList3B,{|x| Alltrim(x[2])+Alltrim(x[3]) == Alltrim(aList8B[nX,06])+Alltrim(aList8B[nX,02])})
@@ -835,6 +836,19 @@ if len(aList8B) > 0
                 aList8[len(aList8),03] := aList3B[nPos,04]
                 aList8[len(aList8),04] := aList3B[nPos,05]
             ENDIF
+        ENDIF
+    NEXT nX*/
+    FOR nX := 1 TO len(aList8B)
+        nPosL8 := Ascan(aList8B[nX][1],{|x| Alltrim(x[6]) == Alltrim(aList[oList:nAt,02])})
+        IF nPosL8 > 0 //Alltrim(aList8B[oList8:nAt,1,nX,6]) == Alltrim(aList[oList:nAt,02])
+            For nJ := 1 to len(aList8B[nX,1])
+                Aadd(aList8,aList8B[nX,1,nJ])
+            Next nJ
+            //nPos := Ascan(aList3B,{|x| Alltrim(x[2])+Alltrim(x[3]) == Alltrim(aList8B[nX,06])+Alltrim(aList8B[nX,02])})
+            //IF nPos > 0  
+            //    aList8[len(aList8),03] := aList3B[nPos,04]
+            //    aList8[len(aList8),04] := aList3B[nPos,05]
+            //ENDIF
         ENDIF
     NEXT nX
 endif
@@ -853,12 +867,19 @@ IF len(aList8) < 1
 else
     oList8:nAt := 1
     oList8:SetArray(aList8)
+    oList8:bLine := {||{aList8[oList8:nAt,01],;
+                        strzero(val(aList8[oList8:nAt,02]),3),; 
+                        aList8[oList8:nAt,03],;
+                        aList8[oList8:nAt,04],;
+                        aList8[oList8:nAt,05],;
+                        aList8[oList8:nAt,08]}}
+    /*
     oList8:bLine := {||{aList8[oList:nAt,oList8:nAt,01],;
                         strzero(val(aList8[oList:nAt,oList8:nAt,02]),3),; 
                         aList8[oList:nAt,oList8:nAt,03],;
                         aList8[oList:nAt,oList8:nAt,04],;
                         aList8[oList:nAt,oList8:nAt,05],;
-                        aList8[oList:nAt,oList8:nAt,08]}} 
+                        aList8[oList:nAt,oList8:nAt,08]}} */
 ENDIF
 
 
@@ -2421,7 +2442,7 @@ IF ParamBox(aPergs ,"Periodo de vendas",@aRet)
             If Empty(dtos(dUltLei))
                 dUltLei := ddatabase-30
             EndIf 
-            Aadd(aVendas, U_CONWSC03(aList[nX,02],2,dUltLei,ddatabase,cHri,cHrf))
+            Aadd(aVendas, U_CONWSC03(aList[nX,02],2,dUltLei,daySub(ddatabase, 1),cHri,cHrf))
         EndIf
     next
 
@@ -2475,15 +2496,16 @@ IF ParamBox(aPergs ,"Periodo de vendas",@aRet)
         
         IF len(aList8) > 0
             Asort(aList8,,,{|x,y| strzero(val(x[2]),3)+x[1] < strzero(val(y[2]),3)+y[1]})
-            oList8:SetArray(aList8)
-            oList8:bLine := {||{aList8[oList8:nAt,01],;
-                                strzero(val(aList8[oList8:nAt,02]),3),; 
-                                aList8[oList8:nAt,03],;
-                                aList8[oList8:nAt,04],;
-                                aList8[oList8:nAt,05],;
-                                Transform(aList8[oList8:nAt,08],"@E 999,999.99")}}
-            oList8:refresh()
-            oDlg1:refresh()
+            FHelp()
+            // oList8:SetArray(aList8)
+            // oList8:bLine := {||{aList8[oList8:nAt,01],;
+            //                     strzero(val(aList8[oList8:nAt,02]),3),; 
+            //                     aList8[oList8:nAt,03],;
+            //                     aList8[oList8:nAt,04],;
+            //                     aList8[oList8:nAt,05],;
+            //                     Transform(aList8[oList8:nAt,08],"@E 999,999.99")}}
+            // oList8:refresh()
+            // oDlg1:refresh()
         ENDIF
     ENDIF
 ENDIF
@@ -2511,57 +2533,84 @@ STATIC FUNCTION savevend()
     
     LOCAL aArea        :=   GetArea()  
     LOCAL aGravarP     :=   {} 
-    LOCAL cCod         :=   GetSXENum("Z08", "Z08_COD") 
+    LOCAL cCod         
     LOCAL cSeq         :=   "01" 
-    LOCAL aContrato    :=   Contrato()
+    LOCAL aContrato    :=   {} //Contrato()
     LOCAL nX   
     LOCAL nY   
+    LOCAL nZ
     
-    for nX := 1 to len(aList8)
+    for nX := 1 to len(aList8B)
+        cCod := GetSXENum("Z08", "Z08_COD") 
+        cSeq := "01"
 
-        aGravarP := {}
+        cQuery := " SELECT AAM_CONTRT,AAN_ITEM,AAM_CODCLI,AAM_LOJA,AAN_CODPRO FROM " + RetSQLName("AAN") + " AAN "
+        cQuery += " INNER JOIN " + RetSQLName("AAM") + " AAM ON AAM_CONTRT = AAN_CONTRT "
+        cQuery += " WHERE AAN_XCBASE = '" + aList8B[nX,01,01,06] + "' "
+        cQuery += " AND AAN.D_E_L_E_T_ = ' ' "
+        cQuery += " AND AAM.D_E_L_E_T_ = ' ' "
 
-        Aadd( aGravarP, {"Z08_FILIAL"  ,xFilial("Z08")})
-        Aadd( aGravarP, {"Z08_COD"     ,cCod})
-        Aadd( aGravarP, {"Z08_SEQUEN"  ,cSeq})
-        Aadd( aGravarP, {"Z08_NUMSER"  ,aList[oList:nAt,2]})
-        Aadd( aGravarP, {"Z08_DATA"    ,ctod(aList8[nX,1])})
-        Aadd( aGravarP, {"Z08_SELECA"  ,aList8[nX,2]})
-        Aadd( aGravarP, {"Z08_PRODUT"  ,aList8[nX,3]})
-        Aadd( aGravarP, {"Z08_CONTRT"  ,aContrato[1,1]})
-        Aadd( aGravarP, {"Z08_ITEM"    ,aContrato[1,2]})
-        Aadd( aGravarP, {"Z08_QTDLID"  ,aList8[nX,5]})
-        Aadd( aGravarP, {"Z08_VLRLID"  ,aList8[nX,8]})
-        Aadd( aGravarP, {"Z08_DTDIGIT" ,dDataBase}) 
-        Aadd( aGravarP, {"Z08_PERIODO" ,Strtokarr(aList8[nX,1], "/")[2] + Strtokarr(aList8[nX,1], "/")[3] })
-        Aadd( aGravarP, {"Z08_MAQUINA" ,aList[oList:nAt,21]}) 
-        Aadd( aGravarP, {"Z08_CODCLI"  ,aList[oList:nAt,17]})  
-        Aadd( aGravarP, {"Z08_LOJACL"  ,aList[oList:nAt,18]})
-        Aadd( aGravarP, {"Z08_MSBLQL"  ,'2'})
-    
-        IF len(aGravarP) > 0
+        if Select("TRB") > 0
+            DBSELECTAREA("TRB")
+            DBCLOSEAREA()
+        endif
+        
+        DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
 
-            DbSelectArea("Z08") 
+        while !EOF()
+            aContrato := {TRB->AAM_CONTRT,TRB->AAN_ITEM,TRB->AAM_CODCLI,TRB->AAM_LOJA,TRB->AAN_CODPRO}
 
-            Reclock("Z08",.T.)
+            DBSKIP()
+        end
 
-            FOR nY := 1 TO len(aGravarP)
+        for nY := 1 to len(aList8B[nX,1])
+        
+            aGravarP := {}
 
-                &("Z08->"+aGravarP[nY,01]) := aGravarP[nY,02]
-            
-            NEXT nY
+            Aadd( aGravarP, {"Z08_FILIAL"  ,xFilial("Z08")})
+            Aadd( aGravarP, {"Z08_COD"     ,cCod})
+            Aadd( aGravarP, {"Z08_SEQUEN"  ,cSeq})
+            Aadd( aGravarP, {"Z08_NUMSER"  ,aList8B[nX,01,nY,06]})
+            Aadd( aGravarP, {"Z08_DATA"    ,ctod(aList8B[nX,01,nY,01])})
+            Aadd( aGravarP, {"Z08_SELECA"  ,StrZero(val(aList8B[nX,01,nY,02]),3)})
+            Aadd( aGravarP, {"Z08_PRODUT"  ,aList8B[nX,01,nY,03]})
+            Aadd( aGravarP, {"Z08_CONTRT"  ,aContrato[1]})
+            Aadd( aGravarP, {"Z08_ITEM"    ,aContrato[2]})
+            Aadd( aGravarP, {"Z08_QTDLID"  ,aList8B[nX,01,nY,05]})
+            Aadd( aGravarP, {"Z08_VLRLID"  ,aList8B[nX,01,nY,08]})
+            Aadd( aGravarP, {"Z08_DTDIGIT" ,dDataBase}) 
+            Aadd( aGravarP, {"Z08_PERIODO" ,Strtokarr(aList8B[nX,01,nY,01], "/")[2] + SubStr(Strtokarr(aList8B[nX,01,nY,01], "/")[3],3,2) })
+            Aadd( aGravarP, {"Z08_MAQUINA" ,aContrato[5]}) 
+            Aadd( aGravarP, {"Z08_CODCLI"  ,aContrato[3]})  
+            Aadd( aGravarP, {"Z08_LOJACL"  ,aContrato[4]})
+            Aadd( aGravarP, {"Z08_MSBLQL"  ,'2'})
+        
+            IF len(aGravarP) > 0
 
-            Z08->(Msunlock())
-            
-            
-        ENDIF
+                DbSelectArea("Z08") 
 
-        cSeq := Soma1(cSeq)
+                Reclock("Z08",.T.)
+
+                FOR nZ := 1 TO len(aGravarP)
+
+                    // &("Z08->"+aGravarP[nZ,01]) := aGravarP[nZ,02]
+                
+                NEXT nZ
+
+                Z08->(Msunlock())
+                
+            ENDIF
+
+            cSeq := Soma1(cSeq)
+
+        next nY
+        
+        // ConfirmSx8()
 
     next nX
 
-    ConfirmSx8()
-    MsgAlert("Leitura salva com sucesso!")
+    // ConfirmSx8()
+    MsgAlert("Leituras salvas com sucesso!")
             
     RestArea(aArea)
 
