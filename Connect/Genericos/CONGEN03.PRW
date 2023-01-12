@@ -18,18 +18,19 @@ User Function CONGEN03()
 	Local lDisableSetup    := .T.
 	Local lOK              := .F.
 	Local cQuery           := ""
-    Local aAux := {}
-    Local cNum := ""
-	Local cEmissao := ""
-	Local cValor := ""
-	Local cMes := ""
-	Local cVencimento := ""
-	Local cLogoD := ""
-	Local cNotD 	:=	space(9)
-	Local cNotA 	:=	'ZZZZZZZZZ'
-	Local cFilD 	:=	space(4)
-	Local cFilA 	:=	'ZZZZ'
-	Local nCont 
+    Local aAux             := {}
+    Local cNum             := ""
+	Local cEmissao         := ""
+	Local cValor           := ""
+	Local cMes             := ""
+	Local cVencimento      := ""
+	Local cLogoD           := ""
+	Local cNotD 	       := space(9)
+	Local cNotA 	       := 'ZZZZZZZZZ'
+	Local cFilD 	       := xFilial("SF2")
+	Local cFilA 	       := xFilial("SF2")
+	Local nCont            := 0
+	Local nValor           := 0
 
 	//Fontes
 	Local oF10FFF          := TFont():New('Arial' /*Fonte*/,,10 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
@@ -58,6 +59,9 @@ User Function CONGEN03()
 	If !ParamBox(aPergs ,"Parametros ")
 		Return
 	EndIf
+
+	cFilD := MV_PAR03
+	cFilA := MV_PAR04
 
     cQuery := "SELECT D2_PEDIDO,D2_PRCVEN,D2_TOTAL,F2_EMISSAO,F2_DOC,F2_EMISSAO,C6_PEDCLI,A1_NOME,A1_CGC,A1_END,A1_NREDUZ,B1_DESC"
 	cQuery += " FROM "+RetSQLName("SF2")+" F2 "
@@ -103,10 +107,29 @@ User Function CONGEN03()
 
 
 	For nCont := 1 to len(aAux)
+		
+		cQuery := " SELECT C6_VALOR FROM " + RetSQLName("SC6") + " WHERE C6_NUM = '" + aAux[nCont,1] + "' AND C6_FILIAL BETWEEN '" + cFilD + "' AND '" + cFilA + "' AND D_E_L_E_T_ = ' ' "
+
+		If Select("TRB") > 0
+			dbSelectArea("TRB")
+			dbCloseArea()
+		EndIf
+
+		cQuery := ChangeQuery(cQuery)
+
+		DbUseArea(.T.,"TOPCONN",TcGenQry(,,cQuery),'TRB',.F.,.T.)
+
+		nValor := 0
+
+		while !EOF()
+				nValor += TRB->C6_VALOR
+			DBSKIP()
+		end
+
 		cNum := cvaltochar(val(aAux[nCont,12]))
 		cEmissao := dtoc(stod(aAux[nCont,2]))
-		cValor := "R$ " + Transform(aAux[nCont,3], "@E 999,999.99")
-		cValor1 := Transform(aAux[nCont,3], "@E 999,999.99")
+		cValor := "R$ " + Transform(nValor, "@E 999,999.99")
+		cValor1 := Transform(nValor, "@E 999,999.99")
 		cNota := aAux[nCont,5]
 		cMes := mesextenso(month(stod(aAux[nCont,6])))
 		cVencimento += AllTrim(aAux[nCont,7])
@@ -118,6 +141,19 @@ User Function CONGEN03()
 		cEmitente := SM0->M0_NOMECOM + " " + Transform(val(SM0->M0_CGC), "@E 99,999,999/9999-99")
 		cEnd :=  aAux[nCont,10]
 		cEndEmit := SM0->M0_ENDENT
+
+		aPergs := {}
+
+		aAdd( aPergs ,{9,"Nome: " + cCli,150,7,.T.})
+		aAdd( aPergs ,{9,"Nome Reduz: " + cCli1,150,7,.T.})
+		aAdd( aPergs ,{9,"Nota: " + StrZero(val(cNum), 9),150,7,.T.})
+		aAdd( aPergs ,{11,"Informe sessao referentes:"   ,"",".T.",".T.",.T.})  
+
+		If !ParamBox(aPergs ,"Observacoes ")
+			Return
+		EndIf
+
+		cReferentes := MV_PAR04
 
 		oPrinter := FWMSPrinter():New( "recibo_loc_"+cNum+".rel",IMP_PDF,lAdjustToLegacy,"C:\temp\",lDisableSetup,,,,.F.,,,.T.)
 		
@@ -150,8 +186,9 @@ User Function CONGEN03()
 
 		oPrinter:Box( 200, 5, 200, 590,"-1" )
 		oPrinter:Say( 210, 10,"REFERENTES A", oF10FFF,, rgb(102, 102, 102)/*Cor*/ )
-		oPrinter:Say( 225, 10,cPeriodo, oF13FFF,, /*Cor*/ )
-		oPrinter:Say( 240, 10,cVencimento, oF13FFF,, /*Cor*/ )
+		oPrinter:Say( 225, 10,cReferentes, oF13FFF,, /*Cor*/ )
+		// oPrinter:Say( 225, 10,cPeriodo, oF13FFF,, /*Cor*/ )
+		// oPrinter:Say( 240, 10,cVencimento, oF13FFF,, /*Cor*/ )
 
 		oPrinter:Box( 250, 5, 250, 590,"-1" )
 		oPrinter:Say( 260, 10,"DETALHAMENTO", oF10FFF,, rgb(102, 102, 102)/*Cor*/ )
@@ -198,7 +235,5 @@ User Function CONGEN03()
 		oPrinter:EndPage()
 		oPrinter:Print()
 	Next nCont 
-
-	
 
 Return
