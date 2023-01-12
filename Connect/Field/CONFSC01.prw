@@ -334,307 +334,175 @@ Return
 
 Static Function Busca(cCond,cQuinze)
 
-Local aArea		:=	GetArea()
-Local cQuery   
-Local nPos1		:=	0
-Local nPos3		:=	0           
-Local aAux3		:=	{} 
-Local nNewVlr	:=	0
-Local nDiasMs	:=	day(lastday(ddatabase))
-Local nCont 
-Local aAux5		:=	{}
-Local nAux		:=	0
-Local cCntTab	:=	""
-Local cBarra 	:=	""
-Local nLeitur	:=	0
+	Local aArea		:=	GetArea()
+	Local cQuery   
+	Local nPos1		:=	0
+	Local nPos3		:=	0           
+	Local aAux3		:=	{} 
+	Local nNewVlr	:=	0
+	Local nDiasMs	:=	day(lastday(ddatabase))
+	Local nCont 
+	Local aAux5		:=	{}
+	Local nAux		:=	0
+	Local cCntTab	:=	""
+	Local cBarra 	:=	""
+	Local nLeitur	:=	0
+	Local nX     	:=	0
 
-cQuery := "SELECT AAN_CONTRT,AAM_CODCLI,AAM_LOJA,AAN_ITEM,AAN_CODPRO,"
-cQuery += " B1_DESC,AAN_XCBASE,AAN_QUANT,AAN_ULTEMI,"
-cQuery += " AAN_XMINQT,AAN_XVLRMI,"
-cQuery += " AAN_VLRUNI,AAN_INICOB,AAN_FIMCOB,AAN_CONPAG,"
-cQuery += " E4_COND,E4_DESCRI,A1_NREDUZ,A1_NOME,A1_END,"
-cQuery += " A1_BAIRRO,A1_MUN,"
-cQuery += " AAM_INIVIG,AAM_FIMVIG,A1_EMAIL,'' AS AAN_XISENT,"
-cQuery += " AAM_XFORFA, AAM_XTIPFA,'' AS AAM_XPERCT,"
-cQuery += " '' AS AAM_XRENOV,AAN_FILIAL,AAM_XPRDCM"
-cQuery += " FROM "+RetSQLName("AAN")+" AAN"
-cQuery += " INNER JOIN "+RetSQLName("AAM")+" AAM ON AAM_FILIAL=AAN_FILIAL AND AAM_CONTRT=AAN_CONTRT AND AAM.D_E_L_E_T_=' '"
-cQuery += " INNER JOIN "+RetSQLName("SE4")+" E4 ON E4_FILIAL='"+xFilial("SE4")+"' AND E4_CODIGO=AAN_CONPAG AND E4.D_E_L_E_T_=' '"
-cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD=AAN_CODPRO AND B1_XCARACT<>'D' AND B1.D_E_L_E_T_=' '"
-cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_COD=AAM_CODCLI AND A1_LOJA=AAM_LOJA AND A1.D_E_L_E_T_=' '"
-cQuery += " WHERE AAN_FILIAL='"+xFilial("AAN")+"' AND AAN.D_E_L_E_T_=''" 
+	cQuery := "SELECT AAN_CONTRT,AAM_CODCLI,AAM_LOJA,AAN_ITEM,AAN_CODPRO,"
+	cQuery += " B1_DESC,AAN_XCBASE,AAN_QUANT,AAN_ULTEMI,"
+	cQuery += " AAN_XMINQT,AAN_XVLRMI,"
+	cQuery += " AAN_VLRUNI,AAN_INICOB,AAN_FIMCOB,AAN_CONPAG,"
+	cQuery += " E4_COND,E4_DESCRI,A1_NREDUZ,A1_NOME,A1_END,"
+	cQuery += " A1_BAIRRO,A1_MUN,"
+	cQuery += " AAM_INIVIG,AAM_FIMVIG,A1_EMAIL,'' AS AAN_XISENT,"
+	cQuery += " AAM_XFORFA, AAM_XTIPFA,'' AS AAM_XPERCT,"
+	cQuery += " '' AS AAM_XRENOV,AAN_FILIAL,AAM_XPRDCM"
+	cQuery += " FROM "+RetSQLName("AAN")+" AAN"
+	cQuery += " INNER JOIN "+RetSQLName("AAM")+" AAM ON AAM_FILIAL=AAN_FILIAL AND AAM_CONTRT=AAN_CONTRT AND AAM.D_E_L_E_T_=' '"
+	cQuery += " INNER JOIN "+RetSQLName("SE4")+" E4 ON E4_FILIAL='"+xFilial("SE4")+"' AND E4_CODIGO=AAN_CONPAG AND E4.D_E_L_E_T_=' '"
+	cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD=AAN_CODPRO AND B1_XCARACT<>'D' AND B1.D_E_L_E_T_=' '"
+	cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_COD=AAM_CODCLI AND A1_LOJA=AAM_LOJA AND A1.D_E_L_E_T_=' '"
+	cQuery += " WHERE AAN_FILIAL='"+xFilial("AAN")+"' AND AAN.D_E_L_E_T_=''" 
 
-If !Empty(cCond)
-	cQuery += " AND AAN_CONPAG='"+cCond+"'" 
-EndIf
-
-cQuery += " AND AAM_CONTRT BETWEEN '"+cCont1+"' AND '"+cCont2+"'"
-cQuery += " AND AAM_CODCLI BETWEEN '"+cCli1+"' AND '"+cCli2+"'"
-
-If !Empty(cTpCnt)
-	cQuery += " AND AAM_CLASSI='"+cTpCnt+"'"
-EndIF 
-
-If Select("TRB") > 0
-	dbSelectArea("TRB")
-	dbCloseArea()
-EndIf
-  
-MemoWrite("CONFSC01.SQL",cQuery)
-
-cQuery:= ChangeQuery(cQuery)
-DbUseArea(.T.,"TOPCONN",TcGenQry(,,cQuery),'TRB',.F.,.T.)   
-      
-/*
-	1			2		3			4		5		  6			7		 8			9  			10		
-AAN_CONTRT,AAM_CODCLI,AAM_LOJA,AAN_ITEM,AAN_CODPRO,B1_DESC,AAN_XCBASE,AAN_QUANT,AAN_ULTEMI,AAN_VLRUNI,
-	11			12		13		  14		15		16		  17	  18	 19		   20      21		  22          23       24
-AAN_INICOB,AAN_FIMCOB,AAN_CONPAG,E4_COND,E4_DESCRI,A1_NREDUZ,A1_NOME,A1_END,A1_BAIRRO,A1_MUN,AAM_INIVIG,AAM_FIMVIG,A1_EMAIL,AAN_XISENT
-	25			26			27		28      29   30
-AAM_XFORFA,AAM_XTIPFA,AAM_XPERCT,AAM_XRENOV,0,AAN_FILIAL
-*/
-
-DbSelectArea("TRB")   
-
-While !EOF()
-	If !TRB->AAN_CONTRT $ cCntTab
-		cCntTab += cBarra + TRB->AAN_CONTRT
-		cBarra := "','"
-	EndIf 
-
-	nPos1 := Ascan(aList,{|x| Alltrim(x[1]) == TRB->AAN_CONTRT})
-	nPos3 := Ascan(aAux3,{|x| Alltrim(x[1]) == TRB->AAN_CONTRT})
-
-	//Valor Diario da locacao do equipamento em referencia a quantidade de dias no mes corrente
-	nVlrPro := TRB->AAN_VLRUNI / nDiasMs 
-
-	//Se o inicio da cobranca é maior que o primeiro dia do mes, então deve-se cobrar pro-rata.
-	If stod(TRB->AAN_INICOB) > firstday(ddatabase)
-		//Quantidade de dias a serem cobrados até o final do mês (segundo o Cassio os contratos sempre são cobrados do dia 01 ao ultimo dia do mes
-		nDiasCb := lastday(ddatabase) - stod(TRB->AAN_INICOB)
-		//Valor a ser cobrado com a pro-rata
-		nNewVlr := nVlrPro * nDiasCb                                                                                    
-	//Se o fim da cobranca é menor que o ultimo dia do mes, então deve-se cobrar pro-rata dos dias em que a maquina saiu.
-	ElseIf stod(TRB->AAN_FIMCOB) < lastday(ddatabase)
-		//Quantidade de dias a serem cobrados do primeiro até a data da saída da maquina do cliente.
-		nDiasCb := stod(TRB->AAN_FIMCOB) - firstday(ddatabase)
-		//Valor a ser cobrado com a pro-rata
-		nNewVlr := nVlrPro * nDiasCb
-	Else
-		//Cobrar o valor cheio para o mes todo
-		nNewVlr := TRB->AAN_VLRUNI
-  	EndIf
-    //Item do contrato isento de cobranca    
-    If TRB->AAN_XISENT == "1"
-    	nNewVlr := 0
-    EndIf
-    //Preenche o array do primeiro grid
-    If nPos1 == 0
-    	Aadd(aList,{TRB->AAN_CONTRT,;
-					nNewVlr,;
-					TRB->AAM_CODCLI,;
-					TRB->AAM_LOJA,;
-    				Alltrim(TRB->A1_NOME)+" / "+Alltrim(TRB->A1_NREDUZ),;
-					Alltrim(TRB->A1_END),;
-					Alltrim(TRB->A1_BAIRRO),;
-					Alltrim(TRB->A1_MUN),;
-					TRB->E4_COND,;
-					TRB->E4_DESCRI,;
-    				STOD(TRB->AAM_INIVIG),;
-					STOD(TRB->AAM_FIMVIG),;
-					TRB->A1_EMAIL,;
-					TRB->AAM_XFORFA,;	//14
-					TRB->AAM_XTIPFA,;	//15
-					TRB->AAM_XPERCT,;
-					TRB->AAM_XRENOV,;
-					0,;
-					TRB->AAN_FILIAL,;
-					0,;
-					0,;
-					TRB->AAM_XPRDCM})
-    Else
-    	//Soma todos os itens do contrato para pegar o valor total.
-    	aList[nPos1,02] += nNewVlr //(TRB->AAN_QUANT*TRB->AAN_VLRUNI)
-    EndIf
-    
-    Aadd(aList2b,{	TRB->AAN_XCBASE,;				//01
-					Alltrim(TRB->B1_DESC),;			//02
-					TRB->AAN_VLRUNI,;				//03
-					TRB->AAN_CONTRT,;				//04
-					Stod(TRB->AAN_INICOB),;			//05
-					stod(TRB->AAN_FIMCOB),;			//06
-					TRB->AAN_XMINQT,;				//07
-					TRB->AAN_XVLRMI,;				//08
-					0,;								//09
-					0,;								//10
-					0,;								//11
-					TRB->AAN_CONPAG})				//12
-
-    //Itens referente aos pedidos faturados para o contrato.
-    If nPos3 == 0
-	    Aadd(aAux3,{TRB->AAN_CONTRT,;
-					TRB->AAM_CODCLI,;
-					TRB->AAM_LOJA,;
-					TRB->AAN_FILIAL})
+	If !Empty(cCond)
+		cQuery += " AND AAN_CONPAG='"+cCond+"'" 
 	EndIf
 
-	If Ascan(aList5b,{|x| Alltrim(x[1])+Alltrim(x[2]) == Alltrim(TRB->AAN_CONTRT)+Alltrim(TRB->AAN_XCBASE)}) == 0
-		Aadd(aList5B,{	TRB->AAN_CONTRT,;
-						TRB->AAN_XCBASE,;
-						TRB->AAN_XMINQT,;
-						TRB->AAN_XVLRMI})
-	EndIf 
-        
-	Dbskip()
-EndDo
-  
-Asort(aList,,,{|x,y| x[1] < y[1]})
-                
-For nCont := 1 to len(aAux3)         
-	//Buscando os pedidos faturados
-	cQuery := "SELECT C6_NUM,C5_EMISSAO,C6_NOTA,C6_VALOR,"
-	cQuery += " C6_DESCRI,C6_ITEM,C6_QTDVEN,C6_SERIE,C6_FILIAL"
-	cQuery += " FROM "+RetSQLName("SC6")+" C6"
-	cQuery += " INNER JOIN "+RetSQLName("SC5")+" C5 ON C5_FILIAL=C6_FILIAL "
-	cQuery += " AND C5_NUM=C6_NUM AND C5_CLIENTE=C6_CLI AND C5.D_E_L_E_T_=' '"
-	cQuery += " AND C5_XTPPED IN('F','L','V')"
-	cQuery += " WHERE C6_FILIAL='"+xFilial("SC6")+"'"
-	cQuery += " AND C6_CONTRT='"+aAux3[nCont,01]+"' "
-	cQuery += " AND C6_CLI='"+aAux3[nCont,02]+"' AND C6.D_E_L_E_T_=''"
-	
+	cQuery += " AND AAM_CONTRT BETWEEN '"+cCont1+"' AND '"+cCont2+"'"
+	cQuery += " AND AAM_CODCLI BETWEEN '"+cCli1+"' AND '"+cCli2+"'"
+
+	If !Empty(cTpCnt)
+		cQuery += " AND AAM_CLASSI='"+cTpCnt+"'"
+	EndIF 
+
 	If Select("TRB") > 0
 		dbSelectArea("TRB")
 		dbCloseArea()
-	EndIf                                                                                 
-	  
-	MemoWrite("CONFSC01.SQL",cQuery)
+	EndIf
 	
+	MemoWrite("CONFSC01.SQL",cQuery)
+
 	cQuery:= ChangeQuery(cQuery)
 	DbUseArea(.T.,"TOPCONN",TcGenQry(,,cQuery),'TRB',.F.,.T.)   
-	
-	While !EOF() 
-		If Ascan(aList3b,{|x| x[1] == TRB->C6_NUM}) == 0
-			Aadd(aList3b,{	TRB->C6_NUM,;
-							stod(TRB->C5_EMISSAO),;
-							TRB->C6_VALOR,;
-							TRB->C6_NOTA,;
-							aAux3[nCont,01],;
-							aAux3[nCont,02],;
-							aAux3[nCont,03],;
-							TRB->C6_FILIAL+Alltrim(TRB->C6_SERIE)})
+		
+	/*
+		1			2		3			4		5		  6			7		 8			9  			10		
+	AAN_CONTRT,AAM_CODCLI,AAM_LOJA,AAN_ITEM,AAN_CODPRO,B1_DESC,AAN_XCBASE,AAN_QUANT,AAN_ULTEMI,AAN_VLRUNI,
+		11			12		13		  14		15		16		  17	  18	 19		   20      21		  22          23       24
+	AAN_INICOB,AAN_FIMCOB,AAN_CONPAG,E4_COND,E4_DESCRI,A1_NREDUZ,A1_NOME,A1_END,A1_BAIRRO,A1_MUN,AAM_INIVIG,AAM_FIMVIG,A1_EMAIL,AAN_XISENT
+		25			26			27		28      29   30
+	AAM_XFORFA,AAM_XTIPFA,AAM_XPERCT,AAM_XRENOV,0,AAN_FILIAL
+	*/
+
+	DbSelectArea("TRB")   
+
+	While !EOF()
+		If !TRB->AAN_CONTRT $ cCntTab
+			cCntTab += cBarra + TRB->AAN_CONTRT
+			cBarra := "','"
+		EndIf 
+
+		nPos1 := Ascan(aList,{|x| Alltrim(x[1]) == TRB->AAN_CONTRT})
+		nPos3 := Ascan(aAux3,{|x| Alltrim(x[1]) == TRB->AAN_CONTRT})
+
+		//Valor Diario da locacao do equipamento em referencia a quantidade de dias no mes corrente
+		nVlrPro := TRB->AAN_VLRUNI / nDiasMs 
+
+		//Se o inicio da cobranca é maior que o primeiro dia do mes, então deve-se cobrar pro-rata.
+		If stod(TRB->AAN_INICOB) > firstday(ddatabase)
+			//Quantidade de dias a serem cobrados até o final do mês (segundo o Cassio os contratos sempre são cobrados do dia 01 ao ultimo dia do mes
+			nDiasCb := lastday(ddatabase) - stod(TRB->AAN_INICOB)
+			//Valor a ser cobrado com a pro-rata
+			nNewVlr := nVlrPro * nDiasCb                                                                                    
+		//Se o fim da cobranca é menor que o ultimo dia do mes, então deve-se cobrar pro-rata dos dias em que a maquina saiu.
+		ElseIf stod(TRB->AAN_FIMCOB) < lastday(ddatabase)
+			//Quantidade de dias a serem cobrados do primeiro até a data da saída da maquina do cliente.
+			nDiasCb := stod(TRB->AAN_FIMCOB) - firstday(ddatabase)
+			//Valor a ser cobrado com a pro-rata
+			nNewVlr := nVlrPro * nDiasCb
 		Else
-			aList3b[Ascan(aList3b,{|x| x[1] == TRB->C6_NUM}),03] += TRB->C6_VALOR
-		EndIF
-	    Aadd(aList4b,{	TRB->C6_NOTA,;
-						substr(TRB->C6_DESCRI,1,20),;
-						TRB->C6_VALOR,;
-						TRB->C6_NUM,;
-						TRB->C6_ITEM,;
-	    				aAux3[nCont,01],;
-						aAux3[nCont,02],;
-						aAux3[nCont,03],;
-						TRB->C6_QTDVEN})
-		DbSkip()
+			//Cobrar o valor cheio para o mes todo
+			nNewVlr := TRB->AAN_VLRUNI
+		EndIf
+		//Item do contrato isento de cobranca    
+		If TRB->AAN_XISENT == "1"
+			nNewVlr := 0
+		EndIf
+		//Preenche o array do primeiro grid
+		If nPos1 == 0
+			Aadd(aList,{TRB->AAN_CONTRT,;
+						nNewVlr,;
+						TRB->AAM_CODCLI,;
+						TRB->AAM_LOJA,;
+						Alltrim(TRB->A1_NOME)+" / "+Alltrim(TRB->A1_NREDUZ),;
+						Alltrim(TRB->A1_END),;
+						Alltrim(TRB->A1_BAIRRO),;
+						Alltrim(TRB->A1_MUN),;
+						TRB->E4_COND,;
+						TRB->E4_DESCRI,;
+						STOD(TRB->AAM_INIVIG),;
+						STOD(TRB->AAM_FIMVIG),;
+						TRB->A1_EMAIL,;
+						TRB->AAM_XFORFA,;	//14
+						TRB->AAM_XTIPFA,;	//15
+						TRB->AAM_XPERCT,;
+						TRB->AAM_XRENOV,;
+						0,;
+						TRB->AAN_FILIAL,;
+						0,;
+						0,;
+						TRB->AAM_XPRDCM})
+		Else
+			//Soma todos os itens do contrato para pegar o valor total.
+			aList[nPos1,02] += nNewVlr //(TRB->AAN_QUANT*TRB->AAN_VLRUNI)
+		EndIf
+		
+		Aadd(aList2b,{	TRB->AAN_XCBASE,;				//01
+						Alltrim(TRB->B1_DESC),;			//02
+						TRB->AAN_VLRUNI,;				//03
+						TRB->AAN_CONTRT,;				//04
+						Stod(TRB->AAN_INICOB),;			//05
+						stod(TRB->AAN_FIMCOB),;			//06
+						TRB->AAN_XMINQT,;				//07
+						TRB->AAN_XVLRMI,;				//08
+						0,;								//09
+						0,;								//10
+						0,;								//11
+						TRB->AAN_CONPAG})				//12
+
+		//Itens referente aos pedidos faturados para o contrato.
+		If nPos3 == 0
+			Aadd(aAux3,{TRB->AAN_CONTRT,;
+						TRB->AAM_CODCLI,;
+						TRB->AAM_LOJA,;
+						TRB->AAN_FILIAL})
+		EndIf
+
+		If Ascan(aList5b,{|x| Alltrim(x[1])+Alltrim(x[2]) == Alltrim(TRB->AAN_CONTRT)+Alltrim(TRB->AAN_XCBASE)}) == 0
+			Aadd(aList5B,{	TRB->AAN_CONTRT,;
+							TRB->AAN_XCBASE,;
+							TRB->AAN_XMINQT,;
+							TRB->AAN_XVLRMI})
+		EndIf 
+			
+		Dbskip()
 	EndDo
 	
-Next nCont     
-
-For nCont := 1 to len(aList3b)
-	nPos := Ascan(aList,{|x| Alltrim(x[1]) == aList3b[nCont,05]})
-	If nPos > 0 .And. (strzero(month(aList3b[nCont,02]),2)+cvaltochar(year(aList3b[nCont,02])) == strzero(month(ddatabase),2)+cvaltochar(year(ddatabase)))
-		If aList[nPos,len(aQtdH)+1] == 0
-			IF !Empty(aList3b[nCont,04])
-				aList[nPos,len(aQtdH)+1] += 2
-			Else
-				aList[nPos,len(aQtdH)+1] += 1
-			EndIf
-		EndIf
-	EndIf
-Next nCont
-
-
-cQuery := "SELECT AAM_CONTRT,DA1_CODPRO,B1_DESC,DA1_PRCVEN,DA1_XCONSU"
-cQuery += " FROM "+RetSQLName("AAM")+" AAM"
-cQuery += "  INNER JOIN "+RetSQLName("DA1")+" DA1 ON DA1_FILIAL='"+xFilial("DA1")+"' AND DA1_CODTAB=AAM_XCODTA AND DA1.D_E_L_E_T_=' '"
-cQuery += "  INNER JOIN "+RetSQLName("SB1")+" SB1 ON B1_FILIAL=DA1_FILIAL AND B1_COD=DA1_CODPRO AND SB1.D_E_L_E_T_=' '"
-cQuery += " WHERE AAM.D_E_L_E_T_=' '"
-cQuery += " AND AAM_CONTRT IN('"+cCntTab+"')"
-If Select("TRB") > 0
-	dbSelectArea("TRB")
-	dbCloseArea()
-EndIf                                                                                 
-	
-MemoWrite("CONFSC01.SQL",cQuery)
-
-cQuery:= ChangeQuery(cQuery)
-DbUseArea(.T.,"TOPCONN",TcGenQry(,,cQuery),'TRB',.F.,.T.)   
-	
-While !EOF()
-	Aadd(aTabPrc,{	TRB->AAM_CONTRT,;
-					TRB->DA1_CODPRO,;
-					TRB->B1_DESC,;
-					TRB->DA1_PRCVEN,;
-					TRB->DA1_XCONSU})
-	Dbskip()
-EndDo 
-
-For nCont := 1 to len(aList5b)
-	
-	aLeitura := {}
-	aLeitura 	:=	LeiAntr(aList5b[nCont,01],aList5b[nCont,02],'')
-	
-	cQuery := ""
-	
-	For nLeitur := 1 to len(aLeitura )
-		If !Empty(cQuery)	
-			cQuery += "  UNION "
-		EndIf 
-
-		cQuery += "SELECT Z08_COD,Z08_SEQUEN,Z08_SELECA,Z08_PRODUT,B1_DESC,Z08_QTDLID,Z08_DATA,Z08_CONTRT,Z08_FATURA" 
-		cQuery += "  FROM "+RetSQLname("Z08")+" Z08" 
-		cQuery += "  LEFT JOIN "+RetSQLname("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"'"
-		cQuery += "   AND B1_COD=Z08_PRODUT AND B1.D_E_L_E_T_=' ' 
+	Asort(aList,,,{|x,y| x[1] < y[1]})
+					
+	For nCont := 1 to len(aAux3)         
+		//Buscando os pedidos faturados
+		cQuery := "SELECT C6_NUM,C5_EMISSAO,C6_NOTA,C6_VALOR,"
+		cQuery += " C6_DESCRI,C6_ITEM,C6_QTDVEN,C6_SERIE,C6_FILIAL"
+		cQuery += " FROM "+RetSQLName("SC6")+" C6"
+		cQuery += " INNER JOIN "+RetSQLName("SC5")+" C5 ON C5_FILIAL=C6_FILIAL "
+		cQuery += " AND C5_NUM=C6_NUM AND C5_CLIENTE=C6_CLI AND C5.D_E_L_E_T_=' '"
+		cQuery += " AND C5_XTPPED IN('F','L','V')"
+		cQuery += " WHERE C6_FILIAL='"+xFilial("SC6")+"'"
+		cQuery += " AND C6_CONTRT='"+aAux3[nCont,01]+"' "
+		cQuery += " AND C6_CLI='"+aAux3[nCont,02]+"' AND C6.D_E_L_E_T_=''"
 		
-		cQuery += " WHERE Z08_COD='"+aLeitura[nLeitur]+"'"
-		cQuery += "  AND Z08.D_E_L_E_T_=' '
-	Next nLeitur
-		/*cQuery := "SELECT Z08_COD,Z08_SEQUEN,Z08_SELECA,Z08_PRODUT,B1_DESC,Z08_QTDLID,Z08_DATA,Z08_CONTRT,Z08_FATURA" 
-		cQuery += "  FROM "+RetSQLname("Z08")+" Z08" 
-		cQuery += "  LEFT JOIN "+RetSQLname("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"'"
-		cQuery += "   AND B1_COD=Z08_PRODUT AND B1.D_E_L_E_T_=' ' 
-		
-		If len(aLeitura) > 0
-			cQuery += " WHERE Z08_COD='"+aLeitura[1]+"'"
-			cQuery += "  AND Z08.D_E_L_E_T_=' '
-		ELSE
-			cQuery += " WHERE  Z08_COD IN(SELECT MAX(Z08_COD) FROM "+RetSQLname("Z08")
-			cQuery += "     	WHERE  Z08_FILIAL='"+xFilial("Z08")+"' AND Z08_NUMSER='"+aList5b[nCont,02]+"'"
-			cQuery += "  	AND Z08_CONTRT='"+aList5b[nCont,01]+"' AND D_E_L_E_T_=' ')"
-			cQuery += " AND Z08.D_E_L_E_T_=' '"
-		EndIF 
-		
-		cQuery += "  UNION 
-		cQuery += "  SELECT Z08_COD,Z08_SEQUEN,Z08_SELECA,Z08_PRODUT,B1_DESC,Z08_QTDLID,Z08_DATA,Z08_CONTRT,Z08_FATURA" 
-		cQuery += "  FROM "+RetSQLname("Z08")+" Z08"
-		cQuery += "  LEFT JOIN "+RetSQLname("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"'"
-		cQuery += "		AND B1_COD=Z08_PRODUT AND B1.D_E_L_E_T_=' '" 
-		
-		If len(aLeitura) > 1
-			cQuery += " WHERE Z08_COD='"+aLeitura[2]+"'"
-			cQuery += "  AND Z08.D_E_L_E_T_=' '"
-		Else
-			cQuery += "  WHERE  Z08_COD IN(SELECT MAX(Z08_COD)-1 FROM "+RetSQLname("Z08")
-			cQuery += "		WHERE  Z08_FILIAL='"+xFilial("Z08")+"' AND Z08_NUMSER='"+aList5b[nCont,02]+"'" 
-			cQuery += "  	AND Z08_CONTRT='"+aList5b[nCont,01]+"' AND D_E_L_E_T_=' ')"
-			cQuery += " AND Z08.D_E_L_E_T_=' '"
-			cQuery += " AND Z08_NUMSER='"+aList5b[nCont,02]+"' AND Z08_CONTRT='"+aList5b[nCont,01]+"'"
-		EndIf 
-
-		cQuery += "  ORDER BY Z08_COD DESC"
-		*/
-	If !Empty(cQuery)
-		cQuery += "  ORDER BY Z08_COD DESC"
-
 		If Select("TRB") > 0
 			dbSelectArea("TRB")
 			dbCloseArea()
@@ -645,92 +513,233 @@ For nCont := 1 to len(aList5b)
 		cQuery:= ChangeQuery(cQuery)
 		DbUseArea(.T.,"TOPCONN",TcGenQry(,,cQuery),'TRB',.F.,.T.)   
 		
-		aAux5 := {}
-
 		While !EOF() 
-			aAuxL5 := {}
-			nPos := Ascan(aAux5,{|x| Alltrim(x[1]) == strzero(val(TRB->Z08_SELECA),3)})
-			nPos2 := Ascan(aTabPrc,{|x| x[1]+x[2] == TRB->Z08_CONTRT+TRB->Z08_PRODUT})
-
-			If nPos == 0 .OR. TRB->Z08_PRODUT != aAux5[nPos,2]
-				Aadd(aAuxL5,strzero(val(TRB->Z08_SELECA),3)) //1
-				Aadd(aAuxL5,TRB->Z08_PRODUT) //2
-				Aadd(aAuxL5,TRB->B1_DESC) //3
-				Aadd(aAuxL5,'') //4
-				Aadd(aAuxL5,0) //5	
-				Aadd(aAuxL5,TRB->Z08_DATA) //6
-				Aadd(aAuxL5,TRB->Z08_QTDLID) //7
-				Aadd(aAuxL5,0) //8
-				
-				If nPos2 > 0
-					Aadd(aAuxL5,aTabPrc[nPos2,04]) //9
-				Else 
-					Aadd(aAuxL5,0) //9
-				EndIf 
-
-				Aadd(aAuxL5,0) //10
-				
-				Aadd(aAuxL5,Z08_COD) //11
-				Aadd(aAuxL5,Z08_FATURA) //12
-
-				Aadd(aAuxL5,'') //13
-				Aadd(aAuxL5,'') //14
-				
-				If len(aAuxL5) > 0
-					Aadd(aAux5,aAuxL5) 
-				EndIf
-				
-				If nPos2 > 0
-					Aadd(aAuxL5,aTabPrc[nPos2,05]) //15
-				Else 
-					Aadd(aAuxL5,0) //15
-				EndIf 
-
-			Else 
-				If TRB->Z08_QTDLID < aAux5[nPos,05] .OR. Empty(aAux5[nPos,04])
-					aAux5[nPos,13] := aAux5[nPos,04]
-					aAux5[nPos,14] := aAux5[nPos,05]
-					aAux5[nPos,04] := TRB->Z08_DATA
-					aAux5[nPos,05] := TRB->Z08_QTDLID
-				
-				/*ElseIf Empty(aAux5[nPos,06])
-					aAux5[nPos,06] := TRB->Z08_DATA
-					aAux5[nPos,07] := TRB->Z08_QTDLID*/
-				Endif 
-
-				If nPos2 > 0 .And. aAux5[nPos,09] == 0
-					aAux5[nPos,09] := aTabPrc[nPos2,04]
-				EndIf 
-
-				If nPos2 > 0 .And. aAux5[nPos,15] == 0
-					aAux5[nPos,15] := aTabPrc[nPos2,05]
-				EndIf 
-
-			EndIf 
-			Dbskip()
-		EndDo 
-
-		Aeval(aAux5,{|x| x[8] := x[7] - x[5]})
-		Aeval(aAux5,{|x| x[10] := x[9] * x[8]})
+			If Ascan(aList3b,{|x| x[1] == TRB->C6_NUM}) == 0
+				Aadd(aList3b,{	TRB->C6_NUM,;
+								stod(TRB->C5_EMISSAO),;
+								TRB->C6_VALOR,;
+								TRB->C6_NOTA,;
+								aAux3[nCont,01],;
+								aAux3[nCont,02],;
+								aAux3[nCont,03],;
+								TRB->C6_FILIAL+Alltrim(TRB->C6_SERIE)})
+			Else
+				aList3b[Ascan(aList3b,{|x| x[1] == TRB->C6_NUM}),03] += TRB->C6_VALOR
+			EndIF
+			Aadd(aList4b,{	TRB->C6_NOTA,;
+							substr(TRB->C6_DESCRI,1,20),;
+							TRB->C6_VALOR,;
+							TRB->C6_NUM,;
+							TRB->C6_ITEM,;
+							aAux3[nCont,01],;
+							aAux3[nCont,02],;
+							aAux3[nCont,03],;
+							TRB->C6_QTDVEN})
+			DbSkip()
+		EndDo
 		
-		For nAux := 1 to len(aAux5)
-			Aadd(aList5b[nCont],aAux5[nAux])
-		Next nAux
-	EndIf
+	Next nCont     
 
-Next nCont
-/*
-For nCont := 1 to len(aList)
-	If (aList[nCont,14] == "2" .And. cQuinze == "2") .Or. (aList[nCont,14] == "1")
-		For nAux := 1 to len(aList5B)
-			If aList5B[nAux,01] == aList[nCont,01]
-				Recalc(aList5B[nAux],nAux)
+	For nCont := 1 to len(aList3b)
+		nPos := Ascan(aList,{|x| Alltrim(x[1]) == aList3b[nCont,05]})
+		If nPos > 0 .And. (strzero(month(aList3b[nCont,02]),2)+cvaltochar(year(aList3b[nCont,02])) == strzero(month(ddatabase),2)+cvaltochar(year(ddatabase)))
+			If aList[nPos,len(aQtdH)+1] == 0
+				IF !Empty(aList3b[nCont,04])
+					aList[nPos,len(aQtdH)+1] += 2
+				Else
+					aList[nPos,len(aQtdH)+1] += 1
+				EndIf
+			EndIf
+		EndIf
+	Next nCont
+
+
+	cQuery := "SELECT AAM_CONTRT,DA1_CODPRO,B1_DESC,DA1_PRCVEN,DA1_XCONSU"
+	cQuery += " FROM "+RetSQLName("AAM")+" AAM"
+	cQuery += "  INNER JOIN "+RetSQLName("DA1")+" DA1 ON DA1_FILIAL='"+xFilial("DA1")+"' AND DA1_CODTAB=AAM_XCODTA AND DA1.D_E_L_E_T_=' '"
+	cQuery += "  INNER JOIN "+RetSQLName("SB1")+" SB1 ON B1_FILIAL=DA1_FILIAL AND B1_COD=DA1_CODPRO AND SB1.D_E_L_E_T_=' '"
+	cQuery += " WHERE AAM.D_E_L_E_T_=' '"
+	cQuery += " AND AAM_CONTRT IN('"+cCntTab+"')"
+	If Select("TRB") > 0
+		dbSelectArea("TRB")
+		dbCloseArea()
+	EndIf                                                                                 
+		
+	MemoWrite("CONFSC01.SQL",cQuery)
+
+	cQuery:= ChangeQuery(cQuery)
+	DbUseArea(.T.,"TOPCONN",TcGenQry(,,cQuery),'TRB',.F.,.T.)   
+		
+	While !EOF()
+		Aadd(aTabPrc,{	TRB->AAM_CONTRT,;
+						TRB->DA1_CODPRO,;
+						TRB->B1_DESC,;
+						TRB->DA1_PRCVEN,;
+						TRB->DA1_XCONSU})
+		Dbskip()
+	EndDo 
+
+	For nCont := 1 to len(aList5b)
+		
+		aLeitura := {}
+		aLeitura 	:=	LeiAntr(aList5b[nCont,01],aList5b[nCont,02],'')
+		
+		cQuery := ""
+		
+		For nLeitur := 1 to len(aLeitura )
+			If !Empty(cQuery)	
+				cQuery += "  UNION "
 			EndIf 
-		Next nAux 
-	EndIf 
-Next nCont 
-*/
-RestArea(aArea)
+
+			cQuery += "SELECT Z08_COD,Z08_SEQUEN,Z08_SELECA,Z08_PRODUT,B1_DESC,Z08_QTDLID,Z08_DATA,Z08_CONTRT,Z08_FATURA" 
+			cQuery += "  FROM "+RetSQLname("Z08")+" Z08" 
+			cQuery += "  LEFT JOIN "+RetSQLname("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"'"
+			cQuery += "   AND B1_COD=Z08_PRODUT AND B1.D_E_L_E_T_=' ' 
+			
+			cQuery += " WHERE Z08_COD='"+aLeitura[nLeitur]+"'"
+			cQuery += "  AND Z08.D_E_L_E_T_=' '
+		Next nLeitur
+			/*cQuery := "SELECT Z08_COD,Z08_SEQUEN,Z08_SELECA,Z08_PRODUT,B1_DESC,Z08_QTDLID,Z08_DATA,Z08_CONTRT,Z08_FATURA" 
+			cQuery += "  FROM "+RetSQLname("Z08")+" Z08" 
+			cQuery += "  LEFT JOIN "+RetSQLname("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"'"
+			cQuery += "   AND B1_COD=Z08_PRODUT AND B1.D_E_L_E_T_=' ' 
+			
+			If len(aLeitura) > 0
+				cQuery += " WHERE Z08_COD='"+aLeitura[1]+"'"
+				cQuery += "  AND Z08.D_E_L_E_T_=' '
+			ELSE
+				cQuery += " WHERE  Z08_COD IN(SELECT MAX(Z08_COD) FROM "+RetSQLname("Z08")
+				cQuery += "     	WHERE  Z08_FILIAL='"+xFilial("Z08")+"' AND Z08_NUMSER='"+aList5b[nCont,02]+"'"
+				cQuery += "  	AND Z08_CONTRT='"+aList5b[nCont,01]+"' AND D_E_L_E_T_=' ')"
+				cQuery += " AND Z08.D_E_L_E_T_=' '"
+			EndIF 
+			
+			cQuery += "  UNION 
+			cQuery += "  SELECT Z08_COD,Z08_SEQUEN,Z08_SELECA,Z08_PRODUT,B1_DESC,Z08_QTDLID,Z08_DATA,Z08_CONTRT,Z08_FATURA" 
+			cQuery += "  FROM "+RetSQLname("Z08")+" Z08"
+			cQuery += "  LEFT JOIN "+RetSQLname("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"'"
+			cQuery += "		AND B1_COD=Z08_PRODUT AND B1.D_E_L_E_T_=' '" 
+			
+			If len(aLeitura) > 1
+				cQuery += " WHERE Z08_COD='"+aLeitura[2]+"'"
+				cQuery += "  AND Z08.D_E_L_E_T_=' '"
+			Else
+				cQuery += "  WHERE  Z08_COD IN(SELECT MAX(Z08_COD)-1 FROM "+RetSQLname("Z08")
+				cQuery += "		WHERE  Z08_FILIAL='"+xFilial("Z08")+"' AND Z08_NUMSER='"+aList5b[nCont,02]+"'" 
+				cQuery += "  	AND Z08_CONTRT='"+aList5b[nCont,01]+"' AND D_E_L_E_T_=' ')"
+				cQuery += " AND Z08.D_E_L_E_T_=' '"
+				cQuery += " AND Z08_NUMSER='"+aList5b[nCont,02]+"' AND Z08_CONTRT='"+aList5b[nCont,01]+"'"
+			EndIf 
+
+			cQuery += "  ORDER BY Z08_COD DESC"
+			*/
+		If !Empty(cQuery)
+			cQuery += "  ORDER BY Z08_COD DESC"
+
+			If Select("TRB") > 0
+				dbSelectArea("TRB")
+				dbCloseArea()
+			EndIf                                                                                 
+			
+			MemoWrite("CONFSC01.SQL",cQuery)
+			
+			cQuery:= ChangeQuery(cQuery)
+			DbUseArea(.T.,"TOPCONN",TcGenQry(,,cQuery),'TRB',.F.,.T.)   
+			
+			aAux5 := {}
+
+			While !EOF() 
+				aAuxL5 := {}
+				nPos := Ascan(aAux5,{|x| Alltrim(x[1]) == strzero(val(TRB->Z08_SELECA),3)})
+				nPos2 := Ascan(aTabPrc,{|x| x[1]+x[2] == TRB->Z08_CONTRT+TRB->Z08_PRODUT})
+
+				If nPos == 0 .OR. TRB->Z08_PRODUT != aAux5[nPos,2]
+					Aadd(aAuxL5,strzero(val(TRB->Z08_SELECA),3)) //1
+					Aadd(aAuxL5,TRB->Z08_PRODUT) //2
+					Aadd(aAuxL5,TRB->B1_DESC) //3
+					Aadd(aAuxL5,'') //4
+					Aadd(aAuxL5,0) //5	
+					Aadd(aAuxL5,TRB->Z08_DATA) //6
+					Aadd(aAuxL5,TRB->Z08_QTDLID) //7
+					Aadd(aAuxL5,0) //8
+					
+					If nPos2 > 0
+						Aadd(aAuxL5,aTabPrc[nPos2,04]) //9
+					Else 
+						Aadd(aAuxL5,0) //9
+					EndIf 
+
+					Aadd(aAuxL5,0) //10
+					
+					Aadd(aAuxL5,Z08_COD) //11
+					Aadd(aAuxL5,Z08_FATURA) //12
+
+					Aadd(aAuxL5,'') //13
+					Aadd(aAuxL5,0) //14
+					
+					If len(aAuxL5) > 0
+						Aadd(aAux5,aAuxL5) 
+					EndIf
+					
+					If nPos2 > 0
+						Aadd(aAuxL5,aTabPrc[nPos2,05]) //15
+					Else 
+						Aadd(aAuxL5,0) //15
+					EndIf 
+
+				Else 
+					If TRB->Z08_QTDLID < aAux5[nPos,05] .OR. Empty(aAux5[nPos,04])
+						aAux5[nPos,13] := aAux5[nPos,04]
+						aAux5[nPos,14] := aAux5[nPos,05]
+						aAux5[nPos,04] := TRB->Z08_DATA
+						aAux5[nPos,05] := TRB->Z08_QTDLID
+					
+					/*ElseIf Empty(aAux5[nPos,06])
+						aAux5[nPos,06] := TRB->Z08_DATA
+						aAux5[nPos,07] := TRB->Z08_QTDLID*/
+					Endif 
+
+					If nPos2 > 0 .And. aAux5[nPos,09] == 0
+						aAux5[nPos,09] := aTabPrc[nPos2,04]
+					EndIf 
+
+					If nPos2 > 0 .And. aAux5[nPos,15] == 0
+						aAux5[nPos,15] := aTabPrc[nPos2,05]
+					EndIf 
+
+				EndIf 
+				Dbskip()
+			EndDo 
+
+			Aeval(aAux5,{|x| x[8] := x[7] - x[5]})
+			Aeval(aAux5,{|x| x[10] := x[9] * x[8]})
+			
+			For nAux := 1 to len(aAux5)
+				Aadd(aList5b[nCont],aAux5[nAux])
+			Next nAux
+		EndIf
+
+		for nX := 5 to len(aList5b[nCont])
+			if aList5b[nCont,nX,14] > aList5b[nCont,nX,07]
+				aList5b[nCont,nX,08] := aList5b[nCont,nX,14] - aList5b[nCont,nX,05] + aList5b[nCont,nX,07]
+			endif
+		next
+
+	Next nCont
+	
+	/*
+	For nCont := 1 to len(aList)
+		If (aList[nCont,14] == "2" .And. cQuinze == "2") .Or. (aList[nCont,14] == "1")
+			For nAux := 1 to len(aList5B)
+				If aList5B[nAux,01] == aList[nCont,01]
+					Recalc(aList5B[nAux],nAux)
+				EndIf 
+			Next nAux 
+		EndIf 
+	Next nCont 
+	*/
+
+	RestArea(aArea)
 
 Return                   
 
