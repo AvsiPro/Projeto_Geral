@@ -2540,6 +2540,11 @@ STATIC FUNCTION savevend()
     LOCAL nY   
     LOCAL nZ
     
+    if validvend() .or. len(aList8B) < 1
+        MsgAlert("Nao foi possivel salvar as vendas!", "Erro!")
+        return
+    endif
+
     for nX := 1 to len(aList8B)
         cCod := GetSXENum("Z08", "Z08_COD") 
         cSeq := "01"
@@ -2593,7 +2598,7 @@ STATIC FUNCTION savevend()
 
                 FOR nZ := 1 TO len(aGravarP)
 
-                    // &("Z08->"+aGravarP[nZ,01]) := aGravarP[nZ,02]
+                    &("Z08->"+aGravarP[nZ,01]) := aGravarP[nZ,02]
                 
                 NEXT nZ
 
@@ -2838,3 +2843,25 @@ dRet := stod(TRB->ULTIMA)
 RestArea(aArea)
 
 Return(dRet)
+
+Static Function validvend()
+    
+    Local aArea := GetArea()
+    Local lRet  := .F.
+    Local nX
+    Local nY
+
+    dbSelectArea("SB1")
+    DbSetOrder(1)
+
+    for nX := 1 to len(aList8B)
+        for nY := 1 to len(aList8B[nX,01,nY])
+            if !DbSeek(xFilial("SB1" + aList8B[nX,01,nY,03]))
+                lRet := .T.
+            endif
+        next
+    next
+
+    RestArea(aArea)
+
+Return (lRet)
