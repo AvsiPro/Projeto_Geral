@@ -142,7 +142,11 @@ RETURN
 User Function Z15Chama(nOpc)
 
     if nOpc == 1
-        U_CONFSC03(Z15->Z15_CONTRA)
+        If Z15->Z15_STATUS == "B"
+            MsgAlert("Chamado já finalizado")
+        Else
+            U_CONFSC03(Z15->Z15_CONTRA)
+        EndIf
     elseif nOpc == 2
         U_CONFSC04(Z15->Z15_CONTRA)
     endif

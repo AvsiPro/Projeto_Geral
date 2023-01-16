@@ -33,6 +33,7 @@ Private cCodCli :=  space(9)
 Private cLojCli :=  space(4)
 Private cContrt :=  cXContrato
 Private cCodPro :=  ""
+Private cCliPri :=  space(4)
 
 If Empty(FunName())
     RpcSetType(3)
@@ -56,7 +57,7 @@ oDlg1      := MSDialog():New( 092,232,479,932,"Preparar Ativo para contrato",,,.
         
         oSay2      := TSay():New( 068,092,{||"Cliente"},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
         oGet2      := TGet():New( 068,152,{|u| If(pcount()>0,cCodCli:=u,cCodCli)},oGrp1,060,008,'',{|| xatuatv(2)},CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"SA1","",,)
-        oGet3      := TGet():New( 068,224,{|u| If(pcount()>0,cLojCli:=u,cLojCli)},oGrp1,028,008,'',{|| xatuatv(2)},CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"","",,)
+        oGet3      := TGet():New( 068,224,{|u| If(pcount()>0,cLojCli:=u,cLojCli)},oGrp1,028,008,'',{|| xatuatv(2)},CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"SA1CON","",,)
         
         oSay4      := TSay():New( 096,024,{||"Informações Ativo"},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,062,008)
         oSay5      := TSay():New( 096,092,{||""},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,252,008)
@@ -67,7 +68,7 @@ oDlg1      := MSDialog():New( 092,232,479,932,"Preparar Ativo para contrato",,,.
         oSay10     := TSay():New( 144,024,{||""},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
         oSay11     := TSay():New( 144,072,{||""},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,252,008)
     
-oBtn1      := TButton():New( 169,100,"Confirmar",oDlg1,{|| oDlg1:end(nOpc:=1)},037,012,,,,.T.,,"",,,,.F. )
+oBtn1      := TButton():New( 169,100,"Confirmar",oDlg1,{|| If(!Empty(cLojCli),oDlg1:end(nOpc:=1),MsgAlert("Não foi informada a loja do cliente"))},037,012,,,,.T.,,"",,,,.F. )
 oBtn2      := TButton():New( 169,208,"Cancelar",oDlg1,{|| oDlg1:end(nOpc:=0)},037,012,,,,.T.,,"",,,,.F. )
 
         if AllTrim(cXContrato) != ""
@@ -89,8 +90,11 @@ If nOpc == 1
             MsgAlert("Gerado o chamado técnico "+cCham+" para atender esta solicitação de preparação da maquina.")
 
             RecLock("Z15", .F.)
-                Z15->Z15_STATUS := "B"
-            MsUnlock()
+            Z15->Z15_STATUS := "B"
+            Z15->Z15_NRCHAM := cCham
+            Z15->Z15_DTATEN := ddatabase
+            Z15->Z15_HRATEN := cvaltochar(Time())
+            Z15->(MsUnlock())
 
         EndIf 
     EndIf 
@@ -136,7 +140,10 @@ If nTip == 1
         If Dbseek(xFilial("SB1")+SN1->N1_PRODUTO)
             oSay5:settext(SB1->B1_DESC)
             cCodPro := SN1->N1_PRODUTO
-        EndIF 
+        EndIF
+    else
+        MsgAlert("Ativo não encontrado na base")
+        Return .F. 
     EndIf 
 
 ElseIf nTip == 2
@@ -175,13 +182,12 @@ elseif nTip == 3
 	while !EOF()
 
         cCodCli := TRB->AAM_CODCLI
-        cLojCli := TRB->AAM_LOJA
-
-		DBSKIP()
+        //cLojCli := TRB->AAM_LOJA
+        DBSKIP()
 	end
 
     oGet2:disable()
-    oGet3:disable()
+    //oGet3:disable()
     
     xatuatv(2)
 
