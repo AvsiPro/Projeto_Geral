@@ -240,7 +240,7 @@ Static Function Tca300()
     aAdd(aCabec,{ "AB1_EMISSA"  , dDataBase         ,Nil})
     aAdd(aCabec,{ "AB1_CODCLI"  , SA1->A1_COD       ,Nil})
     aAdd(aCabec,{ "AB1_LOJA"    , SA1->A1_LOJA      ,Nil})
-    aAdd(aCabec,{ "AB1_HORA"    ,Time()             ,Nil})
+    aAdd(aCabec,{ "AB1_HORA"    ,cValToChar(Time())             ,Nil})
     aAdd(aCabec,{ "AB1_ATEND"   ,cUserName          ,Nil})
 
     aItem := {  }
