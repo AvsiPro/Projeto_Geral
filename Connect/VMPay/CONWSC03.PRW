@@ -443,10 +443,8 @@ WHILE nPage > 0
                 aCod := separa(aAux2[nX]:GOOD:NAME,"#")
                 //Aadd(aAux,If(aAux2[nX]:GOOD:UPC_CODE==nil,'null',aAux2[nX]:GOOD:UPC_CODE))
                 Aadd(aAux,Alltrim(aCod[2]))
-            Else 
-                Aadd(aAux,'Sem Codigo')
+                Aadd(aHeader[nPos],aAux)
             EndIf 
-            Aadd(aHeader[nPos],aAux)
             aAux := {}
         Next nX       
         

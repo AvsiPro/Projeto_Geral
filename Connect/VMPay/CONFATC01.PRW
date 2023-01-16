@@ -2855,8 +2855,8 @@ Static Function validvend()
     DbSetOrder(1)
 
     for nX := 1 to len(aList8B)
-        for nY := 1 to len(aList8B[nX,01,nY])
-            if !DbSeek(xFilial("SB1" + aList8B[nX,01,nY,03]))
+        for nY := 1 to len(aList8B[nX,01])
+            if !DbSeek(xFilial("SB1")+aList8B[nX,01,nY,03])
                 lRet := .T.
             endif
         next

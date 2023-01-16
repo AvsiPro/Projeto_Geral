@@ -213,7 +213,7 @@ oGrp1      := TGroup():New( 002,004,336,710,"",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F.
 							If(aList5[oList5:nAt,08]<>0,aList5[oList5:nAt,08],'Sem Consumo'),;
 							Transform(aList5[oList5:nAt,09],"@E 999,999,999.99"),;
 							Transform(aList5[oList5:nAt,10],"@E 999,999,999.99"),;
-							aList5[oList5:nAt,13],;
+							stod(aList5[oList5:nAt,13]),;
 							aList5[oList5:nAt,14]}}
 
 	oGrp5      := TGroup():New( 076,520,202,708,"Faturamento",oGrp1,CLR_BLACK,CLR_WHITE,.T.,.F. )
@@ -688,7 +688,7 @@ Static Function Busca(cCond,cQuinze)
 					EndIf 
 
 				Else 
-					If TRB->Z08_QTDLID < aAux5[nPos,05] .OR. Empty(aAux5[nPos,04])
+					If TRB->Z08_DATA < aAux5[nPos,04] .OR. Empty(aAux5[nPos,04]) //TRB->Z08_QTDLID < aAux5[nPos,05]
 						aAux5[nPos,13] := aAux5[nPos,04]
 						aAux5[nPos,14] := aAux5[nPos,05]
 						aAux5[nPos,04] := TRB->Z08_DATA
@@ -711,8 +711,8 @@ Static Function Busca(cCond,cQuinze)
 				Dbskip()
 			EndDo 
 
-			Aeval(aAux5,{|x| x[8] := x[7] - x[5]})
-			Aeval(aAux5,{|x| x[10] := x[9] * x[8]})
+			//Aeval(aAux5,{|x| x[8] := x[7] - x[5]})
+			//Aeval(aAux5,{|x| x[10] := x[9] * x[8]})
 			
 			For nAux := 1 to len(aAux5)
 				Aadd(aList5b[nCont],aAux5[nAux])
@@ -720,10 +720,24 @@ Static Function Busca(cCond,cQuinze)
 		EndIf
 
 		for nX := 5 to len(aList5b[nCont])
-			if aList5b[nCont,nX,14] > aList5b[nCont,nX,07]
-				aList5b[nCont,nX,08] := aList5b[nCont,nX,14] - aList5b[nCont,nX,05] + aList5b[nCont,nX,07]
+			lZerou := .F.
+		//leitura atual x leitura faturamento anterior
+			If aList5b[nCont,nX,07] < aList5b[nCont,nX,05]
+				//leitura zerada
+				aList5b[nCont,nX,08] := aList5b[nCont,nX,07]
+				lZerou := .T.
+			Else 
+				aList5b[nCont,nX,08] := aList5b[nCont,nX,07] - aList5b[nCont,nX,05]
+			EndIf 
+		//leitura atual x leitura intermediaria
+			if aList5b[nCont,nX,14] > 0 //> aList5b[nCont,nX,07]
+				If aList5b[nCont,nX,14] < aList5b[nCont,nX,07] .or. aList5b[nCont,nX,14] < aList5b[nCont,nX,05]
+					aList5b[nCont,nX,08] += aList5b[nCont,nX,14]
+				//aList5b[nCont,nX,08] := aList5b[nCont,nX,14] - aList5b[nCont,nX,05] + aList5b[nCont,nX,07]
+				endif
 			endif
-		next
+			aList5b[nCont,nX,10] := aList5b[nCont,nX,08] * aList5b[nCont,nX,09]
+		next nX
 
 	Next nCont
 	
@@ -909,7 +923,7 @@ oList5:bLine := {||{Alltrim(aList5[oList5:nAt,01]),;
 							If(aList5[oList5:nAt,08]<>0,aList5[oList5:nAt,08],'Sem Consumo'),;
 							Transform(aList5[oList5:nAt,09],"@E 999,999,999.99"),;
 							Transform(aList5[oList5:nAt,10],"@E 999,999,999.99"),;
-							aList5[oList5:nAt,13],;
+							stod(aList5[oList5:nAt,13]),;
 							aList5[oList5:nAt,14]}}
 
 If nOpini == 0
@@ -970,7 +984,7 @@ If AAM->AAM_XQTVLM > 0
 
 	Aeval(aList2b,{|x| nDifCb += If(x[4] == aList[nLinha2,01],x[9],0)})
 
-	If nDifCb < AAM->AAM_XQTVLM
+	If nDifCb < AAM->AAM_XQTVLM .AND. cQuinze == "2"
 		cTexto += " - Doses Complementares a serem cobradas "+Transform(AAM->AAM_XQTVLM-nDifCb,"@E 999,999,999")
 		aList[nLinha2,20] := AAM->AAM_XQTVLM-nDifCb
 	EndIf 
@@ -2018,14 +2032,16 @@ ElseIf nOpcG == 1
 				cAtFat += cBarra + Alltrim(aList5b[nCont,02])
 				cBarra := "/"
 				For nJ := 5 to len(aList5b[nCont])
-					nPos := Ascan(aItens,{|x| x[1] == aList5B[nCont,nJ,02]})
-					If nPos == 0
-						Aadd(aItens,{	aList5B[nCont,nJ,02],;
-										aList5B[nCont,nJ,08],;
-										aList5B[nCont,nJ,09]})
-					Else 
-						aItens[nPos,02] += aList5B[nCont,nJ,08]
-					EndIf 
+					If aList5B[nCont,nJ,08] > 0
+						nPos := Ascan(aItens,{|x| x[1] == aList5B[nCont,nJ,02]})
+						If nPos == 0
+							Aadd(aItens,{	aList5B[nCont,nJ,02],;
+											aList5B[nCont,nJ,08],;
+											aList5B[nCont,nJ,09]})
+						Else 
+							aItens[nPos,02] += aList5B[nCont,nJ,08]
+						EndIf 
+					EndIf
 				Next nJ 
 			EndIf
 		Next nCont
@@ -2042,16 +2058,18 @@ ElseIf nOpcG == 1
 			For nCont := 1 to len(aList5B)
 				If aList5B[nCont,01] == aList2[nX,04] .And. len(aList5b[nCont]) > 4 .And. aList5B[nCont,02] == aList2[nX,01]
 					For nJ := 5 to len(aList5b[nCont])
-						nPosloc := Ascan(aItens,{|x| x[1] == aList5B[nCont,nJ,02]})
-						
-						If nPosloc == 0
+						If aList5B[nCont,nJ,08] > 0
+							nPosloc := Ascan(aItens,{|x| x[1] == aList5B[nCont,nJ,02]})
 							
-							Aadd(aItens,{	aList5B[nCont,nJ,02],;
-											aList5B[nCont,nJ,08],;
-											aList5B[nCont,nJ,09]})
-						Else 
-							aItens[nPosloc,02] += aList5B[nCont,nJ,08]
-						EndIf 
+							If nPosloc == 0
+								
+								Aadd(aItens,{	aList5B[nCont,nJ,02],;
+												aList5B[nCont,nJ,08],;
+												aList5B[nCont,nJ,09]})
+							Else 
+								aItens[nPosloc,02] += aList5B[nCont,nJ,08]
+							EndIf 
+						EndIf
 					Next nJ 
 				EndIf
 			Next nCont
