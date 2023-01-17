@@ -20,12 +20,12 @@
 User Function MSD2460()
 
 	Local aArea			:=	GetArea()
-	Local cTM			:=	GetMv("MV_XTMSD3",,"001")
+	/*Local cTM			:=	GetMv("MV_XTMSD3",,"001")
 	Local cTMEst      	:=  GetMv("MV_XTESD3",,"501")
 	Local _aCab1 		:= 	{}
 	Local _aItem 		:= 	{}
 	Local _atotitem		:=	{}
-	Local n := 0
+	Local n := 0*/
 
 	Private aEst 		:= {} //estrutura produto
 	Private aAuxest 	:= {}
@@ -78,7 +78,10 @@ User Function MSD2460()
 		*/
 	//Faturamento de pedidos de remessa de maquina
 	ElseIf SC5->C5_XTPPED == "I"
-		atucontr(SC6->C6_CONTRT,SC6->C6_PRODUTO,SC6->C6_NUMSERI)
+		cOS 	:= SC6->C6_NUMOS
+		cCham 	:= Posicione("AB7",1,xFilial("AB7")+cOS,"AB7_NRCHAM")
+		cPlaca	:= Posicione("AB2",1,xFilial("AB2")+cCham,"AB2_XCBASE")
+		atucontr(SC6->C6_CONTRT,SC6->C6_PRODUTO,cPlaca) //SC6->C6_NUMSERI
 	Else
 		RestArea(aArea)
 		Return
