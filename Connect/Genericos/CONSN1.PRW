@@ -92,7 +92,9 @@ Return
 
 Static Function EXECSN1(aAux)
     
-	if aAux[1] $ cChapa
+	dbSelectArea("SN1")
+	DbSetOrder(2)
+	if aAux[1] $ cChapa .OR. DbSeek(xFilial("SN1") + AvKey(aAux[1], "N1_CBASE"))
 		return
 	endif
 
