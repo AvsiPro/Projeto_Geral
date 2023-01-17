@@ -8,7 +8,7 @@
 #include "parmtype.ch"
 
 //Variáveis Estáticas
-STATIC cTitulo    :=    "Inclusão Manual de Leitura"
+STATIC cTitulo    :=    "Configuração de Leiaute de Maquinas"
  
 USER FUNCTION Z08Tela()
    
@@ -28,8 +28,8 @@ USER FUNCTION Z08Tela()
     oBrowse:SetDescription(cTitulo)
      
     //Legendas
-    oBrowse:AddLegend( "Z08->Z08_MSBLQL = '2'", "GREEN",    "Não bloqueado" )
-    oBrowse:AddLegend( "Z08->Z08_MSBLQL = '1' .OR. Z08->Z08_MSBLQL = ' '", "RED",    "Bloqueado" )
+    oBrowse:AddLegend( "Z08->Z08_MSBLQL = '2'", "GREEN" ,    "Não bloqueado"    )
+    oBrowse:AddLegend( "Z08->Z08_MSBLQL = '1'", "RED"   ,    "Bloqueado"        )
      
     //Filtrando
     oBrowse:SetFilterDefault("Z08->Z08_SEQUEN = '01'")
@@ -115,17 +115,6 @@ STATIC FUNCTION ViewDef()
     //O formulário da interface será colocado dentro do container
     oView:SetOwnerView("VIEW_Z08","TELA")
      
-    /*
-    //Tratativa para remover campos da visualização
-    For nAtual := 1 To Len(aStruZ08)
-        cCampoAux := Alltrim(aStruZ08[nAtual][01])
-         
-        //Se o campo atual não estiver nos que forem considerados
-        If Alltrim(cCampoAux) $ "Z08_CODIGO;"
-            oStZ08:RemoveField(cCampoAux)
-        EndIf
-    Next
-    */
 RETURN oView
 
  

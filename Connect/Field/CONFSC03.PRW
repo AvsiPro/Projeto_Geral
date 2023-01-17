@@ -16,7 +16,7 @@
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
 ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
 /*/
-User Function CONFSC03(cXContrato,cCodCli,cLojCli)
+User Function CONFSC03(cXContrato,cxCdCli,cxLjCli)
 
 Local aArea :=  GetArea()
 Local nOpc  :=  0
@@ -27,12 +27,14 @@ SetPrvt("oDlg1","oGrp1","oSay1","oSay2","oSay3","oSay4","oSay5","oSay6","oSay7",
 SetPrvt("oGet1","oGet2","oGet3","oGet4","oBtn1","oBtn2")
 
 DEFAULT cXContrato := Space(20)
-DEFAULT cCodCli :=  space(9)
-DEFAULT cLojCli :=  space(4)
+DEFAULT cxCdCli :=  space(9)
+DEFAULT cxLjCli :=  space(4)
 
 
 Private cAtivo  :=  space(10)
 Private cContrt :=  cXContrato
+Private cCodCli :=  cxCdCli
+Private cLojCli :=  cxLjCli
 Private cCodPro :=  ""
 Private cCliPri :=  space(4)
 
@@ -71,8 +73,10 @@ oDlg1      := MSDialog():New( 092,232,479,932,"Preparar Ativo para contrato",,,.
         oSay10     := TSay():New( 144,024,{||""},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
         oSay11     := TSay():New( 144,072,{||""},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,252,008)
     
-oBtn1      := TButton():New( 169,100,"Confirmar",oDlg1,{|| If(!Empty(cLojCli),oDlg1:end(nOpc:=1),MsgAlert("Não foi informada a loja do cliente"))},037,012,,,,.T.,,"",,,,.F. )
-oBtn2      := TButton():New( 169,208,"Cancelar",oDlg1,{|| oDlg1:end(nOpc:=0)},037,012,,,,.T.,,"",,,,.F. )
+        oBtn1      := TButton():New( 169,100,"Confirmar",oDlg1,{|| oDlg1:end(nOpc:=1)},037,012,,,,.T.,,"",,,,.F. )
+        oBtn2      := TButton():New( 169,208,"Cancelar",oDlg1,{|| oDlg1:end(nOpc:=0)},037,012,,,,.T.,,"",,,,.F. )
+
+        oBtn1:disable()
 
         if AllTrim(cXContrato) != ""
             xatuatv(3)
@@ -124,9 +128,7 @@ Return
 Static Function xatuatv(nTip)
 
 Local aArea  :=  GetArea()
-//Local cQuery := ""
 
-//If nTip == 1
 
     oSay5:settext("")
 
@@ -162,7 +164,7 @@ Local aArea  :=  GetArea()
 
         oGet2:disable()
         oGet3:disable()
-       
+        oBtn1:enable()       
     else
         If !Empty(cAtivo)
             MsgAlert("Ativo não encontrado na base")
@@ -170,52 +172,6 @@ Local aArea  :=  GetArea()
         EndIf 
     EndIf 
 
-/*ElseIf nTip == 2
-
-    oSay7:settext("")
-    oSay9:settext("")
-    DbSelectArea("SA1")
-    DbSetOrder(1)
-    If DbSeek(xFilial("SA1")+cCodCli+cLojCli)
-        oSay7:settext(Alltrim(SA1->A1_NOME)+' / '+Alltrim(SA1->A1_NREDUZ))
-        oSay9:settext(Alltrim(SA1->A1_END)+' - '+Alltrim(SA1->A1_BAIRRO)+' - '+Alltrim(SA1->A1_MUN)+' - '+SA1->A1_EST)
-        if len(Alltrim(SA1->A1_END)+' - '+Alltrim(SA1->A1_BAIRRO)+' - '+Alltrim(SA1->A1_MUN)+' - '+SA1->A1_EST) > 75
-            oSay10:settext(SubStr(Alltrim(SA1->A1_END)+' - '+Alltrim(SA1->A1_BAIRRO)+' - '+Alltrim(SA1->A1_MUN)+' - '+SA1->A1_EST,75))
-        endif
-    EndIf 
-    
-elseif nTip == 3
-    
-    cQuery := " "
-    cQuery += " SELECT DISTINCT AAM_CODCLI,AAM_LOJA   " 
-    cQuery += " FROM   " + RetSQLName("AAN") + " AAN   " 
-    cQuery += " INNER JOIN " + RetSQLName("AAM") + " AAM ON AAM_CONTRT = AAN_CONTRT   " 
-    cQuery += " WHERE  AAN_CONTRT = '" + cContrt + "'   " 
-    cQuery += "        AND AAN.D_E_L_E_T_ = ' '   " 
-    cQuery += "        AND AAM.D_E_L_E_T_ = ' '   " 
-
-	If Select("TRB") > 0
-		dbSelectArea("TRB")
-		dbCloseArea()
-	EndIf
-
-	cQuery := ChangeQuery(cQuery)
-
-	DbUseArea(.T.,"TOPCONN",TcGenQry(,,cQuery),'TRB',.F.,.T.)
-
-	while !EOF()
-
-        cCodCli := TRB->AAM_CODCLI
-        //cLojCli := TRB->AAM_LOJA
-        DBSKIP()
-	end
-
-    oGet2:disable()
-    //oGet3:disable()
-    
-    xatuatv(2)
-
-EndIf*/ 
 
 RestArea(aArea)
 
@@ -246,10 +202,6 @@ Local dData     := ddatabase
 
 PRIVATE lMsErroAuto := .F.
 
-//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
-//| Abertura do ambiente                                        
-//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-
 Aadd(aNrsSerie,cAtivo)
 
 nRegs     := Len(aNrsSerie) 
@@ -259,9 +211,9 @@ For nI := 1 to nRegs
     Aadd(aCab040, { "AA3_CODCLI"    , cCodCli           , NIL } )               
     Aadd(aCab040, { "AA3_LOJA"      , cLojCli           , NIL } )               
     Aadd(aCab040, { "AA3_CODPRO"    , cCodPro           , NIL } )               
-    Aadd(aCab040, { "AA3_NUMSER"    , SN1->N1_XNUMSER            , NIL } )                
+    Aadd(aCab040, { "AA3_NUMSER"    , SN1->N1_XNUMSER   , NIL } )                
     Aadd(aCab040, { "AA3_CBASE"     , cAtivo            , NIL } )                
-    Aadd(aCab040, { "AA3_ITEM"      , '0001'            , NIL } )                
+    Aadd(aCab040, { "AA3_ITEM"      , SN1->N1_ITEM      , NIL } )                
     Aadd(aCab040, { "AA3_CHAPA"     , cAtivo            , NIL } )                
     Aadd(aCab040, { "AA3_DTVEN"     , dData             , NIL } )
 
@@ -269,7 +221,7 @@ For nI := 1 to nRegs
 
     If lMsErroAuto  
         MostraErro()                            
-        lRet := !lMsErroAuto  
+        lRet := .F.  
     else
         DbSelectArea("SN1")
         DbSetOrder(1)
@@ -328,7 +280,7 @@ aAdd(aCabec,{ "AB1_NRCHAM"  , cChamado          ,Nil})
 aAdd(aCabec,{ "AB1_EMISSA"  , dDataBase         ,Nil})
 aAdd(aCabec,{ "AB1_CODCLI"  , SA1->A1_COD       ,Nil})
 aAdd(aCabec,{ "AB1_LOJA"    , SA1->A1_LOJA      ,Nil})
-aAdd(aCabec,{ "AB1_HORA"    ,cValToChar(Time())             ,Nil})
+aAdd(aCabec,{ "AB1_HORA"    ,cValToChar(Time()) ,Nil})
 aAdd(aCabec,{ "AB1_ATEND"   ,cUserName          ,Nil})
 
 aItem := {  }

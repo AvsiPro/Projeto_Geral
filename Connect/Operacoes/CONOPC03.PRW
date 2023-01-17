@@ -119,8 +119,6 @@ If nOpc == 1
         Z07->Z07_LOJA   :=  cLj
         Z07->Z07_SELECA :=  aCols[nX,02]
         Z07->Z07_CODPRO :=  aCols[nX,03]
-        // Z07->Z07_VLRVND :=  aCols[nX,05]
-        // Z07->Z07_CONSUM :=  aCols[nX,06]
         Z07->(MsUnlock())
     Next nX 
 EndIf 
@@ -238,11 +236,6 @@ ElseIf nPosic == 3
         lEditCell( aCols, oList1, "@!", nPosic)
     EndIf
     
-// ElseIf nPosic >= 5
-//     If aCols[nLin,nPosic] <= 0
-//         aCols[nLin,nPosic] := 0
-//     EndIf 
-//     lEditCell( aCols, oList1, "@E 999,999.99", nPosic)
 EndIf
 
 oList1:refresh()
