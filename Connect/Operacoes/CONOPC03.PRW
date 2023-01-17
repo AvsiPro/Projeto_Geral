@@ -30,12 +30,13 @@
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
 ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß*/
 
-User Function CONOPC03(cXPatr)
+User Function CONOPC03(cXPatr,lIncl)
 
 Local nOpc      :=  0
 Local nX 
 
 DEFAULT cXPatr := space(TamSX3("AA3_CBASE")[1])
+DEFAULT lIncl  := .F.
 
 Private aCols   :=  {}
 Private oDlg1,oGrp1,oSay1,oSay2,oSay3,oSay4,oSay5,oSay6
@@ -62,7 +63,7 @@ oDlg1      := MSDialog():New( 057,187,748,993,"Cadastro de Leiautes",,,.F.,,,,,,
 oGrp1      := TGroup():New( 004,016,108,380,"Cadastro",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
     
     oSay1      := TSay():New( 012,116,{||"Patrimonio"},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
-    oGet1      := TGet():New( 012,168,{|u| If(PCount()>0,cPatr:=u,cPatr)},oGrp1,060,008,'',{|| Basexcli()},CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"SN1X","",,)
+    oGet1      := TGet():New( 012,168,{|u| If(PCount()>0,cPatr:=u,cPatr)},oGrp1,060,008,'@!',{|| Basexcli(lIncl)},CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"SN1X","",,)
 
     oSay2      := TSay():New( 032,032,{||"Cliente"},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
     oGet2      := TGet():New( 032,068,{|u| If(PCount()>0,cCli:=u,cCli)},oGrp1,060,008,'',{|| Fcadcli()},CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"SA1","",,)
@@ -94,6 +95,12 @@ oGrp1      := TGroup():New( 004,016,108,380,"Cadastro",oDlg1,CLR_BLACK,CLR_WHITE
     oBtn3      := TButton():New( 120,364,"+",oDlg1,{|| inclin()},021,012,,,,.T.,,"",,,,.F. )
     oBtn4      := TButton():New( 137,365,"-",oDlg1,{|| dellin(oList1:nAt)},021,012,,,,.T.,,"",,,,.F. )
 
+    If !Empty(cXPatr)
+        Basexcli(lIncl)
+        oGet1:DISABLE()
+        oGet4:DISABLE()
+    EndIF 
+    
 oDlg1:Activate(,,,.T.)
 
 If nOpc == 1
@@ -222,6 +229,8 @@ If nPosic == 2
     EndIf 
 
     lEditCell( aCols, oList1, "@!", nPosic)
+    aCols[oList1:nAt,nPosic] := strzero(val(aCols[oList1:nAt,nPosic]),3)
+
 ElseIf nPosic == 3
     lProd    := ConPad1(,,,"SB1",,,.f.)
     
@@ -283,19 +292,34 @@ Return
     (examples)
     @see (links_or_references)
 /*/
-Static Function Basexcli()
+Static Function Basexcli(lIncl)
 
 Local aArea     :=  GetArea()
+Local lAtivo    := .T.
 
-If !Empty(cPatr)
+If lIncl .And. 'MODELO' $ cPatr
+    MsgAlert("Para inclusão e alteração de leiaute padrão, utilize a opção correta")
+    Return(.F.)
+EndIf 
+
+If !Empty(cPatr) 
     aCols := {}
    
     cQuery := "SELECT Z07_CHAPA,Z07_SELECA,Z07_CODPRO,B1_DESC,Z07_VLRVND,Z07_CONSUM,"
-    cQuery += " Z07_CLIENT,Z07_LOJA,AAM_XCODTA,DA1_PRCVEN,DA1_XCONSU"
+    cQuery += " Z07_CLIENT,Z07_LOJA"
+
+    If !'MODELO' $ Alltrim(cPatr)
+        cQuery += " ,AAM_XCODTA,DA1_PRCVEN,DA1_XCONSU"
+    EndIf
+    
     cQuery += " FROM "+RetSQLName("Z07")+" Z07"
-    cQuery += " INNER JOIN "+RetSQLName("AAN")+" AAN ON AAN_FILIAL='01 ' AND AAN_XCBASE=Z07_CHAPA AND AAN.D_E_L_E_T_=' ' "
-    cQuery += " INNER JOIN "+RetSQLName("AAM")+" AAM ON AAM_FILIAL=AAN_FILIAL AND AAM_CONTRT=AAN_CONTRT AND AAM.D_E_L_E_T_=' '"
-    cQuery += " LEFT JOIN "+RetSQLName("DA1")+" DA1 ON DA1_FILIAL=AAN_FILIAL AND DA1_CODTAB=AAM_XCODTA AND DA1_CODPRO=Z07_CODPRO AND DA1.D_E_L_E_T_=' '"
+
+    If !'MODELO' $ Alltrim(cPatr)
+        cQuery += " INNER JOIN "+RetSQLName("AAN")+" AAN ON AAN_FILIAL='01 ' AND AAN_XCBASE=Z07_CHAPA AND AAN.D_E_L_E_T_=' ' "
+        cQuery += " INNER JOIN "+RetSQLName("AAM")+" AAM ON AAM_FILIAL=AAN_FILIAL AND AAM_CONTRT=AAN_CONTRT AND AAM.D_E_L_E_T_=' '"
+        cQuery += " LEFT JOIN "+RetSQLName("DA1")+" DA1 ON DA1_FILIAL=AAN_FILIAL AND DA1_CODTAB=AAM_XCODTA AND DA1_CODPRO=Z07_CODPRO AND DA1.D_E_L_E_T_=' '"
+    EndIf 
+
     cQuery += " INNER JOIN "+RetSQLName("SB1")+ " B1 ON B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD=Z07_CODPRO AND B1.D_E_L_E_T_=' '"
     cQuery += " WHERE Z07_FILIAL='"+xFilial("Z07")+"' AND Z07_CHAPA='"+cPatr+"' AND Z07.D_E_L_E_T_=' '"
     
@@ -314,28 +338,41 @@ If !Empty(cPatr)
                     TRB->Z07_SELECA,;
                     TRB->Z07_CODPRO,;
                     TRB->B1_DESC,;
-                    TRB->DA1_PRCVEN,;
-                    TRB->DA1_XCONSU,;
+                    If(!'MODELO' $ Alltrim(cPatr),TRB->DA1_PRCVEN,0),;
+                    If(!'MODELO' $ Alltrim(cPatr),TRB->DA1_XCONSU,0),;
                     .F.})
 
-        cCli := TRB->Z07_CLIENT
-        cLj  := TRB->Z07_LOJA
+        If !'MODELO' $ Alltrim(cPatr)
+            cCli := TRB->Z07_CLIENT
+            cLj  := TRB->Z07_LOJA
+        Else 
+            cCli    := ''
+            cLj     := ''
+        EndIf 
         Dbskip()
     EndDo 
 
-    If len(aCols) < 1
+    If len(aCols) < 1 .AND. !'MODELO' $ Alltrim(cPatr)
         Aadd(aCols,{'','','','',0,0,.f.})
         DbSelectArea("AA3")
         DbSetOrder(7)
         If Dbseek(xFilial("AA3")+cPatr)
             cCli := AA3->AA3_CODCLI
             cLj  := AA3->AA3_LOJA
+            lAtivo := .T.
+        Else 
+            lAtivo := .F.
         EndIf
 
         DbSelectArea("SA1")
         DbSetOrder(1)
         Dbseek(xFilial("SA1")+Avkey(cCli, "A1_COD") + Avkey(cLj, "A1_LOJA"))
 
+    EndIf 
+
+    If !lAtivo .And. !"MODELO" $ cPatr 
+        MsgAlert("Ativo não encontrado ou base instalada não atribuída a um cliente.")
+        Return(.F.)
     EndIf 
 
     Asort(aCols,,,{|x,y| x[2] < y[2]})
@@ -359,10 +396,16 @@ If !Empty(cCli)
 
         oSay3:settext(SA1->A1_NOME)
         oSay6:settext(Alltrim(SA1->A1_END)+' - '+Alltrim(SA1->A1_BAIRRO)+' - '+Alltrim(SA1->A1_MUN)+' - '+Alltrim(SA1->A1_EST))
-        oGet2:disable()
-        oGet3:disable()
+        
         
     EndIf 
+EndIf 
+
+oGet2:disable()
+oGet3:disable()
+
+IF 'MODELO' $ Alltrim(cPatr)
+    oGet4:disable()
 EndIf 
 
 oList1:refresh()
