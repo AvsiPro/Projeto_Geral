@@ -60,12 +60,6 @@ STATIC FUNCTION ModelDef()
     //Criação da estrutura de dados utilizada na interface
     LOCAL oStZ15    :=    FWFormStruct(1, "Z15")
      
-    //Editando características do dicionário
-    // oStZ15:SetProperty('Z15_CODIGO',  MODEL_FIELD_WHEN,    FwBuildFeature(STRUCT_FEATURE_WHEN,    '.T.'))                                 //Modo de Edição
-    // oStZ15:SetProperty('Z15_CODIGO',  MODEL_FIELD_INIT,    FwBuildFeature(STRUCT_FEATURE_INIPAD,  'GetSXENum("Z15", "Z15_CODIGO")'))      //Ini Padrão
-    // oStZ15:SetProperty('Z15_DESCRI',  MODEL_FIELD_VALID,   FwBuildFeature(STRUCT_FEATURE_VALID,   'Iif(Empty(M->Z15_DESCRI), .F., .T.)')) //Validação de Campo
-    // oStZ15:SetProperty('Z15_DESCRI',  MODEL_FIELD_OBRIGAT, Iif(RetCodUsr()!='000000', .T., .F.) )                                         //Campo Obrigatório
-     
     //Instanciando o modelo, não é recomendado colocar nome da USER FUNCTION (por causa do u_), respeitando 10 caracteres
     oModel := MPFormModel():New("Z15TelaM",/*bPre*/, /*bPos*/,/*bCommit*/,/*bCancel*/) 
      
@@ -114,17 +108,6 @@ STATIC FUNCTION ViewDef()
     //O formulário da interface será colocado dentro do container
     oView:SetOwnerView("VIEW_Z15","TELA")
      
-    /*
-    //Tratativa para remover campos da visualização
-    FOR nAtual := 1 TO Len(aStruZ15)
-        cCampoAux := Alltrim(aStruZ15[nAtual][01])
-         
-        //Se o campo atual não estiver nos que forem considerados
-        IF Alltrim(cCampoAux) $ "Z15_CODIGO;"
-            oStZ15:RemoveField(cCampoAux)
-        ENDIF
-    NEXT
-    */
 RETURN oView
  
 USER FUNCTION Z15Leg()
@@ -143,12 +126,20 @@ User Function Z15Chama(nOpc)
 
     if nOpc == 1
         If Z15->Z15_STATUS == "B"
-            MsgAlert("Chamado já finalizado")
+            MsgAlert("Chamado já finalizado","Z15TELA")
+        ElseIf Z15->Z15_STATUS == "C"
+            MsgAlert("Já foi atribuído um ativo para este chamado","Z15TELA")
         Else
             U_CONFSC03(Z15->Z15_CONTRA,Z15->Z15_CLIENT,Z15->Z15_LOJA)
         EndIf
     elseif nOpc == 2
-        U_CONFSC04(Z15->Z15_CONTRA)
+        If Z15->Z15_STATUS == "B"
+            MsgAlert("Chamado já finalizado","Z15TELA")
+        ElseIf Z15->Z15_STATUS == "C"
+            MsgAlert("Já foi atribuído um ativo para este chamado","Z15TELA")
+        Else
+            U_CONFSC04(Z15->Z15_CONTRA)
+        EndIf 
     endif
 
 Return 

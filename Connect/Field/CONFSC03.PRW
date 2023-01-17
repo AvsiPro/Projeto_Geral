@@ -293,6 +293,8 @@ aAdd(aItem,{ "AB2_CODPRO"   ,cCodPro            ,Nil})
 aAdd(aItem,{ "AB2_NUMSER"   ,SN1->N1_XNUMSER             ,Nil})
 aAdd(aItem,{ "AB2_CODPRB"   ,'000002'           ,Nil}) //AAG->AAG_CODPRB
 aAdd(aItem,{ "AB2_XCONTR"   ,cContrt            ,Nil})
+aAdd(aItem,{ "AB2_XCBASE"   ,cAtivo             ,Nil})
+
 
 aAdd(aItens,aItem)
 
