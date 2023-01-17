@@ -419,11 +419,11 @@ Local aAux		:=	{}
 
 cQuery := "SELECT MAX(D2_DOC) AS SAIDA,'S' AS TIPO"
 cQuery += " FROM "+RetSQLName("SD2")+" D2"
-cQuery += " WHERE D2_FILIAL='"+xFilial("SD2")+"' AND D2_SERIE='001' AND D2.D_E_L_E_T_=''"
+cQuery += " WHERE D2_FILIAL='"+xFilial("SD2")+"' AND D2_SERIE='1' AND D2.D_E_L_E_T_=''"
 cQuery += " UNION"
 cQuery += " SELECT MAX(D1_DOC) AS SAIDA,'E' AS TIPO"
 cQuery += " FROM "+RetSQLName("SD1")+" D1"
-cQuery += " WHERE D1_FILIAL='"+xFilial("SD1")+"' AND D1_SERIE='001' AND D1.D_E_L_E_T_='' AND D1_DOC LIKE '0%' AND D1_FORMUL='S'"
+cQuery += " WHERE D1_FILIAL='"+xFilial("SD1")+"' AND D1_SERIE='1' AND D1.D_E_L_E_T_='' AND D1_DOC LIKE '0%' AND D1_FORMUL='S'"
 
 If Select('TRB') > 0
 	dbSelectArea('TRB')

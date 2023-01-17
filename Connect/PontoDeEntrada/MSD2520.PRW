@@ -31,6 +31,8 @@ User Function MSD2520()
 	Private lMsHelpAuto := 	.T. // se .t. direciona as mensagens de help
 	Private lMsErroAuto := 	.F. //necessario a criacao
 	
+	RETURN
+
 	dbSelectArea("SC5")
 	SC5->(dbSetOrder(1))
 	If SC5->(dbSeek(xFilial("SC5")+SD2->D2_PEDIDO )) .AND. !Empty(SC5->C5_XCODPA) .AND. SC5->C5_XTPPED == "A"
