@@ -16,7 +16,7 @@
 北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北
 哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌
 /*/
-User Function CONFSC03(cXContrato)
+User Function CONFSC03(cXContrato,cCodCli,cLojCli)
 
 Local aArea :=  GetArea()
 Local nOpc  :=  0
@@ -27,10 +27,11 @@ SetPrvt("oDlg1","oGrp1","oSay1","oSay2","oSay3","oSay4","oSay5","oSay6","oSay7",
 SetPrvt("oGet1","oGet2","oGet3","oGet4","oBtn1","oBtn2")
 
 DEFAULT cXContrato := Space(20)
+DEFAULT cCodCli :=  space(9)
+DEFAULT cLojCli :=  space(4)
+
 
 Private cAtivo  :=  space(10)
-Private cCodCli :=  space(9)
-Private cLojCli :=  space(4)
 Private cContrt :=  cXContrato
 Private cCodPro :=  ""
 Private cCliPri :=  space(4)
@@ -58,7 +59,9 @@ oDlg1      := MSDialog():New( 092,232,479,932,"Preparar Ativo para contrato",,,.
         oSay2      := TSay():New( 068,092,{||"Cliente"},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
         oGet2      := TGet():New( 068,152,{|u| If(pcount()>0,cCodCli:=u,cCodCli)},oGrp1,060,008,'',{|| xatuatv(2)},CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"SA1","",,)
         oGet3      := TGet():New( 068,224,{|u| If(pcount()>0,cLojCli:=u,cLojCli)},oGrp1,028,008,'',{|| xatuatv(2)},CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"SA1CON","",,)
-        
+        oGet2:disable()
+        oGet3:disable()
+
         oSay4      := TSay():New( 096,024,{||"Informa珲es Ativo"},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,062,008)
         oSay5      := TSay():New( 096,092,{||""},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,252,008)
         oSay6      := TSay():New( 112,024,{||"Cliente"},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
@@ -121,9 +124,9 @@ Return
 Static Function xatuatv(nTip)
 
 Local aArea  :=  GetArea()
-Local cQuery := ""
+//Local cQuery := ""
 
-If nTip == 1
+//If nTip == 1
 
     oSay5:settext("")
 
@@ -141,12 +144,33 @@ If nTip == 1
             oSay5:settext(SB1->B1_DESC)
             cCodPro := SN1->N1_PRODUTO
         EndIF
+
+        cCodCli := Z15->Z15_CLIENT
+        cLojCli := Z15->Z15_LOJA
+        
+        oSay7:settext("")
+        oSay9:settext("")
+        DbSelectArea("SA1")
+        DbSetOrder(1)
+        If DbSeek(xFilial("SA1")+cCodCli+cLojCli)
+            oSay7:settext(Alltrim(SA1->A1_NOME)+' / '+Alltrim(SA1->A1_NREDUZ))
+            oSay9:settext(Alltrim(SA1->A1_END)+' - '+Alltrim(SA1->A1_BAIRRO)+' - '+Alltrim(SA1->A1_MUN)+' - '+SA1->A1_EST)
+            if len(Alltrim(SA1->A1_END)+' - '+Alltrim(SA1->A1_BAIRRO)+' - '+Alltrim(SA1->A1_MUN)+' - '+SA1->A1_EST) > 75
+                oSay10:settext(SubStr(Alltrim(SA1->A1_END)+' - '+Alltrim(SA1->A1_BAIRRO)+' - '+Alltrim(SA1->A1_MUN)+' - '+SA1->A1_EST,75))
+            endif
+        EndIf 
+
+        oGet2:disable()
+        oGet3:disable()
+       
     else
-        MsgAlert("Ativo n鉶 encontrado na base")
-        Return .F. 
+        If !Empty(cAtivo)
+            MsgAlert("Ativo n鉶 encontrado na base")
+            Return .F. 
+        EndIf 
     EndIf 
 
-ElseIf nTip == 2
+/*ElseIf nTip == 2
 
     oSay7:settext("")
     oSay9:settext("")
@@ -191,7 +215,7 @@ elseif nTip == 3
     
     xatuatv(2)
 
-EndIf 
+EndIf*/ 
 
 RestArea(aArea)
 
