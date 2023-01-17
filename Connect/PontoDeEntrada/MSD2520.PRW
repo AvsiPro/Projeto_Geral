@@ -18,13 +18,13 @@
 */
 User Function MSD2520()
 
-	Local cTMEst      	:=  GetMv("MV_XTESD3",,"501")
-	Local cTM			:=	GetMv("MV_XTMSD3",,"001")
+	// Local cTMEst      	:=  GetMv("MV_XTESD3",,"501")
+	// Local cTM			:=	GetMv("MV_XTMSD3",,"001")
 	Local aArea			:=	GetArea()
-	Local _aCab1 		:= 	{}
-	Local _aItem 		:= 	{}
-	Local _atotitem		:=	{}
-	Local n             :=  0
+	// Local _aCab1 		:= 	{}
+	// Local _aItem 		:= 	{}
+	// Local _atotitem		:=	{}
+	// Local n             :=  0
 
 	Private aEst 		:=	{} //estrutura produto
 	Private aAuxest 	:=	{}
@@ -50,8 +50,8 @@ User Function MSD2520()
 		aadd(_atotitem,_aitem)
 		*/
 
-
 	ElseIf SC5->(dbSeek(xFilial("SC5")+SD2->D2_PEDIDO )) .AND. !Empty(SC5->C5_XCODPA) .AND. SC5->C5_XTPPED == "F"
+
 		/*
 		U_BusSG1(SD2->D2_COD,SD2->D2_QUANT)
 
@@ -73,6 +73,7 @@ User Function MSD2520()
 			aadd(_atotitem,_aitem)
 		Next
 		*/
+
 	ElseIf SC5->C5_XTPPED == "I"
 		atucontr(SC6->C6_CONTRT,SC6->C6_ITCONTR)
 	else
@@ -116,6 +117,7 @@ Local aArea  :=	GetArea()
 Local cQuery :=	""
 Local cMaq   :=	""
 Local lOK    :=	.T.
+Local nRecno := 0
 
 DbSelectArea("AAN")
 DbSetOrder(1)
@@ -128,14 +130,14 @@ EndIf
 
 DbSelectArea("SN1")
 DbSetOrder(2)
-if DBSEEK(xFilial("SN1")+cMaq)
+if DBSEEK(xFilial("SN1")+AvKey(cMaq, "N1_CBASE"))
 	RecLock("SN1", .F.)
 		SN1->N1_XCLIENT := ""
 		SN1->N1_XLOJA   := ""	
 	MsUnlock()
 endif
 
-cQuery := " SELECT * FROM AAN010 WHERE AAN_CONTRT = '" + cContrt + "' "
+cQuery := " SELECT AAN_CONTRT FROM " + RetSQLName("AAN") + " WHERE AAN_CONTRT = '" + cContrt + "' "
 cQuery += " AND D_E_L_E_T_ = ' ' "
 cQuery += " AND AAN_FILIAL = '" + xFilial("AAN") + "' "
 
@@ -151,10 +153,11 @@ DbSelectArea("TRB")
 
 while !EOF()
 	lOK := .F.
+	DBSKIP()
 end
 
 if lOK
-	cQuery := " SELECT * FROM AAN010 WHERE AAN_CONTRT = '" + cContrt + "'"
+	cQuery := " SELECT R_E_C_N_O_ AS ALIASREC, AAN_CODPRO FROM " + RetSQLName("AAN") + " WHERE AAN_CONTRT = '" + cContrt + "'"
 
 	If Select("TRB") > 0
 		dbSelectArea("TRB")
@@ -168,7 +171,7 @@ if lOK
 
 	while !EOF()
 		if AllTrim(TRB->AAN_CODPRO) == "CONTRATO"
-			nRecno := TRB->R_E_C_N_O_
+			nRecno := TRB->ALIASREC
 		endif
 		DBSKIP()
 	end
