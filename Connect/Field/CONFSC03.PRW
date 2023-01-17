@@ -97,10 +97,11 @@ If nOpc == 1
             MsgAlert("Gerado o chamado técnico "+cCham+" para atender esta solicitação de preparação da maquina.")
 
             RecLock("Z15", .F.)
-            Z15->Z15_STATUS := "B"
+            Z15->Z15_STATUS := "C"
             Z15->Z15_NRCHAM := cCham
             Z15->Z15_DTATEN := ddatabase
             Z15->Z15_HRATEN := cvaltochar(Time())
+            Z15->Z15_CBASE  := cAtivo
             Z15->(MsUnlock())
 
         EndIf 
