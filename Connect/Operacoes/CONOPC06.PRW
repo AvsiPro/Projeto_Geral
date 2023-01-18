@@ -17,7 +17,10 @@ User Function CONOPC06()
 
     DbSelectArea("AB1")
     DbSetOrder(1)
-    DbSeek(xFilial("AB1") + Z15->Z15_NRCHAM)
+    if !DbSeek(xFilial("AB1") + Z15->Z15_NRCHAM)
+        MsgAlert("Chamado técnico não encontrado!", "Erro!")
+        Return
+    EndIf
 
     cQuery := " SELECT AB2_NUMOS, AB2_XCBASE FROM " + RetSQLName("AB2") + " " 
     cQuery += " WHERE AB2_NRCHAM = '" + Z15->Z15_NRCHAM + "' "
@@ -32,10 +35,15 @@ User Function CONOPC06()
 
     cNumOS := TRB->AB2_NUMOS
 
+    if Empty(TRB->AB2_XCBASE)
+        MsgAlert("Chamado técnico sem ativo vinculado!", "Erro!")
+        Return
+    endif
+
     //Adiciona itens para o cabeçalho do Atendimento
     aAdd(aCabec, { "AB9_NUMOS"  ,AvKey(cNumOS, "AB9_NUMOS")             ,Nil }) // Numero da O.S + Item
     aAdd(aCabec, { "AB9_SEQ"    ,"01"                                   ,Nil }) // Sequencia de Atendimento
-    aAdd(aCabec, { "AB9_CODTEC" ,"00000000000001"                       ,Nil }) // Codigo do Técnico
+    aAdd(aCabec, { "AB9_CODTEC" ,AvKey("00000000000001", "AB9_CODTEC")  ,Nil }) // Codigo do Técnico
     aAdd(aCabec, { "AB9_DTCHEG" ,ddatabase                              ,Nil }) // Data de Chegada
     aAdd(aCabec, { "AB9_HRCHEG" ,SubStr(cValToChar(Time()),1,5)         ,Nil }) // Hora de Chegada
     aAdd(aCabec, { "AB9_DTSAID" ,ddatabase                              ,Nil }) // Data de Saida
@@ -52,7 +60,17 @@ User Function CONOPC06()
 
     dbSelectArea("SN1")
     DbSetOrder(2)
-    DbSeek(xFilial("SN1") + AvKey(TRB->AB2_XCBASE, "N1_CBASE"))
+    if !DbSeek(xFilial("SN1") + AvKey(TRB->AB2_XCBASE, "N1_CBASE"))
+        MsgAlert("Ativo não encontrado no cadastro de ativos!", "Erro!")
+        Return
+    endif
+
+    DbSelectArea("SB1")
+    DbSetOrder(1)
+    if !DbSeek(xFilial("SB1") + SN1->N1_PRODUTO)
+        MsgAlert("Produto do ativo não encontrado no cadastro de produtos!", "Erro!")
+        Return
+    EndIf
 
     DbSelectArea("SN3")
     DbSetOrder(1)
@@ -61,9 +79,9 @@ User Function CONOPC06()
     //Itens do Atendimento da O.S
     aAdd(aItem, { "ABA_ITEM"   ,"01"                                                           ,Nil }) // Item
     aAdd(aItem, { "ABA_CODPRO" ,SN1->N1_PRODUTO                                                ,Nil }) // Cod. do Produto
-    aAdd(aItem, { "ABA_DESCRI" ,Posicione("SB1",1,xFilial("SB1") + SN1->N1_PRODUTO, "B1_DESC") ,Nil }) // Cod. do Produto
+    aAdd(aItem, { "ABA_DESCRI" ,avKey(SB1->B1_DESC,"ABA_DESCRI")                               ,Nil }) // Cod. do Produto
     aAdd(aItem, { "ABA_QUANT"  ,1                                                              ,Nil }) // Quantidade usada
-    aAdd(aItem, { "ABA_NUMSER" ,SN1->N1_XNUMSER                                                ,Nil }) // Cod. do servico
+    aAdd(aItem, { "ABA_NUMSER" ,SN1->N1_CBASE                                                  ,Nil }) // Cod. do servico
     aAdd(aItem, { "ABA_CODSER" ,"000001"                                                       ,Nil }) // Cod. do servico
     aAdd(aItem, { "ABA_LOCAL"  ,"01"                                                           ,Nil }) // Cod. do servico
     aAdd(aItens,aItem)
@@ -75,7 +93,7 @@ User Function CONOPC06()
         lRet := .T.
         MsgInfo("Atendimento da OS " + cNumOS + " feito com sucesso!", "Êxito!")
     Else
-        MostraErro()
+        // MostraErro()
         MsgAlert("Não foi possível atender OS", "Erro!")
     EndIf
 
@@ -102,7 +120,7 @@ User Function CONOPC06()
         MsUnlock()
 
         RecLock("Z15", .F.)            
-            Z15->Z15_STATUS := "B"
+            Z15->Z15_STATUS := "D"
         MsUnlock()
 
         MsgInfo("OS " + cNumOS + " pronta para efetivar!", "Fim!")
