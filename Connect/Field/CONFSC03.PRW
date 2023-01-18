@@ -78,7 +78,7 @@ oDlg1      := MSDialog():New( 092,232,479,932,"Preparar Ativo para contrato",,,.
 
         oBtn1:disable()
 
-        if AllTrim(cXContrato) != ""
+        if !Empty(cXContrato) 
             xatuatv(3)
             oGet4:Disable()
         endif        
@@ -86,7 +86,7 @@ oDlg1      := MSDialog():New( 092,232,479,932,"Preparar Ativo para contrato",,,.
 oDlg1:Activate(,,,.T.)
 
 If nOpc == 1
-    BEGIN TRANSACTION 
+    BEGIN TRANSACTION
 
     Processa({|| lRet := GeraBase()},"Aguarde, gerando base de atendimento")
 
@@ -290,7 +290,7 @@ aAdd(aItem,{ "AB2_ITEM"     ,StrZero(nX,2)      ,Nil})
 aAdd(aItem,{ "AB2_TIPO"     ,"3"                ,Nil})
 aAdd(aItem,{ "AB2_CLASSI"   ,"003"              ,Nil})
 aAdd(aItem,{ "AB2_CODPRO"   ,cCodPro            ,Nil})
-aAdd(aItem,{ "AB2_NUMSER"   ,SN1->N1_XNUMSER             ,Nil})
+aAdd(aItem,{ "AB2_NUMSER"   ,SN1->N1_XNUMSER    ,Nil})
 aAdd(aItem,{ "AB2_CODPRB"   ,'000002'           ,Nil}) //AAG->AAG_CODPRB
 aAdd(aItem,{ "AB2_XCONTR"   ,cContrt            ,Nil})
 aAdd(aItem,{ "AB2_XCBASE"   ,cAtivo             ,Nil})
@@ -310,3 +310,44 @@ Else
 EndIf
 
 Return cChamado
+
+/*/{Protheus.doc} FichTec
+    (long_description)
+    @type  Static Function
+    @author user
+    @since 18/01/2023
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function FichTec(cAtivo)
+
+Private oDlg1,oGrp1,oGrp2,oBtn1
+Private aList1 := {}
+Private oList1 
+Private aList2 := {}
+Private oList2
+
+Aadd(aList1,{'',''})
+oDlg1      := MSDialog():New( 092,230,482,914,"Atribuir Leiaute",,,.F.,,,,,,.T.,,,.T. )
+
+    oGrp1      := TGroup():New( 008,016,076,320,"Modelos",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
+    //oBrw1      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{016,024,072,312},,, oGrp1 ) 
+    oList1            := TCBrowse():New(124,024,345,180,, {'','Modelo'},{30,80},;
+                            oGrp3,,,,{|| },{|| /*editcol(oList1:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
+        
+    oList1:SetArray(aList1)
+    oList1:bLine := {||{aList1[oList1:nAt,01],; 
+                        aList1[oList1:nAt,02]}}
+
+    oGrp2      := TGroup():New( 080,016,164,320,"Leiaute",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
+    //oBrw2      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{088,024,160,312},,, oGrp2 ) 
+
+    oBtn1      := TButton():New( 169,144,"Confirmar",oDlg1,,037,012,,,,.T.,,"",,,,.F. )
+
+oDlg1:Activate(,,,.T.)
+
+Return
