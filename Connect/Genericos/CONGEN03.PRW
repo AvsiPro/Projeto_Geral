@@ -69,7 +69,9 @@ User Function CONGEN03()
 	cQuery += " INNER JOIN "+RetSQLName("SC6")+" C6 ON C6_FILIAL=D2_FILIAL AND C6_NUM=D2_PEDIDO AND C6_ITEM=D2_ITEMPV AND C6.D_E_L_E_T_=' '"
 	cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_COD=F2_CLIENTE AND A1_LOJA=F2_LOJA AND A1.D_E_L_E_T_=' '"
 	cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD=D2_COD AND B1.D_E_L_E_T_=' '"
-	cQuery += " WHERE F2_FILIAL BETWEEN '"+MV_PAR03+"' AND '"+MV_PAR04+"' AND F2_SERIE='LOC' AND F2.D_E_L_E_T_=' '"
+	cQuery += " WHERE F2_FILIAL BETWEEN '"+MV_PAR03+"' AND '"+MV_PAR04+"'"
+	cQuery += " AND F2_SERIE IN('LOC','LRJ')"
+	cQuery += " AND F2.D_E_L_E_T_=' '"
 	cQuery += " AND F2_DOC BETWEEN '"+MV_PAR01+"' AND '"+MV_PAR02+"'"
 
 	If Select("TRB") > 0
