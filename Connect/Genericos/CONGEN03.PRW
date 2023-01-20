@@ -19,6 +19,7 @@ User Function CONGEN03()
 	Local lOK              := .F.
 	Local cQuery           := ""
     Local aAux             := {}
+    Local aMaquinas        := {}
     Local cNum             := ""
 	Local cEmissao         := ""
 	Local cValor           := ""
@@ -31,6 +32,8 @@ User Function CONGEN03()
 	Local cFilA 	       := xFilial("SF2")
 	Local nCont            := 0
 	Local nValor           := 0
+	Local nX               := 0
+	Local nLinha           := 0
 
 	//Fontes
 	Local oF10FFF          := TFont():New('Arial' /*Fonte*/,,10 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
@@ -63,7 +66,7 @@ User Function CONGEN03()
 	cFilD := MV_PAR03
 	cFilA := MV_PAR04
 
-    cQuery := "SELECT D2_PEDIDO,D2_PRCVEN,D2_TOTAL,F2_EMISSAO,F2_DOC,F2_EMISSAO,C6_PEDCLI,A1_NOME,A1_CGC,A1_END,A1_NREDUZ,B1_DESC"
+    cQuery := "SELECT DISTINCT D2_PEDIDO,D2_PRCVEN,D2_TOTAL,F2_EMISSAO,F2_DOC,F2_EMISSAO,C6_PEDCLI,A1_NOME,A1_CGC,A1_END,A1_NREDUZ,B1_DESC"
 	cQuery += " FROM "+RetSQLName("SF2")+" F2 "
 	cQuery += " INNER JOIN "+RetSQLName("SD2")+" D2 ON D2_FILIAL=F2_FILIAL AND D2_DOC=F2_DOC AND D2_SERIE=F2_SERIE AND D2.D_E_L_E_T_=' '"
 	cQuery += " INNER JOIN "+RetSQLName("SC6")+" C6 ON C6_FILIAL=D2_FILIAL AND C6_NUM=D2_PEDIDO AND C6_ITEM=D2_ITEMPV AND C6.D_E_L_E_T_=' '"
@@ -209,6 +212,40 @@ User Function CONGEN03()
 		oPrinter:Say( 360, 10,"DATA DE EMISSÃO", oF10FFF,, rgb(102, 102, 102)/*Cor*/ )
 		oPrinter:Say( 375, 10,cEmissao, oF13FFF,, /*Cor*/ )
 		oPrinter:Say( 360, 310,"ASSINATURA", oF10FFF,, rgb(102, 102, 102)/*Cor*/ )
+
+		nLinha := 390
+
+		cQuery := " SELECT C5_MENNOTA FROM " + RetSQLName("SC5") + " WHERE C5_NUM = '" + aAux[nCont,1] + "' "
+
+		If Select("TRB") > 0
+			dbSelectArea("TRB")
+			dbCloseArea()
+		EndIf
+
+		cQuery := ChangeQuery(cQuery)
+
+		DbUseArea(.T.,"TOPCONN",TcGenQry(,,cQuery),'TRB',.F.,.T.)
+
+		cMenNota := AllTrim(TRB->C5_MENNOTA)
+
+		if Empty(cMenNota)
+			MsgAlert("Area de mencao nota vazio!", "Atencao!")
+		else
+			aMaquinas := StrToKarr(AllTrim(Substr(cMenNota, 39)), "/")
+
+			for nX := 1 to len(aMaquinas)
+				
+				oPrinter:Fillrect( { nLinha += 20, 005, nLinha + 15, 590 }, oBrush1, "-2")
+				oPrinter:Say( nLinha+10, 10,"Patrimônio - " + aMaquinas[nX], oF13FFF,, rgb(102, 102, 102)/*Cor*/ )
+
+				DbSelectArea("AAN")
+				DbSetOrder(3)
+				if DbSeek(xFilial("AAN") + AvKey(aMaquinas[nX], "AAN_XCBASE"))
+					oPrinter:Say( nLinha+10, 500,"R$" + Transform(AAN->AAN_VALOR, "@E 999,999.99"), oF13FFF,, /*Cor*/ )
+				endif
+
+			next
+		endif
 
 		oPrinter:Say( 735, 5,"_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ ", oF10FFF )
 		oPrinter:Box( 750, 100, 750, 590,"-1" )
