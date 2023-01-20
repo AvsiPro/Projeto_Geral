@@ -74,7 +74,10 @@ User Function CONOPC06()
 
     DbSelectArea("SN3")
     DbSetOrder(1)
-    DbSeek(xFilial("SN3") + SN1->N1_CBASE + "0001" + "01" + AvKey("", "N3_BAIXA") + AvKey("", "N3_SEQ"))
+    if !DbSeek(xFilial("SN3") + SN1->N1_CBASE /* + "0001" + "01" + AvKey("", "N3_BAIXA") + AvKey("", "N3_SEQ")*/)
+        MsgAlert("Valores não encontrados na SN3", "Erro!")
+        Return
+    EndIf
 
     //Itens do Atendimento da O.S
     aAdd(aItem, { "ABA_ITEM"   ,"01"                                                           ,Nil }) // Item
