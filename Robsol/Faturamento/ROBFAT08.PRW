@@ -28,7 +28,7 @@ User Function ROBFAT08()
 
 	If Select("SM0") == 0
 		RpcSetType(3)
-		RPCSetEnv("01","01")
+		RPCSetEnv("01","0103")
 	EndIf
 
     Processa({|| buscaGeren()},"Aguarde")
@@ -90,7 +90,7 @@ User Function ROBFAT08()
 
     if nOpc == 1
         if MsgYesNo("Deseja gerar documento de entrada?", "Confirma")
-            Processa({|| geraDE()},"Aguarde")
+            Processa({|| geraDE()},"Gerando documento de entrada...")
         endif
     endif
 
@@ -194,23 +194,38 @@ Static Function buscaProd(nLinha)
     Local nX         
     Local cValid       :=    ""
 
-	cQuery := " "
-	cQuery += " SELECT BM_XMODELO,B1_COD,B1_DESC,B2_QATU,B1_PRV1,BM_XMODELO,B1_LOCPAD,B6_SALDO,B6_PRUNIT,B6_DOC,B6_EMISSAO,B6_CLIFOR,B1_UM "+CRLF
-	cQuery += " FROM " + RetSQLName("SB6") + " SB6 "+CRLF
-	cQuery += " INNER JOIN " + RetSQLName("SB1") + " SB1 ON B1_FILIAL = '" + xFilial("SB1") + "' AND B6_PRODUTO = B1_COD AND SB1.B1_MSBLQL <> '1' AND SB1.D_E_L_E_T_ = ' '"+CRLF
-	cQuery += " INNER JOIN " + RetSQLName("SBM") + " SBM ON BM_FILIAL = '" + xFilial("SBM") + "' AND BM_GRUPO = B1_GRUPO AND SBM.D_E_L_E_T_=' '"+CRLF
-	cQuery += " INNER JOIN " + RetSQLName("SB2") + " SB2 ON B2_FILIAL = B6_FILIAL AND B2_COD = B1_COD AND B2_LOCAL = B6_LOCAL AND SB2.D_E_L_E_T_=' '"+CRLF
-	cQuery += " WHERE " 
-	//"B6_CLIFOR = '" + aList2[nLinha,6] + "'"
-	cQuery += " B6_CLIFOR = '"+aList2[nLinha,6]+"'"
-
-	cQuery += " AND B6_TIPO = 'E' AND B6_SALDO > '0' "+CRLF
-	cQuery += " AND B6_PODER3 = 'R' "+CRLF
-	cQuery += " AND B6_FILIAL = '" + xFilial("SB6") + "' "+CRLF
-	cQuery += " AND SB6.D_E_L_E_T_ = ' ' "+CRLF
-	cQuery += " AND B2_QATU <= '15' "+CRLF
-	cQuery += " AND B1_GRUPO != ' ' "+CRLF
-	cQuery += " ORDER BY B1_COD "+CRLF
+    cQuery := " "
+    cQuery += " SELECT BM_XMODELO,B1_COD,B1_DESC,B2_QATU,B1_PRV1,BM_XMODELO,B1_LOCPAD,B6_SALDO,B6_PRUNIT,B6_DOC,B6_EMISSAO,B6_CLIFOR,B1_UM,B6_SERIE,D2_ITEM,B6_IDENT   " 
+    cQuery += " FROM   " + RetSQLName("SB6") + " SB6   " 
+    cQuery += " INNER JOIN " + RetSQLName("SB1") + " SB1 ON B1_FILIAL = '01  '   " 
+    cQuery += "        AND B6_PRODUTO = B1_COD   " 
+    cQuery += "        AND SB1.B1_MSBLQL <> '1'   " 
+    cQuery += "        AND SB1.D_E_L_E_T_ = ' '   " 
+    cQuery += " INNER JOIN " + RetSQLName("SBM") + " SBM ON BM_FILIAL = '01  '   " 
+    cQuery += "        AND BM_GRUPO = B1_GRUPO   " 
+    cQuery += "        AND SBM.D_E_L_E_T_=' '   " 
+    cQuery += " INNER JOIN " + RetSQLName("SB2") + " SB2 ON B2_FILIAL = B6_FILIAL   " 
+    cQuery += "        AND B2_COD = B1_COD   " 
+    cQuery += "        AND B2_LOCAL = B6_LOCAL   " 
+    cQuery += "        AND SB2.D_E_L_E_T_=' '   " 
+    cQuery += " INNER JOIN " + RetSQLName("SF2") + " SF2 ON F2_FILIAL = B6_FILIAL   " 
+    cQuery += "        AND F2_DOC = B6_DOC   " 
+    cQuery += "        AND F2_SERIE = B6_SERIE   " 
+    cQuery += "        AND SF2.D_E_L_E_T_ = ' '   " 
+    cQuery += " INNER JOIN " + RetSQLName("SD2") + " SD2 ON D2_FILIAL = F2_FILIAL   " 
+    cQuery += "        AND D2_DOC = F2_DOC   " 
+    cQuery += "        AND D2_SERIE = F2_SERIE   " 
+    cQuery += "        AND D2_COD = B6_PRODUTO   " 
+    cQuery += "        AND SD2.D_E_L_E_T_ = ' '   " 
+    cQuery += " WHERE  B6_CLIFOR = '" + aList2[nLinha,6] + "' " 
+    cQuery += "        AND B6_TIPO = 'E' " 
+    cQuery += "        AND B6_SALDO > '0' " 
+    cQuery += "        AND B6_PODER3 = 'R' " 
+    cQuery += "        AND B6_FILIAL = " + xFilial("SB6") + "   " 
+    cQuery += "        AND SB6.D_E_L_E_T_ = ' '   " 
+    cQuery += "        AND B2_QATU <= '15'   " 
+    cQuery += "        AND B1_GRUPO != ' '   " 
+    cQuery += " ORDER BY  B1_COD   " 
 
     If Select('TRB') > 0
         dbSelectArea('TRB')
@@ -223,7 +238,7 @@ Static Function buscaProd(nLinha)
 
     While !EOF()
         if cValid != TRB->B1_COD
-            Aadd(aList3, { .T., AllTrim(TRB->B1_COD), AllTrim(TRB->B1_DESC), TRB->B6_SALDO, TRB->B2_QATU, TRB->B6_PRUNIT, TRB->BM_XMODELO,TRB->B1_LOCPAD,TRB->B6_DOC,TRB->B6_EMISSAO,TRB->B1_UM})
+            Aadd(aList3, { .T., AllTrim(TRB->B1_COD), AllTrim(TRB->B1_DESC), TRB->B6_SALDO, TRB->B2_QATU, TRB->B6_PRUNIT, TRB->BM_XMODELO,TRB->B1_LOCPAD,TRB->B6_DOC,TRB->B6_EMISSAO,TRB->B1_UM,TRB->B6_SERIE,TRB->D2_ITEM,TRB->B6_IDENT})
             cValid := TRB->B1_COD
         endif
         DBSKIP()
@@ -425,8 +440,8 @@ Static Function geraDE()
     aadd( aCab,{"F1_SERIE"   ,"1 "                    ,NIL} )
     aadd( aCab,{"F1_EMISSAO" ,DDATABASE               ,NIL} )
     aadd( aCab,{"F1_DTDIGIT" ,DDATABASE               ,NIL} )
-    aadd( aCab,{"F1_FORNECE" ,aAux[1,9]               ,NIL} )
-    aadd( aCab,{"F1_LOJA"    ,aAux[1,10]              ,NIL} )
+    aadd( aCab,{"F1_FORNECE" ,aAux[1,6]               ,NIL} )
+    aadd( aCab,{"F1_LOJA"    ,aAux[1,7]              ,NIL} )
     aadd( aCab,{"F1_ESPECIE" ,"SPED"                  ,NIL} )
     // aadd( aCab,{"F1_COND"    ,"001"                  ,NIL} )
     // aadd( aCab,{"F1_DESPESA" ,10                     ,NIL} )
@@ -441,14 +456,20 @@ Static Function geraDE()
     For nX := 2 To len(aAux)
 
         aItem := {}
-        aadd( aItem,{"D1_ITEM"   ,StrZero(nX - 1,4) ,NIL} )
-        aadd( aItem,{"D1_COD"    ,aAux[nX,2]        ,NIL} )
-        aadd( aItem,{"D1_UM"     ,aAux[nX,11]       ,NIL} )
-        aadd( aItem,{"D1_LOCAL"  ,aAux[nX,8]        ,NIL} )
-        aadd( aItem,{"D1_QUANT"  ,aAux[nX,4]        ,NIL} )
-        aadd( aItem,{"D1_VUNIT"  ,aAux[nX,6]        ,NIL} )
-        aadd( aItem,{"D1_TOTAL"  ,aAux[nX,6]        ,NIL} )
-        aadd( aItem,{"D1_TES"    ,"131"             ,NIL} )
+        aadd( aItem,{"D1_ITEM"       ,StrZero(nX - 1,4)       ,NIL} )
+        aadd( aItem,{"D1_COD"        ,aAux[nX,02]             ,NIL} )
+        aadd( aItem,{"D1_UM"         ,aAux[nX,11]             ,NIL} )
+        aadd( aItem,{"D1_LOCAL"      ,aAux[nX,08]             ,NIL} )
+        aadd( aItem,{"D1_QUANT"      ,aAux[nX,04]             ,NIL} )
+        aadd( aItem,{"D1_VUNIT"      ,aAux[nX,06]             ,NIL} )
+        aadd( aItem,{"D1_TOTAL"      ,aAux[nX,06]             ,NIL} )
+        aadd( aItem,{"D1_TES"        ,"131"                   ,NIL} )
+        aadd( aItem,{"D1_NFORI"      ,aAux[nX,09]             ,NIL} )
+        aadd( aItem,{"D1_SERIORI"    ,aAux[nX,12]             ,NIL} )
+        aadd( aItem,{"D1_ITEMORI"    ,aAux[nX,13]             ,NIL} )
+        aadd( aItem,{"D1_IDENTB6"    ,aAux[nX,14]             ,NIL} )
+        // aadd( aItem,{"D1_QTDEDEV"    ,aAux[nX,04]             ,NIL} )
+        // aadd( aItem,{"D1_VALDEV"     ,aAux[nX,06]             ,NIL} )
         // aadd( aItem,{"D1_RATEIO" ,"2"               ,NIL} )
         aAdd( aItens, aItem )
         
