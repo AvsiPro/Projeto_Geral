@@ -78,10 +78,10 @@ User Function MSD2460()
 		*/
 	//Faturamento de pedidos de remessa de maquina
 	ElseIf SC5->C5_XTPPED == "I"
-		cOS 	:= SC6->C6_NUMOS
-		cCham 	:= Posicione("AB7",1,xFilial("AB7")+cOS,"AB7_NRCHAM")
-		cPlaca	:= Posicione("AB2",1,xFilial("AB2")+cCham,"AB2_XCBASE")
-		atucontr(SC6->C6_CONTRT,SC6->C6_PRODUTO,cPlaca) //SC6->C6_NUMSERI
+		// cOS 	:= SC6->C6_NUMOS
+		// cCham 	:= Posicione("AB7",1,xFilial("AB7")+cOS,"AB7_NRCHAM")
+		// cPlaca	:= Posicione("AB2",1,xFilial("AB2")+cCham,"AB2_XCBASE")
+		atucontr(SC6->C6_CONTRT,SC6->C6_PRODUTO,SC6->C6_NUMSERI) //SC6->C6_NUMSERI
 	Else
 		RestArea(aArea)
 		Return

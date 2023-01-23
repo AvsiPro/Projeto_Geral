@@ -30,8 +30,6 @@ User Function MSD2520()
 	Private aAuxest 	:=	{}
 	Private lMsHelpAuto := 	.T. // se .t. direciona as mensagens de help
 	Private lMsErroAuto := 	.F. //necessario a criacao
-	
-	RETURN
 
 	dbSelectArea("SC5")
 	SC5->(dbSetOrder(1))
@@ -86,7 +84,7 @@ User Function MSD2520()
 	SC5->(DBCloseArea())
 
 	/*
-	If len(_aCab1) > 0 .AND. len(_atotitem) > 0
+	If len(_aCab1) > 0 .AND. len(_atotitem) > 0 
 		MSExecAuto({|x,y,z| MATA241(x,y,z)},_aCab1,_atotitem,3)
 		
 		If lMsErroAuto
