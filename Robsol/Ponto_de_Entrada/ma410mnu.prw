@@ -17,5 +17,6 @@ User Function MA410MNU()
 
 aAdd(aRotina,{"Informações de Frete"			,	"U_ROBFAT01()"	,0,2,0,NIL})
 aAdd(aRotina,{"Liberações"			            ,	"U_ROBFAT05()"	,0,2,0,NIL})
+aAdd(aRotina,{"Cons.Tit.Atrasado"		        ,	"U_ROBFAT09()"	,0,2,0,NIL})
 
 return 
