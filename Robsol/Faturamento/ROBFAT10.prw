@@ -29,7 +29,7 @@
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
 ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß*/
 
-User Function ROBFAT10(codigo,loja)
+User Function ROBFAT10(codigo,loja,cIdPr)
 
 Local aArea		:=	GetArea()
 
@@ -38,7 +38,7 @@ Private aList 	:=	{}
 Private aItens	:=	{}
 
  
-PreAcols(codigo,loja)
+PreAcols(codigo,loja,cIdPr)
 
 If len(aList) < 1
 	MsgAlert("Não foram encontrados titulos vencidos para este cliente","ROBFAT10")
@@ -106,7 +106,7 @@ Return
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
 ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
 */
-Static Function PreAcols(codigo,loja)
+Static Function PreAcols(codigo,loja,cIdPr)
 
 Local aArea	:=	GetArea()
 Local cQuery
@@ -119,6 +119,16 @@ cQuery := "SELECT E1_PREFIXO,E1_NUM,E1_TIPO,E1_VALOR,E1_EMISSAO,E1_VENCREA,E1_VE
 cQuery += " FROM "+RetSQLName("SE1")
 cQuery += " WHERE E1_CLIENTE='"+codigo+"' AND E1_LOJA='"+loja+"'"
 cQuery += " AND E1_VENCREA <'"+dtos(dDataBase)+"' AND (E1_BAIXA='' OR E1_SALDO>0) AND D_E_L_E_T_=''"
+
+If !Empty(cIdPr)
+	cQuery += " UNION "
+	cQuery += " SELECT E1_PREFIXO,E1_NUM,E1_TIPO,E1_VALOR,E1_EMISSAO,E1_VENCREA,E1_VEND1,E1_SALDO,E1_FILORIG"
+	cQuery += " FROM "+RetSQLName("SE1")
+	cQuery += " WHERE E1_CLIENTE IN(SELECT A1_COD FROM "+RetSQLName("SA1")+" WHERE A1_FILIAL='"+xFilial("SA1")+"' AND A1_XIDPROP='"+cIdPr+"')" 
+	cQuery += " AND E1_VENCREA <'"+dtos(dDataBase)+"' AND (E1_BAIXA=' ' OR E1_SALDO>0) AND D_E_L_E_T_=' '"
+
+
+EndIF
 
 
 If Select('TRB') > 0
