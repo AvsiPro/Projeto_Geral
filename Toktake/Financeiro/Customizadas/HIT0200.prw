@@ -113,6 +113,7 @@ Static Function PreAcols(codigo,loja)
 
 Local aArea	:=	GetArea()
 Local cQuery
+Local nX 
 
 aList := {} 
 aItens:= {}
@@ -215,7 +216,8 @@ Static Function ConsItens(cDoc,cSerie,cFila)
 
 Local oDlg2,oGrp2,oBtn1,oList2
 Local aAux	:=	{}
-      
+Local nX 
+
 For nX := 1 to len(aItens)  
 	If aItens[nX,01] == cFila .And. aItens[nX,02] == cDoc .And. Alltrim(aItens[nX,03]) == Alltrim(cSerie)
 		Aadd(aAux,aItens[nX])
