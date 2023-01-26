@@ -538,7 +538,8 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
 					aadd(aLinha,{"C6_PRCVEN"	, val(STRTRAN(aItensCad[nX]:VALOR,",","."))	, Nil})
 					aadd(aLinha,{"C6_PRUNIT"	, val(STRTRAN(aItensCad[nX]:VALOR,",","."))	, Nil})
 					aadd(aLinha,{"C6_VALOR"		, val(STRTRAN(aItensCad[nX]:VALOR,",",".")) * nQtd	, Nil})
-
+					aadd(aLinha,{"C6_XQTDORI"	, nQtd							, Nil})
+					
 					cItem := Soma1(cItem)
 					
 					If aItensCad[nX]:GetJsonObject("BENEF") <> Nil
