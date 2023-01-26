@@ -12,12 +12,18 @@ User Function CONDA0()
     Local cCodTab := ""
     Local cItem   := ""
     Local cMsg    := ""
-    Local cArqT   :=	"C:\00\CONDA0" + dtos(dDataBase) + StrTran(Time(),":","") + ".txt"
-    Local nHandle :=	fcreate(cArqT, FO_READWRITE + FO_SHARED )    
+    Local cArqT   :=	GetTempPath() + "\LOG"
+    Local nHandle
 
     if !MsgYesNo("Deseja atualizar as tabelas de preco?", "Pergunta.")
         Return
     endif
+
+    If !ExistDir(cArqT)
+        Makedir(cArqT)
+    EndIf
+
+    nHandle := fcreate(cArqT + "\CONDA0" + dtos(dDataBase) + StrTran(Time(),":","") + ".txt", FO_READWRITE + FO_SHARED )  
 
     cQuery := " "
     cQuery += " SELECT AAM_CODCLI,AAM_XNOMCL,Z07_CODPRO,AAM_CONTRT,COUNT(*)   " 
@@ -87,6 +93,8 @@ User Function CONDA0()
                 DA1->DA1_CODPRO := aAux[nX,03]
                 DA1->DA1_ATIVO  := "1"
                 DA1->DA1_MOEDA  := 1
+                DA1->DA1_TPOPER := "4"
+                DA1->DA1_QTDLOT := 999999.99
                 DA1->DA1_DATVIG := dDataBase
             MsUnlock()
 
@@ -118,6 +126,8 @@ User Function CONDA0()
                         DA1->DA1_CODPRO := aAux[nX,03]
                         DA1->DA1_ATIVO  := "1"
                         DA1->DA1_MOEDA  := 1
+                        DA1->DA1_TPOPER := "4"
+                        DA1->DA1_QTDLOT := 999999.99
                         DA1->DA1_DATVIG := dDataBase
                     MsUnlock()
 
@@ -152,6 +162,8 @@ User Function CONDA0()
                     DA1->DA1_CODPRO := aAux[nX,03]
                     DA1->DA1_ATIVO  := "1"
                     DA1->DA1_MOEDA  := 1
+                    DA1->DA1_TPOPER := "4"
+                    DA1->DA1_QTDLOT := 999999.99
                     DA1->DA1_DATVIG := dDataBase
                 MsUnlock()
 
