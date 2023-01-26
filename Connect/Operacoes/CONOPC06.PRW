@@ -28,7 +28,7 @@ User Function CONOPC06()
         Return
     EndIf
 
-    cQuery := " SELECT AB2_NUMOS, AB2_XCBASE FROM " + RetSQLName("AB2") + " " 
+    cQuery := " SELECT AB2_NUMOS, AB2_XCBASE, AB2_CODPRB FROM " + RetSQLName("AB2") + " " 
     cQuery += " WHERE AB2_NRCHAM = '" + Z15->Z15_NRCHAM + "' "
     cQuery += " AND AB2_FILIAL = '" + xFilial("AB2") + "' "
 
@@ -40,7 +40,7 @@ User Function CONOPC06()
     DbUseArea(.T.,"TOPCONN",TcGenQry(,,cQuery),'TRB',.F.,.T.)
 
     while !EOF()
-        Aadd(aAtivos, {TRB->AB2_NUMOS, TRB->AB2_XCBASE} )
+        Aadd(aAtivos, {TRB->AB2_NUMOS, TRB->AB2_XCBASE, TRB->AB2_CODPRB} )
 
         DbSkip()
     end
@@ -55,20 +55,20 @@ User Function CONOPC06()
         aCabec := {}
 
         //Adiciona itens para o cabeçalho do Atendimento
-        aAdd(aCabec, { "AB9_NUMOS"  ,AvKey(aAtivos[nX,01], "AB9_NUMOS")     ,Nil }) // Numero da O.S + Item
-        aAdd(aCabec, { "AB9_SEQ"    ,"01"                                   ,Nil }) // Sequencia de Atendimento
-        aAdd(aCabec, { "AB9_CODTEC" ,AvKey("00000000000001", "AB9_CODTEC")  ,Nil }) // Codigo do Técnico
-        aAdd(aCabec, { "AB9_DTCHEG" ,ddatabase                              ,Nil }) // Data de Chegada
-        aAdd(aCabec, { "AB9_HRCHEG" ,SubStr(cValToChar(Time()),1,5)         ,Nil }) // Hora de Chegada
-        aAdd(aCabec, { "AB9_DTSAID" ,ddatabase                              ,Nil }) // Data de Saida
-        aAdd(aCabec, { "AB9_HRSAID" ,SubStr(cValToChar(Time()),1,5)         ,Nil }) // Hora de Saida
-        aAdd(aCabec, { "AB9_DTINI"  ,ddatabase                              ,Nil }) // Data de Inicio
-        aAdd(aCabec, { "AB9_HRINI"  ,SubStr(cValToChar(Time()),1,5)         ,Nil }) // Hora de Inicio
-        aAdd(aCabec, { "AB9_DTFIM"  ,ddatabase                              ,Nil }) // Data de Fim
-        aAdd(aCabec, { "AB9_HRFIM"  ,SubStr(cValToChar(Time()),1,5)         ,Nil }) // Hora de Fim
-        aAdd(aCabec, { "AB9_CODPRB" ,"000002"                               ,Nil }) // Codigo da Ocorrencia
-        aAdd(aCabec, { "AB9_TIPO"   ,"1"                                    ,Nil }) // Tipo(1= Encerrado,2=Aberta)
-        aAdd(aCabec, { "AB9_TOTFAT" ,"000:00"                               ,Nil }) // Horas Faturadas
+        aAdd(aCabec, { "AB9_NUMOS"  ,AvKey(aAtivos[nX,01], "AB9_NUMOS")               ,Nil }) // Numero da O.S + Item
+        aAdd(aCabec, { "AB9_SEQ"    ,"01"                                             ,Nil }) // Sequencia de Atendimento
+        aAdd(aCabec, { "AB9_CODTEC" ,AvKey("00000000000001", "AB9_CODTEC")            ,Nil }) // Codigo do Técnico
+        aAdd(aCabec, { "AB9_DTCHEG" ,ddatabase                                        ,Nil }) // Data de Chegada
+        aAdd(aCabec, { "AB9_HRCHEG" ,SubStr(cValToChar(Time()),1,5)                   ,Nil }) // Hora de Chegada
+        aAdd(aCabec, { "AB9_DTSAID" ,ddatabase                                        ,Nil }) // Data de Saida
+        aAdd(aCabec, { "AB9_HRSAID" ,SubStr(cValToChar(Time()),1,5)                   ,Nil }) // Hora de Saida
+        aAdd(aCabec, { "AB9_DTINI"  ,ddatabase                                        ,Nil }) // Data de Inicio
+        aAdd(aCabec, { "AB9_HRINI"  ,SubStr(cValToChar(Time()),1,5)                   ,Nil }) // Hora de Inicio
+        aAdd(aCabec, { "AB9_DTFIM"  ,ddatabase                                        ,Nil }) // Data de Fim
+        aAdd(aCabec, { "AB9_HRFIM"  ,SubStr(cValToChar(Time()),1,5)                   ,Nil }) // Hora de Fim
+        aAdd(aCabec, { "AB9_CODPRB" ,IF(aAtivos[nX,03] == "000003","000003","000002") ,Nil }) // Codigo da Ocorrencia
+        aAdd(aCabec, { "AB9_TIPO"   ,"1"                                              ,Nil }) // Tipo(1= Encerrado,2=Aberta)
+        aAdd(aCabec, { "AB9_TOTFAT" ,"000:00"                                         ,Nil }) // Horas Faturadas
 
         aItem := {}
         aItens := {}
@@ -95,13 +95,13 @@ User Function CONOPC06()
         EndIf
 
         //Itens do Atendimento da O.S
-        aAdd(aItem, { "ABA_ITEM"   ,"01"                             ,Nil }) // Item
-        aAdd(aItem, { "ABA_CODPRO" ,SN1->N1_PRODUTO                  ,Nil }) // Cod. do Produto
-        aAdd(aItem, { "ABA_DESCRI" ,avKey(SB1->B1_DESC,"ABA_DESCRI") ,Nil }) // Cod. do Produto
-        aAdd(aItem, { "ABA_QUANT"  ,1                                ,Nil }) // Quantidade usada
-        aAdd(aItem, { "ABA_NUMSER" ,SN1->N1_CBASE                    ,Nil }) // Cod. do servico
-        aAdd(aItem, { "ABA_CODSER" ,"000001"                         ,Nil }) // Cod. do servico
-        aAdd(aItem, { "ABA_LOCAL"  ,"01"                             ,Nil }) // Cod. do servico
+        aAdd(aItem, { "ABA_ITEM"   ,"01"                                             ,Nil }) // Item
+        aAdd(aItem, { "ABA_CODPRO" ,SN1->N1_PRODUTO                                  ,Nil }) // Cod. do Produto
+        aAdd(aItem, { "ABA_DESCRI" ,avKey(SB1->B1_DESC,"ABA_DESCRI")                 ,Nil }) // Cod. do Produto
+        aAdd(aItem, { "ABA_QUANT"  ,1                                                ,Nil }) // Quantidade usada
+        aAdd(aItem, { "ABA_NUMSER" ,SN1->N1_CBASE                                    ,Nil }) // Cod. do servico
+        aAdd(aItem, { "ABA_CODSER" ,IF(aAtivos[nX,03] == "000003","000003","000001") ,Nil }) // Cod. do servico
+        aAdd(aItem, { "ABA_LOCAL"  ,"01"                                             ,Nil }) // Cod. do servico
         aAdd(aItens,aItem)
         
         //Executa ExecAuto
