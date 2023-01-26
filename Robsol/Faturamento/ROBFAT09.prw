@@ -45,8 +45,10 @@ nQtd := QUERY->QTD
 If !Empty(cIdPr)
 	cQuery := "SELECT COUNT(*) AS QTD2 FROM "+RetSQLName("SE1")
 	cQuery += " WHERE "         
-	cQuery += " E1_CLIENTE IN(SELECT A1_COD FROM "+RetSQLName("SA1")+" WHERE A1_FILIAL='"+xFilial("SA1")+"' AND A1_XIDPROP='"+cIdPr+"')" 
-	cQuery += " AND E1_VENCREA < '"+dtos(dDataBase)+"' AND E1_BAIXA=' ' AND E1_TIPO NOT IN('RA','NCC')"
+	cQuery += " E1_CLIENTE IN(SELECT A1_COD FROM "+RetSQLName("SA1")
+	cQuery += " WHERE A1_FILIAL='"+xFilial("SA1")+"' AND A1_XIDPROP='"+cIdPr+"')" 
+	//cQuery += " AND E1_VENCREA < '"+dtos(dDataBase)+"'"
+	cQuery += " AND E1_BAIXA=' ' AND E1_TIPO NOT IN('RA','NCC')"
 	cQuery += " AND D_E_L_E_T_=' '" 
 
 	If Select('QUERY') > 0
@@ -63,11 +65,11 @@ If !Empty(cIdPr)
 EndIF 
 
 If nQtd > 0 .OR. nQtd2 > 0 
-	If MsgYesNo("Exitem titulos em aberto para este Cliente ou ID Proprietário"+CRLF+"Deseja visualizar os titulos em aberto!","ROBFAT09 - Cliente Inadimplente")
-		U_ROBFAT10(SC5->C5_CLIENTE,SC5->C5_LOJACLI,cIdPr)
+	If MsgYesNo("Exitem titulos em aberto para este Cliente ou ID Proprietário"+CRLF+"Deseja visualizar os titulos em aberto!","ROBFAT09 - Titulos em aberto")
+		Processa({|| U_ROBFAT10(SC5->C5_CLIENTE,SC5->C5_LOJACLI,cIdPr)},"Aguarde")
 	EndIf
 else
-	MsgAlert("Não há titulos em atraso para este cliente")
+	MsgAlert("Não há titulos em aberto para este cliente")
 EndIf
 
 RestArea(aArea)

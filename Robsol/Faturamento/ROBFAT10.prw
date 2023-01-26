@@ -36,8 +36,16 @@ Local aArea		:=	GetArea()
 Private oDlg1,oGrp1,oSay1,oSay2,oSay3,oSay4,oGrp2,oBrw1,oBtn1,oList,oBtn2,oBtn3
 Private aList 	:=	{} 
 Private aItens	:=	{}
-
+Private cNome 	:=	Posicione("SA1",1,xFilial("SA1")+codigo+loja,"A1_NOME")
+Private cCgc	:=	Posicione("SA1",1,xFilial("SA1")+codigo+loja,"A1_CGC")
+Private cFone 	:=	Posicione("SA1",1,xFilial("SA1")+codigo+loja,"A1_TEL")
  
+Default cCodigo := ''
+Default cLoja 	:= ''
+
+cCodigo := codigo 
+cLoja   := loja 
+
 PreAcols(codigo,loja,cIdPr)
 
 If len(aList) < 1
@@ -54,13 +62,13 @@ oGrp1      := TGroup():New( 004,004,056,336,"Dados do Cliente",oDlg1,CLR_BLACK,C
 	oGet1      := TGet():New( 020,016,{|u| If(PCount()>0,codigo:=u,codigo+"-"+loja)},oGrp1,056,008,'',,CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"","",,)
 	
 	oSay2      := TSay():New( 012,092,{||"Nome:"},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,016,008)
-	oGet2      := TGet():New( 020,092,{|| Posicione("SA1",1,xFilial("SA1")+codigo+loja,"A1_NOME")},oGrp1,184,008,'@!',,CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"","",,)
+	oGet2      := TGet():New( 020,092,{|u| If(PCount()>0,cNome:=u,cNome)},oGrp1,184,008,'@!',,CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"","",,)
 
 	oSay3      := TSay():New( 032,016,{||"CNPJ"},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,016,008)
-	oGet3      := TGet():New( 040,016,{|| Posicione("SA1",1,xFilial("SA1")+codigo+loja,"A1_CGC")},oGrp1,056,008,'@R 99.999.999/9999-99',,CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"","",,)
+	oGet3      := TGet():New( 040,016,{|u| If(PCount()>0,cCgc:=u,cCgc)},oGrp1,056,008,'@R 99.999.999/9999-99',,CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"","",,)
 
 	oSay4      := TSay():New( 032,092,{||"Telefone"},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,024,008)
-	oGet4      := TGet():New( 040,092,{|| Posicione("SA1",1,xFilial("SA1")+codigo+loja,"A1_TEL")},oGrp1,060,008,'@R 9999-9999',,CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"","",,)
+	oGet4      := TGet():New( 040,092,{|u| If(PCount()>0,cFone:=u,cFone)},oGrp1,060,008,'@R 9999-9999',,CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"","",,)
 	
 	oGet1:Disable()
 	oGet2:Disable()
@@ -69,14 +77,15 @@ oGrp1      := TGroup():New( 004,004,056,336,"Dados do Cliente",oDlg1,CLR_BLACK,C
 
 oGrp2      := TGroup():New( 064,004,212,336,"Histórico",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
 
-	oList := TCBrowse():New(076,012,320,130,, {'Número NF','Série','Emissão','Vencimento','Valor'},{50,30,50,50,50},; //,'Data Entrega','Canhoto','Romaneio'
-	                            oGrp2,,,,{|| },{|| },, ,,,  ,,.F.,,.T.,,.F.,,,)
+	oList := TCBrowse():New(076,012,320,130,, {'Número NF','Série','Emissão','Vencimento','Valor','Status'},{50,30,50,50,50,50},; //,'Data Entrega','Canhoto','Romaneio'
+	                            oGrp2,,,,{|| Fhelp(oList:nAt)},{|| },, ,,,  ,,.F.,,.T.,,.F.,,,)
 	oList:SetArray(aList)
 	oList:bLine := {||{ aList[oList:nAt,01],; 
 	 					 aList[oList:nAt,02],;
 	 					 aList[oList:nAt,03],;
 	                     aList[oList:nAt,04],;
-	                     aList[oList:nAt,05]}}
+	                     aList[oList:nAt,05],;
+						 If(aList[oList:nAt,04]<ddatabase,'Vencido','A Vencer')}}
 
 oBtn2      := TButton():New( 220,088,"Vis. Itens",oDlg1,{||ConsItens(aList[oList:nAt,01],aList[oList:nAt,02],aList[oList:nAt,09])},037,012,,,,.T.,,"",,,,.F. )
 //oBtn3      := TButton():New( 220,148,"Enviar PDF",oDlg1,{||U_TTRREIMP(aList[oList:nAt,01],aList[oList:nAt,02])},037,012,,,,.T.,,"",,,,.F. )
@@ -115,17 +124,20 @@ Local nX
 aList := {} 
 aItens:= {}
 
-cQuery := "SELECT E1_PREFIXO,E1_NUM,E1_TIPO,E1_VALOR,E1_EMISSAO,E1_VENCREA,E1_VEND1,E1_SALDO,E1_FILORIG"
+cQuery := "SELECT E1_PREFIXO,E1_NUM,E1_TIPO,E1_VALOR,E1_EMISSAO,E1_VENCREA,E1_VEND1,E1_SALDO,E1_FILORIG,E1_CLIENTE,E1_LOJA"
 cQuery += " FROM "+RetSQLName("SE1")
-cQuery += " WHERE E1_CLIENTE='"+codigo+"' AND E1_LOJA='"+loja+"'"
-cQuery += " AND E1_VENCREA <'"+dtos(dDataBase)+"' AND (E1_BAIXA='' OR E1_SALDO>0) AND D_E_L_E_T_=''"
+cQuery += " WHERE E1_FILIAL BETWEEN ' ' AND 'ZZZ' AND E1_CLIENTE='"+codigo+"' AND E1_LOJA='"+loja+"'"
+//cQuery += " AND E1_VENCREA <'"+dtos(dDataBase)+"'"
+cQuery += " AND (E1_BAIXA=' ' OR E1_SALDO>0) AND D_E_L_E_T_=''"
 
 If !Empty(cIdPr)
 	cQuery += " UNION "
-	cQuery += " SELECT E1_PREFIXO,E1_NUM,E1_TIPO,E1_VALOR,E1_EMISSAO,E1_VENCREA,E1_VEND1,E1_SALDO,E1_FILORIG"
+	cQuery += " SELECT E1_PREFIXO,E1_NUM,E1_TIPO,E1_VALOR,E1_EMISSAO,E1_VENCREA,E1_VEND1,E1_SALDO,E1_FILORIG,E1_CLIENTE,E1_LOJA"
 	cQuery += " FROM "+RetSQLName("SE1")
-	cQuery += " WHERE E1_CLIENTE IN(SELECT A1_COD FROM "+RetSQLName("SA1")+" WHERE A1_FILIAL='"+xFilial("SA1")+"' AND A1_XIDPROP='"+cIdPr+"')" 
-	cQuery += " AND E1_VENCREA <'"+dtos(dDataBase)+"' AND (E1_BAIXA=' ' OR E1_SALDO>0) AND D_E_L_E_T_=' '"
+	cQuery += " WHERE E1_FILIAL BETWEEN ' ' AND 'ZZZ' AND E1_CLIENTE IN(SELECT A1_COD FROM "+RetSQLName("SA1")
+	cQuery += " 					WHERE A1_FILIAL='"+xFilial("SA1")+"' AND A1_XIDPROP='"+cIdPr+"')" 
+	//cQuery += " AND E1_VENCREA <'"+dtos(dDataBase)+"'"
+	cQuery += " AND (E1_BAIXA=' ' OR E1_SALDO>0) AND D_E_L_E_T_=' '"
 
 
 EndIF
@@ -143,7 +155,8 @@ DbSelectArea("TRB")
 
 While !Eof()  
     Aadd(aList,{TRB->E1_NUM,TRB->E1_PREFIXO,STOD(TRB->E1_EMISSAO),STOD(TRB->E1_VENCREA),;
-    			Transform(TRB->E1_VALOR,"@E 999,999,999.99"),"","","",TRB->E1_FILORIG})
+    			Transform(TRB->E1_VALOR,"@E 999,999,999.99"),"","","",TRB->E1_FILORIG,;
+				TRB->E1_CLIENTE,TRB->E1_LOJA})
 	DbSkip()
 EndDo
 
@@ -248,5 +261,32 @@ If len(aAux) > 0
 	
 	oDlg2:Activate(,,,.T.)
 EndIf
+
+Return
+
+/*/{Protheus.doc} Fhelp
+	(long_description)
+	@type  Static Function
+	@author user
+	@since 26/01/2023
+	@version version
+	@param param_name, param_type, param_descr
+	@return return_var, return_type, return_description
+	@example
+	(examples)
+	@see (links_or_references)
+/*/
+Static Function Fhelp(nLinha)
+
+If aList[nLinha,10] <> cCodigo .Or. aList[nLinha,11] <> cloja 
+	DbSelectArea("SA1")
+	DbSetOrder(1)
+	DbSeek(xFilial("SA1")+aList[nLinha,10]+aList[nLinha,11])
+	cNome := SA1->A1_NOME
+	cCgc  := SA1->A1_CGC
+	cFone := SA1->A1_TEL
+
+	oDlg1:refresh()
+EndIF 
 
 Return
