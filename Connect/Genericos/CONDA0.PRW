@@ -2,6 +2,7 @@
 #INCLUDE "TBICONN.CH"
 #INCLUDE 'Protheus.ch'
 #INCLUDE 'FWMVCDef.ch'
+#include "fileio.ch"
 
 User Function CONDA0()
     
@@ -10,6 +11,13 @@ User Function CONDA0()
     Local nX      := 0
     Local cCodTab := ""
     Local cItem   := ""
+    Local cMsg    := ""
+    Local cArqT   :=	"C:\00\CONDA0" + dtos(dDataBase) + StrTran(Time(),":","") + ".txt"
+    Local nHandle :=	fcreate(cArqT, FO_READWRITE + FO_SHARED )    
+
+    if !MsgYesNo("Deseja atualizar as tabelas de preco?", "Pergunta.")
+        Return
+    endif
 
     cQuery := " "
     cQuery += " SELECT AAM_CODCLI,AAM_XNOMCL,Z07_CODPRO,AAM_CONTRT,COUNT(*)   " 
@@ -86,6 +94,9 @@ User Function CONDA0()
                 AAM->AAM_XCODTA := cCodTab
             MsUnlock()
 
+            cMsg += "CRIADA TABELA " + AllTrim(cCodTab) + " PARA O CLIENTE " + aAux[nX,02] + CRLF
+            cMsg += "ADICIONADO PRODUTO " + aAux[nX,03] + " NA TABELA " + cCodTab + " PARA O CLIENTE " + aAux[nX,02] + CRLF
+
         else
             if DA0->(DbSeek(xFilial("DA0") + AAM->AAM_XCODTA))
 
@@ -109,7 +120,11 @@ User Function CONDA0()
                         DA1->DA1_MOEDA  := 1
                         DA1->DA1_DATVIG := dDataBase
                     MsUnlock()
+
+                    cMsg += "ADICIONADO PRODUTO " + aAux[nX,03] + " NA TABELA " + cCodTab + " PARA O CLIENTE " + aAux[nX,02] + CRLF
+
                 endif
+
             else
                 
                 cCodTab := GetSXENum("DA0", "DA0_CODTAB")
@@ -144,6 +159,9 @@ User Function CONDA0()
                     AAM->AAM_XCODTA := cCodTab
                 MsUnlock()
 
+                cMsg += "CRIADA TABELA " + AllTrim(cCodTab) + " PARA O CLIENTE " + aAux[nX,02] + CRLF
+                cMsg += "ADICIONADO PRODUTO " + aAux[nX,03] + " NA TABELA " + cCodTab + " PARA O CLIENTE " + aAux[nX,02] + CRLF
+
             EndIf
 
 
@@ -153,6 +171,13 @@ User Function CONDA0()
 
     END TRANSACTION
 
-    MsgAlert("Tabelas Atualizadas!", "Fim!")
+    fwrite(nHandle, "----------" + CRLF)
+    fwrite(nHandle, "Atualizacoes das tabelas de preco (CONDA0.PRW) " + Time() + " Usuario: " + cUsername + CRLF)
+    fwrite(nHandle, cMsg)
+    fwrite(nHandle, "----------" + CRLF)
+    FCLOSE(nHandle)
+    ShellExecute("open", cArqT, "00\", "C:\", 1)
+
+    MsgAlert("Rotina Finalizada!", "Fim!")
 
 Return 
