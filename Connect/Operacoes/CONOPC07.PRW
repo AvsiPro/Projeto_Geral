@@ -157,4 +157,6 @@ User Function CONOPC07()
 
     RestArea(aArea)
 
+    MsgInfo("Rotina Finalizada!", "Fim!")
+
 Return

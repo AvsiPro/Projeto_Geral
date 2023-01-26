@@ -154,9 +154,12 @@ If nOpc == 1
             Z15->(MsUnlock())
 
         EndIf 
+    else
+        Return
     EndIf 
 
     END TRANSACTION 
+
 EndIf 
 
 RestArea(aArea)
@@ -276,6 +279,7 @@ Static Function GeraBase()
         If lMsErroAuto  
             MostraErro()                            
             lRet := .F.  
+            Return
         else
             DbSelectArea("SN1")
             DbSetOrder(1)
