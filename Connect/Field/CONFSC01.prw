@@ -277,6 +277,7 @@ oTButton1:SetPopupMenu(oMenu)
 //ao clicar com o botão direito no grid de ativos.
 	MENU oMenuP POPUP 
 	MENUITEM "Faturar" ACTION (Processa({|| GeraPv(1)},"Aguarde"))
+	MENUITEM "Localizar" ACTION (Processa({|| Localiza()},"Aguarde"))
 	ENDMENU                                                                           
 
 	oList:bRClicked := { |oObject,nX,nY| oMenuP:Activate( nX, (nY-10), oObject ) }
@@ -458,18 +459,22 @@ Static Function Busca(cCond,cQuinze)
 			aList[nPos1,02] += nNewVlr //(TRB->AAN_QUANT*TRB->AAN_VLRUNI)
 		EndIf
 		
-		Aadd(aList2b,{	TRB->AAN_XCBASE,;				//01
-						Alltrim(TRB->B1_DESC),;			//02
-						TRB->AAN_VLRUNI,;				//03
-						TRB->AAN_CONTRT,;				//04
-						Stod(TRB->AAN_INICOB),;			//05
-						stod(TRB->AAN_FIMCOB),;			//06
-						TRB->AAN_XMINQT,;				//07
-						TRB->AAN_XVLRMI,;				//08
-						0,;								//09
-						0,;								//10
-						0,;								//11
-						TRB->AAN_CONPAG})				//12
+		if !Empty(TRB->AAN_XCBASE)
+			Aadd(aList2b,{	TRB->AAN_XCBASE,;				//01
+							Alltrim(TRB->B1_DESC),;			//02
+							TRB->AAN_VLRUNI,;				//03
+							TRB->AAN_CONTRT,;				//04
+							Stod(TRB->AAN_INICOB),;			//05
+							stod(TRB->AAN_FIMCOB),;			//06
+							TRB->AAN_XMINQT,;				//07
+							TRB->AAN_XVLRMI,;				//08
+							0,;								//09
+							0,;								//10
+							0,;								//11
+							TRB->AAN_CONPAG})				//12
+		else
+			Aadd(aList2b, {"","",0,"","","",0,0,0,0,0,""})
+		endif
 
 		//Itens referente aos pedidos faturados para o contrato.
 		If nPos3 == 0
@@ -489,7 +494,7 @@ Static Function Busca(cCond,cQuinze)
 		Dbskip()
 	EndDo
 	
-	Asort(aList,,,{|x,y| x[1] < y[1]})
+	Asort(aList,,,{|x,y| x[5] < y[5]})
 					
 	For nCont := 1 to len(aAux3)         
 		//Buscando os pedidos faturados
@@ -2113,6 +2118,7 @@ If len(aItens) > 0
 	aAdd( aCabec , { "C5_LOJACLI"   , aList[oList:nAt,04]    , Nil } )
 	Aadd( aCabec , { "C5_MENNOTA"   , 'Faturamento de Doses - Ref. Patrimonio(s) '+cAtFat   , Nil } )
 	aAdd( aCabec , { "C5_CONDPAG"   , AAM->AAM_CPAGPV     , Nil } )    
+	aAdd( aCabec , { "C5_NATUREZ"   , "31101001  "     , Nil } )    
         
 	For nCont := 1 to len(aItens)
 		aLinha := {}
@@ -2121,7 +2127,8 @@ If len(aItens) > 0
 		aAdd( aLinha , { "C6_PRODUTO"    , aItens[nCont,01]                       , Nil })
 		aAdd( aLinha , { "C6_QTDVEN"     , aItens[nCont,02]                       , Nil })
 		aAdd( aLinha , { "C6_PRCVEN"     , aItens[nCont,03]                       , Nil })
-		aAdd( aLinha , { "C6_TES"        , '523'                                  , Nil })  
+		aAdd( aLinha , { "C6_OPER"       , "08"                                   , Nil })
+		// aAdd( aLinha , { "C6_TES"        , '523'                                  , Nil })  
 		aAdd( aLinha , { "C6_QTDLIB"     , aItens[nCont,02]    	                  , Nil })
 		aAdd( aLinha , { "C6_CONTRT" 	 , AAM->AAM_CONTRT						  , Nil })
 
@@ -2577,3 +2584,22 @@ Static Function LeiAntr(cCont,cAtv,cLei)
 	RestArea(aArea)
 
 Return(aRet)
+
+Static Function Localiza()
+	
+	Local aLoca   := {}
+	Local aLocaR  := {}
+	Local cNome   := ""
+
+	aAdd( aLoca ,{1,"Nome do Cliente : ",Space(100)	,"@!",'.T.',"",'.T.',80,.F.})  
+			
+	If !ParamBox(aLoca ,"Localizar",aLocaR)
+		Return
+	Else
+		cNome := aLocaR[1]
+	EndIf
+
+	oList:nAt := AScan(aList, {|x| UPPER(AllTrim(cNome)) $ UPPER(StrTran(AllTrim(x[5]), "/", " "))})
+	oList:refresh()
+
+Return 
