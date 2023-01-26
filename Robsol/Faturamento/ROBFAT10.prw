@@ -33,7 +33,7 @@ User Function ROBFAT10(codigo,loja,cIdPr)
 
 Local aArea		:=	GetArea()
 
-Private oDlg1,oGrp1,oSay1,oSay2,oSay3,oSay4,oGrp2,oBrw1,oBtn1,oList,oBtn2,oBtn3
+Private oDlg1,oGrp1,oSay1,oSay2,oSay3,oSay4,oGrp2,oBrw1,oBtn1,oList,oBtn2,oBtn3,oSay5,oSay6
 Private aList 	:=	{} 
 Private aItens	:=	{}
 Private cNome 	:=	Posicione("SA1",1,xFilial("SA1")+codigo+loja,"A1_NOME")
@@ -70,6 +70,10 @@ oGrp1      := TGroup():New( 004,004,056,336,"Dados do Cliente",oDlg1,CLR_BLACK,C
 	oSay4      := TSay():New( 032,092,{||"Telefone"},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,024,008)
 	oGet4      := TGet():New( 040,092,{|u| If(PCount()>0,cFone:=u,cFone)},oGrp1,060,008,'@R 9999-9999',,CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"","",,)
 	
+
+	oSay5      := TSay():New( 035,192,{||"Vencidos"},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,224,008)
+	oSay6      := TSay():New( 045,192,{||"A Vencer"},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,224,008)
+	
 	oGet1:Disable()
 	oGet2:Disable()
 	oGet3:Disable()
@@ -84,7 +88,7 @@ oGrp2      := TGroup():New( 064,004,212,336,"Histórico",oDlg1,CLR_BLACK,CLR_WHIT
 	 					 aList[oList:nAt,02],;
 	 					 aList[oList:nAt,03],;
 	                     aList[oList:nAt,04],;
-	                     aList[oList:nAt,05],;
+	                     Transform(aList[oList:nAt,05],"@E 999,999,999.99"),;
 						 If(aList[oList:nAt,04]<ddatabase,'Vencido','A Vencer')}}
 
 oBtn2      := TButton():New( 220,088,"Vis. Itens",oDlg1,{||ConsItens(aList[oList:nAt,01],aList[oList:nAt,02],aList[oList:nAt,09])},037,012,,,,.T.,,"",,,,.F. )
@@ -155,7 +159,7 @@ DbSelectArea("TRB")
 
 While !Eof()  
     Aadd(aList,{TRB->E1_NUM,TRB->E1_PREFIXO,STOD(TRB->E1_EMISSAO),STOD(TRB->E1_VENCREA),;
-    			Transform(TRB->E1_VALOR,"@E 999,999,999.99"),"","","",TRB->E1_FILORIG,;
+    			TRB->E1_VALOR,"","","",TRB->E1_FILORIG,;
 				TRB->E1_CLIENTE,TRB->E1_LOJA})
 	DbSkip()
 EndDo
@@ -278,6 +282,18 @@ Return
 /*/
 Static Function Fhelp(nLinha)
 
+Local nTotVc := 0
+Local nTotAv := 0
+
+Aeval(aList,{|x| nTotVc += If(x[4]<ddatabase,x[5],0)})
+Aeval(aList,{|x| nTotAv += If(x[4]>=ddatabase,x[5],0)})
+
+oSay5:settext("")
+oSay6:settext("")
+
+oSay5:settext("Vencidos "+Transform(nTotVc,"@E 999,999.99") )
+oSay6:settext("A Vencer "+Transform(nTotAv,"@E 999,999.99") )
+
 If aList[nLinha,10] <> cCodigo .Or. aList[nLinha,11] <> cloja 
 	DbSelectArea("SA1")
 	DbSetOrder(1)
@@ -286,7 +302,13 @@ If aList[nLinha,10] <> cCodigo .Or. aList[nLinha,11] <> cloja
 	cCgc  := SA1->A1_CGC
 	cFone := SA1->A1_TEL
 
-	oDlg1:refresh()
+	oGet1:cText(cNome)
+	oGet2:cText(cCgc)
+	oGet3:cText(cFone)
+	
+	
 EndIF 
+
+oDlg1:refresh()
 
 Return
