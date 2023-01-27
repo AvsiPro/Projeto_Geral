@@ -119,6 +119,10 @@ Local cMaq   :=	""
 Local lOK    :=	.T.
 Local nRecno := 0
 
+DbSelectArea("AAM")
+DbSetOrder(1)
+Dbseek(xFilial("AAM")+cContrt)
+
 DbSelectArea("AAN")
 DbSetOrder(1)
 If Dbseek(xFilial("AAN")+cContrt+cItCont)
@@ -127,6 +131,22 @@ If Dbseek(xFilial("AAN")+cContrt+cItCont)
 	DBDelete()
 	AAN->(MsUnlock())
 EndIf 
+
+DbSelectArea("AA3")
+DbSetOrder(1)
+if DBSEEK(xFilial("AA3") + AAM->AAM_CODCLI + AAM->AAM_LOJA + AAN->AAN_CODPRO + Posicione("SN1", 2, xFilial("SN1") + AvKey(AAN->AAN_XCBASE, "N1_CBASE"), "N1_XNUMSER") + xFilial("AA3"))
+	RecLock("AA3", .F.)
+		DBDelete()
+	AA3->(MsUnlock())
+endif
+
+DbSelectArea("AA4")
+DbSetOrder(2)
+if DBSEEK(xFilial("AA4") + AAM->AAM_CODCLI + AAM->AAM_LOJA + AAN->AAN_CODPRO + AAN->AAN_XCBASE)
+	RecLock("AA4", .F.)
+		DBDelete()
+	AA4->(MsUnlock())
+endif
 
 DbSelectArea("SN1")
 DbSetOrder(2)

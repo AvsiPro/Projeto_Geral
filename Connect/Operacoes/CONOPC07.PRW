@@ -38,7 +38,7 @@ User Function CONOPC07()
     //Verifica se existe AA4
     DbSelectArea("AA4")
     DbSetOrder(2)
-    if DBSEEK(xFilial("AA4") + AAM->AAM_CONTRT + AAM->AAM_CODCLI + AAM->AAM_LOJA + AAN->AAN_CODPRO + Posicione("SN1", 2, xFilial("SN1") + AvKey(AAN->AAN_XCBASE, "N1_CBASE"), "N1_XNUMSER"))
+    if DBSEEK(xFilial("AA4") + AAM->AAM_CODCLI + AAM->AAM_LOJA + AAN->AAN_CODPRO + AAN->AAN_XCBASE)
         lAA4 := .T.
     endif
 
