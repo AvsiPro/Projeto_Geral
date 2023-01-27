@@ -2005,10 +2005,29 @@ Local aLocac 	:=	{}
 Local nJ 
 Local cAtLoc 	:=	""
 Local cBarra 	:=	""
+Local aCombo    := {"1=Todos", "2=Somente Dose", "3=Somente Locacao" }
+Local aPerg     := {}
 Local cAtFat 	:=	""
 Local cTipFat	:=	'' //aList[oList:nAt,15]
 Local cForFat 	:=	''
 Local nX 
+Local lDose     := .F.
+Local lLoc      := .F.
+
+aAdd( aPerg ,{2,"Escolha uma opção : ",0,aCombo,100,"",.T.})
+
+If !ParamBox(aPerg ,"Parametros ")
+	Return
+EndIf
+
+if MV_PAR01 == "1" 
+	lDose := .T.
+	lLoc  := .T.
+elseif MV_PAR01 == "2"
+	lDose := .T.
+elseif MV_PAR01 == "3"
+	lLoc := .T.
+endif
 
 If nOpcG == 0
 	//Faturar todos os itens liberados do array alist
@@ -2031,7 +2050,7 @@ ElseIf nOpcG == 1
 
 	cBarra := ""
 
-	If cTipFat == "1"
+	If cTipFat $ "1/3"
 		For nCont := 1 to len(aList5B)
 			If aList5B[nCont,01] == aList[oList:nAt,01] .And. len(aList5b[nCont]) > 4
 				cAtFat += cBarra + Alltrim(aList5b[nCont,02])
@@ -2097,7 +2116,7 @@ ElseIf nOpcG == 1
 
 EndIF 
 
-If len(aItens) > 0 
+If len(aItens) > 0 .AND. lDose
 //PEDIDOS DE DOSES
 
 	If Empty(cAtFat)
@@ -2165,7 +2184,7 @@ If len(aItens) > 0
 EndIF 
 
 //Faturamento locacao
-If len(aLocac) > 0
+If len(aLocac) > 0 .AND. lLoc
 	cProdLoc := SuperGetMV("TI_PRODLOC",.F.,"SLOC000001")
 	cNaturez := SuperGetMV("TI_NATRLOC",.F.,"31101003  ")
 	cTesLoc  := Posicione("SB1",1,xFilial("SB1")+cProdLoc,"B1_TS")
@@ -2207,23 +2226,23 @@ If len(aLocac) > 0
 		MostraErro()
 	ELSE
 		Msgalert("Pedido gerado de locação "+SC5->C5_NUM)
-		DbSelectArea("Z08")
-		DbSetOrder(1)
-		For nCont := 1 to len(aList5B)
-			If aList5B[nCont,01] == aList[oList:nAt,01] .And. len(aList5b[nCont]) > 4
-				For nJ := 5 to len(aList5b[nCont])
-					If Dbseek(xFilial("Z08")+aList5b[nCont,nJ,11])
-						While !EOF() .And. Z08->Z08_COD == aList5b[nCont,nJ,11]
-							RecLock("Z08", .F.)
-							Z08->Z08_FATURA := 'S'
-							Z08->(MsUnlock())
-							aList5b[nCont,nJ,12] := 'S'
-							Dbskip()
-						EndDo
-					EndIf 
-				Next nJ
-			EndIf 
-		Next nCont
+		// DbSelectArea("Z08")
+		// DbSetOrder(1)
+		// For nCont := 1 to len(aList5B)
+		// 	If aList5B[nCont,01] == aList[oList:nAt,01] .And. len(aList5b[nCont]) > 4
+		// 		For nJ := 5 to len(aList5b[nCont])
+		// 			If Dbseek(xFilial("Z08")+aList5b[nCont,nJ,11])
+		// 				While !EOF() .And. Z08->Z08_COD == aList5b[nCont,nJ,11]
+		// 					RecLock("Z08", .F.)
+		// 					Z08->Z08_FATURA := 'S'
+		// 					Z08->(MsUnlock())
+		// 					aList5b[nCont,nJ,12] := 'S'
+		// 					Dbskip()
+		// 				EndDo
+		// 			EndIf 
+		// 		Next nJ
+		// 	EndIf 
+		// Next nCont
 	ENDIF    
 EndIf
 
