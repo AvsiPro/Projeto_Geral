@@ -37,7 +37,7 @@ SetPrvt("oSay1","oSay2","oSay3","oSay4","oSay5","oSay6","oSay7","oSay8","oSay9",
     cQuery += "     AND F2_CLIENTE=Z50_CODCLI "
     cQuery += "     AND F2_LOJA=Z50_LOJCLI "
     cQuery += "     AND SF2.D_E_L_E_T_='' "
-    cQuery += " INNER JOIN "+RetSqlName('SC5')+" SC5  "
+    cQuery += " LEFT JOIN "+RetSqlName('SC5')+" SC5  "
     cQuery += "     ON C5_FILIAL = F2_FILIAL "
     cQuery += "     AND C5_CLIENTE = F2_CLIENTE "
     cQuery += "     AND C5_LOJACLI = F2_LOJA "
