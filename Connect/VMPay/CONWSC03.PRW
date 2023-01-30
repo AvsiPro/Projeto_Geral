@@ -445,9 +445,15 @@ WHILE nPage > 0
             If aAux2[nX]:GOOD:NAME != NIL
                 aCod := separa(aAux2[nX]:GOOD:NAME,"#")
                 //Aadd(aAux,If(aAux2[nX]:GOOD:UPC_CODE==nil,'null',aAux2[nX]:GOOD:UPC_CODE))
-                Aadd(aAux,Alltrim(aCod[2]))
-                Aadd(aHeader[nPos],aAux)
-            EndIf 
+                    Aadd(aAux,Alltrim(aCod[2]))
+                //EndIf 
+                
+            ELSE
+                Aadd(aAux,'Item Nao encontrado')
+            EndIf
+
+            Aadd(aHeader[nPos],aAux)
+             
             aAux := {}
         Next nX       
         
