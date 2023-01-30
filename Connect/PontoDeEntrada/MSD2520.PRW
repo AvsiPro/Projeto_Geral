@@ -18,13 +18,13 @@
 */
 User Function MSD2520()
 
-	// Local cTMEst      	:=  GetMv("MV_XTESD3",,"501")
-	// Local cTM			:=	GetMv("MV_XTMSD3",,"001")
+	Local cTMEst      	:=  GetMv("MV_XTESD3",,"501")
+	//Local cTM			:=	GetMv("MV_XTMSD3",,"001")
 	Local aArea			:=	GetArea()
-	// Local _aCab1 		:= 	{}
-	// Local _aItem 		:= 	{}
-	// Local _atotitem		:=	{}
-	// Local n             :=  0
+	Local _aCab1 		:= 	{}
+	Local _aItem 		:= 	{}
+	Local _atotitem		:=	{}
+	//Local n             :=  0
 
 	Private aEst 		:=	{} //estrutura produto
 	Private aAuxest 	:=	{}
