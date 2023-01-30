@@ -3,7 +3,6 @@
 #INCLUDE "XMLXFUN.CH"
 #INCLUDE "TBICONN.CH"
 
-
 //Colocar em outras acoes de contrato na area de trabalho e colocar consulta que só traz itens dentro daquele contrato
 User Function CONOPC07()
 
@@ -16,6 +15,11 @@ User Function CONOPC07()
     Local lSN1   :=	.F.
     Local nRecno := 0
     Local aPergs := {}
+
+    if !(cUsername $ GetMV("MV_XCONO07"))
+        MsgAlert("Seu usuario (" + cUsername + ") nao tem permissao para acessar essa rotina!", "Encerrado!")
+        Return
+    endif
 
     MsgInfo("Essa rotina tem como objetivo retirar um ativo do contrato sem gerar nota!", "Info!")
 
