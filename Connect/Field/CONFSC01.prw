@@ -133,7 +133,7 @@ aAdd( aPergs ,{1,"Contrato Ate: "				,cCont2	,"@!",'.T.',"AAM",'.T.',80,.F.})
 aAdd( aPergs ,{1,"Cliente de : " 				,cCli1	,"@!",'.T.',"SA1",'.T.',60,.F.})  
 aAdd( aPergs ,{1,"Cliente Ate: " 				,cCli2	,"@!",'.T.',"SA1",'.T.',60,.F.})  
 aAdd( aPergs ,{1,"Tipo Contrato:"				,cTpCnt	,"@!",'.T.',"A7",'.T.',40,.F.})  
-        
+    
 		
 If !ParamBox(aPergs ,"Parametros ",aRet)
 	Return
@@ -141,8 +141,8 @@ Else
 	cCond 	:= aRet[1]
 	cPeri 	:= aRet[2]
 	cQuinze := aRet[3]
-	cCont1	:= aRet[4]
-	cCont2	:= aRet[5]
+	cCont1	:= strzero(val(aRet[4]),15)
+	cCont2	:= strzero(val(aRet[5]),15)
 	cCli1	:= aRet[6]
 	cCli2	:= aRet[7]
 	cTpCnt	:= aRet[8]
