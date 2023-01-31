@@ -64,7 +64,7 @@ User Function ROBFAT11()
         for nX := 1 to len(aAux)
             dbSelectArea("SC9")
             if !dbSeek(xFilial("SC9")+SC5->C5_NUM+aAux[nX,02])
-                nQtdLib := val(aAux[nX,06])
+                nQtdLib := aAux[nX,06]
                 //nQtdLib := MaLibDoFat(SC6->(RecNo()),nQtdLib,@lCredito,@lEstoque,.F.,lAvEst,lLiber,lTransf)
                 nQtdLib := MaLibDoFat(aAux[nX,08],nQtdLib,.F.,.F.,.F.,.F.,.F.,.F.)
             Endif
