@@ -24,7 +24,10 @@
 		},
 		{
 			"label": "sigaMDI"
+		},
+		{
+			"label": "U_PILEST01"
 		}
 	],
-	"lastProgramExecuted": "sigaadv"
+	"lastProgramExecuted": "U_PILEST01"
 }
