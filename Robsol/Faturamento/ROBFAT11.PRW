@@ -88,7 +88,7 @@ Static Function Busca()
     cQuery += "        AND C6_FILIAL = B2_FILIAL   " 
     cQuery += "        AND SB2.D_E_L_E_T_ = ' '   " 
     cQuery += " WHERE  C6_NUM = '" + SC5->C5_NUM + "'   " 
-    cQuery += "        AND C6_FILIAL = " + xFilial("SC6") + "   " 
+    cQuery += "        AND C6_FILIAL = '" + SC5->C5_FILIAL + "' " 
     cQuery += " ORDER BY  C6_ITEM   " 
 
     If Select("TRB") > 0
@@ -99,7 +99,14 @@ Static Function Busca()
     DbUseArea(.T.,"TOPCONN",TcGenQry(,,cQuery),'TRB',.F.,.T.)
 
     while !EOF()
-        Aadd(aList, {IF(TRB->C6_QTDVEN < TRB->B2_QATU,"1",IF(TRB->C6_QTDVEN == TRB->B2_QATU,"2", "3")), TRB->C6_ITEM, AllTrim(TRB->C6_PRODUTO), AllTrim(TRB->C6_DESCRI), TRB->C6_QTDVEN, StrZero(TRB->C6_QTDVEN, 3), TRB->B2_QATU, TRB->ALIASREC})
+        Aadd(aList, {IF(TRB->C6_QTDVEN < TRB->B2_QATU,"1",IF(TRB->C6_QTDVEN == TRB->B2_QATU,"2", "3")),;
+                        TRB->C6_ITEM,;
+                        AllTrim(TRB->C6_PRODUTO),;
+                        AllTrim(TRB->C6_DESCRI),;
+                        TRB->C6_QTDVEN,;
+                        If(TRB->C6_QTDVEN<TRB->B2_QATU,TRB->C6_QTDVEN,0),;
+                        TRB->B2_QATU,;
+                        TRB->ALIASREC})
         dbskip()
     end
 
@@ -109,24 +116,29 @@ Static Function editcol(nLin)
 
     Local aArea     :=  GetArea()
     Local nPosic    :=  oList:nColpos
+    Local nBkpL6    :=  aList[nLin,06]
 
     If nPosic == 6
         lEditCell( aList, oList, "@!", nPosic)
+        IF aList[nLin,06] > aList[nLin,05]
+            MsgAlert("Quantidade atendida não pode ser maior que quantidade vendida")
+            aList[nLin,06] := nBkpL6
+        EndIf
+        //aList[nLin,06] := StrZero(val(aList[nLin,06]), 3)
 
-        aList[nLin,06] := StrZero(val(aList[nLin,06]), 3)
-
-        if val(aList[nLin,06]) == 0
+        if aList[nLin,06] == 0
             aList[nLin,01] := "3"
-        elseif val(aList[nLin,06]) > aList[nLin,07]
-            aList[nLin,06] := StrZero(aList[nLin,07], 3)
+        elseif aList[nLin,06] > aList[nLin,07]
+            MsgAlert("Quantidade maior que o saldo disponível")
+            aList[nLin,06] := aList[nLin,07] //StrZero(aList[nLin,07], 3)
         endif
 
-        aList[nLin,01] := IF(val(aList[nLin,06]) < aList[nLin,07] .AND. val(aList[nLin,06]) != 0,"1",IF(val(aList[nLin,06]) == aList[nLin,07],"2", "3"))
+        aList[nLin,01] := IF(aList[nLin,06] < aList[nLin,07] .AND. aList[nLin,06] != 0,"1",IF(aList[nLin,06] == aList[nLin,07],"2", "3"))
 
     elseif aList[nLin,01] $ "1/2"
         aList[nLin,01] := "3"
     else
-        aList[nLin,01] := IF(val(aList[nLin,06]) < aList[nLin,07],"1",IF(val(aList[nLin,06]) == aList[nLin,07],"2", "3"))
+        aList[nLin,01] := IF(aList[nLin,06] < aList[nLin,07],"1",IF(aList[nLin,06] == aList[nLin,07],"2", "3"))
     EndIf
 
     oList:refresh()
