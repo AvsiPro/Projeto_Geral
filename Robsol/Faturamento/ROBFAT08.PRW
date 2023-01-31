@@ -16,6 +16,7 @@ User Function ROBFAT08()
     Local nLarg
     Local nAlt
     Local nLinha
+    Local nOpc      :=  0
 
     Private oDlg1,oGrp1,oList1,oList2,oList3,oBtn1,oBtn2,oBtn3,oBtn4,oBtn5,oSay1,oSay2
     Private aList1 := {}
@@ -426,17 +427,17 @@ Static Function geraDE()
         endif
     next
 
-    cNum := GetSxeNum("SF1","F1_DOC")
+    /*cNum := GetSxeNum("SF1","F1_DOC")
     SF1->(dbSetOrder(1))
     While SF1->(dbSeek(xFilial("SF1")+cNum))
         ConfirmSX8()
         cNum := GetSxeNum("SF1","F1_DOC")
-    EndDo
+    EndDo*/
 
     //Cabeçalho
     aadd( aCab,{"F1_TIPO"    ,"B"                     ,NIL} )
     aadd( aCab,{"F1_FORMUL"  ,"S"                     ,NIL} )
-    aadd( aCab,{"F1_DOC"     ,cNum                    ,NIL} )
+    //aadd( aCab,{"F1_DOC"     ,cNum                    ,NIL} )
     aadd( aCab,{"F1_SERIE"   ,"1 "                    ,NIL} )
     aadd( aCab,{"F1_EMISSAO" ,DDATABASE               ,NIL} )
     aadd( aCab,{"F1_DTDIGIT" ,DDATABASE               ,NIL} )

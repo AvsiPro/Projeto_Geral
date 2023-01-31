@@ -158,9 +158,17 @@ DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
 DbSelectArea("TRB")         
 
 While !Eof()  
-    Aadd(aList,{TRB->E1_NUM,TRB->E1_PREFIXO,STOD(TRB->E1_EMISSAO),STOD(TRB->E1_VENCREA),;
-    			TRB->E1_VALOR,"","","",TRB->E1_FILORIG,;
-				TRB->E1_CLIENTE,TRB->E1_LOJA})
+    Aadd(aList,{TRB->E1_NUM,;
+				TRB->E1_PREFIXO,;
+				STOD(TRB->E1_EMISSAO),;
+				STOD(TRB->E1_VENCREA),;
+    			TRB->E1_VALOR,;
+				"",;
+				"",;
+				"",;
+				TRB->E1_FILORIG,;
+				TRB->E1_CLIENTE,;
+				TRB->E1_LOJA})
 	DbSkip()
 EndDo
 
@@ -209,11 +217,21 @@ For nX := 1 to len(aList)
 	DbSelectArea("TRB")
 	
 	While !EOF()
-		Aadd(aItens,{TRB->D2_FILIAL,TRB->D2_DOC,TRB->D2_SERIE,TRB->D2_ITEM,TRB->D2_COD,TRB->B1_DESC,TRB->D2_QUANT,TRB->D2_PRCVEN,TRB->D2_TOTAL})
+		Aadd(aItens,{TRB->D2_FILIAL,;
+					TRB->D2_DOC,;
+					TRB->D2_SERIE,;
+					TRB->D2_ITEM,;
+					TRB->D2_COD,;
+					TRB->B1_DESC,;
+					TRB->D2_QUANT,;
+					TRB->D2_PRCVEN,;
+					TRB->D2_TOTAL})
 		Dbskip()
 	EndDo
 
 Next nX
+
+Asort(aList,,,{|x,y| x[4] < y[4]})
 
 RestArea(aArea)
 
