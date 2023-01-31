@@ -27,7 +27,8 @@ Local cIdPr	:=	Posicione("SA1",1,xFilial("SA1")+SC5->C5_CLIENTE+SC5->C5_LOJACLI,
 cQuery := "SELECT COUNT(*) AS QTD FROM "+RetSQLName("SE1")
 cQuery += " WHERE "         
 cQuery += " E1_CLIENTE='"+SC5->C5_CLIENTE+"' AND E1_LOJA='"+SC5->C5_LOJACLI+"' 
-cQuery += " AND E1_VENCREA < '"+dtos(dDataBase)+"' AND E1_BAIXA='' AND E1_TIPO NOT IN('RA','NCC')"
+//cQuery += " AND E1_VENCREA < '"+dtos(dDataBase)+"' 
+cQuery += " AND E1_BAIXA=' ' AND E1_TIPO NOT IN('RA','NCC')"
 cQuery += " AND D_E_L_E_T_=''" 
 
 If Select('QUERY') > 0
