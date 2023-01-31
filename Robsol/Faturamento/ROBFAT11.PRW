@@ -15,7 +15,9 @@ User Function ROBFAT11()
     Private oMe   	:= LoadBitmap(GetResources(),'br_amarelo') //Liberado e possui saldo igual a quantidade liberada
     Private oNo   	:= LoadBitmap(GetResources(),'br_vermelho') //Não Liberado
 
-    SetPrvt("oDlg1", "oGrp1", "oGrp2", "oGrp3", "oSay1", "oSay2", "oSay3", "oList")
+    Private nQtdTo  :=  0
+
+    SetPrvt("oDlg1", "oGrp1", "oGrp2", "oGrp3", "oSay1", "oSay2", "oSay3", "oList", "oSay4")
 
     DbSelectArea("SA1")
     SA1->(DbSetOrder(1))
@@ -27,6 +29,8 @@ User Function ROBFAT11()
 
     Busca()
 
+    Aeval(aList,{|x| nQtdTo += IF(x[1]=="1",x[6],0)})
+
     oDlg1      := MSDialog():New( 092,232,770/*Y*/,1672/*X*/,"Liberacao de Pedido",,,.F.,,,,,,.T.,,,.T. )
 
     oGrp1      := TGroup():New( 002,004,336/*Y*/,710/*X*/,"",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
@@ -34,6 +38,7 @@ User Function ROBFAT11()
         oGrp2      := TGroup():New( 008,008,072,700,"Dados do Pedido",oGrp1,CLR_BLACK,CLR_WHITE,.T.,.F. )
             oSay1      := TSay():New( 024,012,{||SC5->C5_NUM + " - " + Transform(val(SA1->A1_CGC), "@E 99,999,999/9999-99") + " (" + AllTrim(SA1->A1_NOME) + ") "},oGrp2,,/*Fonte*/,.F.,.F.,.F.,.T.,CLR_GREEN,CLR_WHITE,500,008)
             oSay3      := TSay():New( 040,012,{||SA3->A3_COD + " - " + SA3->A3_NOME},oGrp2,,/*Fonte*/,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,500,008)
+            oSay4      := TSay():New( 056,012,{||"Quantidade de Itens Atendidos "+cvaltochar(nQtdTo)},oGrp2,,/*Fonte*/,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,500,008)
         
         oGrp3      := TGroup():New( 076,008,335,710,"Itens do Pedido",oGrp1,CLR_BLACK,CLR_WHITE,.T.,.F. )
 
@@ -66,7 +71,7 @@ User Function ROBFAT11()
             if !dbSeek(xFilial("SC9")+SC5->C5_NUM+aAux[nX,02])
                 nQtdLib := aAux[nX,06]
                 //nQtdLib := MaLibDoFat(SC6->(RecNo()),nQtdLib,@lCredito,@lEstoque,.F.,lAvEst,lLiber,lTransf)
-                nQtdLib := MaLibDoFat(aAux[nX,08],nQtdLib,.F.,.F.,.F.,.F.,.F.,.F.)
+                nQtdLib := MaLibDoFat(aAux[nX,08],nQtdLib,.T.,.T.,.F.,.F.,.F.,.F.)
             Endif
         next
 
@@ -141,6 +146,11 @@ Static Function editcol(nLin)
         aList[nLin,01] := IF(aList[nLin,06] < aList[nLin,07],"1",IF(aList[nLin,06] == aList[nLin,07],"2", "3"))
     EndIf
 
+    nQtdTo := 0
+    Aeval(aList,{|x| nQtdTo += IF(x[1]=="1",x[6],0)})
+    oSay4:settext("")
+    oSay4:settext("Quantidade de itens atendidos "+cvaltochar(nQtdTo))
+    
     oList:refresh()
     oDlg1:refresh()
 

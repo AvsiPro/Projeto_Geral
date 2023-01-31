@@ -30,6 +30,17 @@ If Select("SM0") == 0
     RPCSetEnv("01","0101")
 EndIf
 
+cQuery :=	" select * from SLAPLIC.dbo.RequisicaoPeca"  //Homologação
+
+If Select("TRB") > 0
+    TRB->( dbclosearea() )
+Endif
+    
+DbUseArea(.T.,'TOPCONN', TcGenQry(,,cQuery),"TRB", .T., .T.)
+    
+While !EOF()
+    DBSKIP()
+ENDDO
 
 //---------- nOpcx = 3 Inclusão de Solicitação de Armazém --------------
 nOpcx := 3
