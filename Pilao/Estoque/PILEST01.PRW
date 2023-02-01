@@ -19,18 +19,19 @@ Local aCab := {}
 Local aItens := {}
 Local nSaveSx8 := 0
 Local cNumero := ''
-
+Local aOSSLAP   :=  {}
 Local nOpcx := 0
+Local nCont :=  0
 
 Private lMsErroAuto := .F.
 Private lMsErroHelp := .T.
 
 If Select("SM0") == 0
     RpcSetType(3)
-    RPCSetEnv("01","0101")
+    RPCSetEnv("01","0201")
 EndIf
 
-cQuery :=	" select * from SLAPLIC.dbo.RequisicaoPeca"  //Homologação
+cQuery :=	" select * from SLAPLIC.dbo.RequisicaoPeca"  
 
 If Select("TRB") > 0
     TRB->( dbclosearea() )
@@ -39,6 +40,16 @@ Endif
 DbUseArea(.T.,'TOPCONN', TcGenQry(,,cQuery),"TRB", .T., .T.)
     
 While !EOF()
+    Aadd(aOSSLAP,{  TRB->OS,;
+                    TRB->OSItem,;
+                    TRB->SB1_COD,;
+                    TRB->IOSQtd,;
+                    TRB->IOSQAp,;
+                    TRB->IOSQAt,;
+                    TRB->OSItemProc,;
+                    TRB->OSAprovador,;
+                    TRB->OSArmazem,;
+                    TRB->OSApObs})
     DBSKIP()
 ENDDO
 
@@ -63,87 +74,14 @@ EndIf
 Aadd( aCab, { "CP_NUM" ,cNumero , Nil })
 Aadd( aCab, { "CP_EMISSAO" ,dDataBase , Nil })
 
-Aadd( aItens, {} )
-Aadd( aItens[ Len( aItens ) ],{"CP_ITEM" , '01' , Nil } )
-Aadd( aItens[ Len( aItens ) ],{"CP_PRODUTO" ,'I147212101' , Nil } )
-Aadd( aItens[ Len( aItens ) ],{"CP_QUANT" ,10 , Nil } )
-
-Aadd( aItens, {} )
-Aadd( aItens[ Len( aItens ) ],{"CP_ITEM" , '02' , Nil } )
-Aadd( aItens[ Len( aItens ) ],{"CP_PRODUTO" ,'I154180001' , Nil } )
-Aadd( aItens[ Len( aItens ) ],{"CP_QUANT" ,20 , Nil } )
-
-/*
-//---------- nOpcx = 4 Alteração de Solicitação de Armazém -------------
-
-//-----------------------------------------------------------------------------//
-// AUTDELETA - Opcional
-// Atributo para Definir se o Item que pertence a Solicitação de Armazém deve
-// ser Excluído ou Não no processo de Alteração.
-
-// - N = Não Deve Ser Excluído
-// - S = Sim Deve Ser Excluído
-//-----------------------------------------------------------------------------//
-nOpcx := 4
-Aadd( aCab, { "CP_NUM" ,cNumero , Nil })
-Aadd( aCab, { "CP_EMISSAO" ,dDataBase , Nil })
-
-Aadd( aItens, {} )
-Aadd( aItens[ Len( aItens ) ],{"CP_ITEM" , '01' , Nil } )
-
-Aadd( aItens[ Len( aItens ) ],{"CP_NUM" , 'cNumero' , Nil } )
-Aadd( aItens[ Len( aItens ) ],{"CP_PRODUTO" ,'PRD_001' , Nil } )
-Aadd( aItens[ Len( aItens ) ],{"CP_QUANT" ,10 , Nil } )
-Aadd( aItens[ Len( aItens ) ],{"AUTDELETA" ,'N' , Nil } )
-
-Aadd( aItens, {} )
-Aadd( aItens[ Len( aItens ) ],{"CP_ITEM" , '02' , Nil } )
-Aadd( aItens[ Len( aItens ) ],{"CP_PRODUTO" ,'PRD_002' , Nil } )
-Aadd( aItens[ Len( aItens ) ],{"CP_QUANT" ,120 , Nil } )
-Aadd( aItens[ Len( aItens ) ],{"AUTDELETA" ,'N' , Nil } )
-
-Aadd( aItens, {} )
-Aadd( aItens[ Len( aItens ) ],{"CP_ITEM" , '03' , Nil } )
-Aadd( aItens[ Len( aItens ) ],{"CP_PRODUTO" ,'PRD_003' , Nil } )
-Aadd( aItens[ Len( aItens ) ],{"CP_QUANT" ,30 , Nil } )
-
-Aadd( aItens[ Len( aItens ) ],{"AUTDELETA" ,'S' , Nil } )
-
-Aadd( aItens, {} )
-Aadd( aItens[ Len( aItens ) ],{"CP_ITEM" , '04' , Nil } )
-Aadd( aItens[ Len( aItens ) ],{"CP_PRODUTO" ,'PRD_004' , Nil } )
-Aadd( aItens[ Len( aItens ) ],{"CP_QUANT" ,40 , Nil } )
-
-Aadd( aItens[ Len( aItens ) ],{"AUTDELETA" ,'N' , Nil } )
-
-
-//---------- nOpcx = 5 Exclusão de Solicitação de Armazém --------------
-nOpcx := 5
-Aadd( aCab, { "CP_NUM" ,cNumero , Nil })
-Aadd( aCab, { "CP_EMISSAO" ,dDataBase , Nil })
-
-Aadd( aItens, {} )
-Aadd( aItens[ Len( aItens ) ],{"CP_ITEM" , '01' , Nil } )
-Aadd( aItens[ Len( aItens ) ],{"CP_PRODUTO" ,'PRD_001' , Nil } )
-Aadd( aItens[ Len( aItens ) ],{"CP_QUANT" ,10 , Nil } )
-
-Aadd( aItens, {} )
-Aadd( aItens[ Len( aItens ) ],{"CP_ITEM" , '02' , Nil } )
-Aadd( aItens[ Len( aItens ) ],{"CP_PRODUTO" ,'PRD_002' , Nil } )
-Aadd( aItens[ Len( aItens ) ],{"CP_QUANT" ,20 , Nil } )
-
-Aadd( aItens, {} )
-Aadd( aItens[ Len( aItens ) ],{"CP_ITEM" , '03' , Nil } )
-Aadd( aItens[ Len( aItens ) ],{"CP_PRODUTO" ,'PRD_003' , Nil } )
-Aadd( aItens[ Len( aItens ) ],{"CP_QUANT" ,30 , Nil } )
-
-Aadd( aItens, {} )
-Aadd( aItens[ Len( aItens ) ],{"CP_ITEM" , '04' , Nil } )
-Aadd( aItens[ Len( aItens ) ],{"CP_PRODUTO" ,'PRD_004' , Nil } )
-Aadd( aItens[ Len( aItens ) ],{"CP_QUANT" ,40 , Nil } )
-
-//----------------------------------------------------------------------
-*/
+For nCont := 1 to len(aOSSLAP)
+    Aadd( aItens, {} )
+    Aadd( aItens[ Len( aItens ) ],{"CP_ITEM" , Strzero(aOSSLAP[nCont,2]) , Nil } )
+    Aadd( aItens[ Len( aItens ) ],{"CP_PRODUTO" ,aOSSLAP[nCont,3] , Nil } )
+    Aadd( aItens[ Len( aItens ) ],{"CP_QUANT" ,aOSSLAP[nCont,4] , Nil } )
+    Aadd( aItens[ Len( aItens ) ],{"CP_NUMOS" ,aOSSLAP[nCont,1] , Nil } )
+    Aadd( aItens[ Len( aItens ) ],{"CP_OBS" ,aOSSLAP[nCont,10] , Nil } )
+Next nCont
 
 SB1->( dbSetOrder( 1 ) )
 SCP->( dbSetOrder( 1 ) )
@@ -154,7 +92,7 @@ If lMsErroAuto
         RollBackSx8()
     EndIf
 
-   MsgStop( 'Erro ao Executar o Processo' )
+   //MsgStop( 'Erro ao Executar o Processo' )
    MostraErro()
    lRet := .F.
 
@@ -163,7 +101,10 @@ Else
        ConfirmSx8()
    End
 
-   MsgInfo( 'Processo Executado' )
+    U_PILEST02()
+    U_PILEST03(SCP->CP_NUM)
+
+   //MsgInfo( 'Processo Executado' )
 EndIf
 
 Return lRet
