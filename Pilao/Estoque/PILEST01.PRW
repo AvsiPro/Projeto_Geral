@@ -28,7 +28,7 @@ Private lMsErroHelp := .T.
 
 If Select("SM0") == 0
     RpcSetType(3)
-    RPCSetEnv("01","0201")
+    RPCSetEnv("01","0101")
 EndIf
 
 cQuery :=	" select * from SLAPLIC.dbo.RequisicaoPeca"  
@@ -43,13 +43,13 @@ While !EOF()
     Aadd(aOSSLAP,{  TRB->OS,;
                     TRB->OSItem,;
                     TRB->SB1_COD,;
-                    TRB->IOSQtd,;
-                    TRB->IOSQAp,;
-                    TRB->IOSQAt,;
-                    TRB->OSItemProc,;
-                    TRB->OSAprovador,;
-                    TRB->OSArmazem,;
-                    TRB->OSApObs})
+                    TRB->IOSQtd,;   //esse foi o que o cara pediu
+                    TRB->IOSQAp,;  // esse cara que vai para a solicitacao
+                    TRB->IOSQAt,;   // esse cara é o que o estoque atendeu
+                    TRB->OSItemProc,;   //Sucesso ou falha
+                    TRB->OSAprovador,;  //aprovador mesmo
+                    TRB->OSArmazem,;   //armazem do produto
+                    TRB->OSApObs})      //obs do aprovador
     DBSKIP()
 ENDDO
 
@@ -76,11 +76,12 @@ Aadd( aCab, { "CP_EMISSAO" ,dDataBase , Nil })
 
 For nCont := 1 to len(aOSSLAP)
     Aadd( aItens, {} )
-    Aadd( aItens[ Len( aItens ) ],{"CP_ITEM" , Strzero(aOSSLAP[nCont,2]) , Nil } )
-    Aadd( aItens[ Len( aItens ) ],{"CP_PRODUTO" ,aOSSLAP[nCont,3] , Nil } )
-    Aadd( aItens[ Len( aItens ) ],{"CP_QUANT" ,aOSSLAP[nCont,4] , Nil } )
-    Aadd( aItens[ Len( aItens ) ],{"CP_NUMOS" ,aOSSLAP[nCont,1] , Nil } )
-    Aadd( aItens[ Len( aItens ) ],{"CP_OBS" ,aOSSLAP[nCont,10] , Nil } )
+    Aadd( aItens[ Len( aItens ) ],{"CP_ITEM"    ,Strzero(aOSSLAP[nCont,02]) , Nil } )
+    Aadd( aItens[ Len( aItens ) ],{"CP_PRODUTO" ,aOSSLAP[nCont,03] , Nil } )
+    Aadd( aItens[ Len( aItens ) ],{"CP_QUANT"   ,aOSSLAP[nCont,05] , Nil } )
+    Aadd( aItens[ Len( aItens ) ],{"CP_NUMOS"   ,aOSSLAP[nCont,01] , Nil } )
+    Aadd( aItens[ Len( aItens ) ],{"CP_XAPROV"  ,aOSSLAP[nCont,08] , Nil } )
+    Aadd( aItens[ Len( aItens ) ],{"CP_OBS"     ,aOSSLAP[nCont,10] , Nil } )
 Next nCont
 
 SB1->( dbSetOrder( 1 ) )
@@ -100,7 +101,8 @@ Else
    While ( GetSx8Len() > nSaveSx8 )
        ConfirmSx8()
    End
-
+    //CP_NUM 
+    //e flag = OsItemAut  = 1 significa que pode ser baixado
     U_PILEST02()
     U_PILEST03(SCP->CP_NUM)
 
