@@ -20,12 +20,12 @@
 User Function MSD2460()
 
 	Local aArea			:=	GetArea()
-	/*Local cTM			:=	GetMv("MV_XTMSD3",,"001")
-	Local cTMEst      	:=  GetMv("MV_XTESD3",,"501")
+	Local cTM			:=	GetMv("MV_XTMSD3",,"001")
+	//Local cTMEst      	:=  GetMv("MV_XTESD3",,"501")
 	Local _aCab1 		:= 	{}
 	Local _aItem 		:= 	{}
 	Local _atotitem		:=	{}
-	Local n := 0*/
+	//Local n := 0
 
 	Private aEst 		:= {} //estrutura produto
 	Private aAuxest 	:= {}
@@ -38,7 +38,7 @@ User Function MSD2460()
 
 	If SC5->C5_XTPPED == "A" 
 
-		/*
+		
 		_aCab1 := {{"D3_DOC" ,SD2->D2_DOC, NIL},;
 					{"D3_TM" ,cTM , NIL},;
 					{"D3_CC" ,"        ", NIL},;
@@ -52,7 +52,7 @@ User Function MSD2460()
 				{"D3_LOCALIZ" , "",NIL}}
 
 			aadd(_atotitem,_aitem)
-		*/
+		
 	//Faturamento de doses movimenta a SD3 pelos itens da estrutura
 	ElseIf SC5->C5_XTPPED == "F"
 		/*
@@ -78,17 +78,17 @@ User Function MSD2460()
 		*/
 	//Faturamento de pedidos de remessa de maquina
 	ElseIf SC5->C5_XTPPED == "I"
-		cOS 	:= SC6->C6_NUMOS
-		cCham 	:= Posicione("AB7",1,xFilial("AB7")+cOS,"AB7_NRCHAM")
-		cPlaca	:= Posicione("AB2",1,xFilial("AB2")+cCham,"AB2_XCBASE")
-		atucontr(SC6->C6_CONTRT,SC6->C6_PRODUTO,cPlaca) //SC6->C6_NUMSERI
+		// cOS 	:= SC6->C6_NUMOS
+		// cCham 	:= Posicione("AB7",1,xFilial("AB7")+cOS,"AB7_NRCHAM")
+		// cPlaca	:= Posicione("AB2",1,xFilial("AB2")+cCham,"AB2_XCBASE")
+		atucontr(SC6->C6_CONTRT,SC6->C6_PRODUTO,SC6->C6_NUMSERI) //SC6->C6_NUMSERI
 	Else
 		RestArea(aArea)
 		Return
 	EndIf
 
 	SC5->(DBCloseArea())
-	/*
+	
 	If len(_aCab1) > 0 .And. Len(_atotitem) > 0
 		MSExecAuto({|x,y,z| MATA241(x,y,z)},_aCab1,_atotitem,3)
 		
@@ -98,7 +98,7 @@ User Function MSD2460()
 			break
 		EndIf
 	EndIf 
-	*/
+	
 	RestArea(aArea)
 
 Return

@@ -2411,9 +2411,9 @@ LOCAL dDtA     :=   LastDate(Date())
 LOCAL cHri     :=   '00:00'
 Local cHrf     :=   '23:59'
 Local cAtde    :=   space(15)
-Local cAtAt    :=   space(15)
+Local cAtAt    :=   'ZZZZZZZZZZZZZZZ'
 Local cCnde    :=   space(15)
-Local cCnAt    :=   space(15)
+Local cCnAt    :=   'ZZZZZZZZZZZZZZZ'
 
 
 LOCAL cData    :=    ''

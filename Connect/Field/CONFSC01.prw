@@ -133,7 +133,7 @@ aAdd( aPergs ,{1,"Contrato Ate: "				,cCont2	,"@!",'.T.',"AAM",'.T.',80,.F.})
 aAdd( aPergs ,{1,"Cliente de : " 				,cCli1	,"@!",'.T.',"SA1",'.T.',60,.F.})  
 aAdd( aPergs ,{1,"Cliente Ate: " 				,cCli2	,"@!",'.T.',"SA1",'.T.',60,.F.})  
 aAdd( aPergs ,{1,"Tipo Contrato:"				,cTpCnt	,"@!",'.T.',"A7",'.T.',40,.F.})  
-        
+    
 		
 If !ParamBox(aPergs ,"Parametros ",aRet)
 	Return
@@ -141,8 +141,8 @@ Else
 	cCond 	:= aRet[1]
 	cPeri 	:= aRet[2]
 	cQuinze := aRet[3]
-	cCont1	:= aRet[4]
-	cCont2	:= aRet[5]
+	cCont1	:= strzero(val(aRet[4]),15)
+	cCont2	:= strzero(val(aRet[5]),15)
 	cCli1	:= aRet[6]
 	cCli2	:= aRet[7]
 	cTpCnt	:= aRet[8]
@@ -277,6 +277,7 @@ oTButton1:SetPopupMenu(oMenu)
 //ao clicar com o botão direito no grid de ativos.
 	MENU oMenuP POPUP 
 	MENUITEM "Faturar" ACTION (Processa({|| GeraPv(1)},"Aguarde"))
+	MENUITEM "Localizar" ACTION (Processa({|| Localiza()},"Aguarde"))
 	ENDMENU                                                                           
 
 	oList:bRClicked := { |oObject,nX,nY| oMenuP:Activate( nX, (nY-10), oObject ) }
@@ -458,18 +459,22 @@ Static Function Busca(cCond,cQuinze)
 			aList[nPos1,02] += nNewVlr //(TRB->AAN_QUANT*TRB->AAN_VLRUNI)
 		EndIf
 		
-		Aadd(aList2b,{	TRB->AAN_XCBASE,;				//01
-						Alltrim(TRB->B1_DESC),;			//02
-						TRB->AAN_VLRUNI,;				//03
-						TRB->AAN_CONTRT,;				//04
-						Stod(TRB->AAN_INICOB),;			//05
-						stod(TRB->AAN_FIMCOB),;			//06
-						TRB->AAN_XMINQT,;				//07
-						TRB->AAN_XVLRMI,;				//08
-						0,;								//09
-						0,;								//10
-						0,;								//11
-						TRB->AAN_CONPAG})				//12
+		if !Empty(TRB->AAN_XCBASE)
+			Aadd(aList2b,{	TRB->AAN_XCBASE,;				//01
+							Alltrim(TRB->B1_DESC),;			//02
+							TRB->AAN_VLRUNI,;				//03
+							TRB->AAN_CONTRT,;				//04
+							Stod(TRB->AAN_INICOB),;			//05
+							stod(TRB->AAN_FIMCOB),;			//06
+							TRB->AAN_XMINQT,;				//07
+							TRB->AAN_XVLRMI,;				//08
+							0,;								//09
+							0,;								//10
+							0,;								//11
+							TRB->AAN_CONPAG})				//12
+		else
+			Aadd(aList2b, {"","",0,"","","",0,0,0,0,0,""})
+		endif
 
 		//Itens referente aos pedidos faturados para o contrato.
 		If nPos3 == 0
@@ -489,7 +494,7 @@ Static Function Busca(cCond,cQuinze)
 		Dbskip()
 	EndDo
 	
-	Asort(aList,,,{|x,y| x[1] < y[1]})
+	Asort(aList,,,{|x,y| x[5] < y[5]})
 					
 	For nCont := 1 to len(aAux3)         
 		//Buscando os pedidos faturados
@@ -2000,10 +2005,29 @@ Local aLocac 	:=	{}
 Local nJ 
 Local cAtLoc 	:=	""
 Local cBarra 	:=	""
+Local aCombo    := {"1=Todos", "2=Somente Dose", "3=Somente Locacao" }
+Local aPerg     := {}
 Local cAtFat 	:=	""
 Local cTipFat	:=	'' //aList[oList:nAt,15]
 Local cForFat 	:=	''
 Local nX 
+Local lDose     := .F.
+Local lLoc      := .F.
+
+aAdd( aPerg ,{2,"Escolha uma opção : ",0,aCombo,100,"",.T.})
+
+If !ParamBox(aPerg ,"Parametros ")
+	Return
+EndIf
+
+if MV_PAR01 == "1" 
+	lDose := .T.
+	lLoc  := .T.
+elseif MV_PAR01 == "2"
+	lDose := .T.
+elseif MV_PAR01 == "3"
+	lLoc := .T.
+endif
 
 If nOpcG == 0
 	//Faturar todos os itens liberados do array alist
@@ -2026,7 +2050,7 @@ ElseIf nOpcG == 1
 
 	cBarra := ""
 
-	If cTipFat == "1"
+	If cTipFat $ "1/3"
 		For nCont := 1 to len(aList5B)
 			If aList5B[nCont,01] == aList[oList:nAt,01] .And. len(aList5b[nCont]) > 4
 				cAtFat += cBarra + Alltrim(aList5b[nCont,02])
@@ -2092,7 +2116,7 @@ ElseIf nOpcG == 1
 
 EndIF 
 
-If len(aItens) > 0 
+If len(aItens) > 0 .AND. lDose
 //PEDIDOS DE DOSES
 
 	If Empty(cAtFat)
@@ -2113,6 +2137,7 @@ If len(aItens) > 0
 	aAdd( aCabec , { "C5_LOJACLI"   , aList[oList:nAt,04]    , Nil } )
 	Aadd( aCabec , { "C5_MENNOTA"   , 'Faturamento de Doses - Ref. Patrimonio(s) '+cAtFat   , Nil } )
 	aAdd( aCabec , { "C5_CONDPAG"   , AAM->AAM_CPAGPV     , Nil } )    
+	aAdd( aCabec , { "C5_NATUREZ"   , "31101001  "     , Nil } )    
         
 	For nCont := 1 to len(aItens)
 		aLinha := {}
@@ -2121,7 +2146,8 @@ If len(aItens) > 0
 		aAdd( aLinha , { "C6_PRODUTO"    , aItens[nCont,01]                       , Nil })
 		aAdd( aLinha , { "C6_QTDVEN"     , aItens[nCont,02]                       , Nil })
 		aAdd( aLinha , { "C6_PRCVEN"     , aItens[nCont,03]                       , Nil })
-		aAdd( aLinha , { "C6_TES"        , '523'                                  , Nil })  
+		aAdd( aLinha , { "C6_OPER"       , "08"                                   , Nil })
+		// aAdd( aLinha , { "C6_TES"        , '523'                                  , Nil })  
 		aAdd( aLinha , { "C6_QTDLIB"     , aItens[nCont,02]    	                  , Nil })
 		aAdd( aLinha , { "C6_CONTRT" 	 , AAM->AAM_CONTRT						  , Nil })
 
@@ -2158,7 +2184,7 @@ If len(aItens) > 0
 EndIF 
 
 //Faturamento locacao
-If len(aLocac) > 0
+If len(aLocac) > 0 .AND. lLoc
 	cProdLoc := SuperGetMV("TI_PRODLOC",.F.,"SLOC000001")
 	cNaturez := SuperGetMV("TI_NATRLOC",.F.,"31101003  ")
 	cTesLoc  := Posicione("SB1",1,xFilial("SB1")+cProdLoc,"B1_TS")
@@ -2200,23 +2226,23 @@ If len(aLocac) > 0
 		MostraErro()
 	ELSE
 		Msgalert("Pedido gerado de locação "+SC5->C5_NUM)
-		DbSelectArea("Z08")
-		DbSetOrder(1)
-		For nCont := 1 to len(aList5B)
-			If aList5B[nCont,01] == aList[oList:nAt,01] .And. len(aList5b[nCont]) > 4
-				For nJ := 5 to len(aList5b[nCont])
-					If Dbseek(xFilial("Z08")+aList5b[nCont,nJ,11])
-						While !EOF() .And. Z08->Z08_COD == aList5b[nCont,nJ,11]
-							RecLock("Z08", .F.)
-							Z08->Z08_FATURA := 'S'
-							Z08->(MsUnlock())
-							aList5b[nCont,nJ,12] := 'S'
-							Dbskip()
-						EndDo
-					EndIf 
-				Next nJ
-			EndIf 
-		Next nCont
+		// DbSelectArea("Z08")
+		// DbSetOrder(1)
+		// For nCont := 1 to len(aList5B)
+		// 	If aList5B[nCont,01] == aList[oList:nAt,01] .And. len(aList5b[nCont]) > 4
+		// 		For nJ := 5 to len(aList5b[nCont])
+		// 			If Dbseek(xFilial("Z08")+aList5b[nCont,nJ,11])
+		// 				While !EOF() .And. Z08->Z08_COD == aList5b[nCont,nJ,11]
+		// 					RecLock("Z08", .F.)
+		// 					Z08->Z08_FATURA := 'S'
+		// 					Z08->(MsUnlock())
+		// 					aList5b[nCont,nJ,12] := 'S'
+		// 					Dbskip()
+		// 				EndDo
+		// 			EndIf 
+		// 		Next nJ
+		// 	EndIf 
+		// Next nCont
 	ENDIF    
 EndIf
 
@@ -2577,3 +2603,22 @@ Static Function LeiAntr(cCont,cAtv,cLei)
 	RestArea(aArea)
 
 Return(aRet)
+
+Static Function Localiza()
+	
+	Local aLoca   := {}
+	Local aLocaR  := {}
+	Local cNome   := ""
+
+	aAdd( aLoca ,{1,"Nome do Cliente : ",Space(100)	,"@!",'.T.',"",'.T.',80,.F.})  
+			
+	If !ParamBox(aLoca ,"Localizar",aLocaR)
+		Return
+	Else
+		cNome := aLocaR[1]
+	EndIf
+
+	oList:nAt := AScan(aList, {|x| UPPER(AllTrim(cNome)) $ UPPER(StrTran(AllTrim(x[5]), "/", " "))})
+	oList:refresh()
+
+Return 

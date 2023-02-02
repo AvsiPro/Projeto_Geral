@@ -42,7 +42,9 @@ IF nPosMaq > 0
         Instalacoes(aHeader[nPosMaq,01],nPosMaq)       
         
         //Buscar id de Planogramas por maquina
-        aAuxP := Planograma(aHeader[nPosMaq,01],aHeader[nPosMaq,03],nPosMaq)
+        If len(aHeader[nPosMaq]) > 2
+            aAuxP := Planograma(aHeader[nPosMaq,01],aHeader[nPosMaq,03],nPosMaq)
+        EndIf
         
         //Buscar Planograma da maquina
         //PlanoMaq(aHeader[nPosMaq,01],aHeader[nPosMaq,03],aHeader[nPosMaq,04],nPosMaq)
@@ -77,6 +79,7 @@ IF nPosMaq > 0
         NEXT nJ 
         
         IF len(aList3) < 1
+            MsgAlert("Não encontrado layout da maquina")
             Aadd(aList3,{.T.,'','','','','','','','','','','','','','','','','',''})
         ENDIF
         
@@ -442,9 +445,15 @@ WHILE nPage > 0
             If aAux2[nX]:GOOD:NAME != NIL
                 aCod := separa(aAux2[nX]:GOOD:NAME,"#")
                 //Aadd(aAux,If(aAux2[nX]:GOOD:UPC_CODE==nil,'null',aAux2[nX]:GOOD:UPC_CODE))
-                Aadd(aAux,Alltrim(aCod[2]))
-                Aadd(aHeader[nPos],aAux)
-            EndIf 
+                    Aadd(aAux,Alltrim(aCod[2]))
+                //EndIf 
+                
+            ELSE
+                Aadd(aAux,'Item Nao encontrado')
+            EndIf
+
+            Aadd(aHeader[nPos],aAux)
+             
             aAux := {}
         Next nX       
         

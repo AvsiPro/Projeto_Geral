@@ -18,26 +18,24 @@
 */
 User Function MSD2520()
 
-	// Local cTMEst      	:=  GetMv("MV_XTESD3",,"501")
-	// Local cTM			:=	GetMv("MV_XTMSD3",,"001")
+	Local cTMEst      	:=  GetMv("MV_XTESD3",,"501")
+	//Local cTM			:=	GetMv("MV_XTMSD3",,"001")
 	Local aArea			:=	GetArea()
-	// Local _aCab1 		:= 	{}
-	// Local _aItem 		:= 	{}
-	// Local _atotitem		:=	{}
-	// Local n             :=  0
+	Local _aCab1 		:= 	{}
+	Local _aItem 		:= 	{}
+	Local _atotitem		:=	{}
+	//Local n             :=  0
 
 	Private aEst 		:=	{} //estrutura produto
 	Private aAuxest 	:=	{}
 	Private lMsHelpAuto := 	.T. // se .t. direciona as mensagens de help
 	Private lMsErroAuto := 	.F. //necessario a criacao
-	
-	RETURN
 
 	dbSelectArea("SC5")
 	SC5->(dbSetOrder(1))
 	If SC5->(dbSeek(xFilial("SC5")+SD2->D2_PEDIDO )) .AND. !Empty(SC5->C5_XCODPA) .AND. SC5->C5_XTPPED == "A"
 
-		/*_aCab1 := {{"D3_DOC" ,SD2->D2_DOC, NIL},;
+		_aCab1 := {{"D3_DOC" ,SD2->D2_DOC, NIL},;
 					{"D3_TM" ,cTMEst , NIL},;
 					{"D3_CC" ,"        ", NIL},;
 					{"D3_EMISSAO" ,ddatabase, NIL}}
@@ -50,7 +48,7 @@ User Function MSD2520()
 				{"D3_LOCALIZ" , "",NIL}}
 
 		aadd(_atotitem,_aitem)
-		*/
+		
 
 	ElseIf SC5->(dbSeek(xFilial("SC5")+SD2->D2_PEDIDO )) .AND. !Empty(SC5->C5_XCODPA) .AND. SC5->C5_XTPPED == "F"
 
@@ -85,8 +83,8 @@ User Function MSD2520()
 
 	SC5->(DBCloseArea())
 
-	/*
-	If len(_aCab1) > 0 .AND. len(_atotitem) > 0
+	
+	If len(_aCab1) > 0 .AND. len(_atotitem) > 0 
 		MSExecAuto({|x,y,z| MATA241(x,y,z)},_aCab1,_atotitem,3)
 		
 		If lMsErroAuto
@@ -96,7 +94,7 @@ User Function MSD2520()
 
 		EndIf
 	EndIf 
-	*/
+	
 
 	RestArea(aArea)
 Return
@@ -121,6 +119,10 @@ Local cMaq   :=	""
 Local lOK    :=	.T.
 Local nRecno := 0
 
+DbSelectArea("AAM")
+DbSetOrder(1)
+Dbseek(xFilial("AAM")+cContrt)
+
 DbSelectArea("AAN")
 DbSetOrder(1)
 If Dbseek(xFilial("AAN")+cContrt+cItCont)
@@ -129,6 +131,22 @@ If Dbseek(xFilial("AAN")+cContrt+cItCont)
 	DBDelete()
 	AAN->(MsUnlock())
 EndIf 
+
+DbSelectArea("AA3")
+DbSetOrder(1)
+if DBSEEK(xFilial("AA3") + AAM->AAM_CODCLI + AAM->AAM_LOJA + AAN->AAN_CODPRO + Posicione("SN1", 2, xFilial("SN1") + AvKey(AAN->AAN_XCBASE, "N1_CBASE"), "N1_XNUMSER") + xFilial("AA3"))
+	RecLock("AA3", .F.)
+		DBDelete()
+	AA3->(MsUnlock())
+endif
+
+DbSelectArea("AA4")
+DbSetOrder(2)
+if DBSEEK(xFilial("AA4") + AAM->AAM_CODCLI + AAM->AAM_LOJA + AAN->AAN_CODPRO + AAN->AAN_XCBASE)
+	RecLock("AA4", .F.)
+		DBDelete()
+	AA4->(MsUnlock())
+endif
 
 DbSelectArea("SN1")
 DbSetOrder(2)

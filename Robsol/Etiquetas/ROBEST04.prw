@@ -92,12 +92,13 @@ cQuery += " INNER JOIN "+RetSQLName("SC5")+" SC5
 cQuery += " ON C5_FILIAL = F2_FILIAL
 cQuery += " AND C5_CLIENTE = F2_CLIENTE
 cQuery += " AND C5_LOJACLI = F2_LOJA
-cQuery += " AND C5_NOTA = F2_DOC
-cQuery += " AND C5_SERIE = F2_SERIE
+//cQuery += " AND C5_NOTA = F2_DOC
+//cQuery += " AND C5_SERIE = F2_SERIE
 cQuery += " AND C5_CONDPAG = F2_COND
 cQuery += " AND C5_TIPOCLI = F2_TIPOCLI
 //cQuery += " AND C5_XETIQUE != ' '
 cQuery += " AND SC5.D_E_L_E_T_= ' '
+cQuery += " AND C5_FILIAL+C5_NUM IN(SELECT C6_FILIAL+C6_NUM FROM "+RetSQLName("SC6")+" WHERE C6_FILIAL=C5_FILIAL AND C6_NOTA=F2_DOC AND C6_SERIE=F2_SERIE AND C6_CLI=C5_CLIENTE AND D_E_L_E_T_='')"
 cQuery += " WHERE F2_DOC BETWEEN '"+MV_PAR01+"' AND '"+MV_PAR02+"'"
 cQuery += " AND F2_SERIE='"+MV_PAR03+"'"
 //cQuery += " AND SF2.D_E_L_E_T_=' ' AND F2_CHVNFE<>' '"

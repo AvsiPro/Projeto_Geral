@@ -195,7 +195,9 @@ RETURN
 /*/
 User Function Z15Chama(nOpc)
 
-    Local aArea :=  GetArea()
+    Local aArea   :=  GetArea()
+    Local aAtivos := {}
+    Local nX      := 0
 
     if nOpc == 1
         If Z15->Z15_STATUS == "B"
@@ -253,7 +255,7 @@ User Function Z15Chama(nOpc)
 		DbUseArea(.T.,"TOPCONN",TcGenQry(,,cQuery),'TRB',.F.,.T.)
 
         if AllTrim(TRB->C6_NUM) == ''
-            MsgAlert("Pedido não faturado!", "Erro!")
+            MsgAlert("Pedido não faturado, não pode confirmar!", "Erro!")
             Return
         endif
 
@@ -262,22 +264,28 @@ User Function Z15Chama(nOpc)
         IF ParamBox(aPergs ,"Informe a data de instalação/desinstalação da maquina no cliente.",@aRet)
             dDtCnf := aRet[1]
             If MsgYesNo("Confirma a instalação da maquina no cliente?")
-                RecLock("Z16", .T.)
-                    Z16->Z16_FILIAL := xFilial("Z16")
-                    Z16->Z16_CODIGO := GetSXENum("Z16", "Z16_CODIGO")
-                    Z16->Z16_CBASE  := Z15->Z15_CBASE
-                    Z16->Z16_CLIENT := Z15->Z15_CLIENT
-                    Z16->Z16_LOJA   := Z15->Z15_LOJA
-                    if Z15->Z15_TIPO == "A"
-                        Z16->Z16_DTINCL := dDtCnf
-                    elseif Z15->Z15_TIPO == "B"    
-                        Z16->Z16_DTREMO := dDtCnf
-                    endif
-                    Z16->Z16_CONTRA := Z15->Z15_CONTRA
-                    Z16->Z16_CHAMAD := Z15->Z15_NRCHAM
-                MsUnlock()
 
-                ConfirmSX8()
+                aAtivos := StrToKarr(Z15->Z15_CBASE, "/")
+
+                for nX := 1 to len(aAtivos)
+                    if !Empty(aAtivos[nX])
+                        RecLock("Z16", .T.)
+                            Z16->Z16_FILIAL := xFilial("Z16")
+                            Z16->Z16_CODIGO := GetSXENum("Z16", "Z16_CODIGO")
+                            Z16->Z16_CBASE  := aAtivos[nX]
+                            Z16->Z16_CLIENT := Z15->Z15_CLIENT
+                            Z16->Z16_LOJA   := Z15->Z15_LOJA
+                            if Z15->Z15_TIPO == "A"
+                                Z16->Z16_DTINCL := dDtCnf
+                            elseif Z15->Z15_TIPO == "B"    
+                                Z16->Z16_DTREMO := dDtCnf
+                            endif
+                            Z16->Z16_CONTRA := Z15->Z15_CONTRA
+                            Z16->Z16_CHAMAD := Z15->Z15_NRCHAM
+                        MsUnlock()
+                        ConfirmSX8()
+                    endif
+                next
 
                 RecLock("Z15", .F.)
                     Z15->Z15_STATUS := "B"
