@@ -8,7 +8,9 @@ User Function ROBFAT11()
     Local nX      := 0
     Local nQtdLib := 0
     Local aAux    := {}
-
+    Local nQtdTot := 0
+    Local nVlrTot := 0
+    Local cProd  := space(15)
     Private aList := {}
 
     Private oYe   	:= LoadBitmap(GetResources(),'br_verde') //Liberado e possui saldo maior que quantidade liberada
@@ -38,8 +40,10 @@ User Function ROBFAT11()
         oGrp2      := TGroup():New( 008,008,072,700,"Dados do Pedido",oGrp1,CLR_BLACK,CLR_WHITE,.T.,.F. )
             oSay1      := TSay():New( 024,012,{||SC5->C5_NUM + " - " + Transform(val(SA1->A1_CGC), "@E 99,999,999/9999-99") + " (" + AllTrim(SA1->A1_NOME) + ") "},oGrp2,,/*Fonte*/,.F.,.F.,.F.,.T.,CLR_GREEN,CLR_WHITE,500,008)
             oSay3      := TSay():New( 040,012,{||SA3->A3_COD + " - " + SA3->A3_NOME},oGrp2,,/*Fonte*/,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,500,008)
-            oSay4      := TSay():New( 056,012,{||"Quantidade de Itens Atendidos "+cvaltochar(nQtdTo)},oGrp2,,/*Fonte*/,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,500,008)
-        
+            oSay4      := TSay():New( 056,012,{||"Quantidade de Itens Atendidos "+cvaltochar(nQtdTo)},oGrp2,,/*Fonte*/,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,200,008)
+            oSay5      := TSay():New( 056,132,{||"Busca Produtos "},oGrp2,,/*Fonte*/,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,050,008)
+            oGet1      := TGet():New( 056,206,{|u| If(PCount()>0,cProd:=u,cProd)},oGrp1,056,008,'@!',{|| buscprd(cProd)},CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"","",,)
+	
         oGrp3      := TGroup():New( 076,008,335,710,"Itens do Pedido",oGrp1,CLR_BLACK,CLR_WHITE,.T.,.F. )
 
             oList 	   := TCBrowse():New(084/*Y*/,010/*X*/,690/*X*/,245/*Y*/,, {"", "Item", "Cod Produto", "Descricao", "QTD Vend", "QTD Liberada", "Saldo"},/*Tamanho das colunas*/,;
@@ -62,6 +66,8 @@ User Function ROBFAT11()
         
         for nX := 1 to len(aList)
             if aList[nX,01] $ "1/2"
+                nQtdTot += aList[nX,06]
+                nVlrTot += aList[nX,09] * aList[nX,06]
                 Aadd(aAux, aList[nX])
             endif
         next
@@ -75,6 +81,11 @@ User Function ROBFAT11()
             Endif
         next
 
+        Reclock("SC5",.F.)
+        SC5->C5_XQUANT  :=  nQtdTot
+        SC5->C5_XTOTAL  :=  nVlrTot
+        SC5->(MSUNLOCK()) 
+        
         MsgInfo("Rotina Finalizada!", "Fim!")
 
     endif
@@ -86,7 +97,7 @@ Static Function Busca()
     Local cQuery := ""
 
     cQuery := " "
-    cQuery += " SELECT C6_ITEM,C6_PRODUTO,C6_DESCRI,C6_QTDVEN,B2_QATU,SC6.R_E_C_N_O_ AS ALIASREC   " 
+    cQuery += " SELECT C6_ITEM,C6_PRODUTO,C6_DESCRI,C6_QTDVEN,B2_QATU,SC6.R_E_C_N_O_ AS ALIASREC,C6_PRCVEN   " 
     cQuery += " FROM   " + RetSQLName("SC6") + " SC6   " 
     cQuery += " INNER JOIN " + RetSQLName("SB2") + " SB2 ON C6_PRODUTO = B2_COD   " 
     cQuery += "        AND C6_LOCAL = B2_LOCAL   " 
@@ -111,7 +122,8 @@ Static Function Busca()
                         TRB->C6_QTDVEN,;
                         If(TRB->C6_QTDVEN<TRB->B2_QATU,TRB->C6_QTDVEN,0),;
                         TRB->B2_QATU,;
-                        TRB->ALIASREC})
+                        TRB->ALIASREC,;
+                        TRB->C6_PRCVEN})
         dbskip()
     end
 
@@ -155,5 +167,34 @@ Static Function editcol(nLin)
     oDlg1:refresh()
 
     RestArea(aArea)
+
+Return
+
+/*/{Protheus.doc} buscprd
+    (long_description)
+    @type  Static Function
+    @author user
+    @since 02/02/2023
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function buscprd(cproduto)
+
+Local nPos := Ascan(aList,{|x| Alltrim(x[3]) == Alltrim(cproduto)})
+
+If !Empty(cproduto)
+    If nPos > 0
+        oList:nAt := nPos
+    Else 
+        MsgAlert("Produto não encontrado no pedido")
+    EndIf 
+
+    oList:refresh()
+    oDlg1:refresh()
+EndIf 
 
 Return
