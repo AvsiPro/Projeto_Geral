@@ -17,11 +17,39 @@ export class WarrantyComponent implements OnInit {
   poModal!: PoModalComponent;
   quickSearchWidth: number = 3;
   detailedChamado: Array<any> = []
+  detailedProduto: Array<any> = []
+  notifyNumber: string = '0'
+
+  @ViewChild('userDetailProduto') userDetailProduto: PoModalComponent | undefined;
+
+
+  readonly detailFields: Array<PoDynamicViewField> = [
+    { property: 'item'},
+    { property: 'cod_produto'},
+    { property: 'preco'},
+    { property: 'nota'},
+    { property: 'quantidade'},
+    { property: 'emissao'},
+    { property: 'bairro_empresa', divider: 'Dados da empresa'},
+    { property: 'nome_empresa', gridColumns: 6},
+    { property: 'cnpj'},
+    { property: 'endereco_empresa', gridColumns: 8},
+    { property: 'cidade_empresa'},
+    { property: 'estado_empresa'},
+    { property: 'inscr_estadual'},
+    { property: 'base_icm', divider: 'Detalhes '},
+    { property: 'chave_nfe', gridColumns: 12},
+    { property: 'desc_cfop', gridColumns: 12},
+    { property: 'filial_faturamento'},
+    { property: 'serie'},
+    { property: 'valor_icm'},
+    { property: 'valor_ipi'},
+];
 
   serviceApi =  environment.api + `EnvChamdo/?cod_cliente=${localStorage.getItem('cod_cliente')}&loja_cliente=${localStorage.getItem('loja_cliente')}`;
 
   public readonly actions: Array<PoPageAction> = [
-    { label: 'Incluir Chamado', url: '/FORMULARIO', icon: 'po-icon po-icon-plus' },
+    { label: 'Incluir Chamado', url: '/FORMULARIO', icon: 'po-icon po-icon-plus' }
   ];
   public readonly breadcrumb: PoBreadcrumb = {
     items: [{ label: 'Home', link: '/' }, { label: 'Garantia' }]
@@ -31,6 +59,7 @@ export class WarrantyComponent implements OnInit {
 
   obscliente: string = '';
   obsatendente: string | undefined;
+  numChamado: string = ''
 
   fields: Array<PoDynamicViewField> = [
     { property: 'chamado', label: 'Chamado', gridLgColumns: 6 },
@@ -48,8 +77,13 @@ export class WarrantyComponent implements OnInit {
 
   tableCustomActions: Array<PoPageDynamicTableCustomTableAction> = [
     {
-      label: 'Detalhes',
+      label: 'Detalhes Chamado',
       action: this.onClickUserDetail.bind(this),
+      icon: 'po-icon-user'
+    },
+    {
+      label: 'Espelho da Nota',
+      action: this.onClickProdutoDetail.bind(this),
       icon: 'po-icon-user'
     }
   ];
@@ -85,7 +119,11 @@ export class WarrantyComponent implements OnInit {
     this.getChamadosAbertos()
   } 
 
-  private onClickUserDetail(event: any) {
+
+  onClickUserDetail(event: any) {
+    
+    this.numChamado = event.chamado
+    this.loadNotify(event.chamado, 'visualiza')
 
     this.employee = { 
       chamado:event.chamado,
@@ -104,7 +142,42 @@ export class WarrantyComponent implements OnInit {
   }
 
 
-  interageCliente(){
+  onClicknotiFy() {
+    
+    let chamadoLocal = JSON.parse(localStorage.getItem('chamados') as string)
+
+    this.numChamado = chamadoLocal[0].chamado
+    this.loadNotify(chamadoLocal[0].chamado, 'visualiza')
+
+    this.employee = { 
+      chamado:chamadoLocal[0].chamado,
+      nota:chamadoLocal[0].nota,
+      item:chamadoLocal[0].item,
+      emissao:chamadoLocal[0].emissao,
+      produto:chamadoLocal[0].produto,
+      descricao:chamadoLocal[0].descricao,
+      quantidade:chamadoLocal[0].quantidade,
+      defeito:chamadoLocal[0].defeito,
+      tipodefeito:chamadoLocal[0].tipodefeito,
+      preco:chamadoLocal[0].preco      
+    }
+    this.obsatendente = chamadoLocal[0].obsatend.trim()
+    this.poModal.open();
+  }
+
+
+  private onClickProdutoDetail(user: any) {
+    let url = environment.api + `FieldService/?nota=${user['nota']}&codigo=${user['produto']}&cod_cliente=${localStorage.getItem('cod_cliente')}&loja_cliente=${localStorage.getItem('loja_cliente')}`
+    
+      this.http.get(url).subscribe((res: any)=>{
+      this.detailedProduto = res['items'][0]
+      this.userDetailProduto!.open();
+    })
+
+  }
+
+
+  interageCliente(){  
 
     if(!!this.obscliente){
       let body: any;
@@ -127,6 +200,8 @@ export class WarrantyComponent implements OnInit {
         const result: any = res['statusrequest'];
   
         if (result[0].code == '#200') {
+          
+          this.fGrvImage(this.numChamado)
           this.poNotification.success(result[0].message);
           this.poModal.close()
           window.location.reload();
@@ -146,16 +221,56 @@ export class WarrantyComponent implements OnInit {
 
   }
 
+
+  loadNotify(chamado: string, tpGet: string){  
+
+      const url_login = environment.api + 'chamadoNotific';
+  
+      this.headers = new HttpHeaders({
+        Authorization: 'Basic UjJhbHJFZDRoQWh1MmZSMFRPQnVCTlpxdFM0YTpsUDBUYktKUDdmQ245WGJDUktkM2pYZDFYRW9hIA' });
+  
+      this.http.post(url_login, {CHAMADO : chamado, TPGET : tpGet}, {headers: this.headers}).subscribe((res: any) => {
+        const result: any = res['statusrequest'];
+  
+        if (result[0].code == '#200') {
+
+          if(result[0].message === 'atualizou'){
+            this.notifyNumber = '1'
+          }else{
+            this.notifyNumber = '0'
+          }
+          
+        } else{
+          console.log(result[0].message);
+        }
+      }, (error) => {
+        if (error.hasOwnProperty('message')){
+          console.log('Falha na comunicaçao com servidor');
+        }
+      });
+
+  }
+
   getChamadosAbertos(){
     let url = environment.api + `EnvChamdo/?cod_cliente=${localStorage.getItem('cod_cliente')}&loja_cliente=${localStorage.getItem('loja_cliente')}`
     let items: any = []
     
     this.http.get(url).subscribe((response: any) =>{
       response['items'].forEach((element: any) =>{
+        this.loadNotify(element.chamado, 'busca')
+
         items.push({
-          chamado: element.chamado,
-          nota: element.nota,
-          produto: element.produto,
+          chamado:element.chamado,
+          nota:element.nota,
+          item:element.item,
+          emissao:element.emissao,
+          produto:element.produto,
+          descricao:element.descricao,
+          quantidade:element.quantidade,
+          defeito:element.defeito,
+          tipodefeito:element.tipodefeito,
+          preco:element.preco,
+          obsatend:element.obsatend
         })
       })
 
@@ -164,8 +279,6 @@ export class WarrantyComponent implements OnInit {
 
     })
   }
-
-
   
   base64: string = ''
   fileSelected?:Blob;

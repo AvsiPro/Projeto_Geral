@@ -31,7 +31,7 @@ User Function ROBWS05()
     aAdd(aPergs, {1, "Emissão Até",dDataAt, "", ".T.", ""   , ".T.", 80,.T.})
     
     If ParamBox(aPergs, "Informe os parâmetros")
-        Processa({|| fQueryPro()},"Aguarde, efetuando rastreamento")
+        Processa({|| fQueryPro()},"Efetuando rastreamento")
     EndIf
 
 Return
@@ -46,15 +46,18 @@ Static Function fQueryPro()
 
     cQuery := " SELECT * FROM " + RetSQLName("SC5") + "  " 
     cQuery += " WHERE D_E_L_E_T_=''  " 
-    cQuery += " AND C5_XETIQUE != ''  " 
+    cQuery += " AND C5_FILIAL = '"+xFilial('SC5')+"'
+    cQuery += " AND C5_TRANSP IN ('T3','"+Iif(cFilAnt == '0101','T1','T16')+"') " 
     cQuery += " AND C5_NUM BETWEEN '"+mv_par01+"' AND '"+mv_par02+"'  " 
     cQuery += " AND C5_NOTA BETWEEN '"+mv_par03+"' AND '"+mv_par04+"'  
     cQuery += " AND C5_EMISSAO BETWEEN '"+DToS(mv_par05)+"' AND '"+DToS(mv_par06)+"'  " 
+    cQuery += " ORDER BY C5_NOTA,C5_TRANSP"
 
     cAliasTMP := GetNextAlias()
     MPSysOpenQuery(cQuery, cAliasTMP)
 
     While (cAliasTMP)->(!EoF())
+          
         Aadd(aList, {;
             Alltrim((cAliasTMP)->C5_FILIAL),;
             Alltrim((cAliasTMP)->C5_NOTA)+'-'+Alltrim((cAliasTMP)->C5_SERIE),;
@@ -63,15 +66,17 @@ Static Function fQueryPro()
             Alltrim((cAliasTMP)->C5_XETIQUE),;
             Alltrim((cAliasTMP)->C5_CLIENTE),;
             Alltrim(Posicione("SA1",1,xFilial("SA1")+(cAliasTMP)->C5_CLIENTE+(cAliasTMP)->C5_LOJACLI,"A1_NOME")),;
-            fGetRastro(Alltrim((cAliasTMP)->C5_XETIQUE),.F.),;
+            Iif(Alltrim((cAliasTMP)->C5_TRANSP) != Iif(cFilAnt == '0101','T1','T16'),fGetRastro(Alltrim((cAliasTMP)->C5_XETIQUE),.F.), fGetBras(Alltrim(SM0->M0_CGC),Alltrim((cAliasTMP)->C5_NOTA),.F.)),;
             Alltrim(Posicione("SA3",1,xFilial("SA3")+(cAliasTMP)->C5_VEND1,"A3_NOME")),;
-            Alltrim((cAliasTMP)->C5_CONDPAG);
+            Alltrim((cAliasTMP)->C5_CONDPAG),;
+            Alltrim((cAliasTMP)->C5_TRANSP),;
+            Alltrim((cAliasTMP)->C5_NOTA);
         })
         (cAliasTMP) ->(DbSkip())
     EndDo
 
     If Len(aList) > 0
-        oDlg1  := MSDialog():New( 092,217,732,1413,"Rastreio de Etiquetas",,,.F.,,,,,,.T.,,,.T. )
+        oDlg1  := MSDialog():New( 092,217,732,1413,"Rastreio de Mercadorias",,,.F.,,,,,,.T.,,,.T. )
         oGrp1  := TGroup():New( 008,008,300,380,"Documentos",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
         oGrp2  := TGroup():New( 008,388,280,584,"Rastreio",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
         oMGet1 := TMultiGet():New( 020,396,{|u| Alltrim(cRastro) },oGrp2,176,252,,,CLR_BLACK,CLR_WHITE,,.T.,"",,,.F.,.F.,.T.,,,.F.,,  )
@@ -79,8 +84,8 @@ Static Function fQueryPro()
         oBtn2  := TButton():New( 284,500,"Fechar",oDlg1,{|| oDlg1:End()},037,016,,,,.T.,,"",,,,.F. )
         oBtn3  := TButton():New( 284,546,"Gravar",oDlg1,{|| fGravaRastro(aList[oList:nAt,01],aList[oList:nAt,02],aList[oList:nAt,08])},037,016,,,,.T.,,"",,,,.F. )
 
-        oList := TCBrowse():New(020,016,352,272,,{'Filial','Nota','Pedido','Emissão','Etiqueta','Cliente','Nome Cliente','Ultimo Status','Vendedor','Cond Pgto'},;
-        {40,40,40,40,40,60,40,60,40,40,40},oGrp1,,,,{|| fGetRastro(aList[oList:nAt,05],.T.)},{|| },,,,,,,.F.,,.T.,,.F.,,,)
+        oList := TCBrowse():New(020,016,352,272,,{'Filial','Nota','Pedido','Emissão','Etiqueta','Cliente','Nome Cliente','Ultimo Status','Vendedor','Cond Pgto','Transporte'},;
+        {40,40,40,40,40,60,40,60,40,40,40,40},oGrp1,,,,{|| Iif(aList[oList:nAt,11] != Iif(cFilAnt == '0101','T1','T16'),fGetRastro(aList[oList:nAt,05],.T.), fGetBras(Alltrim(SM0->M0_CGC),aList[oList:nAt,12],.T.))},{|| },,,,,,,.F.,,.T.,,.F.,,,)
     
         oList:SetArray(aList)
         oList:bLine := {||{;
@@ -93,7 +98,9 @@ Static Function fQueryPro()
             aList[oList:nAt,07],;
             aList[oList:nAt,08],;
             aList[oList:nAt,09],;
-            aList[oList:nAt,10]}}
+            aList[oList:nAt,10],;
+            Iif(aList[oList:nAt,11] == 'T3','Correrios','Braspress');
+        }}
 
         oDlg1:Activate(,,,.T.)
     EndIf
@@ -296,3 +303,68 @@ Local cTitle    := 'Rastreio_Correrios'
 
 	
 Return
+
+
+
+Static Function fGetBras(cCnpj,cDoc,lAll)
+
+Local aHeader  := {}
+Local nMaxTent := 10
+Local nCntTent := 0
+Local nX       := 0
+Local cRet     := ''
+
+Default cCnpj := '23824405000301'
+Default cDoc  := '00005428'
+
+cUrlInt := Alltrim(SuperGetmv('TI_APIBRAS',.F.,"https://api.braspress.com")) 
+oRest   := FWRest():New(cUrlInt)
+jJSON   := JsonObject():New()
+cUsrId  := Alltrim(SuperGetmv('TI_USRBRAS',.F.,"ROB301_PRD:igYY3I38ROu42Wmq"))
+
+aadd(aHeader,'Content-Type: application/json; charset=utf-8')
+aadd(aHeader,'Authorization: Basic ' + Encode64(cUsrId))
+aadd(aheader,'Cookie: JSESSIONID=998EA0B48034ADA3FAE84FB1AB0D4B6B')
+
+oRest:setPath("/v3/tracking/byNf/"+Alltrim(cCnpj)+"/"+Alltrim(StrTran(cDoc,'0',''))+"/json")
+
+While .T.
+    nCntTent++
+
+    If oRest:Get(aHeader)
+        jJSON:fromJSON(oRest:GetResult())
+        
+        aTimeLine := jJSON['conhecimentos'][1]['timeLine']
+
+        If aTimeLine != Nil
+            For nX := 1 To Len(aTimeLine)
+                If lAll
+                    cRet += 'Data: ' + aTimeLine[nX]['data'] + CRLF
+                    cRet += 'Descrição: '+ aTimeLine[nX]['descricao'] + CRLF + CRLF
+                Else
+                    If nX == Len(aTimeLine)
+                        cRet := aTimeLine[nX]['data'] + '-' + aTimeLine[nX]['descricao']
+                        Exit
+                    EndIf
+                EndIf
+            Next nX
+        Else
+            cRet := 'Erro ao consultar Braspress, tente novamente'
+        EndIf
+
+        Exit
+    EndIf
+
+    If nCntTent == nMaxTent
+        cRet := 'Erro ao consultar Braspress, tente novamente'
+        Exit
+    EndIf
+EndDo
+
+If Empty(cRet)
+    cRet := 'Erro ao consultar Braspress, tente novamente'
+EndIf
+
+cRastro := cRet
+
+Return cRet

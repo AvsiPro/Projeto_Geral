@@ -1,7 +1,7 @@
 #INCLUDE 'PROTHEUS.CH'
 #INCLUDE 'RESTFUL.CH'
 #INCLUDE "FWMVCDEF.CH"
-
+#INCLUDE "Fileio.ch"
 
 //-------------------------------------------------------------------
 /*/{Protheus.doc} PRTL044
@@ -28,6 +28,12 @@ End WsRestFul
 WsRestFul UpdChamdo DESCRIPTION "API REST - EVENTO Envia Chamados | PORTAL ROBSOL " 
 
 	WsMethod POST Description "Interacao no chamado "  WsSyntax "/UpdChamdo"
+
+End WsRestFul
+
+WsRestFul chamadoNotific DESCRIPTION "API REST - EVENTO Notifica Chamados | PORTAL ROBSOL " 
+
+	WsMethod POST Description "Notifica Chamados"  WsSyntax "/chamadoNotific"
 
 End WsRestFul
 //-------------------------------------------------------------------
@@ -186,6 +192,79 @@ WsMethod POST WsReceive RECEIVE WsService UpdChamdo
 		Else
 			cCode 	 := "#500"
 			cMessage := "Necessario descrever interacao!"
+			lRet 	 := .F.
+		EndIf
+
+	EndIf
+
+	//-> Mensagem de Retorno da requisicao
+	self:setContentType("application/json")
+	self:setResponse(fwJsonSerialize(StatReq(cCode,cMessage)))
+
+	// Realiza o fechamento do Ambiente
+	RpcClearEnv()
+	Freeobj(oBody)
+
+Return lRet
+
+
+
+WsMethod POST WsReceive RECEIVE WsService chamadoNotific
+
+	Local cCode			As Character 
+	Local cMessage		As Character
+	Local cChamado		As Character
+	Local cTpGet		As Character
+	Local lRet			As Logical 
+	Local oBody			As J 
+
+	cCode	:= ''
+	cMessage	:= ''
+	lRet	:= .T.
+
+	conout("chegou aqui chamadoNotific")
+
+	// recupera o body da requisicao
+	oBody  := JsonObject():New()
+
+	If ValType(oBody:fromJson( AllTrim( self:getContent() ) )) != 'U'	
+		cCode 		:= "#500"
+		cMessage	:= "Formato Json nao reconhecido. Revisar a estrutura e layout informado."
+		lRet		:= .F.
+	Else
+		cChamado := oBody:getJsonText("CHAMADO")
+		cTpGet	 := oBody:getJsonText("TPGET")
+
+		If !Empty(cChamado)
+			cCode 	 := "#200"
+			lRet 	 := .T.
+
+			If cTpGet == 'busca'
+				oFile := FWFileReader():New('\updchamados\chamado_'+Alltrim(cChamado)+'\notification.txt')
+
+				If (oFile:Open())
+					If !(oFile:EoF())
+						cMessage := oFile:FullRead()
+					Else
+						cMessage := 'visualizou'
+					EndIf
+					
+					oFile:Close()
+				EndIf
+			Else
+				cMessage := 'visualizou'
+				nHandle	 := FCREATE('\updchamados\chamado_'+Alltrim(cChamado)+'\notification.txt')
+
+				If nHandle = -1
+					conout("Erro ao criar arquivo - ferror " + Str(Ferror()))
+				Else
+					FWrite(nHandle, 'visualizou')
+					FClose(nHandle)
+				Endif
+			EndIf
+		Else
+			cCode 	 := "#500"
+			cMessage := "visualizou"
 			lRet 	 := .F.
 		EndIf
 

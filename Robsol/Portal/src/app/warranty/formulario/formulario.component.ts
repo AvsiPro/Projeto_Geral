@@ -366,7 +366,7 @@ export class FormularioComponent implements OnInit {
     let url = environment.api + `FieldService/?nota=${user['nota']}&codigo=${user['cod_produto']}&cod_cliente=${localStorage.getItem('cod_cliente')}&loja_cliente=${localStorage.getItem('loja_cliente')}`
     
       this.http.get(url).subscribe((res: any)=>{
-      this.detailedProduto = res['items'][0]
+      this.detailedProduto = res['items'][0] 
       this.userDetailProduto!.open();
     })
 

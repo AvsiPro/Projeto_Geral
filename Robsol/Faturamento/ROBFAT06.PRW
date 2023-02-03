@@ -2,7 +2,7 @@
 #Include 'RWMAKE.CH'
 #Include 'FONT.CH'
 #Include 'COLORS.CH'
-
+#Include "Fileio.ch"
 
 /*/{Protheus.doc} ROBFAT06
     @long_description Tela de atendimento de chamados Robsol
@@ -290,6 +290,15 @@ Local aParam := {{ 2, "Status Chamado",nStatus,aStatus,60,, .T. },;
                             Z50->Z50_PEDVEN := aRetPed[2]
                         EndIf
                     Z50->(MsUnlock())
+
+                    nHandle := FCREATE('\updchamados\chamado_'+Alltrim(Z50->Z50_CODIGO)+'\notification.txt')
+
+                    If nHandle = -1
+                        conout("Erro ao criar arquivo - ferror " + Str(Ferror()))
+                    Else
+                        FWrite(nHandle, 'atualizou')
+                        FClose(nHandle)
+                    Endif
                 EndIf
 
                 oDlg1:end()

@@ -1,5 +1,10 @@
 <po-page-default p-title="Garantia" [p-actions]="actions" [p-breadcrumb]="breadcrumb">
-
+    <div style="display: flex; justify-content: flex-end;">
+            <button class="notification button button2" (click)="onClicknotiFy()">
+              <span class="badge">{{notifyNumber}}</span>
+              <img src="../../assets/bell.png" height="30">
+            </button>
+    </div>
     <po-page-dynamic-table
         [p-auto-router]='true'
         [p-concat-filters]='true'
@@ -49,3 +54,47 @@
     </po-modal>
 
 </po-page-default>
+
+<po-modal #userDetailProduto p-title="Detalhes da Nota">
+    <po-dynamic-view p-size="lg" [p-fields]="detailFields" [p-value]="detailedProduto"> </po-dynamic-view>
+</po-modal>
+
+
+
+<style>
+    .notification {
+      text-decoration: none;
+      position: relative;
+      display: inline-block;
+      margin-top: 5px;
+      margin-bottom: 10px;
+    }
+
+    .notification .badge {
+      position: absolute;
+      top: -2px;
+      right: -8px;
+      padding: 2.5px 6px;
+      border-radius: 50%;
+      background-color: tomato;
+      color: white;
+      font-size: 10px;
+    }
+
+    .button {
+      border: none;
+      color: white;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      margin: 4px 2px;
+      cursor: pointer;
+    }
+
+    .button2 {
+      background-color: transparent;
+      color: black; 
+      border: 0px solid #008CBA;
+    }
+</style>
