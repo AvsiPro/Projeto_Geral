@@ -27,6 +27,7 @@ export class LoginComponent {
   };
 
   literals: string | any;
+  hideload = true
 
   constructor(
     private router: Router,
@@ -54,6 +55,7 @@ export class LoginComponent {
 
 
   loginSubmit(formData: PoPageLogin) {
+    this.hideload = false
 
     let body: any;
     const url_login = environment.api + 'PRTL001';
@@ -85,14 +87,18 @@ export class LoginComponent {
             localStorage.setItem('cod_cliente', fmt_res[0].cod_cliente.trim());
             localStorage.setItem('menu_acesso', fmt_res[0].menu_acesso);
             localStorage.setItem('loja_cliente', fmt_res[0].loja_cliente);
+            this.hideload = true
             this.router.navigate(['/']);
 
           } else{
             this.poNotification.error('Falha na autenticação');
+            this.hideload = true
+            
             }
           }, (error) => {
             if (error.hasOwnProperty('message')){
               this.poNotification.error('Falha na autenticação');
+              this.hideload = true
             }
           });
 
