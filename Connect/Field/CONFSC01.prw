@@ -2056,7 +2056,7 @@ ElseIf nOpcG == 1
 				cAtFat += cBarra + Alltrim(aList5b[nCont,02])
 				cBarra := "/"
 				For nJ := 5 to len(aList5b[nCont])
-					If aList5B[nCont,nJ,08] > 0
+					If aList5B[nCont,nJ,08] > 0 .And. aList5B[nCont,nJ,09] > 0
 						nPos := Ascan(aItens,{|x| x[1] == aList5B[nCont,nJ,02]})
 						If nPos == 0
 							Aadd(aItens,{	aList5B[nCont,nJ,02],;
@@ -2082,7 +2082,7 @@ ElseIf nOpcG == 1
 			For nCont := 1 to len(aList5B)
 				If aList5B[nCont,01] == aList2[nX,04] .And. len(aList5b[nCont]) > 4 .And. aList5B[nCont,02] == aList2[nX,01]
 					For nJ := 5 to len(aList5b[nCont])
-						If aList5B[nCont,nJ,08] > 0
+						If aList5B[nCont,nJ,08] > 0 .And. aList5B[nCont,nJ,09] > 0
 							nPosloc := Ascan(aItens,{|x| x[1] == aList5B[nCont,nJ,02]})
 							
 							If nPosloc == 0
