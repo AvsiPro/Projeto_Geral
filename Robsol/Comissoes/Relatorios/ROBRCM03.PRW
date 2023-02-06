@@ -258,9 +258,9 @@ if (oFile:Open())
 
             If lPulaD
                 dDia1++
-                If dDia1 > _DtAt .And. dDia1 > lastday(_DtDe)
+                /*If dDia1 > _DtAt .And. dDia1 > lastday(_DtDe)
                     dDia1 := ctod(' / / ')
-                EndIf
+                EndIf*/
             EndIf
             
 
