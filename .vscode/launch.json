@@ -27,7 +27,10 @@
 		},
 		{
 			"label": "U_PILEST01"
+		},
+		{
+			"label": "u_conest02"
 		}
 	],
-	"lastProgramExecuted": "sigaadv"
+	"lastProgramExecuted": "u_conest02"
 }
