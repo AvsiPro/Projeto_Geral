@@ -52,9 +52,31 @@ export class LoginComponent {
      });
     }
 
+    tentLogar = async(formData: PoPageLogin) => {
+
+      let result : any
+
+      this.hideload = false
+
+      for (var i = 0; i < 5; i++) {
+          console.log('tentativa de logar: '+i);
+          result = this.loginSubmit(formData)
+          
+          if(result.retorno){
+              this.hideload = true
+              this.router.navigate(['/']);
+              break
+          }
+      }
+      
+      if(!result.retorno){
+        this.poNotification.error(result.erro)
+      }
+      this.hideload = true
+  }
 
 
-  loginSubmit(formData: PoPageLogin) {
+  loginSubmit = async(formData: any) =>{
     this.hideload = false
 
     let body: any;
@@ -69,39 +91,46 @@ export class LoginComponent {
 
     this.httpClient.post(url_login, body, {headers: this.headers}).subscribe((res: any) => {
       const fmt_res: any = res['statusrequest'];
-        localStorage.setItem('access_token', fmt_res[0].user_token);
 
-            if(fmt_res[0].cod_cliente.trim() == ''){
-              localStorage.setItem('tipo', 'vendedor');
-            }
-            if(fmt_res[0].cod_vendedor.trim() == ''){
-              localStorage.setItem('tipo', 'cliente');
-            }
+      localStorage.setItem('access_token', fmt_res[0].user_token);
+      
+      if(!fmt_res[0].cod_cliente){
+        localStorage.setItem('tipo', 'vendedor');
+      }
 
-            if (fmt_res[0].code == '#200') {
-            
-            localStorage.setItem('login_user', formData.login);
-            localStorage.setItem('user', fmt_res[0].nome_usuario);
-            localStorage.setItem('cod_usuario', fmt_res[0].Cod_Usuario);
-            localStorage.setItem('cod_vendedor', fmt_res[0].cod_vendedor.trim());
-            localStorage.setItem('cod_cliente', fmt_res[0].cod_cliente.trim());
-            localStorage.setItem('menu_acesso', fmt_res[0].menu_acesso);
-            localStorage.setItem('loja_cliente', fmt_res[0].loja_cliente);
-            this.hideload = true
-            this.router.navigate(['/']);
+      if(!fmt_res[0].cod_vendedor){
+        localStorage.setItem('tipo', 'cliente');
+      }
+      
+      console.log(fmt_res[0].code)
+      if (fmt_res[0].code == '#200') {
 
-          } else{
-            this.poNotification.error('Falha na autenticação');
-            this.hideload = true
-            
-            }
-          }, (error) => {
-            if (error.hasOwnProperty('message')){
-              this.poNotification.error('Falha na autenticação');
-              this.hideload = true
-            }
+        localStorage.setItem('login_user', formData.login);
+        localStorage.setItem('user', fmt_res[0].nome_usuario);
+        localStorage.setItem('cod_usuario', fmt_res[0].Cod_Usuario);
+        localStorage.setItem('cod_vendedor', fmt_res[0].cod_vendedor.trim());
+        localStorage.setItem('cod_cliente', fmt_res[0].cod_cliente.trim());
+        localStorage.setItem('menu_acesso', fmt_res[0].menu_acesso);
+        localStorage.setItem('loja_cliente', fmt_res[0].loja_cliente);
+
+        this.router.navigate(['/']);
+
+        return new Promise((resolve) => {
+            resolve({retorno: true, erro: ''});
+        });
+        
+      } else{
+          return new Promise((resolve) => {
+            resolve({retorno: false, erro: 'Falha na autenticação'});
+        });
+          
+      }
+    }, (error) => {
+            return new Promise((resolve) => {
+              resolve({retorno: false, erro: 'Falha na autenticação'});
           });
-
+    });
+   
   }
 
 }

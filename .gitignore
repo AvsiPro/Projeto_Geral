@@ -38,3 +38,4 @@
 /**/.angular/
 *.pack
 *.old
+*.launch.json
