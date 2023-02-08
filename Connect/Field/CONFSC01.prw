@@ -359,7 +359,7 @@ Static Function Busca(cCond,cQuinze)
 	cQuery += " AAN_XMINQT,AAN_XVLRMI,"
 	cQuery += " AAN_VLRUNI,AAN_INICOB,AAN_FIMCOB,AAN_CONPAG,"
 	cQuery += " E4_COND,E4_DESCRI,A1_NREDUZ,A1_NOME,A1_END,"
-	cQuery += " A1_BAIRRO,A1_MUN,"
+	cQuery += " A1_BAIRRO,A1_MUN,A1_EST,"
 	cQuery += " AAM_INIVIG,AAM_FIMVIG,A1_EMAIL,'' AS AAN_XISENT,"
 	cQuery += " AAM_XFORFA, AAM_XTIPFA,'' AS AAM_XPERCT,"
 	cQuery += " '' AS AAM_XRENOV,AAN_FILIAL,AAM_XPRDCM"
@@ -457,7 +457,8 @@ Static Function Busca(cCond,cQuinze)
 						TRB->AAN_FILIAL,;
 						0,;
 						0,;
-						TRB->AAM_XPRDCM})
+						TRB->AAM_XPRDCM,;
+						TRB->A1_EST})
 		Else
 			//Soma todos os itens do contrato para pegar o valor total.
 			aList[nPos1,02] += nNewVlr //(TRB->AAN_QUANT*TRB->AAN_VLRUNI)
@@ -998,12 +999,11 @@ If AAM->AAM_XQTVLM > 0
 	Aeval(aList2b,{|x| nDifCb += If(x[4] == aList[nLinha2,01],If(AAM->AAM_XTIPMI=="1",x[9],x[10]),0)})
 
 	If nDifCb < AAM->AAM_XQTVLM .AND. cQuinze == "2"
-		cTexto += " - Doses Compl. a serem cobradas "+Transform(AAM->AAM_XQTVLM-nDifCb,"@E 999,999,999")
+		
 		aList[nLinha2,20] := AAM->AAM_XQTVLM-nDifCb
 	EndIf 
 EndIF 
 
-oSay6:settext(cTexto)
 
 If aList[nLinha2,20] > 0
 	nAbater := 0
@@ -1018,11 +1018,17 @@ If aList[nLinha2,20] > 0
 						cLeit  := aList5B[nCont,nX,11]
 						cDtAnt := aList5B[nCont,nX,04]
 						nQtdAb := abatfat(cNumSr,cLeit,cSelec,cDtAnt)
+						If nQtdAb == 0 .And. aList5B[nCont,nX,05] > 0
+							nQtdAb := aList5B[nCont,nX,05]
+						EndIf 
+
 						nVlrAbt += nQtdAb *  aList5B[nCont,nX,09]
-						nAbater += aList5B[nCont,nX,05] - nQtdAb
+						//nAbater += aList5B[nCont,nX,05] - nQtdAb
+						nAbater += nQtdAb
 				Next nX 
 			EndIf
 		Next nCont
+		cTexto += " - Doses Compl. a serem cobradas "+Transform(AAM->AAM_XQTVLM-nDifCb-nAbater,"@E 999,999,999")
 	EndIf 
 
 	IF AAM->AAM_XTIPMI=="1"
@@ -1040,6 +1046,8 @@ If aList[nLinha2,20] > 0
 	EndIf  
 	
 EndIf 
+
+oSay6:settext(cTexto)
 
 oList:refresh()
 If nOpini <> 0
@@ -2052,6 +2060,7 @@ Local cForFat 	:=	''
 Local nX 
 Local lDose     := .F.
 Local lLoc      := .F.
+Local cFilFat	:=	If(aList[oList:nAt,23]=="RJ","0102","0101")
 
 aAdd( aPerg ,{2,"Escolha uma opção : ",0,aCombo,100,"",.T.})
 
@@ -2144,7 +2153,7 @@ ElseIf nOpcG == 1
 			EndIf 
 			cAtFat := Alltrim(aList2[nX,01])
 			If len(aItens) > 0 //(len(aItens) > 0 .And. cQuinze == "2") .OR.(cForFat=="1" .AND. cTipFat=="2" .And. len(aItens) > 0)
-				Processa({|| Pedido(cAtFat,aItens)},"Aguarde")
+				Processa({|| Pedido(cAtFat,aItens,cFilFat)},"Aguarde")
 				aItens := {}
 			EndIF
 			
@@ -2169,7 +2178,7 @@ If len(aItens) > 0 .AND. lDose
 	aItC6  := {}
 	cItem  := '01'
 
-	aAdd( aCabec , { "C5_FILIAL"    , xFilial("SC5")      , Nil } ) 
+	aAdd( aCabec , { "C5_FILIAL"    , cFilFat		      , Nil } ) 
 	aAdd( aCabec , { "C5_XTPPED"    , 'F'                 , Nil } )
 	aAdd( aCabec , { "C5_TIPO"      , 'N'                 , Nil } )
 	aAdd( aCabec , { "C5_CLIENTE"   , aList[oList:nAt,03]    , Nil } )
@@ -2180,7 +2189,7 @@ If len(aItens) > 0 .AND. lDose
         
 	For nCont := 1 to len(aItens)
 		aLinha := {}
-		aAdd( aLinha , { "C6_FILIAL"     , xFilial("SC6")                         , Nil })
+		aAdd( aLinha , { "C6_FILIAL"     , cFilFat		                          , Nil })
 		aAdd( aLinha , { "C6_ITEM"       , cItem 							      , Nil })
 		aAdd( aLinha , { "C6_PRODUTO"    , aItens[nCont,01]                       , Nil })
 		aAdd( aLinha , { "C6_QTDVEN"     , aItens[nCont,02]                       , Nil })
@@ -2234,7 +2243,7 @@ If len(aLocac) > 0 .AND. lLoc
 	aItC6  := {}
 	cItem  := '01'
 
-	aAdd( aCabec , { "C5_FILIAL"    , xFilial("SC5")      	, Nil } ) 
+	aAdd( aCabec , { "C5_FILIAL"    , cFilFat		      	, Nil } ) 
 	aAdd( aCabec , { "C5_XTPPED"    , 'L'                 	, Nil } )
 	aAdd( aCabec , { "C5_TIPO"      , 'N'                 	, Nil } )
 	aAdd( aCabec , { "C5_CLIENTE"   , aList[oList:nAt,03]   , Nil } )
@@ -2245,7 +2254,7 @@ If len(aLocac) > 0 .AND. lLoc
 	
 	For nCont := 1 to len(aLocac)
 		aLinha := {}
-		aAdd( aLinha , { "C6_FILIAL"     , xFilial("SC6")                         , Nil })
+		aAdd( aLinha , { "C6_FILIAL"     , cFilFat		                          , Nil })
 		aAdd( aLinha , { "C6_ITEM"       , cItem 							      , Nil })
 		aAdd( aLinha , { "C6_PRODUTO"    , cProdLoc		                          , Nil })
 		aAdd( aLinha , { "C6_QTDVEN"     , 1				                      , Nil })
@@ -2386,7 +2395,7 @@ Return
 	(examples)
 	@see (links_or_references)
 /*/
-Static Function Pedido(cAtFat,aItens)
+Static Function Pedido(cAtFat,aItens,cFilFat)
 
 Local aArea		:=	GetArea()
 Local nCont 	:=	0
@@ -2407,7 +2416,7 @@ aCabec := {}
 aItC6  := {}
 cItem  := '01'
 
-aAdd( aCabec , { "C5_FILIAL"    , xFilial("SC5")      , Nil } ) 
+aAdd( aCabec , { "C5_FILIAL"    , cFilFat		      , Nil } ) 
 aAdd( aCabec , { "C5_XTPPED"    , 'F'                 , Nil } )
 aAdd( aCabec , { "C5_TIPO"      , 'N'                 , Nil } )
 aAdd( aCabec , { "C5_CLIENTE"   , aList[oList:nAt,03]    , Nil } )
@@ -2417,7 +2426,7 @@ aAdd( aCabec , { "C5_CONDPAG"   , AAM->AAM_CPAGPV     , Nil } )
 	
 For nCont := 1 to len(aItens)
 	aLinha := {}
-	aAdd( aLinha , { "C6_FILIAL"     , xFilial("SC6")                         , Nil })
+	aAdd( aLinha , { "C6_FILIAL"     , cFilFat		                          , Nil })
 	aAdd( aLinha , { "C6_ITEM"       , cItem 							      , Nil })
 	aAdd( aLinha , { "C6_PRODUTO"    , aItens[nCont,01]                       , Nil })
 	aAdd( aLinha , { "C6_QTDVEN"     , aItens[nCont,02]                       , Nil })
