@@ -151,7 +151,7 @@ Local cQuery := ''
 Local aProds := {}
 Local nCont  := 0
 
-cQuery := "SELECT D2_CLIENTE,D2_LOJA,A1_NOME,D2_COD,B1_DESC,SUM(D2_QUANT) AS CONSUMO"
+cQuery := "SELECT D2_CLIENTE,D2_LOJA,A1_NOME,D2_COD,B1_DESC,D2_DOC,D2_SERIE,SUM(D2_QUANT) AS CONSUMO"
 cQuery += " FROM "+RetSQLName("SD2")+" D2"
 cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD=D2_COD AND B1.D_E_L_E_T_=' '"
 cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_COD=D2_CLIENTE AND A1_LOJA=D2_LOJA AND A1.D_E_L_E_T_=' '"
@@ -160,7 +160,7 @@ cQuery += " AND D2_EMISSAO BETWEEN '"+dtos(MV_PAR02)+"' AND '"+dtos(MV_PAR03)+"'
 cQuery += " AND D2.D_E_L_E_T_=' '" 
 cQuery += " AND D2_PEDIDO IN(SELECT C5_NUM FROM "+RetSQLName("SC5")+" WHERE C5_FILIAL='"+MV_PAR01+"' AND C5_XTPPED='F' AND D_E_L_E_T_=' ' AND C5_EMISSAO<='"+dtos(MV_PAR03)+"')"
 cQuery += " AND D2_COD <> 'DOSE COMP'"
-cQuery += " GROUP BY D2_CLIENTE,D2_LOJA,A1_NOME,D2_COD,B1_DESC"
+cQuery += " GROUP BY D2_CLIENTE,D2_LOJA,A1_NOME,D2_COD,B1_DESC,D2_DOC,D2_SERIE"
 
 If Select("TRB") > 0
     dbSelectArea("TRB")
@@ -430,16 +430,6 @@ Static Function CalcSld()
 
 Local nCont := 0
 //aList4B 9
-/*Aadd(aList4B,{  TRB->D2_COD,;
-                    TRB->B1_DESC,;
-                    TRB->REMESSA,;
-                    TRB->NNR_CODCLI,;
-                    TRB->NNR_LOJCLI,;
-                    TRB->A1_NOME,;
-                    TRB->C5_XCODPA,;
-                    TRB->NNR_DESCRI,;
-                    0,;
-                    0})*/
 
 DbSelectArea("SB2")
 DbSetOrder(1)

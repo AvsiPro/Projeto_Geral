@@ -150,146 +150,150 @@ EndIf
 
 Processa( { || Busca(cCond,cQuinze),"Aguarde"})
 
-Aadd(aList2,{'','',0})
+Aadd(aList2,{'','',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0})
 Aadd(aList3,{'','',0})
 Aadd(aList4,{'','',0})
 Aadd(aList5,{'','','','',0,'',0,0,0,0,'','','',''})
 
-oDlg1      := MSDialog():New( 092,232,770,1672,"Histórico de Faturamentos",,,.F.,,,,,,.T.,,,.T. )
+If len(aList) > 0
+	oDlg1      := MSDialog():New( 092,232,770,1672,"Histórico de Faturamentos",,,.F.,,,,,,.T.,,,.T. )
 
-oGrp1      := TGroup():New( 002,004,336,710,"",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
+	oGrp1      := TGroup():New( 002,004,336,710,"",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
 
-	oGrp2      := TGroup():New( 008,008,072,612,"Dados do Cliente",oGrp1,CLR_BLACK,CLR_WHITE,.T.,.F. )
-		oSay1      := TSay():New( 024,012,{||"Cliente"},oGrp2,,oFont2,.F.,.F.,.F.,.T.,CLR_GREEN,CLR_WHITE,032,008)
-		oSay2      := TSay():New( 024,052,{||"oSay2"},oGrp2,,oFont4,.F.,.F.,.F.,.T.,CLR_BLUE,CLR_WHITE,492,016)
-		oSay3      := TSay():New( 040,012,{||"Endereço"},oGrp2,,oFont2,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
-		oSay4      := TSay():New( 040,052,{||"oSay4"},oGrp2,,oFont1,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,392,008)
-		oSay5      := TSay():New( 052,012,{||"Contrato"},oGrp2,,oFont2,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
-		oSay6      := TSay():New( 052,052,{||"oSay6"},oGrp2,,oFont3,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,552,008)
-		oSay7      := TSay():New( 062,360,{||"Valor Excedente"},oGrp2,,oFont1,.F.,.F.,.F.,.T.,CLR_RED,CLR_WHITE,552,008)
-		oSay8      := TSay():New( 062,052,{||"Parâmetros selecionados / Data Fat. "+cCond+" / Periodo "+cPeri+" / Quinzena "+cQuinze},oGrp2,,oFont1,.F.,.F.,.F.,.T.,CLR_RED,CLR_WHITE,552,008)
-	 
-	oGrp3      := TGroup():New( 076,008,332,170,"Contratos",oGrp1,CLR_BLACK,CLR_WHITE,.T.,.F. )
-
-		oList 	   := TCBrowse():New(084,010,158,245,, {'','Contrato','Vlr Faturamento'},{5,90,30},;
-	                            oGrp3,,,,{|| FHelp(oList:nAt)},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
-		oList:SetArray(aList)
-		oList:bLine := {||{If(aList[oList:nAt,len(aQtdH)+1]==0,oSpv,(If(aList[oList:nAt,len(aQtdH)+1]==1,oPvg,oFat))),;
-							substr(aList[oList:nAt,05],at("/ ",aList[oList:nAt,05])+2),; 
-		 					Transform(aList[oList:nAt,02],"@E 999,999,999.99")}}
-    //
-	//oTBitmap := TBitmap():New(220,010,110,010,,"\_AMC\Legendas.bmp",.T.,oGrp3, {||alert('teste')},,.F.,.F.,,,.F.,,.T.,,.F.)
-								
-	oGrp4      := TGroup():New( 076,172,202,516,"Ativos",oGrp1,CLR_BLACK,CLR_WHITE,.T.,.F. )
-
-		oList2 	   := TCBrowse():New(084,174,337,115,,;
-		{'Ativo','Modelo','Vlr Locação','Qtd. Min.','Valor Min.','Qtd.Total','Vlr.Fat.','Vlr.Compl.'},;
-		{30,40,40,40,40,40,40,40},;
-	            oGrp4,,,,{|| FHelp3(oList2:nAt,oList:nAt)},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
-	
-		oList2:SetArray(aList2)
-		oList2:bLine := {||{ Alltrim(aList2[oList2:nAt,01]),;
-							 Alltrim(aList2[oList2:nAt,02]),;
-		 					 If(aList2[oList2:nAt,03]>1,Transform(aList2[oList2:nAt,03],"@E 999,999,999.99"),'Isento'),;
-							 If(aList2[oList2:nAt,07]>0,Transform(aList2[oList2:nAt,07],"@E 999,999,999.99"),'S/ Min.Qtd.'),;
-							 If(aList2[oList2:nAt,08]>0,Transform(aList2[oList2:nAt,08],"@E 999,999,999.99"),'S/ Vlr.Min.'),;
-							 If(aList2[oList2:nAt,09]>0,Transform(aList2[oList2:nAt,09],"@E 999,999,999.99"),'S/Qtd'),;
-							 If(aList2[oList2:nAt,10]>0,Transform(aList2[oList2:nAt,10],"@E 999,999,999.99"),'S/Vlr'),;
-							 aList2[oList2:nAt,11]}}
-	
-	oGrp7      := TGroup():New( 202,172,332,708,"Consumo",oGrp1,CLR_BLACK,CLR_WHITE,.T.,.F. )
-										//290 118
-		oList5 	   := TCBrowse():New(209,174,532,118,, {'Seleção','Produto','Descrição','Data Ant.','Leit.Ant.','Data Atual','Leit.Atual','Consumo','Valor Un.','Valor Fat.','Penult.Data','Penult.Leit'},{30,40,70,30,30,30,30,30,30,30,30,30},;
-	                            oGrp7,,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList:nAt)*/},, oFont2,,,  ,,.F.,,.T.,,.F.,,,)
+		oGrp2      := TGroup():New( 008,008,072,612,"Dados do Cliente",oGrp1,CLR_BLACK,CLR_WHITE,.T.,.F. )
+			oSay1      := TSay():New( 024,012,{||"Cliente"},oGrp2,,oFont2,.F.,.F.,.F.,.T.,CLR_GREEN,CLR_WHITE,032,008)
+			oSay2      := TSay():New( 024,052,{||"oSay2"},oGrp2,,oFont4,.F.,.F.,.F.,.T.,CLR_BLUE,CLR_WHITE,492,016)
+			oSay3      := TSay():New( 040,012,{||"Endereço"},oGrp2,,oFont2,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
+			oSay4      := TSay():New( 040,052,{||"oSay4"},oGrp2,,oFont1,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,392,008)
+			oSay5      := TSay():New( 052,012,{||"Contrato"},oGrp2,,oFont2,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
+			oSay6      := TSay():New( 052,052,{||"oSay6"},oGrp2,,oFont3,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,552,008)
+			oSay7      := TSay():New( 062,360,{||"Valor Excedente"},oGrp2,,oFont1,.F.,.F.,.F.,.T.,CLR_RED,CLR_WHITE,552,008)
+			oSay8      := TSay():New( 062,052,{||"Parâmetros selecionados / Data Fat. "+cCond+" / Periodo "+cPeri+" / Quinzena "+cQuinze},oGrp2,,oFont1,.F.,.F.,.F.,.T.,CLR_RED,CLR_WHITE,552,008)
 		
-		oList5:SetArray(aList5)
-		oList5:bLine := {||{Alltrim(aList5[oList5:nAt,01]),;
-							Alltrim(aList5[oList5:nAt,02]),;
-							Alltrim(aList5[oList5:nAt,03]),;
-							STOD(aList5[oList5:nAt,04]),;
-							aList5[oList5:nAt,05],;
-							STOD(aList5[oList5:nAt,06]),;
-							aList5[oList5:nAt,07],;
-							If(aList5[oList5:nAt,08]<>0,aList5[oList5:nAt,08],'Sem Consumo'),;
-							Transform(aList5[oList5:nAt,09],"@E 999,999,999.99"),;
-							Transform(aList5[oList5:nAt,10],"@E 999,999,999.99"),;
-							stod(aList5[oList5:nAt,13]),;
-							aList5[oList5:nAt,14]}}
+		oGrp3      := TGroup():New( 076,008,332,170,"Contratos",oGrp1,CLR_BLACK,CLR_WHITE,.T.,.F. )
 
-	oGrp5      := TGroup():New( 076,520,202,708,"Faturamento",oGrp1,CLR_BLACK,CLR_WHITE,.T.,.F. )
+			oList 	   := TCBrowse():New(084,010,158,245,, {'','Contrato','Vlr Faturamento'},{5,90,30},;
+									oGrp3,,,,{|| FHelp(oList:nAt)},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
+			oList:SetArray(aList)
+			oList:bLine := {||{If(aList[oList:nAt,len(aQtdH)+1]==0,oSpv,(If(aList[oList:nAt,len(aQtdH)+1]==1,oPvg,oFat))),;
+								substr(aList[oList:nAt,05],at("/ ",aList[oList:nAt,05])+2),; 
+								Transform(aList[oList:nAt,02],"@E 999,999,999.99")}}
+		//
+		//oTBitmap := TBitmap():New(220,010,110,010,,"\_AMC\Legendas.bmp",.T.,oGrp3, {||alert('teste')},,.F.,.F.,,,.F.,,.T.,,.F.)
+									
+		oGrp4      := TGroup():New( 076,172,202,516,"Ativos",oGrp1,CLR_BLACK,CLR_WHITE,.T.,.F. )
 
-		oList3 	   := TCBrowse():New(084,524,182,115,, {'Pedido','Emissão','Nota','Vlr Faturamento'},{30,40,40},;
-	                            oGrp5,,,,{|| FHelp2(oList3:nAt)},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
-		oList3:SetArray(aList3)
-		oList3:bLine := {||{ Alltrim(aList3[oList3:nAt,01]),;
-							 aList3[oList3:nAt,02],;
-							 aList3[oList3:nAt,04],;
-		 					 Transform(aList3[oList3:nAt,03],"@E 999,999,999.99")}}
-	
-	Processa({|| atugrid()},"Atualizando totais")
+			oList2 	   := TCBrowse():New(084,174,337,115,,;
+			{'Ativo','Modelo','Vlr Locação','Qtd. Min.','Valor Min.','Qtd.Total','Vlr.Fat.','Vlr.Compl.'},;
+			{30,40,40,40,40,40,40,40},;
+					oGrp4,,,,{|| FHelp3(oList2:nAt,oList:nAt)},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
+		
+			oList2:SetArray(aList2)
+			oList2:bLine := {||{ Alltrim(aList2[oList2:nAt,01]),;
+								Alltrim(aList2[oList2:nAt,02]),;
+								If(aList2[oList2:nAt,03]>1,Transform(aList2[oList2:nAt,03],"@E 999,999,999.99"),'Isento'),;
+								If(aList2[oList2:nAt,07]>0,Transform(aList2[oList2:nAt,07],"@E 999,999,999.99"),'S/ Min.Qtd.'),;
+								If(aList2[oList2:nAt,08]>0,Transform(aList2[oList2:nAt,08],"@E 999,999,999.99"),'S/ Vlr.Min.'),;
+								If(aList2[oList2:nAt,09]>0,Transform(aList2[oList2:nAt,09],"@E 999,999,999.99"),'S/Qtd'),;
+								If(aList2[oList2:nAt,10]>0,Transform(aList2[oList2:nAt,10],"@E 999,999,999.99"),'S/Vlr'),;
+								aList2[oList2:nAt,11]}}
+		
+		oGrp7      := TGroup():New( 202,172,332,708,"Consumo",oGrp1,CLR_BLACK,CLR_WHITE,.T.,.F. )
+											//290 118
+			oList5 	   := TCBrowse():New(209,174,532,118,, {'Seleção','Produto','Descrição','Data Ant.','Leit.Ant.','Data Atual','Leit.Atual','Consumo','Valor Un.','Valor Fat.','Penult.Data','Penult.Leit'},{30,40,70,30,30,30,30,30,30,30,30,30},;
+									oGrp7,,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList:nAt)*/},, oFont2,,,  ,,.F.,,.T.,,.F.,,,)
+			
+			oList5:SetArray(aList5)
+			oList5:bLine := {||{Alltrim(aList5[oList5:nAt,01]),;
+								Alltrim(aList5[oList5:nAt,02]),;
+								Alltrim(aList5[oList5:nAt,03]),;
+								STOD(aList5[oList5:nAt,04]),;
+								aList5[oList5:nAt,05],;
+								STOD(aList5[oList5:nAt,06]),;
+								aList5[oList5:nAt,07],;
+								If(aList5[oList5:nAt,08]<>0,aList5[oList5:nAt,08],'Sem Consumo'),;
+								Transform(aList5[oList5:nAt,09],"@E 999,999,999.99"),;
+								Transform(aList5[oList5:nAt,10],"@E 999,999,999.99"),;
+								stod(aList5[oList5:nAt,13]),;
+								aList5[oList5:nAt,14]}}
 
-	For nCont := 1 to len(aList)
-		nPos := Ascan(aList5B,{|x| x[1] == aList[nCont,01]})
-		If nPos > 0 
-			If len(aList5B[nPos]) > 4
-				For nJ := 5 to len(aList5B[nPos])
-					If aList5B[nPos,nJ,12] == "S"
-						aList[nCont,18] := 2
-						exit
-					EndIf 
-				Next nJ 
-			EndIf
-		EndIf 
-	Next nCont
+		oGrp5      := TGroup():New( 076,520,202,708,"Faturamento",oGrp1,CLR_BLACK,CLR_WHITE,.T.,.F. )
 
-	oList:nAt := 1
-	oList2:nAt := 1
-	oList:refresh()
-	oList2:refresh()
+			oList3 	   := TCBrowse():New(084,524,182,115,, {'Pedido','Emissão','Nota','Vlr Faturamento'},{30,40,40},;
+									oGrp5,,,,{|| FHelp2(oList3:nAt)},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
+			oList3:SetArray(aList3)
+			oList3:bLine := {||{ Alltrim(aList3[oList3:nAt,01]),;
+								aList3[oList3:nAt,02],;
+								aList3[oList3:nAt,04],;
+								Transform(aList3[oList3:nAt,03],"@E 999,999,999.99")}}
+		
+		Processa({|| atugrid()},"Atualizando totais")
 
-oBtn1      := TButton():New( 055,640,"Sair",oDlg1,{||oDlg1:end()},037,012,,,,.T.,,"",,,,.F. )
+		For nCont := 1 to len(aList)
+			nPos := Ascan(aList5B,{|x| x[1] == aList[nCont,01]})
+			If nPos > 0 
+				If len(aList5B[nPos]) > 4
+					For nJ := 5 to len(aList5B[nPos])
+						If aList5B[nPos,nJ,12] == "S"
+							aList[nCont,18] := 2
+							exit
+						EndIf 
+					Next nJ 
+				EndIf
+			EndIf 
+		Next nCont
 
-//Botões diversos
-oMenu := TMenu():New(0,0,0,0,.T.)
-// Adiciona itens no Menu
-oTMenuIte1 := TMenuItem():New(oDlg1,"Procurar",,,,{|| procurar()},,,,,,,,,.T.)
-oTMenuIte2 := TMenuItem():New(oDlg1,"Listar-Faturamento",,,,{|| Processa({||PreFat(),"Aguarde"})} ,,,,,,,,,.T.)
-// oTMenuIte3 := TMenuItem():New(oDlg1,"Faturar",,,,{|| Processa({||GeraPv(0),"Aguarde"})} ,,,,,,,,,.T.)
-oTMenuIte4 := TMenuItem():New(oDlg1,"Envio NF/Boleto",,,,{|| NFBol()} ,,,,,,,,,.T.)
-//oTMenuIte5 := TMenuItem():New(oDlg1,"Fechamento Mensal",,,,{|| Fechamento()} ,,,,,,,,,.T.)
-//oTMenuIte6 := TMenuItem():New(oDlg1,"Rescisão Contrato",,,,{|| Rescisao(oList:nAt)} ,,,,,,,,,.T.)
-oTMenuIte7 := TMenuItem():New(oDlg1,"Impressoes",,,,{|| Processa({||U_CONFSR02(aList,alist2,aList3,aList4,aList5,oSay6:cTitle),"Aguarde"})} ,,,,,,,,,.T.)
+		oList:nAt := 1
+		oList2:nAt := 1
+		oList:refresh()
+		oList2:refresh()
+
+	oBtn1      := TButton():New( 055,640,"Sair",oDlg1,{||oDlg1:end()},037,012,,,,.T.,,"",,,,.F. )
+
+	//Botões diversos
+	oMenu := TMenu():New(0,0,0,0,.T.)
+	// Adiciona itens no Menu
+	oTMenuIte1 := TMenuItem():New(oDlg1,"Procurar",,,,{|| procurar()},,,,,,,,,.T.)
+	oTMenuIte2 := TMenuItem():New(oDlg1,"Listar-Faturamento",,,,{|| Processa({||PreFat(),"Aguarde"})} ,,,,,,,,,.T.)
+	// oTMenuIte3 := TMenuItem():New(oDlg1,"Faturar",,,,{|| Processa({||GeraPv(0),"Aguarde"})} ,,,,,,,,,.T.)
+	oTMenuIte4 := TMenuItem():New(oDlg1,"Envio NF/Boleto",,,,{|| NFBol()} ,,,,,,,,,.T.)
+	//oTMenuIte5 := TMenuItem():New(oDlg1,"Fechamento Mensal",,,,{|| Fechamento()} ,,,,,,,,,.T.)
+	//oTMenuIte6 := TMenuItem():New(oDlg1,"Rescisão Contrato",,,,{|| Rescisao(oList:nAt)} ,,,,,,,,,.T.)
+	oTMenuIte7 := TMenuItem():New(oDlg1,"Impressoes",,,,{|| Processa({||U_CONFSR02(aList,alist2,aList3,aList4,aList5,oSay6:cTitle),"Aguarde"})} ,,,,,,,,,.T.)
 
 
-oMenu:Add(oTMenuIte1)
-oMenu:Add(oTMenuIte2)
-// oMenu:Add(oTMenuIte3)
-oMenu:Add(oTMenuIte4)
-//oMenu:Add(oTMenuIte5)
-//oMenu:Add(oTMenuIte6)
-oMenu:Add(oTMenuIte7)
+	oMenu:Add(oTMenuIte1)
+	oMenu:Add(oTMenuIte2)
+	// oMenu:Add(oTMenuIte3)
+	oMenu:Add(oTMenuIte4)
+	//oMenu:Add(oTMenuIte5)
+	//oMenu:Add(oTMenuIte6)
+	oMenu:Add(oTMenuIte7)
 
-// Cria botão que sera usado no Menu  
-oTButton1 := TButton():New( 025, 640, "Opções",oDlg1,{||},40,10,,,.F.,.T.,.F.,,.F.,,,.F. )
-// Define botão no Menu
-oTButton1:SetPopupMenu(oMenu)
+	// Cria botão que sera usado no Menu  
+	oTButton1 := TButton():New( 025, 640, "Opções",oDlg1,{||},40,10,,,.F.,.T.,.F.,,.F.,,,.F. )
+	// Define botão no Menu
+	oTButton1:SetPopupMenu(oMenu)
 
-//ao clicar com o botão direito no grid de ativos.
-	MENU oMenuP POPUP 
-	MENUITEM "Faturar" ACTION (Processa({|| GeraPv(1)},"Aguarde"))
-	MENUITEM "Localizar" ACTION (Processa({|| Localiza()},"Aguarde"))
-	ENDMENU                                                                           
+	//ao clicar com o botão direito no grid de ativos.
+		MENU oMenuP POPUP 
+		MENUITEM "Faturar" ACTION (Processa({|| GeraPv(1)},"Aguarde"))
+		MENUITEM "Localizar" ACTION (Processa({|| Localiza()},"Aguarde"))
+		ENDMENU                                                                           
 
-	oList:bRClicked := { |oObject,nX,nY| oMenuP:Activate( nX, (nY-10), oObject ) }
+		oList:bRClicked := { |oObject,nX,nY| oMenuP:Activate( nX, (nY-10), oObject ) }
 
-//ao clicar com o botão direito no grid de faturamentos.
-	MENU oMenuP3 POPUP 
-	MENUITEM "Itens Pedido" ACTION (Processa({|| ItensPv(aList3[oList3:nAt,01],aList3[oList3:nAt,04])},"Aguarde"))
-	ENDMENU                                                                           
+	//ao clicar com o botão direito no grid de faturamentos.
+		MENU oMenuP3 POPUP 
+		MENUITEM "Itens Pedido" ACTION (Processa({|| ItensPv(aList3[oList3:nAt,01],aList3[oList3:nAt,04])},"Aguarde"))
+		ENDMENU                                                                           
 
-	oList3:bRClicked := { |oObject,nX,nY| oMenuP3:Activate( nX, (nY-10), oObject ) }
+		oList3:bRClicked := { |oObject,nX,nY| oMenuP3:Activate( nX, (nY-10), oObject ) }
 
-oDlg1:Activate(,,,.T.)
+	oDlg1:Activate(,,,.T.)
+else 
+	MsgAlert("Não encontrados contratos que atendam ao filtro selecionado")
+EndIf
 
 //Reset Environment
 
@@ -602,7 +606,8 @@ Static Function Busca(cCond,cQuinze)
 			cQuery += "   AND B1_COD=Z08_PRODUT AND B1.D_E_L_E_T_=' ' 
 			
 			cQuery += " WHERE Z08_COD='"+aLeitura[nLeitur]+"'"
-			cQuery += "  AND Z08.D_E_L_E_T_=' '
+			cQuery += "  AND Z08.D_E_L_E_T_=' '"
+			cQuery += "  AND Z08_NUMSER='"+aList5b[nCont,02]+"' AND Z08_CONTRT='"+aList5b[nCont,01]+"'"
 		Next nLeitur
 			/*cQuery := "SELECT Z08_COD,Z08_SEQUEN,Z08_SELECA,Z08_PRODUT,B1_DESC,Z08_QTDLID,Z08_DATA,Z08_CONTRT,Z08_FATURA" 
 			cQuery += "  FROM "+RetSQLname("Z08")+" Z08" 
@@ -724,10 +729,12 @@ Static Function Busca(cCond,cQuinze)
 			Next nAux
 		EndIf
 
+		lZerou := .F.
+
 		for nX := 5 to len(aList5b[nCont])
-			lZerou := .F.
+			
 		//leitura atual x leitura faturamento anterior
-			If aList5b[nCont,nX,07] < aList5b[nCont,nX,05]
+			If aList5b[nCont,nX,07] < aList5b[nCont,nX,05] .OR. lZerou
 				//leitura zerada
 				aList5b[nCont,nX,08] := aList5b[nCont,nX,07]
 				lZerou := .T.
@@ -891,6 +898,7 @@ Static Function FHelp3(nLinha,nLinha2,nOpini)
 Local aArea 	:=	GetArea()
 Local nPos  	:= 	0
 Local nCont 
+Local nX 
 Local nTotQ		:=	0
 Local nTotV 	:=	0
 Local nTotC 	:=	0
@@ -987,10 +995,10 @@ EndIF
 If AAM->AAM_XQTVLM > 0
 	cTexto += " - Qtd/Vlr Minimo "+Transform(AAM->AAM_XQTVLM,"@E 999,999,999") 
 
-	Aeval(aList2b,{|x| nDifCb += If(x[4] == aList[nLinha2,01],x[9],0)})
+	Aeval(aList2b,{|x| nDifCb += If(x[4] == aList[nLinha2,01],If(AAM->AAM_XTIPMI=="1",x[9],x[10]),0)})
 
 	If nDifCb < AAM->AAM_XQTVLM .AND. cQuinze == "2"
-		cTexto += " - Doses Complementares a serem cobradas "+Transform(AAM->AAM_XQTVLM-nDifCb,"@E 999,999,999")
+		cTexto += " - Doses Compl. a serem cobradas "+Transform(AAM->AAM_XQTVLM-nDifCb,"@E 999,999,999")
 		aList[nLinha2,20] := AAM->AAM_XQTVLM-nDifCb
 	EndIf 
 EndIF 
@@ -998,8 +1006,39 @@ EndIF
 oSay6:settext(cTexto)
 
 If aList[nLinha2,20] > 0
-	aList[nLinha2,21] := POSICIONE("DA1",1,XFILIAL("DA1")+AAM->AAM_XCODTA+AAM->AAM_XPRDCM,"DA1_PRCVEN")
-	oSay7:settext("Valor Excedente a ser cobrado "+Transform(aList[nLinha2,20]*aList[nLinha2,21],"@E 999,999.99"))
+	nAbater := 0
+	nVlrAbt	:= 0
+
+	If cQuinze == '2'
+		For nCont := 1 to len(aList5B)
+			If aList5B[nCont,01] == aList[nLinha2,01]
+				For nX := 5 to len(aList5B[nCont])
+						cSelec := aList5B[nCont,nX,01]
+						cNumSr := aList5B[nCont,2]
+						cLeit  := aList5B[nCont,nX,11]
+						cDtAnt := aList5B[nCont,nX,04]
+						nQtdAb := abatfat(cNumSr,cLeit,cSelec,cDtAnt)
+						nVlrAbt += nQtdAb *  aList5B[nCont,nX,09]
+						nAbater += aList5B[nCont,nX,05] - nQtdAb
+				Next nX 
+			EndIf
+		Next nCont
+	EndIf 
+
+	IF AAM->AAM_XTIPMI=="1"
+		aList[nLinha2,20] := aList[nLinha2,20] - nAbater
+		aList[nLinha2,21] := POSICIONE("DA1",1,XFILIAL("DA1")+AAM->AAM_XCODTA+AAM->AAM_XPRDCM,"DA1_PRCVEN")
+		oSay7:settext("Valor Excedente a ser cobrado "+Transform(aList[nLinha2,20]*aList[nLinha2,21],"@E 999,999.99"))
+	else
+		/*
+		aList[nLinha2,21] := AAM->AAM_XQTVLM-nDifCb
+		aList[nLinha2,20] := (aList[nLinha2,21] / POSICIONE("DA1",1,XFILIAL("DA1")+AAM->AAM_XCODTA+AAM->AAM_XPRDCM,"DA1_PRCVEN")) - nAbater
+		*/
+		aList[nLinha2,21] := POSICIONE("DA1",1,XFILIAL("DA1")+AAM->AAM_XCODTA+AAM->AAM_XPRDCM,"DA1_PRCVEN")
+		aList[nLinha2,20] := AAM->AAM_XQTVLM-nDifCb-nVlrAbt
+		oSay7:settext("Valor Excedente a ser cobrado "+Transform(aList[nLinha2,20]*aList[nLinha2,21],"@E 999,999.99"))
+	EndIf  
+	
 EndIf 
 
 oList:refresh()
@@ -1247,7 +1286,7 @@ oBoleto    := MSDialog():New( 092,232,660,1043,"Nota/Boleto por Email",,,.F.,,,,
 
 	oBotao1    := TButton():New( 260,048,"Inverter Marc.",oBoleto,{||inverte(1)},037,012,,,,.T.,,"",,,,.F. )
 	oBotao4    := TButton():New( 260,098,"Marcar/Desm. Todos",oBoleto,{||inverte(2)},037,012,,,,.T.,,"",,,,.F. )
-	oBotao2    := TButton():New( 260,179,"Enviar",oBoleto,{||Processa({|| enviar()},"Processando...") },037,012,,,,.T.,,"",,,,.F. )
+	oBotao2    := TButton():New( 260,179,"Enviar",oBoleto,{||Processa({|| bolmail()},"Processando...") },037,012,,,,.T.,,"",,,,.F. )
 	oBotao3    := TButton():New( 260,300,"Sair",oBoleto,{||oBoleto:end()},037,012,,,,.T.,,"",,,,.F. )
 
 oBoleto:Activate(,,,.T.)
@@ -2622,3 +2661,123 @@ Static Function Localiza()
 	oList:refresh()
 
 Return 
+
+/*/{Protheus.doc} bolmail()
+	(long_description)
+	@type  Static Function
+	@author user
+	@since 07/02/2023
+	@version version
+	@param param_name, param_type, param_descr
+	@return return_var, return_type, return_description
+	@example
+	(examples)
+	@see (links_or_references)
+/*/
+Static Function bolmail()
+
+Local aArea 	:=	GetArea()
+Local nCont 	:=	0
+Local cBody     :=  corpo()  
+Local aArquivos	:=	{}
+
+For nCont := 1 to len(aEmail)
+	If aEmail[nCont,01]
+		MV_PAR01 := Substr(aEmail[nCont,11],5)
+		MV_PAR02 := aEmail[nCont,02]
+
+		DbSelectArea("SA1")
+		DBSetOrder(1)
+		DbSeek(xFilial("SA1")+aEmail[nCont,09]+aEmail[nCont,10])
+		cCnpjj := SA1->A1_CGC
+		U_CONBOL(.T.,'C:\BOLETOS\'+cCnpjj+'\',substr(aEmail[nCont,11],1,4),'')
+		//(cNota, cSerie, cPasta, ccnpj)
+		U_CONDANFE(MV_PAR02,MV_PAR01,'C:\BOLETOS\',cCnpjj)
+		cRemete := 'nf.erp@connectvending.com.br'
+		cDestino := 'avenanc@yahoo.com.br'
+		cSubject := 'Faturamento'
+		CPYT2S('C:\BOLETOS\'+cCnpjj+'\'+MV_PAR02+'.pdf','\SPOOL\')
+		CPYT2S('C:\BOLETOS\'+cCnpjj+'\'+MV_PAR02+'.xml','\SPOOL\')
+		CPYT2S('C:\BOLETOS\'+cCnpjj+'\boleto_'+MV_PAR02+'.pdf','\SPOOL\')
+
+		Aadd(aArquivos,{'\SPOOL\'+MV_PAR02+'.pdf',''})
+		Aadd(aArquivos,{'\SPOOL\'+MV_PAR02+'.xml',''})
+		Aadd(aArquivos,{'\SPOOL\boleto_'+MV_PAR02+'.pdf',''})
+
+		U_CONMAIL(cRemete,cDestino,cSubject,cBody,aArquivos,.T.) 
+		//U_EnviarEmail(cDestino,cSubject,cBody,aArquivos,lLog)  
+	EndIf 
+Next nCont
+RestArea(aArea)
+
+Return
+
+
+/*/{Protheus.doc} Corpo
+    (long_description)
+    @type  Static Function
+    @author user
+    @since 07/03/2022
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function corpo
+
+Local cRet := ""
+
+cRet := If(val(substr(time(),1,2))<12 .and.val(substr(time(),1,2))>=0,'Bom dia','Boa tarde' )+'<br><br>'
+
+cRet += "Dicas de Segurança<br>"
+cRet += "Fique atento: Seus boletos sempre chegarão pelo remetente do Dominio: <p> CONNECTVENDING.COM.BR </p><br>"
+cRet += "Ex.: noreply@connectvending.com.br financeiro@connectvending.com.br<br>"
+cRet += "Ao pagar confira sempre o CNPJ e o FAVORECIDO<br>"
+cRet += "CONNECT VENDING<br>"
+
+Return(cRet)
+
+/*/{Protheus.doc} abatfat(cNumSr,cLeit,cSelec,cDtAnt)
+	(long_description)
+	@type  Static Function
+	@author user
+	@since 08/02/2023
+	@version version
+	@param param_name, param_type, param_descr
+	@return return_var, return_type, return_description
+	@example
+	(examples)
+	@see (links_or_references)
+/*/
+Static Function abatfat(cNumSr,cLeit,cSelec,cDtAnt)
+
+Local aArea := GetArea()
+Local nRet  := 0
+Local cQuery 
+
+cQuery := "SELECT Z08_QTDLID FROM "+RetSQLName("Z08")
+cQuery += " WHERE Z08_FILIAL='"+xFilial("Z08")+"'"
+cQuery += " AND Z08_NUMSER='"+cNumSr+"'"
+cQuery += " AND Z08_COD<>'"+cLeit+"'"
+cQuery += " AND Z08_SELECA='"+cSelec+"'"
+cQuery += " AND Z08_DATA<'"+cDtAnt+"'"
+cQuery += " AND D_E_L_E_T_=' '"
+
+If Select("QUERY") > 0
+	dbSelectArea("QUERY")
+	dbCloseArea()
+EndIf
+	
+MemoWrite("CONFSC01.SQL",cQuery)
+
+cQuery:= ChangeQuery(cQuery)
+
+DbUseArea(.T.,"TOPCONN",TcGenQry(,,cQuery),'QUERY',.F.,.T.)
+
+nRet := QUERY->Z08_QTDLID
+
+RestArea(aArea)
+
+Return(nRet)

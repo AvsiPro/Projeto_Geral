@@ -495,7 +495,7 @@ Static Function DemonsCon()
 
 		for nY := 1 to len(aAux[nX])
 			nCon1 += aAux[nX,nY,8]
-			nUni1 += aAux[nX,nY,9]
+			nUni1 := aAux[nX,nY,9]
 			nTot1 += aAux[nX,nY,10]
 		next
 

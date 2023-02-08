@@ -9,8 +9,8 @@ User Function CONMAIL(cFrom,cTo,cSubject,cBody,aAttach,lConfirm,cCC,cBCC)
     Local oMessage
     Local cMailServer	:= ""
     Local cSmtpServer	:=  strtran(Alltrim( GetMV("MV_RELSERV") ),":587") //'smtp.avsipro.com.br'
-    Local cAccount		:=  'noreply@robsol.com.br' //Alltrim( GetMV("MV_RELACNT") ) // 'suporte@avsipro.com.br'
-    Local cPassword		:=  'noreply50821955' //Alltrim( GetMV("MV_RELPSW")  ) //
+    Local cAccount		:=  Alltrim( GetMV("MV_RELACNT") ) // 'suporte@avsipro.com.br'
+    Local cPassword		:=  Alltrim( GetMV("MV_RELPSW")  ) //
     Local lAuth			:=  .T. //GETMV("MV_RELAUTH")
     Local nMailPort		:= 0
     Local nSmtpPort		:= 587
@@ -59,7 +59,7 @@ User Function CONMAIL(cFrom,cTo,cSubject,cBody,aAttach,lConfirm,cCC,cBCC)
         nErro := oServer:SMTPAuth( cAccount, cPassword )
         If nErro != 0
             Conout( "#TTMAILN: ERRO AO AUTENTICAR -> ", oServer:GetErrorString( nErro ) )
-            Return lRet
+            //Return lRet
         EndIf   
     EndIf
 
