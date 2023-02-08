@@ -37,7 +37,7 @@ Local aStatCm   := {'0=Selecione',;
     '2=Bloquear p/ inadimplência',;
              '3=Aguardar cliente',;
          '4=Liberar para estoque',;
-                    '5=Imprimido',;
+                    '5=Impresso',;
                      '6=Cancelado'}
 Local aParam    := { { 2, "Status Comissao", 1, aStatCm, 60, , .T. } }
 Local cBloqueia := ""
@@ -210,7 +210,7 @@ If nOpc == 1
         cStaOpc := 'Liberado para estoque'
     ElseIf MV_PAR01 == 5
         cStatus := 'F'
-        cStaOpc := 'Imprimido'
+        cStaOpc := 'Impresso'
     ElseIf MV_PAR01 == 6
         cStatus   := 'G'
         cStaOpc   := 'Cancelado'

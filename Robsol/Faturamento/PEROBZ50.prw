@@ -63,7 +63,7 @@ Default cCodigo  := ''
             CpyS2T(cDir+cChamado+"\"+aFiles[nX,1],cTemp,.F.)
             Sleep(500)
         
-            If File(cTemp+ aFiles[nX,1])
+            If File(cTemp+ aFiles[nX,1]) .And. Alltrim(Upper(aFiles[nX,1])) != 'NOTIFICATION.TXT'
                 ShellExecute("OPEN", aFiles[nX,1], "", cTemp, 1)
             EndIf
         EndIf
