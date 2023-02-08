@@ -898,6 +898,7 @@ Static Function FHelp3(nLinha,nLinha2,nOpini)
 Local aArea 	:=	GetArea()
 Local nPos  	:= 	0
 Local nCont 
+Local nX 
 Local nTotQ		:=	0
 Local nTotV 	:=	0
 Local nTotC 	:=	0
@@ -997,7 +998,7 @@ If AAM->AAM_XQTVLM > 0
 	Aeval(aList2b,{|x| nDifCb += If(x[4] == aList[nLinha2,01],If(AAM->AAM_XTIPMI=="1",x[9],x[10]),0)})
 
 	If nDifCb < AAM->AAM_XQTVLM .AND. cQuinze == "2"
-		cTexto += " - Doses Complementares a serem cobradas "+Transform(AAM->AAM_XQTVLM-nDifCb,"@E 999,999,999")
+		cTexto += " - Doses Compl. a serem cobradas "+Transform(AAM->AAM_XQTVLM-nDifCb,"@E 999,999,999")
 		aList[nLinha2,20] := AAM->AAM_XQTVLM-nDifCb
 	EndIf 
 EndIF 
@@ -1005,13 +1006,37 @@ EndIF
 oSay6:settext(cTexto)
 
 If aList[nLinha2,20] > 0
+	nAbater := 0
+	nVlrAbt	:= 0
+
+	If cQuinze == '2'
+		For nCont := 1 to len(aList5B)
+			If aList5B[nCont,01] == aList[nLinha2,01]
+				For nX := 5 to len(aList5B[nCont])
+						cSelec := aList5B[nCont,nX,01]
+						cNumSr := aList5B[nCont,2]
+						cLeit  := aList5B[nCont,nX,11]
+						cDtAnt := aList5B[nCont,nX,04]
+						nQtdAb := abatfat(cNumSr,cLeit,cSelec,cDtAnt)
+						nVlrAbt += nQtdAb *  aList5B[nCont,nX,09]
+						nAbater += aList5B[nCont,nX,05] - nQtdAb
+				Next nX 
+			EndIf
+		Next nCont
+	EndIf 
+
 	IF AAM->AAM_XTIPMI=="1"
+		aList[nLinha2,20] := aList[nLinha2,20] - nAbater
 		aList[nLinha2,21] := POSICIONE("DA1",1,XFILIAL("DA1")+AAM->AAM_XCODTA+AAM->AAM_XPRDCM,"DA1_PRCVEN")
 		oSay7:settext("Valor Excedente a ser cobrado "+Transform(aList[nLinha2,20]*aList[nLinha2,21],"@E 999,999.99"))
 	else
+		/*
 		aList[nLinha2,21] := AAM->AAM_XQTVLM-nDifCb
-		aList[nLinha2,20] := aList[nLinha2,21] / POSICIONE("DA1",1,XFILIAL("DA1")+AAM->AAM_XCODTA+AAM->AAM_XPRDCM,"DA1_PRCVEN")
-		oSay7:settext("Valor Excedente a ser cobrado "+Transform(aList[nLinha2,21],"@E 999,999.99"))
+		aList[nLinha2,20] := (aList[nLinha2,21] / POSICIONE("DA1",1,XFILIAL("DA1")+AAM->AAM_XCODTA+AAM->AAM_XPRDCM,"DA1_PRCVEN")) - nAbater
+		*/
+		aList[nLinha2,21] := POSICIONE("DA1",1,XFILIAL("DA1")+AAM->AAM_XCODTA+AAM->AAM_XPRDCM,"DA1_PRCVEN")
+		aList[nLinha2,20] := AAM->AAM_XQTVLM-nDifCb-nVlrAbt
+		oSay7:settext("Valor Excedente a ser cobrado "+Transform(aList[nLinha2,20]*aList[nLinha2,21],"@E 999,999.99"))
 	EndIf  
 	
 EndIf 
@@ -2713,3 +2738,46 @@ cRet += "Ao pagar confira sempre o CNPJ e o FAVORECIDO<br>"
 cRet += "CONNECT VENDING<br>"
 
 Return(cRet)
+
+/*/{Protheus.doc} abatfat(cNumSr,cLeit,cSelec,cDtAnt)
+	(long_description)
+	@type  Static Function
+	@author user
+	@since 08/02/2023
+	@version version
+	@param param_name, param_type, param_descr
+	@return return_var, return_type, return_description
+	@example
+	(examples)
+	@see (links_or_references)
+/*/
+Static Function abatfat(cNumSr,cLeit,cSelec,cDtAnt)
+
+Local aArea := GetArea()
+Local nRet  := 0
+Local cQuery 
+
+cQuery := "SELECT Z08_QTDLID FROM "+RetSQLName("Z08")
+cQuery += " WHERE Z08_FILIAL='"+xFilial("Z08")+"'"
+cQuery += " AND Z08_NUMSER='"+cNumSr+"'"
+cQuery += " AND Z08_COD<>'"+cLeit+"'"
+cQuery += " AND Z08_SELECA='"+cSelec+"'"
+cQuery += " AND Z08_DATA<'"+cDtAnt+"'"
+cQuery += " AND D_E_L_E_T_=' '"
+
+If Select("QUERY") > 0
+	dbSelectArea("QUERY")
+	dbCloseArea()
+EndIf
+	
+MemoWrite("CONFSC01.SQL",cQuery)
+
+cQuery:= ChangeQuery(cQuery)
+
+DbUseArea(.T.,"TOPCONN",TcGenQry(,,cQuery),'QUERY',.F.,.T.)
+
+nRet := QUERY->Z08_QTDLID
+
+RestArea(aArea)
+
+Return(nRet)
