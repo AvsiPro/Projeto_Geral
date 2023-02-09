@@ -18,6 +18,8 @@ User Function CONFSR02(aXList,aXList2,aXList3,aXList4,aXList5,cXTitle,nOpc)
 
 	Local aCombo := {"1=Extrato de Leitura", "2=Demonstrativo de Consumo", "3=Todos" }
 	Local aPergs := {}
+	Local dDtDe  := CTOD(" / / ")
+	Local dDtAt  := CTOD(" / / ")
 
 	Private aList := aXList
 	Private aList2 := aXList2
@@ -29,6 +31,9 @@ User Function CONFSR02(aXList,aXList2,aXList3,aXList4,aXList5,cXTitle,nOpc)
 	Default nOpc := 0
 
 	aAdd( aPergs ,{2,"Escolha uma opção : ",0,aCombo,100,"",.T.})
+	aAdd( aPergs ,{1,"Leitura De : ", dDtDe,"@!",'.T.',"AANX",'.T.',40,.T.})
+	aAdd( aPergs ,{1,"Leitura Até : ", dDtAt,"@!",'.T.',"AANX",'.T.',40,.T.})
+
 	if nOpc == 0
 		If !ParamBox(aPergs ,"Parametros ")
 			Return
@@ -103,7 +108,8 @@ Static Function ExtLeitura()
 
 	Asort(aPontos,,,{|x,y| x[2] < y[2]})
 
-	cEntre := DTOC(STOD(aPontos[1,5,4])) + " e " + DTOC(STOD(aPontos[1,5,6]))
+	//cEntre := DTOC(STOD(aPontos[1,5,4])) + " e " + DTOC(STOD(aPontos[1,5,6]))
+	cEntre := DTOC(MV_PAR02) + " e " + DTOC(MV_PAR03)
 
 	nCon1 := 0
 	nSub1 := 0
