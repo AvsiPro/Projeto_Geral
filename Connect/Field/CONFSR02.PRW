@@ -14,21 +14,21 @@
     @since 16/12/2022
     @version 1
     /*/
-User Function CONFSR02(aXList,aXList2,aXList3,aXList4,aXList5,cXTitle,nOpc)
+User Function CONFSR02(cXTitle)
 
 	Local aCombo := {"1=Extrato de Leitura", "2=Demonstrativo de Consumo", "3=Todos" }
 	Local aPergs := {}
 	Local dDtDe  := CTOD(" / / ")
 	Local dDtAt  := CTOD(" / / ")
+	Local nOpc := 0
 
-	Private aList := aXList
-	Private aList2 := aXList2
-	Private aList3 := aXList3
-	Private aList4 := aXList4
-	Private aList5 := aXList5
+	Private _aList := aClone(aList)
+	Private _aList2 := aClone(aList2)
+	Private _aList3 := aClone(aList3)
+	Private _aList4 := aClone(aList4)
+	Private _aList5 := aClone(aList5)
+	Private _aList5B := aClone(aList5B)
 	Private cTitle := cXTitle
-
-	Default nOpc := 0
 
 	aAdd( aPergs ,{2,"Escolha uma opção : ",0,aCombo,100,"",.T.})
 	aAdd( aPergs ,{1,"Leitura De : ", dDtDe,"@!",'.T.',"AANX",'.T.',40,.T.})
@@ -100,13 +100,13 @@ Static Function ExtLeitura()
 
 	//Replicar aPontos por meio da query para trazer dados faltantes
 
-	for nX := 1 to len(aList5B)
-		if len(aList5B[nX]) > 4
-			Aadd(aPontos, aList5B[nX])
+	for nX := 1 to len(_aList5B)
+		if len(_aList5B[nX]) > 4
+			Aadd(aPontos, _aList5B[nX])
 		endif
 	next
 
-	Asort(aPontos,,,{|x,y| x[2] < y[2]})
+	//Asort(aPontos,,,{|x,y| x[2] < y[2]})
 
 	//cEntre := DTOC(STOD(aPontos[1,5,4])) + " e " + DTOC(STOD(aPontos[1,5,6]))
 	cEntre := DTOC(MV_PAR02) + " e " + DTOC(MV_PAR03)
@@ -151,7 +151,7 @@ Static Function ExtLeitura()
 		next
 	next
 
-	Asort(aProd,,,{|x,y| x[2] < y[2]})
+	//Asort(aProd,,,{|x,y| x[2] < y[2]})
 
 	for nX := 1 to len(aProd)
 		if aProd[nX,2] == cProd
@@ -208,15 +208,15 @@ Static Function ExtLeitura()
 
 	oPrinter:Fillrect( { nLin+=20, 10, nLin+30, 590 }, oBrush3, "-2")
 
-	oPrinter:Say( nLin+12, 30,SubStr(aList[oList:nAt,5],1,55), oF12FFF,, rgb(238, 238, 238) )
-	oPrinter:Say( nLin+24, 30,AllTrim(aList[oList:nAt,3]) + "-" + AllTrim(aList[oList:nAt,4]), oF10FFF,, rgb(238, 238, 238) )
+	oPrinter:Say( nLin+12, 30,SubStr(_aList[oList:nAt,5],1,55), oF12FFF,, rgb(238, 238, 238) )
+	oPrinter:Say( nLin+24, 30,AllTrim(_aList[oList:nAt,3]) + "-" + AllTrim(_aList[oList:nAt,4]), oF10FFF,, rgb(238, 238, 238) )
 
 	oPrinter:Say( nLin+=60, 10,"CONSOLIDADO", oF15FFF )
 	oPrinter:Fillrect( { nLin+=5, 10, nLin, 590 }, oBrush1, "-2")
 	oPrinter:Fillrect( { nLin+=15, 10, nLin+30, 590 }, oBrush2, "-2")
 	oPrinter:Fillrect( { nLin+10, 20, nLin+20, 30 }, oBrush3, "-2")
-	oPrinter:Say( nLin+15, 40,SubStr(aList[oList:nAt,5],1,55), oF12FFF )
-	oPrinter:Say( nLin+25, 40,"Totalizando " + cValToChar(len(aList2)) + " Pontos de Venda", oF10FFF )
+	oPrinter:Say( nLin+15, 40,SubStr(_aList[oList:nAt,5],1,55), oF12FFF )
+	oPrinter:Say( nLin+25, 40,"Totalizando " + cValToChar(len(_aList2)) + " Pontos de Venda", oF10FFF )
 	oPrinter:Say( nLin+=15, 360,cCon1, oF10FFF )
 	oPrinter:Say( nLin, 410,Transform(val(cSub1), "@E 99,999.99"), oF10FFF )
 	oPrinter:Say( nLin, 480,Transform(val(cConRS1), "@E 99,999.99"), oF10FFF )
@@ -265,7 +265,7 @@ Static Function ExtLeitura()
 		oPrinter:Fillrect( { nLin+5, 10, nLin+5, 590 }, oBrush1, "-2")
 		oPrinter:Fillrect( { nLin+10, 10, nLin+40, 590 }, oBrush2, "-2")
 		oPrinter:Fillrect( { nLin+20, 30, nLin+30, 20 }, oBrush1, "-2")
-		oPrinter:Say( nLin+25, 40,SubStr(aList[oList:nAt,5],1,55), oF12FFF )
+		oPrinter:Say( nLin+25, 40,SubStr(_aList[oList:nAt,5],1,55), oF12FFF )
 		oPrinter:Say( nLin+35, 40,AllTrim(aPontos[nX,2]), oF10FFF )
 		oPrinter:Say( nLin+25, 360,cCon1, oF10FFF )
 		oPrinter:Say( nLin+25, 410,Transform(val(cSub1), "@E 99,999.99"), oF10FFF ) //Pendente Subsidio
@@ -400,9 +400,9 @@ Static Function DemonsCon()
 
 	Private oPrinter := FWMSPrinter():New( "demons_consumo_.pdf",IMP_PDF,lAdjustToLegacy,"C:\temp\",lDisableSetup,,,,,,,, )
 
-	for nX := 1 to len(aList5B)
-		if len(aList5B[nX]) > 4
-			Aadd(aPontos, aList5B[nX])
+	for nX := 1 to len(_aList5B)
+		if len(_aList5B[nX]) > 4
+			Aadd(aPontos, _aList5B[nX])
 		endif
 	next
 
@@ -413,7 +413,7 @@ Static Function DemonsCon()
 		next
 	next
 
-	Asort(aProd,,,{|x,y| x[2] < y[2]})
+	//Asort(aProd,,,{|x,y| x[2] < y[2]})
 
 	oPrinter:StartPage()
 	oPrinter:SetMargin( 005, 005, 005, 005 )
@@ -435,7 +435,7 @@ Static Function DemonsCon()
 
 	cQuery := " SELECT A1_CEP,A1_CGC,A1_MUN,A1_EST "
 	cQuery += " FROM SA1010 "
-	cQuery += " WHERE A1_COD = '" + aList[oList:nAt,3] + "' AND A1_LOJA = '" + aList[oList:nAt,4] + "' "
+	cQuery += " WHERE A1_COD = '" + _aList[oList:nAt,3] + "' AND A1_LOJA = '" + _aList[oList:nAt,4] + "' "
 
 	If Select("TRB") > 0
 		dbSelectArea("TRB")
@@ -451,9 +451,9 @@ Static Function DemonsCon()
 		DBSKIP()
 	end
 
-	oPrinter:Say( nLin+20, 35,SubStr(aList[oList:nAt,5],1 ,30), oF20TFF,, rgb(0, 0, 0) )
+	oPrinter:Say( nLin+20, 35,SubStr(_aList[oList:nAt,5],1 ,30), oF20TFF,, rgb(0, 0, 0) )
 	oPrinter:Say( nLin+32, 35,Transform(val(aAux[2]), "@E 99,999,999/9999-99"), oF12FFF,, rgb(0, 0, 0) )
-	oPrinter:Say( nLin+44, 35,aList[oList:nAt,6], oF12FFF,, rgb(0, 0, 0) )
+	oPrinter:Say( nLin+44, 35,_aList[oList:nAt,6], oF12FFF,, rgb(0, 0, 0) )
 	oPrinter:Say( nLin+56, 35,Transform(val(aAux[1]), "@E 99999-999") + " - " + AllTrim(aAux[3]) + "-" + aAux[4], oF12FFF,, rgb(0, 0, 0) )
 	oPrinter:Say( nLin+68, 35,"Este é o seu demonstrativo de consumo para o período", oF12FFF,, rgb(0, 0, 0) )
 	oPrinter:Say( nLin+80, 35,"de " + dtoc(stod(aProd[1,4])) + " a " + dtoc(stod(aProd[1,6])) + " ", oF12FFF,, rgb(0, 0, 0) )
