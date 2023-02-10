@@ -259,7 +259,7 @@ If len(aList) > 0
 	oTMenuIte2 := TMenuItem():New(oDlg1,"Listar-Faturamento",,,,{|| Processa({||PreFat(),"Aguarde"})} ,,,,,,,,,.T.)
 	// oTMenuIte3 := TMenuItem():New(oDlg1,"Faturar",,,,{|| Processa({||GeraPv(0),"Aguarde"})} ,,,,,,,,,.T.)
 	oTMenuIte4 := TMenuItem():New(oDlg1,"Envio NF/Boleto",,,,{|| NFBol()} ,,,,,,,,,.T.)
-	oTMenuIte7 := TMenuItem():New(oDlg1,"Impressoes",,,,{|| Processa({||U_CONFSR02(aList,alist2,aList3,aList4,aList5,oSay6:cTitle),"Aguarde"})} ,,,,,,,,,.T.)
+	oTMenuIte7 := TMenuItem():New(oDlg1,"Impressoes",,,,{|| Processa({||U_CONFSR02(oSay6:cTitle),"Aguarde"})} ,,,,,,,,,.T.)
 
 
 	oMenu:Add(oTMenuIte1)
