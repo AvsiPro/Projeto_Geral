@@ -697,23 +697,30 @@ Static Function Busca(cCond,cQuinze)
 		EndIf
 
 		lZerou := .F.
+		for nX := 5 to len(aList5b[nCont])
+			If aList5b[nCont,nX,07] < aList5b[nCont,nX,05]
+				lZerou := .T.
+				exit 
+			EndIf 
+		Next nX 
 
 		for nX := 5 to len(aList5b[nCont])
 			
 		//leitura atual x leitura faturamento anterior
-			If aList5b[nCont,nX,07] < aList5b[nCont,nX,05] .OR. lZerou
+			If lZerou //aList5b[nCont,nX,07] < aList5b[nCont,nX,05] .OR. lZerou
 				//leitura zerada
 				aList5b[nCont,nX,08] := aList5b[nCont,nX,07]
-				lZerou := .T.
+				//lZerou := .T.
 			Else 
 				aList5b[nCont,nX,08] := aList5b[nCont,nX,07] - aList5b[nCont,nX,05]
 			EndIf 
 		//leitura atual x leitura intermediaria
 			if aList5b[nCont,nX,14] > 0 //> aList5b[nCont,nX,07]
-				If aList5b[nCont,nX,14] < aList5b[nCont,nX,07] .or. aList5b[nCont,nX,14] < aList5b[nCont,nX,05]
+				If lZerou //aList5b[nCont,nX,14] < aList5b[nCont,nX,07] .or. aList5b[nCont,nX,14] < aList5b[nCont,nX,05]
 					aList5b[nCont,nX,08] += aList5b[nCont,nX,14]
 				endif
 			endif
+
 			aList5b[nCont,nX,10] := aList5b[nCont,nX,08] * aList5b[nCont,nX,09]
 
 			nPos := Ascan(aList,{|x| Alltrim(x[1]) == aList5B[nCont,01]})
@@ -892,8 +899,8 @@ Else
 	Aadd(aList5,{'','','','',0,'',0,0,0,0,'','','',''})
 EndIf 
 
-Aeval(aList5,{|x| nTotQ += x[8]})
-Aeval(aList5,{|x| nTotV += x[10]})
+Aeval(aList5,{|x| nTotQ += x[8]}) //+x[14]})
+Aeval(aList5,{|x| nTotV += x[10]}) //+(x[14]*x[9])})
 
 oList5:SetArray(aList5)
 oList5:bLine := {||{Alltrim(aList5[oList5:nAt,01]),;
