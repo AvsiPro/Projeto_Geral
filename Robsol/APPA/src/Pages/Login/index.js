@@ -34,9 +34,32 @@ export default function Login({navigation}){
 
     const [hidepass, setHidepass] = useState(false)
 
+    const tentLogar = async() => {
+
+        let result = {}
+
+        setLoad(true)
+
+        for (var i = 0; i < 5; i++) {
+            console.log('tentativa de logar: '+i);
+            result = await loadUser()
+            
+            if(result.retorno){
+                setLoad(false)
+                navigation.navigate('Home');
+                break
+            }
+        }
+        
+        if(!result.retorno){
+            alert(result.erro)
+        }
+        setLoad(false)
+    }
+
+
     const loadUser = async() =>{
         Keyboard.dismiss()
-        setLoad(true)
         
         try{
             const response = await api.post("/PRTL001", {
@@ -48,18 +71,19 @@ export default function Login({navigation}){
                 console.log(response.data.statusrequest[0])
 
                 setUserData(response.data.statusrequest[0])
-
-                navigation.navigate('Home');
-
+                return {retorno: true, erro: ''}
+                
             } else {
-                alert(response.data.statusrequest[0].Cod_Usuario)
+                //alert(response.data.statusrequest[0].Cod_Usuario)
+                return {retorno: false, erro: response.data.statusrequest[0].Cod_Usuario}
             } 
         
         } catch(error){
             console.log(error)
-            alert('Usuário ou senha incorretos')
+            //alert('Usuário ou senha incorretos')
+            return {retorno: false, erro: 'Usuário ou senha incorretos'}
         }
-        setLoad(false)
+        
     };
 
     useEffect(()=>{
@@ -159,7 +183,7 @@ export default function Login({navigation}){
                 </View>
 
 
-                <TouchableOpacity style={styles.button} onPress={loadUser}>
+                <TouchableOpacity style={styles.button} onPress={tentLogar}>
                     {load ?
                     <View style={{flex:1,justifyContent:'center'}}>
                         <ActivityIndicator color={'#fff'} size={35}/>
@@ -170,7 +194,7 @@ export default function Login({navigation}){
                 </TouchableOpacity>
                 
                 <View style={{marginTop:40}}>
-                    <Text>v120221215</Text>
+                    <Text>v120230208</Text>
                 </View>
             </Animated.View>
             

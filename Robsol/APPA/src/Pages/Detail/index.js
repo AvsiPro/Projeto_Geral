@@ -1,4 +1,4 @@
-import React,{useState,useContext, useEffect} from 'react';
+import React,{useState,useContext,useRef} from 'react';
 import {
     SafeAreaView,
     View,
@@ -9,6 +9,7 @@ import {
     FlatList,
     Keyboard,
     ActivityIndicator,
+    ScrollView
 } from 'react-native';
 import { RadioButton } from 'react-native-paper';
 
@@ -22,6 +23,7 @@ import { Ionicons } from '@expo/vector-icons';
 import api from '../../services/api'
 
 import ModFilter from '../../Modal/modFilter';
+import {Modalize} from 'react-native-modalize'
 
 import Section from '../../Sections/index';
 
@@ -46,9 +48,11 @@ export default function Detail({route,navigation}){
     const [visibleFilter, setVisibleFilter] = useState(false);
     const [checked, setChecked] = useState(filter);
     const [load, setLoad] = useState(false);
+    const [listTit, setListTit] = useState([]);
+    const [cliTit, setCliTit] = useState('');
 
     const authBasic = 'YWRtaW46QVZTSTIwMjI';
-
+    const modalizeRefTit = useRef(null);
 
     function buttomSearch(option){
         if(searchT){ loadSec() } else { searchSec(option) }
@@ -197,6 +201,34 @@ export default function Detail({route,navigation}){
         return Object.values(newList)
     }
 
+
+    const handleOpenTit = async(codigo)=>{
+
+        const response = await api.get('/Financial',{
+            withCredentials: true,
+            headers: {
+                'Authorization': 'Basic '+authBasic,
+                'VENDEDOR': dataUser.cod_vendedor,
+                'codigo': codigo
+            } 
+        })
+
+        const aResult = [...response.data["items"]]
+
+        if (aResult.length !== 0){
+            setCliTit(aResult[0].cliente)
+        }else {
+            setCliTit('Nenhum titulo localizado')
+        }
+
+        setListTit(aResult)
+        modalizeRefTit.current?.open()
+    };
+
+    const handleCloseTit = ()=>{
+        modalizeRefTit.current?.close()
+    };
+
     return( 
 
         <SafeAreaView style={styles.contSafe}>
@@ -244,6 +276,7 @@ export default function Detail({route,navigation}){
                             vendedor={dataUser.cod_vendedor}
                             prdProd={prdProd}
                             dataBack={[nameSec,data,filter,icon,prdProd]}
+                            handleOpenTit={handleOpenTit}
                         />
                     }
                     onEndReached={!searchT&&loadSec}
@@ -422,6 +455,107 @@ export default function Detail({route,navigation}){
                     </View>
                 }
             </ModFilter>
+
+
+            <Modalize
+                adjustToContentHeight={600}
+                ref={modalizeRefTit}
+                snapPoint={600}
+                withHandle={false}
+            >
+                <View style={{height:600,margin:15}}>
+                    
+                    <View style={styles.headerPed}>
+                        <Text style={{fontSize:22, fontWeight:'bold'}}>Titulos Cliente</Text>
+
+                        <View style={styles.closeModal}>
+                            <TouchableOpacity onPress={handleCloseTit}>
+                                <Ionicons style={{bottom:7}} name="close" size={40} color="black" />
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+
+                    <Text style={{fontWeight:'bold',fontSize:16,color:"#175A93",marginBottom:20}}>{cliTit}</Text>
+
+
+                    <ScrollView style={{marginBottom:30}}>
+
+                    { listTit.sort((a, b) => b.id.localeCompare(a.id)).map((item) => (
+                        
+                        <View
+                            key={item.id}
+                            style={{
+                                borderWidth:1,
+                                marginVertical:5,
+                                borderRadius:10,
+                                paddingVertical:10,
+                                borderColor:"#175A93" 
+                            }}
+                        >   
+                            <View style={{
+                                flexDirection:'row',
+                                justifyContent:'space-between',
+                                marginHorizontal:5,
+                                marginBottom:20
+                                }}
+                            >
+                                <Text style={{color:'#175A93',fontWeight:'bold'}}>{item.titulo}</Text>
+                                <Text style={{fontWeight:'bold'}}>{'Vencto: '+item.vencimento}</Text>
+                            </View>
+
+                            <View style={{flexDirection:'row',justifyContent:'space-between'}}>
+                                <View style={{marginHorizontal:5,alignItems:'center'}}>
+                                    <Text style={{fontWeight:'bold'}}>Prefixo</Text>
+                                    <Text>{item.prefixo}</Text>
+                                </View>
+
+                                <View style={{marginHorizontal:5,alignItems:'center'}}>
+                                    <Text style={{fontWeight:'bold'}}>Parcela</Text>
+                                    <Text>{item.parcela}</Text>
+                                </View>
+
+                                <View style={{marginHorizontal:5,alignItems:'center'}}>
+                                    <Text style={{fontWeight:'bold'}}>Emissão</Text>
+                                    <Text>{item.emissao}</Text>
+                                </View>                  
+
+                                <View style={{marginHorizontal:5,alignItems:'center'}}>
+                                    <Text style={{fontWeight:'bold'}}>Status</Text>
+                                    <Text style={item.status==="Pago" ? {color:'green'} : item.status==="Em Aberto" ?{color:'#F4C619'} : {color:'tomato'}}>
+                                        {item.status}
+                                    </Text>
+                                </View>
+                                
+                                <View style={{marginHorizontal:7,alignItems:'center'}}>
+                                    <Text style={{fontWeight:'bold'}}>Valor</Text>
+                                    <Text>{item.valor.trim()}</Text>
+                                </View>
+                            </View>
+                            
+                            <View style={{flexDirection:'row',justifyContent:'flex-end',marginTop:22}}>
+                                <TouchableOpacity 
+                                    style={styles.buttonDownload}
+                                    onPress={()=>{handleDownload(item.boleto)}}
+                                >
+                                    <Text style={{fontWeight:'bold',color:'white'}}>Boleto</Text>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity 
+                                    style={styles.buttonDownload}
+                                    onPress={()=>{handleDownload(item.danfe)}}
+                                >
+                                    <Text style={{fontWeight:'bold',color:'white'}}>Danfe</Text>
+                                </TouchableOpacity>
+                            </View>
+
+                        </View>
+                    ))
+
+                    }
+
+                    </ScrollView>
+                </View>
+            </Modalize>
 
         </SafeAreaView>
         

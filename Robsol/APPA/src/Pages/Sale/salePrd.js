@@ -593,6 +593,7 @@ export default function SalePrd({route,navigation}){
             }
         })
 
+        setSelectItems([])
         totalCart(vlrTotalCart + sumall)
         quantCart(qtdTotalCart + sumQtd)
         addCart(copyCart)

@@ -152,7 +152,7 @@ export default function SaleCli({route,navigation}){
 
         try{
             setLoad(true)
-            const response = await api.get(`/${nameSec}/`,{headers: params})
+            const response = await api.get(`/${nameSec}/?pagesize=50`,{headers: params})
 
             if(_.has(response.data,"Erro")){
                 aResult = [];
@@ -188,7 +188,7 @@ export default function SaleCli({route,navigation}){
                 contato: yup.string().required("Informe o Contato..."),
                 razao_social: yup.string().required("Informe a Razão Social..."),
                 nome_fantasia: yup.string().required("Informe o Nome Fantasia..."),
-                email: yup.string().email('E-mail invalido').required("Informe o Email..."),
+                email: yup.string().required("Informe o Email..."),
                 celular: yup.string().required("Informe o Telefone..."),
                 fone2: yup.string().required("Informe o Telefone..."),
                 cep: yup.string().required("Informe o CEP..."),
@@ -203,6 +203,10 @@ export default function SaleCli({route,navigation}){
 
     const handleSignIn = async(dataCad) =>{
 
+        if(!validateEmail(dataCad.email)){
+            alert('Formato de e-mail inválido, corrija para prosseguir.')
+            return
+        }
         setCli(dataCad)
         setLoadPrd(true)
 
@@ -226,8 +230,14 @@ export default function SaleCli({route,navigation}){
 
         setLoadPrd(false)
         handleCloseCli(false)
-        
     };
+
+
+    function validateEmail(email) {
+        var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        return re.test(String(email).toLowerCase());
+      }
+      
 
     const handleOpenCli = ()=>{modalizeRefCli.current?.open()};
     const handleCloseCli = ()=>{modalizeRefCli.current?.close()};
