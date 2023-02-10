@@ -78,6 +78,8 @@ Private oNo   	:= LoadBitmap(GetResources(),'br_vermelho')
 Private aTabPrc :=	{}
 Private cQuinze	:=	""
 
+Private aAbater	:=	{}
+
 IF Select("SM0") == 0
     RpcSetType(3)
     RPCSetEnv("01","0101")
@@ -257,17 +259,12 @@ If len(aList) > 0
 	oTMenuIte2 := TMenuItem():New(oDlg1,"Listar-Faturamento",,,,{|| Processa({||PreFat(),"Aguarde"})} ,,,,,,,,,.T.)
 	// oTMenuIte3 := TMenuItem():New(oDlg1,"Faturar",,,,{|| Processa({||GeraPv(0),"Aguarde"})} ,,,,,,,,,.T.)
 	oTMenuIte4 := TMenuItem():New(oDlg1,"Envio NF/Boleto",,,,{|| NFBol()} ,,,,,,,,,.T.)
-	//oTMenuIte5 := TMenuItem():New(oDlg1,"Fechamento Mensal",,,,{|| Fechamento()} ,,,,,,,,,.T.)
-	//oTMenuIte6 := TMenuItem():New(oDlg1,"Rescisão Contrato",,,,{|| Rescisao(oList:nAt)} ,,,,,,,,,.T.)
 	oTMenuIte7 := TMenuItem():New(oDlg1,"Impressoes",,,,{|| Processa({||U_CONFSR02(aList,alist2,aList3,aList4,aList5,oSay6:cTitle),"Aguarde"})} ,,,,,,,,,.T.)
 
 
 	oMenu:Add(oTMenuIte1)
 	oMenu:Add(oTMenuIte2)
-	// oMenu:Add(oTMenuIte3)
 	oMenu:Add(oTMenuIte4)
-	//oMenu:Add(oTMenuIte5)
-	//oMenu:Add(oTMenuIte6)
 	oMenu:Add(oTMenuIte7)
 
 	// Cria botão que sera usado no Menu  
@@ -286,6 +283,9 @@ If len(aList) > 0
 	//ao clicar com o botão direito no grid de faturamentos.
 		MENU oMenuP3 POPUP 
 		MENUITEM "Itens Pedido" ACTION (Processa({|| ItensPv(aList3[oList3:nAt,01],aList3[oList3:nAt,04])},"Aguarde"))
+		MENUITEM "Estornar Faturamento" ACTION (Processa({|| estorfat(aList3[oList3:nAt,01],aList3[oList3:nAt,04])},"Aguarde"))
+		
+
 		ENDMENU                                                                           
 
 		oList3:bRClicked := { |oObject,nX,nY| oMenuP3:Activate( nX, (nY-10), oObject ) }
@@ -391,15 +391,6 @@ Static Function Busca(cCond,cQuinze)
 	cQuery:= ChangeQuery(cQuery)
 	DbUseArea(.T.,"TOPCONN",TcGenQry(,,cQuery),'TRB',.F.,.T.)   
 		
-	/*
-		1			2		3			4		5		  6			7		 8			9  			10		
-	AAN_CONTRT,AAM_CODCLI,AAM_LOJA,AAN_ITEM,AAN_CODPRO,B1_DESC,AAN_XCBASE,AAN_QUANT,AAN_ULTEMI,AAN_VLRUNI,
-		11			12		13		  14		15		16		  17	  18	 19		   20      21		  22          23       24
-	AAN_INICOB,AAN_FIMCOB,AAN_CONPAG,E4_COND,E4_DESCRI,A1_NREDUZ,A1_NOME,A1_END,A1_BAIRRO,A1_MUN,AAM_INIVIG,AAM_FIMVIG,A1_EMAIL,AAN_XISENT
-		25			26			27		28      29   30
-	AAM_XFORFA,AAM_XTIPFA,AAM_XPERCT,AAM_XRENOV,0,AAN_FILIAL
-	*/
-
 	DbSelectArea("TRB")   
 
 	While !EOF()
@@ -549,7 +540,7 @@ Static Function Busca(cCond,cQuinze)
 		EndDo
 		
 	Next nCont     
-
+/*
 	For nCont := 1 to len(aList3b)
 		nPos := Ascan(aList,{|x| Alltrim(x[1]) == aList3b[nCont,05]})
 		If nPos > 0 .And. (strzero(month(aList3b[nCont,02]),2)+cvaltochar(year(aList3b[nCont,02])) == strzero(month(ddatabase),2)+cvaltochar(year(ddatabase)))
@@ -562,7 +553,7 @@ Static Function Busca(cCond,cQuinze)
 			EndIf
 		EndIf
 	Next nCont
-
+*/
 
 	cQuery := "SELECT AAM_CONTRT,DA1_CODPRO,B1_DESC,DA1_PRCVEN,DA1_XCONSU"
 	cQuery += " FROM "+RetSQLName("AAM")+" AAM"
@@ -601,7 +592,8 @@ Static Function Busca(cCond,cQuinze)
 				cQuery += "  UNION "
 			EndIf 
 
-			cQuery += "SELECT Z08_COD,Z08_SEQUEN,Z08_SELECA,Z08_PRODUT,B1_DESC,Z08_QTDLID,Z08_DATA,Z08_CONTRT,Z08_FATURA" 
+			cQuery += "SELECT Z08_COD,Z08_SEQUEN,Z08_SELECA,Z08_PRODUT,B1_DESC,Z08_QTDLID,"
+			cQuery += " Z08_DATA,Z08_CONTRT,Z08_FATURA,Z08.R_E_C_N_O_ AS RECZ08,Z08_PEDIDO" 
 			cQuery += "  FROM "+RetSQLname("Z08")+" Z08" 
 			cQuery += "  LEFT JOIN "+RetSQLname("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"'"
 			cQuery += "   AND B1_COD=Z08_PRODUT AND B1.D_E_L_E_T_=' ' 
@@ -610,40 +602,7 @@ Static Function Busca(cCond,cQuinze)
 			cQuery += "  AND Z08.D_E_L_E_T_=' '"
 			cQuery += "  AND Z08_NUMSER='"+aList5b[nCont,02]+"' AND Z08_CONTRT='"+aList5b[nCont,01]+"'"
 		Next nLeitur
-			/*cQuery := "SELECT Z08_COD,Z08_SEQUEN,Z08_SELECA,Z08_PRODUT,B1_DESC,Z08_QTDLID,Z08_DATA,Z08_CONTRT,Z08_FATURA" 
-			cQuery += "  FROM "+RetSQLname("Z08")+" Z08" 
-			cQuery += "  LEFT JOIN "+RetSQLname("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"'"
-			cQuery += "   AND B1_COD=Z08_PRODUT AND B1.D_E_L_E_T_=' ' 
 			
-			If len(aLeitura) > 0
-				cQuery += " WHERE Z08_COD='"+aLeitura[1]+"'"
-				cQuery += "  AND Z08.D_E_L_E_T_=' '
-			ELSE
-				cQuery += " WHERE  Z08_COD IN(SELECT MAX(Z08_COD) FROM "+RetSQLname("Z08")
-				cQuery += "     	WHERE  Z08_FILIAL='"+xFilial("Z08")+"' AND Z08_NUMSER='"+aList5b[nCont,02]+"'"
-				cQuery += "  	AND Z08_CONTRT='"+aList5b[nCont,01]+"' AND D_E_L_E_T_=' ')"
-				cQuery += " AND Z08.D_E_L_E_T_=' '"
-			EndIF 
-			
-			cQuery += "  UNION 
-			cQuery += "  SELECT Z08_COD,Z08_SEQUEN,Z08_SELECA,Z08_PRODUT,B1_DESC,Z08_QTDLID,Z08_DATA,Z08_CONTRT,Z08_FATURA" 
-			cQuery += "  FROM "+RetSQLname("Z08")+" Z08"
-			cQuery += "  LEFT JOIN "+RetSQLname("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"'"
-			cQuery += "		AND B1_COD=Z08_PRODUT AND B1.D_E_L_E_T_=' '" 
-			
-			If len(aLeitura) > 1
-				cQuery += " WHERE Z08_COD='"+aLeitura[2]+"'"
-				cQuery += "  AND Z08.D_E_L_E_T_=' '"
-			Else
-				cQuery += "  WHERE  Z08_COD IN(SELECT MAX(Z08_COD)-1 FROM "+RetSQLname("Z08")
-				cQuery += "		WHERE  Z08_FILIAL='"+xFilial("Z08")+"' AND Z08_NUMSER='"+aList5b[nCont,02]+"'" 
-				cQuery += "  	AND Z08_CONTRT='"+aList5b[nCont,01]+"' AND D_E_L_E_T_=' ')"
-				cQuery += " AND Z08.D_E_L_E_T_=' '"
-				cQuery += " AND Z08_NUMSER='"+aList5b[nCont,02]+"' AND Z08_CONTRT='"+aList5b[nCont,01]+"'"
-			EndIf 
-
-			cQuery += "  ORDER BY Z08_COD DESC"
-			*/
 		If !Empty(cQuery)
 			cQuery += "  ORDER BY Z08_COD DESC"
 
@@ -668,10 +627,19 @@ Static Function Busca(cCond,cQuinze)
 					Aadd(aAuxL5,strzero(val(TRB->Z08_SELECA),3)) //1
 					Aadd(aAuxL5,TRB->Z08_PRODUT) //2
 					Aadd(aAuxL5,TRB->B1_DESC) //3
-					Aadd(aAuxL5,'') //4
-					Aadd(aAuxL5,0) //5	
-					Aadd(aAuxL5,TRB->Z08_DATA) //6
-					Aadd(aAuxL5,TRB->Z08_QTDLID) //7
+					//Se ja esta faturado Z08_FATURA==S Posiciona registro atual na 04 e 05
+					//do contrario 06 e 07
+					If TRB->Z08_FATURA == "S"
+						Aadd(aAuxL5,TRB->Z08_DATA) //4
+						Aadd(aAuxL5,TRB->Z08_QTDLID) //5
+						Aadd(aAuxL5,'') //6
+						Aadd(aAuxL5,0) //7	
+					Else 
+						Aadd(aAuxL5,'') //4
+						Aadd(aAuxL5,0) //5	
+						Aadd(aAuxL5,TRB->Z08_DATA) //6
+						Aadd(aAuxL5,TRB->Z08_QTDLID) //7
+					EndIF 
 					Aadd(aAuxL5,0) //8
 					
 					If nPos2 > 0
@@ -682,8 +650,8 @@ Static Function Busca(cCond,cQuinze)
 
 					Aadd(aAuxL5,0) //10
 					
-					Aadd(aAuxL5,Z08_COD) //11
-					Aadd(aAuxL5,Z08_FATURA) //12
+					Aadd(aAuxL5,TRB->Z08_COD) //11
+					Aadd(aAuxL5,TRB->Z08_FATURA) //12
 
 					Aadd(aAuxL5,'') //13
 					Aadd(aAuxL5,0) //14
@@ -698,6 +666,9 @@ Static Function Busca(cCond,cQuinze)
 						Aadd(aAuxL5,0) //15
 					EndIf 
 
+					Aadd(aAuxL5,TRB->RECZ08)  //16
+					Aadd(aAuxL5,TRB->Z08_PEDIDO)  //17
+
 				Else 
 					If TRB->Z08_DATA < aAux5[nPos,04] .OR. Empty(aAux5[nPos,04]) //TRB->Z08_QTDLID < aAux5[nPos,05]
 						aAux5[nPos,13] := aAux5[nPos,04]
@@ -705,9 +676,6 @@ Static Function Busca(cCond,cQuinze)
 						aAux5[nPos,04] := TRB->Z08_DATA
 						aAux5[nPos,05] := TRB->Z08_QTDLID
 					
-					/*ElseIf Empty(aAux5[nPos,06])
-						aAux5[nPos,06] := TRB->Z08_DATA
-						aAux5[nPos,07] := TRB->Z08_QTDLID*/
 					Endif 
 
 					If nPos2 > 0 .And. aAux5[nPos,09] == 0
@@ -722,8 +690,6 @@ Static Function Busca(cCond,cQuinze)
 				Dbskip()
 			EndDo 
 
-			//Aeval(aAux5,{|x| x[8] := x[7] - x[5]})
-			//Aeval(aAux5,{|x| x[10] := x[9] * x[8]})
 			
 			For nAux := 1 to len(aAux5)
 				Aadd(aList5b[nCont],aAux5[nAux])
@@ -746,26 +712,29 @@ Static Function Busca(cCond,cQuinze)
 			if aList5b[nCont,nX,14] > 0 //> aList5b[nCont,nX,07]
 				If aList5b[nCont,nX,14] < aList5b[nCont,nX,07] .or. aList5b[nCont,nX,14] < aList5b[nCont,nX,05]
 					aList5b[nCont,nX,08] += aList5b[nCont,nX,14]
-				//aList5b[nCont,nX,08] := aList5b[nCont,nX,14] - aList5b[nCont,nX,05] + aList5b[nCont,nX,07]
 				endif
 			endif
 			aList5b[nCont,nX,10] := aList5b[nCont,nX,08] * aList5b[nCont,nX,09]
+
+			nPos := Ascan(aList,{|x| Alltrim(x[1]) == aList5B[nCont,01]})
+			If nPos > 0 
+				If !Empty(aList5B[nCont,nX,17])
+					aList[nPos,len(aQtdH)+1] := 1
+					nPosic := Ascan(aList3B,{|x| x[1] == aList5B[nCont,nX,17]})
+					If nPosic > 0
+						If !Empty(aList3B[nPosic,04])
+							aList[nPos,len(aQtdH)+1] := 2
+						EndIf 
+					EndIf 
+
+				Else 
+					aList[nPos,len(aQtdH)+1] := 0
+				EndIf
+			Endif 
 		next nX
 
 	Next nCont
 	
-	/*
-	For nCont := 1 to len(aList)
-		If (aList[nCont,14] == "2" .And. cQuinze == "2") .Or. (aList[nCont,14] == "1")
-			For nAux := 1 to len(aList5B)
-				If aList5B[nAux,01] == aList[nCont,01]
-					Recalc(aList5B[nAux],nAux)
-				EndIf 
-			Next nAux 
-		EndIf 
-	Next nCont 
-	*/
-
 	RestArea(aArea)
 
 Return                   
@@ -1013,36 +982,48 @@ If aList[nLinha2,20] > 0
 		For nCont := 1 to len(aList5B)
 			If aList5B[nCont,01] == aList[nLinha2,01]
 				For nX := 5 to len(aList5B[nCont])
+					If aList5B[nCont,nX,12] <> 'S'
 						cSelec := aList5B[nCont,nX,01]
 						cNumSr := aList5B[nCont,2]
 						cLeit  := aList5B[nCont,nX,11]
 						cDtAnt := aList5B[nCont,nX,04]
 						nQtdAb := abatfat(cNumSr,cLeit,cSelec,cDtAnt)
+						
 						If nQtdAb == 0 .And. aList5B[nCont,nX,05] > 0
 							nQtdAb := aList5B[nCont,nX,05]
 						EndIf 
-
+						
+						If Ascan(aAbater,{|x| Alltrim(x[1])+Alltrim(x[2])+Alltrim(x[5]) == Alltrim(aList5B[nCont,01])+Alltrim(cNumSr)+Alltrim(cSelec)}) == 0
+							Aadd(aAbater,{aList5B[nCont,01],cNumSr,nQtdAb,nQtdAb *  aList5B[nCont,nX,09],cSelec})
+						EndIF 
+											
 						nVlrAbt += nQtdAb *  aList5B[nCont,nX,09]
+						
+						
 						//nAbater += aList5B[nCont,nX,05] - nQtdAb
 						nAbater += nQtdAb
+					EndIf
 				Next nX 
 			EndIf
 		Next nCont
-		cTexto += " - Doses Compl. a serem cobradas "+Transform(AAM->AAM_XQTVLM-nDifCb-nAbater,"@E 999,999,999")
+
+		If AAM->AAM_XQTVLM-nDifCb-nAbater > 0 .And. aList[nLinha2,len(aQtdH)+1] <= 1
+			cTexto += " - Doses Compl. a serem cobradas "+Transform(AAM->AAM_XQTVLM-nDifCb-nAbater,"@E 999,999,999")
+		EndIf 
 	EndIf 
 
 	IF AAM->AAM_XTIPMI=="1"
 		aList[nLinha2,20] := aList[nLinha2,20] - nAbater
 		aList[nLinha2,21] := POSICIONE("DA1",1,XFILIAL("DA1")+AAM->AAM_XCODTA+AAM->AAM_XPRDCM,"DA1_PRCVEN")
-		oSay7:settext("Valor Excedente a ser cobrado "+Transform(aList[nLinha2,20]*aList[nLinha2,21],"@E 999,999.99"))
+		If aList[nLinha2,20]*aList[nLinha2,21] > 0 .And. aList[nLinha2,len(aQtdH)+1] <= 1
+			oSay7:settext("Valor Excedente a ser cobrado "+Transform(aList[nLinha2,20]*aList[nLinha2,21],"@E 999,999.99"))
+		EndIf
 	else
-		/*
-		aList[nLinha2,21] := AAM->AAM_XQTVLM-nDifCb
-		aList[nLinha2,20] := (aList[nLinha2,21] / POSICIONE("DA1",1,XFILIAL("DA1")+AAM->AAM_XCODTA+AAM->AAM_XPRDCM,"DA1_PRCVEN")) - nAbater
-		*/
 		aList[nLinha2,21] := POSICIONE("DA1",1,XFILIAL("DA1")+AAM->AAM_XCODTA+AAM->AAM_XPRDCM,"DA1_PRCVEN")
 		aList[nLinha2,20] := AAM->AAM_XQTVLM-nDifCb-nVlrAbt
-		oSay7:settext("Valor Excedente a ser cobrado "+Transform(aList[nLinha2,20]*aList[nLinha2,21],"@E 999,999.99"))
+		If aList[nLinha2,20]*aList[nLinha2,21] > 0 .And. aList[nLinha2,len(aQtdH)+1] <= 1
+			oSay7:settext("Valor Excedente a ser cobrado "+Transform(aList[nLinha2,20]*aList[nLinha2,21],"@E 999,999.99"))
+		EndIf 
 	EndIf  
 	
 EndIf 
@@ -1390,150 +1371,6 @@ Return
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
 ±±ÉÍÍÍÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍ»±±
-±±ºPrograma  ³CONFSC01  ºAutor  ³Microsiga           º Data ³  09/13/16   º±±
-±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
-±±ºDesc.     ³  Enviar notas e boletos por email                          º±±
-±±º          ³                                                            º±±
-±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
-±±ºUso       ³ AP                                                         º±±
-±±ÈÍÍÍÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼±±
-±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
-ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
-*/
-
-Static Function Enviar()
-
-Local aArea		:=	GetArea()
-Local cSerNd	:=	Alltrim(cFilAnt+"D") 
-Local nQtdLib	:=	0     
-Local aArquivos	:=	{}
-Local lRetorno	:=  .F.
-Local lArqOk	:=	.F.
-Local nAkacio
-Local nI 
-Local nPtro
-
-For nAkacio := 1 to len(aEmail) 
-	If aEmail[nAkacio,01]
-	 	If Empty(aEmail[nAkacio,02])                 
-			dbSelectArea("SC6")
-			dbSetOrder(1)	 		
-			dbSeek(xFilial("SC6")+aEmail[nAkacio,07])
-			While !eof() .and. SC6->C6_FILIAL == xFilial("SC6") .and. SC6->C6_NUM == aEmail[nAkacio,07]
-			 	lCredito := .t.
-			    lEstoque := .t.
-			    lLiber   := .t.
-			    lTransf := .f.    
-			    lAvEst	:=	.T.
-				dbSelectArea("SC9")
-				if !dbSeek(xFilial("SC9")+aEmail[nAkacio,07]+SC6->C6_ITEM)
-					nQtdLib := SC6->C6_QTDVEN
-				   	nQtdLib := MaLibDoFat(SC6->(RecNo()),nQtdLib,@lCredito,@lEstoque,.F.,lAvEst,lLiber,lTransf)
-				Endif
-				dbSelectArea("SC6")
-				dbSkip()
-			Enddo
-			
-			//Chamada da funcao que fara o faturamento do pedido
-			aEmail[nAkacio,02] := GeraNF(aEmail[nAkacio,07],aEmail[nAkacio,08])
-
-			If !Empty(aEmail[nAkacio,02])
-				MV_PAR01 := cSerNd
-				MV_PAR02 := aEmail[nAkacio,02]                    
-		      	aArquivos	:=	{}
-		      	//lArqOk := .F.
-				cRet := U_AMCFIN01(.T.) 
-				cRet := strtran(cRet,".")
-				cRet := strtran(cRet," ")
-				aEmail[nAkacio,12] := cRet
-				Sleep(6000) 
-			EndIf  
-		Else
-			MV_PAR01 := cSerNd
-			MV_PAR02 := aEmail[nAkacio,02]                    
-	      	aArquivos	:=	{}		
-			cRet := U_AMCFIN01(.T.)
-			cRet := strtran(cRet,".")
-			cRet := strtran(cRet," ")
-			aEmail[nAkacio,12] := cRet
-			Sleep(6000)				
-		EndIf
-	EndIf
-Next nAkacio                    
-
-
-For nAkacio := 1 to len(aEmail) 
-	If aEmail[nAkacio,01]
-		If aEmail[nAkacio,04] == 'Não enviado'
-			If !Empty(aEmail[nAkacio,02])
-		      	aArquivos	:=	{}
-		      	lArqOk := .F.
-		  		
-		  		If !lArqOk
-					For nI := 1 To 10   				                                   //+aEmail[nAkacio,09]+aEmail[nAkacio,10]
-    					lArqOk := ChkArq("\_AMC\Nota_Debito\"+cFilAnt+"\"+aEmail[nAkacio,02]+".pdf")
-			      		If lArqOk
-							Exit
-						EndIf
-					Next nI
-		  		EndIF
-				
-				cMsg := cHtml(aEmail[nAkacio,12],aEmail[nAkacio,2])                                                   //+aEmail[nAkacio,09]+aEmail[nAkacio,10]
-				Aadd(aArquivos,{"\_AMC\Nota_Debito\"+cFilAnt+"\"+aEmail[nAkacio,02]+".pdf",''})  
-				aAxM := strtokarr(Alltrim(aEmail[nAkacio,05]),";")
-				cMailenv := ''
-				cPV	:=	''
-				For nPtro := 1 to len(aAxM)
-					cMailenv += cPV +Alltrim(aAxM[nPtro])
-					cPV := ";"
-				Next nPtro    
-				lRetorno := U_TTMAILN('nfe.amc@toktake.com.br',cMailenv+';nfe.amc@toktake.com.br','Nota de Debito '+aEmail[nAkacio,02]+' Serie '+aEmail[nAkacio,11],cMsg,aArquivos,.T.)				                                                                                              
-				
-				aEmail[nX,04] := 'Enviado'				
-			Endif	
-		Else
-			If !Empty(aEmail[nAkacio,02])
-		      	aArquivos	:=	{}
-		      	lArqOk := .F.
-		  		
-		  		If !lArqOk
-					For nI := 1 To 10   				                                   //+aEmail[nAkacio,09]+aEmail[nAkacio,10]
-    					lArqOk := ChkArq("\_AMC\Nota_Debito\"+cFilAnt+"\"+aEmail[nAkacio,02]+".pdf")
-			      		If lArqOk
-							Exit
-						EndIf
-					Next nI
-		  		EndIF
-				
-				cMsg := cHtml(aEmail[nAkacio,12],aEmail[nAkacio,2])                                                    //+aEmail[nAkacio,09]+aEmail[nAkacio,10]
-				Aadd(aArquivos,{"\_AMC\Nota_Debito\"+cFilAnt+"\"+aEmail[nAkacio,02]+".pdf",''})
-
-				aAxM := strtokarr(Alltrim(aEmail[nAkacio,05]),";")
-				cMailenv := ''
-				cPV	:=	''
-				For nPtro := 1 to len(aAxM)
-					cMailenv += cPV + Alltrim(aAxM[nPtro])
-					cPV := ";"
-				Next nPtro 				
-				
-				lRetorno := U_TTMAILN('nfe.amc@toktake.com.br',cMailenv+';nfe.amc@toktake.com.br','Nota de Debito '+aEmail[nAkacio,02]+' Serie '+aEmail[nAkacio,11],cMsg,aArquivos,.T.)				                                                                                              
-				
-			EndIf	
-		EndIf
-	EndIf
-Next nAkacio
-
-oBoleto:end()
-oDlg1:end()
-
-RestArea(aArea)
-
-Return
-
-/*
-ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
-±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
-±±ÉÍÍÍÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍ»±±
 ±±ºPrograma  ³CONFSC01  ºAutor  ³Microsiga           º Data ³  09/16/16   º±±
 ±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
 ±±ºDesc.     ³   Atualiza grid de itens faturados com o grid de pedidos   º±±
@@ -1706,104 +1543,6 @@ RestArea(aArea)
 
 Return(cRet)                                                                   
 
-/*
-ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
-±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
-±±ÉÍÍÍÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍ»±±
-±±ºPrograma  ³CONFSC01  ºAutor  ³Microsiga           º Data ³  09/22/16   º±±
-±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
-±±ºDesc.     ³  Rotina de fechamento mensal                               º±±
-±±º          ³                                                            º±±
-±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
-±±ºUso       ³ AP                                                         º±±
-±±ÈÍÍÍÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼±±
-±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
-ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
-*/
-
-Static Function Fechamento
-
-Local aArea		:=	GetArea()
-Local cQuery       
-Local aFecha	:=	{} 
-
-Private oFecha1,oFecha2
-Private aFecha1	:=	{}
-Private aFecha2	:=	{}
-
-Private oDlF1,oGrpF1,oBrw1,oGrpF2,oBrw2,oBtnF1,oBtnF2
-
-cQuery := "SELECT AAM_STATUS,AAM_CODCLI,AAM_LOJA,A1_NOME,A1_NREDUZ,AAN_CONTRT,AAN_ITEM,'' AS AAN_XCBASE,'' AS AAN_XISENT,AAN_CODPRO,B1_DESC,AAN_QUANT,"
-cQuery += "AAN_VLRUNI,AAN_VALOR,AAN_INICOB,AAN_FIMCOB,AAN_ULTPED,AAN_ULTEMI,AAM_INIVIG,AAM_FIMVIG,'' AS AAM_XFORFA,'' AS AAM_XTIPFA,'' AS AAM_XRENOV,AAN.R_E_C_N_O_ AS REG"
-cQuery += " FROM "+RetSQLName("AAN")+" AAN"
-cQuery += " INNER JOIN "+RetSQLName("AAM")+" AAM ON AAM_FILIAL=AAN_FILIAL AND AAM_CONTRT=AAN_CONTRT AND AAM.D_E_L_E_T_=''"
-cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_COD=AAM_CODCLI AND A1_LOJA=AAM_LOJA AND A1.D_E_L_E_T_=''"
-cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_COD=AAN_CODPRO AND B1.D_E_L_E_T_=''"
-cQuery += " WHERE AAN.D_E_L_E_T_=''"
-cQuery += " ORDER BY AAN_CONTRT,AAN_ITEM"
-
-If Select("TRB") > 0
-	dbSelectArea("TRB")
-	dbCloseArea()
-EndIf
-  
-MemoWrite("CONFSC01.SQL",cQuery)
-
-cQuery:= ChangeQuery(cQuery)
-DbUseArea(.T.,"TOPCONN",TcGenQry(,,cQuery),'TRB',.F.,.T.) 
-
-While !EOF()
-    Aadd(aFecha,{TRB->AAM_STATUS,TRB->AAM_CODCLI,TRB->AAM_LOJA,TRB->A1_NOME,TRB->A1_NREDUZ,TRB->AAN_CONTRT,TRB->AAN_ITEM,;
-    			TRB->AAN_XCBASE,TRB->AAN_XISENT,TRB->AAN_CODPRO,TRB->B1_DESC,TRB->AAN_QUANT,TRB->AAN_VLRUNI,TRB->AAN_VALOR,;
-    			TRB->AAN_INICOB,TRB->AAN_FIMCOB,TRB->AAN_ULTPED,TRB->AAN_ULTEMI,TRB->AAM_INIVIG,TRB->AAM_FIMVIG,TRB->AAM_XFORFA,;
-    			TRB->AAM_XTIPFA,TRB->AAM_XRENOV})
-    If TRB->AAN_XISENT != "1" .And. STRZERO(MONTH(stod(TRB->AAN_ULTEMI)),2) != STRZERO(MONTH(DDATABASE),2) .And. strzero(Month(Stod(TRB->AAN_FIMCOB)),2)+cvaltochar(year(Stod(TRB->AAN_FIMCOB))) <= strzero(Month(dDatabase),2)+cvaltochar(year(ddatabase))
- 	 	Aadd(aFecha1,{TRB->AAN_CONTRT,Alltrim(TRB->B1_DESC),TRB->AAN_VLRUNI})
-    EndIf       
-    
-    If TRB->AAN_XISENT != "1" .And. strzero(Month(Stod(TRB->AAN_FIMCOB)),2)+cvaltochar(year(Stod(TRB->AAN_FIMCOB))) <= strzero(Month(dDatabase),2)+cvaltochar(year(ddatabase)) .And. stod(TRB->AAN_FIMCOB) <= lastday(ddatabase)
-    	Aadd(aFecha2,{.F.,TRB->AAN_CONTRT,TRB->AAN_XCBASE,TRB->AAN_FIMCOB,TRB->REG})
-    EndIF
-	Dbskip()
-EndDo
-
-If len(aFecha1) < 1
-	Aadd(aFecha1,{'','',0,'',''})
-Endif
-
-If len(aFecha2) < 1
-	Aadd(aFecha2,{.F.,'','','',0})
-Endif
-
-oDlF1      := MSDialog():New( 092,232,592,1027,"Fechamento Mensal",,,.F.,,,,,,.T.,,,.T. )
-	oGrpF1     := TGroup():New( 000,004,216,202,"Contratos não Faturados",oDlF1,CLR_BLACK,CLR_WHITE,.T.,.F. )
-	//oBrw1      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{008,008,208,148},,, oGrpF1 ) 
-	
-	oFecha1 	   := TCBrowse():New(008,008,190,200,, {'Contrato','Item','Valor'},{25,40,30},;
-                            oGrpF1,,,,{|| },{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
-	oFecha1:SetArray(aFecha1)
-	oFecha1:bLine := {||{aFecha1[oFecha1:nAt,01],;
-						 aFecha1[oFecha1:nAt,02],; 
-	 					 Transform(aFecha1[oFecha1:nAt,03],"@E 999,999.99")}}
-  
-	oGrpF2     := TGroup():New( 000,206,216,396,"Ativos Removidos",oDlF1,CLR_BLACK,CLR_WHITE,.T.,.F. )
-	//oBrw2      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{008,160,212,332},,, oGrpF2 ) 
-	oFecha2 	   := TCBrowse():New(008,210,180,200,, {'','Contrato','Ativo','Retirado em'},{25,30,40},;
-                            oGrpF2,,,,{|| },{|| markatv(oFecha2:nAt)},, ,,,  ,,.F.,,.T.,,.F.,,,)
-	oFecha2:SetArray(aFecha2)
-	oFecha2:bLine := {||{If(aFecha2[oFecha2:nAt,01],oSpv,oFat),;
-						 aFecha2[oFecha2:nAt,02],; 
-	 					 aFecha2[oFecha2:nAt,03],;
-	 					 stod(aFecha2[oFecha2:nAt,04])}}
-	
-	oBtnF1     := TButton():New( 224,220,"Remover Ativos",oDlF1,{||RemAtv()},040,012,,,,.T.,,"",,,,.F. )
-	oBtnF2     := TButton():New( 224,346,"Sair",oDlF1,{||oDlF1:end()},037,012,,,,.T.,,"",,,,.F. )
-
-oDlF1:Activate(,,,.T.)
-
-RestArea(aArea)
-
-Return
 
 /*
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
@@ -1835,159 +1574,6 @@ oFecha2:bLine := {||{If(aFecha2[oFecha2:nAt,01],oSpv,oFat),;
  					 stod(aFecha2[oFecha2:nAt,04])}}
 oFecha2:refresh()
 oDlF1:refresh()
-
-Return
-
-/*
-ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
-±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
-±±ÉÍÍÍÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍ»±±
-±±ºPrograma  ³CONFSC01  ºAutor  ³Microsiga           º Data ³  09/27/16   º±±
-±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
-±±ºDesc.     ³  Remove o Ativo do contrato                                º±±
-±±º          ³                                                            º±±
-±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
-±±ºUso       ³ AP                                                         º±±
-±±ÈÍÍÍÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼±±
-±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
-ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
-*/
-
-Static Function RemAtv()
-
-Local aArea	:=	GetArea()
-Local nG 
-
-DbSelectArea("AAN")
-
-For nG := 1 to len(aFecha2)
-
-	If aFecha2[nG,01] .And. aFecha2[nG,05] > 0
-		Dbgoto(aFecha2[nG,05])
-		Reclock("AAN",.F.)
-		Dbdelete()
-		AAN->(Msunlock())
-	EndIF  
-
-Next nG 
-
-oDlF1:end()
-
-RestArea(aArea)
-
-Return                         
-
-
-/*
-ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
-±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
-±±ÉÍÍÍÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍ»±±
-±±ºPrograma  ³CONFSC01  ºAutor  ³Microsiga           º Data ³  09/28/16   º±±
-±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
-±±ºDesc.     ³  Calcular Rescisao do Contrato                             º±±
-±±º          ³                                                            º±±
-±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
-±±ºUso       ³ AP                                                         º±±
-±±ÈÍÍÍÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼±±
-±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
-ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
-*/
-
-Static Function Rescisao(nLinha)
-
-Local aArea	:=	GetArea()    
-Local nTot	:=	0             
-Local nOpica:=	0
-Local nX 
-
-Private oRes1,oGres1,oGres2,oBrw1,oGres3,oBRes1,oBRes2,oSayR1,oSayR2,oSayR3,oSayR4,oSayR5,oSayR6,oSayR7,oSayR8,oSayR9,oSayR10,oSayR11,oSayR12,oSayR13
-Private oResci
-Private aResci	:=	{}  
-
-
-For nX := 1 to len(aList2b)
-	If aList[nLinha,01] == aList2b[nX,04]
-		Aadd(aResci,{aList2b[nX,01],aList2b[nX,02],aList2b[nX,05],aList2b[nX,03],''})
-	EndIf
-Next nX
- 
-cInfCl  := aList[nLinha,03]+"-"+aList[nLinha,04]+" / "+aList[nLinha,05]
-cInfEnd := aList[nLinha,06]+" / "+aList[nLinha,07]+" / "+aList[nLinha,08] 
-cInfVig := cvaltochar(aList[nLinha,11]) +" A "+cvaltochar(aList[nLinha,12])
-
-//Valor Mensal
-Aeval(aList2b,{|aList2b| nTot += If(aList2b[4] == aList[nLinha,01] .And. aList2b[3]>1,aList2b[3],0)})
-
-//Vencimento do Contrato
-nVencCnt := MonthSum(stod(aList[nLinha,14]),val(aList[nLinha,15]))
-
-//Quantidade de meses para vencer o contrato
-nQtdMes	:=	DateDiffMonth(ddatabase,nVencCnt)
-
-//Multa
-nMulta 	:=	(nTot * nQtdMes) * (aList[nLinha,16]/100)
-
-
-oRes1      := MSDialog():New( 092,232,592,927,"Rescisão",,,.F.,,,,,,.T.,,,.T. )
-
-	oGRes1      := TGroup():New( 004,004,080,336,"Informações do Contrato",oRes1,CLR_BLACK,CLR_WHITE,.T.,.F. )
-		oSayR7      := TSay():New( 016,012,{||"Cliente                 "+cInfCl},oGRes1,,oFont4,.F.,.F.,.F.,.T.,CLR_BLUE,CLR_WHITE,316,008)
-		oSayR8      := TSay():New( 037,012,{||"Endereço                "+cInfEnd},oGRes1,,oFont3,.F.,.F.,.F.,.T.,CLR_BLUE,CLR_WHITE,316,008)
-		oSayR9      := TSay():New( 055,012,{||"Vigência do Contrato    "+cInfVig},oGRes1,,oFont3,.F.,.F.,.F.,.T.,CLR_BLUE,CLR_WHITE,316,008)
-		oSayR10     := TSay():New( 052,012,{||""},oGRes1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,316,008)
-		oSayR11     := TSay():New( 068,122,{||"Valor Mensal "+Transform(nTot,"@E 999,999,999.99")},oGRes1,,oFont3,.F.,.F.,.F.,.T.,CLR_RED,CLR_WHITE,316,008)
-
-	oGres2      := TGroup():New( 084,004,232,204,"Ativos no Contrato",oRes1,CLR_BLACK,CLR_WHITE,.T.,.F. )
-		
-		//oBrw1      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{092,008,228,200},,, oRes2 ) 
-		oResci 	   := TCBrowse():New(092,008,193,135,, {'Ativo','Modelo','Instalado em','Valor'},{25,30,30,30},;
-	                            oGres2,,,,{|| },{|| /*editcol*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
-		oResci:SetArray(aResci)
-		oResci:bLine := {||{aResci[oResci:nAt,01],;
-							 aResci[oResci:nAt,02],; 
-		 					 aResci[oResci:nAt,03],;
-		 					 If(aResci[oResci:nAt,04]>1,Transform(aResci[oResci:nAt,04],"@E 999,999,999.99"),'Isento')}}
-	
-	oGRes3      := TGroup():New( 084,208,196,336,"Calculo",oRes1,CLR_BLACK,CLR_WHITE,.T.,.F. )
-	
-		oSayR1      := TSay():New( 096,216,{||"Vencimento do Contrato"},oGRes3,,oFont2,.F.,.F.,.F.,.T.,CLR_BLUE,CLR_WHITE,160,008)
-		oSayR2      := TSay():New( 096,292,{||nVencCnt},oGRes3,,oFont3,.F.,.F.,.F.,.T.,CLR_RED,CLR_WHITE,052,008)
-		oSayR3      := TSay():New( 116,216,{||"Meses a serem cobrados"},oGRes3,,oFont2,.F.,.F.,.F.,.T.,CLR_BLUE,CLR_WHITE,160,008)
-		oSayR4      := TSay():New( 116,292,{|| nQtdMes},oGRes3,,oFont3,.F.,.F.,.F.,.T.,CLR_RED,CLR_WHITE,052,008)
-		
-		oSayR12      := TSay():New( 136,216,{||"% Multa"},oGRes3,,oFont2,.F.,.F.,.F.,.T.,CLR_BLUE,CLR_WHITE,160,008)
-		oSayR13      := TSay():New( 136,292,{|| aList[nLinha,16]},oGRes3,,oFont3,.F.,.F.,.F.,.T.,CLR_RED,CLR_WHITE,052,008)
-
-		oSayR5      := TSay():New( 156,216,{||"Valor para Rescisão em "+cvaltochar(dDataBase)},oGRes3,,oFont3,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,112,008)
-		oSayR6      := TSay():New( 176,237,{||"R$ "+Transform(nMulta,"@E 999,999,999.99")},oGRes3,,oFont4,.F.,.F.,.F.,.T.,CLR_RED,CLR_WHITE,112,020)
-
-	oBRes1     := TButton():New( 220,208,"Rescindir",oGRes1,{||oRes1:end(nOpica:=1)},037,012,,,,.T.,,"",,,,.F. )
-	oBRes2     := TButton():New( 220,300,"Sair",oGres1,{||oRes1:end(nOpica:=0)},037,012,,,,.T.,,"",,,,.F. )
-
-oRes1:Activate(,,,.T.)
-
-If nOpica == 1
-	U_AMCFAT02()	   
-	DbSelectArea("AAM")
-	DbSetOrder(1)
-	If Dbseek(xFilial("AAM")+aList[oList:nAt,01])
-		Reclock("AAM",.F.)
-		AAM->AAM_STATUS := "3"
-		AAM->(Msunlock())
-	EndIf
-	DbSelectArea("AAN")
-	DbSetOrder(1)
-	IF Dbseek(xFilial("AAN")+aList[oList:nAt,01])
-		While !EOF() .And. AAN->AAN_CONTRT == aList[oList:nAt,01]
-			Reclock("AAN",.F.)
-			DbDelete()
-			AAN->(Msunlock())
-			Dbskip()
-		EndDo
-	EndIf
-EndIf
-
-RestArea(aArea)
 
 Return
 
@@ -2048,6 +1634,7 @@ Static Function GeraPv(nOpcG)
 Local aArea 	:=	GetArea()
 Local nCont 
 Local aItens	:=	{}
+Local aItSFt	:=	{}
 Local aLocac 	:=	{}
 Local nJ 
 Local cAtLoc 	:=	""
@@ -2061,6 +1648,11 @@ Local nX
 Local lDose     := .F.
 Local lLoc      := .F.
 Local cFilFat	:=	If(aList[oList:nAt,23]=="RJ","0102","0101")
+
+If aList[oList:nAt,len(aQtdH)+1] > 1
+	MsgAlert("Contrato já faturado para o período")
+	//Return
+EndIf
 
 aAdd( aPerg ,{2,"Escolha uma opção : ",0,aCombo,100,"",.T.})
 
@@ -2112,7 +1704,11 @@ ElseIf nOpcG == 1
 											aList5B[nCont,nJ,09]})
 						Else 
 							aItens[nPos,02] += aList5B[nCont,nJ,08]
-						EndIf 
+						EndIf
+					Else 
+						Aadd(aItSFt,{	aList5B[nCont,nJ,02],;
+											aList5B[nCont,nJ,08],;
+											aList5B[nCont,nJ,09]}) 
 					EndIf
 				Next nJ 
 			EndIf
@@ -2140,7 +1736,11 @@ ElseIf nOpcG == 1
 												aList5B[nCont,nJ,09]})
 							Else 
 								aItens[nPosloc,02] += aList5B[nCont,nJ,08]
-							EndIf 
+							EndIf
+						Else 
+							Aadd(aItSFt,{	aList5B[nCont,nJ,02],;
+												aList5B[nCont,nJ,08],;
+												aList5B[nCont,nJ,09]}) 
 						EndIf
 					Next nJ 
 				EndIf
@@ -2152,147 +1752,199 @@ ElseIf nOpcG == 1
 								Posicione("DA1",1,xFilial("DA1")+AAM->AAM_XCODTA+aList[oList:nAt,22],"DA1_PRCVEN")})
 			EndIf 
 			cAtFat := Alltrim(aList2[nX,01])
-			If len(aItens) > 0 //(len(aItens) > 0 .And. cQuinze == "2") .OR.(cForFat=="1" .AND. cTipFat=="2" .And. len(aItens) > 0)
-				Processa({|| Pedido(cAtFat,aItens,cFilFat)},"Aguarde")
+			If len(aItens) > 0 
+				If resumfat(aItens,aItSFt,.F.)
+					Processa({|| Pedido(cAtFat,aItens,cFilFat)},"Aguarde")
+				else
+					Return 
+				EndIf 
 				aItens := {}
-			EndIF
-			
-			
-		
+			EndIF		
 		Next nX
 	EndIf 
 
 EndIF 
 
-If len(aItens) > 0 .AND. lDose
-//PEDIDOS DE DOSES
+If len(aItens) > 0
+	If resumfat(aItens,aItSFt,.F.)
+					
+		If len(aItens) > 0 .AND. lDose
+		//PEDIDOS DE DOSES
+			
+			If Empty(cAtFat)
+				cAtFat := Alltrim(aList2[oList2:nAt,01])
+			EndIF 
 
-	If Empty(cAtFat)
-		cAtFat := Alltrim(aList2[oList2:nAt,01])
-	EndIF 
+			DbSelectArea("AAM")
+			DbSetOrder(1)
+			DbSeek(xFilial("AAM")+aList[oList:nAt,01])
+			aCabec := {}
+			aItC6  := {}
+			cItem  := '01'
 
-	DbSelectArea("AAM")
-	DbSetOrder(1)
-	DbSeek(xFilial("AAM")+aList[oList:nAt,01])
-	aCabec := {}
-	aItC6  := {}
-	cItem  := '01'
+			aAdd( aCabec , { "C5_FILIAL"    , cFilFat		      , Nil } ) 
+			aAdd( aCabec , { "C5_XTPPED"    , 'F'                 , Nil } )
+			aAdd( aCabec , { "C5_TIPO"      , 'N'                 , Nil } )
+			aAdd( aCabec , { "C5_CLIENTE"   , aList[oList:nAt,03]    , Nil } )
+			aAdd( aCabec , { "C5_LOJACLI"   , aList[oList:nAt,04]    , Nil } )
+			Aadd( aCabec , { "C5_MENNOTA"   , 'Faturamento de Doses - Ref. Patrimonio(s) '+cAtFat   , Nil } )
+			aAdd( aCabec , { "C5_CONDPAG"   , AAM->AAM_CPAGPV     , Nil } )    
+			aAdd( aCabec , { "C5_NATUREZ"   , "31101001  "     , Nil } )    
+			aAdd( aCabec , { "C5_XCONTRT"	, aList[oList:nAt,01]	, Nil })
+				
+			For nCont := 1 to len(aItens)
+				aLinha := {}
+				aAdd( aLinha , { "C6_FILIAL"     , cFilFat		                          , Nil })
+				aAdd( aLinha , { "C6_ITEM"       , cItem 							      , Nil })
+				aAdd( aLinha , { "C6_PRODUTO"    , aItens[nCont,01]                       , Nil })
+				aAdd( aLinha , { "C6_QTDVEN"     , aItens[nCont,02]                       , Nil })
+				aAdd( aLinha , { "C6_PRCVEN"     , aItens[nCont,03]                       , Nil })
+				aAdd( aLinha , { "C6_OPER"       , "08"                                   , Nil })
+				// aAdd( aLinha , { "C6_TES"        , '523'                                  , Nil })  
+				aAdd( aLinha , { "C6_QTDLIB"     , aItens[nCont,02]    	                  , Nil })
+				aAdd( aLinha , { "C6_CONTRT" 	 , AAM->AAM_CONTRT						  , Nil })
 
-	aAdd( aCabec , { "C5_FILIAL"    , cFilFat		      , Nil } ) 
-	aAdd( aCabec , { "C5_XTPPED"    , 'F'                 , Nil } )
-	aAdd( aCabec , { "C5_TIPO"      , 'N'                 , Nil } )
-	aAdd( aCabec , { "C5_CLIENTE"   , aList[oList:nAt,03]    , Nil } )
-	aAdd( aCabec , { "C5_LOJACLI"   , aList[oList:nAt,04]    , Nil } )
-	Aadd( aCabec , { "C5_MENNOTA"   , 'Faturamento de Doses - Ref. Patrimonio(s) '+cAtFat   , Nil } )
-	aAdd( aCabec , { "C5_CONDPAG"   , AAM->AAM_CPAGPV     , Nil } )    
-	aAdd( aCabec , { "C5_NATUREZ"   , "31101001  "     , Nil } )    
-        
-	For nCont := 1 to len(aItens)
-		aLinha := {}
-		aAdd( aLinha , { "C6_FILIAL"     , cFilFat		                          , Nil })
-		aAdd( aLinha , { "C6_ITEM"       , cItem 							      , Nil })
-		aAdd( aLinha , { "C6_PRODUTO"    , aItens[nCont,01]                       , Nil })
-		aAdd( aLinha , { "C6_QTDVEN"     , aItens[nCont,02]                       , Nil })
-		aAdd( aLinha , { "C6_PRCVEN"     , aItens[nCont,03]                       , Nil })
-		aAdd( aLinha , { "C6_OPER"       , "08"                                   , Nil })
-		// aAdd( aLinha , { "C6_TES"        , '523'                                  , Nil })  
-		aAdd( aLinha , { "C6_QTDLIB"     , aItens[nCont,02]    	                  , Nil })
-		aAdd( aLinha , { "C6_CONTRT" 	 , AAM->AAM_CONTRT						  , Nil })
+				aAdd( aItC6 , aLinha ) 
+				cItem := Soma1(cItem)
+			Next nCont
 
-		aAdd( aItC6 , aLinha ) 
-		cItem := Soma1(cItem)
-	Next nCont
-
-	lMsErroAuto := .F.
-	MSExecAuto({|x,y,z| Mata410(x,y,z)},aCabec,aItC6,3)
-		
-	IF lMsErroAuto  
-		MostraErro()
-	ELSE
-		Msgalert("Pedido gerado de faturamento de doses "+SC5->C5_NUM)
-		DbSelectArea("Z08")
-		DbSetOrder(1)
-		For nCont := 1 to len(aList5B)
-			If aList5B[nCont,01] == aList[oList:nAt,01] .And. len(aList5b[nCont]) > 4
-				For nJ := 5 to len(aList5b[nCont])
-					If Dbseek(xFilial("Z08")+aList5b[nCont,nJ,11])
-						While !EOF() .And. Z08->Z08_COD == aList5b[nCont,nJ,11]
-							RecLock("Z08", .F.)
-							Z08->Z08_FATURA := 'S'
-							Z08->(MsUnlock())
-							aList5b[nCont,nJ,12] := 'S'
-							Dbskip()
-						EndDo 
+			lMsErroAuto := .F.
+			MSExecAuto({|x,y,z| Mata410(x,y,z)},aCabec,aItC6,3)
+				
+			IF lMsErroAuto  
+				MostraErro()
+			ELSE
+				nVlrFt := 0
+				Msgalert("Pedido gerado de faturamento de doses "+SC5->C5_NUM)
+				DbSelectArea("Z08")
+				DbSetOrder(2)
+				For nCont := 1 to len(aList5B)
+					If aList5B[nCont,01] == aList[oList:nAt,01] .And. len(aList5b[nCont]) > 4
+						For nJ := 5 to len(aList5b[nCont])
+							If Dbseek(xFilial("Z08")+aList5b[nCont,nJ,11]+aList5b[nCont,nJ,01])
+								RecLock("Z08", .F.)
+								Z08->Z08_FATURA := 'S'
+								Z08->Z08_PEDIDO := SC5->C5_NUM
+								Z08->Z08_CONSUM := aList5b[nCont,nJ,08]
+								Z08->Z08_VLRFAT := aList5b[nCont,nJ,10]
+								nVlrFt += aList5b[nCont,nJ,10]
+								Z08->(MsUnlock())
+								aList5b[nCont,nJ,12] := 'S'
+								Dbskip() 
+							EndIf 
+						Next nJ
 					EndIf 
-				Next nJ
-			EndIf 
-		Next nCont
-	ENDIF
+				Next nCont
 
-EndIF 
+				Aadd(aList3b,{	SC5->C5_NUM,;
+								SC5->C5_EMISSAO,;
+								nVlrFt,;
+								'',;
+								aList[oList:nAt,01],;
+								aList[oList:nAt,03],;
+								aList[oList:nAt,04],;
+								SC5->C5_FILIAL})
 
+				Aadd(aList3,{	SC5->C5_NUM,;
+								SC5->C5_EMISSAO,;
+								nVlrFt,;
+								'',;
+								aList[oList:nAt,01],;
+								aList[oList:nAt,03],;
+								aList[oList:nAt,04],;
+								SC5->C5_FILIAL})
+
+				For nCont := 1 to len(aList5B)
+					If aList5B[nCont,01] == aList[oList:nAt,01] .And. len(aList5b[nCont]) > 4
+						For nJ := 5 to len(aList5b[nCont])
+							aList5B[nCont,nJ,04] := aList5B[nCont,nJ,06]
+							aList5B[nCont,nJ,05] := aList5B[nCont,nJ,07]
+							aList5B[nCont,nJ,06] := ""
+							aList5B[nCont,nJ,07] := 0
+							aList5B[nCont,nJ,08] := 0
+							aList5B[nCont,nJ,10] := 0
+							aList5B[nCont,nJ,12] := "S"
+							aList5B[nCont,nJ,17] := SC5->C5_NUM
+						Next nJ
+					EndIF 
+				Next nCont
+			ENDIF
+
+		EndIF 
+	Else 
+		Return 
+	EndIf 
+EndIf
+					
 //Faturamento locacao
 If len(aLocac) > 0 .AND. lLoc
-	cProdLoc := SuperGetMV("TI_PRODLOC",.F.,"SLOC000001")
-	cNaturez := SuperGetMV("TI_NATRLOC",.F.,"31101003  ")
-	cTesLoc  := Posicione("SB1",1,xFilial("SB1")+cProdLoc,"B1_TS")
-	DbSelectArea("AAM")
-	DbSetOrder(1)
-	DbSeek(xFilial("AAM")+aList[oList:nAt,01])
-	aCabec := {}
-	aItC6  := {}
-	cItem  := '01'
+	If resumfat(aLocac,aItSFt,lLoc)
+		cProdLoc := SuperGetMV("TI_PRODLOC",.F.,"SLOC000001")
+		cNaturez := SuperGetMV("TI_NATRLOC",.F.,"31101003  ")
+		cTesLoc  := Posicione("SB1",1,xFilial("SB1")+cProdLoc,"B1_TS")
+		DbSelectArea("AAM")
+		DbSetOrder(1)
+		DbSeek(xFilial("AAM")+aList[oList:nAt,01])
+		aCabec := {}
+		aItC6  := {}
+		cItem  := '01'
 
-	aAdd( aCabec , { "C5_FILIAL"    , cFilFat		      	, Nil } ) 
-	aAdd( aCabec , { "C5_XTPPED"    , 'L'                 	, Nil } )
-	aAdd( aCabec , { "C5_TIPO"      , 'N'                 	, Nil } )
-	aAdd( aCabec , { "C5_CLIENTE"   , aList[oList:nAt,03]   , Nil } )
-	aAdd( aCabec , { "C5_LOJACLI"   , aList[oList:nAt,04]   , Nil } )
-	Aadd( aCabec , { "C5_MENNOTA"   , 'Locacao de Maquinas Ref. Patrimonio(s) '+cAtLoc    , Nil } )
-	aAdd( aCabec , { "C5_CONDPAG"   , aLocac[1,3]     		, Nil } )    //AAM->AAM_CPAGPV
-	aAdd( aCabec , { "C5_NATUREZ"   , cNaturez     			, Nil } )
-	
-	For nCont := 1 to len(aLocac)
-		aLinha := {}
-		aAdd( aLinha , { "C6_FILIAL"     , cFilFat		                          , Nil })
-		aAdd( aLinha , { "C6_ITEM"       , cItem 							      , Nil })
-		aAdd( aLinha , { "C6_PRODUTO"    , cProdLoc		                          , Nil })
-		aAdd( aLinha , { "C6_QTDVEN"     , 1				                      , Nil })
-		aAdd( aLinha , { "C6_PRCVEN"     , aLocac[nCont,02]                       , Nil })
-		aAdd( aLinha , { "C6_TES"        , cTesLoc                                , Nil })  
-		aAdd( aLinha , { "C6_QTDLIB"     , 1			    	                  , Nil })
-		aAdd( aLinha , { "C6_CONTRT" 	 , AAM->AAM_CONTRT						  , Nil })
-
-		aAdd( aItC6 , aLinha ) 
-		cItem := Soma1(cItem)
-	Next nCont
-
-	lMsErroAuto := .F.
-	MSExecAuto({|x,y,z| Mata410(x,y,z)},aCabec,aItC6,3)
+		aAdd( aCabec , { "C5_FILIAL"    , cFilFat		      	, Nil } ) 
+		aAdd( aCabec , { "C5_XTPPED"    , 'L'                 	, Nil } )
+		aAdd( aCabec , { "C5_TIPO"      , 'N'                 	, Nil } )
+		aAdd( aCabec , { "C5_CLIENTE"   , aList[oList:nAt,03]   , Nil } )
+		aAdd( aCabec , { "C5_LOJACLI"   , aList[oList:nAt,04]   , Nil } )
+		Aadd( aCabec , { "C5_MENNOTA"   , 'Locacao de Maquinas Ref. Patrimonio(s) '+cAtLoc    , Nil } )
+		aAdd( aCabec , { "C5_CONDPAG"   , aLocac[1,3]     		, Nil } )    //AAM->AAM_CPAGPV
+		aAdd( aCabec , { "C5_NATUREZ"   , cNaturez     			, Nil } )
+		aAdd( aCabec , { "C5_XCONTRT"	, aList[oList:nAt,01]	, Nil })
 		
-	IF lMsErroAuto  
-		MostraErro()
-	ELSE
-		Msgalert("Pedido gerado de locação "+SC5->C5_NUM)
-		// DbSelectArea("Z08")
-		// DbSetOrder(1)
-		// For nCont := 1 to len(aList5B)
-		// 	If aList5B[nCont,01] == aList[oList:nAt,01] .And. len(aList5b[nCont]) > 4
-		// 		For nJ := 5 to len(aList5b[nCont])
-		// 			If Dbseek(xFilial("Z08")+aList5b[nCont,nJ,11])
-		// 				While !EOF() .And. Z08->Z08_COD == aList5b[nCont,nJ,11]
-		// 					RecLock("Z08", .F.)
-		// 					Z08->Z08_FATURA := 'S'
-		// 					Z08->(MsUnlock())
-		// 					aList5b[nCont,nJ,12] := 'S'
-		// 					Dbskip()
-		// 				EndDo
-		// 			EndIf 
-		// 		Next nJ
-		// 	EndIf 
-		// Next nCont
-	ENDIF    
-EndIf
+		nVlrFt := 0
+		For nCont := 1 to len(aLocac)
+			aLinha := {}
+			aAdd( aLinha , { "C6_FILIAL"     , cFilFat		                          , Nil })
+			aAdd( aLinha , { "C6_ITEM"       , cItem 							      , Nil })
+			aAdd( aLinha , { "C6_PRODUTO"    , cProdLoc		                          , Nil })
+			aAdd( aLinha , { "C6_QTDVEN"     , 1				                      , Nil })
+			aAdd( aLinha , { "C6_PRCVEN"     , aLocac[nCont,02]                       , Nil })
+			aAdd( aLinha , { "C6_TES"        , cTesLoc                                , Nil })  
+			aAdd( aLinha , { "C6_QTDLIB"     , 1			    	                  , Nil })
+			aAdd( aLinha , { "C6_CONTRT" 	 , AAM->AAM_CONTRT						  , Nil })
+			nVlrFt += aLocac[nCont,02]
+			aAdd( aItC6 , aLinha ) 
+			cItem := Soma1(cItem)
+		Next nCont
+
+		lMsErroAuto := .F.
+		MSExecAuto({|x,y,z| Mata410(x,y,z)},aCabec,aItC6,3)
+			
+		IF lMsErroAuto  
+			MostraErro()
+		ELSE
+			Msgalert("Pedido gerado de locação "+SC5->C5_NUM)
+			Aadd(aList3b,{	SC5->C5_NUM,;
+								SC5->C5_EMISSAO,;
+								nVlrFt,;
+								'',;
+								aList[oList:nAt,01],;
+								aList[oList:nAt,03],;
+								aList[oList:nAt,04],;
+								SC5->C5_FILIAL})
+								
+				Aadd(aList3,{	SC5->C5_NUM,;
+								SC5->C5_EMISSAO,;
+								nVlrFt,;
+								'',;
+								aList[oList:nAt,01],;
+								aList[oList:nAt,03],;
+								aList[oList:nAt,04],;
+								SC5->C5_FILIAL})
+			
+		ENDIF    
+	EndIf
+EndIf 
+
+Fhelp(oList:nAt)
 
 RestArea(aArea)
 
@@ -2423,7 +2075,8 @@ aAdd( aCabec , { "C5_CLIENTE"   , aList[oList:nAt,03]    , Nil } )
 aAdd( aCabec , { "C5_LOJACLI"   , aList[oList:nAt,04]    , Nil } )
 Aadd( aCabec , { "C5_MENNOTA"   , 'Faturamento de Doses - Ref. Patrimonio(s) '+cAtFat   , Nil } )
 aAdd( aCabec , { "C5_CONDPAG"   , AAM->AAM_CPAGPV     , Nil } )    
-	
+aAdd( aCabec , { "C5_XCONTRT"	, aList[oList:nAt,01]	, Nil })
+    	
 For nCont := 1 to len(aItens)
 	aLinha := {}
 	aAdd( aLinha , { "C6_FILIAL"     , cFilFat		                          , Nil })
@@ -2445,160 +2098,68 @@ MSExecAuto({|x,y,z| Mata410(x,y,z)},aCabec,aItC6,3)
 IF lMsErroAuto  
 	MostraErro()
 ELSE
+	nVlrFt := 0
 	Msgalert("Pedido gerado de faturamento de doses "+SC5->C5_NUM)
 	DbSelectArea("Z08")
-	DbSetOrder(1)
+	DbSetOrder(2)
 	For nCont := 1 to len(aList5B)
 		If aList5B[nCont,01] == aList[oList:nAt,01] .And. len(aList5b[nCont]) > 4
 			For nJ := 5 to len(aList5b[nCont])
-				If Dbseek(xFilial("Z08")+aList5b[nCont,nJ,11])
-					While !EOF() .And. Z08->Z08_COD == aList5b[nCont,nJ,11]
+				If Dbseek(xFilial("Z08")+aList5b[nCont,nJ,11]+aList5b[nCont,nJ,01])
+					//While !EOF() .And. Z08->Z08_COD == aList5b[nCont,nJ,11]
 						RecLock("Z08", .F.)
 						Z08->Z08_FATURA := 'S'
+						Z08->Z08_PEDIDO := SC5->C5_NUM
+						Z08->Z08_CONSUM := aList5b[nCont,nJ,08]
+						Z08->Z08_VLRFAT := aList5b[nCont,nJ,10]
+						nVlrFt += aList5b[nCont,nJ,10]
 						Z08->(MsUnlock())
 						aList5b[nCont,nJ,12] := 'S'
 						Dbskip()
-					EndDo 
+					//EndDo 
 				EndIf 
 			Next nJ
 		EndIf 
 	Next nCont
+
+	Aadd(aList3b,{	SC5->C5_NUM,;
+					SC5->C5_EMISSAO,;
+					nVlrFt,;
+					'',;
+					aList[oList:nAt,01],;
+					aList[oList:nAt,03],;
+					aList[oList:nAt,04],;
+					SC5->C5_FILIAL})
+					
+	Aadd(aList3,{	SC5->C5_NUM,;
+					SC5->C5_EMISSAO,;
+					nVlrFt,;
+					'',;
+					aList[oList:nAt,01],;
+					aList[oList:nAt,03],;
+					aList[oList:nAt,04],;
+					SC5->C5_FILIAL})
+
+	For nCont := 1 to len(aList5B)
+		If aList5B[nCont,01] == aList[oList:nAt,01] .And. len(aList5b[nCont]) > 4
+			For nJ := 5 to len(aList5b[nCont])
+				aList5B[nCont,nJ,04] := aList5B[nCont,nJ,06]
+				aList5B[nCont,nJ,05] := aList5B[nCont,nJ,07]
+				aList5B[nCont,nJ,06] := ""
+				aList5B[nCont,nJ,07] := 0
+				aList5B[nCont,nJ,08] := 0
+				aList5B[nCont,nJ,10] := 0
+				aList5B[nCont,nJ,12] := "S"
+				aList5B[nCont,nJ,17] := SC5->C5_NUM
+			Next nJ
+		EndIF 
+	Next nCont
+
 ENDIF
 
 RestArea(aArea)
 
 Return
-
-/*/{Protheus.doc} Recalc
-	(long_description)
-	@type  Static Function
-	@author user
-	@since 12/12/2022
-	@version version
-	@param param_name, param_type, param_descr
-	@return return_var, return_type, return_description
-	@example
-	(examples)
-	@see (links_or_references)
-/*/
-Static Function Recalc(aArray,nLin)
-
-Local aArea 	:=	GetArea()
-Local cQuery
-Local aAux5 	:=	{}
-Local nY 
-Local aLeitura 	:=	If(len(aArray)>4,LeiAntr(aArray[01],aArray[02],aArray[5,11]),{})
-Local cTipFat	:=	alist[ascan(aList,{|x| x[1] == aarray[1]}),14]
-
-If len(aArray)  < 5 .or. len(aLeitura) < 2
-	Return  
-EndIf 
-
-cQuery := "  SELECT Z08_COD,Z08_SEQUEN,Z08_SELECA,Z08_PRODUT,B1_DESC,Z08_QTDLID,Z08_DATA,Z08_CONTRT,Z08_FATURA" 
-cQuery += "  FROM "+RetSQLname("Z08")+" Z08"
-cQuery += "  LEFT JOIN "+RetSQLname("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"'"
-cQuery += "		AND B1_COD=Z08_PRODUT AND B1.D_E_L_E_T_=' '" 
-cQuery += " WHERE Z08_COD='"+aLeitura[1]+"'"
-cQuery += "  AND Z08.D_E_L_E_T_=' '"
-cQuery += " UNION "
-cQuery += "  SELECT Z08_COD,Z08_SEQUEN,Z08_SELECA,Z08_PRODUT,B1_DESC,Z08_QTDLID,Z08_DATA,Z08_CONTRT,Z08_FATURA" 
-cQuery += "  FROM "+RetSQLname("Z08")+" Z08"
-cQuery += "  LEFT JOIN "+RetSQLname("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"'"
-cQuery += "		AND B1_COD=Z08_PRODUT AND B1.D_E_L_E_T_=' '" 
-cQuery += " WHERE Z08_COD='"+aLeitura[2]+"'"
-cQuery += "  AND Z08.D_E_L_E_T_=' '"
-cQuery += "  ORDER BY Z08_COD DESC"
-
-If Select("TRB") > 0
-	dbSelectArea("TRB")
-	dbCloseArea()
-EndIf                                                                                 
-	
-MemoWrite("CONFSC01.SQL",cQuery)
-
-cQuery:= ChangeQuery(cQuery)
-DbUseArea(.T.,"TOPCONN",TcGenQry(,,cQuery),'TRB',.F.,.T.)   
-
-aAux5 := {}
-
-While !EOF() 
-	aAuxL5 := {}
-	nPos := Ascan(aAux5,{|x| x[2] == TRB->Z08_PRODUT})
-	nPos2 := Ascan(aTabPrc,{|x| x[1]+x[2] == TRB->Z08_CONTRT+TRB->Z08_PRODUT})
-
-	If nPos == 0
-		Aadd(aAuxL5,strzero(val(TRB->Z08_SELECA),3)) //1
-		Aadd(aAuxL5,TRB->Z08_PRODUT) //2
-		Aadd(aAuxL5,TRB->B1_DESC) //3
-		Aadd(aAuxL5,'') //4
-		Aadd(aAuxL5,0) //5	
-		Aadd(aAuxL5,TRB->Z08_DATA) //6
-		Aadd(aAuxL5,TRB->Z08_QTDLID) //7
-		Aadd(aAuxL5,0) //8
-		
-		If nPos2 > 0
-			Aadd(aAuxL5,aTabPrc[nPos2,04]) //9
-		Else 
-			Aadd(aAuxL5,0) //9
-			
-		EndIf 
-
-		Aadd(aAuxL5,0) //10
-		
-		Aadd(aAuxL5,Z08_COD) //11
-		Aadd(aAuxL5,Z08_FATURA) //12
-
-		If len(aAuxL5) > 0
-			Aadd(aAux5,aAuxL5)
-		EndIf
-	Else 
-		If Empty(aAux5[nPos,04])
-			aAux5[nPos,04] := TRB->Z08_DATA
-			aAux5[nPos,05] := TRB->Z08_QTDLID
-		ElseIf Empty(aAux5[nPos,06])
-			aAux5[nPos,06] := TRB->Z08_DATA
-			aAux5[nPos,07] := TRB->Z08_QTDLID
-		Endif 
-
-		If nPos2 > 0 .And. aAux5[nPos,09] == 0
-			aAux5[nPos,09] := aTabPrc[nPos2,04]
-		EndIf 
-	EndIf 
-	Dbskip()
-EndDo 
-
-Aeval(aAux5,{|x| x[8] := x[7] - x[5]})
-Aeval(aAux5,{|x| x[10] := x[9] * x[8]})
-
-For nY :=  5 to len(aList5B[nLin])
-	If cTipFat == "1"
-		nPL5 := Ascan(aAux5,{|x| x[2] == aList5B[nLin,nY,02]})
-		If nPL5 > 0
-			nQtdT := aAux5[nPL5,7] - aAux5[nPL5,5]
-			aList5B[nLin,nY,08] := aList5B[nLin,nY,07] - nQtdT
-			aList5B[nLin,nY,13] := stod(aAux5[nPL5,4])
-			aList5B[nLin,nY,14] := aAux5[nPL5,5]
-			aList5B[nLin,nY,10] := aList5B[nLin,nY,10] - aAux5[nPL5,10]
-			if Empty(aList5B[nLin,nY,04])
-				aList5B[nLin,nY,04] := aAux5[nPL5,6]
-				aList5B[nLin,nY,05] := aAux5[nPL5,7]
-			endif
-		EndIF
-	Else 
-		nPL5 := Ascan(aAux5,{|x| x[1]+x[6] == aList5B[nLin,nY,01]+aList5B[nLin,nY,04]})
-		If nPL5 > 0
-			nQtdT := aAux5[nPL5,7] - aAux5[nPL5,5]
-			aList5B[nLin,nY,08] := aList5B[nLin,nY,07] - nQtdT
-			aList5B[nLin,nY,13] := stod(aAux5[nPL5,4])
-			aList5B[nLin,nY,14] := aAux5[nPL5,5]
-		EndIf	
-	EndIf
-Next nY 
-
-RestArea(aArea)
-
-Return
-
 
 /*/{Protheus.doc} LeiAntr
 	(long_description)
@@ -2652,6 +2213,18 @@ Static Function LeiAntr(cCont,cAtv,cLei)
 
 Return(aRet)
 
+/*/{Protheus.doc} LeiAntr
+	(long_description)
+	@type  Static Function
+	@author user
+	@since 15/12/2022
+	@version version
+	@param param_name, param_type, param_descr
+	@return return_var, return_type, return_description
+	@example
+	(examples)
+	@see (links_or_references)
+/*/
 Static Function Localiza()
 	
 	Local aLoca   := {}
@@ -2717,6 +2290,7 @@ For nCont := 1 to len(aEmail)
 		//U_EnviarEmail(cDestino,cSubject,cBody,aArquivos,lLog)  
 	EndIf 
 Next nCont
+
 RestArea(aArea)
 
 Return
@@ -2790,3 +2364,235 @@ nRet := QUERY->Z08_QTDLID
 RestArea(aArea)
 
 Return(nRet)
+
+/*/{Protheus.doc} resumfat
+	(long_daItens)
+	@type  Stati
+	Local aArea	:=	GetArea()
+	
+	RestArea(aArea)
+	 Function
+	@
+	@since 09/02/2023
+	@version version
+	@param param_name, param_type, param_descr
+	@return return_var, return_type, return_description
+	@example
+	(examples)
+	@see (links_or_references)
+/*/
+Static Function resumfat(aItens,aItSFt,lLoc)
+
+Local aArea	:=	GetArea()
+Local nCont :=  0
+Local nToQt :=  0
+Local nToVl :=  0
+Local lRet  :=  .F.
+Local nToQt2 :=  0
+Local nToVl2 :=  0
+Local oResumo,oGrRes,oResm1,oResm2,oLRes
+Local aAux  :=  {}
+Local nOpc  :=  0
+
+For nCont := 1 to len(aItens)
+	Aadd(aAux,{	aItens[nCont,01],;
+				If(lLoc,'Locacao',Posicione("SB1",1,xFilial("SB1")+aItens[nCont,01],"B1_DESC")),;
+				If(lLoc,1,aItens[nCont,02]),;
+				If(lLoc,aItens[nCont,02],aItens[nCont,03]),;
+				If(lLoc,aItens[nCont,02],aItens[nCont,03]) * If(lLoc,1,aItens[nCont,02]) })
+
+	nToQt += If(lLoc,1,aItens[nCont,02])
+	nToVl += If(lLoc,1,aItens[nCont,02]) * If(lLoc,aItens[nCont,02],aItens[nCont,03])
+Next nCont
+
+If len(aAux) > 0
+	Aadd(aAux,{'','Total',nToQt,,nToVl})
+
+	If len(aItSFt) > 0
+		Aadd(aAux,{'','',,,})
+		Aadd(aAux,{'','Itens sem cobrança',,,})
+		nToQt2 := 0
+		nToVl2 := 0
+		For nCont := 1 to len(aItSFt)
+			nPos := ascan(aAux,{|x| Alltrim(x[1]) == Alltrim(aItSFt[nCont,01])})
+
+			If nPos == 0
+				Aadd(aAux,{	aItSFt[nCont,01],;
+					Posicione("SB1",1,xFilial("SB1")+aItSFt[nCont,01],"B1_DESC"),;
+					aItSFt[nCont,02],;
+					aItSFt[nCont,03],;
+					aItSFt[nCont,03] * aItSFt[nCont,02] })
+			Else
+				aAux[nPos,03] += aItSFt[nCont,02]
+			EndIf 
+
+			nToQt2 += aItSFt[nCont,02]
+			nToVl2 += aItSFt[nCont,02] * aItSFt[nCont,03]
+
+		Next nCont
+
+		Aadd(aAux,{'','Total',nToQt2,,nToVl2})
+		Aadd(aAux,{'','',,,})
+		Aadd(aAux,{'','Total Consumido',nToQt+nToQt2,,nToVl+nToVl2})
+		
+	EndIf
+
+	If len(aAbater) > 0
+		Aadd(aAux,{'','',,,})
+		Aadd(aAux,{'','Doses abatidas quinzena anterior',,,})
+		
+		//Aadd(aAbater,{aList5B[nCont,01],cNumSr,nQtdAb,nVlr})
+		nToQt := 0
+		nToVl := 0
+		For nCont := 1 to len(aAbater) 
+			If aList[oList:nAt,01] == aAbater[nCont,01]
+				nPos := Ascan(aAux,{|x| Alltrim(x[1]) == Alltrim(aAbater[nCont,02])})
+				If nPos > 0
+					Aadd(aAux,{aAbater[nCont,02],;
+								'',;
+								aAbater[nCont,03],;
+								aAbater[nCont,04],;
+								aAbater[nCont,03]*aAbater[nCont,04]})
+				EndIF 
+
+				nToQt += aAbater[nCont,03]
+				nToVl += aAbater[nCont,04]
+				lAbate := .T.
+			EndIf
+		Next nCont
+
+		Aadd(aAux,{'','Totais',nToQt,,nToVl})
+		
+	EndIf 
+
+	oResumo    := MSDialog():New( 092,232,531,1139,"Resumo Faturamento",,,.F.,,,,,,.T.,,,.T. )
+
+		oGrRes     := TGroup():New( 008,016,192,432,"Itens para o pedido",oResumo,CLR_BLACK,CLR_WHITE,.T.,.F. )
+		//oBrw1      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{020,020,188,428},,, oGrRes ) 
+		oLRes 	   := TCBrowse():New(020,020,405,170,, {'Produto','Descrição','Qtd.','Vlr Unit.','Valor Fat.'},;
+								{40,70,30,30,30},;
+								oGrRes,,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList:nAt)*/},, oFont2,,,  ,,.F.,,.T.,,.F.,,,)
+		
+		oLRes:SetArray(aAux)
+		oLRes:bLine := {||{	aAux[oLRes:nAt,01],;
+							aAux[oLRes:nAt,02],;
+							Transform(aAux[oLRes:nAt,03],"@E 999,999"),;
+							Transform(aAux[oLRes:nAt,04],"@E 999.99"),;
+							Transform(aAux[oLRes:nAt,05],"@E 999,999.99")}}
+
+		oResm1     := TButton():New( 196,156,"Confirmar",oResumo,{||oResumo:end(nOpc:=1)},037,012,,,,.T.,,"",,,,.F. )
+		oResm2     := TButton():New( 196,212,"Cancelar",oResumo,{||oResumo:end(nOpc:=0)},037,012,,,,.T.,,"",,,,.F. )
+
+	oResumo:Activate(,,,.T.)
+else
+	MsgAlert("Sem Faturamento")
+EndIf 
+
+If nOpc == 1
+	lRet := .T.
+EndIF 
+
+RestArea(aArea)
+
+Return(lRet)
+
+/*/{Protheus.doc} estorfat
+cription)
+	@type  Stati	@author user
+	@since 09/02/2023
+	@version version
+	@param param_name, param_type, param_descr
+	@return return_var, return_type, return_description
+	@example
+	(examples)
+	@see (links_or_references)
+/*/
+Static Function estorfat(cPedido,cNota)
+
+Local cFilFat  := substr(aList3[oList3:nAt,08],1,4)
+Local aCabec   := {}
+Local aItens   := {}
+Local aLinha   := {}
+Local nCont	   := 0
+Local nX 	   := 0
+
+Private lMsErroAuto    := .F.
+Private lAutoErrNoFile := .F.
+
+If !Empty(cNota)
+	MsgAlert("Somente pedidos não faturados podem ser estornados")
+	Return 
+EndIf 
+
+DbSelectArea("SC5")
+DbSetOrder(1)
+DbSeek(cFilFat+cPedido)
+
+aadd(aCabec, {"C5_NUM"		, cPedido			,	Nil})
+aadd(aCabec, {"C5_TIPO"		, "N"				,   Nil})
+aadd(aCabec, {"C5_CLIENTE"	, SC5->C5_CLIENTE	,   Nil})
+aadd(aCabec, {"C5_LOJACLI"	, SC5->C5_LOJACLI	,   Nil})
+aadd(aCabec, {"C5_LOJAENT"	, SC5->C5_LOJAENT	,  	Nil})
+aadd(aCabec, {"C5_CONDPAG"	, SC5->C5_CONDPAG	, 	Nil})
+
+DbSelectArea("SC6")
+DbSetOrder(1)
+DbSeek(cFilFat+cPedido)
+While !EOF() .AND. SC6->C6_FILIAL == SC5->C5_FILIAL .AND. SC6->C6_NUM == SC5->C5_NUM
+	
+	aLinha := {}
+	aadd(aLinha,{"C6_ITEM"		, SC6->C6_ITEM	  , Nil})
+	aadd(aLinha,{"C6_PRODUTO"	, SC6->C6_PRODUTO , Nil})
+	aadd(aLinha,{"C6_QTDVEN"	, SC6->C6_QTDVEN  , Nil})
+	aadd(aLinha,{"C6_PRCVEN"	, SC6->C6_PRCVEN  , Nil})
+	aadd(aLinha,{"C6_PRUNIT"	, SC6->C6_PRUNIT  , Nil})
+	aadd(aLinha,{"C6_VALOR"		, SC6->C6_VALOR   , Nil})
+	aadd(aLinha,{"C6_TES"		, SC6->C6_TES     , Nil})
+	aadd(aItens, aLinha)
+
+	cFilSC9 := xFilial("SC9")
+    // posiciona SC9 a partir da SC6
+    SC9->(dbSetOrder(1)) // C9_FILIAL, C9_PEDIDO, C9_ITEM
+    SC9->(dbSeek(cFilSC9 + SC6->C6_NUM + SC6->C6_ITEM)) // C9_FILIAL, C9_PEDIDO, C9_ITEM
+    A460Estorna(.T.)
+     
+	
+	SC6->(Dbskip())
+EndDo 
+
+MSExecAuto({|a, b, c| MATA410(a, b, c)}, aCabec, aItens, 5)
+
+If !lMsErroAuto
+	For nCont := 1 to len(aList5B)
+		If aList5B[nCont,01] == aList[oList:nAt,01]
+			If len(aList5B[nCont]) > 4
+				For nX := 5 to len(aList5B[nCont])
+					If aList5B[nCont,nX,17] == cPedido
+						DbSelectArea("Z08")
+						DbGoto(aList5B[nCont,nX,16])
+						RECLOCK("Z08", .F. )
+						Z08->Z08_PEDIDO := ' '
+						Z08->Z08_FATURA := ' '
+						Z08->Z08_CONSUM := 0
+						Z08->Z08_VLRFAT := 0
+						Z08->(MSUNLOCK()) 
+					EndIF
+				Next nX
+			EndIf 
+		EndIf 
+	Next nCont
+	
+	nPosic := Ascan(aList3B,{|x| x[1]+x[5] == aList3[oList3:nAt,01]+aList3[oList3:nAt,05]})
+
+	MsgAlert("Pedido excluído com sucesso, se deseja faturar esta leitura, saia e entre novamente na rotina de faturamento")
+	Adel(aList3,oList3:nAt)
+    ASize(aList3,len(aList3)-1)
+	Adel(aList3B,nPosic)
+    ASize(aList3B,len(aList3B)-1)
+	oList3:refresh()
+	oDlg1:refresh()
+Else
+	MsgAlert("Não foi possível excluir o pedido")
+EndIf
+
+Return

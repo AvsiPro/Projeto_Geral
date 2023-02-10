@@ -50,29 +50,12 @@ User Function MSD2520()
 		aadd(_atotitem,_aitem)
 		
 
-	ElseIf SC5->(dbSeek(xFilial("SC5")+SD2->D2_PEDIDO )) .AND. !Empty(SC5->C5_XCODPA) .AND. SC5->C5_XTPPED == "F"
-
-		/*
-		U_BusSG1(SD2->D2_COD,SD2->D2_QUANT)
-
-		_aCab1 := {{"D3_DOC" ,SD2->D2_DOC, NIL},;
-					{"D3_TM" ,cTM , NIL},;
-					{"D3_CC" ,"        ", NIL},;
-					{"D3_EMISSAO" ,ddatabase, NIL}}
-		
-
-		For n := 1 to len(aAuxEst)
-
-			_aItem:={{"D3_COD" ,aAuxEst[n][2][1] ,NIL},;
-					{"D3_UM" ,SB1->B1_UM ,NIL},;
-					{"D3_QUANT" , aAuxEst[n][3][1] ,NIL},;
-					{"D3_LOCAL" ,SC5->C5_XCODPA ,NIL},;
-					{"D3_LOTECTL" ,"",NIL},;
-					{"D3_LOCALIZ" , "",NIL}}
-
-			aadd(_atotitem,_aitem)
-		Next
-		*/
+	ElseIf SC5->(dbSeek(xFilial("SC5")+SD2->D2_PEDIDO )) .AND. SC5->C5_XTPPED == "F"
+		cUpd := "UPDATE Z08010 SET Z08_NOTA=' ',Z08_SERIE=' '"
+		cUpd += " WHERE Z08_FILIAL='"+xFilial("Z08")+"' AND Z08_CONTRT='"+SC5->C5_XCONTRT+"'"
+		cUpd += " AND Z08_PEDIDO='"+SC5->C5_NUM+"' AND Z08_NOTA='"+SD2->D2_DOC+"'"
+		cUpd += " AND Z08_SERIE='"+SD2->D2_SERIE+"' AND D_E_L_E_T_=' '"
+		TcSqlExec(cUpd)
 
 	ElseIf SC5->C5_XTPPED == "I"
 		atucontr(SC6->C6_CONTRT,SC6->C6_ITCONTR)
