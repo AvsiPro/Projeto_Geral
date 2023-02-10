@@ -35,6 +35,8 @@ export default function Sections({nameSec,item,vendedor,prdProd,dataBack,reset,h
     const [listSearch,setListSearch] = useState([]);
     const [qtdTotal, setQtdTotal] = useState(0)
     const [vlrTotal, setVlrTotal] = useState(0)
+    const [qtdTotalFat, setQtdTotalFat] = useState(0)
+    const [vlrTotalFat, setVlrTotalFat] = useState(0)
     const [load, setLoad] = useState(false)
     const [loadPDF, setLoadPDF] = useState(false)
     const [loadCopy, setLoadCopy] = useState(false)
@@ -104,15 +106,22 @@ export default function Sections({nameSec,item,vendedor,prdProd,dataBack,reset,h
         if(opt_new[2] == 'ped' || opt_new[2] == 'copy'){
             let qtd = 0;
             let vlr = 0;
+            let qtdFat = 0;
+            let vlrFat = 0;
             
             aResult.forEach((item) => {
-
+                
                 qtd += parseInt(item.quantidade)
                 vlr += parseFloat(item.valor_total.trim().replace('.','').replace(',','.'))
+
+                qtdFat += parseInt(item.quant_fatura)
+                vlrFat += parseFloat(item.valor_total_fatura.trim().replace('.','').replace(',','.'))
             })
 
             setQtdTotal(qtd)
             setVlrTotal(vlr)
+            setQtdTotalFat(qtdFat)
+            setVlrTotalFat(vlrFat)
         };
 
         if(opt_new[2] == 'copy'){
@@ -459,6 +468,11 @@ export default function Sections({nameSec,item,vendedor,prdProd,dataBack,reset,h
                                 <Text style={{left:8}}>{'R$'+item.valor_unit.trim()}</Text>
                                 <Text>{'R$'+item.valor_total.trim()}</Text>
                             </View>
+
+                            <View style={{justifyContent:'space-around',flexDirection:'row',marginTop:12,marginBottom:3}}>
+                                <Text>{'Quant. Faturada: '+item.quant_fatura}</Text>
+                                <Text>{'Valor Faturado: '+'R$'+item.valor_total_fatura.trim()}</Text>
+                            </View>
                         </View>
                     }
                     onEndReached={null}
@@ -474,8 +488,15 @@ export default function Sections({nameSec,item,vendedor,prdProd,dataBack,reset,h
                 />
 
                 <View style={styles.totalPed}>
-                    <Text style={styles.txtBold}>{'Quant.: '+qtdTotal}</Text>
-                    <Text style={styles.txtBold}>{'Total: '+(vlrTotal).toLocaleString('pt-BR',{style: 'currency', currency: 'BRL'})}</Text>
+                    <View>
+                        <Text style={styles.txtBold}>{'Quant.: '+qtdTotal}</Text>
+                        <Text style={[styles.txtBold,{marginTop:5}]}>{'Qtd. Fatura.: '+qtdTotalFat}</Text>
+                    </View>
+
+                    <View>
+                        <Text style={styles.txtBold}>{'Total: '+(vlrTotal).toLocaleString('pt-BR',{style: 'currency', currency: 'BRL'})}</Text>
+                        <Text style={[styles.txtBold,{marginTop:5}]}>{'Tot. Fatur.: '+(vlrTotalFat).toLocaleString('pt-BR',{style: 'currency', currency: 'BRL'})}</Text>
+                    </View>
                 </View>
                 
             </ModSale>
