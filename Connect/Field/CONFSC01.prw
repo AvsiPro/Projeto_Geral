@@ -2553,8 +2553,9 @@ While !EOF() .AND. SC6->C6_FILIAL == SC5->C5_FILIAL .AND. SC6->C6_NUM == SC5->C5
 	cFilSC9 := xFilial("SC9")
     // posiciona SC9 a partir da SC6
     SC9->(dbSetOrder(1)) // C9_FILIAL, C9_PEDIDO, C9_ITEM
-    SC9->(dbSeek(cFilSC9 + SC6->C6_NUM + SC6->C6_ITEM)) // C9_FILIAL, C9_PEDIDO, C9_ITEM
-    A460Estorna(.T.)
+    If SC9->(dbSeek(cFilSC9 + SC6->C6_NUM + SC6->C6_ITEM)) // C9_FILIAL, C9_PEDIDO, C9_ITEM
+    	A460Estorna(.T.)
+	EndIf
      
 	
 	SC6->(Dbskip())
