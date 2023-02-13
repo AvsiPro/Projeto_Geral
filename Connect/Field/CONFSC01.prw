@@ -1015,7 +1015,11 @@ If aList[nLinha2,20] > 0
 		Next nCont
 
 		If AAM->AAM_XQTVLM-nDifCb-nAbater > 0 .And. aList[nLinha2,len(aQtdH)+1] <= 1
-			cTexto += " - Doses Compl. a serem cobradas "+Transform(AAM->AAM_XQTVLM-nDifCb-nAbater,"@E 999,999,999")
+			If AAM->AAM_XTIPMI=="1"
+				cTexto += " - Doses Compl. a serem cobradas "+Transform(AAM->AAM_XQTVLM-nDifCb-nAbater,"@E 999,999,999")
+			Else 
+				cTexto += " - Doses Compl. a serem cobradas "+Transform((AAM->AAM_XQTVLM-nDifCb-nAbater)/POSICIONE("DA1",1,XFILIAL("DA1")+AAM->AAM_XCODTA+AAM->AAM_XPRDCM,"DA1_PRCVEN"),"@E 999,999,999")
+			EndIf 
 		EndIf 
 	EndIf 
 
@@ -1027,7 +1031,7 @@ If aList[nLinha2,20] > 0
 		EndIf
 	else
 		aList[nLinha2,21] := POSICIONE("DA1",1,XFILIAL("DA1")+AAM->AAM_XCODTA+AAM->AAM_XPRDCM,"DA1_PRCVEN")
-		aList[nLinha2,20] := AAM->AAM_XQTVLM-nDifCb-nVlrAbt
+		aList[nLinha2,20] := (AAM->AAM_XQTVLM-nDifCb-nVlrAbt) / aList[nLinha2,21] 
 		If aList[nLinha2,20]*aList[nLinha2,21] > 0 .And. aList[nLinha2,len(aQtdH)+1] <= 1
 			oSay7:settext("Valor Excedente a ser cobrado "+Transform(aList[nLinha2,20]*aList[nLinha2,21],"@E 999,999.99"))
 		EndIf 
