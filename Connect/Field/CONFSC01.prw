@@ -259,7 +259,7 @@ If len(aList) > 0
 	oTMenuIte2 := TMenuItem():New(oDlg1,"Listar-Faturamento",,,,{|| Processa({||PreFat(),"Aguarde"})} ,,,,,,,,,.T.)
 	// oTMenuIte3 := TMenuItem():New(oDlg1,"Faturar",,,,{|| Processa({||GeraPv(0),"Aguarde"})} ,,,,,,,,,.T.)
 	oTMenuIte4 := TMenuItem():New(oDlg1,"Envio NF/Boleto",,,,{|| NFBol()} ,,,,,,,,,.T.)
-	oTMenuIte7 := TMenuItem():New(oDlg1,"Impressoes",,,,{|| Processa({||U_CONFSR02(oSay6:cTitle),"Aguarde"})} ,,,,,,,,,.T.)
+	oTMenuIte7 := TMenuItem():New(oDlg1,"Impressoes",,,,{|| Processa({||U_CONFSR02(oSay6:cTitle,.F.),"Aguarde"})} ,,,,,,,,,.T.)
 
 
 	oMenu:Add(oTMenuIte1)
@@ -284,7 +284,7 @@ If len(aList) > 0
 		MENU oMenuP3 POPUP 
 		MENUITEM "Itens Pedido" ACTION (Processa({|| ItensPv(aList3[oList3:nAt,01],aList3[oList3:nAt,04])},"Aguarde"))
 		MENUITEM "Estornar Faturamento" ACTION (Processa({|| estorfat(aList3[oList3:nAt,01],aList3[oList3:nAt,04])},"Aguarde"))
-		
+		MENUITEM "Imprimir Leitura" ACTION (Processa({||U_CONFSR02(oSay6:cTitle,.T.,aList3[oList3:nAt,01]),"Aguarde"}))
 
 		ENDMENU                                                                           
 
