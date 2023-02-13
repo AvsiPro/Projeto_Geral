@@ -154,7 +154,7 @@ If DBSEEK(xFilial("SE1")+Avkey(MV_PAR01,"E1_PREFIXO")+Avkey(MV_PAR02,"E1_NUM")) 
 				cParcela := "0"
 		ENDCASE
 		
-		oPrint 	:= FWMSPrinter():New("Boleto_"+strzero(VAL(MV_PAR02),9)+"_"+Alltrim(SE1->E1_PARCELA)+".rel",  IMP_PDF, lAdjustToLegacy, cPasta, lDisableSetup,,,,.F.,,,.F.)
+		oPrint 	:= FWMSPrinter():New("Boleto_"+strzero(VAL(MV_PAR02),9)+".rel",  IMP_PDF, lAdjustToLegacy, cPasta, lDisableSetup,,,,.F.,,,.F.)
 
 		oPrint:SetResolution(78) //Tamanho estipulado para a Danfe
 		oPrint:SetPortrait()

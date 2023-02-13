@@ -1325,7 +1325,13 @@ ElseIf oEmail:colpos == 5
 	lEditCell( aEmail, oEmail, "", oEmail:colpos)
 	If aEmail[nLinha,05] <> cBkMail
 		IF MsgYesNo("Atualizar o email no cadastro do cliente?","editcol - CONFSC01")
-		
+			DbSelectArea("SA1")
+			DbSetOrder(1)
+			If DbSeek(xFilial("SA1")+aList[oList:nAt,03]+aList[oList:nAt,04])
+				Reclock("SA1",.F.)
+				SA1->A1_EMAIL := Alltrim(SA1->A1_EMAIL)+";"+Alltrim(aEmail[nLinha,05])
+				SA1->(Msunlock())
+			EndIF 
 		endIf 
 	EndIf
 EndIf
@@ -2273,6 +2279,9 @@ Local aArea 	:=	GetArea()
 Local nCont 	:=	0
 Local cBody     :=  corpo()  
 Local aArquivos	:=	{}
+Local cFile1	:=	''
+Local cFile2	:=	''
+Local cFile3	:=	''
 
 For nCont := 1 to len(aEmail)
 	If aEmail[nCont,01]
@@ -2286,19 +2295,25 @@ For nCont := 1 to len(aEmail)
 		U_CONBOL(.T.,'C:\BOLETOS\'+cCnpjj+'\',substr(aEmail[nCont,11],1,4),'')
 		//(cNota, cSerie, cPasta, ccnpj)
 		U_CONDANFE(MV_PAR02,MV_PAR01,'C:\BOLETOS\',cCnpjj)
+		
 		cRemete := 'nf.erp@connectvending.com.br'
-		cDestino := 'avenanc@yahoo.com.br'
+		cDestino := Alltrim(aEmail[nCont,05])
+		
 		cSubject := 'Faturamento'
 		CPYT2S('C:\BOLETOS\'+cCnpjj+'\'+MV_PAR02+'.pdf','\SPOOL\')
 		CPYT2S('C:\BOLETOS\'+cCnpjj+'\'+MV_PAR02+'.xml','\SPOOL\')
 		CPYT2S('C:\BOLETOS\'+cCnpjj+'\boleto_'+MV_PAR02+'.pdf','\SPOOL\')
+		
+		cFile1 := '\SPOOL\'+MV_PAR02+'.pdf'
+		cFile2 := '\SPOOL\'+MV_PAR02+'.xml'
+		cFile3 := '\SPOOL\boleto_'+MV_PAR02+'.pdf'
 
-		Aadd(aArquivos,{'\SPOOL\'+MV_PAR02+'.pdf',''})
-		Aadd(aArquivos,{'\SPOOL\'+MV_PAR02+'.xml',''})
-		Aadd(aArquivos,{'\SPOOL\boleto_'+MV_PAR02+'.pdf',''})
+		Aadd(aArquivos,{cFile1,''})
+		Aadd(aArquivos,{cFile2,''})
+		Aadd(aArquivos,{cFile3,''})
 
-		U_CONMAIL(cRemete,cDestino,cSubject,cBody,aArquivos,.T.) 
-		//U_EnviarEmail(cDestino,cSubject,cBody,aArquivos,lLog)  
+		//U_CONMAIL(cRemete,cDestino,cSubject,cBody,aArquivos,.T.) 
+		U_EnviarEmail(cDestino,cSubject,cBody,cFile1+','+cFile2+','+cFile3,.f.)  
 	EndIf 
 Next nCont
 
@@ -2324,6 +2339,18 @@ Static Function corpo
 Local cRet := ""
 
 cRet := If(val(substr(time(),1,2))<12 .and.val(substr(time(),1,2))>=0,'Bom dia','Boa tarde' )+'<br><br>'
+
+/*Dose 1ª quinzena:
+"Olá, você está recebendo a fatura referente a 1ª quinzena de xx de 2023 da sua máquina de café. Em caso de dúvidas, basta entrar em contato conosco."
+
+Dose 2ª quinzena:
+"Olá, você está recebendo a fatura referente a 2ª quinzena de xx de 2023 da sua máquina de café. Em caso de dúvidas, basta entrar em contato conosco."
+*/
+If cQuinze == "1"
+	cRet += "Olá, você está recebendo a fatura referente a 1ª quinzena de "+MesExtenso(ddatabase)+" de "+cvaltochar(year(ddatabase))+" da sua máquina de café. Em caso de dúvidas, basta entrar em contato conosco."
+Else 
+	cRet += "Olá, você está recebendo a fatura referente a 2ª quinzena de "+MesExtenso(ddatabase)+" de "+cvaltochar(year(ddatabase))+" da sua máquina de café. Em caso de dúvidas, basta entrar em contato conosco."
+EndIF 
 
 cRet += "Dicas de Segurança<br>"
 cRet += "Fique atento: Seus boletos sempre chegarão pelo remetente do Dominio: <p> CONNECTVENDING.COM.BR </p><br>"

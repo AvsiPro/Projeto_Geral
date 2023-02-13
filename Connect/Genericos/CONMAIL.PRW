@@ -8,8 +8,8 @@ User Function CONMAIL(cFrom,cTo,cSubject,cBody,aAttach,lConfirm,cCC,cBCC)
     Local oServer
     Local oMessage
     Local cMailServer	:= ""
-    Local cSmtpServer	:=  strtran(Alltrim( GetMV("MV_RELSERV") ),":587") //'smtp.avsipro.com.br'
-    Local cAccount		:=  Alltrim( GetMV("MV_RELACNT") ) // 'suporte@avsipro.com.br'
+    Local cSmtpServer	:=  strtran(Alltrim( GetMV("MV_RELSERV") ),":587") //
+    Local cAccount		:=  Alltrim( GetMV("MV_RELACNT") ) // 
     Local cPassword		:=  Alltrim( GetMV("MV_RELPSW")  ) //
     Local lAuth			:=  .T. //GETMV("MV_RELAUTH")
     Local nMailPort		:= 0
