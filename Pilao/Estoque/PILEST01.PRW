@@ -23,13 +23,14 @@ Local aOSSLAP   :=  {}
 Local nOpcx     :=  0
 Local nCont     :=  0
 Local cOSAt     :=  ''
+Local aLsSCP    :=  {}
 
 Private lMsErroAuto := .F.
 Private lMsErroHelp := .T.
 
 If Select("SM0") == 0
     RpcSetType(3)
-    RPCSetEnv("01","0101")
+    RPCSetEnv("01","0201")
 EndIf
 
 cQuery := " select * from SLAPLIC.dbo.RequisicaoPeca "
@@ -52,7 +53,8 @@ While !EOF()
                     TRB->OSItemProc,;   //Sucesso ou falha
                     TRB->OSAprovador,;  //aprovador mesmo
                     TRB->OSArmazem,;   //armazem do produto
-                    TRB->OSApObs})      //obs do aprovador
+                    TRB->OSApObs,;      //obs do aprovador
+                    .F.})               //Com saldo
     DBSKIP()
 ENDDO
 
@@ -70,76 +72,89 @@ dbSelectArea( 'SCP' )
 SCP->( dbSetOrder( 1 ) )
 
 For nCont := 1 to len(aOSSLAP)
+    dbSelectArea("SB2")
+    dbSetOrder(1) // Filial + Produto + Local
 
-    If cOSAt <> aOSSLAP[nCont,01]
-        nSaveSx8:= GetSx8Len()
-        cNumero := GetSx8Num( 'SCP', 'CP_NUM' )
+    _nSaldoB2 := 0
 
-        If nOpcx == 3
-            While SCP->( dbSeek( xFilial( 'SCP' ) + cNumero ) )
-                ConfirmSx8()
-                cNumero := GetSx8Num('SCP', 'CP_NUM')
-            EndDo
-        EndIf
+    If SB2->(dbSeek( xFilial("SB2") + aOSSLAP[nCont,03] + aOSSLAP[nCont,09]) )
+        _nSaldoB2 := SaldoSb2()
+        If _nSaldoB2 >= aOSSLAP[nCont,05]
+            aOSSLAP[nCont,11] := .T.
+        endIf 
+    EndIf
+Next nCont
 
-        Aadd( aCab, { "CP_NUM" ,cNumero , Nil })
-        Aadd( aCab, { "CP_EMISSAO" ,dDataBase , Nil })
+For nCont := 1 to len(aOSSLAP)
+    If aOSSLAP[nCont,11]
+        If cOSAt <> aOSSLAP[nCont,01]
+            nSaveSx8:= GetSx8Len()
+            cNumero := GetSx8Num( 'SCP', 'CP_NUM' )
 
-        SB1->( dbSetOrder( 1 ) )
-        SCP->( dbSetOrder( 1 ) )
-        
-        MsExecAuto( { | x, y, z | Mata105( x, y , z ) }, aCab, aItens , nOpcx )
-
-        If lMsErroAuto
-            If !__lSX8
-                RollBackSx8()
+            If nOpcx == 3
+                While SCP->( dbSeek( xFilial( 'SCP' ) + cNumero ) )
+                    ConfirmSx8()
+                    cNumero := GetSx8Num('SCP', 'CP_NUM')
+                EndDo
             EndIf
 
-            aLogAuto := GetAutoGRLog()
+            Aadd( aCab, { "CP_NUM" ,cNumero , Nil })
+            Aadd( aCab, { "CP_EMISSAO" ,dDataBase , Nil })
 
-            For nCont := 1 To Len(aLogAuto)
-                cLogTxt += aLogAuto[nCont] + CRLF
-            Next
-
-            _cNome := "TINTA010.txt"
-            ctxtErro := MostraErro(,_cNome)
-            cUpdQry := "UPDATE SLAPLIC.dbo.RequisicaoPeca "
-            cUpdQry += " SET OSItemErr='"+ctxtErro+"'"
-            cUpdQry += " where OS='"+cOSAt+"'"
-            TcSqlExec(cUpdQry)
-
-            lRet := .F.
-
-        Else
-            While ( GetSx8Len() > nSaveSx8 )
-                ConfirmSx8()
-            End
-
-            cUpdQry := "UPDATE SLAPLIC.dbo.RequisicaoPeca "
-            cUpdQry += " SET CP_NUM='"+SCP->CP_NUM+"',CP_ITEM=OSItem"
-            cUpdQry += " where OS='"+cOSAt+"'"
-            TcSqlExec(cUpdQry)
+            SB1->( dbSetOrder( 1 ) )
+            SCP->( dbSetOrder( 1 ) )
             
-            //CP_NUM 
-            //e flag = OsItemAut  = 1 significa que pode ser baixado
-            //U_PILEST02()
-            //U_PILEST03(SCP->CP_NUM)
+            MsExecAuto( { | x, y, z | Mata105( x, y , z ) }, aCab, aItens , nOpcx )
 
-        EndIf
+            If lMsErroAuto
+                If !__lSX8
+                    RollBackSx8()
+                EndIf
 
-        aCab := {}
-        cOSAt := aOSSLAP[nCont,01]
-    EndIF 
+                _cNome := "TINTA010.txt"
+                ctxtErro := MostraErro(,_cNome)
+                cUpdQry := "UPDATE SLAPLIC.dbo.RequisicaoPeca "
+                cUpdQry += " SET OSItemErr='"+ctxtErro+"'"
+                cUpdQry += " where OS='"+cOSAt+"'"
+                TcSqlExec(cUpdQry)
 
-    Aadd( aItens, {} )
-    Aadd( aItens[ Len( aItens ) ],{"CP_ITEM"    ,Strzero(aOSSLAP[nCont,02],2) , Nil } )
-    Aadd( aItens[ Len( aItens ) ],{"CP_PRODUTO" ,aOSSLAP[nCont,03] , Nil } )
-    Aadd( aItens[ Len( aItens ) ],{"CP_QUANT"   ,aOSSLAP[nCont,05] , Nil } )
-    Aadd( aItens[ Len( aItens ) ],{"CP_NUMOS"   ,aOSSLAP[nCont,01] , Nil } )
-    Aadd( aItens[ Len( aItens ) ],{"CP_LOCAL"   ,aOSSLAP[nCont,09] , Nil } )
-    Aadd( aItens[ Len( aItens ) ],{"CP_XAPROV"  ,aOSSLAP[nCont,08] , Nil } )
-    Aadd( aItens[ Len( aItens ) ],{"CP_OBS"     ,aOSSLAP[nCont,10] , Nil } )
- 
+                lRet := .F.
+
+            Else
+                While ( GetSx8Len() > nSaveSx8 )
+                    ConfirmSx8()
+                End
+
+                cUpdQry := "UPDATE SLAPLIC.dbo.RequisicaoPeca "
+                cUpdQry += " SET CP_NUM='"+SCP->CP_NUM+"',CP_ITEM=OSItem"
+                cUpdQry += " where OS='"+cOSAt+"'"
+                TcSqlExec(cUpdQry)
+                Aadd(aLsSCP,SCP->CP_NUM)
+                //CP_NUM 
+                //e flag = OsItemAut  = 1 significa que pode ser baixado
+                //U_PILEST02()
+                //U_PILEST03(SCP->CP_NUM)
+
+            EndIf
+
+            aCab := {}
+            cOSAt := aOSSLAP[nCont,01]
+        EndIF 
+
+        Aadd( aItens, {} )
+        Aadd( aItens[ Len( aItens ) ],{"CP_ITEM"    ,Strzero(aOSSLAP[nCont,02],2) , Nil } )
+        Aadd( aItens[ Len( aItens ) ],{"CP_PRODUTO" ,aOSSLAP[nCont,03] , Nil } )
+        Aadd( aItens[ Len( aItens ) ],{"CP_QUANT"   ,aOSSLAP[nCont,05] , Nil } )
+        Aadd( aItens[ Len( aItens ) ],{"CP_NUMOS"   ,aOSSLAP[nCont,01] , Nil } )
+        Aadd( aItens[ Len( aItens ) ],{"CP_LOCAL"   ,aOSSLAP[nCont,09] , Nil } )
+        Aadd( aItens[ Len( aItens ) ],{"CP_XAPROV"  ,aOSSLAP[nCont,08] , Nil } )
+        Aadd( aItens[ Len( aItens ) ],{"CP_OBS"     ,aOSSLAP[nCont,10] , Nil } )
+    Else 
+        cUpdQry := "UPDATE SLAPLIC.dbo.RequisicaoPeca "
+        cUpdQry += " SET OSItemErr='Erro - Item sem saldo'"
+        cUpdQry += " where OS='"+aOSSLAP[nCont,01]+"' and OSItem='"+aOSSLAP[nCont,02]+"'"
+        TcSqlExec(cUpdQry)
+    EndIf
     
 Next nCont
 
@@ -184,7 +199,18 @@ If len(aItens) > 0
         cUpdQry += " SET CP_NUM='"+SCP->CP_NUM+"',CP_ITEM=OSItem"
         cUpdQry += " where OS='"+cOSAt+"'"
         TcSqlExec(cUpdQry)
+
+        Aadd(aLsSCP,SCP->CP_NUM)
         
     EndIf
+
 EndIf 
+
+
+U_PILEST02()
+
+For nCont := 1 to len(aLsSCP)
+    U_PILEST03(aLsSCP[nCont])
+Next nCont
+
 Return lRet

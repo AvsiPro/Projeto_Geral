@@ -2298,6 +2298,7 @@ For nCont := 1 to len(aEmail)
 		
 		cRemete := 'nf.erp@connectvending.com.br'
 		cDestino := Alltrim(aEmail[nCont,05])
+		cDestino += SUPERGETMV( "MV_XMAILFT", .F., 'faturas@connectvending.com.br' )
 		
 		cSubject := 'Faturamento'
 		CPYT2S('C:\BOLETOS\'+cCnpjj+'\'+MV_PAR02+'.pdf','\SPOOL\')
