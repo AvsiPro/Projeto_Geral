@@ -1,24 +1,26 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { environment } from 'src/environments/environment';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { PoBreadcrumb, PoDynamicViewField, PoModalComponent, PoNotificationService, PoPageAction } from '@po-ui/ng-components';
+import { PoBreadcrumb, PoDynamicViewField, PoModalComponent, PoNotificationService, PoPageAction, PoTableAction, PoTableColumn, PoTableColumnLabel, PoTableColumnSort } from '@po-ui/ng-components';
 
 import { PoPageDynamicTableCustomTableAction, PoPageDynamicTableOptions } from '@po-ui/ng-templates';
 import { DomSanitizer } from '@angular/platform-browser';
-
 
 @Component({
   selector: 'app-warranty',
   templateUrl: './warranty.component.html',
   styleUrls: ['./warranty.component.css']
 })
+
 export class WarrantyComponent implements OnInit {
   @ViewChild(PoModalComponent, { static: true })
   poModal!: PoModalComponent;
-  quickSearchWidth: number = 3;
   detailedChamado: Array<any> = []
   detailedProduto: Array<any> = []
   notifyNumber: string = '0'
+
+  columnsTable: Array<PoTableColumn> | any ;
+  itemsTable: Array<any> | any;
 
   @ViewChild('userDetailProduto') userDetailProduto: PoModalComponent | undefined;
 
@@ -45,8 +47,6 @@ export class WarrantyComponent implements OnInit {
     { property: 'valor_icm'},
     { property: 'valor_ipi'},
 ];
-
-  serviceApi =  environment.api + `EnvChamdo/?cod_cliente=${localStorage.getItem('cod_cliente')}&loja_cliente=${localStorage.getItem('loja_cliente')}`;
 
   public readonly actions: Array<PoPageAction> = [
     { label: 'Incluir Chamado', url: '/FORMULARIO', icon: 'po-icon po-icon-plus' }
@@ -75,47 +75,32 @@ export class WarrantyComponent implements OnInit {
     { property: 'rastreio', label: 'Num. Rastreamento', gridLgColumns: 4 }
   ];
 
-  tableCustomActions: Array<PoPageDynamicTableCustomTableAction> = [
-    {
-      label: 'Detalhes Chamado',
-      action: this.onClickUserDetail.bind(this),
-      icon: 'po-icon-user'
-    },
-    {
-      label: 'Espelho da Nota',
-      action: this.onClickProdutoDetail.bind(this),
-      icon: 'po-icon-user'
-    }
+
+  tableCustomActions: Array<PoTableAction> = [
+      {
+        label: 'Detalhes Chamado',
+        action: this.onClickUserDetail.bind(this),
+        icon: 'po-icon-user'
+      },
+      {
+        label: 'Espelho da Nota',
+        action: this.onClickProdutoDetail.bind(this),
+        icon: 'po-icon-user'
+      }
   ];
 
-  constructor(public http: HttpClient,private poNotification: PoNotificationService,private sant:DomSanitizer,) { }
 
-  onLoad(): PoPageDynamicTableOptions {
-    return {
-      fields: [
-        { property: 'chamado', label: 'Chamado', gridLgColumns: 6 , filter: true},
-        { property: 'nota', label: 'Nota', gridLgColumns: 4 , filter: true},
-        { property: 'item', label: 'Item', gridLgColumns: 4, filter: true },
-        { property: 'emissao', label: 'Emissão', gridLgColumns: 4, filter: true },
-        { property: 'produto', label: 'Produto', gridLgColumns: 4, filter: true },
-        { property: 'descricao', label: 'Descrição', gridLgColumns: 20, filter: true },
-        { property: 'quantidade', label: 'Quantidade', gridLgColumns: 4 , filter: true},
-        { property: 'preco', label: 'Valor', gridLgColumns: 4, filter: true },
-        { property: 'defeito', label: 'Defeito', gridLgColumns: 4, filter: true },
-        { property: 'tipodefeito', label: 'Tipo Defeito', gridLgColumns: 4, filter: true },
-        { property: 'status', type: 'label', labels:[
-          { value: '2', color: 'color-02', label: 'Atendido' },
-          { value: '1', color: 'color-08', label: 'Em Aberto' },
-          { value: '3', color: 'color-07', label: 'Negado' },
-          { value: '4', color: 'color-11', label: 'Finalizado' },
-        ], gridLgColumns: 4, filter: true },
-      ]
-    };
-  }
+  constructor(
+    public http: HttpClient,
+    private poNotification: PoNotificationService,
+    private sant:DomSanitizer,
+  ) { }
 
   employee: any = ''
 
   ngOnInit(): void {
+    this.columnsTable = this.getColumns();
+    this.itemsTable = this.getChamadosAbertos();
     this.getChamadosAbertos()
   } 
 
@@ -123,7 +108,7 @@ export class WarrantyComponent implements OnInit {
   onClickUserDetail(event: any) {
     
     this.numChamado = event.chamado
-    this.loadNotify(event.chamado, 'visualiza')
+    this.loadNotify(event.chamado)
 
     this.employee = { 
       chamado:event.chamado,
@@ -142,26 +127,24 @@ export class WarrantyComponent implements OnInit {
   }
 
 
-  onClicknotiFy() {
-    
-    let chamadoLocal = JSON.parse(localStorage.getItem('chamados') as string)
+  onClicknotiFy(row: any) {
 
-    this.numChamado = chamadoLocal[0].chamado
-    this.loadNotify(chamadoLocal[0].chamado, 'visualiza')
+    this.numChamado = row.chamado
+    this.loadNotify(row.chamado)
 
     this.employee = { 
-      chamado:chamadoLocal[0].chamado,
-      nota:chamadoLocal[0].nota,
-      item:chamadoLocal[0].item,
-      emissao:chamadoLocal[0].emissao,
-      produto:chamadoLocal[0].produto,
-      descricao:chamadoLocal[0].descricao,
-      quantidade:chamadoLocal[0].quantidade,
-      defeito:chamadoLocal[0].defeito,
-      tipodefeito:chamadoLocal[0].tipodefeito,
-      preco:chamadoLocal[0].preco      
+      chamado:row.chamado,
+      nota:row.nota,
+      item:row.item,
+      emissao:row.emissao,
+      produto:row.produto,
+      descricao:row.descricao,
+      quantidade:row.quantidade,
+      defeito:row.defeito,
+      tipodefeito:row.tipodefeito,
+      preco:row.preco      
     }
-    this.obsatendente = chamadoLocal[0].obsatend.trim()
+    this.obsatendente = row.obsatend.trim()
     this.poModal.open();
   }
 
@@ -222,63 +205,23 @@ export class WarrantyComponent implements OnInit {
   }
 
 
-  loadNotify(chamado: string, tpGet: string){  
+  async loadNotify (chamado: string){  
+  
+    this.headers = new HttpHeaders({
+      Authorization: 'Basic UjJhbHJFZDRoQWh1MmZSMFRPQnVCTlpxdFM0YTpsUDBUYktKUDdmQ245WGJDUktkM2pYZDFYRW9hIA' });
 
-      const url_login = environment.api + 'chamadoNotific';
-  
-      this.headers = new HttpHeaders({
-        Authorization: 'Basic UjJhbHJFZDRoQWh1MmZSMFRPQnVCTlpxdFM0YTpsUDBUYktKUDdmQ245WGJDUktkM2pYZDFYRW9hIA' });
-  
-      this.http.post(url_login, {CHAMADO : chamado, TPGET : tpGet}, {headers: this.headers}).subscribe((res: any) => {
+    this.http.post(environment.api + 'chamadoNotific', {CHAMADO : chamado}, {headers: this.headers})
+      .subscribe((res: any) => {
         const result: any = res['statusrequest'];
-  
-        if (result[0].code == '#200') {
-
-          if(result[0].message === 'atualizou'){
-            this.notifyNumber = '1'
-          }else{
-            this.notifyNumber = '0'
-          }
-          
-        } else{
           console.log(result[0].message);
-        }
+
       }, (error) => {
         if (error.hasOwnProperty('message')){
           console.log('Falha na comunicaçao com servidor');
         }
       });
-
   }
 
-  getChamadosAbertos(){
-    let url = environment.api + `EnvChamdo/?cod_cliente=${localStorage.getItem('cod_cliente')}&loja_cliente=${localStorage.getItem('loja_cliente')}`
-    let items: any = []
-    
-    this.http.get(url).subscribe((response: any) =>{
-      response['items'].forEach((element: any) =>{
-        this.loadNotify(element.chamado, 'busca')
-
-        items.push({
-          chamado:element.chamado,
-          nota:element.nota,
-          item:element.item,
-          emissao:element.emissao,
-          produto:element.produto,
-          descricao:element.descricao,
-          quantidade:element.quantidade,
-          defeito:element.defeito,
-          tipodefeito:element.tipodefeito,
-          preco:element.preco,
-          obsatend:element.obsatend
-        })
-      })
-
-      const setChamado = items.length > 0 ? JSON.stringify(items) : JSON.stringify([])
-      localStorage.setItem('chamados', setChamado)
-
-    })
-  }
   
   base64: string = ''
   fileSelected?:Blob;
@@ -290,8 +233,6 @@ export class WarrantyComponent implements OnInit {
   onSelectNewFile(files: FileList):void{
 
     var filesStr = "";
-
-    console.log(files)
 
     for (let i = 0; i < files.length; i++){
       filesStr += '<li>' + files[i].name + ' </li> '
@@ -350,5 +291,78 @@ export class WarrantyComponent implements OnInit {
 
   }
 
+
+  getColumns(): Array<PoTableColumn> {
+    return [
+      { property: 'chamado', label: 'Chamado' },
+      { property: 'nota', label: 'Nota' },
+      { property: 'item', label: 'Item' },
+      { property: 'emissao', label: 'Emissão' },
+      { property: 'produto', label: 'Produto' },
+      { property: 'descricao', label: 'Descrição' },
+      { property: 'quantidade', label: 'Quantidade' },
+      { property: 'defeito', label: 'Defeito' },
+      { property: 'tipodefeito', label: 'Tipo Defeito' },
+      { property: 'produto', label: 'Produto' },
+      { 
+        property: 'status', 
+        type: 'label', 
+        labels:[
+          { value: '2', color: 'color-02', label: 'Atendido' },
+          { value: '1', color: 'color-08', label: 'Em Aberto' },
+          { value: '3', color: 'color-07', label: 'Negado' },
+          { value: '4', color: 'color-11', label: 'Finalizado' },
+        ] 
+      },
+      {
+        property: 'notification',
+        label: 'Notificação',
+        type: 'icon',
+        sortable: false,
+        icons: [
+          {
+            action: this.onClicknotiFy.bind(this),
+            color: 'color-07',
+            icon: 'po-icon-notification',
+            tooltip: 'Visualizar Notificação',
+            value: 'atualizou'
+          }
+        ]
+      }
+    ];
+  }
+
+
+  getChamadosAbertos(): Array<any>{
+    let url = environment.api + `EnvChamdo/?cod_cliente=${localStorage.getItem('cod_cliente')}&loja_cliente=${localStorage.getItem('loja_cliente')}`
+    let items: any = []
+    
+    this.http.get(url).subscribe((response: any) =>{
+      response['items'].forEach((element: any) =>{
+
+        items.push({
+          chamado:element.chamado,
+          nota:element.nota,
+          item:element.item,
+          emissao:element.emissao,
+          produto:element.produto,
+          descricao:element.descricao,
+          quantidade:element.quantidade,
+          defeito:element.defeito,
+          tipodefeito:element.tipodefeito,
+          preco:element.preco,
+          obsatend:element.obsatend,
+          status:element.status,
+          notification: element.notification
+        })
+      })
+
+      const setChamado = items.length > 0 ? JSON.stringify(items) : JSON.stringify([])
+      localStorage.setItem('chamados', setChamado)
+
+    })
+
+    return items
+  }
 
 }

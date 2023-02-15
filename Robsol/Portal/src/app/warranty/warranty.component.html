@@ -1,20 +1,16 @@
 <po-page-default p-title="Garantia" [p-actions]="actions" [p-breadcrumb]="breadcrumb">
-    <div style="display: flex; justify-content: flex-end;">
-            <button class="notification button button2" (click)="onClicknotiFy()">
-              <span class="badge">{{notifyNumber}}</span>
-              <img src="../../assets/bell.png" height="30">
-            </button>
-    </div>
-    <po-page-dynamic-table
-        [p-auto-router]='true'
-        [p-concat-filters]='true'
-        [p-keep-filters]='true'
-        p-title="Meus Chamados"
-        [p-table-custom-actions]="tableCustomActions"
-        [p-quick-search-width]="quickSearchWidth"
-        [p-service-api]="serviceApi"
-        [p-load]="onLoad.bind(this)"
-    ></po-page-dynamic-table>
+
+  <div style="margin-top: 20px;">
+    <po-table
+      [p-auto-collapse]="true"
+      [p-columns]="columnsTable"
+      [p-hide-columns-manager]="true"
+      [p-items]="itemsTable"
+      [p-sort]="true"
+      [p-actions]="tableCustomActions"
+    >
+    </po-table>
+  </div>
 
     <po-modal #poModal p-title="Detalhes do Chamado">
         <po-dynamic-view [p-fields]="fields" [p-value]="employee"></po-dynamic-view>
@@ -56,45 +52,35 @@
 </po-page-default>
 
 <po-modal #userDetailProduto p-title="Detalhes da Nota">
-    <po-dynamic-view p-size="lg" [p-fields]="detailFields" [p-value]="detailedProduto"> </po-dynamic-view>
+  <po-dynamic-view p-size="lg" [p-fields]="detailFields" [p-value]="detailedProduto"> </po-dynamic-view>
+</po-modal>
+
+<po-modal #notifyList p-title="Chamados com Interação">
+
 </po-modal>
 
 
-
 <style>
-    .notification {
-      text-decoration: none;
-      position: relative;
-      display: inline-block;
-      margin-top: 5px;
-      margin-bottom: 10px;
-    }
 
-    .notification .badge {
-      position: absolute;
-      top: -2px;
-      right: -8px;
-      padding: 2.5px 6px;
-      border-radius: 50%;
-      background-color: tomato;
-      color: white;
+    .badge1 {
+      padding: 3px 10px;
+      border-radius: 3px;
+      color: #fff;
+      width: 100px;
+      text-align: center;
+      box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
       font-size: 10px;
     }
 
-    .button {
-      border: none;
-      color: white;
-      text-align: center;
-      text-decoration: none;
-      display: inline-block;
-      font-size: 16px;
-      margin: 4px 2px;
-      cursor: pointer;
+    .badge1.component {
+      background-color: #82b1ff;
     }
 
-    .button2 {
-      background-color: transparent;
-      color: black; 
-      border: 0px solid #008CBA;
+    .badge1.service {
+      background-color: #b39ddb;
+    }
+
+    .badge1.template {
+      background-color: #ffb515;
     }
 </style>
