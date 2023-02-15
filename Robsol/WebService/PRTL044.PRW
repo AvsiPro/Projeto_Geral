@@ -95,7 +95,6 @@ WsMethod GET WsReceive COD_CLIENTE,LOJA_CLIENTE WsService EnvChamdo
 		Z50->(DbSetOrder(1))
 		If Z50->(DbSeek(xFilial('Z50')+TRB->Z50_NOTA+TRB->Z50_CODCLI+TRB->Z50_LOJCLI+TRB->Z50_EMISSA+TRB->Z50_PROD))
 			::SetResponse('"obsatend":"'+fRemoveCarc(StrTran(Z50->Z50_OBSATD,CRLF,'\r\n'))+'",')
-			//::SetResponse('"obsatend":" ",')
 		EndIf
 
 		SC5->(DbSetOrder(3))
@@ -111,6 +110,19 @@ WsMethod GET WsReceive COD_CLIENTE,LOJA_CLIENTE WsService EnvChamdo
 			::SetResponse('"rastreio":" ",')
 		EndIf
 
+		oFile := FWFileReader():New('\updchamados\chamado_'+AllTrim(TRB->Z50_CODIGO)+'\notification.txt')
+
+		cNotif := 'visualizou'
+
+		If (oFile:Open())
+			If !(oFile:EoF())
+				cNotif := oFile:FullRead()
+			EndIf
+			
+			oFile:Close()
+		EndIf
+
+		::SetResponse('"notification":"'+AllTrim(cNotif)+'",')
 		::SetResponse('"status":"'+AllTrim(TRB->Z50_STATUS)+'"')
 		::SetResponse('}')
 
@@ -214,13 +226,12 @@ WsMethod POST WsReceive RECEIVE WsService chamadoNotific
 	Local cCode			As Character 
 	Local cMessage		As Character
 	Local cChamado		As Character
-	Local cTpGet		As Character
 	Local lRet			As Logical 
 	Local oBody			As J 
 
-	cCode	:= ''
+	cCode		:= ''
 	cMessage	:= ''
-	lRet	:= .T.
+	lRet		:= .T.
 
 	conout("chegou aqui chamadoNotific")
 
@@ -233,38 +244,23 @@ WsMethod POST WsReceive RECEIVE WsService chamadoNotific
 		lRet		:= .F.
 	Else
 		cChamado := oBody:getJsonText("CHAMADO")
-		cTpGet	 := oBody:getJsonText("TPGET")
 
 		If !Empty(cChamado)
 			cCode 	 := "#200"
 			lRet 	 := .T.
 
-			If cTpGet == 'busca'
-				oFile := FWFileReader():New('\updchamados\chamado_'+Alltrim(cChamado)+'\notification.txt')
+			cMessage := 'visualizou'
+			nHandle	 := FCREATE('\updchamados\chamado_'+Alltrim(cChamado)+'\notification.txt')
 
-				If (oFile:Open())
-					If !(oFile:EoF())
-						cMessage := oFile:FullRead()
-					Else
-						cMessage := 'visualizou'
-					EndIf
-					
-					oFile:Close()
-				EndIf
+			If nHandle = -1
+				conout("Erro ao criar arquivo - ferror " + Str(Ferror()))
 			Else
-				cMessage := 'visualizou'
-				nHandle	 := FCREATE('\updchamados\chamado_'+Alltrim(cChamado)+'\notification.txt')
-
-				If nHandle = -1
-					conout("Erro ao criar arquivo - ferror " + Str(Ferror()))
-				Else
-					FWrite(nHandle, 'visualizou')
-					FClose(nHandle)
-				Endif
+				FWrite(nHandle, 'visualizou')
+				FClose(nHandle)
 			EndIf
+			
 		Else
 			cCode 	 := "#500"
-			cMessage := "visualizou"
 			lRet 	 := .F.
 		EndIf
 
