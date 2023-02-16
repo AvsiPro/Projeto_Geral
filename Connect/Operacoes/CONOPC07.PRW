@@ -34,8 +34,9 @@ User Function CONOPC07()
 
     //Verifica se existe AA3
     DbSelectArea("AA3")
-    DbSetOrder(1)
-    if DBSEEK(xFilial("AA3") + AAM->AAM_CODCLI + AAM->AAM_LOJA + AAN->AAN_CODPRO + Posicione("SN1", 2, xFilial("SN1") + AvKey(AAN->AAN_XCBASE, "N1_CBASE"), "N1_XNUMSER") + xFilial("AA3"))
+    DbSetOrder(7)
+    iF DbSEek(xFilial("AA3") + AAN->AAN_XCBASE)
+    //if DBSEEK(xFilial("AA3") + AAM->AAM_CODCLI + AAM->AAM_LOJA + AAN->AAN_CODPRO + Posicione("SN1", 2, xFilial("SN1") + AvKey(AAN->AAN_XCBASE, "N1_CBASE"), "N1_XNUMSER") + xFilial("AA3"))
         lAA3 := .T.
     endif
 
