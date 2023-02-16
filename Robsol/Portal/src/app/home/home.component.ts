@@ -162,9 +162,8 @@ export class HomeComponent {
 
     })
 
-    if(localStorage.getItem('tipo') == 'vendedor'){
+    if(localStorage.getItem('tipo') === 'vendedor'){
       this.vendedor = !this.vendedor
-
     }
     this.http.get(this.comissoes).subscribe((success: any) => {
       success['items'].forEach((element: any) => {
