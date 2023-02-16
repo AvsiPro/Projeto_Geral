@@ -737,7 +737,8 @@ If len(aVend) > 0
         oBtn2      := TButton():New( 284,200,"Confirmar",oDlg1,{|| Processa({|| gravar()},"Aguarde")},037,012,,,,.T.,,"",,,,.F. )
         oBtn3      := TButton():New( 284,250,"Excel",oDlg1,{|| Processa({|| Geraexc()},"Aguarde")},037,012,,,,.T.,,"",,,,.F. )
         oBtn5      := TButton():New( 284,300,"Pedido S/Fat",oDlg1,{|| Processa({|| PvNaoFat()},"Aguarde")},037,012,,,,.T.,,"",,,,.F. )
-        oBtn4      := TButton():New( 284,350,"Cancelar",oDlg1,{||oDlg1:end(nOpcao:=0)},037,012,,,,.T.,,"",,,,.F. )
+        oBtn4      := TButton():New( 284,350,"Inadimplencias",oDlg1,{|| Processa({|| inadimpl()},"Aguarde")},037,012,,,,.T.,,"",,,,.F. )
+        oBtn5      := TButton():New( 284,400,"Cancelar",oDlg1,{||oDlg1:end(nOpcao:=0)},037,012,,,,.T.,,"",,,,.F. )
 
         MENU oMenu POPUP 
         MENUITEM "Comissão já paga" ACTION ( compaga(oList2:nAt) )
@@ -2189,6 +2190,144 @@ If len(aAux) > 0
     oExcelApp := MsExcel():New()
     oExcelApp:Destroy()
 EndIf 
+
+RestArea(aArea)
+
+Return
+
+/*/{Protheus.doc} Inadimplencias dos clientes de cada representante
+    @type  Static Function
+    @
+    @since 15/02/2023
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function inadimpl()
+
+Local aArea := GetArea()
+Local cQuery 
+Local oExcel 	:= FWMSEXCEL():New()
+Local cDir 		:= ""
+Local nX 
+Local cArqXls 	:= "Inadimplencia_Anteriores_"+dtos(ddatabase-90)+strtran(time(),":")+".xls" 
+Local cPeriod   :=  'Inadimplencia'
+Local aAux      :=  {}
+
+cDir := cGetFile(, OemToAnsi("Selecione o diretório de destino"), 0, "C:\", .T., GETF_LOCALHARD+GETF_NETWORKDRIVE+GETF_RETDIRECTORY, .F., .F.) 
+
+If Empty(cDir)
+	Return
+EndIf
+
+
+cQuery := "SELECT E1_PEDIDO,E1_NUM,E1_PARCELA,E1_EMISSAO,E1_VENCREA,E1_VALOR,E1_CLIENTE,"
+cQuery += " A1_NOME,A1_NREDUZ,E1_VEND1,A3_NOME,E1_TIPO,C5_EMISSAO,C5_XTOTAL"
+cQuery += " FROM "+RetSQLName("SE1")+" E1"
+cQuery += " INNER JOIN "+RetSQLName("SA3")+" A3 ON A3_FILIAL=E1_FILIAL AND A3_COD=E1_VEND1 AND A3.D_E_L_E_T_=' '"
+cQuery += " INNER JOIN "+RetSQLName("SC5")+" C5 ON C5_FILIAL=E1_FILORIG AND C5_NUM=E1_PEDIDO AND C5.D_E_L_E_T_=' '"
+cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL=E1_FILIAL AND A1_COD=E1_CLIENTE AND A1_LOJA=E1_LOJA AND A1.D_E_L_E_T_=' '"
+cQuery += " WHERE E1_FILIAL = '"+xFilial("SE1")+"'"
+cQuery += " AND E1_SALDO > 0"
+cQuery += " AND E1_VENCREA <'"+dtos(ddatabase-90)+"'"
+cQuery += " AND E1.D_E_L_E_T_=' '"
+
+If len(aVend) == 1
+    cQuery += " AND E1_VEND1='"+aVend[1,1]+"'"
+Else 
+    cQuery += " AND E1_VEND1 IN('"
+    cBarra := ""
+
+    For nX := 1 to len(aVend)
+        cQuery += cBarra + aVend[nX,01]
+        cBarra := "','"
+    Next nX 
+
+    cQuery += "')"
+
+EndIF 
+
+cQuery += " ORDER BY E1_VEND1,E1_EMISSAO"
+
+If Select('QUERY') > 0
+    dbSelectArea('QUERY')
+    dbCloseArea()
+EndIf
+
+DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "QUERY", .F., .T. )
+
+DbSelectArea("QUERY")
+
+While !EOF()
+    Aadd(aAux,{ QUERY->E1_PEDIDO,;
+                QUERY->E1_NUM,;
+                QUERY->E1_PARCELA,;
+                QUERY->E1_EMISSAO,;
+                QUERY->E1_VENCREA,;
+                QUERY->E1_VALOR,;
+                QUERY->E1_CLIENTE,;
+                QUERY->A1_NOME,;
+                QUERY->A1_NREDUZ,;
+                QUERY->E1_VEND1,;
+                QUERY->A3_NOME,;
+                QUERY->E1_TIPO,;
+                QUERY->C5_EMISSAO,;
+                QUERY->C5_XTOTAL})
+    Dbskip()
+ENDDO
+
+If len(aAux) > 0
+    oExcel:AddworkSheet(cPeriod) 
+
+    oExcel:AddTable (cPeriod,cPeriod)
+    oExcel:AddColumn(cPeriod,cPeriod,"Pedido",1,1)
+    oExcel:AddColumn(cPeriod,cPeriod,"Nota",1,1)
+    oExcel:AddColumn(cPeriod,cPeriod,"Parcela",1,1)
+    oExcel:AddColumn(cPeriod,cPeriod,"Emissão",1,1)
+    oExcel:AddColumn(cPeriod,cPeriod,"Vencimento",1,1)
+    oExcel:AddColumn(cPeriod,cPeriod,"Valor",1,1)
+    oExcel:AddColumn(cPeriod,cPeriod,"Codigo_Cliente",1,1)
+    oExcel:AddColumn(cPeriod,cPeriod,"Razao",1,1)
+    oExcel:AddColumn(cPeriod,cPeriod,"Nome_Fantasia",1,1)
+    oExcel:AddColumn(cPeriod,cPeriod,"Codigo_Vendedor",1,1)
+    oExcel:AddColumn(cPeriod,cPeriod,"Nome_Vendedor",1,1)
+    oExcel:AddColumn(cPeriod,cPeriod,"Tipo",1,1)
+    oExcel:AddColumn(cPeriod,cPeriod,"Emissão",1,1)
+    oExcel:AddColumn(cPeriod,cPeriod,"Valor_Pedido",1,1)
+
+    For nX := 1 to len(aAux)
+
+        oExcel:AddRow(cPeriod,cPeriod,{ aAux[nX,01],;
+                                        aAux[nX,02],; 
+                                        aAux[nX,03],;
+                                        cvaltochar(stod(aAux[nX,04])),;
+                                        cvaltochar(stod(aAux[nX,05])),;
+                                        aAux[nX,06],;
+                                        aAux[nX,07],;
+                                        aAux[nX,08],;
+                                        aAux[nX,09],;
+                                        aAux[nX,10],;
+                                        aAux[nX,11],;
+                                        aAux[nX,12],;
+                                        cvaltochar(stod(aAux[nX,13])),;
+                                        aAux[nX,14]})
+
+
+    Next nX
+
+    oExcel:Activate()
+
+    oExcel:GetXMLFile(cDir +cArqXls)
+
+    WinExec('Explorer.exe /select,"' + substr(cDir,1,len(cDir)-1) + '"', 1)
+
+    oExcelApp := MsExcel():New()
+    oExcelApp:Destroy()
+    
+EndIF 
 
 RestArea(aArea)
 
