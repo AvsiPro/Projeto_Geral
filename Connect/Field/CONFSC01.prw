@@ -499,7 +499,7 @@ Static Function Busca(cCond,cQuinze)
 		cQuery += " FROM "+RetSQLName("SC6")+" C6"
 		cQuery += " INNER JOIN "+RetSQLName("SC5")+" C5 ON C5_FILIAL=C6_FILIAL "
 		cQuery += " AND C5_NUM=C6_NUM AND C5_CLIENTE=C6_CLI AND C5.D_E_L_E_T_=' '"
-		cQuery += " AND C5_XTPPED IN('F','L','V')"
+		cQuery += " AND C5_XTPPED IN('F','L','V','Q')"
 		cQuery += " WHERE C6_FILIAL='"+xFilial("SC6")+"'"
 		cQuery += " AND C6_CONTRT='"+aAux3[nCont,01]+"' "
 		cQuery += " AND C6_CLI='"+aAux3[nCont,02]+"' AND C6.D_E_L_E_T_=''"
