@@ -52,31 +52,8 @@ export class LoginComponent {
      });
     }
 
-    tentLogar = async(formData: PoPageLogin) => {
 
-      let result : any
-
-      this.hideload = false
-
-      for (var i = 0; i < 5; i++) {
-          console.log('tentativa de logar: '+i);
-          result = this.loginSubmit(formData)
-          
-          if(result.retorno){
-              this.hideload = true
-              this.router.navigate(['/']);
-              break
-          }
-      }
-      
-      if(!result.retorno){
-        this.poNotification.error(result.erro)
-      }
-      this.hideload = true
-  }
-
-
-  loginSubmit = async(formData: any) =>{
+  loginSubmit = async(formData: PoPageLogin) =>{
     this.hideload = false
 
     let body: any;
@@ -93,13 +70,13 @@ export class LoginComponent {
       const fmt_res: any = res['statusrequest'];
 
       localStorage.setItem('access_token', fmt_res[0].user_token);
-      
-      if(!fmt_res[0].cod_cliente){
-        localStorage.setItem('tipo', 'vendedor');
-      }
-
-      if(!fmt_res[0].cod_vendedor){
+      console.log(fmt_res[0])
+      if(fmt_res[0].cod_cliente.trim() !== ""){
         localStorage.setItem('tipo', 'cliente');
+      }
+      
+      if(fmt_res[0].cod_vendedor.trim() !== ""){
+        localStorage.setItem('tipo', 'vendedor');
       }
       
       console.log(fmt_res[0].code)
@@ -114,21 +91,16 @@ export class LoginComponent {
         localStorage.setItem('loja_cliente', fmt_res[0].loja_cliente);
 
         this.router.navigate(['/']);
-
-        return new Promise((resolve) => {
-            resolve({retorno: true, erro: ''});
-        });
+        this.hideload = true
         
       } else{
-          return new Promise((resolve) => {
-            resolve({retorno: false, erro: 'Falha na autenticação'});
-        });
+          this.poNotification.error(fmt_res[0].Cod_Usuario)
+          this.hideload = true
           
       }
     }, (error) => {
-            return new Promise((resolve) => {
-              resolve({retorno: false, erro: 'Falha na autenticação'});
-          });
+        this.poNotification.error('Falha na autenticação, tente novamente')
+        this.hideload = true
     });
    
   }
