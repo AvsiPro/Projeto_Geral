@@ -25,7 +25,7 @@ Local oMessage
 Local cMailServer	:= ""
 Local cSmtpServer	:=  strtran(Alltrim( GetMV("MV_RELSERV") ),":587") //'smtp.avsipro.com.br'
 Local cAccount		:=  'noreply@robsol.com.br' //Alltrim( GetMV("MV_RELACNT") ) // 'suporte@avsipro.com.br'
-Local cPassword		:=  'noreply50821955' //Alltrim( GetMV("MV_RELPSW")  ) //
+Local cPassword		:=  alltrim( GetMV("MV_RELPSW")  ) //'noreply50821955'
 Local lAuth			:=  .T. //GETMV("MV_RELAUTH")
 Local nMailPort		:= 0
 Local nSmtpPort		:= 587
