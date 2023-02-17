@@ -70,17 +70,16 @@ export class LoginComponent {
       const fmt_res: any = res['statusrequest'];
 
       localStorage.setItem('access_token', fmt_res[0].user_token);
-      console.log(fmt_res[0])
-      if(fmt_res[0].cod_cliente.trim() !== ""){
-        localStorage.setItem('tipo', 'cliente');
-      }
-      
-      if(fmt_res[0].cod_vendedor.trim() !== ""){
-        localStorage.setItem('tipo', 'vendedor');
-      }
-      
-      console.log(fmt_res[0].code)
+
       if (fmt_res[0].code == '#200') {
+
+        if(fmt_res[0].cod_cliente.trim() !== ""){
+          localStorage.setItem('tipo', 'cliente');
+        }
+        
+        if(fmt_res[0].cod_vendedor.trim() !== ""){
+          localStorage.setItem('tipo', 'vendedor');
+        }
 
         localStorage.setItem('login_user', formData.login);
         localStorage.setItem('user', fmt_res[0].nome_usuario);

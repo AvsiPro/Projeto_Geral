@@ -26,26 +26,27 @@ export class WarrantyComponent implements OnInit {
 
 
   readonly detailFields: Array<PoDynamicViewField> = [
-    { property: 'item'},
-    { property: 'cod_produto'},
-    { property: 'preco'},
-    { property: 'nota'},
-    { property: 'quantidade'},
-    { property: 'emissao'},
-    { property: 'bairro_empresa', divider: 'Dados da empresa'},
-    { property: 'nome_empresa', gridColumns: 6},
-    { property: 'cnpj'},
-    { property: 'endereco_empresa', gridColumns: 8},
-    { property: 'cidade_empresa'},
-    { property: 'estado_empresa'},
-    { property: 'inscr_estadual'},
-    { property: 'base_icm', divider: 'Detalhes '},
-    { property: 'chave_nfe', gridColumns: 12},
-    { property: 'desc_cfop', gridColumns: 12},
-    { property: 'filial_faturamento'},
-    { property: 'serie'},
-    { property: 'valor_icm'},
-    { property: 'valor_ipi'},
+    { property: 'item', label: 'Item'},
+    { property: 'cod_produto', label: 'Produto'},
+    { property: 'preco', label: 'Preço'},
+    { property: 'nota', label: 'Nota'},
+    { property: 'serie', label: 'Serie'},
+    { property: 'quantidade', label: 'Quantidade'},
+    { property: 'emissao', label: 'Emissão'},
+    { property: 'bairro_empresa', label: 'Bairro', divider: 'Dados da empresa'},
+    { property: 'nome_empresa', label: 'Empresa', gridColumns: 6},
+    { property: 'cnpj', label: 'CNPJ'},
+    { property: 'endereco_empresa',label: 'Endereço', gridColumns: 8},
+    { property: 'cidade_empresa', label: 'Cidade'},
+    { property: 'estado_empresa', label: 'Estado'},
+    { property: 'cep_empresa', label: 'CEP'},
+    { property: 'inscr_estadual', label:'Insc. Estadual'},
+    { property: 'base_icm', label: 'Base ICMS' ,divider: 'Detalhes '},
+    { property: 'chave_nfe',label: 'Chave NFE', gridColumns: 12},
+    { property: 'desc_cfop', label: 'CFOP', gridColumns: 12},
+    { property: 'filial_faturamento', label: 'Filial Faturamento'},
+    { property: 'valor_icm', label:'Valor ICMS'},
+    { property: 'valor_ipi', label: 'Valor IPI'},
 ];
 
   public readonly actions: Array<PoPageAction> = [
@@ -60,6 +61,7 @@ export class WarrantyComponent implements OnInit {
   obscliente: string = '';
   obsatendente: string | undefined;
   numChamado: string = ''
+  hideload = true
 
   fields: Array<PoDynamicViewField> = [
     { property: 'chamado', label: 'Chamado', gridLgColumns: 6 },
@@ -101,7 +103,6 @@ export class WarrantyComponent implements OnInit {
   ngOnInit(): void {
     this.columnsTable = this.getColumns();
     this.itemsTable = this.getChamadosAbertos();
-    this.getChamadosAbertos()
   } 
 
 
@@ -151,8 +152,8 @@ export class WarrantyComponent implements OnInit {
 
   private onClickProdutoDetail(user: any) {
     let url = environment.api + `FieldService/?nota=${user['nota']}&codigo=${user['produto']}&cod_cliente=${localStorage.getItem('cod_cliente')}&loja_cliente=${localStorage.getItem('loja_cliente')}`
-    
-      this.http.get(url).subscribe((res: any)=>{
+
+    this.http.get(url).subscribe((res: any)=>{
       this.detailedProduto = res['items'][0]
       this.userDetailProduto!.open();
     })
@@ -334,6 +335,8 @@ export class WarrantyComponent implements OnInit {
 
 
   getChamadosAbertos(): Array<any>{
+    this.hideload = false
+
     let url = environment.api + `EnvChamdo/?cod_cliente=${localStorage.getItem('cod_cliente')}&loja_cliente=${localStorage.getItem('loja_cliente')}`
     let items: any = []
     
@@ -359,9 +362,9 @@ export class WarrantyComponent implements OnInit {
 
       const setChamado = items.length > 0 ? JSON.stringify(items) : JSON.stringify([])
       localStorage.setItem('chamados', setChamado)
-
+      this.hideload = true
+      
     })
-
     return items
   }
 
