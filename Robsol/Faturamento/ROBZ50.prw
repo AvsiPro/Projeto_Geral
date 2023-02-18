@@ -1,6 +1,7 @@
 #Include 'Protheus.ch'
 #Include 'FWMVCDef.ch'
- 
+#Include "Fileio.ch"
+
 Static cTitulo := "Chamados Portal - Robsol"
 
 /*/{Protheus.doc} ROBZ50
@@ -14,17 +15,26 @@ Static cTitulo := "Chamados Portal - Robsol"
 User Function ROBZ50()
 
     Local oBrowseZ50
-    
+    Local nIgnore := 1
+
     SetFunName("ROBZ50")
 
     oBrowseZ50 := FwmBrowse():new()
     oBrowseZ50:SetAlias("Z50")
     oBrowseZ50:SetDescription(cTitulo)
 
-    oBrowseZ50:AddLegend( "Z50->Z50_STATUS == '1'", "YELLOW", "Chamado Aberto" )
-    oBrowseZ50:AddLegend( "Z50->Z50_STATUS == '2'", "BLUE",   "Chamado Atendido")
-    oBrowseZ50:AddLegend( "Z50->Z50_STATUS == '3'", "RED",    "Chamado Negado")
-    oBrowseZ50:AddLegend( "Z50->Z50_STATUS == '4'", "GREEN",  "Chamado Finalizado")
+    oBrowseZ50:AddLegend( "Z50->Z50_STATUS == '1'", "YELLOW", "Chamado Aberto",'1' )
+    oBrowseZ50:AddLegend( "Z50->Z50_STATUS == '2'", "BLUE",   "Chamado Atendido",'1')
+    oBrowseZ50:AddLegend( "Z50->Z50_STATUS == '3'", "RED",    "Chamado Negado",'1')
+    oBrowseZ50:AddLegend( "Z50->Z50_STATUS == '4'", "GREEN",  "Chamado Finalizado",'1')
+
+    oBrowseZ50:AddLegend( "u_ROBNOTF()", "EDITABLE",  "Chamado Finalizado",'2')
+
+    //Tratativa para ignorar warnings de ViewDef e ModelDef nunca chamados
+    If nIgnore == 0
+        ModelDef()
+        ViewDef()
+    EndIf
 
     oBrowseZ50:Activate()
     
@@ -89,3 +99,20 @@ Local aLegenda := {}
      
     BrwLegenda(cTitulo, "Status", aLegenda)
 Return
+
+
+User Function ROBNOTF()
+
+Local cNotif  := ''
+
+oFile := FWFileReader():New('\updchamados\chamado_'+AllTrim(Z50->Z50_CODIGO)+'\notification.txt')
+
+If (oFile:Open())
+    If !(oFile:EoF())
+        cNotif := oFile:FullRead()
+    EndIf
+    
+    oFile:Close()
+EndIf
+
+Return cNotif == 'visualizou'
