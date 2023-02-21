@@ -176,6 +176,7 @@ Private _Pedi2  :=  'ZZZZZZ'
 Private _DtDe   :=  CTOD(' / / ')
 Private _DtAt   :=  CTOD(' / / ')
 Private aItens  :=  {}
+Private aCampan :=  {}
 
 If Empty(FunName())
     RpcSetType(3)
@@ -311,17 +312,12 @@ Local aRet  :=  {}
 Local cQuery:=  ""
 Local cMesAn:=  substr(strtran(cvaltochar(DtAt),"/"),3)
 Local cAuxM :=  BuscaMes(cMesAn)
-/*
-cQuery := "SELECT D2_ITEM,D2_COD,B1_GRUPO,BM_GRUPO,F2_VEND1,BM_XMODELO,"
-cQuery += "Z03_DESGRI,D2_PEDIDO,F2_DOC,F2_SERIE,F2_CLIENTE,F2_LOJA,"
-cQuery += "C5_EMISSAO,F2_EMISSAO,"
-cQuery += "F2_VALMERC,C5_CONDPAG,D2_DESC,D2_QUANT,D2_TOTAL,A3_NOME,A3_GEREN,"
-cQuery += " (SELECT SUM(C6_VALOR) FROM "+RetSQLName("SC6")+" WHERE C6_FILIAL=D2_FILIAL AND C6_NUM=D2_PEDIDO  AND D_E_L_E_T_=' ') AS VALORPEDIDO"
-*/
+
 cQuery := "SELECT DISTINCT F4_CODIGO,D2_ITEM,D2_COD,D2_PEDIDO,D2_DESC,D2_TOTAL, D2_QUANT,"
 cQuery += " B1_GRUPO,BM_GRUPO,"
 cQuery += " F2_VEND1,F2_VEND2,F2_VEND2,F2_DOC,F2_SERIE,F2_CLIENTE,F2_LOJA,F2_EMISSAO,F2_VALMERC,"
 cQuery += " C5_EMISSAO,C5_CONDPAG,C5_XCLASPV,"
+cQuery += " C6_QTDVEN,"
 cQuery += " ( SELECT E4_DESCRI FROM "+RetSQLName("SE4")+" WHERE E4_CODIGO = C5_CONDPAG ) AS DESCRIPAGTO,"
 cQuery += " Z43_DESCRI,"
 cQuery += " BM_XMODELO,"
@@ -410,10 +406,12 @@ While !EOF()
                     TRB->Z01_DESBAN,;                   //29
                     TRB->Z01_DSCESP,;                   //30
                     TRB->DESCRIPAGTO,;                  //31                  
-                    TRB->Z01_CODBAN})                   //32                                    
+                    TRB->Z01_CODBAN,;                   //32                                    
+                    TRB->C6_QTDVEN})                    //33
     Else 
         aRet[nPos,14] += TRB->D2_QUANT
         aRet[nPos,15] += TRB->D2_TOTAL        
+        aRet[nPos,33] += TRB->C6_QTDVEN        
     EndIf 
 
     Aadd(aItens,{TRB->D2_ITEM,;
@@ -461,10 +459,12 @@ While !EOF()
                         TRB->Z01_DESBAN,;                   //29
                         TRB->Z01_DSCESP,;                   //30  
                         TRB->DESCRIPAGTO,;                  //31                  
-                        TRB->Z01_CODBAN})                   //32
+                        TRB->Z01_CODBAN,;                   //32
+                        TRB->C6_QTDVEN})                    //33
         Else 
             aRet[nPos,14] += TRB->D2_QUANT
             aRet[nPos,15] += TRB->D2_TOTAL        
+            aRet[nPos,33] += TRB->C6_QTDVEN
         EndIf 
 
         Aadd(aItens,{TRB->D2_ITEM,;
@@ -549,7 +549,8 @@ While !EOF()
                 TRB->Z01_DESBAN,;                   //29
                 '',;                                //30 
                 '',;                                //31 
-                TRB->Z01_CODBAN})                   //32
+                TRB->Z01_CODBAN,;                   //32
+                0})                                 //33
     Dbskip()
 EndDo 
 
@@ -614,12 +615,43 @@ While !EOF()
                     TRB->Z01_DESBAN,;                   //29
                     TRB->Z01_DSCESP,;                   //30
                     'TRB->DESCRIPAGTO',;                //31                  
-                    TRB->Z01_CODBAN})                   //32
+                    TRB->Z01_CODBAN,;                   //32
+                    0})                                 //33
     Else 
         aRet[nPos,14] += TRB->D1_QUANT
         aRet[nPos,15] += TRB->D1_TOTAL  
         aRet[nPos,20] := (aRet[nPos,15] *0.10)*(-1)      
     EndIf
+    Dbskip()
+ENDDO
+
+cQuery := "SELECT Z54_CODIGO,Z54_DESCRI,Z54_DTINI,Z54_DTFIM,Z54_DESCCA,"
+cQuery += " Z55_PRODUT,B1_DESC,Z55_QTDMIN,Z55_DSCESP"
+cQuery += "  FROM "+RetSQLName("Z54")+" Z54"
+cQuery += " INNER JOIN "+RetSQLName("Z55")+" Z55 ON Z55_FILIAL=Z54_FILIAL AND Z55_CODIGO=Z54_CODIGO AND Z55.D_E_L_E_T_=' '"
+cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD=Z55_PRODUT AND B1.D_E_L_E_T_=' '"
+cQuery += " WHERE Z54.D_E_L_E_T_=' '"
+cQuery += " AND Z54_FILIAL=' ' AND Z54_DTINI<='"+dtos(DtDe)+"' AND Z54_DTFIM>='"+dtos(DtAt)+"'"
+
+If Select('TRB') > 0
+    dbSelectArea('TRB')
+    dbCloseArea()
+EndIf
+
+DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
+
+DbSelectArea("TRB")
+
+While !EOF()
+    Aadd(aCampan,{  TRB->Z54_CODIGO,;
+                    TRB->Z54_DESCRI,;
+                    TRB->Z54_DTINI,;
+                    TRB->Z54_DTFIM,;
+                    TRB->Z54_DESCCA,;
+                    TRB->Z55_PRODUT,;
+                    TRB->B1_DESC,;
+                    TRB->Z55_QTDMIN,;
+                    TRB->Z55_DSCESP})
     Dbskip()
 ENDDO
 
@@ -689,8 +721,8 @@ If len(aVend) > 0
                                             //536
     oGrp2      := TGroup():New( 004,188,176,795,"Itens para calculo",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
         //oBrw2      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{012,192,172,532},,, oGrp2 ) 
-        oList2:= 	TCBrowse():New(012,192,599,160,, {'Marca','Pedido','Nota','EmissaoPV','EmissaoNF','Valor PV','Valor NF','CondPagto','Desconto','Qtd Peças','Valor Peças','% Comissao','R$ Comissao','Cliente','Tipo PV','Evento'},;
-                                                    {30,30,30,30,30,30,30,30,30,30,30,30,30,30,30},;
+        oList2:= 	TCBrowse():New(012,192,599,160,, {'Marca','Pedido','Nota','EmissaoPV','EmissaoNF','Valor PV','Valor NF','CondPagto','Desconto','Qtd Faturada','Qtd Vendida','Valor Peças','% Comissao','R$ Comissao','Cliente','Tipo PV','Evento'},;
+                                                    {30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30},;
                                             oGrp2,,,,{|| Fhelp2(oList2:nAt)},{|| /*editcol(oList2:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
         
         oList2:SetArray(aList2)
@@ -704,6 +736,7 @@ If len(aVend) > 0
                             aList2[oList2:nAt,12],;
                             aList2[oList2:nAt,13],;
                             Transform(aList2[oList2:nAt,14],"@E 999,999,999.99"),;
+                            Transform(aList2[oList2:nAt,33],"@E 999,999,999.99"),;
                             Transform(aList2[oList2:nAt,15],"@E 999,999,999.99"),;
                             aList2[oList2:nAt,19],;
                             Transform(aList2[oList2:nAt,20],"@E 999,999,999.99"),;
@@ -795,6 +828,7 @@ oList2:bLine := {||{aList2[oList2:nAt,03],;
                     aList2[oList2:nAt,12],;
                     aList2[oList2:nAt,13],;
                     Transform(aList2[oList2:nAt,14],"@E 999,999,999.99"),;
+                    Transform(aList2[oList2:nAt,33],"@E 999,999,999.99"),;
                     Transform(aList2[oList2:nAt,15],"@E 999,999,999.99"),;
                     aList2[oList2:nAt,19],;
                     Transform(aList2[oList2:nAt,20],"@E 999,999,999.99"),;
