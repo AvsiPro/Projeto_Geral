@@ -177,6 +177,7 @@ Private _DtDe   :=  CTOD(' / / ')
 Private _DtAt   :=  CTOD(' / / ')
 Private aItens  :=  {}
 Private aCampan :=  {}
+Private aItCmp  :=  {}
 
 If Empty(FunName())
     RpcSetType(3)
@@ -313,7 +314,7 @@ Local cQuery:=  ""
 Local cMesAn:=  substr(strtran(cvaltochar(DtAt),"/"),3)
 Local cAuxM :=  BuscaMes(cMesAn)
 
-cQuery := "SELECT DISTINCT F4_CODIGO,D2_ITEM,D2_COD,D2_PEDIDO,D2_DESC,D2_TOTAL, D2_QUANT,"
+cQuery := "SELECT DISTINCT F4_CODIGO,D2_ITEM,D2_COD,D2_PEDIDO,D2_DESC,D2_TOTAL, D2_QUANT,D2_FILIAL,"
 cQuery += " B1_GRUPO,BM_GRUPO,"
 cQuery += " F2_VEND1,F2_VEND2,F2_VEND2,F2_DOC,F2_SERIE,F2_CLIENTE,F2_LOJA,F2_EMISSAO,F2_VALMERC,"
 cQuery += " C5_EMISSAO,C5_CONDPAG,C5_XCLASPV,"
@@ -407,11 +408,24 @@ While !EOF()
                     TRB->Z01_DSCESP,;                   //30
                     TRB->DESCRIPAGTO,;                  //31                  
                     TRB->Z01_CODBAN,;                   //32                                    
-                    TRB->C6_QTDVEN})                    //33
+                    TRB->C6_QTDVEN,;                    //33
+                    TRB->D2_FILIAL})                    //34
     Else 
         aRet[nPos,14] += TRB->D2_QUANT
         aRet[nPos,15] += TRB->D2_TOTAL        
         aRet[nPos,33] += TRB->C6_QTDVEN        
+    EndIf 
+
+    If Ascan(aItCmp,{|x| x[1]+x[7] == TRB->D2_COD+TRB->D2_ITEM}) == 0
+        Aadd(aItCmp,{   TRB->D2_COD,;
+                        TRB->D2_PEDIDO,;
+                        TRB->D2_QUANT,;
+                        TRB->C6_QTDVEN,;
+                        TRB->D2_DESC,;
+                        TRB->D2_TOTAL,;
+                        TRB->D2_ITEM,;
+                        TRB->F2_VEND1,;
+                        TRB->BM_XMODELO})
     EndIf 
 
     Aadd(aItens,{TRB->D2_ITEM,;
@@ -460,7 +474,8 @@ While !EOF()
                         TRB->Z01_DSCESP,;                   //30  
                         TRB->DESCRIPAGTO,;                  //31                  
                         TRB->Z01_CODBAN,;                   //32
-                        TRB->C6_QTDVEN})                    //33
+                        TRB->C6_QTDVEN,;                    //33
+                        TRB->D2_FILIAL})                    //34
         Else 
             aRet[nPos,14] += TRB->D2_QUANT
             aRet[nPos,15] += TRB->D2_TOTAL        
@@ -483,7 +498,7 @@ While !EOF()
 ENDDO
 
 
-cQuery := "SELECT E1_PEDIDO,E1_PREFIXO,E1_VEND1,E1_NUM,E1_PARCELA,E1_CLIENTE,E1_LOJA,
+cQuery := "SELECT E1_PEDIDO,E1_PREFIXO,E1_VEND1,E1_NUM,E1_PARCELA,E1_CLIENTE,E1_LOJA,E1_FILORIG,"
 cQuery += " CONVERT(VARCHAR,MONTH(E1_EMISSAO)) AS MES,Z40_PRCCOM,Z40_VLRCOM,"
 cQuery += " Z40_MARCA,E1_EMISSAO,A3_NOME,Z01_DESBAN,Z01_CODBAN,A1_XBANDEI,SUM(E1_VALOR) AS VLRSE1"
 cQuery += " FROM "+RetSQLName("SE1")+" E1"
@@ -503,7 +518,7 @@ cQuery += " AND E1_PEDIDO+E1_NUM+E1_PREFIXO+E1_CLIENTE+E1_LOJA NOT IN(SELECT Z40
 
 cQuery += " GROUP BY E1_PEDIDO,E1_PREFIXO,E1_VEND1,E1_NUM,E1_PARCELA,E1_CLIENTE,"
 cQuery += " E1_LOJA,CONVERT(VARCHAR,MONTH(E1_EMISSAO)),Z40_PRCCOM,"
-cQuery += " Z40_VLRCOM,Z40_MARCA,E1_EMISSAO,A3_NOME,Z01_DESBAN,Z01_CODBAN,A1_XBANDEI"
+cQuery += " Z40_VLRCOM,Z40_MARCA,E1_EMISSAO,A3_NOME,Z01_DESBAN,Z01_CODBAN,A1_XBANDEI,E1_FILORIG"
 
 If Select('TRB') > 0
     dbSelectArea('TRB')
@@ -550,11 +565,12 @@ While !EOF()
                 '',;                                //30 
                 '',;                                //31 
                 TRB->Z01_CODBAN,;                   //32
-                0})                                 //33
+                0,;                                 //33
+                TRB->E1_FILORIG})                   //34
     Dbskip()
 EndDo 
 
-cQuery := "SELECT D1_NFORI,D1_SERIORI,D1_ITEMORI,D1_DOC,D1_SERIE,D1_COD,B1_DESC,D1_EMISSAO,"
+cQuery := "SELECT D1_NFORI,D1_SERIORI,D1_ITEMORI,D1_DOC,D1_SERIE,D1_COD,B1_DESC,D1_EMISSAO,D1_FILIAL,"
 cQuery += " BM_XMODELO,Z03_CODGRI,C5_CONDPAG,C5_VEND1,C5_XCLASPV,Z01_CODBAN,Z01_DESBAN,C5_EMISSAO,D2_DESC,"
 cQuery += " Z01_DSCESP,A1_XBANDEI,D2_PEDIDO,D1_QUANT,D1_VUNIT,D1_TOTAL,C5_CLIENTE,C5_LOJACLI,"
 cQuery += " A31.A3_NOME AS VEND1N,A31.A3_GEREN AS GEREN1N"
@@ -616,7 +632,8 @@ While !EOF()
                     TRB->Z01_DSCESP,;                   //30
                     'TRB->DESCRIPAGTO',;                //31                  
                     TRB->Z01_CODBAN,;                   //32
-                    0})                                 //33
+                    0,;                                 //33
+                    TRB->D1_FILIAL})                    //34
     Else 
         aRet[nPos,14] += TRB->D1_QUANT
         aRet[nPos,15] += TRB->D1_TOTAL  
@@ -626,10 +643,11 @@ While !EOF()
 ENDDO
 
 cQuery := "SELECT Z54_CODIGO,Z54_DESCRI,Z54_DTINI,Z54_DTFIM,Z54_DESCCA,"
-cQuery += " Z55_PRODUT,B1_DESC,Z55_QTDMIN,Z55_DSCESP"
+cQuery += " Z55_PRODUT,B1_DESC,Z55_QTDMIN,Z55_DSCESP,BM_XMODELO"
 cQuery += "  FROM "+RetSQLName("Z54")+" Z54"
 cQuery += " INNER JOIN "+RetSQLName("Z55")+" Z55 ON Z55_FILIAL=Z54_FILIAL AND Z55_CODIGO=Z54_CODIGO AND Z55.D_E_L_E_T_=' '"
 cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD=Z55_PRODUT AND B1.D_E_L_E_T_=' '"
+cQuery += " INNER JOIN "+RetSQLName("SBM")+" BM ON BM_FILIAL=B1_FILIAL AND BM_GRUPO=B1_GRUPO AND BM.D_E_L_E_T_=' '"
 cQuery += " WHERE Z54.D_E_L_E_T_=' '"
 cQuery += " AND Z54_FILIAL=' ' AND Z54_DTINI<='"+dtos(DtDe)+"' AND Z54_DTFIM>='"+dtos(DtAt)+"'"
 
@@ -651,12 +669,14 @@ While !EOF()
                     TRB->Z55_PRODUT,;
                     TRB->B1_DESC,;
                     TRB->Z55_QTDMIN,;
-                    TRB->Z55_DSCESP})
+                    TRB->Z55_DSCESP,;
+                    TRB->BM_XMODELO})
     Dbskip()
 ENDDO
 
 Asort(aRet,,,{|x,y| x[4]+x[5] < y[4]+y[5]})
 Asort(aItens,,,{|x,y| x[8]+x[1] < y[8]+y[1]})
+Asort(aItCmp,,,{|x,y| x[1]+x[8] < y[1]+y[8]})
 
 RestArea(aArea)
 
@@ -771,12 +791,15 @@ If len(aVend) > 0
         oBtn3      := TButton():New( 284,250,"Excel",oDlg1,{|| Processa({|| Geraexc()},"Aguarde")},037,012,,,,.T.,,"",,,,.F. )
         oBtn5      := TButton():New( 284,300,"Pedido S/Fat",oDlg1,{|| Processa({|| PvNaoFat()},"Aguarde")},037,012,,,,.T.,,"",,,,.F. )
         oBtn4      := TButton():New( 284,350,"Inadimplencias",oDlg1,{|| Processa({|| inadimpl()},"Aguarde")},037,012,,,,.T.,,"",,,,.F. )
-        oBtn5      := TButton():New( 284,400,"Cancelar",oDlg1,{||oDlg1:end(nOpcao:=0)},037,012,,,,.T.,,"",,,,.F. )
+        oBtn5      := TButton():New( 284,400,"Mostruario",oDlg1,{|| Processa({|| Mostruario()},"Aguarde")},037,012,,,,.T.,,"",,,,.F. )
+        oBtn6      := TButton():New( 284,450,"Cancelar",oDlg1,{||oDlg1:end(nOpcao:=0)},037,012,,,,.T.,,"",,,,.F. )
 
         MENU oMenu POPUP 
         MENUITEM "Comissão já paga" ACTION ( compaga(oList2:nAt) )
         MENUITEM "Ajustar % comissão" ACTION ( AjustPer(oList2:nAt) )
         MENUITEM "Historico de Pedidos" ACTION ( Historico(aList2[oList2:nAt,07],aList2[oList2:nAt,04]) )
+        MENUITEM "Campanha" ACTION ( xCampan(oList2:nAt) )
+        MENUITEM "Liberações" ACTION ( xObsLib(oList2:nAt) )
         ENDMENU                                                                           
 
         oList2:bRClicked := { |oObject,nX,nY| oMenu:Activate( nX, (nY-10), oObject ) }
@@ -810,6 +833,9 @@ aList2 := {}
 For nCont := 1 to len(aList2B)
     If aList2B[nCont,01] == aVend[nLinha,01]
         Aadd(aList2,aList2B[nCont])
+        If Ascan(aCampan,{|x| Alltrim(x[10]) == Alltrim(aList2[len(aList2),3])}) > 0
+            aList2[len(aList2),03] := Alltrim(aList2[len(aList2),03]) + " *C*"
+        EndIF 
     EndIf 
 Next nCont
 
@@ -2364,5 +2390,292 @@ If len(aAux) > 0
 EndIF 
 
 RestArea(aArea)
+
+Return
+
+/*/{Protheus.doc} xCampan
+    (long_description)
+    @type  Static Function
+    @author user
+    @since 21/02/2023
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function xCampan(nLinha)
+
+Local oDlgc1,oGrpc1,oGrpc2,oBtnC1
+Local aArra1 := {}
+Local aArra2 := {}
+Local oAuxi1  
+Local oAuxi2
+Local nCont  := 0
+Local cPedido:= aList2[nLinha,04]
+
+For nCont := 1 to len(aCampan)
+    If Alltrim(aCampan[nCont,10]) == Alltrim(aList2[nLinha,02])
+        Aadd(aArra1,{   Alltrim(aCampan[nCont,02]),;
+                        Alltrim(aCampan[nCont,06]),;
+                        cvaltochar(aCampan[nCont,08]),;
+                        cvaltochar(aCampan[nCont,05])})
+    EndIf 
+Next nCont 
+
+For nCont := 1 to len(aItCmp)
+    If Alltrim(aItCmp[nCont,02]) == Alltrim(cPedido) .And. Alltrim(aList2[nLinha,02]) == Alltrim(aItCmp[nCont,09])
+        If Ascan(aCampan,{|x| Alltrim(x[6]) == Alltrim(aItCmp[nCont,01])})
+            cProdC := ' * '
+        else
+            cProdC := ''
+        EndIf 
+
+        Aadd(aArra2,{Alltrim(aItCmp[nCont,01])+cProdC,;
+                    aItCmp[nCont,04],;
+                    aItCmp[nCont,05],;
+                    aItCmp[nCont,06]})
+    EndIf 
+Next nCont 
+
+
+If len(aArra1) < 1
+    Aadd(aArra1,{'','','',''})
+EndIf 
+
+If len(aArra2) < 1
+    Aadd(aArra2,{''})
+EndIf 
+
+oDlgc1     := MSDialog():New( 092,232,461,1058,"Campanhas",,,.F.,,,,,,.T.,,,.T. )
+
+    oGrpc1     := TGroup():New( 004,008,152,188,"Campanhas x Itens",oDlgc1,CLR_BLACK,CLR_WHITE,.T.,.F. )
+    //oBrw1      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{012,012,148,184},,, oGrpc1 ) 
+    oAuxi1:= 	TCBrowse():New(012,012,174,138,, {'Campanha','Produto','Qtd Min','Desconto'},;
+                                                {50,40,30,30},;
+                                        oGrpc1,,,,{|| /*Fhelp2(oList2:nAt)*/},{|| /*editcol(oList2:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
+    
+    oAuxi1:SetArray(aArra1)
+    oAuxi1:bLine := {||{aArra1[oAuxi1:nAt,01],;
+                        aArra1[oAuxi1:nAt,02],;
+                        aArra1[oAuxi1:nAt,03],;
+                        aArra1[oAuxi1:nAt,04]}}
+
+    oGrpc2     := TGroup():New( 004,192,152,400,"Itens Vendidos x Campanhas",oDlgc1,CLR_BLACK,CLR_WHITE,.T.,.F. )
+    //oBrw2      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{012,196,148,396},,, oGrpc2 ) 
+    oAuxi2:= 	TCBrowse():New(012,196,202,138,, {'Produto','Qtd Vendida','Desconto','Vlr Total'},;
+                                                    {50,40,30,30},;
+                                            oGrpc2,,,,{|| /*Fhelp2(oList2:nAt)*/},{|| /*editcol(oList2:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
+        
+    oAuxi2:SetArray(aArra2)
+    oAuxi2:bLine := {||{aArra2[oAuxi2:nAt,01],;
+                        aArra2[oAuxi2:nAt,02],;
+                        aArra2[oAuxi2:nAt,03],;
+                        aArra2[oAuxi2:nAt,04]}}
+
+    oBtnC1     := TButton():New( 160,180,"Sair",oDlgc1,{|| oDlgc1:end()},037,012,,,,.T.,,"",,,,.F. )
+
+oDlgc1:Activate(,,,.T.)
+
+
+Return
+
+/*/{Protheus.doc} xObsLib
+    (long_description)
+    @type  Static Function
+    @author user
+    @since 22/02/2023
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function xObsLib(nLinha)
+
+Local aArea :=  GetArea()
+
+DbSelectArea("SC5")
+DbSetOrder(1)
+DbSeek(aList2[nLinha,34]+aList2[nLinha,04])
+
+MSGALERT("Pedido "+SC5->C5_NUM+CRLF+"Liberacoes"+CRLF+SC5->C5_XOBSLIB)
+
+RestArea(aArea)
+
+Return 
+
+/*/{Protheus.doc} Mostruario
+    (long_description)
+    @type  Static Function
+    @author user
+    @since 22/02/2023
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function Mostruario()
+
+Local aArea :=  GetArea()
+Local cQuery 
+Local oExcel 	:= FWMSEXCEL():New()
+Local cDir 		:= ""
+Local nX 
+Local cArqXls 	:= "Mostruarios_"+dtos(ddatabase-90)+strtran(time(),":")+".xls" 
+Local cPeriod   :=  'Mostruario'
+Local cTitulos  :=  'Titulos_Pagos'
+Local aRet      :=  {}
+Local cForVend  :=  ''
+Local cForE2    :=  ''
+Local cForNF    :=  Posicione("SA3",1,xFilial("SA3")+aVend[oList1:nAt,1],"A3_CGC")
+Local aTitulos  :=  {}
+
+DbSelectArea("SA2")
+DbSetOrder(3)
+If DbSeek(xFilial("SA2")+cForNF)
+    cForE2 := SA2->A2_COD 
+EndIf 
+
+DbSelectArea("SA1")
+DbSetOrder(3)
+If DbSeek(xFilial("SA1")+cForNF)
+    cForVend := SA1->A1_COD 
+EndIf 
+
+cDir := cGetFile(, OemToAnsi("Selecione o diretório de destino"), 0, "C:\", .T., GETF_LOCALHARD+GETF_NETWORKDRIVE+GETF_RETDIRECTORY, .F., .F.) 
+
+If Empty(cDir)
+	Return
+EndIf
+
+
+//Malas em aberto com o representante.
+cQuery := "SELECT B6_DOC,B6_EMISSAO,BM_XMODELO,Z03_DESGRI,B6_PRODUTO,B1_DESC,B6_QUANT,B6_PRUNIT"
+cQuery += " FROM "+RetSQLName("SB6")+" B6"
+cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD=B6_PRODUTO AND B1.D_E_L_E_T_=' '"
+cQuery += " INNER JOIN "+RetSQLName("SBM")+" BM ON BM_FILIAL=B1_FILIAL AND BM_GRUPO=B1_GRUPO AND BM.D_E_L_E_T_=' '"
+cQuery += " INNER JOIN "+RetSQLName("Z03")+" Z03 ON Z03_FILIAL=BM_FILIAL AND Z03_CODGRI=BM_XMODELO AND Z03.D_E_L_E_T_=' '"
+cQuery += " WHERE B6_FILIAL BETWEEN ' ' AND 'ZZZ'"
+cQuery += " AND B6_CLIFOR='"+cForVend+"' AND B6_SALDO>0"
+cQuery += " AND B6.D_E_L_E_T_=' '"
+cQuery += " ORDER BY B6_DOC,B6_PRODUTO"
+
+If Select('QUERY') > 0
+    dbSelectArea('QUERY')
+    dbCloseArea()
+EndIf
+
+DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "QUERY", .F., .T. )
+
+DbSelectArea("QUERY")
+
+While !EOF()
+    Aadd(aRet,{ QUERY->B6_DOC,;   
+                QUERY->B6_EMISSAO,;
+                QUERY->BM_XMODELO,;
+                QUERY->Z03_DESGRI,;
+                QUERY->B6_PRODUTO,;
+                QUERY->B1_DESC,;
+                QUERY->B6_QUANT,;
+                QUERY->B6_PRUNIT})
+    Dbskip()
+EndDo 
+
+cQuery := "SELECT ROW_NUMBER() OVER(ORDER BY E2_EMISSAO) AS LINHA ,E2_EMISSAO,E2_HIST,E2_VALOR,E2_BAIXA,E2_VALLIQ"
+cQuery += " FROM "+RetSQLName("SE2")
+cQuery += " WHERE E2_FILIAL BETWEEN ' ' AND 'ZZ'"
+cQuery += " AND E2_FORNECE='"+cForE2+"' AND D_E_L_E_T_=' '"
+cQuery += " ORDER BY E2_EMISSAO"
+
+If Select('QUERY') > 0
+    dbSelectArea('QUERY')
+    dbCloseArea()
+EndIf
+
+DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "QUERY", .F., .T. )
+
+DbSelectArea("QUERY")
+
+While !EOF()
+    Aadd(aTitulos,{QUERY->LINHA,;
+                    QUERY->E2_EMISSAO,;
+                    Alltrim(QUERY->E2_HIST),;
+                    QUERY->E2_VALOR,;
+                    QUERY->E2_BAIXA,;
+                    QUERY->E2_VALLIQ})
+    Dbskip()
+EndDo 
+
+If len(aRet) > 0
+    oExcel:AddworkSheet(cPeriod) 
+
+    oExcel:AddTable (cPeriod,cPeriod)
+    oExcel:AddColumn(cPeriod,cPeriod,"Nota",1,1)
+    oExcel:AddColumn(cPeriod,cPeriod,"Emissão",1,1)
+    oExcel:AddColumn(cPeriod,cPeriod,"Modelo",1,1)
+    oExcel:AddColumn(cPeriod,cPeriod,"Mala",1,1)
+    oExcel:AddColumn(cPeriod,cPeriod,"Produto",1,1)
+    oExcel:AddColumn(cPeriod,cPeriod,"Descrição",1,1)
+    oExcel:AddColumn(cPeriod,cPeriod,"Quantidade",1,1)
+    oExcel:AddColumn(cPeriod,cPeriod,"Valor",1,1)
+    
+    For nX := 1 to len(aRet)
+
+        oExcel:AddRow(cPeriod,cPeriod,{ aRet[nX,01],;
+                                        cvaltochar(stod(aRet[nX,02])),; 
+                                        aRet[nX,03],;
+                                        aRet[nX,04],;
+                                        aRet[nX,05],;
+                                        aRet[nX,06],;
+                                        aRet[nX,07],;
+                                        aRet[nX,08]})
+
+
+    Next nX
+
+    
+    
+EndIF 
+
+If len(aTitulos) > 0
+    oExcel:AddworkSheet(cTitulos) 
+
+    oExcel:AddTable (cTitulos,cTitulos)
+    oExcel:AddColumn(cTitulos,cTitulos,"Nº",1,1)
+    oExcel:AddColumn(cTitulos,cTitulos,"Emissão",1,1)
+    oExcel:AddColumn(cTitulos,cTitulos,"Mes Ref.",1,1)
+    oExcel:AddColumn(cTitulos,cTitulos,"Valor",1,1)
+    oExcel:AddColumn(cTitulos,cTitulos,"Dt_Pagto",1,1)
+    oExcel:AddColumn(cTitulos,cTitulos,"Vlr_Pago",1,1)
+
+    For nX := 1 to len(aTitulos)
+
+        oExcel:AddRow(cTitulos,cTitulos,{ aTitulos[nX,01],;
+                                        cvaltochar(stod(aTitulos[nX,02])),; 
+                                        aTitulos[nX,03],;
+                                        aTitulos[nX,04],;
+                                        aTitulos[nX,05],;
+                                        aTitulos[nX,06]})
+
+
+    Next nX
+     
+EndIf 
+
+oExcel:Activate()
+
+oExcel:GetXMLFile(cDir +cArqXls)
+
+WinExec('Explorer.exe /select,"' + substr(cDir,1,len(cDir)-1) + '"', 1)
+
+oExcelApp := MsExcel():New()
+oExcelApp:Destroy()
+
+Restarea(aArea)
 
 Return

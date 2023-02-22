@@ -19,5 +19,6 @@ aAdd(aRotina,{"Informações de Frete"			,	"U_ROBFAT01()"	,0,2,0,NIL})
 aAdd(aRotina,{"Liberações"			            ,	"U_ROBFAT05()"	,0,2,0,NIL})
 aAdd(aRotina,{"Tit. em Aberto"	    	        ,	"U_ROBFAT09()"	,0,2,0,NIL})
 aAdd(aRotina,{"Liberacao de Pedido"	    	    ,	"U_ROBFAT11()"	,0,2,0,NIL})
+aAdd(aRotina,{"Alterar Vendedor"	    	    ,	"U_ROBFAT12()"	,0,2,0,NIL})
 
 return 
