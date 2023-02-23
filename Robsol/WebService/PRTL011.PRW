@@ -125,6 +125,7 @@ WsMethod GET WsReceive CNPJ,PAGE,PAGESIZE,RAZAO_SOCIAL,NOME_FANTASIA,ENDERECO,BA
 			::SetResponse('"razao_social":"'+Alltrim(SA1->A1_NOME)+'",')
 			::SetResponse('"nome_fantasia":"'+Alltrim(SA1->A1_NREDUZ)+'",')
 			::SetResponse('"endereco":"'+Alltrim(SA1->A1_END)+'",')
+			::SetResponse('"complemento":"'+Alltrim(SA1->A1_COMPLEM)+'",')
 			::SetResponse('"bairro":"'+Alltrim(SA1->A1_BAIRRO)+'",')
 			::SetResponse('"cidade":"'+Alltrim(SA1->A1_MUN)+'",')
 			::SetResponse('"uf":"'+Alltrim(SA1->A1_EST)+'",')
@@ -200,7 +201,7 @@ WsMethod GET WsReceive CNPJ,PAGE,PAGESIZE,RAZAO_SOCIAL,NOME_FANTASIA,ENDERECO,BA
 			cQuery += "	SELECT TOP("+If(!Empty(cPage),cvaltochar(val(cPage)*val(nQtdPg)),nQtdPg)+")"
 		EndIf
 
-		cQuery += " A1_CGC,A1_COD,A1_LOJA,A1_NOME,A1_NREDUZ,A1_END,A1_BAIRRO,A1_MUN,"
+		cQuery += " A1_CGC,A1_COD,A1_LOJA,A1_NOME,A1_NREDUZ,A1_END,A1_COMPLEM,A1_BAIRRO,A1_MUN,"
 		cQuery += " A1_EST,A1_DDD,A1_TEL,A1_CEP,A1_CONTATO,A1_EMAIL,A1_ULTCOM,A1_XDDD,"
 		cQuery += " A1_MCOMPRA,A1_NROCOM,A1_SALDUP,A1_ATR,A1_MATR,A1_PAGATR,A1_XTELEFO,"
 		cQuery += " A1_RISCO,A1_LC,A1_LC-A1_SALDUP AS SALDO,A1_PRICOM,A1_INSCR,A1_MSBLQL,A1.R_E_C_N_O_ AS RECA1"
@@ -301,7 +302,8 @@ WsMethod GET WsReceive CNPJ,PAGE,PAGESIZE,RAZAO_SOCIAL,NOME_FANTASIA,ENDERECO,BA
 						TRB->A1_INSCR,;
 						TRB->RECA1,;
 						ALLTRIM(TRB->A1_XDDD)+ALLTRIM(TRB->A1_XTELEFO),;
-						Iif(Alltrim(TRB->A1_MSBLQL) == '1','sim','nao');
+						Iif(Alltrim(TRB->A1_MSBLQL) == '1','sim','nao'),;
+						TRB->A1_COMPLEM; //29
 					})
 			Dbskip()
 		ENDDO
@@ -326,6 +328,7 @@ WsMethod GET WsReceive CNPJ,PAGE,PAGESIZE,RAZAO_SOCIAL,NOME_FANTASIA,ENDERECO,BA
 					::SetResponse('"razao_social":"'+Alltrim(FwCutOff(aAux[nCont,03],.F.))+'",')
 					::SetResponse('"nome_fantasia":"'+Alltrim(FwCutOff(aAux[nCont,04],.F.))+'",')
 					::SetResponse('"endereco":"'+Alltrim(FwCutOff(aAux[nCont,05],.F.))+'",')
+					::SetResponse('"complemento":"'+Alltrim(FwCutOff(aAux[nCont,29],.F.))+'",')
 					::SetResponse('"bairro":"'+Alltrim(FwCutOff(aAux[nCont,06],.F.))+'",')
 					::SetResponse('"cidade":"'+Alltrim(FwCutOff(aAux[nCont,07],.F.))+'",')
 					::SetResponse('"uf":"'+Alltrim(aAux[nCont,08])+'",')
