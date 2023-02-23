@@ -84,7 +84,7 @@ WsMethod GET WsReceive CODIGO,COD_CLIENTE,LOJA_CLIENTE,NOTA WsService FieldServi
 
 	cQuery := "SELECT D2_DOC,D2_SERIE,D2_QUANT,D2_PRCVEN,D2_CF,D2_FILIAL,D2_EMISSAO,D2_COD,D2_ITEM,"
 	cQuery += " X5_DESCRI,D2_BASEICM,D2_VALICM,D2_VALIPI,F2_CHVNFE,M0_NOMECOM,"
-	cQuery += " M0_ENDENT,M0_COMPENT,M0_BAIRENT,M0_CIDENT,M0_ESTENT,M0_CGC,M0_INSC"
+	cQuery += " M0_ENDENT,M0_COMPENT,M0_BAIRENT,M0_CIDENT,M0_ESTENT,M0_CGC,M0_INSC,M0_CEPENT "
 	cQuery += " FROM "+RetSQLName("SD2")+" D2"
 	cQuery += " INNER JOIN "+RetSQLName("SF2")+" F2 ON F2_FILIAL=D2_FILIAL"
 	cQuery += "    AND F2_DOC=D2_DOC AND F2_SERIE=D2_SERIE AND F2_CLIENT=D2_CLIENTE"
@@ -133,13 +133,14 @@ WsMethod GET WsReceive CODIGO,COD_CLIENTE,LOJA_CLIENTE,NOTA WsService FieldServi
 					TRB->M0_INSC,;
 					TRB->D2_FILIAL,;
 					TRB->D2_COD,;
-					TRB->D2_ITEM})
+					TRB->D2_ITEM,;
+					TRB->M0_CEPENT})
 		Dbskip()
 	EndDo
 
 	cQuery := "SELECT Z53_DOC,Z53_SERIE,Z53_QUANT,Z53_PRCVEN,Z53_CF,Z53_FILIAL,Z53_EMISSA,Z53_COD,Z53_ITEM,"
 	cQuery += " ' ' AS X5_DESCRI,Z53_BASEIC,Z53_VALICM,Z53_VALIPI,Z52_CHVNFE,M0_NOMECOM,"
-	cQuery += " M0_ENDENT,M0_COMPENT,M0_BAIRENT,M0_CIDENT,M0_ESTENT,M0_CGC,M0_INSC"
+	cQuery += " M0_ENDENT,M0_COMPENT,M0_BAIRENT,M0_CIDENT,M0_ESTENT,M0_CGC,M0_INSC,M0_CEPENT "
 	cQuery += " FROM "+RetSQLName("Z53")+" Z53"
 	cQuery += " INNER JOIN "+RetSQLName("Z52")+" Z52 ON Z52_FILIAL=Z53_FILIAL"
 	cQuery += "    AND Z52_DOC=Z53_DOC AND Z52_SERIE=Z53_SERIE AND Z52_CLIENT=Z53_CLIENT"
@@ -187,7 +188,8 @@ WsMethod GET WsReceive CODIGO,COD_CLIENTE,LOJA_CLIENTE,NOTA WsService FieldServi
 					TRB->M0_INSC,;
 					TRB->Z53_FILIAL,;
 					TRB->Z53_COD,;
-					TRB->Z53_ITEM})
+					TRB->Z53_ITEM,;
+					TRB->M0_CEPENT})
 		Dbskip()
 	EndDo
 	
@@ -209,6 +211,7 @@ WsMethod GET WsReceive CODIGO,COD_CLIENTE,LOJA_CLIENTE,NOTA WsService FieldServi
 		::SetResponse('"endereco_empresa":"'+aAux[nCont,12]+'",')
 		::SetResponse('"bairro_empresa":"'+aAux[nCont,13]+'",')
 		::SetResponse('"cidade_empresa":"'+aAux[nCont,14]+'",')
+		::SetResponse('"cep_empresa":"'+aAux[nCont,21]+'",')
 		::SetResponse('"estado_empresa":"'+aAux[nCont,15]+'",')
 		::SetResponse('"cnpj":"'+aAux[nCont,16]+'",')
 		::SetResponse('"inscr_estadual":"'+aAux[nCont,17]+'",')

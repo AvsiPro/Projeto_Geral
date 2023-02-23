@@ -316,7 +316,9 @@ export default function Sections({nameSec,item,vendedor,prdProd,dataBack,reset,h
 
     function selectCli(){
         if(item.bloqueado === 'sim'){
-            alert('Cliente bloqueado, não é possível prosseguir com o pedido.')
+            if(prdProd){
+                alert('Cliente bloqueado, não é possível prosseguir com o pedido.')
+            }
 
         } else {
             if (prdProd){

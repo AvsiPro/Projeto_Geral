@@ -25,7 +25,7 @@
 ±±³              ³  /  /  ³                                               ³±±
 ±±³              ³  /  /  ³                                               ³±±
 ±±ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
-±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±± 
 ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß*/
 
 User Function ROBFAT05
@@ -39,7 +39,17 @@ Local aStatCm   := {'0=Selecione',;
          '4=Liberar para estoque',;
                     '5=Impresso',;
                      '6=Cancelado'}
+Local aStatCm2  := {'1=Informacoes cadastrais',;
+                         '2=Limite de credito',;
+                         '3=Boletos em atraso',;
+                            '4=Aguardando blu',;
+                            '5=Aguardando pix',;
+                            '6=Aguardando chq',;
+                  '7=Aguardando representante',;
+                                    '8=Serasa',;
+                                     '9=Outros'}
 Local aParam    := { { 2, "Status Comissao", 1, aStatCm, 60, , .T. } }
+Local aParam2   := { { 2, "Informacao Complementar", 1, aStatCm2, 120, , .T. } }
 Local cBloqueia := ""
 
 SetPrvt("oDlg1","oGrp1","oGrp2","oFld1","oSay1","oSay2")
@@ -50,13 +60,14 @@ Private oList2
 Private oList3
 Private oList4
 Private oList5
-Private aList1  := {}
-Private aList2  := {}
-Private aList3  := {}
-Private aList4  := {}
-Private aList5  := {}
-Private cMsgObs := Alltrim(SC5->C5_XOBSLIB)
-Private cMsgNew := space(1024)
+Private aList1   := {}
+Private aList2   := {}
+Private aList3   := {}
+Private aList4   := {}
+Private aList5   := {}
+Private cMsgObs  := StrTran(StrTran(AllTrim(SC5->C5_XOBSLIB), "<mpen>", ""), "</mpen>", "")
+Private cMsgObs2 := Alltrim(SC5->C5_XOBSLIB)
+Private cMsgNew  := space(1024)
 
 
 If !Empty(SC5->C5_NOTA).Or.SC5->C5_LIBEROK=='E' .And. Empty(ALLTRIM(SC5->C5_BLQ))
@@ -205,6 +216,13 @@ If nOpc == 1
     ElseIf MV_PAR01 == 3
         cStatus := 'C'
         cStaOpc := 'Aguardando resposta cliente'
+
+        If ParamBox(aParam2, "Informe o motivo da pendencia!")
+            MV_PAR01 := VAL(MV_PAR01)
+        Else 
+            Return
+        EndIf
+
     ElseIf MV_PAR01 == 4
         cStatus := 'H'
         cStaOpc := 'Liberado para estoque'
@@ -216,17 +234,22 @@ If nOpc == 1
         cStaOpc   := 'Cancelado'
         cBloqueia := '1'
     EndIf
-
+//053037
     cMsgGrv := 'Data '+cvaltochar(dDatabase)+' Hora '+cvaltochar(time())+CRLF
     cMsgGrv += 'Usuário '+cusername+CRLF 
     cMsgGrv += 'Opção selecionada '+cStaOpc+CRLF
     cMsgGrv += 'Observações anotadas '+cMsgNew+CRLF
+
+    If cStatus == 'C'
+        cMsgGrv += '<mpen>'+SubStr(aStatCm2[MV_PAR01],3)+'</mpen>'+CRLF
+    EndIf
+    
     RecLock("SC5", .F.)
-    SC5->C5_XOBSLIB := Alltrim(cMsgObs)+cMsgGrv
-    SC5->C5_ZZSTATU := cStatus
-    if cBloqueia != ""
-        SC5->C5_MSBLQL := cBloqueia
-    endif
+        SC5->C5_XOBSLIB := Alltrim(cMsgObs2)+cMsgGrv
+        SC5->C5_ZZSTATU := cStatus
+        if cBloqueia != ""
+            SC5->C5_MSBLQL := cBloqueia
+        endif
     SC5->(MsUnlock())    
 EndIf 
 
