@@ -437,22 +437,26 @@ WHILE nPage > 0
         aLinhas := strtokarr(cValor,"},{")
 
         For nX := 1 to len(aAux2)
-            Aadd(aAux,aAux2[nX]:COIL)
-            Aadd(aAux,aAux2[nX]:OCCURRED_AT)
-            Aadd(aAux,cvaltochar(aAux2[nX]:QUANTITY))
-            Aadd(aAux,cvaltochar(aAux2[nX]:VALUE))
-            
-            If aAux2[nX]:GOOD:NAME != NIL
-                aCod := separa(aAux2[nX]:GOOD:NAME,"#")
-                //Aadd(aAux,If(aAux2[nX]:GOOD:UPC_CODE==nil,'null',aAux2[nX]:GOOD:UPC_CODE))
-                    Aadd(aAux,Alltrim(aCod[2]))
-                //EndIf 
+            If aAux2[nX]:GOOD:CATEGORY_ID != NIL
                 
-            ELSE
-                Aadd(aAux,'Item Nao encontrado')
-            EndIf
+                Aadd(aAux,aAux2[nX]:COIL)
+                Aadd(aAux,aAux2[nX]:OCCURRED_AT)
+                Aadd(aAux,cvaltochar(aAux2[nX]:QUANTITY))
+                Aadd(aAux,cvaltochar(aAux2[nX]:VALUE))
+                
+                If aAux2[nX]:GOOD:NAME != NIL
+                    aCod := separa(aAux2[nX]:GOOD:NAME,"#")
+                    //Aadd(aAux,If(aAux2[nX]:GOOD:UPC_CODE==nil,'null',aAux2[nX]:GOOD:UPC_CODE))
+                        Aadd(aAux,Alltrim(aCod[2]))
+                    //EndIf 
+                    
+                ELSE
+                        Aadd(aAux,'Item Nao encontrado')
+                    
+                EndIf
 
-            Aadd(aHeader[nPos],aAux)
+                Aadd(aHeader[nPos],aAux)
+            ENDIF
              
             aAux := {}
         Next nX       
