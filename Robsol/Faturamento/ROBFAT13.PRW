@@ -62,12 +62,12 @@ Local aArea	 :=	GetArea()
 Local aCabec := {}
 Local aItens := {}
 Local aLinha := {}
-Local cDoc   := "000058"
+Local cDoc   := ""
 Local aAux   :=  {}
 Local aFilel :=  {}
 Local nCont  := 1
 
-Private cArqTxt 	:=	'C:\000\nfcompl.csv' //MV_PAR01
+Private cArqTxt 	:=	MV_PAR01  //'C:\000\nfcompl.csv' //
 Private nHandle 	:=	FT_FUse(cArqTxt)
 
 
@@ -113,13 +113,15 @@ For nCont := 1 to len(aFilel)
         
             If !lMsErroAuto    
                 ConOut("Incluido com sucesso! ")      
-            Else       
+            Else  
+                MostraErro()     
                 ConOut("Erro na inclusao!")
             EndIf   
         EndIf
 
         cDoc := aFilel[nCont,13]
         cItem := '01'
+        aCabec := {}
         aItens := {}
         cNota := ''
         DbSelectArea("SX5")
@@ -171,15 +173,6 @@ For nCont := 1 to len(aFilel)
     
     aadd(aItens,aLinha)
     
-    //MSExecAuto ({|x,y| MATA920(aCabec,aItens)}, aCabec, aItens, 3) 
-    /*
-    If !lMsErroAuto    
-        ConOut("Incluido com sucesso! "+cDoc)      
-    Else       
-        ConOut("Erro na inclusao!")
-    EndIf  */
-
-
 Next nCont
  
 If len(aCabec) > 0
@@ -190,6 +183,7 @@ If len(aCabec) > 0
     If !lMsErroAuto    
         ConOut("Incluido com sucesso! "+cDoc)      
     Else       
+        MostraErro()
         ConOut("Erro na inclusao!")
     EndIf
 EndIf 
