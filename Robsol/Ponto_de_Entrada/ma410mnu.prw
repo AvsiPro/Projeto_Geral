@@ -20,5 +20,6 @@ aAdd(aRotina,{"Liberações"			            ,	"U_ROBFAT05()"	,0,2,0,NIL})
 aAdd(aRotina,{"Tit. em Aberto"	    	        ,	"U_ROBFAT09()"	,0,2,0,NIL})
 aAdd(aRotina,{"Liberacao de Pedido"	    	    ,	"U_ROBFAT11()"	,0,2,0,NIL})
 aAdd(aRotina,{"Alterar Vendedor"	    	    ,	"U_ROBFAT12()"	,0,2,0,NIL})
+AAdd(aRotina,{"Log Alteração"                   ,   "U_ROBGEN12('SC5',SC5->C5_NUM,'SC6')", 2, 0 } )
 
 return 

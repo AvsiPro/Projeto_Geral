@@ -15,7 +15,8 @@
 */
 
 User Function MA030TOK()
-
+//USAR ESTE AGORA
+//https://tdn.totvs.com/pages/releaseview.action?pageId=616215550
 Local lRet	:=	.T.
 Local nX    :=  0
 Local aLogA	:=	{}
