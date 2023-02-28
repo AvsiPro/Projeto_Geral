@@ -30,7 +30,7 @@
 
 User Function ROBFAT05
 
-Local nOpc      := 0
+Local nOpc,nX   := 0
 Local lOk       := .F.
 Local aStatCm   := {'0=Selecione',;
                     '1=Conferido',;
@@ -194,7 +194,7 @@ If nOpc == 1
     lOk := .F.
     While !lOk
         If ParamBox(aParam ,"Selecione uma opção",,,,.F.,420,100)
-            MV_PAR01 := VAL(MV_PAR01)
+            MV_PAR01 := IIF(VALTYPE(MV_PAR01) != 'N',VAL(MV_PAR01),MV_PAR01)
             If MV_PAR01 <> 0
                 lOk := .T.
             EndIf 
@@ -218,7 +218,7 @@ If nOpc == 1
         cStaOpc := 'Aguardando resposta cliente'
 
         If ParamBox(aParam2, "Informe o motivo da pendencia!")
-            MV_PAR01 := VAL(MV_PAR01)
+            MV_PAR01 := IIF(VALTYPE(MV_PAR01) != 'N',VAL(MV_PAR01),MV_PAR01)
         Else 
             Return
         EndIf
@@ -238,11 +238,30 @@ If nOpc == 1
     cMsgGrv := 'Data '+cvaltochar(dDatabase)+' Hora '+cvaltochar(time())+CRLF
     cMsgGrv += 'Usuário '+cusername+CRLF 
     cMsgGrv += 'Opção selecionada '+cStaOpc+CRLF
-    cMsgGrv += 'Observações anotadas '+cMsgNew+CRLF
-
+    
     If cStatus == 'C'
-        cMsgGrv += '<mpen>'+SubStr(aStatCm2[MV_PAR01],3)+'</mpen>'+CRLF
+        cMsgGrv += 'Motivo de pendencia <mpen>'+SubStr(aStatCm2[MV_PAR01],3)+'</mpen>'+CRLF
+    Else
+
+        cAuxObs := FwCutOff(cMsgObs2)
+        For nX := 1 To len(cAuxObs)
+
+            If At("<mpen>",  cAuxObs, nX) != 0
+                nPosIni  := At("<mpen>",  cAuxObs, nX)
+                nPosFim  := At("</mpen>",  cAuxObs, nX) + Len("</mpen>")
+                nLeitura := nPosFim - nPosIni
+
+                cStat    := SubStr(cAuxObs, nPosIni, nLeitura)
+            EndIf
+        Next nX
+
+        If !Empty(cStat)
+            cMsgGrv += 'Motivo de pendencia '+cStat +CRLF
+        EndIf
     EndIf
+
+    cMsgGrv += 'Observações anotadas '+cMsgNew+CRLF
+    cMsgGrv += '--------------------------------------------'+CRLF
     
     RecLock("SC5", .F.)
         SC5->C5_XOBSLIB := Alltrim(cMsgObs2)+cMsgGrv
