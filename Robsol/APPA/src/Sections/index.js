@@ -316,7 +316,9 @@ export default function Sections({nameSec,item,vendedor,prdProd,dataBack,reset,h
 
     function selectCli(){
         if(item.bloqueado === 'sim'){
-            alert('Cliente bloqueado, não é possível prosseguir com o pedido.')
+            if(prdProd){
+                alert('Cliente bloqueado, não é possível prosseguir com o pedido.')
+            }
 
         } else {
             if (prdProd){
@@ -412,7 +414,18 @@ export default function Sections({nameSec,item,vendedor,prdProd,dataBack,reset,h
                             }
 
                             <Text style={styles.cardSubTitleP}>{'Razão Social: '+item.razao_social.trim()}</Text>
+                            
+                            <View style={{marginTop:10}}>
+                                <View style={{flexDirection:'row',justifyContent:'space-between'}}>
+                                    <Text style={styles.cardSubTitleP}>{'Qtd. Vendida: '+item.quant_vendida}</Text>
+                                    <Text style={styles.cardSubTitleP}>{'Vlr. Vendido: R$ '+item.valor_total_vendido}</Text>
+                                </View>
 
+                                <View style={{flexDirection:'row',justifyContent:'space-between'}}>
+                                    <Text style={styles.cardSubTitleP}>{'Qtd. Faturada: '+item.quant_fatura}</Text>
+                                    <Text style={styles.cardSubTitleP}>{'Vlr. Faturado: R$ '+item.valor_total_fatura}</Text>
+                                </View>
+                            </View>
                             
                             { item.status.trim() === 'Editando' &&
                                 <Text style={{fontSize:18,fontWeight:'bold',marginTop:10}}>Clique aqui para continuar o Pedido</Text>

@@ -97,7 +97,7 @@ export default function SaleCli({route,navigation}){
                 'pageSize': 10
             } 
         })
-
+        
         const aResult = getNewList(list,response.data["items"])
 
         setList(aResult)
@@ -193,6 +193,7 @@ export default function SaleCli({route,navigation}){
                 fone2: yup.string().required("Informe o Telefone..."),
                 cep: yup.string().required("Informe o CEP..."),
                 endereco: yup.string().required("Informe o Endereço..."),
+                complemento: yup.string(),
                 bairro: yup.string().required("Informe o Bairro..."),
                 cidade: yup.string().required("Informe a Cidade..."),
                 uf: yup.string().required("Informe a UF..."),
@@ -664,6 +665,24 @@ export default function SaleCli({route,navigation}){
                                             onBlur={onBlur}
                                             style={[styles.inputForm, errors.endereco ? { borderColor:'#D13434' } : { borderColor:'#2F8BD8'}]}
                                             placeholder={errors.endereco && errors.endereco?.message}
+                                            placeholderTextColor='#FA7E7E'
+                                        />
+                                    </View>
+                                )}
+                            />
+
+                            <Controller
+                                control={control}
+                                name='complemento'
+                                render={({field: {onChange,onBlur,value}})=>(
+                                    <View>
+                                        <Text style={{color:'#AAADAE',fontWeight:'bold'}}>Complemento *</Text>
+                                        <TextInput
+                                            onChangeText={onChange}
+                                            value={value}
+                                            onBlur={onBlur}
+                                            style={[styles.inputForm, errors.complemento ? { borderColor:'#D13434' } : { borderColor:'#2F8BD8'}]}
+                                            placeholder={errors.complemento && errors.complemento?.message}
                                             placeholderTextColor='#FA7E7E'
                                         />
                                     </View>

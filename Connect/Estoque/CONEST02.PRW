@@ -39,10 +39,13 @@ Private aList3  :=  {}
 Private aList3B :=  {}
 Private aList4  :=  {}
 Private aList4B :=  {}
+Private aList5  :=  {}
+Private aList5B :=  {}
 Private oList1
 Private oList2
 Private oList3
 Private oList4
+Private oList5
 Private aConsumo := {}
 
 IF Select("SM0") == 0
@@ -70,39 +73,25 @@ If len(aList4) < 1
     Aadd(aList4,{'','','','',''})
 EndIf
 
-oDlg1      := MSDialog():New( 053,216,625,1475,"Fechamento Estoque Ponto de Venda",,,.F.,,,,,,.T.,,,.T. )
+If len(aList5) < 1
+    Aadd(aList5,{'','','','',''})
+EndIf 
 
-oGrp1      := TGroup():New( 004,008,132,252,"Clientes",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
-    //oBrw1      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{012,012,124,248},,, oGrp1 ) 
-    oList1 	   := TCBrowse():New(012,012,236,115,, {'Cliente','Loja','Nome'},{30,20,50},;
+oDlg1      := MSDialog():New( 053,216,725,1620,"Fechamento Estoque Ponto de Venda",,,.F.,,,,,,.T.,,,.T. )
+
+oGrp1      := TGroup():New( 004,008,142,302,"Clientes",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
+    
+    oList1 	   := TCBrowse():New(012,012,286,126,, {'Cliente','Loja','Nome'},{30,20,50},;
 	                            oGrp1,,,,{|| FHelp(oList1:nAt)},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
     oList1:SetArray(aList1)
     oList1:bLine := {||{aList1[oList1:nAt,01],;
                         aList1[oList1:nAt,02],; 
                         aList1[oList1:nAt,03]}}
-                        
-oGrp2      := TGroup():New( 004,256,132,616,"Consumo",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
-    //oBrw2      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{012,260,128,612},,, oGrp2 ) 
-    oList2 	   := TCBrowse():New(012,260,350,115,, {'Produto','Descricao','Consumo'},{40,50,30},;
-	                            oGrp2,,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
-    oList2:SetArray(aList2)
-    oList2:bLine := {||{aList2[oList2:nAt,01],;
-                        aList2[oList2:nAt,02],; 
-                        aList2[oList2:nAt,03]}}
 
-oGrp3      := TGroup():New( 136,008,252,252,"Ativos Contrato",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
-    //oBrw3      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{144,012,248,248},,, oGrp3 ) 
-    oList3 	   := TCBrowse():New(144,012,236,105,, {'Ativo','Ponto Venda','Contrato'},{40,50,60},;
-	                            oGrp3,,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
-    oList3:SetArray(aList3)
-    oList3:bLine := {||{aList3[oList3:nAt,01],;
-                        aList3[oList3:nAt,02],; 
-                        aList3[oList3:nAt,03]}}
-
-oGrp4      := TGroup():New( 136,256,252,616,"Remessas X Consumo X Estoques",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
-    //oBrw4      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{144,260,248,612},,, oGrp4 ) 
-    oList4 	   := TCBrowse():New(144,260,350,105,, {'Produto','Descricao','Ponto Venda','Remessa','Consumo','Saldo'},{30,40,30,30,30,30},;
+oGrp4      := TGroup():New( 004,306,142,690,"Remessas X Consumo X Estoques",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
+    oList4 	   := TCBrowse():New(012,310,375,126,, {'Produto','Descricao','Ponto Venda','Remessa','Consumo','Saldo'},{30,40,30,30,30,30},;
 	                            oGrp4,,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
+
     oList4:SetArray(aList4)
     oList4:bLine := {||{aList4[oList4:nAt,01],;
                         aList4[oList4:nAt,02],;
@@ -111,23 +100,47 @@ oGrp4      := TGroup():New( 136,256,252,616,"Remessas X Consumo X Estoques",oDlg
                         aList4[oList4:nAt,10],;  
                         aList4[oList4:nAt,03]}}
 
-    MENU oMenuP POPUP 
-    MENUITEM "Consumo x Estrutura"   ACTION (cnsvsest())
-    ENDMENU                                                                           
+oGrp3      := TGroup():New( 146,008,292,212,"Ativos Contrato",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
 
-    oList2:bRClicked := { |oObject,nX,nY| oMenuP:Activate( nX, (nY-10), oObject ) }
+    oList3 	   := TCBrowse():New(154,012,196,135,, {'Ativo','Ponto Venda','Contrato'},{40,50,60},;
+	                            oGrp3,,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
+    oList3:SetArray(aList3)
+    oList3:bLine := {||{aList3[oList3:nAt,01],;
+                        aList3[oList3:nAt,02],; 
+                        aList3[oList3:nAt,03]}}
 
-//oBtn1      := TButton():New( 256,580,"Sair",oDlg1,{||oDlg1:end()},037,012,,,,.T.,,"",,,,.F. )
+oGrp2      := TGroup():New( 146,216,292,435,"Consumo",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
+    oList2 	   := TCBrowse():New(154,220,210,135,, {'Produto','Descricao','Consumo'},{40,50,30},;
+	                            oGrp2,,,,{|| FHelp2(oList2:nAt)},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
+  
+    oList2:SetArray(aList2)
+    oList2:bLine := {||{aList2[oList2:nAt,01],;
+                        aList2[oList2:nAt,02],; 
+                        aList2[oList2:nAt,03]}}
+
+oGrp5      := TGroup():New( 146,439,292,690,"Estrutura x Consumo",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
+    oList5 	   := TCBrowse():New(154,442,243,135,, {'Produto','Descricao','UM','Consumo'},{30,30,20,30},;
+	                            oGrp5,,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
+  
+    oList5:SetArray(aList5)
+    oList5:bLine := {||{aList5[oList5:nAt,02],;
+                        aList5[oList5:nAt,03],; 
+                        aList5[oList5:nAt,04],;
+                        aList5[oList5:nAt,05]}}
+
+
 //Botao de faturamento
 oMenu := TMenu():New(0,0,0,0,.T.)
-// Adiciona itens no Menu
-oTMenuIte1   := TMenuItem():New(oDlg1,"Devoluções",,,,{|| Processa({|| devolpv(),"Gerando Devoluções"})},,,,,,,,,.T.)
-oTMenuIte7   := TMenuItem():New(oDlg1,"Sair",,,,{|| oDlg1:end()},,,,,,,,,.T.)
-oMenu:Add(oTMenuIte1)
-oMenu:Add(oTMenuIte7)
-oTButton1 := TButton():New( 256, 580, "Opções",oDlg1,{||},037,12,,,.F.,.T.,.F.,,.F.,,,.F. )
-// Define botão no Menu
-oTButton1:SetPopupMenu(oMenu)
+    // Adiciona itens no Menu
+    oTMenuIte1   := TMenuItem():New(oDlg1,"Devoluções",,,,{|| Processa({|| devolpv(),"Gerando Devoluções"})},,,,,,,,,.T.)
+    oTMenuIte7   := TMenuItem():New(oDlg1,"Sair",,,,{|| oDlg1:end()},,,,,,,,,.T.)
+    oMenu:Add(oTMenuIte1)
+    oMenu:Add(oTMenuIte7)
+    
+    oTButton1 := TButton():New( 310, 650, "Opções",oDlg1,{||},037,12,,,.F.,.T.,.F.,,.F.,,,.F. )
+
+    // Define botão no Menu
+    oTButton1:SetPopupMenu(oMenu)
 
 oDlg1:Activate(,,,.T.)
 
@@ -184,7 +197,7 @@ While !EOF()
     
     If nPos2 == 0
         Aadd(aList2B,{  TRB->D2_COD,;
-                        TRB->B1_DESC,;
+                        Alltrim(TRB->B1_DESC),;
                         TRB->CONSUMO,;
                         TRB->D2_CLIENTE,;
                         TRB->D2_LOJA})
@@ -200,9 +213,10 @@ While !EOF()
 EndDo 
 
 For nCont := 1 to len(aProds)
-    cQuery := "SELECT G1_COD,G1_COMP,G1_QUANT"
-    cQuery += " FROM "+RetSQLName("SG1")
-    cQuery += " WHERE G1_FILIAL='"+xFilial("SG1")+"' AND G1_COD='"+aProds[nCont]+"' AND D_E_L_E_T_=' '"
+    cQuery := "SELECT G1_COD,G1_COMP,B1_DESC,B1_UM,B1_SEGUM,G1_QUANT"
+    cQuery += " FROM "+RetSQLName("SG1")+" G1"
+    cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD=G1_COMP AND B1.D_E_L_E_T_=' '"
+    cQuery += " WHERE G1_FILIAL='"+xFilial("SG1")+"' AND G1_COD='"+aProds[nCont]+"' AND G1.D_E_L_E_T_=' '"
 
     If Select("TRB") > 0
         dbSelectArea("TRB")
@@ -219,6 +233,8 @@ For nCont := 1 to len(aProds)
         If Ascan(aConsumo,{|x| x[1]+x[2] == TRB->G1_COD+TRB->G1_COMP}) == 0
             Aadd(aConsumo,{ TRB->G1_COD,;
                             TRB->G1_COMP,;
+                            Alltrim(TRB->B1_DESC),;
+                            Alltrim(TRB->B1_UM)+"/"+Alltrim(TRB->B1_SEGUM),;
                             TRB->G1_QUANT})
         EndIf
         Dbskip()
@@ -293,6 +309,7 @@ EndDo
 
 Asort(aList1,,,{|x,y| x[3] < y[3]})
 
+SldSRem()
 CalcSld()
 CalcCns()
 
@@ -318,10 +335,11 @@ Local aFilFat   :=  {"0101","0102"}
 Local cFilFat   :=  aFilFat[1]
 Local cMesFat   :=  ""
 Local aMeses    :=  {"1=Janeiro","2=Fevereiro","3=Março","4=Abril","5=Maio","6=Junho","7=Julho","8=Agosto","9=Setembro","10=Outubro","11=Novembro","12=Dezembro"}
-
+Local cAno      :=  cvaltochar(year(ddatabase))
 
 aAdd( aPergs ,{2,"Filial : "		,cFilFat,aFilFat,080,'',.T.})  
 aAdd( aPergs ,{2,"Mês Fechamento?"	,cMesFat,aMeses,080,'',.T.})
+aAdd( aPergs ,{1,"Ano?"				,cAno	,"@!",'.T.',"",'.T.',40,.T.})  
 
 If !ParamBox(aPergs ,"Parametros ",aRet)
 	Return .F.
@@ -414,6 +432,49 @@ RestArea(aArea)
 
 Return
 
+/*/{Protheus.doc} Fhelp2
+nLinhadescription)
+    @type  Static F
+    uthor user
+    @since 25/02/2023
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function Fhelp2(nLinha)
+
+Local aArea := GetArea()
+Local nCont := 0
+
+aList5 := {}
+
+For nCont := 1 to len(aConsumo)
+    If Alltrim(aConsumo[nCont,01]) == Alltrim(aList2[nLinha,01])
+        Aadd(aList5,aConsumo[nCont])
+    EndIf 
+Next nCont 
+
+If len(aList5) < 1 
+    Aadd(aList5,{'','','','',''})
+EndIf 
+
+oList5:SetArray(aList5)
+oList5:SetArray(aList5)
+oList5:bLine := {||{aList5[oList5:nAt,02],;
+                    aList5[oList5:nAt,03],; 
+                    aList5[oList5:nAt,04],;
+                    aList5[oList5:nAt,05]}}
+
+oList5:refresh()
+oDlg1:refresh()
+
+RestArea(aArea)
+
+Return
+
 /*/{Protheus.doc} CalcSld
     (long_description)
     @type  Static Function
@@ -469,28 +530,35 @@ For nCont1 := 1 to len(aList4B)
     nPos := Ascan(aList2B,{|x| Alltrim(x[4]) == Alltrim(aList4B[nCont1,04])})
     If nPos > 0
         For nCont2 := nPos to len(aList2B)
-            nPos  := Ascan(aConsumo,{|x| Alltrim(x[1])+Alltrim(x[2]) == Alltrim(aList2B[nCont2,01])+Alltrim(aList4B[nCont1,01])})
-            If nPos > 0
-                nCons := aList2B[nCont2,03] * aConsumo[nPos,03]
-            else
-                nCons := 99999
-            EndIf 
-            aList4B[nCont1,10] := nCons
             If aList2B[nCont2,04] <> aList4B[nCont1,04]
                 EXIT
             EndIf
+            
+            nPos  := Ascan(aConsumo,{|x| Alltrim(x[1])+Alltrim(x[2]) == Alltrim(aList2B[nCont2,01])+Alltrim(aList4B[nCont1,01])})
+            
+            nCons := 0
+
+            If nPos > 0
+                nCons := aList2B[nCont2,03] * aConsumo[nPos,05]
+            /*else
+                nCons := 99999*/
+            EndIf 
+
+            If nCons > 0
+                aList4B[nCont1,10] += nCons
+            EndIf 
+            
         Next nCont2
     EndIf
 Next nCont1
 
 Return
 
-
-/*/{Protheus.doc} cnsvsest
+/*/{Protheus.doc} SldSRem
     (long_description)
     @type  Static Function
     @author user
-    @since 06/02/2023
+    @since 25/02/2023
     @version version
     @param param_name, param_type, param_descr
     @return return_var, return_type, return_description
@@ -498,51 +566,54 @@ Return
     (examples)
     @see (links_or_references)
 /*/
-Static Function cnsvsest()
+Static Function SldSRem()
 
-Local oDlg2,oSay1,oSay2,oGrp1b,oBtn1b
-Local aAux := {}
-Local nCont
-Local nPos := Ascan(aConsumo,{|x| x[1] == aList2[oList2:nAt,01]})
-Local oAux 
+Local aArea     :=  GetArea()
+Local nCont     :=  0
+Local cQuery 
 
-If nPos > 0
-    For nCont := nPos to len(aConsumo )
-        If aConsumo[nCont,01] <> aList2[oList2:nAt,01]
-            exit 
+For nCont := 1 to len(aList3B)
+
+    cQuery := "SELECT B2_COD,B1_DESC,0 AS REMESSA,A1_NOME,B2_LOCAL,NNR_DESCRI,B2_QATU"
+    cQuery += " FROM "+RetSQLName("SB2")+" B2"
+    cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD=B2_COD AND B1.D_E_L_E_T_=' '"
+    cQuery += " INNER JOIN "+RetSQLName("NNR")+" NNR ON NNR_FILIAL=B2_FILIAL AND NNR_CODIGO=B2_LOCAL AND NNR.D_E_L_E_T_=' '"
+    cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_COD=NNR_CODCLI AND A1_LOJA=NNR_LOJCLI AND A1.D_E_L_E_T_=' '"
+    cQuery += " WHERE B2_FILIAL='"+Alltrim(MV_PAR01)+"' AND B2_LOCAL='"+aList3B[nCont,02]+"'"
+
+    If Select("TRB") > 0
+        dbSelectArea("TRB")
+        dbCloseArea()
+    EndIf
+
+    cQuery:= ChangeQuery(cQuery)
+
+    DbUseArea(.T.,"TOPCONN",TcGenQry(,,cQuery),'TRB',.F.,.T.) 
+
+    DbSelectArea("TRB")   
+
+    While !EOF()
+        If Ascan(aList4B,{|x| x[1]+x[7] == Alltrim(TRB->B2_COD)+Alltrim(TRB->B2_LOCAL)}) == 0
+            Aadd(aList4B,{  Alltrim(TRB->B2_COD),;
+                    Alltrim(TRB->B1_DESC),;
+                    TRB->REMESSA,;
+                    aList3B[nCont,04],;
+                    aList3B[nCont,05],;
+                    TRB->A1_NOME,;
+                    TRB->B2_LOCAL,;
+                    Alltrim(TRB->NNR_DESCRI),;
+                    TRB->B2_QATU,;
+                    0})
         EndIf 
-        
-        Aadd(aAux,{aConsumo[nCont,02],;
-                    Alltrim(Posicione("SB1",1,xFilial("SB1")+aConsumo[nCont,02],"B1_DESC")),;
-                    aConsumo[nCont,03]})
+        Dbskip()
+    EndDo 
 
-        
-    Next nCont
+Next nCont
 
-    If len(aAux) > 0
-        oDlg2      := MSDialog():New( 092,232,446,763,"Consumo X Estrutura",,,.F.,,,,,,.T.,,,.T. )
+RestArea(aArea)
 
-        oSay1      := TSay():New( 004,032,{||aList2[oList2:nAt,01]},oDlg2,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
-        oSay2      := TSay():New( 004,072,{||aList2[oList2:nAt,02]},oDlg2,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,152,008)
-
-        oGrp1b      := TGroup():New( 020,008,152,267,"Estrutura",oDlg2,CLR_BLACK,CLR_WHITE,.T.,.F. )
-            //oBrw1      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{028,012,148,236},,, oGrp1 ) 
-            oAux 	   := TCBrowse():New(028,012,248,115,, {'Produto','Descricao','Qtd Consumo dose'},{30,60,30},;
-	                            oGrp1b,,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
-            oAux:SetArray(aAux)
-            oAux:bLine := {||{  aAux[oAux:nAt,01],;
-                                aAux[oAux:nAt,02],; 
-                                aAux[oAux:nAt,03]}}
-
-        oBtn1b      := TButton():New( 156,096,"Sair",oDlg2,{||oDlg2:end()},037,012,,,,.T.,,"",,,,.F. )
-
-        oDlg2:Activate(,,,.T.)
-    EndIf 
-Else 
-    MsgAlert("Sem estrutura cadastrada")
-EndIf 
-   
 Return
+
 
 /*/{Protheus.doc} devolpv
     (long_description)
@@ -557,5 +628,101 @@ Return
     @see (links_or_references)
 /*/
 Static Function devolpv()
-    
+
+Local aArea :=  GetArea()
+Local nCont 
+Local aAux  :=  {}
+Local nX 
+Local aQtdx :=  {}
+
+For nCont := 1 to len(aList1)
+
+    nPos := Ascan(aList4B,{|x| Alltrim(x[4]) == Alltrim(aList1[nCont,01])})
+
+    If nPos > 0 
+
+        Aadd(aAux,{ aList1[nCont,01],;
+                    aList1[nCont,02]})
+
+        For nX := nPos to len(aList4B)
+
+            If Alltrim(aList4B[nX,04]) <> Alltrim(aList1[nCont,01])
+                EXIT
+            EndIf 
+
+            If aList4B[nX,10] > 0
+                Aadd(aAux[len(aAux)],{  aList4B[nX,01],;
+                                        aList4B[nX,10],;
+                                        aList4B[nX,07],;
+                                        aList4B[nX,10]})
+            EndIf 
+
+        Next nX 
+
+    EndIf
+
+Next nCont 
+
+For nCont := 1 to len(aAux)
+    If len(aAux[nCont]) > 2
+        aQtdx := {}
+        
+        For nX := 3 to len(aAux[nCont])
+            cQuery := "SELECT D2_DOC,D2_SERIE,D2_ITEM,D2_QUANT,D2_QTDEDEV,D2_QUANT-D2_QTDEDEV AS SALDO"
+            cQuery += " FROM "+RetSQLName("SD2")+" D2"
+            cQuery += " INNER JOIN "+RetSQLName("SC5")+" C5 ON C5_FILIAL=D2_FILIAL AND D2_PEDIDO=C5_NUM AND C5.D_E_L_E_T_=' '"
+            cQuery += " AND C5_XTPPED='A' AND C5_XCODPA='"+aAux[nCont,nX,03]+"'"
+            cQuery += " WHERE D2_FILIAL='"+MV_PAR01+"' AND D2.D_E_L_E_T_=' ' AND D2_EMISSAO <='"+dtos(MV_PAR03)+"'"
+            cQuery += " AND D2_COD='"+aAux[nCont,nX,01]+"'"
+            cQuery += " AND D2_QUANT>D2_QTDEDEV"
+            cQuery += " ORDER BY D2_EMISSAO"
+
+            If Select("TRB") > 0
+                dbSelectArea("TRB")
+                dbCloseArea()
+            EndIf
+
+            cQuery:= ChangeQuery(cQuery)
+
+            DbUseArea(.T.,"TOPCONN",TcGenQry(,,cQuery),'TRB',.F.,.T.) 
+
+            DbSelectArea("TRB")   
+
+            While !EOF()
+                If TRB->SALDO >= aAux[nCont,nX,04]
+                    If aAux[nCont,nX,04] <= TRB->SALDO 
+                        nSaldo := aAux[nCont,nX,04]
+                    Else 
+                        nSaldo := TRB->SALDO 
+                    EndIF
+
+                    aAux[nCont,nX,04] -= nSaldo
+
+                    Aadd(aQtdx,{TRB->D2_DOC,;
+                                TRB->D2_SERIE,;
+                                TRB->D2_ITEM,;
+                                nSaldo})
+                Else 
+                    nSaldo := TRB->SALDO 
+                    aAux[nCont,nX,04] -= TRB->SALDO 
+                    Aadd(aQtdx,{TRB->D2_DOC,;
+                                TRB->D2_SERIE,;
+                                TRB->D2_ITEM,;
+                                nSaldo})
+                Endif
+
+                If aAux[nCont,nX,04] == 0
+                    Aadd(aAux[nCont,nX],aQtdx)
+                    exit 
+                EndIf 
+
+                DbSkip()
+            EndDo 
+        Next nX
+    EndIF 
+
+Next nCont 
+
+RestArea(aArea)
+
 Return

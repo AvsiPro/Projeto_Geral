@@ -66,6 +66,7 @@ WsMethod GET WsReceive CODIGO,VENDEDOR,PAGINA,STATUS,EMISSAO,CLIENTE,CNPJ,FILTRO
 	Local nVlrTotal := 0
 	Local cVirg		:= ''
 	Local aAux		:= {}
+	Local aTipSta	:=	{'Venda','Garantia','Mostruario','Armarinho','Bon. Cliente','Bon. MKT','Bon. Gerencia','Garantia_Portal'}
 
 	lRet					:= .T.
 
@@ -156,7 +157,7 @@ WsMethod GET WsReceive CODIGO,VENDEDOR,PAGINA,STATUS,EMISSAO,CLIENTE,CNPJ,FILTRO
 		EndIf
 
 		cQuery += " C5_FILIAL,C5_NUM,C5_CLIENTE,C5_LOJACLI,A1_NOME,A1_NREDUZ,A1_END,A1_MUN,C5_CONDPAG,C5_VEND1,"
-		cQuery += " C5_EMISSAO,C5_NOTA,C5_SERIE,C5_OK,C5.R_E_C_N_O_ AS RECC5,A1_CGC"
+		cQuery += " C5_EMISSAO,C5_NOTA,C5_SERIE,C5_OK,C5.R_E_C_N_O_ AS RECC5,A1_CGC,C5_XCLASPV"
 		cQuery += " FROM "+RetSQLName("SC5")+" C5"
 		cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_COD=C5_CLIENTE AND A1_LOJA=C5_LOJACLI AND A1.D_E_L_E_T_=' '"
 
@@ -206,11 +207,31 @@ WsMethod GET WsReceive CODIGO,VENDEDOR,PAGINA,STATUS,EMISSAO,CLIENTE,CNPJ,FILTRO
 
 		DbSelectArea("TRB")
 
-		While !EOF()
+		DbSelectArea("SC6")
+		SC6->(DBSetOrder(1))
+		SC6->(DBGoTOP())
+
+		While TRB->(!EOF())
+			nQtdFat := 0
+			nQtdVen := 0
+			nVlrFat := 0
+			nVlrVen := 0
+
+			If SC6->(DBSeek(TRB->C5_FILIAL+TRB->C5_NUM))
+				While SC6->(!EoF()) .And. SC6->C6_FILIAL == TRB->C5_FILIAL .AND. SC6->C6_NUM == TRB->C5_NUM
+					nQtdFat += SC6->C6_QTDENT
+					nVlrFat += Iif(SC6->C6_QTDENT > 0, SC6->C6_QTDENT * SC6->C6_PRCVEN, 0)
+					nQtdVen += Iif(SC6->C6_XQTDORI > 0, SC6->C6_XQTDORI, SC6->C6_QTDVEN)
+					nVlrVen += Iif(cCopy == 'S',(Iif(cCopy == 'S',SC6->C6_PRUNIT,SC6->C6_PRCVEN) * SC6->C6_QTDVEN) + SC6->C6_VALDESC,SC6->C6_VALOR)
+					SC6->(DBSkip())
+				EndDo
+			EndIf
+
 			Aadd(aAux,{	TRB->C5_NUM,TRB->C5_CLIENTE+TRB->C5_LOJACLI,TRB->A1_NOME,;
 						TRB->A1_NREDUZ,TRB->C5_EMISSAO,TRB->C5_NOTA,TRB->C5_SERIE,;
-						TRB->C5_OK,TRB->RECC5,TRB->A1_CGC,TRB->C5_FILIAL})
-			Dbskip()
+						TRB->C5_OK,TRB->RECC5,TRB->A1_CGC,TRB->C5_FILIAL,;
+						If(TRB->C5_XCLASPV=="P",'8',TRB->C5_XCLASPV),nQtdFat,nVlrFat,nQtdVen,nVlrVen})
+			TRB->(Dbskip())
 		EndDo
 
 		Asort(aAux,,,{|x,y| x[2] < y[2]})
@@ -221,9 +242,9 @@ WsMethod GET WsReceive CODIGO,VENDEDOR,PAGINA,STATUS,EMISSAO,CLIENTE,CNPJ,FILTRO
 				cDtFat := Posicione("SF2",1,aAux[nCont,11]+aAux[nCont,06]+aAux[nCont,07],"F2_EMISSAO")
 			EndIf 
 
-			::SetResponse(cVirg+'{')
+	 		::SetResponse(cVirg+'{')
 			::SetResponse('"codigo":"'+fRemoveCarc(aAux[nCont,11]+aAux[nCont,01])+'",')
-			::SetResponse('"status":"'+If(!Empty(aAux[nCont,06]),'Faturado em '+cvaltochar(cDtFat),(If(aAux[nCont,08]=="3","Pendencias","Em Aberto")))+'",')
+			::SetResponse('"status":"'+If(!Empty(aAux[nCont,06]),'Faturado em '+cvaltochar(cDtFat),(If(aAux[nCont,08]=="3","Pendencias","Em Aberto")))+' # Tipo Pedido - '+aTipSta[val(aAux[nCont,12])]+'",')
 			::SetResponse('"emissao":"'+cvaltochar(stod(aAux[nCont,05]))+'",')
 			::SetResponse('"razao_social":"'+fRemoveCarc(aAux[nCont,03])+'",')
 			::SetResponse('"cliente":"'+fRemoveCarc(aAux[nCont,04])+'",')
@@ -231,6 +252,10 @@ WsMethod GET WsReceive CODIGO,VENDEDOR,PAGINA,STATUS,EMISSAO,CLIENTE,CNPJ,FILTRO
 			::SetResponse('"nota":"'+fRemoveCarc(aAux[nCont,06])+'",')
 			::SetResponse('"serie":"'+fRemoveCarc(aAux[nCont,07])+'",')
 			::SetResponse('"id":"'+cvaltochar(aAux[nCont,09])+'",')
+			::SetResponse('"quant_fatura":"'+cvaltochar(aAux[nCont,13])+'",')
+			::SetResponse('"valor_total_fatura":"'+Alltrim(Transform(aAux[nCont,14],"@E 999,999,999.99"))+'",')
+			::SetResponse('"quant_vendida":"'+cvaltochar(aAux[nCont,15])+'",')
+			::SetResponse('"valor_total_vendido":"'+Alltrim(Transform(aAux[nCont,16],"@E 999,999,999.99"))+'",')
 			::SetResponse('"dtemisped":"'+aAux[nCont,05]+'"')
 			::SetResponse('}')
 			cVirg := ','
