@@ -15,141 +15,141 @@
 ±±»ÕÕÕÕÕÕÕÕÕÕœÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕº±±
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
 ﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂ
-*/                           
+*/
 
 user function ROBJOB1a(cCodEmp,cCodFil)
 
-Local cQuery                 
-Local cRemete   := "No-Reply Robsol <noreply@robsol.com.br>"
-Local cBody                                   
-Local cSubject	:=	"Avisos de Vencimento"
-Local aArquivos := {}           
-Local cDestino	:=	"alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br"
-Local dDtFour 	:= ''   
-Local cNomeArq	:= ''
-Local aTitE1	:= {}
-Local cPasta  	:= '\clientes\cnpj\'   
+	Local cQuery
+	Local cRemete   := "No-Reply Robsol <noreply@robsol.com.br>"
+	Local cBody
+	Local cSubject	:=	"Avisos de Vencimento"
+	Local aArquivos := {}
+	Local cDestino	:=	"alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br;financeiro@robsol.com.br"
+	Local dDtFour 	:= ''
+	Local cNomeArq	:= ''
+	Local aTitE1	:= {}
+	Local cPasta  	:= '\clientes\cnpj\'
 
-Private aAvisFi	:= {}                        
-Private aTitCli	:= {}  
-Private aCumula	:= {}
+	Private aAvisFi	:= {}
+	Private aTitCli	:= {}
+	Private aCumula	:= {}
 
-Default cCodEmp := "01"
-Default cCodFil := "01"
+	Default cCodEmp := "01"
+	Default cCodFil := "01"
 
-   //Utilizando a nova classe de email para poder anexar corretamente o email ao corpo da mensagem.
-    // ************************************************************ //
-    // 		Parametros da rotina de envio de email  			  	//
-    //																//
-    //	01 - Remetente da mensagem                                  //
-    //	02 - Destinatario do email                                  //
-    //	03 - Assunto do email                                       //
-    //	04 - Corpo da mensagem                                      //
-    //	05 - Array com arquivos a serem atachados                   //
+	//Utilizando a nova classe de email para poder anexar corretamente o email ao corpo da mensagem.
+	// ************************************************************ //
+	// 		Parametros da rotina de envio de email  			  	//
+	//																//
+	//	01 - Remetente da mensagem                                  //
+	//	02 - Destinatario do email                                  //
+	//	03 - Assunto do email                                       //
+	//	04 - Corpo da mensagem                                      //
+	//	05 - Array com arquivos a serem atachados                   //
 	//			Posicao 1 - \Caminho\NomeArquivo.extensao           //
 	//			Posicao 2 - Content-ID "Apelido" da imagem          //
 	//	06 - Confirmacao de leitura (logico)						//
-	// ************************************************************ //                         
-                    
-                      
-If Empty(FunName())
-	RpcSetType(3)
-	RPCSetEnv("01","0101")
-EndIf
-                     
-cNomeArq := 'c:\temp\_avisos\'+dtos(ddatabase)+'.txt'
+	// ************************************************************ //
 
-Aadd(aArquivos,{"\system\LGMID.png",'Content-ID: <ID_LGMID,png>'})
 
-// ValidaÁ„o para 03 dias 
+	If Empty(FunName())
+		RpcSetType(3)
+		RPCSetEnv("01","0101")
+	EndIf
 
-IF DOW(dDataBase) == 2         
-	dDtFour := datavalida(dDataBase+3,.T.) //CondiÁ„o para Segunda                         
-ELSEIF DOW(dDataBase) == 3
-	dDtFour := datavalida(dDataBase+3,.T.)+1 //CondiÁ„o para TerÁa
-ELSEIF DOW(dDataBase) == 4
-	dDtFour := datavalida(dDataBase+3,.T.)+2 //CondiÁ„o para Quarta
-ELSEIF DOW(dDataBase) == 5
-	dDtFour := datavalida(dDataBase+3,.T.)+2 //CondiÁ„o para Quinta	
-ELSE
-	dDtFour := datavalida(dDataBase+3,.T.)+2
-ENDIF
+	cNomeArq := 'c:\temp\_avisos\'+dtos(ddatabase)+'.txt'
 
-cQuery := "SELECT E1_FILIAL,E1_PREFIXO,E1_NUM,E1_TIPO,E1_NATUREZ,ED_DESCRIC,E1_FILORIG,"
-cQuery += " E1_CLIENTE,E1_LOJA,A1_NOME,E1_VENCREA,E1_VALOR,A1_EMAIL,E1_PARCELA,A1_CGC,"
-cQuery += " E1_PORTADO,E1.R_E_C_N_O_ AS REGE1"
-cQuery += " FROM "+RetSQLName("SE1")+" E1"
-cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_COD=E1_CLIENTE AND A1_LOJA=E1_LOJA AND A1.D_E_L_E_T_=''"
-cQuery += " INNER JOIN "+RetSQLName("SED")+" ED ON ED_CODIGO=E1_NATUREZ AND ED.D_E_L_E_T_=''"
-cQuery += " WHERE E1_VENCREA = '"+DTOS(datavalida(dDtFour))+"' AND E1_BAIXA='' AND E1_PREFIXO <> 'CTR' "
-cQuery += " AND E1.D_E_L_E_T_='' AND E1_PORTADO BETWEEN '001' AND '999'"
-cQuery += " AND E1_FILIAL='"+xFilial('SE1')+"'"
-cQuery += " AND E1_TIPO NOT IN('RA','NCC')"
-cQuery += " ORDER BY E1_CLIENTE"                        
+	Aadd(aArquivos,{"\system\LGMID.png",'Content-ID: <ID_LGMID,png>'})
 
-If Select('TRB') > 0
-	dbSelectArea('TRB')
-	dbCloseArea()
-EndIf       
+	// ValidaÁ„o para 03 dias 22/02/2023 alterado para 1
 
-dbUseArea(.T.,"TOPCONN",TCGENQRY(,,cQuery),"TRB",.F.,.T.)
-dbSelectArea("TRB")
+	IF DOW(dDataBase) == 2
+		dDtFour := datavalida(dDataBase+1,.T.) //CondiÁ„o para Segunda
+	ELSEIF DOW(dDataBase) == 3
+		dDtFour := datavalida(dDataBase+1,.T.)//+1 //CondiÁ„o para TerÁa
+	ELSEIF DOW(dDataBase) == 4
+		dDtFour := datavalida(dDataBase+1,.T.)//+2 //CondiÁ„o para Quarta
+	ELSEIF DOW(dDataBase) == 5
+		dDtFour := datavalida(dDataBase+1,.T.)//+2 //CondiÁ„o para Quinta
+	ELSE
+		dDtFour := datavalida(dDataBase+1,.T.)+2
+	ENDIF
 
-nArq:= fCreate(cNomeArq)
+	cQuery := "SELECT E1_FILIAL,E1_PREFIXO,E1_NUM,E1_TIPO,E1_NATUREZ,ED_DESCRIC,E1_FILORIG,"
+	cQuery += " E1_CLIENTE,E1_LOJA,A1_NOME,E1_VENCREA,E1_VALOR,A1_EMAIL,E1_PARCELA,A1_CGC,"
+	cQuery += " E1_PORTADO,E1.R_E_C_N_O_ AS REGE1"
+	cQuery += " FROM "+RetSQLName("SE1")+" E1"
+	cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_COD=E1_CLIENTE AND A1_LOJA=E1_LOJA AND A1.D_E_L_E_T_=''"
+	cQuery += " INNER JOIN "+RetSQLName("SED")+" ED ON ED_CODIGO=E1_NATUREZ AND ED.D_E_L_E_T_=''"
+	cQuery += " WHERE E1_VENCREA = '"+DTOS(datavalida(dDtFour))+"' AND E1_BAIXA='' AND E1_PREFIXO <> 'CTR' "
+	cQuery += " AND E1.D_E_L_E_T_='' AND E1_PORTADO BETWEEN '001' AND '999'"
+	cQuery += " AND E1_FILIAL='"+xFilial('SE1')+"'"
+	cQuery += " AND E1_TIPO NOT IN('RA','NCC')"
+	cQuery += " ORDER BY E1_CLIENTE"
 
-FWrite(nArq, 'Inicio '+DTOC(dDataBase) + ' ' + Time()+CRLF)
-FWrite(nArq, '*************************************************************************************************************'+CRLF)
-Fwrite(nArq, '|                       Avisos de Vencimentos transmitidos em '+cvaltochar(dDatabase)+'                      |'+CRLF)
-FWrite(nArq, '*************************************************************************************************************'+CRLF)
-               
-While !EOF()
-	cDestino 	:=	Alltrim(TRB->A1_EMAIL)
-    //cDestino 	:=	"alexandre.venancio@avsipro.com.br" //;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br" //;adm@robsol.com.br;cnoculos@hotmail.com" //Alltrim(TRB->A1_EMAIL)    
-	MV_PAR01	:=	TRB->E1_PREFIXO
-	MV_PAR02	:=	TRB->E1_NUM
-	MV_PAR03	:=	TRB->E1_PARCELA
-	MV_PAR04	:=	TRB->E1_PARCELA
+	If Select('TRB') > 0
+		dbSelectArea('TRB')
+		dbCloseArea()
+	EndIf
 
-	If File(cPasta+Alltrim(TRB->A1_CGC)+"\boleto_"+Alltrim(TRB->E1_NUM)+"_"+Alltrim(TRB->E1_PARCELA)+".PDF")
-        cBoleto := cPasta+Alltrim(TRB->A1_CGC)+"\boleto_"+Alltrim(TRB->E1_NUM)+"_"+Alltrim(TRB->E1_PARCELA)+".PDF"
-	else
-		aArBkp := GetArea()
-		U_ROBBOL(.T.,cPasta+alltrim(TRB->A1_CGC)+'\',TRB->E1_FILORIG,TRB->E1_PARCELA)
-		RestArea(aArBkp)
+	dbUseArea(.T.,"TOPCONN",TCGENQRY(,,cQuery),"TRB",.F.,.T.)
+	dbSelectArea("TRB")
+
+	nArq:= fCreate(cNomeArq)
+
+	FWrite(nArq, 'Inicio '+DTOC(dDataBase) + ' ' + Time()+CRLF)
+	FWrite(nArq, '*************************************************************************************************************'+CRLF)
+	Fwrite(nArq, '|                       Avisos de Vencimentos transmitidos em '+cvaltochar(dDatabase)+'                      |'+CRLF)
+	FWrite(nArq, '*************************************************************************************************************'+CRLF)
+
+	While !EOF()
+		cDestino 	:=	Alltrim(TRB->A1_EMAIL)
+		//cDestino 	:=	"alexandre.venancio@avsipro.com.br" //;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br" //;adm@robsol.com.br;cnoculos@hotmail.com" //Alltrim(TRB->A1_EMAIL)
+		MV_PAR01	:=	TRB->E1_PREFIXO
+		MV_PAR02	:=	TRB->E1_NUM
+		MV_PAR03	:=	TRB->E1_PARCELA
+		MV_PAR04	:=	TRB->E1_PARCELA
+
 		If File(cPasta+Alltrim(TRB->A1_CGC)+"\boleto_"+Alltrim(TRB->E1_NUM)+"_"+Alltrim(TRB->E1_PARCELA)+".PDF")
 			cBoleto := cPasta+Alltrim(TRB->A1_CGC)+"\boleto_"+Alltrim(TRB->E1_NUM)+"_"+Alltrim(TRB->E1_PARCELA)+".PDF"
 		else
-			cBoleto := ""
-		EndIf 
-    ENDIF
+			aArBkp := GetArea()
+			U_ROBBOL(.T.,cPasta+alltrim(TRB->A1_CGC)+'\',TRB->E1_FILORIG,TRB->E1_PARCELA)
+			RestArea(aArBkp)
+			If File(cPasta+Alltrim(TRB->A1_CGC)+"\boleto_"+Alltrim(TRB->E1_NUM)+"_"+Alltrim(TRB->E1_PARCELA)+".PDF")
+				cBoleto := cPasta+Alltrim(TRB->A1_CGC)+"\boleto_"+Alltrim(TRB->E1_NUM)+"_"+Alltrim(TRB->E1_PARCELA)+".PDF"
+			else
+				cBoleto := ""
+			EndIf
+		ENDIF
 
-	cBody 		:=	Aviso_1(cBoleto) 
- 
-	aArquivos 	:=  {}
-	
-	Aadd(aArquivos,{lower(cBoleto),''})
+		cBody 		:=	Aviso_1(cBoleto)
 
-    U_robmail(cRemete,cDestino,cSubject,cBody,aArquivos,.T.)   
-    
-    cCorpo := TRB->E1_CLIENTE+'#'+TRB->E1_LOJA+'#'+TRB->A1_NOME+'#'+TRB->E1_PREFIXO+'#'+TRB->E1_NUM+'#'+CVALTOCHAR(STOD(TRB->E1_VENCREA))+'#'+Transform(TRB->E1_VALOR,"@E 999,999,999.99")+'#'+TRB->A1_EMAIL
+		aArquivos 	:=  {}
 
-    FWrite(nArq,cCorpo+CRLF)
-	Aadd(aAvisFi,{TRB->E1_CLIENTE,TRB->E1_LOJA,TRB->A1_NOME,TRB->E1_PREFIXO+TRB->E1_NUM,CVALTOCHAR(STOD(TRB->E1_VENCREA)),Transform(TRB->E1_VALOR,"@E 999,999,999.99"),TRB->A1_EMAIL})
-	Aadd(aTitE1,TRB->REGE1)
-	dbSelectArea("TRB")
-    DbSkip()
-EndDo
+		Aadd(aArquivos,{lower(cBoleto),''})
 
-fWrite(nArq, 'Fim '+DTOC(dDataBase) + ' ' + Time()+CRLF)
-fClose(nArq)
+		U_robmail(cRemete,cDestino,cSubject,cBody,aArquivos,.T.)
 
-cBody := AvisFin(cSubject,{}) 
+		cCorpo := TRB->E1_CLIENTE+'#'+TRB->E1_LOJA+'#'+TRB->A1_NOME+'#'+TRB->E1_PREFIXO+'#'+TRB->E1_NUM+'#'+CVALTOCHAR(STOD(TRB->E1_VENCREA))+'#'+Transform(TRB->E1_VALOR,"@E 999,999,999.99")+'#'+TRB->A1_EMAIL
 
-cDestino := "alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br"
+		FWrite(nArq,cCorpo+CRLF)
+		Aadd(aAvisFi,{TRB->E1_CLIENTE,TRB->E1_LOJA,TRB->A1_NOME,TRB->E1_PREFIXO+TRB->E1_NUM,CVALTOCHAR(STOD(TRB->E1_VENCREA)),Transform(TRB->E1_VALOR,"@E 999,999,999.99"),TRB->A1_EMAIL})
+		Aadd(aTitE1,TRB->REGE1)
+		dbSelectArea("TRB")
+		DbSkip()
+	EndDo
 
-U_robmail(cRemete,cDestino,cSubject+" "+cvaltochar(ddatabase),cBody,{},.T.)
+	fWrite(nArq, 'Fim '+DTOC(dDataBase) + ' ' + Time()+CRLF)
+	fClose(nArq)
 
-Return                     
+	cBody := AvisFin(cSubject,{})
+
+	cDestino := "alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br;financeiro@robsol.com.br"
+
+	U_robmail(cRemete,cDestino,cSubject+" "+cvaltochar(ddatabase),cBody,{},.T.)
+
+Return
 
 /*
 ‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹
@@ -168,372 +168,374 @@ Return
 
 User Function ROBJOB1b(cCodEmp,cCodFil)
 
-Local aArea		:=	GetArea()
-Local cQuery                 
-Local cRemete   := "No-Reply Robsol <noreply@robsol.com.br>"
-Local cBody                                   
-Local cSubject	:=	"Aviso de CobranÁa"
-Local aArquivos := {}           
-Local cDestino	:=	"alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br"
-Local cCliente	:=	'' 
-Local nCont		:=	1
-Local dDtOne  	:= ''
-Local dDtTwo  	:= ''
-Local dDtTree 	:= ''
-Local aTitE1	:= {}
-                        
-Private aAvisFi	:= {}                        
-Private aTitCli	:= {}  
-Private aCumula	:= {}
+	Local aArea		:=	GetArea()
+	Local cQuery
+	Local cRemete   := "No-Reply Robsol <noreply@robsol.com.br>"
+	Local cBody
+	Local cSubject	:=	"Aviso de CobranÁa"
+	Local aArquivos := {}
+	Local cDestino	:=	"alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br;financeiro@robsol.com.br"
+	Local cCliente	:=	''
+	Local nCont		:=	1
+	Local dDtOne  	:= ''
+	Local dDtTwo  	:= ''
+	Local dDtTree 	:= ''
+	Local aTitE1	:= {}
 
-Default cCodEmp := "01"
-Default cCodFil := "01"
+	Private aAvisFi	:= {}
+	Private aTitCli	:= {}
+	Private aCumula	:= {}
 
-   //Utilizando a nova classe de email para poder anexar corretamente o email ao corpo da mensagem.
-    // ************************************************************ //
-    // 		Parametros da rotina de envio de email  			  	//
-    //																//
-    //	01 - Remetente da mensagem                                  //
-    //	02 - Destinatario do email                                  //
-    //	03 - Assunto do email                                       //
-    //	04 - Corpo da mensagem                                      //
-    //	05 - Array com arquivos a serem atachados                   //
+	Default cCodEmp := "01"
+	Default cCodFil := "01"
+
+	//Utilizando a nova classe de email para poder anexar corretamente o email ao corpo da mensagem.
+	// ************************************************************ //
+	// 		Parametros da rotina de envio de email  			  	//
+	//																//
+	//	01 - Remetente da mensagem                                  //
+	//	02 - Destinatario do email                                  //
+	//	03 - Assunto do email                                       //
+	//	04 - Corpo da mensagem                                      //
+	//	05 - Array com arquivos a serem atachados                   //
 	//			Posicao 1 - \Caminho\NomeArquivo.extensao           //
 	//			Posicao 2 - Content-ID "Apelido" da imagem          //
 	//	06 - Confirmacao de leitura (logico)						//
-	// ************************************************************ //                         
-                    
-If Empty(FunName())
-	RpcSetType(3)
-	RPCSetEnv("01","0101")
-EndIf
+	// ************************************************************ //
 
-cNomeArq := 'c:\temp\_cobrancas\'+dtos(ddatabase)+'.txt'
+	If Empty(FunName())
+		RpcSetType(3)
+		RPCSetEnv("01","0101")
+	EndIf
 
-Aadd(aArquivos,{"\system\LGMID.PNG",'Content-ID: <ID_LGMID.PNG>'}) //Aadd(aArquivos,{"\system\LGMID.PNG.bmp",'Content-ID: <ID_LGMID.PNG.bmp>'})
+	cNomeArq := 'c:\temp\_cobrancas\'+dtos(ddatabase)+'.txt'
 
-// ValidaÁ„o para 03 dias
+	Aadd(aArquivos,{"\system\LGMID.PNG",'Content-ID: <ID_LGMID.PNG>'}) //Aadd(aArquivos,{"\system\LGMID.PNG.bmp",'Content-ID: <ID_LGMID.PNG.bmp>'})
 
-IF DOW(dDataBase) == 2                    
-	dDtOne := datavalida(dDataBase-3,.F.)-2 //CondiÁ„o para Segunda
-ELSEIF DOW(dDataBase) == 3
-	dDtOne := datavalida(dDataBase-3,.F.)-1 //CondiÁ„o para TerÁa
-ELSE
-	dDtOne := datavalida(dDataBase-3,.F.)
-ENDIF
- 
-cQuery := "SELECT E1_PREFIXO,E1_NUM,E1_TIPO,E1_EMISSAO,E1_NATUREZ,ED_DESCRIC,"
-cQuery += " E1_PARCELA,E1_CLIENTE,E1_LOJA,A1_NOME,E1_VENCREA,E1_VALOR,A1_EMAIL,"
-cQuery += " E1_VALJUR,E1.R_E_C_N_O_ AS REGE1" 
-cQuery += " FROM "+RetSQLName("SE1")+" E1"
-cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_COD=E1_CLIENTE AND A1_LOJA=E1_LOJA AND A1.D_E_L_E_T_=''"
-cQuery += " INNER JOIN "+RetSQLName("SED")+" ED ON ED_CODIGO=E1_NATUREZ AND ED.D_E_L_E_T_=''"
-cQuery += " WHERE E1_VENCREA = '"+dtos(datavalida(dDtOne,.F.))+"' AND E1_BAIXA=' ' AND E1_PREFIXO <> 'CTR' "
-cQuery += " AND E1_TIPO='NF'"
-cQuery += " AND E1_FILIAL='"+xFilial('SE1')+"'"
-cQuery += " AND E1.D_E_L_E_T_=''AND E1_PORTADO BETWEEN '001' AND '999'"          
-cQuery += " ORDER BY E1_CLIENTE,E1_LOJA,E1_VENCREA"
+	// ValidaÁ„o para 03 dias
 
-If Select('TRB') > 0
-	dbSelectArea('TRB')	
-	dbCloseArea()
-EndIf       
-                    
-cSubject := "Aviso de CobranÁa"
+	IF DOW(dDataBase) == 2
+		dDtOne := datavalida(dDataBase-3,.F.)-2 //CondiÁ„o para Segunda
+	ELSEIF DOW(dDataBase) == 3
+		dDtOne := datavalida(dDataBase-3,.F.)-2//-1 //CondiÁ„o para TerÁa
+	ELSEIF DOW(dDataBase) == 4
+		dDtOne := datavalida(dDataBase-3,.T.)-2//+2 //CondiÁ„o para Quarta
+	ELSE
+		dDtOne := datavalida(dDataBase-3,.F.)
+	ENDIF
 
-aTitCli := {}
-aAvisFi := {}
+	cQuery := "SELECT E1_PREFIXO,E1_NUM,E1_TIPO,E1_EMISSAO,E1_NATUREZ,ED_DESCRIC,"
+	cQuery += " E1_PARCELA,E1_CLIENTE,E1_LOJA,A1_NOME,E1_VENCREA,E1_VALOR,A1_EMAIL,"
+	cQuery += " E1_VALJUR,E1.R_E_C_N_O_ AS REGE1"
+	cQuery += " FROM "+RetSQLName("SE1")+" E1"
+	cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_COD=E1_CLIENTE AND A1_LOJA=E1_LOJA AND A1.D_E_L_E_T_=''"
+	cQuery += " INNER JOIN "+RetSQLName("SED")+" ED ON ED_CODIGO=E1_NATUREZ AND ED.D_E_L_E_T_=''"
+	cQuery += " WHERE E1_VENCREA = '"+dtos(datavalida(dDtOne,.F.))+"' AND E1_BAIXA=' ' AND E1_PREFIXO <> 'CTR' "
+	cQuery += " AND E1_TIPO='NF'"
+	cQuery += " AND E1_FILIAL='"+xFilial('SE1')+"'"
+	cQuery += " AND E1.D_E_L_E_T_=''AND E1_PORTADO BETWEEN '001' AND '999'"
+	cQuery += " ORDER BY E1_CLIENTE,E1_LOJA,E1_VENCREA"
 
-dbUseArea(.T.,"TOPCONN",TCGENQRY(,,cQuery),"TRB",.F.,.T.)
-dbSelectArea("TRB")
+	If Select('TRB') > 0
+		dbSelectArea('TRB')
+		dbCloseArea()
+	EndIf
 
-cCliente := TRB->E1_CLIENTE+TRB->E1_LOJA
+	cSubject := "Aviso de CobranÁa"
 
-nArq:= fCreate(cNomeArq)
+	aTitCli := {}
+	aAvisFi := {}
 
-fWrite(nArq, 'Inicio '+DTOC(dDataBase) + ' ' + Time()+chr(13)+chr(10))
+	dbUseArea(.T.,"TOPCONN",TCGENQRY(,,cQuery),"TRB",.F.,.T.)
+	dbSelectArea("TRB")
 
-While !EOF() 
-    
+	cCliente := TRB->E1_CLIENTE+TRB->E1_LOJA
+
+	nArq:= fCreate(cNomeArq)
+
+	fWrite(nArq, 'Inicio '+DTOC(dDataBase) + ' ' + Time()+chr(13)+chr(10))
+
+	While !EOF()
+
 		If cCliente != TRB->E1_CLIENTE+TRB->E1_LOJA
 			cCliente := TRB->E1_CLIENTE+TRB->E1_LOJA
 			If Len(aTitCli) > 0
 				cBody := Cobranca1()
 				U_robmail(cRemete,cDestino,cSubject,cBody,aArquivos,.T.)
-				aTitCli := {}		          
-				cDestino := Alltrim(TRB->A1_EMAIL)                           
+				aTitCli := {}
+				cDestino := Alltrim(TRB->A1_EMAIL)
 				//cDestino := "alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br" //Alltrim(TRB->A1_EMAIL) //
 				nCont++
 			Else
 				If aScan(aTitCli,{|x| x[1] = TRB->E1_NUM}) == 0
 					Aadd(aTitCli,{TRB->E1_NUM,stod(TRB->E1_EMISSAO),stod(TRB->E1_VENCREA),Transform(TRB->E1_VALOR,"@E 999,999,999.99"),;
-							DDATABASE-STOD(E1_VENCREA),Transform(TRB->E1_VALJUR,"@E 999,999,999.99"),TRB->ED_DESCRIC,TRB->A1_NOME,;
-							Transform(TRB->E1_VALOR+(TRB->E1_VALJUR*(DDATABASE-STOD(TRB->E1_VENCREA))),"@E 999,999,999.99"),;
-							TRB->E1_PREFIXO,TRB->E1_CLIENTE+TRB->E1_LOJA})	
+						DDATABASE-STOD(E1_VENCREA),Transform(TRB->E1_VALJUR,"@E 999,999,999.99"),TRB->ED_DESCRIC,TRB->A1_NOME,;
+						Transform(TRB->E1_VALOR+(TRB->E1_VALJUR*(DDATABASE-STOD(TRB->E1_VENCREA))),"@E 999,999,999.99"),;
+						TRB->E1_PREFIXO,TRB->E1_CLIENTE+TRB->E1_LOJA})
 
 				EndIf
-				cDestino := Alltrim(TRB->A1_EMAIL)                           
+				cDestino := Alltrim(TRB->A1_EMAIL)
 				//cDestino := "alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br" //Alltrim(TRB->A1_EMAIL) //
 			EndIf
 		Else
 			If aScan(aTitCli,{|x| x[1] = TRB->E1_NUM}) == 0
 				Aadd(aTitCli,{TRB->E1_NUM,stod(TRB->E1_EMISSAO),stod(TRB->E1_VENCREA),Transform(TRB->E1_VALOR,"@E 999,999,999.99"),;
-							DDATABASE-STOD(E1_VENCREA),Transform(TRB->E1_VALJUR,"@E 999,999,999.99"),TRB->ED_DESCRIC,TRB->A1_NOME,;
-							Transform(TRB->E1_VALOR+(TRB->E1_VALJUR*(DDATABASE-STOD(TRB->E1_VENCREA))),"@E 999,999,999.99"),;
-							TRB->E1_PREFIXO,TRB->E1_CLIENTE+TRB->E1_LOJA})	
+					DDATABASE-STOD(E1_VENCREA),Transform(TRB->E1_VALJUR,"@E 999,999,999.99"),TRB->ED_DESCRIC,TRB->A1_NOME,;
+					Transform(TRB->E1_VALOR+(TRB->E1_VALJUR*(DDATABASE-STOD(TRB->E1_VENCREA))),"@E 999,999,999.99"),;
+					TRB->E1_PREFIXO,TRB->E1_CLIENTE+TRB->E1_LOJA})
 			EndIf
-			cDestino := Alltrim(TRB->A1_EMAIL)                           
+			cDestino := Alltrim(TRB->A1_EMAIL)
 			//cDestino := "alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br" //Alltrim(TRB->A1_EMAIL) //
 		EndIf
-        
+
 		nPsi := Ascan(aCumula,{|x| Alltrim(x[1]) == Alltrim(TRB->A1_NOME)})
 		If nPsi == 0
 			Aadd(aCumula,{TRB->A1_NOME,TRB->E1_VALOR})
 		Else
 			aCumula[nPsi,02] += TRB->E1_VALOR
 		EndIf
-	
-	    cCorpo := TRB->E1_CLIENTE+'/'+TRB->E1_LOJA+'/'+TRB->A1_NOME+'/'+TRB->E1_PREFIXO+'/'+TRB->E1_NUM+'/'+CVALTOCHAR(STOD(TRB->E1_VENCREA))+'/'+Transform(TRB->E1_VALOR,"@E 999,999,999.99")+'/'+TRB->A1_EMAIL
-	
-	    FWrite(nArq,cCorpo+chr(13)+chr(10))
 
-	    Aadd(aAvisFi,{TRB->E1_CLIENTE,TRB->E1_LOJA,TRB->A1_NOME,TRB->E1_PREFIXO+TRB->E1_NUM,CVALTOCHAR(STOD(TRB->E1_VENCREA)),Transform(TRB->E1_VALOR,"@E 999,999,999.99"),TRB->A1_EMAIL})
+		cCorpo := TRB->E1_CLIENTE+'/'+TRB->E1_LOJA+'/'+TRB->A1_NOME+'/'+TRB->E1_PREFIXO+'/'+TRB->E1_NUM+'/'+CVALTOCHAR(STOD(TRB->E1_VENCREA))+'/'+Transform(TRB->E1_VALOR,"@E 999,999,999.99")+'/'+TRB->A1_EMAIL
+
+		FWrite(nArq,cCorpo+chr(13)+chr(10))
+
+		Aadd(aAvisFi,{TRB->E1_CLIENTE,TRB->E1_LOJA,TRB->A1_NOME,TRB->E1_PREFIXO+TRB->E1_NUM,CVALTOCHAR(STOD(TRB->E1_VENCREA)),Transform(TRB->E1_VALOR,"@E 999,999,999.99"),TRB->A1_EMAIL})
 		Aadd(aTitE1,TRB->REGE1)
-	Dbskip()
-Enddo
-                         
-If len(aTitCli) > 0
-	cBody := Cobranca1()  
-	U_robmail(cRemete,cDestino,cSubject,cBody,aArquivos,.T.)
-	aTitCli := {}		
-EndIf     
+		Dbskip()
+	Enddo
 
-fWrite(nArq, 'Fim '+DTOC(dDataBase) + ' ' + Time()+chr(13)+chr(10))
-fClose(nArq)
+	If len(aTitCli) > 0
+		cBody := Cobranca1()
+		U_robmail(cRemete,cDestino,cSubject,cBody,aArquivos,.T.)
+		aTitCli := {}
+	EndIf
 
-IF len(aAvisFi) > 0
-	cBody := AvisFin(cSubject,aCumula)
-	cDestino := "alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br"
-	U_robmail(cRemete,cDestino,cSubject+" "+cvaltochar(ddatabase),cBody,{},.T.)
-EndIf
+	fWrite(nArq, 'Fim '+DTOC(dDataBase) + ' ' + Time()+chr(13)+chr(10))
+	fClose(nArq)
 
-// ValidaÁ„o para 05 dias 
+	IF len(aAvisFi) > 0
+		cBody := AvisFin(cSubject,aCumula)
+		cDestino := "alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br"
+		U_robmail(cRemete,cDestino,cSubject+" "+cvaltochar(ddatabase),cBody,{},.T.)
+	EndIf
 
-IF DOW(dDataBase) == 2         
-	dDtTwo := datavalida(dDataBase-5,.F.)-2 //CondiÁ„o para Segunda                         
-ELSEIF DOW(dDataBase) == 3
-	dDtTwo := datavalida(dDataBase-5,.F.)-2 //CondiÁ„o para TerÁa
-ELSEIF DOW(dDataBase) == 4
-	dDtTwo := datavalida(dDataBase-5,.F.)-2 //CondiÁ„o para Quarta
-ELSEIF DOW(dDataBase) == 5
-	dDtTwo := datavalida(dDataBase-5,.F.)-1 //CondiÁ„o para Quinta	
-ELSE
-	dDtTwo := datavalida(dDataBase-5,.F.)
-ENDIF
+	// ValidaÁ„o para 05 dias 22/02/2023 alterado para 7
+
+	IF DOW(dDataBase) == 2
+		dDtTwo := datavalida(dDataBase-7,.F.)//-1 //CondiÁ„o para Segunda
+	ELSEIF DOW(dDataBase) == 3
+		dDtTwo := datavalida(dDataBase-7,.F.)//-2 //CondiÁ„o para TerÁa
+	ELSEIF DOW(dDataBase) == 4
+		dDtTwo := datavalida(dDataBase-7,.F.)//-2 //CondiÁ„o para Quarta
+	ELSEIF DOW(dDataBase) == 5
+		dDtTwo := datavalida(dDataBase-7,.F.)//-1 //CondiÁ„o para Quinta
+	ELSE
+		dDtTwo := datavalida(dDataBase-7,.F.)
+	ENDIF
 
 
-cQuery := "SELECT E1_PREFIXO,E1_NUM,E1_TIPO,E1_EMISSAO,E1_NATUREZ,ED_DESCRIC,"
-cQuery += " E1_PARCELA,E1_CLIENTE,E1_LOJA,A1_NOME,E1_VENCREA,E1_VALOR,A1_EMAIL,"
-cQuery += " E1_VALJUR,E1.R_E_C_N_O_ AS REGE1" 
-cQuery += " FROM "+RetSQLName("SE1")+" E1"
-cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_COD=E1_CLIENTE AND A1_LOJA=E1_LOJA AND A1.D_E_L_E_T_=''"
-cQuery += " INNER JOIN "+RetSQLName("SED")+" ED ON ED_CODIGO=E1_NATUREZ AND ED.D_E_L_E_T_=''"
-cQuery += " WHERE E1_VENCREA = '"+dtos(datavalida(dDtTwo,.F.))+"' AND E1_BAIXA=' ' AND E1_PREFIXO <> 'CTR' "
-cQuery += " AND E1_TIPO='NF'"
-cQuery += " AND E1_FILIAL='"+xFilial('SE1')+"'"
-cQuery += " AND E1.D_E_L_E_T_=''AND E1_PORTADO BETWEEN '001' AND '999'"          
-cQuery += " ORDER BY E1_CLIENTE,E1_LOJA,E1_VENCREA"
+	cQuery := "SELECT E1_PREFIXO,E1_NUM,E1_TIPO,E1_EMISSAO,E1_NATUREZ,ED_DESCRIC,"
+	cQuery += " E1_PARCELA,E1_CLIENTE,E1_LOJA,A1_NOME,E1_VENCREA,E1_VALOR,A1_EMAIL,"
+	cQuery += " E1_VALJUR,E1.R_E_C_N_O_ AS REGE1"
+	cQuery += " FROM "+RetSQLName("SE1")+" E1"
+	cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_COD=E1_CLIENTE AND A1_LOJA=E1_LOJA AND A1.D_E_L_E_T_=''"
+	cQuery += " INNER JOIN "+RetSQLName("SED")+" ED ON ED_CODIGO=E1_NATUREZ AND ED.D_E_L_E_T_=''"
+	cQuery += " WHERE E1_VENCREA = '"+dtos(datavalida(dDtTwo,.F.))+"' AND E1_BAIXA=' ' AND E1_PREFIXO <> 'CTR' "
+	cQuery += " AND E1_TIPO='NF'"
+	cQuery += " AND E1_FILIAL='"+xFilial('SE1')+"'"
+	cQuery += " AND E1.D_E_L_E_T_=''AND E1_PORTADO BETWEEN '001' AND '999'"
+	cQuery += " ORDER BY E1_CLIENTE,E1_LOJA,E1_VENCREA"
 
-If Select('TRB') > 0
-	dbSelectArea('TRB')
-	dbCloseArea()
-EndIf  
+	If Select('TRB') > 0
+		dbSelectArea('TRB')
+		dbCloseArea()
+	EndIf
 
-cSubject := "Aviso de CobranÁa"
-aTitCli := {}
-aAvisFi := {}
-aTitE1  := {}
+	cSubject := "Aviso de CobranÁa"
+	aTitCli := {}
+	aAvisFi := {}
+	aTitE1  := {}
 
-dbUseArea(.T.,"TOPCONN",TCGENQRY(,,cQuery),"TRB",.F.,.T.)
-dbSelectArea("TRB")
+	dbUseArea(.T.,"TOPCONN",TCGENQRY(,,cQuery),"TRB",.F.,.T.)
+	dbSelectArea("TRB")
 
-cCliente := TRB->E1_CLIENTE+TRB->E1_LOJA
+	cCliente := TRB->E1_CLIENTE+TRB->E1_LOJA
 
-nArq:= fCreate(cNomeArq)
+	nArq:= fCreate(cNomeArq)
 
-fWrite(nArq, 'Inicio '+DTOC(dDataBase) + ' ' + Time()+chr(13)+chr(10))
+	fWrite(nArq, 'Inicio '+DTOC(dDataBase) + ' ' + Time()+chr(13)+chr(10))
 
-While !EOF() 
-    
+	While !EOF()
+
 		If cCliente != TRB->E1_CLIENTE+TRB->E1_LOJA
 			cCliente := TRB->E1_CLIENTE+TRB->E1_LOJA
 			If Len(aTitCli) > 0
 				cBody := Cobranca2()
 				U_robmail(cRemete,cDestino,cSubject,cBody,aArquivos,.T.)
-				aTitCli := {}		                                     
-				
-                cDestino := Alltrim(TRB->A1_EMAIL) 
+				aTitCli := {}
+
+				cDestino := Alltrim(TRB->A1_EMAIL)
 				//cDestino := "alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br"
-                nCont++
-			Else
-				If aScan(aTitCli,{|x| x[1] = TRB->E1_NUM}) == 0
-					Aadd(aTitCli,{TRB->E1_NUM,stod(TRB->E1_EMISSAO),stod(TRB->E1_VENCREA),Transform(TRB->E1_VALOR,"@E 999,999,999.99"),;
-							DDATABASE-STOD(E1_VENCREA),Transform(TRB->E1_VALJUR,"@E 999,999,999.99"),TRB->ED_DESCRIC,TRB->A1_NOME,;
-							Transform(TRB->E1_VALOR+(TRB->E1_VALJUR*(DDATABASE-STOD(TRB->E1_VENCREA))),"@E 999,999,999.99"),;
-							TRB->E1_PREFIXO,TRB->E1_CLIENTE+TRB->E1_LOJA})	
-
-				EndIf
-				//cDestino := "alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br"
-                cDestino := Alltrim(TRB->A1_EMAIL)
-			EndIf
-		Else
-			If aScan(aTitCli,{|x| x[1] = TRB->E1_NUM}) == 0
-				Aadd(aTitCli,{TRB->E1_NUM,stod(TRB->E1_EMISSAO),stod(TRB->E1_VENCREA),Transform(TRB->E1_VALOR,"@E 999,999,999.99"),;
-							DDATABASE-STOD(E1_VENCREA),Transform(TRB->E1_VALJUR,"@E 999,999,999.99"),TRB->ED_DESCRIC,TRB->A1_NOME,;
-							Transform(TRB->E1_VALOR+(TRB->E1_VALJUR*(DDATABASE-STOD(TRB->E1_VENCREA))),"@E 999,999,999.99"),;
-							TRB->E1_PREFIXO,TRB->E1_CLIENTE+TRB->E1_LOJA})	
-			EndIf
-			//cDestino := "alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br"
-            cDestino := Alltrim(TRB->A1_EMAIL)
-		EndIf	
-				
-				nPsi := Ascan(aCumula,{|x| Alltrim(x[1]) == Alltrim(TRB->A1_NOME)})
-		If nPsi == 0
-			Aadd(aCumula,{TRB->A1_NOME,TRB->E1_VALOR})
-		Else
-			aCumula[nPsi,02] += TRB->E1_VALOR
-		EndIf
-	
-	    cCorpo := TRB->E1_CLIENTE+'/'+TRB->E1_LOJA+'/'+TRB->A1_NOME+'/'+TRB->E1_PREFIXO+'/'+TRB->E1_NUM+'/'+CVALTOCHAR(STOD(TRB->E1_VENCREA))+'/'+Transform(TRB->E1_VALOR,"@E 999,999,999.99")+'/'+TRB->A1_EMAIL
-	
-	    FWrite(nArq,cCorpo+chr(13)+chr(10))
-
-	    Aadd(aAvisFi,{TRB->E1_CLIENTE,TRB->E1_LOJA,TRB->A1_NOME,TRB->E1_PREFIXO+TRB->E1_NUM,CVALTOCHAR(STOD(TRB->E1_VENCREA)),Transform(TRB->E1_VALOR,"@E 999,999,999.99"),TRB->A1_EMAIL})
-		Aadd(aTitE1,TRB->REGE1)
-	Dbskip()
-EndDo	
-
-If len(aTitCli) > 0
-	cBody := Cobranca2()  
-	U_robmail(cRemete,cDestino,cSubject,cBody,aArquivos,.T.)
-	aTitCli := {}		
-EndIf     
-
-fWrite(nArq, 'Fim '+DTOC(dDataBase) + ' ' + Time()+chr(13)+chr(10))
-fClose(nArq)
-
-IF len(aAvisFi) > 0
-	cBody := AvisFin(cSubject,aCumula)
-	cDestino := "alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br"
-	U_robmail(cRemete,cDestino,cSubject+" "+cvaltochar(ddatabase),cBody,{},.T.)
-EndIf
-
-// ValidaÁ„o para 07 dias     
-
-IF DOW(dDataBase) == 2         
-	dDtTree := datavalida(dDataBase-7,.F.)-4 //CondiÁ„o para Segunda                         
-ELSEIF DOW(dDataBase) == 3
-	dDtTree := datavalida(dDataBase-7,.F.)-3 //CondiÁ„o para TerÁa
-ELSEIF DOW(dDataBase) == 4
-	dDtTree := datavalida(dDataBase-7,.F.)-2 //CondiÁ„o para Quarta
-ELSEIF DOW(dDataBase) == 5
-	dDtTree := datavalida(dDataBase-7,.F.)-2 //CondiÁ„o para Quinta	
-ELSE //DOW(dDataBase) == 6
-	dDtTree := datavalida(dDataBase-7,.F.)-2 //CondiÁ„o para Sexta
-ENDIF
-
-cQuery := "SELECT E1_PREFIXO,E1_NUM,E1_TIPO,E1_EMISSAO,E1_NATUREZ,ED_DESCRIC,"
-cQuery += " E1_PARCELA,E1_CLIENTE,E1_LOJA,A1_NOME,E1_VENCREA,E1_VALOR,A1_EMAIL,"
-cQuery += " E1_VALJUR,E1.R_E_C_N_O_ AS REGE1" 
-cQuery += " FROM "+RetSQLName("SE1")+" E1"
-cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_COD=E1_CLIENTE AND A1_LOJA=E1_LOJA AND A1.D_E_L_E_T_=''"
-cQuery += " INNER JOIN "+RetSQLName("SED")+" ED ON ED_CODIGO=E1_NATUREZ AND ED.D_E_L_E_T_=''"
-cQuery += " WHERE E1_VENCREA = '"+dtos(datavalida(dDtTree,.F.))+"' AND E1_BAIXA='' AND E1_PREFIXO <> 'CTR' "
-cQuery += " AND E1_TIPO='NF'"
-cQuery += " AND E1_FILIAL='"+xFilial('SE1')+"'"
-cQuery += " AND E1.D_E_L_E_T_=''AND E1_PORTADO BETWEEN '001' AND '999'"          
-cQuery += " ORDER BY E1_CLIENTE,E1_LOJA,E1_VENCREA"  
-
-If Select('TRB') > 0
-	dbSelectArea('TRB')
-	dbCloseArea()
-EndIf       
-                    
-cSubject := "Aviso de CobranÁa"
-aTitCli := {}
-aAvisFi := {}
-aTitE1  := {}
-
-dbUseArea(.T.,"TOPCONN",TCGENQRY(,,cQuery),"TRB",.F.,.T.)
-dbSelectArea("TRB")
-
-While !EOF() 
-    
-		If cCliente != TRB->E1_CLIENTE+TRB->E1_LOJA
-			cCliente := TRB->E1_CLIENTE+TRB->E1_LOJA
-			If Len(aTitCli) > 0
-				cBody := Cobranca3()
-				U_robmail(cRemete,cDestino,cSubject,cBody,aArquivos,.T.)
-				aTitCli := {}		                                     
-				cDestino := Alltrim(TRB->A1_EMAIL) //
-                //cDestino := "alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br"
 				nCont++
 			Else
 				If aScan(aTitCli,{|x| x[1] = TRB->E1_NUM}) == 0
 					Aadd(aTitCli,{TRB->E1_NUM,stod(TRB->E1_EMISSAO),stod(TRB->E1_VENCREA),Transform(TRB->E1_VALOR,"@E 999,999,999.99"),;
-							DDATABASE-STOD(E1_VENCREA),Transform(TRB->E1_VALJUR,"@E 999,999,999.99"),TRB->ED_DESCRIC,TRB->A1_NOME,;
-							Transform(TRB->E1_VALOR+(TRB->E1_VALJUR*(DDATABASE-STOD(TRB->E1_VENCREA))),"@E 999,999,999.99"),;
-							TRB->E1_PREFIXO,TRB->E1_CLIENTE+TRB->E1_LOJA})	
+						DDATABASE-STOD(E1_VENCREA),Transform(TRB->E1_VALJUR,"@E 999,999,999.99"),TRB->ED_DESCRIC,TRB->A1_NOME,;
+						Transform(TRB->E1_VALOR+(TRB->E1_VALJUR*(DDATABASE-STOD(TRB->E1_VENCREA))),"@E 999,999,999.99"),;
+						TRB->E1_PREFIXO,TRB->E1_CLIENTE+TRB->E1_LOJA})
 
 				EndIf
-				cDestino := Alltrim(TRB->A1_EMAIL) //
-                //cDestino := "alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br"
+				//cDestino := "alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br"
+				cDestino := Alltrim(TRB->A1_EMAIL)
 			EndIf
 		Else
-		    If aScan(aTitCli,{|x| x[1] = TRB->E1_NUM}) == 0
+			If aScan(aTitCli,{|x| x[1] = TRB->E1_NUM}) == 0
 				Aadd(aTitCli,{TRB->E1_NUM,stod(TRB->E1_EMISSAO),stod(TRB->E1_VENCREA),Transform(TRB->E1_VALOR,"@E 999,999,999.99"),;
-							DDATABASE-STOD(E1_VENCREA),Transform(TRB->E1_VALJUR,"@E 999,999,999.99"),TRB->ED_DESCRIC,TRB->A1_NOME,;
-							Transform(TRB->E1_VALOR+(TRB->E1_VALJUR*(DDATABASE-STOD(TRB->E1_VENCREA))),"@E 999,999,999.99"),;
-							TRB->E1_PREFIXO,TRB->E1_CLIENTE+TRB->E1_LOJA})	
+					DDATABASE-STOD(E1_VENCREA),Transform(TRB->E1_VALJUR,"@E 999,999,999.99"),TRB->ED_DESCRIC,TRB->A1_NOME,;
+					Transform(TRB->E1_VALOR+(TRB->E1_VALJUR*(DDATABASE-STOD(TRB->E1_VENCREA))),"@E 999,999,999.99"),;
+					TRB->E1_PREFIXO,TRB->E1_CLIENTE+TRB->E1_LOJA})
 			EndIf
-			
-            cDestino := Alltrim(TRB->A1_EMAIL) //
-            //cDestino := "alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br"
+			//cDestino := "alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br"
+			cDestino := Alltrim(TRB->A1_EMAIL)
 		EndIf
-        
+
 		nPsi := Ascan(aCumula,{|x| Alltrim(x[1]) == Alltrim(TRB->A1_NOME)})
 		If nPsi == 0
 			Aadd(aCumula,{TRB->A1_NOME,TRB->E1_VALOR})
 		Else
 			aCumula[nPsi,02] += TRB->E1_VALOR
 		EndIf
-	
-	    cCorpo := TRB->E1_CLIENTE+'/'+TRB->E1_LOJA+'/'+TRB->A1_NOME+'/'+TRB->E1_PREFIXO+'/'+TRB->E1_NUM+'/'+CVALTOCHAR(STOD(TRB->E1_VENCREA))+'/'+Transform(TRB->E1_VALOR,"@E 999,999,999.99")+'/'+TRB->A1_EMAIL
-	
-	    FWrite(nArq,cCorpo+chr(13)+chr(10))
 
-	    Aadd(aAvisFi,{TRB->E1_CLIENTE,TRB->E1_LOJA,TRB->A1_NOME,TRB->E1_PREFIXO+TRB->E1_NUM,CVALTOCHAR(STOD(TRB->E1_VENCREA)),Transform(TRB->E1_VALOR,"@E 999,999,999.99"),TRB->A1_EMAIL})
+		cCorpo := TRB->E1_CLIENTE+'/'+TRB->E1_LOJA+'/'+TRB->A1_NOME+'/'+TRB->E1_PREFIXO+'/'+TRB->E1_NUM+'/'+CVALTOCHAR(STOD(TRB->E1_VENCREA))+'/'+Transform(TRB->E1_VALOR,"@E 999,999,999.99")+'/'+TRB->A1_EMAIL
+
+		FWrite(nArq,cCorpo+chr(13)+chr(10))
+
+		Aadd(aAvisFi,{TRB->E1_CLIENTE,TRB->E1_LOJA,TRB->A1_NOME,TRB->E1_PREFIXO+TRB->E1_NUM,CVALTOCHAR(STOD(TRB->E1_VENCREA)),Transform(TRB->E1_VALOR,"@E 999,999,999.99"),TRB->A1_EMAIL})
 		Aadd(aTitE1,TRB->REGE1)
-	Dbskip()
-Enddo
+		Dbskip()
+	EndDo
 
-If len(aTitCli) > 0
-	cBody := Cobranca3()  
-	U_robmail(cRemete,cDestino,cSubject,cBody,aArquivos,.T.)
-	aTitCli := {}		
-EndIf     
+	If len(aTitCli) > 0
+		cBody := Cobranca2()
+		U_robmail(cRemete,cDestino,cSubject,cBody,aArquivos,.T.)
+		aTitCli := {}
+	EndIf
 
-fWrite(nArq, 'Fim '+DTOC(dDataBase) + ' ' + Time()+chr(13)+chr(10))
-fClose(nArq)
+	fWrite(nArq, 'Fim '+DTOC(dDataBase) + ' ' + Time()+chr(13)+chr(10))
+	fClose(nArq)
 
-IF len(aAvisFi) > 0
-	cBody := AvisFin(cSubject,aCumula)
-	
-    cDestino := "alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br"
-	U_robmail(cRemete,cDestino,cSubject+" "+cvaltochar(ddatabase),cBody,{},.T.)
-EndIf
+	IF len(aAvisFi) > 0
+		cBody := AvisFin(cSubject,aCumula)
+		cDestino := "alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br;financeiro@robsol.com.br"
+		U_robmail(cRemete,cDestino,cSubject+" "+cvaltochar(ddatabase),cBody,{},.T.)
+	EndIf
 
-RestArea(aArea)
+	// ValidaÁ„o para 07 dias   22/02/2023  alterado para 9
+
+	IF DOW(dDataBase) == 2
+		dDtTree := datavalida(dDataBase-7,.F.)-4 //CondiÁ„o para Segunda
+	ELSEIF DOW(dDataBase) == 3
+		dDtTree := datavalida(dDataBase-7,.F.)-4 //CondiÁ„o para TerÁa
+	ELSEIF DOW(dDataBase) == 4
+		dDtTree := datavalida(dDataBase-7,.F.)-2 //CondiÁ„o para Quarta
+	ELSEIF DOW(dDataBase) == 5
+		dDtTree := datavalida(dDataBase-7,.F.)-2 //CondiÁ„o para Quinta
+	ELSE //DOW(dDataBase) == 6
+		dDtTree := datavalida(dDataBase-7,.F.)-2 //CondiÁ„o para Sexta
+	ENDIF
+
+	cQuery := "SELECT E1_PREFIXO,E1_NUM,E1_TIPO,E1_EMISSAO,E1_NATUREZ,ED_DESCRIC,"
+	cQuery += " E1_PARCELA,E1_CLIENTE,E1_LOJA,A1_NOME,E1_VENCREA,E1_VALOR,A1_EMAIL,"
+	cQuery += " E1_VALJUR,E1.R_E_C_N_O_ AS REGE1"
+	cQuery += " FROM "+RetSQLName("SE1")+" E1"
+	cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_COD=E1_CLIENTE AND A1_LOJA=E1_LOJA AND A1.D_E_L_E_T_=''"
+	cQuery += " INNER JOIN "+RetSQLName("SED")+" ED ON ED_CODIGO=E1_NATUREZ AND ED.D_E_L_E_T_=''"
+	cQuery += " WHERE E1_VENCREA = '"+dtos(datavalida(dDtTree,.F.))+"' AND E1_BAIXA='' AND E1_PREFIXO <> 'CTR' "
+	cQuery += " AND E1_TIPO='NF'"
+	cQuery += " AND E1_FILIAL='"+xFilial('SE1')+"'"
+	cQuery += " AND E1.D_E_L_E_T_=''AND E1_PORTADO BETWEEN '001' AND '999'"
+	cQuery += " ORDER BY E1_CLIENTE,E1_LOJA,E1_VENCREA"
+
+	If Select('TRB') > 0
+		dbSelectArea('TRB')
+		dbCloseArea()
+	EndIf
+
+	cSubject := "Aviso de CobranÁa"
+	aTitCli := {}
+	aAvisFi := {}
+	aTitE1  := {}
+
+	dbUseArea(.T.,"TOPCONN",TCGENQRY(,,cQuery),"TRB",.F.,.T.)
+	dbSelectArea("TRB")
+
+	While !EOF()
+
+		If cCliente != TRB->E1_CLIENTE+TRB->E1_LOJA
+			cCliente := TRB->E1_CLIENTE+TRB->E1_LOJA
+			If Len(aTitCli) > 0
+				cBody := Cobranca3()
+				U_robmail(cRemete,cDestino,cSubject,cBody,aArquivos,.T.)
+				aTitCli := {}
+				cDestino := Alltrim(TRB->A1_EMAIL) //
+				//cDestino := "alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br"
+				nCont++
+			Else
+				If aScan(aTitCli,{|x| x[1] = TRB->E1_NUM}) == 0
+					Aadd(aTitCli,{TRB->E1_NUM,stod(TRB->E1_EMISSAO),stod(TRB->E1_VENCREA),Transform(TRB->E1_VALOR,"@E 999,999,999.99"),;
+						DDATABASE-STOD(E1_VENCREA),Transform(TRB->E1_VALJUR,"@E 999,999,999.99"),TRB->ED_DESCRIC,TRB->A1_NOME,;
+						Transform(TRB->E1_VALOR+(TRB->E1_VALJUR*(DDATABASE-STOD(TRB->E1_VENCREA))),"@E 999,999,999.99"),;
+						TRB->E1_PREFIXO,TRB->E1_CLIENTE+TRB->E1_LOJA})
+
+				EndIf
+				cDestino := Alltrim(TRB->A1_EMAIL) //
+				//cDestino := "alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br"
+			EndIf
+		Else
+			If aScan(aTitCli,{|x| x[1] = TRB->E1_NUM}) == 0
+				Aadd(aTitCli,{TRB->E1_NUM,stod(TRB->E1_EMISSAO),stod(TRB->E1_VENCREA),Transform(TRB->E1_VALOR,"@E 999,999,999.99"),;
+					DDATABASE-STOD(E1_VENCREA),Transform(TRB->E1_VALJUR,"@E 999,999,999.99"),TRB->ED_DESCRIC,TRB->A1_NOME,;
+					Transform(TRB->E1_VALOR+(TRB->E1_VALJUR*(DDATABASE-STOD(TRB->E1_VENCREA))),"@E 999,999,999.99"),;
+					TRB->E1_PREFIXO,TRB->E1_CLIENTE+TRB->E1_LOJA})
+			EndIf
+
+			cDestino := Alltrim(TRB->A1_EMAIL) //
+			//cDestino := "alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br"
+		EndIf
+
+		nPsi := Ascan(aCumula,{|x| Alltrim(x[1]) == Alltrim(TRB->A1_NOME)})
+		If nPsi == 0
+			Aadd(aCumula,{TRB->A1_NOME,TRB->E1_VALOR})
+		Else
+			aCumula[nPsi,02] += TRB->E1_VALOR
+		EndIf
+
+		cCorpo := TRB->E1_CLIENTE+'/'+TRB->E1_LOJA+'/'+TRB->A1_NOME+'/'+TRB->E1_PREFIXO+'/'+TRB->E1_NUM+'/'+CVALTOCHAR(STOD(TRB->E1_VENCREA))+'/'+Transform(TRB->E1_VALOR,"@E 999,999,999.99")+'/'+TRB->A1_EMAIL
+
+		FWrite(nArq,cCorpo+chr(13)+chr(10))
+
+		Aadd(aAvisFi,{TRB->E1_CLIENTE,TRB->E1_LOJA,TRB->A1_NOME,TRB->E1_PREFIXO+TRB->E1_NUM,CVALTOCHAR(STOD(TRB->E1_VENCREA)),Transform(TRB->E1_VALOR,"@E 999,999,999.99"),TRB->A1_EMAIL})
+		Aadd(aTitE1,TRB->REGE1)
+		Dbskip()
+	Enddo
+
+	If len(aTitCli) > 0
+		cBody := Cobranca3()
+		U_robmail(cRemete,cDestino,cSubject,cBody,aArquivos,.T.)
+		aTitCli := {}
+	EndIf
+
+	fWrite(nArq, 'Fim '+DTOC(dDataBase) + ' ' + Time()+chr(13)+chr(10))
+	fClose(nArq)
+
+	IF len(aAvisFi) > 0
+		cBody := AvisFin(cSubject,aCumula)
+
+		cDestino := "alexandre.venancio@avsipro.com.br;adm@robsol.com.br;cnoculos@hotmail.com;financeiro3@robsol.com.br;financeiro1@robsol.com.br;financeiro@robsol.com.br"
+		U_robmail(cRemete,cDestino,cSubject+" "+cvaltochar(ddatabase),cBody,{},.T.)
+	EndIf
+
+	RestArea(aArea)
 
 Return
 
@@ -552,57 +554,57 @@ Return
 ﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂ
 */
 
-Static Function Aviso_1(cBoleto) 
+Static Function Aviso_1(cBoleto)
 
-Local aArea	:=	GetArea()
+	Local aArea	:=	GetArea()
 
-cHtml := "<html>"
-cHtml += "<body>"
+	cHtml := "<html>"
+	cHtml += "<body>"
 
-cHtml += "<table width='1078' border='0'>"    
-cHtml += "  <tr bgcolor='#33FFFF'>"
-cHtml += "    <td align='center'><b>Aviso de vencimento / NOTA  N∫ "+TRB->E1_NUM+" Prefixo "+TRB->E1_PREFIXO+" "+cvaltochar(STOD(TRB->E1_VENCREA))+"</b></td>"
-cHtml += "  </tr>"
-cHtml += "</table><br><br><br>"
+	cHtml += "<table width='1078' border='0'>"
+	cHtml += "  <tr bgcolor='#33FFFF'>"
+	cHtml += "    <td align='center'><b>Aviso de vencimento / NOTA  N∫ "+TRB->E1_NUM+" Prefixo "+TRB->E1_PREFIXO+" "+cvaltochar(STOD(TRB->E1_VENCREA))+"</b></td>"
+	cHtml += "  </tr>"
+	cHtml += "</table><br><br><br>"
 
-cHtml += "<table width='1078' border='0'>"
-cHtml += "  <tr bgcolor='#d4e6f6'>"
-cHtml += "    <td >Cedente:</td><td><b>"+Alltrim(SM0->M0_NOMECOM)+"</b></td></tr>"
-cHtml += "    <tr bgcolor='#5592bb'><td>Sacado:</td><td><b>"+Alltrim(TRB->A1_NOME)+"</b> C”DIGO "+TRB->E1_CLIENTE+TRB->E1_LOJA+" CNPJ "+Transform(TRB->A1_CGC,"@R 99.999.999/9999-99")+"</td></tr>"
-cHtml += "    <tr bgcolor='#d4e6f6'><td>Valor:</td><td><b>R$ "+cvaltochar(Transform(TRB->E1_VALOR,"@E 999,999,999.99"))+"</b></td></tr>"
-cHtml += "    <tr bgcolor='#d4e6f6'><td>Vencimento:</td><td><b>"+cvaltochar(Stod(TRB->E1_VENCREA))+"</b></td></tr>"
-cHtml += "    <tr bgcolor='#d4e6f6'><td>ReferÍncia:</td><td><b>"+Alltrim(TRB->ED_DESCRIC)+"</b></td></tr>"
-cHtml += "</table><br><br><br>"
+	cHtml += "<table width='1078' border='0'>"
+	cHtml += "  <tr bgcolor='#d4e6f6'>"
+	cHtml += "    <td >Cedente:</td><td><b>"+Alltrim(SM0->M0_NOMECOM)+"</b></td></tr>"
+	cHtml += "    <tr bgcolor='#5592bb'><td>Sacado:</td><td><b>"+Alltrim(TRB->A1_NOME)+"</b> C”DIGO "+TRB->E1_CLIENTE+TRB->E1_LOJA+" CNPJ "+Transform(TRB->A1_CGC,"@R 99.999.999/9999-99")+"</td></tr>"
+	cHtml += "    <tr bgcolor='#d4e6f6'><td>Valor:</td><td><b>R$ "+cvaltochar(Transform(TRB->E1_VALOR,"@E 999,999,999.99"))+"</b></td></tr>"
+	cHtml += "    <tr bgcolor='#d4e6f6'><td>Vencimento:</td><td><b>"+cvaltochar(Stod(TRB->E1_VENCREA))+"</b></td></tr>"
+	cHtml += "    <tr bgcolor='#d4e6f6'><td>ReferÍncia:</td><td><b>"+Alltrim(TRB->ED_DESCRIC)+"</b></td></tr>"
+	cHtml += "</table><br><br><br>"
 
-cHtml += "<table width='1078' border='0'>"
-cHtml += "  <tr>"
-cHtml += "    <td>Prezado (a), Cliente<br>" 
-cHtml += Alltrim(TRB->A1_NOME)+" Cnpj "+Transform(TRB->A1_CGC,'@R 99.999.999/9999-99')+"<br>"
-cHtml += "Lembramos do vencimento de seu boleto banc·rio do dia ( "+cvaltochar(stod(TRB->E1_VENCREA))+" ) "+IF(!Empty(cBoleto),", se encontra em anexo.","")+"<br>"
-cHtml += "Essa È uma mensagem autom·tica, caso j· tenha efetuado o pagamento, por favor desconsiderar o e-mail</td>"
-cHtml += "  </tr><br>"
+	cHtml += "<table width='1078' border='0'>"
+	cHtml += "  <tr>"
+	cHtml += "    <td>Prezado (a), Cliente<br>"
+	cHtml += Alltrim(TRB->A1_NOME)+" Cnpj "+Transform(TRB->A1_CGC,'@R 99.999.999/9999-99')+"<br>"
+	cHtml += "Lembramos do vencimento de seu boleto banc·rio do dia ( "+cvaltochar(stod(TRB->E1_VENCREA))+" ) "+IF(!Empty(cBoleto),", se encontra em anexo.","")+"<br>"
+	cHtml += "Essa È uma mensagem autom·tica, caso j· tenha efetuado o pagamento, por favor desconsiderar o e-mail</td>"
+	cHtml += "  </tr><br>"
 
-If !Empty(cBoleto)
+	If !Empty(cBoleto)
 
-	cHtml += " <tr bgcolor='#5592bb'>"
-	cHtml += "    <td>Para agilizar o processo, estamos anexando uma cÛpia do boleto.</td>"
-	cHtml += " </tr>"
+		cHtml += " <tr bgcolor='#5592bb'>"
+		cHtml += "    <td>Para agilizar o processo, estamos anexando uma cÛpia do boleto.</td>"
+		cHtml += " </tr>"
 
-EndIf
+	EndIf
 
-cHtml += "  <tr>"
-cHtml += "    <td><p><strong>"+Alltrim(SM0->M0_NOMECOM)+"</strong><br />"
-cHtml += "      Departamento Financeiro<br />"
-cHtml += "      "+Alltrim(SM0->M0_ENDENT)+" "+Alltrim(SM0->M0_CIDENT)+" - "+SM0->M0_ESTENT+"<br />"
-cHtml += "  <strong>T</strong>el 55 (11) 5082-1955 Celular / WhatsApp: (11) 98577-0022 e (11) 97079-1448 <br />"  //"+SM0->M0_TEL+"
-cHtml += "  <strong>E-mail</strong><strong> </strong><a href='mailto:financeiro@robsol.com.br'>financeiro@robsol.com.br</a><u> </u></p></td>"
-cHtml += "  </tr>"
-cHtml += "</table>"  
+	cHtml += "  <tr>"
+	cHtml += "    <td><p><strong>"+Alltrim(SM0->M0_NOMECOM)+"</strong><br />"
+	cHtml += "      Departamento Financeiro<br />"
+	cHtml += "      "+Alltrim(SM0->M0_ENDENT)+" "+Alltrim(SM0->M0_CIDENT)+" - "+SM0->M0_ESTENT+"<br />"
+	cHtml += "  <strong>T</strong>el 55 (11) 5082-1955 Celular / WhatsApp: (11) 98577-0022 e (11) 97079-1448 <br />"  //"+SM0->M0_TEL+"
+	cHtml += "  <strong>E-mail</strong><strong> </strong><a href='mailto:financeiro@robsol.com.br'>financeiro@robsol.com.br</a><u> </u></p></td>"
+	cHtml += "  </tr>"
+	cHtml += "</table>"
 
-cHtml += "</body>"
-cHtml += "</html>"     
+	cHtml += "</body>"
+	cHtml += "</html>"
 
-RestArea(aArea)
+	RestArea(aArea)
 
 Return(cHtml)
 
@@ -623,75 +625,75 @@ Return(cHtml)
 
 Static Function Cobranca1()
 
-Local aArea	:= GetArea()
-Local cHtml 
-Local nX 	:= 0
+	Local aArea	:= GetArea()
+	Local cHtml
+	Local nX 	:= 0
 
-cHtml := "<html>"
-cHtml += "<body>"
+	cHtml := "<html>"
+	cHtml += "<body>"
 
-cHtml += "<table width='1081' border='0'>" 
-cHtml += "  <tr>"
-cHtml += " <td align='center' bgcolor='#33FFFF'><b>Aviso de CobranÁa</b></td>"
-cHtml += " </tr>"
-cHtml += " <tr><br><br><br>"
-cHtml += "    <td align='right'>S„o Paulo, "+Transform(Day(dDataBase),'99') + " de " + MesExtenso(dDataBase) + " de " + Transform(Year(dDataBase),'9999')+".</td>"   
-cHtml += "</tr></table><br><br><br>"   
+	cHtml += "<table width='1081' border='0'>"
+	cHtml += "  <tr>"
+	cHtml += " <td align='center' bgcolor='#33FFFF'><b>Aviso de CobranÁa</b></td>"
+	cHtml += " </tr>"
+	cHtml += " <tr><br><br><br>"
+	cHtml += "    <td align='right'>S„o Paulo, "+Transform(Day(dDataBase),'99') + " de " + MesExtenso(dDataBase) + " de " + Transform(Year(dDataBase),'9999')+".</td>"
+	cHtml += "</tr></table><br><br><br>"
 
-cHtml += "<table width='1081' border='0'>"
-cHtml += "  <tr>"
-cHtml += "  <td><p>Prezado Cliente,</p></td></tr><tr>"
-cHtml += "  <td><p>"+substr(aTitCli[1,11],1,6)+"-"+substr(aTitCli[1,11],7,2)+" / "+Alltrim(aTitCli[1,8])+"</p></td>"
-cHtml += "  </tr><br><br>"
-cHtml += "  <tr>"
-cHtml += "  <td>Informamos que atÈ a presente data, n„o registramos o pagamento do tÌtulo abaixo relacionado. Pedimos para efetuar o pagamento para evitar possÌvel protestos/negativaÁ„o. Para qualquer d˙vida, entrar em contato atravÈs do telefone (11) 5082-1955
-cHtml += "  Caso o pagamento j· tenha ocorrido, anterior ‡ data de hoje, solicitamos que desconsidere este aviso e nos encaminhe o comprovante de pagamento atravÈs do e-mail: financeiro@robsol.com.br , informando o numero do seu CNPJ."
-//cHtml += "  Qualquer d˙vida entrar em contato pelo telefone (11) 5082-1955"
+	cHtml += "<table width='1081' border='0'>"
+	cHtml += "  <tr>"
+	cHtml += "  <td><p>Prezado Cliente,</p></td></tr><tr>"
+	cHtml += "  <td><p>"+substr(aTitCli[1,11],1,6)+"-"+substr(aTitCli[1,11],7,2)+" / "+Alltrim(aTitCli[1,8])+"</p></td>"
+	cHtml += "  </tr><br><br>"
+	cHtml += "  <tr>"
+	cHtml += "  <td>Informamos que atÈ a presente data, n„o registramos o pagamento do tÌtulo abaixo relacionado. Pedimos para efetuar o pagamento para evitar possÌvel protestos/negativaÁ„o. Para qualquer d˙vida, entrar em contato atravÈs do telefone (11) 5082-1955
+	cHtml += "  Caso o pagamento j· tenha ocorrido, anterior ‡ data de hoje, solicitamos que desconsidere este aviso e nos encaminhe o comprovante de pagamento atravÈs do e-mail: financeiro@robsol.com.br , informando o numero do seu CNPJ."
+	//cHtml += "  Qualquer d˙vida entrar em contato pelo telefone (11) 5082-1955"
 
-cHtml += "  </tr>"
-cHtml += "</table>
-cHtml += "<br><br><br>"
+	cHtml += "  </tr>"
+	cHtml += "</table>
+	cHtml += "<br><br><br>"
 
-cHtml += "<table width='1081' border='0'>"
-cHtml += "  <tr>" 
-cHtml += "  <td align='center' bgcolor='#33FFFF'><b>N˙mero NF</b></td><td align='center' bgcolor='#33FFFF'><b>Emiss„o</b></td><td align='center' bgcolor='#33FFFF'><b>Vencimento</b></td><td align='center' bgcolor='#33FFFF'><b>Valor</b></td><td align='center' bgcolor='#33FFFF'><b>Natureza</b></td>"
-cHtml += "  </tr>"
+	cHtml += "<table width='1081' border='0'>"
+	cHtml += "  <tr>"
+	cHtml += "  <td align='center' bgcolor='#33FFFF'><b>N˙mero NF</b></td><td align='center' bgcolor='#33FFFF'><b>Emiss„o</b></td><td align='center' bgcolor='#33FFFF'><b>Vencimento</b></td><td align='center' bgcolor='#33FFFF'><b>Valor</b></td><td align='center' bgcolor='#33FFFF'><b>Natureza</b></td>"
+	cHtml += "  </tr>"
 
-For nX := 1 to len(aTitCli)
-	cHtml += "  <tr>"                                                                                        
-	cHtml += "<td align='center'>"+aTitCli[nX,10]+aTitCli[nX,01]+"</td><td align='center'>"+cvaltochar(aTitCli[nX,02])+"</td><td align='center'>"+cvaltochar(aTitCli[nX,03])+"</td><td align='center'>"+cvaltochar(aTitCli[nX,04])+"</td><td align='center'>"+Alltrim(aTitCli[nX,07])+"</td>
-	cHtml += "  </tr>"                                                                                                                                                                          
-Next nX	
+	For nX := 1 to len(aTitCli)
+		cHtml += "  <tr>"
+		cHtml += "<td align='center'>"+aTitCli[nX,10]+aTitCli[nX,01]+"</td><td align='center'>"+cvaltochar(aTitCli[nX,02])+"</td><td align='center'>"+cvaltochar(aTitCli[nX,03])+"</td><td align='center'>"+cvaltochar(aTitCli[nX,04])+"</td><td align='center'>"+Alltrim(aTitCli[nX,07])+"</td>
+		cHtml += "  </tr>"
+	Next nX
 
-cHtml += "</table><br><br><br>"
+	cHtml += "</table><br><br><br>"
 
-cHtml += "<table width='1081' border='0'>"
-cHtml += " <br><br><b>Esta mensagem n„o contÈm anexos</b><br><br>  
-cHtml += "</table><br><br>
+	cHtml += "<table width='1081' border='0'>"
+	cHtml += " <br><br><b>Esta mensagem n„o contÈm anexos</b><br><br>
+	cHtml += "</table><br><br>
 
-cHtml += "<table width='1081' border='0'>"
-cHtml += "  <tr>"
-cHtml += "    <td><p>Certos de  vossa atenÁ„o, permanecemos no aguardo.</p></td>"
-cHtml += "  </tr><br><br><br>"
-cHtml += "  <tr>"
-cHtml += "    <td><p><strong>"+Alltrim(SM0->M0_NOMECOM)+"</strong><br />"
-cHtml += "      Departamento Financeiro<br />"
-cHtml += "      "+Alltrim(SM0->M0_ENDENT)+" "+Alltrim(SM0->M0_CIDENT)+" - "+SM0->M0_ESTENT+"<br />"
-cHtml += "  <strong>T</strong>el 55 (11) 5082-1955 Celular / WhatsApp: (11) 98577-0022 e (11) 97079-1448  <br />" //"+SM0->M0_TEL+"
-cHtml += "  <strong>E-mail:</strong><strong> </strong><a href='mailto:financeiro@robsol.com.br'>financeiro@robsol.com.br</a></p></td>"
-cHtml += "  </tr>"
-cHtml += "  <tr>"
-cHtml += "	<td><img src='cid:LGMID.PNG'></td>"
-cHtml += "  </tr>"
-cHtml += "</table>"
-cHtml += "</body>"
-cHtml += "</html>"
+	cHtml += "<table width='1081' border='0'>"
+	cHtml += "  <tr>"
+	cHtml += "    <td><p>Certos de  vossa atenÁ„o, permanecemos no aguardo.</p></td>"
+	cHtml += "  </tr><br><br><br>"
+	cHtml += "  <tr>"
+	cHtml += "    <td><p><strong>"+Alltrim(SM0->M0_NOMECOM)+"</strong><br />"
+	cHtml += "      Departamento Financeiro<br />"
+	cHtml += "      "+Alltrim(SM0->M0_ENDENT)+" "+Alltrim(SM0->M0_CIDENT)+" - "+SM0->M0_ESTENT+"<br />"
+	cHtml += "  <strong>T</strong>el 55 (11) 5082-1955 Celular / WhatsApp: (11) 98577-0022 e (11) 97079-1448  <br />" //"+SM0->M0_TEL+"
+	cHtml += "  <strong>E-mail:</strong><strong> </strong><a href='mailto:financeiro@robsol.com.br'>financeiro@robsol.com.br</a></p></td>"
+	cHtml += "  </tr>"
+	cHtml += "  <tr>"
+	cHtml += "	<td><img src='cid:LGMID.PNG'></td>"
+	cHtml += "  </tr>"
+	cHtml += "</table>"
+	cHtml += "</body>"
+	cHtml += "</html>"
 
-RestArea(aArea)
+	RestArea(aArea)
 
-Return(cHtml)                                                                                                                
+Return(cHtml)
 
- /*
+/*
 ‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
 ±±…ÕÕÕÕÕÕÕÕÕÕ—ÕÕÕÕÕÕÕÕÕÕÀÕÕÕÕÕÕÕ—ÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÀÕÕÕÕÕÕ—ÕÕÕÕÕÕÕÕÕÕÕÕÕª±±
@@ -708,76 +710,76 @@ Return(cHtml)
 
 Static Function Cobranca2()
 
-Local aArea	:=	GetArea()
-Local cHtml
-Local nX  	:=	0
+	Local aArea	:=	GetArea()
+	Local cHtml
+	Local nX  	:=	0
 
-cHtml := "<html>"
-cHtml += "<body>"
+	cHtml := "<html>"
+	cHtml += "<body>"
 
-cHtml += "<table width='1081' border='0'>"
-cHtml += "  <tr>"
-cHtml += " <td align='center' bgcolor='#33FFFF'><b>Aviso de CobranÁa</b></td>"
-cHtml += "</tr>"
-cHtml += "  <tr>"
-cHtml += " <td align='right'>S„o Paulo, "+Transform(Day(dDataBase),'99') + " de " + MesExtenso(dDataBase) + " de " + Transform(Year(dDataBase),'9999')+".</td>"   
-cHtml += "</tr></table><br><br><br>"
-
-cHtml += "<table width='1081' border='0'>"
-cHtml += "  <tr>"
-cHtml += "  <td><p>Prezado Cliente,</p></td></tr><tr>"
-cHtml += "  <td><p>"+substr(aTitCli[1,11],1,6)+"-"+substr(aTitCli[1,11],7,2)+" / "+Alltrim(aTitCli[1,8])+"</p></td>"
-cHtml += "  </tr><br><br>"
-cHtml += "  <tr>"
-cHtml += "  <td>Informamos que atÈ a presente data, n„o registramos o pagamento do tÌtulo abaixo relacionado. Pedimos para efetuar o pagamento para evitar possÌvel protestos/negativaÁ„o. Para qualquer d˙vida, entrar em contato atravÈs do telefone (11) 5082-1955
-cHtml += "  Caso o pagamento j· tenha ocorrido, anterior ‡ data de hoje, solicitamos que desconsidere este aviso e nos encaminhe o comprovante de pagamento atravÈs do e-mail: financeiro@robsol.com.br , informando o numero do seu CNPJ."
-//cHtml += "  Qualquer d˙vida entrar em contato pelo telefone (11) 5082-1955"
-cHtml += "  </tr>"
-cHtml += "</table>
-cHtml += "<br><br><br>"
-
-cHtml += "<table width='1081' border='0'>"
-
-cHtml += "  <tr>"
-cHtml += "  <td align='center' bgcolor='#33FFFF'><b>N˙mero NF</b></td><td align='center' bgcolor='#33FFFF'><b>Emiss„o</b></td><td align='center' bgcolor='#33FFFF'><b>Vencimento</b></td><td align='center' bgcolor='#33FFFF'><b>Valor</b></td><td align='center' bgcolor='#33FFFF'><b>Natureza</b></td>"
-cHtml += "  </tr>"
-
-For nX := 1 to len(aTitCli)
+	cHtml += "<table width='1081' border='0'>"
 	cHtml += "  <tr>"
-	cHtml += "<td align='center'>"+aTitCli[nX,10]+aTitCli[nX,01]+"</td><td align='center'>"+cvaltochar(aTitCli[nX,02])+"</td><td align='center'>"+cvaltochar(aTitCli[nX,03])+"</td><td align='center'>"+cvaltochar(aTitCli[nX,04])+"</td><td align='center'>"+Alltrim(aTitCli[nX,07])+"</td>
-	cHtml += "  </tr>"                                                                                                                                                                          
-Next nX	
+	cHtml += " <td align='center' bgcolor='#33FFFF'><b>Aviso de CobranÁa</b></td>"
+	cHtml += "</tr>"
+	cHtml += "  <tr>"
+	cHtml += " <td align='right'>S„o Paulo, "+Transform(Day(dDataBase),'99') + " de " + MesExtenso(dDataBase) + " de " + Transform(Year(dDataBase),'9999')+".</td>"
+	cHtml += "</tr></table><br><br><br>"
 
-cHtml += "</table><br><br><br>"
- 
-cHtml += "<table width='1081' border='0'>"
-cHtml += " <br><br><b>Esta mensagem n„o contÈm anexos</b><br><br>  
-cHtml += "</table><br><br>
+	cHtml += "<table width='1081' border='0'>"
+	cHtml += "  <tr>"
+	cHtml += "  <td><p>Prezado Cliente,</p></td></tr><tr>"
+	cHtml += "  <td><p>"+substr(aTitCli[1,11],1,6)+"-"+substr(aTitCli[1,11],7,2)+" / "+Alltrim(aTitCli[1,8])+"</p></td>"
+	cHtml += "  </tr><br><br>"
+	cHtml += "  <tr>"
+	cHtml += "  <td>Informamos que atÈ a presente data, n„o registramos o pagamento do tÌtulo abaixo relacionado. Pedimos para efetuar o pagamento para evitar possÌvel protestos/negativaÁ„o. Para qualquer d˙vida, entrar em contato atravÈs do telefone (11) 5082-1955
+	cHtml += "  Caso o pagamento j· tenha ocorrido, anterior ‡ data de hoje, solicitamos que desconsidere este aviso e nos encaminhe o comprovante de pagamento atravÈs do e-mail: financeiro@robsol.com.br , informando o numero do seu CNPJ."
+	//cHtml += "  Qualquer d˙vida entrar em contato pelo telefone (11) 5082-1955"
+	cHtml += "  </tr>"
+	cHtml += "</table>
+	cHtml += "<br><br><br>"
 
-cHtml += "<table width='1081' border='0'>"
-cHtml += "  <tr>"
-cHtml += "  </tr>"
-cHtml += "  <tr><br>"
-cHtml += "    <td><p><em>Certos  da vossa atenÁ„o, permanecemos no aguardo.</em></p></td>"
-cHtml += "  </tr>"
-cHtml += "  <tr>"
-cHtml += "    <td>&nbsp;</td>"
-cHtml += "  </tr>"
-cHtml += "  <tr>"
-cHtml += "    <td><p><strong>"+Alltrim(SM0->M0_NOMECOM)+"</strong><br />"
-cHtml += "      Departamento Financeiro<br />"
-cHtml += "      "+Alltrim(SM0->M0_ENDENT)+" "+Alltrim(SM0->M0_CIDENT)+" - "+SM0->M0_ESTENT+"<br />"
-cHtml += "  <strong>T</strong>el 55 (11) 5082-1955 Celular / WhatsApp: (11) 98577-0022 e (11) 97079-1448 <br />" //"+SM0->M0_TEL+"
-cHtml += "  <strong>E-mail:</strong><strong> </strong><a href='mailto:financeiro@robsol.com.br'>financeiro@robsol.com.br</a></p></td>"
-cHtml += "  </tr>"
-cHtml += "  <tr>"
-cHtml += "	<td><img src='cid:LGMID.PNG'></td>"
-cHtml += "  </tr>"
-cHtml += "</table>"
-cHtml += "</body>"
-cHtml += "</html>"
+	cHtml += "<table width='1081' border='0'>"
 
-RestArea(aArea)
+	cHtml += "  <tr>"
+	cHtml += "  <td align='center' bgcolor='#33FFFF'><b>N˙mero NF</b></td><td align='center' bgcolor='#33FFFF'><b>Emiss„o</b></td><td align='center' bgcolor='#33FFFF'><b>Vencimento</b></td><td align='center' bgcolor='#33FFFF'><b>Valor</b></td><td align='center' bgcolor='#33FFFF'><b>Natureza</b></td>"
+	cHtml += "  </tr>"
+
+	For nX := 1 to len(aTitCli)
+		cHtml += "  <tr>"
+		cHtml += "<td align='center'>"+aTitCli[nX,10]+aTitCli[nX,01]+"</td><td align='center'>"+cvaltochar(aTitCli[nX,02])+"</td><td align='center'>"+cvaltochar(aTitCli[nX,03])+"</td><td align='center'>"+cvaltochar(aTitCli[nX,04])+"</td><td align='center'>"+Alltrim(aTitCli[nX,07])+"</td>
+		cHtml += "  </tr>"
+	Next nX
+
+	cHtml += "</table><br><br><br>"
+
+	cHtml += "<table width='1081' border='0'>"
+	cHtml += " <br><br><b>Esta mensagem n„o contÈm anexos</b><br><br>
+	cHtml += "</table><br><br>
+
+	cHtml += "<table width='1081' border='0'>"
+	cHtml += "  <tr>"
+	cHtml += "  </tr>"
+	cHtml += "  <tr><br>"
+	cHtml += "    <td><p><em>Certos  da vossa atenÁ„o, permanecemos no aguardo.</em></p></td>"
+	cHtml += "  </tr>"
+	cHtml += "  <tr>"
+	cHtml += "    <td>&nbsp;</td>"
+	cHtml += "  </tr>"
+	cHtml += "  <tr>"
+	cHtml += "    <td><p><strong>"+Alltrim(SM0->M0_NOMECOM)+"</strong><br />"
+	cHtml += "      Departamento Financeiro<br />"
+	cHtml += "      "+Alltrim(SM0->M0_ENDENT)+" "+Alltrim(SM0->M0_CIDENT)+" - "+SM0->M0_ESTENT+"<br />"
+	cHtml += "  <strong>T</strong>el 55 (11) 5082-1955 Celular / WhatsApp: (11) 98577-0022 e (11) 97079-1448 <br />" //"+SM0->M0_TEL+"
+	cHtml += "  <strong>E-mail:</strong><strong> </strong><a href='mailto:financeiro@robsol.com.br'>financeiro@robsol.com.br</a></p></td>"
+	cHtml += "  </tr>"
+	cHtml += "  <tr>"
+	cHtml += "	<td><img src='cid:LGMID.PNG'></td>"
+	cHtml += "  </tr>"
+	cHtml += "</table>"
+	cHtml += "</body>"
+	cHtml += "</html>"
+
+	RestArea(aArea)
 
 Return(cHtml)
 
@@ -798,83 +800,83 @@ Return(cHtml)
 
 Static Function Cobranca3()
 
-Local aArea	:=	GetArea()
-Local cHtml
-Local nX 	:=	0
+	Local aArea	:=	GetArea()
+	Local cHtml
+	Local nX 	:=	0
 
-cHtml := "<html>"
-cHtml += "<body>"
+	cHtml := "<html>"
+	cHtml += "<body>"
 
-cHtml += "<table width='1081' border='0'>"
-cHtml += "  <tr>"
-cHtml += " <td align='center' bgcolor='#33FFFF'><b>Aviso de CobranÁa</b></td>"
-cHtml += "</tr>"
-cHtml += "  <tr>"
-cHtml += " <td align='right'>S„o Paulo, "+Transform(Day(dDataBase),'99') + " de " + MesExtenso(dDataBase) + " de " + Transform(Year(dDataBase),'9999')+".</td>"   
-cHtml += "</tr></table><br><br><br>"
-
-cHtml += "<table width='1081' border='0'>"
-cHtml += "  <tr>"
-cHtml += "  <td><p>Prezado Cliente,</p></td></tr><tr>"
-cHtml += "  <td><p>"+substr(aTitCli[1,11],1,6)+"-"+substr(aTitCli[1,11],7,2)+" / "+Alltrim(aTitCli[1,8])+"</p></td>"
-cHtml += "  </tr><br><br>"
-cHtml += "  <tr>"
-cHtml += "  <td>Informamos que atÈ a presente data, n„o registramos o pagamento do tÌtulo abaixo relacionado. Pedimos para efetuar o pagamento para evitar possÌvel protestos/negativaÁ„o. Para qualquer d˙vida, entrar em contato atravÈs do telefone (11) 5082-1955
-cHtml += "  Caso o pagamento j· tenha ocorrido, anterior ‡ data de hoje, solicitamos que desconsidere este aviso e nos encaminhe o comprovante de pagamento atravÈs do e-mail: financeiro@robsol.com.br , informando o numero do seu CNPJ."
-//cHtml += "  Qualquer d˙vida entrar em contato pelo telefone (11) 5082-1955"
-cHtml += "  </tr>"
-cHtml += "</table>
-cHtml += "<br><br><br>"
-cHtml += "<table width='1081' border='0'>"
-cHtml += "  <tr>"
-cHtml += "  <td align='center' bgcolor='#33FFFF'><b>N˙mero NF</b></td><td align='center' bgcolor='#33FFFF'><b>Emiss„o</b></td><td align='center' bgcolor='#33FFFF'><b>Vencimento</b></td><td align='center' bgcolor='#33FFFF'><b>Valor</b></td><td align='center' bgcolor='#33FFFF'><b>Natureza</b></td>"
-cHtml += "  </tr>"
-
-For nX := 1 to len(aTitCli)
+	cHtml += "<table width='1081' border='0'>"
 	cHtml += "  <tr>"
-	cHtml += "<td align='center'>"+aTitCli[nX,10]+aTitCli[nX,01]+"</td><td align='center'>"+cvaltochar(aTitCli[nX,02])+"</td><td align='center'>"+cvaltochar(aTitCli[nX,03])+"</td><td align='center'>"+cvaltochar(aTitCli[nX,04])+"</td><td align='center'>"+Alltrim(aTitCli[nX,07])+"</td>
-	cHtml += "  </tr>"                                                                                                                                                                          
-Next nX	
+	cHtml += " <td align='center' bgcolor='#33FFFF'><b>Aviso de CobranÁa</b></td>"
+	cHtml += "</tr>"
+	cHtml += "  <tr>"
+	cHtml += " <td align='right'>S„o Paulo, "+Transform(Day(dDataBase),'99') + " de " + MesExtenso(dDataBase) + " de " + Transform(Year(dDataBase),'9999')+".</td>"
+	cHtml += "</tr></table><br><br><br>"
 
-cHtml += "</table><br><br><br>"
+	cHtml += "<table width='1081' border='0'>"
+	cHtml += "  <tr>"
+	cHtml += "  <td><p>Prezado Cliente,</p></td></tr><tr>"
+	cHtml += "  <td><p>"+substr(aTitCli[1,11],1,6)+"-"+substr(aTitCli[1,11],7,2)+" / "+Alltrim(aTitCli[1,8])+"</p></td>"
+	cHtml += "  </tr><br><br>"
+	cHtml += "  <tr>"
+	cHtml += "  <td>Informamos que atÈ a presente data, n„o registramos o pagamento do tÌtulo abaixo relacionado. Pedimos para efetuar o pagamento para evitar possÌvel protestos/negativaÁ„o. Para qualquer d˙vida, entrar em contato atravÈs do telefone (11) 5082-1955
+	cHtml += "  Caso o pagamento j· tenha ocorrido, anterior ‡ data de hoje, solicitamos que desconsidere este aviso e nos encaminhe o comprovante de pagamento atravÈs do e-mail: financeiro@robsol.com.br , informando o numero do seu CNPJ."
+	//cHtml += "  Qualquer d˙vida entrar em contato pelo telefone (11) 5082-1955"
+	cHtml += "  </tr>"
+	cHtml += "</table>
+	cHtml += "<br><br><br>"
+	cHtml += "<table width='1081' border='0'>"
+	cHtml += "  <tr>"
+	cHtml += "  <td align='center' bgcolor='#33FFFF'><b>N˙mero NF</b></td><td align='center' bgcolor='#33FFFF'><b>Emiss„o</b></td><td align='center' bgcolor='#33FFFF'><b>Vencimento</b></td><td align='center' bgcolor='#33FFFF'><b>Valor</b></td><td align='center' bgcolor='#33FFFF'><b>Natureza</b></td>"
+	cHtml += "  </tr>"
 
-cHtml += "<table width='1081' border='0'>"
-cHtml += " <br><br><b>Esta mensagem n„o contÈm anexos</b><br><br>  
-cHtml += "</table><br><br>
+	For nX := 1 to len(aTitCli)
+		cHtml += "  <tr>"
+		cHtml += "<td align='center'>"+aTitCli[nX,10]+aTitCli[nX,01]+"</td><td align='center'>"+cvaltochar(aTitCli[nX,02])+"</td><td align='center'>"+cvaltochar(aTitCli[nX,03])+"</td><td align='center'>"+cvaltochar(aTitCli[nX,04])+"</td><td align='center'>"+Alltrim(aTitCli[nX,07])+"</td>
+		cHtml += "  </tr>"
+	Next nX
 
-cHtml += "<table width='1081' border='0'>"
-cHtml += "  <tr>"
-cHtml += "  </tr>"
-cHtml += "  <tr><br>"
-cHtml += "    <td>O n„o pronunciamento ensejar· no encaminhamento do(s) tÌtulo(s) para cartÛrio.</td>"
-cHtml += "  </tr>"
-cHtml += "  <tr>"
-cHtml += "    <td><p>Certos  de vossa atenÁ„o, permanecemos no aguardo. </p></td>"
-cHtml += "  </tr>"
-cHtml += "  <tr>"
-cHtml += "    <td>&nbsp;</td>"
-cHtml += "  </tr>"
-cHtml += "  <tr>"
-cHtml += "    <td><p><strong>"+Alltrim(SM0->M0_NOMECOM)+"</strong><br />"
-cHtml += "      Departamento Financeiro<br />"
-cHtml += "      "+Alltrim(SM0->M0_ENDENT)+" "+Alltrim(SM0->M0_CIDENT)+" - "+SM0->M0_ESTENT+"<br />"
-cHtml += "  <strong>T</strong>el 55 (11) 5082-1955 Celular / WhatsApp: (11) 98577-0022 e (11) 97079-1448 <br />" //"+SM0->M0_TEL+"
-cHtml += "  <strong>E-mail:</strong><strong> </strong><a href='mailto:financeiro@robsol.com.br'>financeiro@robsol.com.br</a></p></td>"
-cHtml += "  </tr>"
-cHtml += "  <tr>"
-cHtml += "    <td>&nbsp;</td>"
-cHtml += "  </tr>"
-cHtml += "  <tr>"
-cHtml += "	<td><img src='cid:lgmid.png'></td>"
-cHtml += "  </tr>"
-cHtml += "</table>"
-cHtml += "</body>"
-cHtml += "</html>"
+	cHtml += "</table><br><br><br>"
 
-RestArea(aArea)
+	cHtml += "<table width='1081' border='0'>"
+	cHtml += " <br><br><b>Esta mensagem n„o contÈm anexos</b><br><br>
+	cHtml += "</table><br><br>
 
-Return(cHtml)                                                                                                           
-                                                                                                
+	cHtml += "<table width='1081' border='0'>"
+	cHtml += "  <tr>"
+	cHtml += "  </tr>"
+	cHtml += "  <tr><br>"
+	cHtml += "    <td>O n„o pronunciamento ensejar· no encaminhamento do(s) tÌtulo(s) para cartÛrio.</td>"
+	cHtml += "  </tr>"
+	cHtml += "  <tr>"
+	cHtml += "    <td><p>Certos  de vossa atenÁ„o, permanecemos no aguardo. </p></td>"
+	cHtml += "  </tr>"
+	cHtml += "  <tr>"
+	cHtml += "    <td>&nbsp;</td>"
+	cHtml += "  </tr>"
+	cHtml += "  <tr>"
+	cHtml += "    <td><p><strong>"+Alltrim(SM0->M0_NOMECOM)+"</strong><br />"
+	cHtml += "      Departamento Financeiro<br />"
+	cHtml += "      "+Alltrim(SM0->M0_ENDENT)+" "+Alltrim(SM0->M0_CIDENT)+" - "+SM0->M0_ESTENT+"<br />"
+	cHtml += "  <strong>T</strong>el 55 (11) 5082-1955 Celular / WhatsApp: (11) 98577-0022 e (11) 97079-1448 <br />" //"+SM0->M0_TEL+"
+	cHtml += "  <strong>E-mail:</strong><strong> </strong><a href='mailto:financeiro@robsol.com.br'>financeiro@robsol.com.br</a></p></td>"
+	cHtml += "  </tr>"
+	cHtml += "  <tr>"
+	cHtml += "    <td>&nbsp;</td>"
+	cHtml += "  </tr>"
+	cHtml += "  <tr>"
+	cHtml += "	<td><img src='cid:lgmid.png'></td>"
+	cHtml += "  </tr>"
+	cHtml += "</table>"
+	cHtml += "</body>"
+	cHtml += "</html>"
+
+	RestArea(aArea)
+
+Return(cHtml)
+
 
 /*
 ‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹
@@ -893,56 +895,56 @@ Return(cHtml)
 
 Static Function AvisFin(cSubject,aCumula)
 
-Local cHtml	:=	"<html>"
-Local nX 	:=	0
+	Local cHtml	:=	"<html>"
+	Local nX 	:=	0
 
-cHtml	+=	"	<head>		<title></title>	</head>"
-cHtml	+=	" 	<body><b>		<p>"+cSubject+" transmitidos.</b></p>"
-cHtml	+=	"	<table border='0' cellpadding='1' cellspacing='1' style='width: 1900px;'>
-cHtml	+=	"	<tr bgcolor='#0000FF'><td>Codigo Cliente</td>"
-cHtml	+=	"	<td>Loja</td>"
-cHtml	+=	"	<td>Nome</td>"
-cHtml	+=	"	<td>Titulo</td>"
-cHtml	+=	"	<td>Vencto.</td>"
-cHtml	+=	"	<td>Valor</td>"
-cHtml	+=	"	<td>Email</td>"
-cHtml	+=	"	</tr>"			
-
-For nX := 1 to len(aAvisFi)
-	cHtml 	+= 	"<tr bgcolor='"+If(Mod(nX,2)==0,"#d4e6f6","#5592bb")+"'>"
-	cHtml	+=	"	<td>"+aAvisFi[nX,01]+"</td>"
-	cHtml	+=	"	<td>"+aAvisFi[nX,02]+"</td>"
-	cHtml	+=	"	<td>"+aAvisFi[nX,03]+"</td>"
-	cHtml	+=	"	<td>"+aAvisFi[nX,04]+"</td>"
-	cHtml	+=	"	<td>"+aAvisFi[nX,05]+"</td>"
-	cHtml	+=	"	<td>"+aAvisFi[nX,06]+"</td>"
-	cHtml	+=	"	<td>"+Alltrim(aAvisFi[nX,07])+"</td>"
+	cHtml	+=	"	<head>		<title></title>	</head>"
+	cHtml	+=	" 	<body><b>		<p>"+cSubject+" transmitidos.</b></p>"
+	cHtml	+=	"	<table border='0' cellpadding='1' cellspacing='1' style='width: 1900px;'>
+	cHtml	+=	"	<tr bgcolor='#0000FF'><td>Codigo Cliente</td>"
+	cHtml	+=	"	<td>Loja</td>"
+	cHtml	+=	"	<td>Nome</td>"
+	cHtml	+=	"	<td>Titulo</td>"
+	cHtml	+=	"	<td>Vencto.</td>"
+	cHtml	+=	"	<td>Valor</td>"
+	cHtml	+=	"	<td>Email</td>"
 	cHtml	+=	"	</tr>"
-Next nX       
 
-	cHtml 	+=	" </table>"
-	cHtml	+=	"	<p>&nbsp;</p>"
-
-If len(aCumula) > 0
-	
-	cHtml 	+=	" 	<table border='0' cellpadding='1' cellspacing='1' style='width: 900px;'>"
-	cHtml	+=	"	<tr><td>Cliente</td>"
-	cHtml	+=	"	<td>Acumulado</td>"
-	cHtml	+=	"	</tr>"
-	
-	Asort(aCumula,,,{|x,y| x[2] > y[2]})
-	 
-	For nX := 1 to len(aCumula)
-		cHtml 	+= 	"<tr>"
-		cHtml	+=	"	<td>"+aCumula[nX,01]+"</td>"
-		cHtml	+=	"	<td>"+Transform(aCumula[nX,02],"@E 999,999,999.99")+"</td>"
-		cHtml	+=	"</tr>"
+	For nX := 1 to len(aAvisFi)
+		cHtml 	+= 	"<tr bgcolor='"+If(Mod(nX,2)==0,"#d4e6f6","#5592bb")+"'>"
+		cHtml	+=	"	<td>"+aAvisFi[nX,01]+"</td>"
+		cHtml	+=	"	<td>"+aAvisFi[nX,02]+"</td>"
+		cHtml	+=	"	<td>"+aAvisFi[nX,03]+"</td>"
+		cHtml	+=	"	<td>"+aAvisFi[nX,04]+"</td>"
+		cHtml	+=	"	<td>"+aAvisFi[nX,05]+"</td>"
+		cHtml	+=	"	<td>"+aAvisFi[nX,06]+"</td>"
+		cHtml	+=	"	<td>"+Alltrim(aAvisFi[nX,07])+"</td>"
+		cHtml	+=	"	</tr>"
 	Next nX
+
 	cHtml 	+=	" </table>"
 	cHtml	+=	"	<p>&nbsp;</p>"
-EndIf
 
-cHtml	+=	"	</body></html>"
+	If len(aCumula) > 0
 
-Return(cHtml)                                                 
-	
+		cHtml 	+=	" 	<table border='0' cellpadding='1' cellspacing='1' style='width: 900px;'>"
+		cHtml	+=	"	<tr><td>Cliente</td>"
+		cHtml	+=	"	<td>Acumulado</td>"
+		cHtml	+=	"	</tr>"
+
+		Asort(aCumula,,,{|x,y| x[2] > y[2]})
+
+		For nX := 1 to len(aCumula)
+			cHtml 	+= 	"<tr>"
+			cHtml	+=	"	<td>"+aCumula[nX,01]+"</td>"
+			cHtml	+=	"	<td>"+Transform(aCumula[nX,02],"@E 999,999,999.99")+"</td>"
+			cHtml	+=	"</tr>"
+		Next nX
+		cHtml 	+=	" </table>"
+		cHtml	+=	"	<p>&nbsp;</p>"
+	EndIf
+
+	cHtml	+=	"	</body></html>"
+
+Return(cHtml)
+
