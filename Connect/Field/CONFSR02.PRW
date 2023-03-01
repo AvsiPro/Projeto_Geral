@@ -113,6 +113,7 @@ Static Function ExtLeitura()
 		cQuery += " INNER JOIN " + RetSQLName("SB1") + " SB1 ON B1_FILIAL='"+xFilial("SB1")+"' AND SB1.B1_COD = Z08.Z08_PRODUT   " 
 		cQuery += " INNER JOIN " + RetSQLName("SA1") + " SA1 ON A1_FILIAL='"+xFilial("SA1")+"' AND SA1.A1_COD = AAM.AAM_CODCLI AND SA1.A1_LOJA = AAM.AAM_LOJA   " 
 		cQuery += " WHERE  Z08.Z08_PEDIDO = '" + _cPedido + "'   " 
+		cQuery += " AND Z08_CONTRT='"+aList[oList:nAt,01]+"'"
 		cQuery += "        AND DA1.D_E_L_E_T_ = ' '   " 
 		cQuery += "        AND Z08.D_E_L_E_T_ = ' '   "
 		cQuery += " GROUP BY Z08.Z08_NUMSER, Z08.Z08_SELECA,Z08.Z08_PRODUT,SB1.B1_DESC,Z08.Z08_DATA,SA1.A1_NOME,SA1.A1_NREDUZ,SA1.A1_COD,SA1.A1_LOJA,DA1.DA1_XCONSU,DA1.DA1_PRCVEN   " 

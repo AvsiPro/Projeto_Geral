@@ -46,9 +46,9 @@ Static cMaskCPF   := "@R 999.999.999-99"                                        
 Static cMaskQtd   := IIf(!IsBlind(),PesqPict("SC6", "C6_QTDVEN"),'')                                          //Máscara de quantidade
 Static cMaskPrc   := IIf(!IsBlind(),PesqPict("SC6", "C6_PRUNIT"),'')                                          //Máscara de preço
 Static cMaskVlr   := IIf(!IsBlind(),PesqPict("SC6", "C6_VALOR"),'')                                           //Máscara de valor
-Static cMaskFrete := IIf(!IsBlind(),PesqPict("SC6", "C5_FRETE"),'')                                           //Máscara de frete
-Static cMaskPBru  := IIf(!IsBlind(),PesqPict("SC6", "C5_PBRUTO"),'')                                         //Máscara de peso bruto
-Static cMaskPLiq  := IIf(!IsBlind(),PesqPict("SC6", "C5_PESOL"),'')                                          //Máscara de peso liquido
+Static cMaskFrete := IIf(!IsBlind(),PesqPict("SC5", "C5_FRETE"),'')                                           //Máscara de frete
+Static cMaskPBru  := IIf(!IsBlind(),PesqPict("SC5", "C5_PBRUTO"),'')                                         //Máscara de peso bruto
+Static cMaskPLiq  := IIf(!IsBlind(),PesqPict("SC5", "C5_PESOL"),'')                                          //Máscara de peso liquido
 Static cCodBar    := ""
 Static cFretePed  := ""
 
