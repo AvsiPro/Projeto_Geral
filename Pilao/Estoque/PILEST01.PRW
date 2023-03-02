@@ -127,7 +127,7 @@ For nCont := 1 to len(aOSSLAP)
 
                 cUpdQry := "UPDATE SLAPLIC.dbo.RequisicaoPeca "
                 cUpdQry += " SET CP_NUM='"+SCP->CP_NUM+"',CP_ITEM=OSItem"
-                cUpdQry += " where OS='"+cOSAt+"'"
+                cUpdQry += " where OS='"+cvaltochar(cOSAt)+"'"
                 TcSqlExec(cUpdQry)
                 Aadd(aLsSCP,SCP->CP_NUM)
                 //CP_NUM 
@@ -152,7 +152,7 @@ For nCont := 1 to len(aOSSLAP)
     Else 
         cUpdQry := "UPDATE SLAPLIC.dbo.RequisicaoPeca "
         cUpdQry += " SET OSItemErr='Erro - Item sem saldo'"
-        cUpdQry += " where OS='"+aOSSLAP[nCont,01]+"' and OSItem='"+aOSSLAP[nCont,02]+"'"
+        cUpdQry += " where OS='"+cvaltochar(aOSSLAP[nCont,01])+"' and OSItem='"+cvaltochar(aOSSLAP[nCont,02])+"'"
         TcSqlExec(cUpdQry)
     EndIf
     
