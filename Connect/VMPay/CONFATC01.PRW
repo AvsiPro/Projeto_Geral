@@ -2442,7 +2442,20 @@ IF ParamBox(aPergs ,"Periodo de vendas",@aRet)
             If Empty(dtos(dUltLei))
                 dUltLei := ddatabase-30
             EndIf 
-            Aadd(aVendas, U_CONWSC03(aList[nX,02],2,dUltLei,daySub(ddatabase, 1),cHri,cHrf))
+
+            aPergs := {}
+            aRet   := {}
+            aAdd(aPergs ,{1, "Data Inicial?",   dUltLei, "", "", "", "", 070, .T.})    
+            aAdd(aPergs ,{1, "Data Final?",     daySub(ddatabase, 1), "", "", "", "", 070, .T.}) 
+            
+            If ParamBox(aPergs ,"Confirma o Periodo",@aRet) 
+            //daySub(ddatabase, 1)
+                dUltLei := aRet[1]
+                dLeiFim := aRet[2]
+                Aadd(aVendas, U_CONWSC03(aList[nX,02],2,dUltLei,dLeiFim,cHri,cHrf))
+            else
+                RETURN
+            EndIf 
         EndIf
     next
 
