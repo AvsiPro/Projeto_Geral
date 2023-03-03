@@ -80,7 +80,7 @@ User Function SF1100I()
 
 			//@127,230 BMPBUTTON TYPE 1 ACTION (ActFunc(1),lRet := .T.)
 			@151,230 BMPBUTTON TYPE 1 ACTION (ActFunc(1),lRet := .T.)
-
+			/*Rodrigo
 		Else
 			@000,000 TO 350,540 DIALOG oDlgObs TITLE OemToAnsi("Dados Adicionais da NF de Entrada: " + SF1->F1_DOC + " - " + SF1->F1_SERIE)
 			//@000,000 TO 300,540 DIALOG oDlgObs TITLE OemToAnsi("Dados Adicionais da NF de Entrada: " + SF1->F1_DOC + " - " + SF1->F1_SERIE)
@@ -90,61 +90,61 @@ User Function SF1100I()
 			@151,230 BMPBUTTON TYPE 1 ACTION GravaObs()
 
 		EndIf
+			*/
+			@007,004 SAY "Tranportadora.:"
+			@006,047 GET cCTrans F3 "SA4" Valid VldTransp(cCTrans) object oTransp
+			@006,092 GET cNTrans When .F. Size 148,50 object oNomeTra
+			@019,004 SAY "Frete por Conta.:"
+			@018,047 ComboBox cTPFrete                Items aTPFrete  SIZE 25,50  object oTPFrete
+			@019,079 SAY "Quantidade.:"
+			@018,122 GET nQuant  Picture "@e 99999" SIZE 40,50
+			@031,004 SAY "Especie.:"
+			@030,047 GET cEspecie SIZE 100,50
+			@043,004 SAY "Peso Bruto.:"
+			@042,047 GET nPesoB  Picture "@e 999999.999" SIZE 40,50
+			@043,106 SAY "Peso Liquido.:"
+			@042,145 GET nPesoL  Picture "@e 999999.999" SIZE 40,50
+			@055,004 SAY "Marca:"
+			@054,047 GET c_Marca SIZE 40, 50
+			@055,106 SAY "Numeração:"
+			@054,145 GET c_Num   SIZE 40, 50
+			@067,004 SAY "Observacoes.:"
+			@066,047 GET cObs SIZE 200,50
+			@078,047 GET cObs1 SIZE 200,50
+			@091,004 SAY "DI.:"
+			@090,047 GET nDI SIZE 40,50
+			@091,106 SAY "Data DI.:"
+			@090,145 GET dDI SIZE 40,50
+			@103,004 SAY "Estado Desemb.:"
+			@102,047 GET UFDesemb SIZE 40,50
+			@103,106 SAY "Local Desemb.:"
+			@102,145 GET xLocDesemb SIZE 40,50
+			@115,004 SAY "Data Desemb.:"
+			@114,047 GET dDesemb SIZE 40,50
+			//RODRIGO BARRETO 19/12/2022
+			//@115,106 SAY "Aliq. COF:"
+			//@114,145 GET n_AliqCOF  Picture "@e 999999.999" SIZE 40,50
+			//@127,004 SAY "Aliq. PIS:"
+			//@126,047 GET n_AliqPIS  Picture "@e 999999.999" SIZE 40,50
+			@115,106 SAY "Valor COF:"
+			@114,145 GET n_VlCOF  Picture "@e 999999.999" SIZE 40,50
+			@127,004 SAY "Valor PIS:"
+			@126,047 GET n_VlPIS  Picture "@e 999999.999" SIZE 40,50
 
-		@007,004 SAY "Tranportadora.:"
-		@006,047 GET cCTrans F3 "SA4" Valid VldTransp(cCTrans) object oTransp
-		@006,092 GET cNTrans When .F. Size 148,50 object oNomeTra
-		@019,004 SAY "Frete por Conta.:"
-		@018,047 ComboBox cTPFrete                Items aTPFrete  SIZE 25,50  object oTPFrete
-		@019,079 SAY "Quantidade.:"
-		@018,122 GET nQuant  Picture "@e 99999" SIZE 40,50
-		@031,004 SAY "Especie.:"
-		@030,047 GET cEspecie SIZE 100,50
-		@043,004 SAY "Peso Bruto.:"
-		@042,047 GET nPesoB  Picture "@e 999999.999" SIZE 40,50
-		@043,106 SAY "Peso Liquido.:"
-		@042,145 GET nPesoL  Picture "@e 999999.999" SIZE 40,50
-		@055,004 SAY "Marca:"
-		@054,047 GET c_Marca SIZE 40, 50
-		@055,106 SAY "Numeração:"
-		@054,145 GET c_Num   SIZE 40, 50
-		@067,004 SAY "Observacoes.:"
-		@066,047 GET cObs SIZE 200,50
-		@078,047 GET cObs1 SIZE 200,50
-		@091,004 SAY "DI.:"
-		@090,047 GET nDI SIZE 40,50
-		@091,106 SAY "Data DI.:"
-		@090,145 GET dDI SIZE 40,50
-		@103,004 SAY "Estado Desemb.:"
-		@102,047 GET UFDesemb SIZE 40,50
-		@103,106 SAY "Local Desemb.:"
-		@102,145 GET xLocDesemb SIZE 40,50
-		@115,004 SAY "Data Desemb.:"
-		@114,047 GET dDesemb SIZE 40,50
-		//RODRIGO BARRETO 19/12/2022
-		//@115,106 SAY "Aliq. COF:"
-		//@114,145 GET n_AliqCOF  Picture "@e 999999.999" SIZE 40,50
-		//@127,004 SAY "Aliq. PIS:"
-		//@126,047 GET n_AliqPIS  Picture "@e 999999.999" SIZE 40,50
-		@115,106 SAY "Valor COF:"
-		@114,145 GET n_VlCOF  Picture "@e 999999.999" SIZE 40,50
-		@127,004 SAY "Valor PIS:"
-		@126,047 GET n_VlPIS  Picture "@e 999999.999" SIZE 40,50
+			@127,106 SAY "Vl.Total:"
+			@126,145 GET n_VlTot  Picture "@e 999,999,999.99" SIZE 80,50
 
-		@127,106 SAY "Vl.Total:"
-		@126,145 GET n_VlTot  Picture "@e 999,999,999.99" SIZE 80,50
-
-		//RODRIGO BARRETO 19/12/2022
-		@139,004 SAY "TX Siscomex:"
-		@138,047 GET n_SisCo  Picture "@e 999999.999" SIZE 40,50
-		@139,106 SAY "Nr/REF:"
-		@138,145 GET cNrRef   SIZE 100,50
-		@151,004 SAY "BL NR:"
-		@150,047 GET cNbr  SIZE 100,50
+			//RODRIGO BARRETO 19/12/2022
+			@139,004 SAY "TX Siscomex:"
+			@138,047 GET n_SisCo  Picture "@e 999999.999" SIZE 40,50
+			@139,106 SAY "Nr/REF:"
+			@138,145 GET cNrRef   SIZE 100,50
+			@151,004 SAY "BL NR:"
+			@150,047 GET cNbr  SIZE 100,50
 
 
-		ACTIVATE DIALOG oDlgObs CENTERED
-
+			ACTIVATE DIALOG oDlgObs CENTERED
+		EndIf
 	EndIf
 
 Return
