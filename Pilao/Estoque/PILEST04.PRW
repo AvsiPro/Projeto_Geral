@@ -9,6 +9,8 @@ Local _aItem        :=  {}
 Local _atotitem     :=  {}
 Local aSB2Sld       :=  {}
 Local nCont         :=  0
+Local _atuB7X       :=  {}
+Local nX    
 
 Private lMsHelpAuto := .t. // se .t. direciona as mensagens de help
 Private lMsErroAuto := .f. //necessario a criacao
@@ -36,7 +38,8 @@ While !EOF()
                     0,;
                     0,;
                     '',;
-                    0})
+                    0,;
+                    TRB->B7CR})
     Dbskip()
 EndDo 
 
@@ -62,39 +65,55 @@ Next nCont
 
 Asort(aSB2Sld,,,{|x,y| x[9] < y[9] })
 
-cTM := aSB2Sld[1,9]
+cTM := ''
 _aItem := {}
 cNumero := ''
 
-If !Empty(cTM)
-    cNumero := NextNumero("SD3",2,"D3_DOC",.T.)
-    _aCab1 := { {"D3_DOC"       ,cNumero    , NIL},;
-                {"D3_TM"        ,cTM        , NIL},;
-                {"D3_EMISSAO"   ,ddatabase  , NIL}}
-EndIf 
 
 For nCont := 1 to len(aSB2Sld)
 
     If cTM <> aSB2Sld[nCont,09]
-        //executa
-        lMsErroAuto := .F.
+        If !Empty(cTM)
+            //executa
+            lMsErroAuto := .F.
 
-        MSExecAuto({|x,y,z| MATA241(x,y,z)},_aCab1,_atotitem,3)
+            MSExecAuto({|x,y,z| MATA241(x,y,z)},_aCab1,_atotitem,3)
 
-        If lMsErroAuto 
-            Mostraerro() 
-            DisarmTransaction() 
-            break
-        EndIf
+            If lMsErroAuto 
+                For nX := 1 to len(_atuB7X)
+                    _cNome := "PILEST04.txt"
+                    ctxtErro := MostraErro(,_cNome)
+                    cUpdQry := "UPDATE SLAPLIC.dbo.SB7_AUX "
+                    cUpdQry += " SET B7ERR='"+ctxtErro+"'"
+                    cUpdQry += " where B7CR='"+cvaltochar(_atuB7X[nX,01])+"'"
+                    TcSqlExec(cUpdQry)
+                Next nX
+            Else 
+                For nX := 1 to len(_atuB7X)
+                    DbSelectArea("SD3")
+                    DbSetOrder(2)
+                    If Dbseek(_atuB7X[nX,03] + Avkey(cNumero,"D3_DOC") + _atuB7X[nX,02])
+                        cRecno := SD3->(Recno())
+                        cUpdQry := "UPDATE SLAPLIC.dbo.SB7_AUX "
+                        cUpdQry += " SET B7SEQ='"+cvaltochar(cRecno)+"'"
+                        cUpdQry += " where B7CR='"+cvaltochar(_atuB7X[nX,01])+"'"
+                        TcSqlExec(cUpdQry)
+                    EndIf
+                Next nX
+            EndIf
+        EndIf 
 
         cNumero := NextNumero("SD3",2,"D3_DOC",.T.)
+        cTM := aSB2Sld[nCont,09]
 
         _aCab1 := { {"D3_DOC"       ,cNumero   , NIL},;
                     {"D3_TM"        ,cTM       , NIL},;
                     {"D3_EMISSAO"   ,ddatabase , NIL}}
 
-        cTM := aSB2Sld[nCont,09]
+        
         _aItem := {}
+        _atotitem := {}
+        _atuB7X := {}
     EndIf 
 
     _aItem:={   {"D3_COD"   ,aSB2Sld[nCont,02]  ,NIL},;
@@ -102,21 +121,40 @@ For nCont := 1 to len(aSB2Sld)
                 {"D3_QUANT" ,aSB2Sld[nCont,08]  ,NIL},;
                 {"D3_LOCAL" ,aSB2Sld[nCont,03] ,NIL}}
 
+    Aadd(_atuB7X,{aSB2Sld[nCont,11],aSB2Sld[nCont,02],aSB2Sld[nCont,01]})
+
     aadd(_atotitem,_aitem) 
    
 
 Next nCont 
 
-If len(_atotitem) > 0
+If len(_atotitem) > 0 .AND. len(_aCab1) > 0
     //executa
     lMsErroAuto := .F.
     
     MSExecAuto({|x,y,z| MATA241(x,y,z)},_aCab1,_atotitem,3)
 
     If lMsErroAuto 
-        Mostraerro() 
-        DisarmTransaction() 
-        break
+        For nX := 1 to len(_atuB7X)
+            _cNome := "PILEST04.txt"
+            ctxtErro := MostraErro(,_cNome)
+            cUpdQry := "UPDATE SLAPLIC.dbo.SB7_AUX "
+            cUpdQry += " SET B7ERR='"+ctxtErro+"'"
+            cUpdQry += " where B7CR='"+cvaltochar(_atuB7X[nX,01])+"'"
+            TcSqlExec(cUpdQry)
+        Next nX
+    Else 
+        For nX := 1 to len(_atuB7X)
+            DbSelectArea("SD3")
+            DbSetOrder(2)
+            If Dbseek(_atuB7X[nX,03] + Avkey(cNumero,"D3_DOC") + _atuB7X[nX,02])
+                cRecno := SD3->(Recno())
+                cUpdQry := "UPDATE SLAPLIC.dbo.SB7_AUX "
+                cUpdQry += " SET B7SEQ='"+cvaltochar(cRecno)+"'"
+                cUpdQry += " where B7CR='"+cvaltochar(_atuB7X[nX,01])+"'"
+                TcSqlExec(cUpdQry)
+            EndIf
+        Next nX   
     EndIf
 EndIf 
 

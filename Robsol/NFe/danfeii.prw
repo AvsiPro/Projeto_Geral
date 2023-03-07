@@ -3031,7 +3031,7 @@ Next nX
 
 nColuna := 002
 If Len(aFaturas) > 0 .And. len(aAux) > 0
-	For nY := 1 To len(aAux) //nFaturas //12
+	For nY := 1 To nFaturas //12
 		oDanfe:Say(273+nAjustaFat,nColuna,aAux[1][nY][1],oFont08:oFont)
 		oDanfe:Say(281+nAjustaFat,nColuna,aAux[1][nY][2],oFont08:oFont)
 		oDanfe:Say(289+nAjustaFat,nColuna,aAux[1][nY][3],oFont08:oFont)
