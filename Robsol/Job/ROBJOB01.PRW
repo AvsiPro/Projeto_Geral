@@ -72,7 +72,7 @@ user function ROBJOB1a(cCodEmp,cCodFil)
 	ELSEIF DOW(dDataBase) == 5
 		dDtFour := datavalida(dDataBase+1,.T.)//+2 //Condição para Quinta
 	ELSE
-		dDtFour := datavalida(dDataBase+1,.T.)+2
+		dDtFour := datavalida(dDataBase+1,.T.)//+2
 	ENDIF
 
 	cQuery := "SELECT E1_FILIAL,E1_PREFIXO,E1_NUM,E1_TIPO,E1_NATUREZ,ED_DESCRIC,E1_FILORIG,"
