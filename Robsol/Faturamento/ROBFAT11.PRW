@@ -115,12 +115,12 @@ Static Function Busca()
     DbUseArea(.T.,"TOPCONN",TcGenQry(,,cQuery),'TRB',.F.,.T.)
 
     while !EOF()
-        Aadd(aList, {IF(TRB->C6_QTDVEN < TRB->B2_QATU,"1",IF(TRB->C6_QTDVEN == TRB->B2_QATU,"2", "3")),;
+        Aadd(aList, {IF(TRB->C6_QTDVEN <= TRB->B2_QATU,"1",IF(TRB->C6_QTDVEN == TRB->B2_QATU,"2", "3")),;
                         TRB->C6_ITEM,;
                         AllTrim(TRB->C6_PRODUTO),;
                         AllTrim(TRB->C6_DESCRI),;
                         TRB->C6_QTDVEN,;
-                        If(TRB->C6_QTDVEN<TRB->B2_QATU,TRB->C6_QTDVEN,0),;
+                        If(TRB->C6_QTDVEN<=TRB->B2_QATU,TRB->C6_QTDVEN,0),;
                         TRB->B2_QATU,;
                         TRB->ALIASREC,;
                         TRB->C6_PRCVEN})
@@ -136,7 +136,7 @@ Static Function editcol(nLin)
     Local nBkpL6    :=  aList[nLin,06]
 
     If nPosic == 6
-        lEditCell( aList, oList, "@!", nPosic)
+        lEditCell( aList, oList, "@E 999999", nPosic)
         IF aList[nLin,06] > aList[nLin,05]
             MsgAlert("Quantidade atendida não pode ser maior que quantidade vendida")
             aList[nLin,06] := nBkpL6
