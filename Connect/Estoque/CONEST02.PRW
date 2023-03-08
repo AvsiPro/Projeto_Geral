@@ -70,11 +70,11 @@ If len(aList3) < 1
 EndIf
 
 If len(aList4) < 1
-    Aadd(aList4,{'','','','',''})
+    Aadd(aList4,{'','','','','','',''})
 EndIf
 
 If len(aList5) < 1
-    Aadd(aList5,{'','','','',''})
+    Aadd(aList5,{'','','','','',''})
 EndIf 
 
 oDlg1      := MSDialog():New( 053,216,725,1620,"Fechamento Estoque Ponto de Venda",,,.F.,,,,,,.T.,,,.T. )
@@ -119,14 +119,15 @@ oGrp2      := TGroup():New( 146,216,292,435,"Consumo",oDlg1,CLR_BLACK,CLR_WHITE,
                         aList2[oList2:nAt,03]}}
 
 oGrp5      := TGroup():New( 146,439,292,690,"Estrutura x Consumo",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
-    oList5 	   := TCBrowse():New(154,442,243,135,, {'Produto','Descricao','UM','Consumo'},{30,30,20,30},;
+    oList5 	   := TCBrowse():New(154,442,243,135,, {'Produto','Descricao','UM','Consumo','Bx Estr'},{30,30,20,30,30},;
 	                            oGrp5,,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
   
     oList5:SetArray(aList5)
     oList5:bLine := {||{aList5[oList5:nAt,02],;
                         aList5[oList5:nAt,03],; 
                         aList5[oList5:nAt,04],;
-                        aList5[oList5:nAt,05]}}
+                        aList5[oList5:nAt,05],;
+                        aList5[oList5:nAt,06]}}
 
 
 //Botao de faturamento
@@ -213,7 +214,7 @@ While !EOF()
 EndDo 
 
 For nCont := 1 to len(aProds)
-    cQuery := "SELECT G1_COD,G1_COMP,B1_DESC,B1_UM,B1_SEGUM,G1_QUANT"
+    cQuery := "SELECT G1_COD,G1_COMP,B1_DESC,B1_UM,B1_SEGUM,G1_QUANT,G1_XBAIXA"
     cQuery += " FROM "+RetSQLName("SG1")+" G1"
     cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD=G1_COMP AND B1.D_E_L_E_T_=' '"
     cQuery += " WHERE G1_FILIAL='"+xFilial("SG1")+"' AND G1_COD='"+aProds[nCont]+"' AND G1.D_E_L_E_T_=' '"
@@ -231,11 +232,12 @@ For nCont := 1 to len(aProds)
 
     While !EOF()
         If Ascan(aConsumo,{|x| x[1]+x[2] == TRB->G1_COD+TRB->G1_COMP}) == 0
-            Aadd(aConsumo,{ TRB->G1_COD,;
-                            TRB->G1_COMP,;
+            Aadd(aConsumo,{ Alltrim(TRB->G1_COD),;
+                            Alltrim(TRB->G1_COMP),;
                             Alltrim(TRB->B1_DESC),;
                             Alltrim(TRB->B1_UM)+"/"+Alltrim(TRB->B1_SEGUM),;
-                            TRB->G1_QUANT})
+                            TRB->G1_QUANT,;
+                            TRB->G1_XBAIXA})
         EndIf
         Dbskip()
     EndDo 
@@ -304,6 +306,7 @@ While !EOF()
                     Alltrim(TRB->NNR_DESCRI),;
                     0,;
                     0})
+
     Dbskip()
 EndDo 
 
@@ -389,7 +392,12 @@ Next nCont
 
 For nCont := 1 to len(aList4B)
     If aList4B[nCont,04] == aList1[nLinha,01] .And. aList4B[nCont,05] == aList1[nLinha,02]
-        Aadd(aList4,aList4B[nCont])
+        nPos := Ascan(aList4,{|x| x[1]+x[4] == aList4B[nCont,01]+aList4B[nCont,04]})
+        If nPos == 0
+            Aadd(aList4,aList4B[nCont])
+        Else 
+            aList4[nPos,03] += aList4B[nCont,03]
+        EndIf
     EndIf 
 Next nCont 
 
@@ -428,6 +436,8 @@ oList3:refresh()
 oList4:refresh()
 oDlg1:refresh()
 
+FHelp2(oList2:nAt)
+
 RestArea(aArea)
 
 Return
@@ -458,15 +468,16 @@ For nCont := 1 to len(aConsumo)
 Next nCont 
 
 If len(aList5) < 1 
-    Aadd(aList5,{'','','','',''})
+    Aadd(aList5,{'','','','','',''})
 EndIf 
 
-oList5:SetArray(aList5)
+
 oList5:SetArray(aList5)
 oList5:bLine := {||{aList5[oList5:nAt,02],;
                     aList5[oList5:nAt,03],; 
                     aList5[oList5:nAt,04],;
-                    aList5[oList5:nAt,05]}}
+                    aList5[oList5:nAt,05],;
+                    aList5[oList5:nAt,06]}}
 
 oList5:refresh()
 oDlg1:refresh()
@@ -539,9 +550,10 @@ For nCont1 := 1 to len(aList4B)
             nCons := 0
 
             If nPos > 0
-                nCons := aList2B[nCont2,03] * aConsumo[nPos,05]
-            /*else
-                nCons := 99999*/
+                If aConsumo[nPos,06] <> "N"
+                    nCons := aList2B[nCont2,03] * aConsumo[nPos,05]
+                EndIf
+            
             EndIf 
 
             If nCons > 0
@@ -595,15 +607,15 @@ For nCont := 1 to len(aList3B)
     While !EOF()
         If Ascan(aList4B,{|x| x[1]+x[7] == Alltrim(TRB->B2_COD)+Alltrim(TRB->B2_LOCAL)}) == 0
             Aadd(aList4B,{  Alltrim(TRB->B2_COD),;
-                    Alltrim(TRB->B1_DESC),;
-                    TRB->REMESSA,;
-                    aList3B[nCont,04],;
-                    aList3B[nCont,05],;
-                    TRB->A1_NOME,;
-                    TRB->B2_LOCAL,;
-                    Alltrim(TRB->NNR_DESCRI),;
-                    TRB->B2_QATU,;
-                    0})
+                            Alltrim(TRB->B1_DESC),;
+                            TRB->REMESSA,;
+                            aList3B[nCont,04],;
+                            aList3B[nCont,05],;
+                            TRB->A1_NOME,;
+                            TRB->B2_LOCAL,;
+                            Alltrim(TRB->NNR_DESCRI),;
+                            TRB->B2_QATU,;
+                            0})
         EndIf 
         Dbskip()
     EndDo 

@@ -217,7 +217,7 @@ Static Function ExtLeitura()
 
 		aAux := {}
 
-		For nX := 1 To Len(aProd)
+		/*For nX := 1 To Len(aProd)
 			If aProd[nX,2] == cProd
 				For nY := 1 To Len(aAux)
 					If aAux[nY,2] == aProd[nX,2]
@@ -229,7 +229,17 @@ Static Function ExtLeitura()
 				aAdd(aAux, aProd[nX])
 				cProd := aProd[nX,2]
 			EndIf
-		Next
+		Next*/
+		For nX := 1 to len(aProd)
+			nPos := Ascan(aAux,{|x| Alltrim(x[2]) == Alltrim(aProd[nX,02])})
+			If nPos == 0
+				aAdd(aAux, aProd[nX])
+			Else 
+				aAux[nPos,3] += aProd[nX,3]
+				aAux[nPos,4] += aProd[nX,4]
+				aAux[nPos,5] += aProd[nX,5]
+			EndIf 
+		Next nX 
 			
 		nCon1 := 0
 		nSub1 := 0
@@ -253,7 +263,7 @@ Static Function ExtLeitura()
 		oPrinter:Say( nLin, 480,transForm(val(cConRS1), "@E 99,999.99"), oF10FFF )
 		oPrinter:Say( nLin, 550,transForm(val(cTot1), "@E 99,999.99"), oF10FFF )
 
-		oPrinter:Say( nLin+=30, 45,"ProduTo", oF10FFF )
+		oPrinter:Say( nLin+=30, 45,"Produto", oF10FFF )
 		oPrinter:Say( nLin, 100,"Descrição", oF10FFF )
 		oPrinter:Say( nLin, 360,"Consumo", oF10FFF )
 		oPrinter:Say( nLin, 410,"Subsidiado R$", oF10FFF )
@@ -471,7 +481,7 @@ Static Function ExtLeitura()
 		Next
 
 		//Asort(aProd,,,{|x,y| x[2] < y[2]})
-
+/*
 		For nX := 1 To Len(aProd)
 			If aProd[nX,2] == cProd
 				For nY := 1 To Len(aAux)
@@ -485,7 +495,17 @@ Static Function ExtLeitura()
 				cProd := aProd[nX,2]
 			EndIf
 		Next
-			
+*/
+		For nX := 1 to len(aProd)
+			nPos := Ascan(aAux,{|x| Alltrim(x[2]) == Alltrim(aProd[nX,02])})
+			If nPos == 0
+				aAdd(aAux, aProd[nX])
+			Else 
+				aAux[nPos,8] += aProd[nX,8]
+				aAux[nPos,10] += aProd[nX,10]
+			EndIf 
+		Next nX 
+					
 		nCon1 := 0
 		nSub1 := 0
 		nConRS1 := 0
