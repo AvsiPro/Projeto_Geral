@@ -304,16 +304,18 @@ DbUseArea(.T.,"TOPCONN",TcGenQry(,,cQuery),'TRB',.F.,.T.)
 DbSelectArea("TRB")   
 
 While !EOF()
-    Aadd(aList4B,{  Alltrim(TRB->D2_COD),;
-                    Alltrim(TRB->B1_DESC),;
-                    TRB->REMESSA,;
-                    TRB->NNR_CODCLI,;
-                    TRB->NNR_LOJCLI,;
-                    TRB->A1_NOME,;
-                    TRB->C5_XCODPA,;
-                    Alltrim(TRB->NNR_DESCRI),;
-                    0,;
-                    0})
+    If Ascan(aList4B,{|x| x[1]+x[4] == Alltrim(TRB->D2_COD)+TRB->NNR_CODCLI}) == 0
+        Aadd(aList4B,{  Alltrim(TRB->D2_COD),;
+                        Alltrim(TRB->B1_DESC),;
+                        TRB->REMESSA,;
+                        TRB->NNR_CODCLI,;
+                        TRB->NNR_LOJCLI,;
+                        TRB->A1_NOME,;
+                        TRB->C5_XCODPA,;
+                        Alltrim(TRB->NNR_DESCRI),;
+                        0,;
+                        0})
+    EndIf
 
     Dbskip()
 EndDo 
@@ -602,7 +604,7 @@ For nCont := 1 to len(aList3B)
     cQuery := "SELECT B2_COD,B1_DESC,0 AS REMESSA,A1_NOME,B2_LOCAL,NNR_DESCRI,B2_QATU"
     cQuery += " FROM "+RetSQLName("SB2")+" B2"
     cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD=B2_COD AND B1.D_E_L_E_T_=' '"
-    cQuery += " INNER JOIN "+RetSQLName("NNR")+" NNR ON NNR_FILIAL=B2_FILIAL AND NNR_CODIGO=B2_LOCAL AND NNR.D_E_L_E_T_=' '"
+    cQuery += " INNER JOIN "+RetSQLName("NNR")+" NNR ON NNR_FILIAL=B2_FILIAL AND NNR_CODIGO=B2_LOCAL AND NNR.D_E_L_E_T_=' ' AND NNR_MSBLQL<>'1'"
     cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_COD=NNR_CODCLI AND A1_LOJA=NNR_LOJCLI AND A1.D_E_L_E_T_=' '"
 
     cQuery += "   AND A1_COD BETWEEN '"+MV_PAR04+"' AND '"+MV_PAR05+"'"
@@ -621,7 +623,7 @@ For nCont := 1 to len(aList3B)
     DbSelectArea("TRB")   
 
     While !EOF()
-        If Ascan(aList4B,{|x| x[1]+x[7] == Alltrim(TRB->B2_COD)+Alltrim(TRB->B2_LOCAL)}) == 0
+        If Ascan(aList4B,{|x| x[1]+x[4] == Alltrim(TRB->B2_COD)+aList3B[nCont,04]}) == 0
             Aadd(aList4B,{  Alltrim(TRB->B2_COD),;
                             Alltrim(TRB->B1_DESC),;
                             TRB->REMESSA,;
@@ -668,6 +670,9 @@ Private aItemD1   :=  {}
 Private oCabec
 Private oItem 
 Private aItens  :=  {}
+
+Private oOk   	:= LoadBitmap(GetResources(),'br_verde')   
+Private oNo   	:= LoadBitmap(GetResources(),'br_vermelho')    
 
 Private oDev1,oGrp1,oGrp2,oBtn1,oBtn2
 
@@ -795,14 +800,17 @@ If len(aAux) > 0
             Else 
                 cDesc := Posicione("SB1",1,xFilial("SB1")+aAux[nCont,nX,01])
             EndIf 
+            
+            nVlrUn := 0
+            cNFOri := ''
+            cSROri := ''
+            cITOri := ''
 
             If len(aAux[nCont,nX]) > 4
                 nVlrUn := aAux[nCont,nX,5,1,5]
                 cNFOri := aAux[nCont,nX,5,1,1]
                 cSROri := aAux[nCont,nX,5,1,2]
                 cITOri := aAux[nCont,nX,5,1,3]
-            Else 
-                nVlrUn := 0
             EndIf 
 
             Aadd(aItemD1,{  cItem,;
@@ -828,7 +836,7 @@ If len(aAux) > 0
             oCabec 	   := TCBrowse():New(012,008,526,104,, {'','Cliente','Loja','Nome','Nota','Serie','Pedido'},{10,30,20,150,30,30,30},;
 	                            oGrp1,,,,{|| FHelpNF(oCabec:nAt)},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
             oCabec:SetArray(aCabec)
-            oCabec:bLine := {||{aCabec[oCabec:nAt,01],;
+            oCabec:bLine := {||{If(aCabec[oCabec:nAt,01],oOk,oNo),;
                                 aCabec[oCabec:nAt,02],; 
                                 aCabec[oCabec:nAt,03],;
                                 aCabec[oCabec:nAt,04],;

@@ -106,6 +106,9 @@ TRCell():New(oSection1,"Opcao_Troca","TRB",/*Titulo*/,/*Picture*/,TamSX3("Z50_OP
 TRCell():New(oSection1,"Defeito","TRB",/*Titulo*/,/*Picture*/,TamSX3("Z50_DEFEIT")[1],/*lPixel*/)
 TRCell():New(oSection1,"Tipo_Defeito","TRB",/*Titulo*/,/*Picture*/,TamSX3("Z50_TPDEFE")[1],/*lPixel*/)
 TRCell():New(oSection1,"Obs_Atend","TRB",/*Titulo*/,/*Picture*/,TamSX3("Z50_OBSATD")[1],/*lPixel*/)
+TRCell():New(oSection1,"Titulo_Cobrar","TRB",/*Titulo*/,/*Picture*/,TamSX3("E1_NUM")[1],/*lPixel*/)
+TRCell():New(oSection1,"Vencimento","TRB",/*Titulo*/,/*Picture*/,TamSX3("E1_VENCREA")[1],/*lPixel*/)
+TRCell():New(oSection1,"Valor","TRB",/*Titulo*/,/*Picture*/,TamSX3("E1_VALOR")[1],/*lPixel*/)
 
 Return(oReport)
 
@@ -132,8 +135,9 @@ Local aAux      :=  {}
 Local nCont
 
 cQuery := "SELECT ISNULL(CAST(CAST(Z50_OBSATD AS VARBINARY(8000)) AS VARCHAR(8000)),'') AS OBS_ATD,"
-cQuery += " A1_NOME AS RAZAO,* FROM "+RetSQLName("Z50")+" Z50"
+cQuery += " A1_NOME AS RAZAO,E1_NUM,E1_VENCREA,E1_VALOR,* FROM "+RetSQLName("Z50")+" Z50"
 cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_COD=Z50_CODCLI AND A1_LOJA=Z50_LOJCLI AND A1.D_E_L_E_T_=' '" 
+cQuery += " LEFT JOIN "+RetSQLName("SE1")+" E1 ON E1_FILIAL='"+xFilial("SE1")+"' AND E1_NUM=Z50_NOTA AND E1_FILORIG=Z50_FILPED AND E1_PREFIXO='GAR' AND E1.D_E_L_E_T_=' '"
 cQuery += " WHERE Z50.D_E_L_E_T_=' '
 cQuery += " AND Z50_DTCRIA BETWEEN '"+DTOS(MV_PAR01)+"' AND '"+DTOS(MV_PAR02)+"'"
 
@@ -167,7 +171,10 @@ While !EOF()
                     TRB->Z50_OPCTRC,;
                     TRB->Z50_DEFEIT,;
                     TRB->Z50_TPDEFE,;
-                    TRB->OBS_ATD})
+                    TRB->OBS_ATD,;
+                    TRB->E1_NUM,;
+                    TRB->E1_VENCREA,;
+                    TRB->E1_VALOR})
     
     Dbskip()
 ENDDO
@@ -200,6 +207,9 @@ For nCont := 1 to len(aAux)
     oSection1:Cell('Defeito'):SetValue(aAux[nCont,17])
     oSection1:Cell('Tipo_Defeito'):SetValue(aAux[nCont,18])
     oSection1:Cell('Obs_Atend'):SetValue(aAux[nCont,19])
+    oSection1:Cell('Titulo_Cobrar'):SetValue(aAux[nCont,20])
+    oSection1:Cell('Vencimento'):SetValue(aAux[nCont,21])
+    oSection1:Cell('Valor'):SetValue(aAux[nCont,22])
     
 	oReport:IncMeter()
 
