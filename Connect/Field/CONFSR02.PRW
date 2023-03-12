@@ -73,35 +73,18 @@ Static Function ExtLeitura()
 	Local nConRS1          := 0
 	Local cTot1            := ""
 	Local nTot1            := 0
-	Local cProd            := ""
-	// Local nMin             := 99999999
-	// Local nMax             := 0
 	Local nX               := 0
 	Local nY               := 0
 	Local nLin             := 0
 
 	//Fontes
 	Local oF10FFF          := TFont():New('Arial' /*Fonte*/,,10 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF10TFF          := TFont():New('Arial' /*Fonte*/,,10 /*Tamanho*/,,.T. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF10FTF          := TFont():New('Arial' /*Fonte*/,,10 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.T. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF10FFT          := TFont():New('Arial' /*Fonte*/,,10 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.T. /*Italico*/ )
 	Local oF12FFF          := TFont():New('Arial' /*Fonte*/,,12 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF12TFF          := TFont():New('Arial' /*Fonte*/,,12 /*Tamanho*/,,.T. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF12FTF          := TFont():New('Arial' /*Fonte*/,,12 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.T. /*Sublinhado*/,.F. /*Italico*/ )
 	Local oF12FFT          := TFont():New('Arial' /*Fonte*/,,12 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.T. /*Italico*/ )
 	Local oF15FFF          := TFont():New('Arial' /*Fonte*/,,15 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
 	Local oF15TFF          := TFont():New('Arial' /*Fonte*/,,15 /*Tamanho*/,,.T. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF15FTF          := TFont():New('Arial' /*Fonte*/,,15 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.T. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF15FFT          := TFont():New('Arial' /*Fonte*/,,15 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.T. /*Italico*/ )
-	// Local oF20FFF          := TFont():New('Arial' /*Fonte*/,,20 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF20TFF          := TFont():New('Arial' /*Fonte*/,,20 /*Tamanho*/,,.T. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF20FTF          := TFont():New('Arial' /*Fonte*/,,20 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.T. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF20FFT          := TFont():New('Arial' /*Fonte*/,,20 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.T. /*Italico*/ )
-	// Local oF25FFF          := TFont():New('Arial' /*Fonte*/,,25 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
 	Local oF25TFF          := TFont():New('Arial' /*Fonte*/,,25 /*Tamanho*/,,.T. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF25FTF          := TFont():New('Arial' /*Fonte*/,,25 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.T. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF25FFT          := TFont():New('Arial' /*Fonte*/,,25 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.T. /*Italico*/ )
-
+	
 	Private oPrinter := FWMSPrinter():New( "extraTo_leitura_.pdf",IMP_PDF,lAdjustToLegacy,"C:\temp\",lDisableSetup,,,,,,,, )
 
 	If lFatur
@@ -161,16 +144,6 @@ Static Function ExtLeitura()
 			EndIf
 		Next
 
-		//Replicar aPontos por meio da query para trazer dados faltanteS
-		// For nX := 1 To Len(_aList5B)
-		// 	If Len(_aList5B[nX]) > 4
-		// 		aAdd(aPontos, _aList5B[nX])
-		// 	EndIf
-		// Next
-
-		//Asort(aPontos,,,{|x,y| x[2] < y[2]})
-
-		//cEntre := DToC(SToD(aPontos[1,5,4])) + " e " + DToC(SToD(aPontos[1,5,6]))
 		cEntre := DToC(MV_PAR02) + " e " + DToC(MV_PAR03)
 
 		nCon1 := 0
@@ -213,23 +186,18 @@ Static Function ExtLeitura()
 			Next
 		Next
 
-		//Asort(aProd,,,{|x,y| x[2] < y[2]})
-
 		aAux := {}
 
-		For nX := 1 To Len(aProd)
-			If aProd[nX,2] == cProd
-				For nY := 1 To Len(aAux)
-					If aAux[nY,2] == aProd[nX,2]
-						aAux[nY,3] += aProd[nX,3]
-						aAux[nY,4] += aProd[nX,4]
-					EndIf
-				Next
-			Else
+		For nX := 1 to len(aProd)
+			nPos := Ascan(aAux,{|x| Alltrim(x[2]) == Alltrim(aProd[nX,02])})
+			If nPos == 0
 				aAdd(aAux, aProd[nX])
-				cProd := aProd[nX,2]
-			EndIf
-		Next
+			Else 
+				aAux[nPos,3] += aProd[nX,3]
+				aAux[nPos,4] += aProd[nX,4]
+				aAux[nPos,5] += aProd[nX,5]
+			EndIf 
+		Next nX 
 			
 		nCon1 := 0
 		nSub1 := 0
@@ -253,7 +221,7 @@ Static Function ExtLeitura()
 		oPrinter:Say( nLin, 480,transForm(val(cConRS1), "@E 99,999.99"), oF10FFF )
 		oPrinter:Say( nLin, 550,transForm(val(cTot1), "@E 99,999.99"), oF10FFF )
 
-		oPrinter:Say( nLin+=30, 45,"ProduTo", oF10FFF )
+		oPrinter:Say( nLin+=30, 45,"Produto", oF10FFF )
 		oPrinter:Say( nLin, 100,"Descrição", oF10FFF )
 		oPrinter:Say( nLin, 360,"Consumo", oF10FFF )
 		oPrinter:Say( nLin, 410,"Subsidiado R$", oF10FFF )
@@ -425,9 +393,6 @@ Static Function ExtLeitura()
 			EndIf
 		Next
 
-		//Asort(aPontos,,,{|x,y| x[2] < y[2]})
-
-		//cEntre := DToC(SToD(aPontos[1,5,4])) + " e " + DToC(SToD(aPontos[1,5,6]))
 		cEntre := DToC(MV_PAR02) + " e " + DToC(MV_PAR03)
 
 		nCon1 := 0
@@ -470,22 +435,16 @@ Static Function ExtLeitura()
 			Next
 		Next
 
-		//Asort(aProd,,,{|x,y| x[2] < y[2]})
-
-		For nX := 1 To Len(aProd)
-			If aProd[nX,2] == cProd
-				For nY := 1 To Len(aAux)
-					If aAux[nY,2] == aProd[nX,2]
-						aAux[nY,8] += aProd[nX,8]
-						aAux[nY,10] += aProd[nX,10]
-					EndIf
-				Next
-			Else
+		For nX := 1 to len(aProd)
+			nPos := Ascan(aAux,{|x| Alltrim(x[2]) == Alltrim(aProd[nX,02])})
+			If nPos == 0
 				aAdd(aAux, aProd[nX])
-				cProd := aProd[nX,2]
-			EndIf
-		Next
-			
+			Else 
+				aAux[nPos,8] += aProd[nX,8]
+				aAux[nPos,10] += aProd[nX,10]
+			EndIf 
+		Next nX 
+					
 		nCon1 := 0
 		nSub1 := 0
 		nConRS1 := 0
@@ -699,26 +658,12 @@ Static Function DemonsCon()
 
 	//Fontes
 	Local oF10FFF          := TFont():New('Ambra Sans' /*Fonte*/,,10 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF10TFF          := TFont():New('Arial' /*Fonte*/,,10 /*Tamanho*/,,.T. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF10FTF          := TFont():New('Arial' /*Fonte*/,,10 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.T. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF10FFT          := TFont():New('Arial' /*Fonte*/,,10 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.T. /*Italico*/ )
 	Local oF12FFF          := TFont():New('Ambra Sans' /*Fonte*/,,12 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF12TFF          := TFont():New('Arial' /*Fonte*/,,12 /*Tamanho*/,,.T. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF12FTF          := TFont():New('Arial' /*Fonte*/,,12 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.T. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF12FFT          := TFont():New('Arial' /*Fonte*/,,12 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.T. /*Italico*/ )
 	Local oF15FFF          := TFont():New('Ambra Sans' /*Fonte*/,,15 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
 	Local oF15TFF          := TFont():New('Ambra Sans' /*Fonte*/,,15 /*Tamanho*/,,.T. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF15FTF          := TFont():New('Arial' /*Fonte*/,,15 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.T. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF15FFT          := TFont():New('Arial' /*Fonte*/,,15 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.T. /*Italico*/ )
-	// Local oF20FFF          := TFont():New('Arial' /*Fonte*/,,20 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
 	Local oF20TFF          := TFont():New('Ambra Sans' /*Fonte*/,,20 /*Tamanho*/,,.T. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF20FTF          := TFont():New('Arial' /*Fonte*/,,20 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.T. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF20FFT          := TFont():New('Arial' /*Fonte*/,,20 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.T. /*Italico*/ )
-	// Local oF25FFF          := TFont():New('Arial' /*Fonte*/,,25 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
 	Local oF25TFF          := TFont():New('Ambra Sans' /*Fonte*/,,25 /*Tamanho*/,,.T. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF25FTF          := TFont():New('Arial' /*Fonte*/,,25 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.T. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF25FFT          := TFont():New('Arial' /*Fonte*/,,25 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.T. /*Italico*/ )
-
+	
 	Private oPrinter := FWMSPrinter():New( "demons_consumo_.pdf",IMP_PDF,lAdjustToLegacy,"C:\temp\",lDisableSetup,,,,,,,, )
 
 	For nX := 1 To Len(_aList5B)
@@ -733,8 +678,6 @@ Static Function DemonsCon()
 			aAdd(aProd, aPontos[nX,nY])
 		Next
 	Next
-
-	//Asort(aProd,,,{|x,y| x[2] < y[2]})
 
 	oPrinter:StartPage()
 	oPrinter:SetMargin( 005, 005, 005, 005 )

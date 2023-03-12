@@ -15,6 +15,11 @@ Local cLocal
 Local cNumOS
 Local nTpServ       :=  25
 
+If "_PROD" $ GetEnvServer()
+	RestArea(aArea)
+	Return 
+EndIf 
+
 If (INCLUI .Or. ALTERA)
 
     dbSelectArea("SA1")
