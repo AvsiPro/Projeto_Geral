@@ -88,7 +88,10 @@ Static Function ExtLeitura()
 	Private oPrinter := FWMSPrinter():New( "extraTo_leitura_.pdf",IMP_PDF,lAdjustToLegacy,"C:\temp\",lDisableSetup,,,,,,,, )
 
 	If lFatur
-		cQuery := " SELECT Z08.Z08_NUMSER,Z08.Z08_PRODUT,Z08.Z08_SELECA,SB1.B1_DESC,Z08.Z08_DATA,SUM(Z08.Z08_CONSUM) AS CONSUMO,SUM(Z08.Z08_VLRFAT) AS VALOR,SUM(Z08.Z08_CONSUM) * DA1.DA1_XCONSU AS CONSUMIDOR,SUM(Z08.Z08_CONSUM) * DA1.DA1_PRCVEN AS SUBSIDI,SA1.A1_NOME,SA1.A1_NREDUZ,SA1.A1_COD,SA1.A1_LOJA   " 
+		cQuery := " SELECT Z08.Z08_NUMSER,Z08.Z08_PRODUT,Z08.Z08_SELECA,SB1.B1_DESC,Z08.Z08_DATA,"
+		cQuery += " SUM(Z08.Z08_CONSUM) AS CONSUMO,SUM(Z08.Z08_VLRFAT) AS VALOR,"
+		cQuery += " SUM(Z08.Z08_CONSUM) * DA1.DA1_XCONSU AS CONSUMIDOR,"
+		cQuery += " SUM(Z08.Z08_CONSUM) * DA1.DA1_PRCVEN AS SUBSIDI,SA1.A1_NOME,SA1.A1_NREDUZ,SA1.A1_COD,SA1.A1_LOJA   " 
 		cQuery += " FROM   " + RetSQLName("Z08") + " Z08   " 
 		cQuery += " INNER JOIN " + RetSQLName("AAM") + " AAM ON AAM_FILIAL='"+xFilial("AAM")+"' AND AAM.AAM_CONTRT = Z08.Z08_CONTRT   " 
 		cQuery += " INNER JOIN " + RetSQLName("DA1") + " DA1 ON DA1_FILIAL='"+xFilial("DA1")+"' AND DA1.DA1_CODTAB = AAM.AAM_XCODTA   " 
@@ -126,7 +129,8 @@ Static Function ExtLeitura()
 				TRB->A1_COD,;
 				TRB->A1_LOJA,;
 				TRB->Z08_SELECA,;
-				TRB->Z08_DATA} )
+				TRB->Z08_DATA,;
+				Posicione("SB1",1,xFilial("SB1")+TRB->Z08_PRODUT,"B1_POSIPI")} )
 			Dbskip()
 		End
 
@@ -223,6 +227,7 @@ Static Function ExtLeitura()
 
 		oPrinter:Say( nLin+=30, 45,"Produto", oF10FFF )
 		oPrinter:Say( nLin, 100,"Descrição", oF10FFF )
+		oPrinter:Say( nLin, 280,"NCM", oF10FFF )
 		oPrinter:Say( nLin, 360,"Consumo", oF10FFF )
 		oPrinter:Say( nLin, 410,"Subsidiado R$", oF10FFF )
 		oPrinter:Say( nLin, 480,"Ao Consumidor R$", oF10FFF )
@@ -231,6 +236,7 @@ Static Function ExtLeitura()
 		For nX := 1 To Len(aAux)
 			oPrinter:Say( nLin+=20, 45,aAux[nX,2], oF10FFF )
 			oPrinter:Say( nLin, 100,AllTrim(aAux[nX,7]), oF10FFF )
+			oPrinter:Say( nLin, 280,AllTrim(aAux[nX,13]), oF10FFF )
 			oPrinter:Say( nLin, 360,cvalTochar(aAux[nX,3]), oF10FFF )
 			oPrinter:Say( nLin, 410,TransForm(aAux[nX,5], "@E 99,999.99"), oF10FFF )
 			oPrinter:Say( nLin, 480,TransForm(aAux[nX,6], "@E 99,999.99"), oF10FFF )
@@ -256,6 +262,7 @@ Static Function ExtLeitura()
 
 		oPrinter:Say( nLin+=30, 45,"ProduTo", oF10FFF )
 		oPrinter:Say( nLin, 100,"Descrição", oF10FFF )
+		oPrinter:Say( nLin, 280,"NCM", oF10FFF )
 		oPrinter:Say( nLin, 360,"Consumo", oF10FFF )
 		oPrinter:Say( nLin, 410,"Subsidiado R$", oF10FFF )
 		oPrinter:Say( nLin, 480,"Ao Consumidor R$", oF10FFF )
@@ -264,6 +271,7 @@ Static Function ExtLeitura()
 		For nX := 1 To Len(aAux)
 			oPrinter:Say( nLin+=20, 45,aAux[nX,2], oF10FFF )
 			oPrinter:Say( nLin, 100,AllTrim(aAux[nX,7]), oF10FFF )
+			oPrinter:Say( nLin, 280,AllTrim(aAux[nX,13]), oF10FFF )
 			oPrinter:Say( nLin, 360,cvalTochar(aAux[nX,3]), oF10FFF )
 			oPrinter:Say( nLin, 410,TransForm(aAux[nX,5], "@E 99,999.99"), oF10FFF ) //PEndente Subsidiado
 			oPrinter:Say( nLin, 480,TransForm(aAux[nX,6], "@E 99,999.99"), oF10FFF ) //PEndente Consumo - Subsidiado
@@ -307,6 +315,7 @@ Static Function ExtLeitura()
 			oPrinter:Say( nLin+=50, 25,"Mola", oF10FFF )
 			oPrinter:Say( nLin, 50,"ProduTo", oF10FFF )
 			oPrinter:Say( nLin, 100,"Descrição", oF10FFF )
+			oPrinter:Say( nLin, 280,"NCM", oF10FFF )
 			oPrinter:Say( nLin, 360,"Consumo", oF10FFF )
 			oPrinter:Say( nLin, 410,"Subsidiado R$", oF10FFF )
 			oPrinter:Say( nLin, 480,"Ao Consumidor R$", oF10FFF )
@@ -322,6 +331,7 @@ Static Function ExtLeitura()
 				oPrinter:Say( nLin+=20, 25,aPontos[nX,nY,11], oF10FFF )
 				oPrinter:Say( nLin, 50,AllTrim(aPontos[nX,nY,2]), oF10FFF )
 				oPrinter:Say( nLin, 100,AllTrim(aPontos[nX,nY,7]), oF10FFF )
+				oPrinter:Say( nLin, 280,AllTrim(aPontos[nX,nY,13]), oF10FFF )
 				oPrinter:Say( nLin, 360,cvalTochar(aPontos[nX,nY,3]), oF10FFF )
 				oPrinter:Say( nLin, 410,TransForm(aPontos[nX,nY,5], "@E 99,999.99"), oF10FFF ) //PEndente Subsidio
 				oPrinter:Say( nLin, 480,TransForm(aPontos[nX,nY,6], "@E 99,999.99"), oF10FFF ) //PEndente Consumido - subsidio
@@ -374,6 +384,7 @@ Static Function ExtLeitura()
 				oPrinter:Say( nLin+=20, 25,aPontos[nX,nY,11], oF10FFF )
 				oPrinter:Say( nLin, 50,aPontos[nX,nY,2], oF10FFF )
 				oPrinter:Say( nLin, 100,aPontos[nX,nY,7], oF10FFF )
+				oPrinter:Say( nLin, 280,aPontos[nX,nY,13], oF10FFF )
 				oPrinter:Say( nLin, 360,cvalTochar(aPontos[nX,nY,3]), oF10FFF )
 				oPrinter:Say( nLin, 410,transForm(aPontos[nX,nY,5], "@E 99,999.99"), oF10FFF ) //PEndente Subsidio
 				oPrinter:Say( nLin, 480,transForm(aPontos[nX,nY,6], "@E 99,999.99"), oF10FFF ) //PEndente Consumo - subsidio
@@ -469,6 +480,7 @@ Static Function ExtLeitura()
 
 		oPrinter:Say( nLin+=30, 45,"ProduTo", oF10FFF )
 		oPrinter:Say( nLin, 100,"Descrição", oF10FFF )
+		oPrinter:Say( nLin, 280,"NCM", oF10FFF )
 		oPrinter:Say( nLin, 360,"Consumo", oF10FFF )
 		oPrinter:Say( nLin, 410,"Subsidiado R$", oF10FFF )
 		oPrinter:Say( nLin, 480,"Ao Consumidor R$", oF10FFF )
@@ -477,6 +489,7 @@ Static Function ExtLeitura()
 		For nX := 1 To Len(aAux)
 			oPrinter:Say( nLin+=20, 45,aAux[nX,2], oF10FFF )
 			oPrinter:Say( nLin, 100,AllTrim(aAux[nX,3]), oF10FFF )
+			oPrinter:Say( nLin, 280,AllTrim(aAux[nX,13]), oF10FFF )
 			oPrinter:Say( nLin, 360,cvalTochar(aAux[nX,8]), oF10FFF )
 			oPrinter:Say( nLin, 410,TransForm(aAux[nX,9]*aAux[nX,8], "@E 99,999.99"), oF10FFF )
 			oPrinter:Say( nLin, 480,TransForm(aAux[nX,15]*aAux[nX,8], "@E 99,999.99"), oF10FFF )
@@ -502,6 +515,7 @@ Static Function ExtLeitura()
 
 		oPrinter:Say( nLin+=30, 45,"ProduTo", oF10FFF )
 		oPrinter:Say( nLin, 100,"Descrição", oF10FFF )
+		oPrinter:Say( nLin, 280,"NCM", oF10FFF )
 		oPrinter:Say( nLin, 360,"Consumo", oF10FFF )
 		oPrinter:Say( nLin, 410,"Subsidiado R$", oF10FFF )
 		oPrinter:Say( nLin, 480,"Ao Consumidor R$", oF10FFF )
@@ -510,6 +524,7 @@ Static Function ExtLeitura()
 		For nX := 1 To Len(aAux)
 			oPrinter:Say( nLin+=20, 45,aAux[nX,2], oF10FFF )
 			oPrinter:Say( nLin, 100,AllTrim(aAux[nX,3]), oF10FFF )
+			oPrinter:Say( nLin, 280,AllTrim(aAux[nX,13]), oF10FFF )
 			oPrinter:Say( nLin, 360,cvalTochar(aAux[nX,8]), oF10FFF )
 			oPrinter:Say( nLin, 410,TransForm(aAux[nX,9]*aAux[nX,8], "@E 99,999.99"), oF10FFF ) //PEndente Subsidiado
 			oPrinter:Say( nLin, 480,TransForm(aAux[nX,15]*aAux[nX,8], "@E 99,999.99"), oF10FFF ) //PEndente Consumo - Subsidiado
@@ -553,6 +568,7 @@ Static Function ExtLeitura()
 			oPrinter:Say( nLin+=50, 25,"Mola", oF10FFF )
 			oPrinter:Say( nLin, 50,"ProduTo", oF10FFF )
 			oPrinter:Say( nLin, 100,"Descrição", oF10FFF )
+			oPrinter:Say( nLin, 280,"NCM", oF10FFF )
 			oPrinter:Say( nLin, 360,"Consumo", oF10FFF )
 			oPrinter:Say( nLin, 410,"Subsidiado R$", oF10FFF )
 			oPrinter:Say( nLin, 480,"Ao Consumidor R$", oF10FFF )
@@ -568,6 +584,7 @@ Static Function ExtLeitura()
 				oPrinter:Say( nLin+=20, 25,aPontos[nX,nY,1], oF10FFF )
 				oPrinter:Say( nLin, 50,AllTrim(aPontos[nX,nY,2]), oF10FFF )
 				oPrinter:Say( nLin, 100,AllTrim(aPontos[nX,nY,3]), oF10FFF )
+				oPrinter:Say( nLin, 280,AllTrim(aPontos[nX,nY,13]), oF10FFF )
 				oPrinter:Say( nLin, 360,cvalTochar(aPontos[nX,nY,8]), oF10FFF )
 				oPrinter:Say( nLin, 410,TransForm(aPontos[nX,nY,9]*aPontos[nX,nY,8], "@E 99,999.99"), oF10FFF ) //PEndente Subsidio
 				oPrinter:Say( nLin, 480,TransForm(aPontos[nX,nY,15]*aPontos[nX,nY,8], "@E 99,999.99"), oF10FFF ) //PEndente Consumido - subsidio
@@ -605,6 +622,7 @@ Static Function ExtLeitura()
 			oPrinter:Say( nLin+=30, 25,"Mola", oF10FFF )
 			oPrinter:Say( nLin, 50,"ProduTo", oF10FFF )
 			oPrinter:Say( nLin, 100,"Descrição", oF10FFF )
+			oPrinter:Say( nLin, 280,"NCM", oF10FFF )
 			oPrinter:Say( nLin, 360,"Consumo", oF10FFF )
 			oPrinter:Say( nLin, 410,"Subsidiado R$", oF10FFF )
 			oPrinter:Say( nLin, 480,"Ao Consumidor R$", oF10FFF )
@@ -620,6 +638,7 @@ Static Function ExtLeitura()
 				oPrinter:Say( nLin+=20, 25,aPontos[nX,nY,1], oF10FFF )
 				oPrinter:Say( nLin, 50,aPontos[nX,nY,2], oF10FFF )
 				oPrinter:Say( nLin, 100,aPontos[nX,nY,3], oF10FFF )
+				oPrinter:Say( nLin, 280,aPontos[nX,nY,13], oF10FFF )
 				oPrinter:Say( nLin, 360,cvalTochar(aPontos[nX,nY,8]), oF10FFF )
 				oPrinter:Say( nLin, 410,transForm(aPontos[nX,nY,9]*aPontos[nX,nY,8], "@E 99,999.99"), oF10FFF ) //PEndente Subsidio
 				oPrinter:Say( nLin, 480,transForm(aPontos[nX,nY,15]*aPontos[nX,nY,8], "@E 99,999.99"), oF10FFF ) //PEndente Consumo - subsidio

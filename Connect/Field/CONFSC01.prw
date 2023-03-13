@@ -2384,8 +2384,9 @@ cQuery += " WHERE Z08_FILIAL='"+xFilial("Z08")+"'"
 cQuery += " AND Z08_NUMSER='"+cNumSr+"'"
 cQuery += " AND Z08_COD<>'"+cLeit+"'"
 cQuery += " AND Z08_SELECA='"+cSelec+"'"
-cQuery += " AND Z08_DATA<'"+cDtAnt+"'"
+cQuery += " AND Z08_DATA<='"+cDtAnt+"'"
 cQuery += " AND D_E_L_E_T_=' '"
+cQuery += " ORDER BY Z08_DATA DESC"
 
 If Select("QUERY") > 0
 	dbSelectArea("QUERY")
