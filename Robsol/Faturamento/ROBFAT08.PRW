@@ -427,17 +427,30 @@ Static Function geraDE()
         endif
     next
 
-    /*cNum := GetSxeNum("SF1","F1_DOC")
+   /* cNum := GetSxeNum("SF1","F1_DOC")
     SF1->(dbSetOrder(1))
     While SF1->(dbSeek(xFilial("SF1")+cNum))
         ConfirmSX8()
-        cNum := GetSxeNum("SF1","F1_DOC")
-    EndDo*/
+        cNum := GetSxeNum("SF2","F2_DOC")
+    EndDo
+*/
+//RODRIGO
+    DbSelectArea("SX5")
+    SX5->(MsSeek(cFilant +'01' + "1     "))
+	cNum := Alltrim(SX5->X5_DESCRI)
+    
+    DbSelectArea("SX5")
+    SX5->(MsSeek(cFilant +'01' + "1     "))
+    RecLock("SX5",.F.)
+    SX5->X5_DESCRI  := Soma1(AllTrim(Substr(cNum,1,9)))
+    SX5->X5_DESCSPA := Soma1(AllTrim(Substr(cNum,1,9)))
+    SX5->X5_DESCENG := Soma1(AllTrim(Substr(cNum,1,9)))
+    SX5->(MsUnlock())
 
     //Cabeçalho
     aadd( aCab,{"F1_TIPO"    ,"B"                     ,NIL} )
     aadd( aCab,{"F1_FORMUL"  ,"S"                     ,NIL} )
-    //aadd( aCab,{"F1_DOC"     ,cNum                    ,NIL} )
+    aadd( aCab,{"F1_DOC"     ,cNum                    ,NIL} )
     aadd( aCab,{"F1_SERIE"   ,"1 "                    ,NIL} )
     aadd( aCab,{"F1_EMISSAO" ,DDATABASE               ,NIL} )
     aadd( aCab,{"F1_DTDIGIT" ,DDATABASE               ,NIL} )

@@ -19,6 +19,7 @@ Função que gera a danfe e o xml de uma nota em uma pasta passada por parâmetro
 @example u_zGerDanfe("000123ABC", "1", "C:\TOTVS\NF",'email@destino.com.br')
 /*/
 User Function ROBDANFE(cNota, cSerie, cPasta, ccnpj)
+ 
     Local aArea     := GetArea()
     Local cIdent    := ""
     Local cArquivo  := ""
@@ -72,14 +73,6 @@ User Function ROBDANFE(cNota, cSerie, cPasta, ccnpj)
             MV_PAR05 := 1                          //Frente e Verso = Sim
             MV_PAR06 := 2                          //DANFE simplificado = Nao
             
-            //Cria a Danfe cPasta
-            //oDanfe := FWMSPrinter():New(cArquivo, IMP_PDF, .F., "C:\Temp\", .T.)
-            //CONOUT(CPASTA)
-            /*cPatSer := '\clientes\cnpj\'+ccnpj
-            If !ExistDir(cPatSer)
-            	Makedir(cPatSer)
-            EndIf*/
-            //oDanfe := FWMSPrinter():New(cArquivo, IMP_PDF, .F., cPatSer, .T.)
             oDanfe := FWMSPrinter():New(cArquivo, IMP_PDF, .F., cPasta, .T.)
             
             //Propriedades da DANFE
@@ -103,7 +96,6 @@ User Function ROBDANFE(cNota, cSerie, cPasta, ccnpj)
             nColAux   := 0
             
             //Chamando a impressão da danfe no RDMAKE
-            //RptStatus({|lEnd| StaticCall(DANFEII, DanfeProc, @oDanfe, @lEnd, cIdent, , , .F.)}, "Imprimindo Danfe...")
             u_DanfeProc(@oDanfe, @lEnd, cIdent, , , .F.) //}, "Imprimindo Danfe...")
             oDanfe:Print()
             aArquivos := {}

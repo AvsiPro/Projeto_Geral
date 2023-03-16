@@ -48,6 +48,7 @@ Local aRot := {}
     ADD OPTION aRot TITLE 'Visualizar'        ACTION 'VIEWDEF.ROBZ50'  OPERATION MODEL_OPERATION_VIEW  ACCESS 0
     ADD OPTION aRot TITLE 'Atender Chamado'   ACTION 'u_ROBFAT06'      OPERATION 3                     ACCESS 0
     ADD OPTION aRot TITLE 'Finalizar Chamado' ACTION 'u_ENCERCHM'      OPERATION 6                     ACCESS 0
+    ADD OPTION aRot TITLE 'Espelho Nota'      ACTION 'U__XESPELHO(Z50->Z50_NOTA,Z50->Z50_FILPED)'      OPERATION 6                     ACCESS 0
     ADD OPTION aRot TITLE 'Legenda'           ACTION 'u_ROBTLEG'       OPERATION 7                     ACCESS 0
 
 Return aRot

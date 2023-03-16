@@ -216,6 +216,8 @@ WsMethod GET WsReceive CODIGO,VENDEDOR,PAGINA,STATUS,EMISSAO,CLIENTE,CNPJ,FILTRO
 			nQtdVen := 0
 			nVlrFat := 0
 			nVlrVen := 0
+			cNotaC6 := ''
+			cSeriC6 := ''
 
 			If SC6->(DBSeek(TRB->C5_FILIAL+TRB->C5_NUM))
 				While SC6->(!EoF()) .And. SC6->C6_FILIAL == TRB->C5_FILIAL .AND. SC6->C6_NUM == TRB->C5_NUM
@@ -223,12 +225,18 @@ WsMethod GET WsReceive CODIGO,VENDEDOR,PAGINA,STATUS,EMISSAO,CLIENTE,CNPJ,FILTRO
 					nVlrFat += Iif(SC6->C6_QTDENT > 0, SC6->C6_QTDENT * SC6->C6_PRCVEN, 0)
 					nQtdVen += Iif(SC6->C6_XQTDORI > 0, SC6->C6_XQTDORI, SC6->C6_QTDVEN)
 					nVlrVen += Iif(cCopy == 'S',(Iif(cCopy == 'S',SC6->C6_PRUNIT,SC6->C6_PRCVEN) * SC6->C6_QTDVEN) + SC6->C6_VALDESC,SC6->C6_VALOR)
+					If !Empty(SC6->C6_NOTA) .And. Empty(cNotaC6)
+						cNotaC6 := SC6->C6_NOTA 
+						cSeriC6 := SC6->C6_SERIE
+					EndIf 
 					SC6->(DBSkip())
 				EndDo
 			EndIf
 
 			Aadd(aAux,{	TRB->C5_NUM,TRB->C5_CLIENTE+TRB->C5_LOJACLI,TRB->A1_NOME,;
-						TRB->A1_NREDUZ,TRB->C5_EMISSAO,TRB->C5_NOTA,TRB->C5_SERIE,;
+						TRB->A1_NREDUZ,TRB->C5_EMISSAO,;
+						If('XXX' $ TRB->C5_NOTA,cNotaC6,TRB->C5_NOTA),;
+						If('XXX' $ TRB->C5_NOTA,cSeriC6,TRB->C5_SERIE),;
 						TRB->C5_OK,TRB->RECC5,TRB->A1_CGC,TRB->C5_FILIAL,;
 						If(TRB->C5_XCLASPV=="P",'8',TRB->C5_XCLASPV),nQtdFat,nVlrFat,nQtdVen,nVlrVen})
 			TRB->(Dbskip())

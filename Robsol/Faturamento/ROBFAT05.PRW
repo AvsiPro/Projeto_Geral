@@ -51,7 +51,7 @@ Local aStatCm2  := {'1=Informacoes cadastrais',;
 Local aParam    := { { 2, "Status Comissao", 1, aStatCm, 60, , .T. } }
 Local aParam2   := { { 2, "Informacao Complementar", 1, aStatCm2, 120, , .T. } }
 Local cBloqueia := ""
-
+Local cStat     :=  ''
 SetPrvt("oDlg1","oGrp1","oGrp2","oFld1","oSay1","oSay2")
 SetPrvt("oSay4","oSay5","oSay6","oSay7","oSay8","oSay9","oSay10","oSay11","oSay12","oSay13","oSay14")
 SetPrvt("oSay16","oSay17","oBtn1","oBtn2")

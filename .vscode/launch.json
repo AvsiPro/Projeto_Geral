@@ -27,7 +27,13 @@
 		},
 		{
 			"label": "u_teste"
+		},
+		{
+			"label": "u_CONWSC04"
+		},
+		{
+			"label": "U_WSKPX006"
 		}
 	],
-	"lastProgramExecuted": "sigamdi"
+	"lastProgramExecuted": "sigaadv"
 }

@@ -508,6 +508,7 @@ Local cNatu   := SuperGetMV('MV_NATGAR',.F.,'OUTROS')
     aAdd(aVetSE1, {"E1_NUM",     PadR(Z50->Z50_NOTA,TamSX3("E1_NUM")[1])      , Nil})
     aAdd(aVetSE1, {"E1_PREFIXO", 'GAR'                                        , Nil})
     aAdd(aVetSE1, {"E1_TIPO",    PadR(cTipo,TamSX3("E1_TIPO")[1])             , Nil})
+    aAdd(aVetSE1, {"E1_PARCELA", Z50->Z50_ITEM                                , Nil})
     aAdd(aVetSE1, {"E1_NATUREZ", PadR(cNatu,TamSX3("E1_NATUREZ")[1])          , Nil})
     aAdd(aVetSE1, {"E1_CLIENTE", PadR(Z50->Z50_CODCLI,TamSX3("E1_CLIENTE")[1]), Nil})
     aAdd(aVetSE1, {"E1_LOJA",    PadR(Z50->Z50_LOJCLI,TamSX3("E1_LOJA")[1])   , Nil})
@@ -515,7 +516,7 @@ Local cNatu   := SuperGetMV('MV_NATGAR',.F.,'OUTROS')
     aAdd(aVetSE1, {"E1_VENCTO",  dDataBase+nVenc                              , Nil})
     aAdd(aVetSE1, {"E1_VENCREA", dDataBase+nVenc                              , Nil})
     aAdd(aVetSE1, {"E1_VALOR",   Z50->Z50_PRECO+cSeq3                         , Nil})
-    aAdd(aVetSE1, {"E1_HIST",    cHist                                        , Nil})
+    aAdd(aVetSE1, {"E1_HIST",    Alltrim(cHist)+" - CHAMADO "+Z50->Z50_CODIGO , Nil})
     aAdd(aVetSE1, {"E1_MOEDA",   1                                            , Nil})
     
     Begin Transaction
@@ -594,3 +595,52 @@ EndIf
 
 
 Return cRet
+
+
+/*/{Protheus.doc} User Function _xEspelho
+    (long_description)
+    @type  Function
+    @author user
+    @since 09/03/2023
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+    /*/
+User Function _xEspelho(cNota,cFilNf)
+    
+Local aArea     :=  GetArea()
+Local cPastaS  	:= '\clientes\cnpj\'
+Local cPastaL   :=  'C:\Espelho_NF\'
+Local ccnpj     :=  ''
+
+DbSelectArea("SF2")
+DbSetOrder(1)
+If Dbseek(cFilNf+cNota)
+    ccnpj := Posicione("SA1",1,xFilial("SA1")+SF2->F2_CLIENTE+SF2->F2_LOJA,"A1_CGC")
+    
+    If File(cPastaS+ccnpj+'\'+cNota+'.pdf')
+        If !ExistDir(cPastaL)
+            Makedir(cPastaL)
+        EndIf
+        CPYS2T(cPastaS+ccnpj+'\'+cNota+'.pdf',cPastaL)
+        WinExec('Explorer.exe /select,"' + cPastaL+cNota+'.pdf' + '"', 1)
+    else
+        u_ROBDANFE(SF2->F2_DOC, SF2->F2_SERIE, cPastaS, ccnpj)
+        If File(cPastaS+ccnpj+'\'+cNota+'.pdf')
+            If !ExistDir(cPastaL)
+                Makedir(cPastaL)
+            EndIf
+            CPYS2T(cPastaS+ccnpj+'\'+cNota+'.pdf',cPastaL)
+            WinExec('Explorer.exe /select,"' + cPastaL+cNota+'.pdf' + '"', 1)
+        EndIf
+    EndIf 
+else
+    MsgAlert("Nota fiscal não encontrada")
+endIf 
+
+RestArea(aArea)
+
+Return

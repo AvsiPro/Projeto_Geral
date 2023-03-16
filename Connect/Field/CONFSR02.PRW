@@ -73,39 +73,25 @@ Static Function ExtLeitura()
 	Local nConRS1          := 0
 	Local cTot1            := ""
 	Local nTot1            := 0
-	Local cProd            := ""
-	// Local nMin             := 99999999
-	// Local nMax             := 0
 	Local nX               := 0
 	Local nY               := 0
 	Local nLin             := 0
 
 	//Fontes
 	Local oF10FFF          := TFont():New('Arial' /*Fonte*/,,10 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF10TFF          := TFont():New('Arial' /*Fonte*/,,10 /*Tamanho*/,,.T. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF10FTF          := TFont():New('Arial' /*Fonte*/,,10 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.T. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF10FFT          := TFont():New('Arial' /*Fonte*/,,10 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.T. /*Italico*/ )
 	Local oF12FFF          := TFont():New('Arial' /*Fonte*/,,12 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF12TFF          := TFont():New('Arial' /*Fonte*/,,12 /*Tamanho*/,,.T. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF12FTF          := TFont():New('Arial' /*Fonte*/,,12 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.T. /*Sublinhado*/,.F. /*Italico*/ )
 	Local oF12FFT          := TFont():New('Arial' /*Fonte*/,,12 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.T. /*Italico*/ )
 	Local oF15FFF          := TFont():New('Arial' /*Fonte*/,,15 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
 	Local oF15TFF          := TFont():New('Arial' /*Fonte*/,,15 /*Tamanho*/,,.T. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF15FTF          := TFont():New('Arial' /*Fonte*/,,15 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.T. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF15FFT          := TFont():New('Arial' /*Fonte*/,,15 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.T. /*Italico*/ )
-	// Local oF20FFF          := TFont():New('Arial' /*Fonte*/,,20 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF20TFF          := TFont():New('Arial' /*Fonte*/,,20 /*Tamanho*/,,.T. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF20FTF          := TFont():New('Arial' /*Fonte*/,,20 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.T. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF20FFT          := TFont():New('Arial' /*Fonte*/,,20 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.T. /*Italico*/ )
-	// Local oF25FFF          := TFont():New('Arial' /*Fonte*/,,25 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
 	Local oF25TFF          := TFont():New('Arial' /*Fonte*/,,25 /*Tamanho*/,,.T. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF25FTF          := TFont():New('Arial' /*Fonte*/,,25 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.T. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF25FFT          := TFont():New('Arial' /*Fonte*/,,25 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.T. /*Italico*/ )
-
+	
 	Private oPrinter := FWMSPrinter():New( "extraTo_leitura_.pdf",IMP_PDF,lAdjustToLegacy,"C:\temp\",lDisableSetup,,,,,,,, )
 
 	If lFatur
-		cQuery := " SELECT Z08.Z08_NUMSER,Z08.Z08_PRODUT,Z08.Z08_SELECA,SB1.B1_DESC,Z08.Z08_DATA,SUM(Z08.Z08_CONSUM) AS CONSUMO,SUM(Z08.Z08_VLRFAT) AS VALOR,SUM(Z08.Z08_CONSUM) * DA1.DA1_XCONSU AS CONSUMIDOR,SUM(Z08.Z08_CONSUM) * DA1.DA1_PRCVEN AS SUBSIDI,SA1.A1_NOME,SA1.A1_NREDUZ,SA1.A1_COD,SA1.A1_LOJA   " 
+		cQuery := " SELECT Z08.Z08_NUMSER,Z08.Z08_PRODUT,Z08.Z08_SELECA,SB1.B1_DESC,Z08.Z08_DATA,"
+		cQuery += " SUM(Z08.Z08_CONSUM) AS CONSUMO,SUM(Z08.Z08_VLRFAT) AS VALOR,"
+		cQuery += " SUM(Z08.Z08_CONSUM) * DA1.DA1_XCONSU AS CONSUMIDOR,"
+		cQuery += " SUM(Z08.Z08_CONSUM) * DA1.DA1_PRCVEN AS SUBSIDI,SA1.A1_NOME,SA1.A1_NREDUZ,SA1.A1_COD,SA1.A1_LOJA   " 
 		cQuery += " FROM   " + RetSQLName("Z08") + " Z08   " 
 		cQuery += " INNER JOIN " + RetSQLName("AAM") + " AAM ON AAM_FILIAL='"+xFilial("AAM")+"' AND AAM.AAM_CONTRT = Z08.Z08_CONTRT   " 
 		cQuery += " INNER JOIN " + RetSQLName("DA1") + " DA1 ON DA1_FILIAL='"+xFilial("DA1")+"' AND DA1.DA1_CODTAB = AAM.AAM_XCODTA   " 
@@ -113,6 +99,7 @@ Static Function ExtLeitura()
 		cQuery += " INNER JOIN " + RetSQLName("SB1") + " SB1 ON B1_FILIAL='"+xFilial("SB1")+"' AND SB1.B1_COD = Z08.Z08_PRODUT   " 
 		cQuery += " INNER JOIN " + RetSQLName("SA1") + " SA1 ON A1_FILIAL='"+xFilial("SA1")+"' AND SA1.A1_COD = AAM.AAM_CODCLI AND SA1.A1_LOJA = AAM.AAM_LOJA   " 
 		cQuery += " WHERE  Z08.Z08_PEDIDO = '" + _cPedido + "'   " 
+		cQuery += " AND Z08_CONTRT='"+aList[oList:nAt,01]+"'"
 		cQuery += "        AND DA1.D_E_L_E_T_ = ' '   " 
 		cQuery += "        AND Z08.D_E_L_E_T_ = ' '   "
 		cQuery += " GROUP BY Z08.Z08_NUMSER, Z08.Z08_SELECA,Z08.Z08_PRODUT,SB1.B1_DESC,Z08.Z08_DATA,SA1.A1_NOME,SA1.A1_NREDUZ,SA1.A1_COD,SA1.A1_LOJA,DA1.DA1_XCONSU,DA1.DA1_PRCVEN   " 
@@ -142,7 +129,8 @@ Static Function ExtLeitura()
 				TRB->A1_COD,;
 				TRB->A1_LOJA,;
 				TRB->Z08_SELECA,;
-				TRB->Z08_DATA} )
+				TRB->Z08_DATA,;
+				Posicione("SB1",1,xFilial("SB1")+TRB->Z08_PRODUT,"B1_POSIPI")} )
 			Dbskip()
 		End
 
@@ -160,16 +148,6 @@ Static Function ExtLeitura()
 			EndIf
 		Next
 
-		//Replicar aPontos por meio da query para trazer dados faltanteS
-		// For nX := 1 To Len(_aList5B)
-		// 	If Len(_aList5B[nX]) > 4
-		// 		aAdd(aPontos, _aList5B[nX])
-		// 	EndIf
-		// Next
-
-		//Asort(aPontos,,,{|x,y| x[2] < y[2]})
-
-		//cEntre := DToC(SToD(aPontos[1,5,4])) + " e " + DToC(SToD(aPontos[1,5,6]))
 		cEntre := DToC(MV_PAR02) + " e " + DToC(MV_PAR03)
 
 		nCon1 := 0
@@ -212,23 +190,18 @@ Static Function ExtLeitura()
 			Next
 		Next
 
-		//Asort(aProd,,,{|x,y| x[2] < y[2]})
-
 		aAux := {}
 
-		For nX := 1 To Len(aProd)
-			If aProd[nX,2] == cProd
-				For nY := 1 To Len(aAux)
-					If aAux[nY,2] == aProd[nX,2]
-						aAux[nY,3] += aProd[nX,3]
-						aAux[nY,4] += aProd[nX,4]
-					EndIf
-				Next
-			Else
+		For nX := 1 to len(aProd)
+			nPos := Ascan(aAux,{|x| Alltrim(x[2]) == Alltrim(aProd[nX,02])})
+			If nPos == 0
 				aAdd(aAux, aProd[nX])
-				cProd := aProd[nX,2]
-			EndIf
-		Next
+			Else 
+				aAux[nPos,3] += aProd[nX,3]
+				aAux[nPos,4] += aProd[nX,4]
+				aAux[nPos,5] += aProd[nX,5]
+			EndIf 
+		Next nX 
 			
 		nCon1 := 0
 		nSub1 := 0
@@ -252,8 +225,9 @@ Static Function ExtLeitura()
 		oPrinter:Say( nLin, 480,transForm(val(cConRS1), "@E 99,999.99"), oF10FFF )
 		oPrinter:Say( nLin, 550,transForm(val(cTot1), "@E 99,999.99"), oF10FFF )
 
-		oPrinter:Say( nLin+=30, 45,"ProduTo", oF10FFF )
+		oPrinter:Say( nLin+=30, 45,"Produto", oF10FFF )
 		oPrinter:Say( nLin, 100,"Descrição", oF10FFF )
+		oPrinter:Say( nLin, 280,"NCM", oF10FFF )
 		oPrinter:Say( nLin, 360,"Consumo", oF10FFF )
 		oPrinter:Say( nLin, 410,"Subsidiado R$", oF10FFF )
 		oPrinter:Say( nLin, 480,"Ao Consumidor R$", oF10FFF )
@@ -262,6 +236,7 @@ Static Function ExtLeitura()
 		For nX := 1 To Len(aAux)
 			oPrinter:Say( nLin+=20, 45,aAux[nX,2], oF10FFF )
 			oPrinter:Say( nLin, 100,AllTrim(aAux[nX,7]), oF10FFF )
+			oPrinter:Say( nLin, 280,AllTrim(aAux[nX,13]), oF10FFF )
 			oPrinter:Say( nLin, 360,cvalTochar(aAux[nX,3]), oF10FFF )
 			oPrinter:Say( nLin, 410,TransForm(aAux[nX,5], "@E 99,999.99"), oF10FFF )
 			oPrinter:Say( nLin, 480,TransForm(aAux[nX,6], "@E 99,999.99"), oF10FFF )
@@ -287,6 +262,7 @@ Static Function ExtLeitura()
 
 		oPrinter:Say( nLin+=30, 45,"ProduTo", oF10FFF )
 		oPrinter:Say( nLin, 100,"Descrição", oF10FFF )
+		oPrinter:Say( nLin, 280,"NCM", oF10FFF )
 		oPrinter:Say( nLin, 360,"Consumo", oF10FFF )
 		oPrinter:Say( nLin, 410,"Subsidiado R$", oF10FFF )
 		oPrinter:Say( nLin, 480,"Ao Consumidor R$", oF10FFF )
@@ -295,6 +271,7 @@ Static Function ExtLeitura()
 		For nX := 1 To Len(aAux)
 			oPrinter:Say( nLin+=20, 45,aAux[nX,2], oF10FFF )
 			oPrinter:Say( nLin, 100,AllTrim(aAux[nX,7]), oF10FFF )
+			oPrinter:Say( nLin, 280,AllTrim(aAux[nX,13]), oF10FFF )
 			oPrinter:Say( nLin, 360,cvalTochar(aAux[nX,3]), oF10FFF )
 			oPrinter:Say( nLin, 410,TransForm(aAux[nX,5], "@E 99,999.99"), oF10FFF ) //PEndente Subsidiado
 			oPrinter:Say( nLin, 480,TransForm(aAux[nX,6], "@E 99,999.99"), oF10FFF ) //PEndente Consumo - Subsidiado
@@ -338,6 +315,7 @@ Static Function ExtLeitura()
 			oPrinter:Say( nLin+=50, 25,"Mola", oF10FFF )
 			oPrinter:Say( nLin, 50,"ProduTo", oF10FFF )
 			oPrinter:Say( nLin, 100,"Descrição", oF10FFF )
+			oPrinter:Say( nLin, 280,"NCM", oF10FFF )
 			oPrinter:Say( nLin, 360,"Consumo", oF10FFF )
 			oPrinter:Say( nLin, 410,"Subsidiado R$", oF10FFF )
 			oPrinter:Say( nLin, 480,"Ao Consumidor R$", oF10FFF )
@@ -353,6 +331,7 @@ Static Function ExtLeitura()
 				oPrinter:Say( nLin+=20, 25,aPontos[nX,nY,11], oF10FFF )
 				oPrinter:Say( nLin, 50,AllTrim(aPontos[nX,nY,2]), oF10FFF )
 				oPrinter:Say( nLin, 100,AllTrim(aPontos[nX,nY,7]), oF10FFF )
+				oPrinter:Say( nLin, 280,AllTrim(aPontos[nX,nY,13]), oF10FFF )
 				oPrinter:Say( nLin, 360,cvalTochar(aPontos[nX,nY,3]), oF10FFF )
 				oPrinter:Say( nLin, 410,TransForm(aPontos[nX,nY,5], "@E 99,999.99"), oF10FFF ) //PEndente Subsidio
 				oPrinter:Say( nLin, 480,TransForm(aPontos[nX,nY,6], "@E 99,999.99"), oF10FFF ) //PEndente Consumido - subsidio
@@ -405,6 +384,7 @@ Static Function ExtLeitura()
 				oPrinter:Say( nLin+=20, 25,aPontos[nX,nY,11], oF10FFF )
 				oPrinter:Say( nLin, 50,aPontos[nX,nY,2], oF10FFF )
 				oPrinter:Say( nLin, 100,aPontos[nX,nY,7], oF10FFF )
+				oPrinter:Say( nLin, 280,aPontos[nX,nY,13], oF10FFF )
 				oPrinter:Say( nLin, 360,cvalTochar(aPontos[nX,nY,3]), oF10FFF )
 				oPrinter:Say( nLin, 410,transForm(aPontos[nX,nY,5], "@E 99,999.99"), oF10FFF ) //PEndente Subsidio
 				oPrinter:Say( nLin, 480,transForm(aPontos[nX,nY,6], "@E 99,999.99"), oF10FFF ) //PEndente Consumo - subsidio
@@ -424,9 +404,6 @@ Static Function ExtLeitura()
 			EndIf
 		Next
 
-		//Asort(aPontos,,,{|x,y| x[2] < y[2]})
-
-		//cEntre := DToC(SToD(aPontos[1,5,4])) + " e " + DToC(SToD(aPontos[1,5,6]))
 		cEntre := DToC(MV_PAR02) + " e " + DToC(MV_PAR03)
 
 		nCon1 := 0
@@ -469,22 +446,16 @@ Static Function ExtLeitura()
 			Next
 		Next
 
-		//Asort(aProd,,,{|x,y| x[2] < y[2]})
-
-		For nX := 1 To Len(aProd)
-			If aProd[nX,2] == cProd
-				For nY := 1 To Len(aAux)
-					If aAux[nY,2] == aProd[nX,2]
-						aAux[nY,8] += aProd[nX,8]
-						aAux[nY,10] += aProd[nX,10]
-					EndIf
-				Next
-			Else
+		For nX := 1 to len(aProd)
+			nPos := Ascan(aAux,{|x| Alltrim(x[2]) == Alltrim(aProd[nX,02])})
+			If nPos == 0
 				aAdd(aAux, aProd[nX])
-				cProd := aProd[nX,2]
-			EndIf
-		Next
-			
+			Else 
+				aAux[nPos,8] += aProd[nX,8]
+				aAux[nPos,10] += aProd[nX,10]
+			EndIf 
+		Next nX 
+					
 		nCon1 := 0
 		nSub1 := 0
 		nConRS1 := 0
@@ -509,6 +480,7 @@ Static Function ExtLeitura()
 
 		oPrinter:Say( nLin+=30, 45,"ProduTo", oF10FFF )
 		oPrinter:Say( nLin, 100,"Descrição", oF10FFF )
+		oPrinter:Say( nLin, 280,"NCM", oF10FFF )
 		oPrinter:Say( nLin, 360,"Consumo", oF10FFF )
 		oPrinter:Say( nLin, 410,"Subsidiado R$", oF10FFF )
 		oPrinter:Say( nLin, 480,"Ao Consumidor R$", oF10FFF )
@@ -517,6 +489,7 @@ Static Function ExtLeitura()
 		For nX := 1 To Len(aAux)
 			oPrinter:Say( nLin+=20, 45,aAux[nX,2], oF10FFF )
 			oPrinter:Say( nLin, 100,AllTrim(aAux[nX,3]), oF10FFF )
+			oPrinter:Say( nLin, 280,AllTrim(aAux[nX,13]), oF10FFF )
 			oPrinter:Say( nLin, 360,cvalTochar(aAux[nX,8]), oF10FFF )
 			oPrinter:Say( nLin, 410,TransForm(aAux[nX,9]*aAux[nX,8], "@E 99,999.99"), oF10FFF )
 			oPrinter:Say( nLin, 480,TransForm(aAux[nX,15]*aAux[nX,8], "@E 99,999.99"), oF10FFF )
@@ -542,6 +515,7 @@ Static Function ExtLeitura()
 
 		oPrinter:Say( nLin+=30, 45,"ProduTo", oF10FFF )
 		oPrinter:Say( nLin, 100,"Descrição", oF10FFF )
+		oPrinter:Say( nLin, 280,"NCM", oF10FFF )
 		oPrinter:Say( nLin, 360,"Consumo", oF10FFF )
 		oPrinter:Say( nLin, 410,"Subsidiado R$", oF10FFF )
 		oPrinter:Say( nLin, 480,"Ao Consumidor R$", oF10FFF )
@@ -550,6 +524,7 @@ Static Function ExtLeitura()
 		For nX := 1 To Len(aAux)
 			oPrinter:Say( nLin+=20, 45,aAux[nX,2], oF10FFF )
 			oPrinter:Say( nLin, 100,AllTrim(aAux[nX,3]), oF10FFF )
+			oPrinter:Say( nLin, 280,AllTrim(aAux[nX,13]), oF10FFF )
 			oPrinter:Say( nLin, 360,cvalTochar(aAux[nX,8]), oF10FFF )
 			oPrinter:Say( nLin, 410,TransForm(aAux[nX,9]*aAux[nX,8], "@E 99,999.99"), oF10FFF ) //PEndente Subsidiado
 			oPrinter:Say( nLin, 480,TransForm(aAux[nX,15]*aAux[nX,8], "@E 99,999.99"), oF10FFF ) //PEndente Consumo - Subsidiado
@@ -593,6 +568,7 @@ Static Function ExtLeitura()
 			oPrinter:Say( nLin+=50, 25,"Mola", oF10FFF )
 			oPrinter:Say( nLin, 50,"ProduTo", oF10FFF )
 			oPrinter:Say( nLin, 100,"Descrição", oF10FFF )
+			oPrinter:Say( nLin, 280,"NCM", oF10FFF )
 			oPrinter:Say( nLin, 360,"Consumo", oF10FFF )
 			oPrinter:Say( nLin, 410,"Subsidiado R$", oF10FFF )
 			oPrinter:Say( nLin, 480,"Ao Consumidor R$", oF10FFF )
@@ -608,6 +584,7 @@ Static Function ExtLeitura()
 				oPrinter:Say( nLin+=20, 25,aPontos[nX,nY,1], oF10FFF )
 				oPrinter:Say( nLin, 50,AllTrim(aPontos[nX,nY,2]), oF10FFF )
 				oPrinter:Say( nLin, 100,AllTrim(aPontos[nX,nY,3]), oF10FFF )
+				oPrinter:Say( nLin, 280,AllTrim(aPontos[nX,nY,13]), oF10FFF )
 				oPrinter:Say( nLin, 360,cvalTochar(aPontos[nX,nY,8]), oF10FFF )
 				oPrinter:Say( nLin, 410,TransForm(aPontos[nX,nY,9]*aPontos[nX,nY,8], "@E 99,999.99"), oF10FFF ) //PEndente Subsidio
 				oPrinter:Say( nLin, 480,TransForm(aPontos[nX,nY,15]*aPontos[nX,nY,8], "@E 99,999.99"), oF10FFF ) //PEndente Consumido - subsidio
@@ -645,6 +622,7 @@ Static Function ExtLeitura()
 			oPrinter:Say( nLin+=30, 25,"Mola", oF10FFF )
 			oPrinter:Say( nLin, 50,"ProduTo", oF10FFF )
 			oPrinter:Say( nLin, 100,"Descrição", oF10FFF )
+			oPrinter:Say( nLin, 280,"NCM", oF10FFF )
 			oPrinter:Say( nLin, 360,"Consumo", oF10FFF )
 			oPrinter:Say( nLin, 410,"Subsidiado R$", oF10FFF )
 			oPrinter:Say( nLin, 480,"Ao Consumidor R$", oF10FFF )
@@ -660,6 +638,7 @@ Static Function ExtLeitura()
 				oPrinter:Say( nLin+=20, 25,aPontos[nX,nY,1], oF10FFF )
 				oPrinter:Say( nLin, 50,aPontos[nX,nY,2], oF10FFF )
 				oPrinter:Say( nLin, 100,aPontos[nX,nY,3], oF10FFF )
+				oPrinter:Say( nLin, 280,aPontos[nX,nY,13], oF10FFF )
 				oPrinter:Say( nLin, 360,cvalTochar(aPontos[nX,nY,8]), oF10FFF )
 				oPrinter:Say( nLin, 410,transForm(aPontos[nX,nY,9]*aPontos[nX,nY,8], "@E 99,999.99"), oF10FFF ) //PEndente Subsidio
 				oPrinter:Say( nLin, 480,transForm(aPontos[nX,nY,15]*aPontos[nX,nY,8], "@E 99,999.99"), oF10FFF ) //PEndente Consumo - subsidio
@@ -698,26 +677,12 @@ Static Function DemonsCon()
 
 	//Fontes
 	Local oF10FFF          := TFont():New('Ambra Sans' /*Fonte*/,,10 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF10TFF          := TFont():New('Arial' /*Fonte*/,,10 /*Tamanho*/,,.T. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF10FTF          := TFont():New('Arial' /*Fonte*/,,10 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.T. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF10FFT          := TFont():New('Arial' /*Fonte*/,,10 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.T. /*Italico*/ )
 	Local oF12FFF          := TFont():New('Ambra Sans' /*Fonte*/,,12 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF12TFF          := TFont():New('Arial' /*Fonte*/,,12 /*Tamanho*/,,.T. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF12FTF          := TFont():New('Arial' /*Fonte*/,,12 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.T. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF12FFT          := TFont():New('Arial' /*Fonte*/,,12 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.T. /*Italico*/ )
 	Local oF15FFF          := TFont():New('Ambra Sans' /*Fonte*/,,15 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
 	Local oF15TFF          := TFont():New('Ambra Sans' /*Fonte*/,,15 /*Tamanho*/,,.T. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF15FTF          := TFont():New('Arial' /*Fonte*/,,15 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.T. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF15FFT          := TFont():New('Arial' /*Fonte*/,,15 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.T. /*Italico*/ )
-	// Local oF20FFF          := TFont():New('Arial' /*Fonte*/,,20 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
 	Local oF20TFF          := TFont():New('Ambra Sans' /*Fonte*/,,20 /*Tamanho*/,,.T. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF20FTF          := TFont():New('Arial' /*Fonte*/,,20 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.T. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF20FFT          := TFont():New('Arial' /*Fonte*/,,20 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.T. /*Italico*/ )
-	// Local oF25FFF          := TFont():New('Arial' /*Fonte*/,,25 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
 	Local oF25TFF          := TFont():New('Ambra Sans' /*Fonte*/,,25 /*Tamanho*/,,.T. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF25FTF          := TFont():New('Arial' /*Fonte*/,,25 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.T. /*Sublinhado*/,.F. /*Italico*/ )
-	// Local oF25FFT          := TFont():New('Arial' /*Fonte*/,,25 /*Tamanho*/,,.F. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.T. /*Italico*/ )
-
+	
 	Private oPrinter := FWMSPrinter():New( "demons_consumo_.pdf",IMP_PDF,lAdjustToLegacy,"C:\temp\",lDisableSetup,,,,,,,, )
 
 	For nX := 1 To Len(_aList5B)
@@ -732,8 +697,6 @@ Static Function DemonsCon()
 			aAdd(aProd, aPontos[nX,nY])
 		Next
 	Next
-
-	//Asort(aProd,,,{|x,y| x[2] < y[2]})
 
 	oPrinter:StartPage()
 	oPrinter:SetMargin( 005, 005, 005, 005 )

@@ -1834,11 +1834,11 @@ If len(aItens) > 0
 				nVlrFt := 0
 				Msgalert("Pedido gerado de faturamento de doses "+SC5->C5_NUM)
 				DbSelectArea("Z08")
-				DbSetOrder(2)
+				DbSetOrder(3)
 				For nCont := 1 to len(aList5B)
 					If aList5B[nCont,01] == aList[oList:nAt,01] .And. len(aList5b[nCont]) > 4
 						For nJ := 5 to len(aList5b[nCont])
-							If Dbseek(xFilial("Z08")+aList5b[nCont,nJ,11]+aList5b[nCont,nJ,01])
+							If Dbseek(xFilial("Z08")+aList5b[nCont,nJ,11]+aList5b[nCont,nJ,01]+aList5B[nCont,02])
 								RecLock("Z08", .F.)
 								Z08->Z08_FATURA := 'S'
 								Z08->Z08_PEDIDO := SC5->C5_NUM
@@ -2118,11 +2118,11 @@ ELSE
 	nVlrFt := 0
 	Msgalert("Pedido gerado de faturamento de doses "+SC5->C5_NUM)
 	DbSelectArea("Z08")
-	DbSetOrder(2)
+	DbSetOrder(3)
 	For nCont := 1 to len(aList5B)
 		If aList5B[nCont,01] == aList[oList:nAt,01] .And. len(aList5b[nCont]) > 4
 			For nJ := 5 to len(aList5b[nCont])
-				If Dbseek(xFilial("Z08")+aList5b[nCont,nJ,11]+aList5b[nCont,nJ,01])
+				If Dbseek(xFilial("Z08")+aList5b[nCont,nJ,11]+aList5b[nCont,nJ,01]+aList5B[nCont,02])
 					//While !EOF() .And. Z08->Z08_COD == aList5b[nCont,nJ,11]
 						RecLock("Z08", .F.)
 						Z08->Z08_FATURA := 'S'
@@ -2384,8 +2384,9 @@ cQuery += " WHERE Z08_FILIAL='"+xFilial("Z08")+"'"
 cQuery += " AND Z08_NUMSER='"+cNumSr+"'"
 cQuery += " AND Z08_COD<>'"+cLeit+"'"
 cQuery += " AND Z08_SELECA='"+cSelec+"'"
-cQuery += " AND Z08_DATA<'"+cDtAnt+"'"
+cQuery += " AND Z08_DATA<='"+cDtAnt+"'"
 cQuery += " AND D_E_L_E_T_=' '"
+cQuery += " ORDER BY Z08_DATA DESC"
 
 If Select("QUERY") > 0
 	dbSelectArea("QUERY")

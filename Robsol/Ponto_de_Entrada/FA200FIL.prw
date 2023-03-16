@@ -17,12 +17,16 @@ User Function FA200FIL()
     LOCAL aAreaSE1  := GetArea()
     LOCAL nIndex    := IndexOrd()
     LOCAL _cConta   := SEE->EE_CONTA
+    Local _cBanco   := SEE->EE_CODIGO
 
-    If padl(alltrim(cConta),3,"0") <> substr(aBuffer[1],33,3)
-        Alert("Conta informada nos parametros não é a mesma do arquivo retorno. A operação será cancelada!")
-        Return
+If substr(aBuffer[1],1,3) == "001"
+    If padl(alltrim(_cConta),3,"0") <> substr(aBuffer[1],33,3) .or. padl(alltrim(_cBanco),3,"0") <> substr(aBuffer[1],1,3)
+        if !val(substr(aBuffer[1],13,1)) > 2 
+            Alert("Conta informada nos parametros não é a mesma do arquivo retorno. A operação será cancelada!")
+        EndIf
+        Return 
     EndIf
-        
+EndIf       
     cNumTit := SE1->E1_PREFIXO+SE1->E1_NUM+SE1->E1_PARCELA
     cEspecie:= SE1->E1_TIPO
 
@@ -36,9 +40,6 @@ User Function FA200FIL()
     Else
         //Só é permitida a manipulação da variável lHelp. Caso queira que o help seja exibido, lHelp deve receber .T.
         lHelp       := .f.
-       
-        //Variáveis permitidas para uso, mas que NÃO devem ser manipuladas
-        //cNumTit     := ""
-        //cEspecie    := ""
+
     EndIf
 Return
