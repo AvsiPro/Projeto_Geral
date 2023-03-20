@@ -408,6 +408,11 @@ Local aItems:= {'Atende','Não atende'}
         Z50->Z50_STATUS := '4'
         Z50->Z50_OBSATD := cObsOld + CRLF + Alltrim(cMsgGrv)
         Z50->Z50_NFATEN := cNFAtend
+        If cCombo1 == 'Atende'
+            Z50->Z50_PROCED := '1'
+        Else 
+            Z50->Z50_PROCED := '2'
+        EndIf  
         Z50->(MsUnlock())
     Else
         MsgAlert('Operação Cancelada!')
