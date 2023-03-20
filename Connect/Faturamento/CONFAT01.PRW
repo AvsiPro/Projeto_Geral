@@ -49,7 +49,7 @@ Private oFont2  :=  TFont():New('Arial',,-12,.T.)
 Private oFont3  :=  TFont():New('Verdana',,-12,.T.)
 Private oFont4  :=  TFont():New('Arial',,-26,.T.)
 Private cPer    :=  space(6)
-
+Private nMes3
 Private oChart
 
 IF Select("SM0") == 0
@@ -97,9 +97,14 @@ oDlg1      := MSDialog():New( 085,210,628,1477,"Painel de Faturamento",,,.F.,,,,
     
     //oBtn1      := TButton():New( 244,580,"Sair",oDlg1,{||oDlg1:end()},037,012,,,,.T.,,"",,,,.F. )
     oMenu := TMenu():New(0,0,0,0,.T.)
+
+    oTMenuIte1 := TMenuItem():New(oDlg1,"Contratos fat.",,,,{|| ContrFat()},,,,,,,,,.T.)
 	oTMenuIte9 := TMenuItem():New(oDlg1,"Sair",,,,{|| oDlg1:end()},,,,,,,,,.T.)
+	
+    oMenu:Add(oTMenuIte1)
 	oMenu:Add(oTMenuIte9)
-	oTButton9 := TButton():New( 244, 580, "Opções",oDlg1,{||},040,12,,,.F.,.T.,.F.,,.F.,,,.F. )
+	
+    oTButton9 := TButton():New( 244, 580, "Opções",oDlg1,{||},040,12,,,.F.,.T.,.F.,,.F.,,,.F. )
 	// Define botão no Menu
 	oTButton9:SetPopupMenu(oMenu)
 
@@ -138,12 +143,13 @@ Local nTotL2 := 0
 Local nTotL3 := 0
 Local nMes1  := month(MonthSub(cPer1,2))
 Local nMes2  := month(MonthSub(cPer1,1))
-Local nMes3  := month(cPer1)
 Local nPedM  := 0
 Local nNotM  := 0
 Local nCont  := 0
 Local nPedV  := 0
 Local nCntFt := 0
+
+nMes3  := month(cPer1)
 
 aContra := {}
 aItCont := {}
@@ -525,6 +531,168 @@ oList1:bLine := {||{ aList1[oList1:nAt,01],;
 
 oList1:refresh()
 oDlg1:refresh()
+
+RestArea(aArea)
+
+Return
+
+/*/{Protheus.doc} ContrFat
+    (long_description)
+    @type  Static Function
+    @author user
+    @since 20/03/2023
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function ContrFat()
+
+Local aArea := GetArea()
+Local nCont
+
+Private oContra
+Private oItemC
+Private oNotas
+Private aDetCon :=  {}
+Private aItemC  :=  {}
+Private aFatura :=  {}
+
+Private oDlg2,oContr,oItem,oFatura,oDetalhe,oSay1,oSay2,oSair
+
+Aadd(aItemC,{'','',''})
+Aadd(aFatura,{'','',''})
+
+For nCont := 1 to len(aContra)
+    Aadd(aDetCon,aContra[nCont])
+Next nCont
+
+oDlg2      := MSDialog():New( 092,232,602,1258,"Contratos",,,.F.,,,,,,.T.,,,.T. )
+
+    oContr     := TGroup():New( 004,004,112,296,"Contratos",oDlg2,CLR_BLACK,CLR_WHITE,.T.,.F. )
+    //oBrw1      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{012,008,108,292},,, oContr ) 
+    oContra 	   := TCBrowse():New(012,008,285,097,, {'Contrato','Cliente','Vlr Min Contrato'},{30,90,40},;
+									oContr,,,,{|| FHelp3(oContra:nAt)},{|| /*editcol(oList:nAt)*/},,,,,,,.F.,,.T.,,.F.,,,)
+        oContra:SetArray(aDetCon)
+        oContra:bLine := {||{   aDetCon[oContra:nAt,01],;
+                                Alltrim(aDetCon[oContra:nAt,05]),; 
+                                Transform(aDetCon[oContra:nAt,06],"@E 999,999,999.99")}}
+
+    oItem      := TGroup():New( 116,004,224,296,"Itens",oDlg2,CLR_BLACK,CLR_WHITE,.T.,.F. )
+    //oBrw2      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{124,008,120,292},,, oItem ) 
+    oItemC 	   := TCBrowse():New(124,008,285,095,, {'Patrimonio','Descrição','Vlr Locação'},{30,90,40},;
+									oItem,,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList:nAt)*/},,,,,,,.F.,,.T.,,.F.,,,)
+    oItemC:SetArray(aItemC)
+    oItemC:bLine := {||{   aItemC[oItemC:nAt,01],;
+                           aItemC[oItemC:nAt,02],; 
+                           aItemC[oItemC:nAt,03]}}
+                            
+    oFatura    := TGroup():New( 116,300,224,504,"Faturamento",oDlg2,CLR_BLACK,CLR_WHITE,.T.,.F. )
+    //oBrw3      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{124,304,220,500},,, oFatura ) 
+    oNotas 	   := TCBrowse():New(124,304,195,095,, {'Tipo','Valor'},{50,90},;
+									oFatura,,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList:nAt)*/},,,,,,,.F.,,.T.,,.F.,,,)
+    oNotas:SetArray(aFatura)
+    oNotas:bLine := {||{   aFatura[oNotas:nAt,01],;
+                           aFatura[oNotas:nAt,02]}}
+
+    oDetalhe   := TGroup():New( 004,300,112,504,"Detalhes",oDlg2,CLR_BLACK,CLR_WHITE,.T.,.F. )
+
+        oSay1      := TSay():New( 020,306,{||""},oDetalhe,,oFont2,.F.,.F.,.F.,.T.,CLR_HBLUE,CLR_WHITE,042,008)
+        oSay2      := TSay():New( 020,354,{||""},oDetalhe,,oFont1,.F.,.F.,.F.,.T.,CLR_HGREEN,CLR_WHITE,136,008)
+        oSay3      := TSay():New( 035,306,{||""},oDetalhe,,,.F.,.F.,.F.,.T.,CLR_HMAGENTA,CLR_WHITE,136,008)
+        oSay4      := TSay():New( 050,306,{||""},oDetalhe,,oFont3,.F.,.F.,.F.,.T.,CLR_HRED,CLR_WHITE,146,028)
+        oSay5      := TSay():New( 085,306,{||""},oDetalhe,,oFont3,.F.,.F.,.F.,.T.,CLR_HRED,CLR_WHITE,146,028)
+        
+        oSair      := TButton():New( 228,224,"Sair",oDlg2,{|| oDlg2:end()},037,012,,,,.T.,,"",,,,.F. )
+
+oDlg2:Activate(,,,.T.)
+
+RestArea(aArea)
+
+Return
+
+/*/{Protheus.doc} FHelp3
+nLinhadescription)
+    @type  Static Function
+    @author user
+    @since 20/03/2023
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function FHelp3(nLinha)
+    
+Local aArea := GetArea()
+Local nCont := 0
+Local aForfa    :=  {'Mensal','Quinzenal'}
+Local aTipFa    :=  {'Min.Global','Min.Ativo','Sem Min.'}
+Local aTipMi    :=  {'Quantidade','Valor'}
+Local cTipFat   :=  ''
+
+aItemC  := {}
+aFatura := {}
+
+oSay1:settext("")
+oSay2:settext("")
+oSay3:settext("")
+oSay4:settext("")
+oSay5:settext("")
+
+For nCont := 1 to len(aItCont)
+    If aItCont[nCont,01] == aDetCon[nLinha,01]
+        Aadd(aItemC,aItCont[nCont])
+    EndIf 
+Next nCont
+
+For nCont := 1 to len(aVndF2)
+    If aVndF2[nCont,01] == aDetCon[nLinha,02] .And. aVndF2[nCont,02] == aDetCon[nLinha,03] .And. aVndF2[nCont,04] == nMes3
+        Aadd(aFatura,{'Venda',aVndF2[nCont,03]})
+    EndIf
+Next nCont
+
+For nCont := 1 to len(aDosF2)
+    If aDosF2[nCont,01] == aDetCon[nLinha,02] .And. aDosF2[nCont,02] == aDetCon[nLinha,03] .And. aDosF2[nCont,04] == nMes3
+        Aadd(aFatura,{'Doses',aDosF2[nCont,03]})
+    EndIf
+Next nCont
+
+For nCont := 1 to len(aLocF2)
+    If aLocF2[nCont,01] == aDetCon[nLinha,02] .And. aLocF2[nCont,02] == aDetCon[nLinha,03] .And. aLocF2[nCont,04] == nMes3
+        Aadd(aFatura,{'Locação',aLocF2[nCont,03]})
+    EndIf
+Next nCont
+
+If len(aFatura) < 1
+    Aadd(aFatura,{'',0,''})
+EndIf 
+
+cTipFat := 'Forma Faturamento - '+aForfa[val(aDetcon[nLinha,07])]+CRLF
+cTipFat += 'Tipo Faturamento - '+aTipFa[val(aDetcon[nLinha,08])]+CRLF
+cTipFat += 'Tipo Minimo - '+aTipMi[val(aDetcon[nLinha,09])]+CRLF
+
+oSay1:settext(aDetCon[nLinha,02]+"/"+aDetcon[nLinha,03])
+oSay2:settext(aDetCon[nLinha,04])
+oSay3:settext("Ativos no Contrato "+cvaltochar(len(aItemC)))
+oSay4:settext(cTipFat)
+oSay5:settext("Classificação Contrato - "+If(!Empty(aDetCon[nLinha,11]),Alltrim(aDetCon[nLinha,11]),'Sem classificação'))
+
+oItemC:SetArray(aItemC)
+oItemC:bLine := {||{    Alltrim(aItemC[oItemC:nAt,04]),;
+                        Alltrim(Posicione("SB1",1,xFilial("SB1")+aItemC[oItemC:nAt,03],"B1_DESC")),; 
+                        Transform(If(aItemC[oItemC:nAt,05]<1,0,aItemC[oItemC:nAt,05]),"@E 999,999.99")}}
+
+oNotas:SetArray(aFatura)
+oNotas:bLine := {||{    aFatura[oNotas:nAt,01],;
+                        Transform(aFatura[oNotas:nAt,02],"@E 999,999,999.99")}}
+
+oNotas:refresh()                 
+oItemC:refresh()
+oDlg2:refresh()
 
 RestArea(aArea)
 
