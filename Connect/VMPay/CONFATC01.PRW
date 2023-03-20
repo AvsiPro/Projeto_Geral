@@ -748,6 +748,9 @@ STATIC FUNCTION FHelp()
 
 LOCAL nX
 Local nJ
+Local nQtdAtv   :=  0
+
+Aeval(aList,{|x| nQtdAtv += If(x[17] == aList[oList:nAt,17],1,0)})
 
 oSay4:settext("")
 oSay5:settext("")
@@ -757,6 +760,7 @@ oSay8:settext("")
 
 oSay4:settext('Cliente  - '+Alltrim(aList[oList:nAT,05])+" / "+Alltrim(aList[oList:nAT,06])+" - Contrato "+Alltrim(aList[oList:nAT,22]))
 oSay5:settext('Endereço - '+Alltrim(aList[oList:nAT,07])+" / "+Alltrim(aList[oList:nAT,08])+" / "+Alltrim(aList[oList:nAT,09])+" / "+Alltrim(aList[oList:nAT,10])+" / "+Alltrim(aList[oList:nAT,11]))
+oSay7:settext("Quantidade de Ativos no Cliente "+cvaltochar(nQtdAtv))
 
 aList1 := {}
 aList3 := {}  
