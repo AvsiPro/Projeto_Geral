@@ -664,9 +664,9 @@ Local nCont
 Local aAux      :=  {}
 Local nX 
 Local aQtdx     :=  {}
-
-Private aCabec    :=  {}
-Private aItemD1   :=  {}
+Local nOpc      :=  0
+Private aCabec  :=  {}
+Private aItemD1 :=  {}
 Private oCabec
 Private oItem 
 Private aItens  :=  {}
@@ -733,6 +733,7 @@ For nCont := 1 to len(aAux)
             DbSelectArea("TRB")   
 
             While !EOF()
+               
                 If TRB->SALDO >= aAux[nCont,nX,04]
                     If aAux[nCont,nX,04] <= TRB->SALDO 
                         nSaldo := aAux[nCont,nX,04]
@@ -859,11 +860,15 @@ If len(aAux) > 0
                                 aItens[oItem:nAt,08],; 
                                 aItens[oItem:nAt,09]}}
 
-        oBtn1      := TButton():New( 256,192,"Confirmar",oDev1,{|| oDev1:end()},037,012,,,,.T.,,"",,,,.F. )
-        oBtn2      := TButton():New( 256,260,"Cancelar",oDev1,{|| oDev1:end()},037,012,,,,.T.,,"",,,,.F. )
+        oBtn1      := TButton():New( 256,192,"Confirmar",oDev1,{|| oDev1:end(nOpc:=1)},037,012,,,,.T.,,"",,,,.F. )
+        oBtn2      := TButton():New( 256,260,"Cancelar",oDev1,{|| oDev1:end(nOpc:=0)},037,012,,,,.T.,,"",,,,.F. )
 
     oDev1:Activate(,,,.T.)
 
+
+    If nOpc == 1
+        Processa({|| gerardoc(aCabec,aItemD1),"Aguarde"})
+    EndIf 
 
 EndIf 
 
@@ -913,6 +918,96 @@ oItem:bLine := {||{ aItens[oItem:nAt,01],;
 
 oItem:refresh()
 oDev1:refresh()
+
+RestArea(aArea)
+
+Return
+
+/*/{Protheus.doc} gerardoc
+    (long_description)
+    @type  Static Function
+    @author user
+    @since 13/03/2023
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function gerardoc(aCabec,aItemD1)
+
+Local aArea     :=  GetArea()
+Local nCont
+Local nItens
+Local nX 
+Local aCabD1    :=  {}
+Local aItens    :=  {}
+Local aIteNF    :=  {}
+Local aLinha    :=  {}
+Local cFornec   :=  '24575331 '
+Local cLojFor   :=  '0001'
+
+Asort(aItemD1,,,{|x,y| x[10]+x[11] < y[10]+y[11]})
+Asort(aCabec,,,{|x,y| x[2]+x[3] < y[2]+y[3]})
+
+For nCont := 1 to len(aCabec)
+    aCabD1 := {}
+    //cDoc := GetSXenum("SF1","F1_DOC")
+    DbSelectArea("SX5")
+    SX5->(MsSeek(cFilant +'01' + "1     "))
+    cDoc := Alltrim(SX5->X5_DESCRI)
+    RecLock("SX5",.F.)
+    SX5->X5_DESCRI  := Soma1(AllTrim(Substr(cDoc,1,9)))
+    SX5->X5_DESCSPA := Soma1(AllTrim(Substr(cDoc,1,9)))
+    SX5->X5_DESCENG := Soma1(AllTrim(Substr(cDoc,1,9)))
+    SX5->(MsUnlock())
+    
+    aadd(aCabD1,{"F1_TIPO"   		,"N"})		
+    aadd(aCabD1,{"F1_FORMUL" 		,"S"})		
+    aadd(aCabD1,{"F1_DOC"    		,cDoc})		
+    aadd(aCabD1,{"F1_SERIE"  		,"1"})		
+    aadd(aCabD1,{"F1_EMISSAO"		,dDataBase})		
+    aadd(aCabD1,{"F1_FORNECE"		,cFornec})		
+    aadd(aCabD1,{"F1_LOJA"   		,cLojFor})		
+    aadd(aCabD1,{"F1_ESPECIE"		,"SPED"})		
+    aadd(aCabD1,{"F1_COND"			,"001"})		
+    aadd(aCabD1,{"F1_DESPESA"   	,0})				
+    aadd(aCabD1,{"E2_NATUREZ"		,"32101002  "})		
+    
+    For nItens := 1 to len(aItemD1)
+        If aItemD1[nItens,10] == aCabec[nCont,02] .And. aItemD1[nItens,11] == aCabec[nCont,03]
+            Aadd(aItens,aItemD1[nItens])
+        else
+            exit
+        EndIf  
+    Next nCont 
+
+    If len(aItens) > 0
+        For nX := 1 To len(aItens)
+            aLinha := {}			
+            aadd(aLinha,{"D1_DOC"  	    ,cDoc    									,Nil})
+            aadd(aLinha,{"D1_ITEM"      ,STRZERO(nX,2) 								,NIL})
+            aadd(aLinha,{"D1_COD"  	    ,aItens[nX,02]								,Nil})			
+            aadd(aLinha,{"D1_QUANT"	    ,aItens[nX,04]	    						,Nil})			
+            aadd(aLinha,{"D1_VUNIT"	    ,aItens[nX,05]  							,Nil})			
+            aadd(aLinha,{"D1_TOTAL"	    ,ROUND(aItens[nX,04] * aItens[nX,05],2)	            ,Nil})			
+            aadd(aLinha,{"D1_NFORI"     ,aItens[nX,07]								,Nil})			
+            aadd(aLinha,{"D1_SERIORI"  	,aItens[nX,08]								,Nil})			
+            aadd(aLinha,{"D1_ITEMORI"  	,aItens[nX,09]								,Nil})			
+            //aadd(aLinha,{"D1_TES"	,"159"										,Nil})   
+            aadd(aIteNF,aLinha)		
+        Next nX
+
+        lMsErroAuto := .F.
+        MSExecAuto({|x,y,z| mata103(x,y,z)},aCabD1,aIteNF,3)		
+
+        If lMsErroAuto
+            MOSTRAERRO()	
+        EndIf
+    EndIf
+
+Next nCont
 
 RestArea(aArea)
 

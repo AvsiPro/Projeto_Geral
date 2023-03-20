@@ -129,7 +129,7 @@ aQtdH := {'Numero_Contrato',;
  
 aAdd( aPergs ,{1,"Data de Faturamento : "		,cCond	,"@!",'.T.',"SE4",'.T.',40,.F.})  
 aAdd( aPergs ,{1,"Período Faturamento 'MMAA' : ",cPeri	,"@E 9999",'.T.',"",'.T.',40,.F.})  
-aAdd( aPergs ,{2,"Faturamento Quinzenal?"		,"1"	,{"1=Primeira","2=Segunda"},080,'',.T.})
+aAdd( aPergs ,{2,"Faturamento Quinzenal?"		," "	,{" ","1=Primeira","2=Segunda"},080,'',.T.})
 aAdd( aPergs ,{1,"Contrato de : "				,cCont1	,"@!",'.T.',"AAM",'.T.',80,.F.})  
 aAdd( aPergs ,{1,"Contrato Ate: "				,cCont2	,"@!",'.T.',"AAM",'.T.',80,.F.})  
 aAdd( aPergs ,{1,"Cliente de : " 				,cCli1	,"@!",'.T.',"SA1",'.T.',60,.F.})  
@@ -362,7 +362,7 @@ Static Function Busca(cCond,cQuinze)
 	cQuery += " A1_BAIRRO,A1_MUN,A1_EST,"
 	cQuery += " AAM_INIVIG,AAM_FIMVIG,A1_EMAIL,'' AS AAN_XISENT,"
 	cQuery += " AAM_XFORFA, AAM_XTIPFA,'' AS AAM_XPERCT,"
-	cQuery += " '' AS AAM_XRENOV,AAN_FILIAL,AAM_XPRDCM"
+	cQuery += " '' AS AAM_XRENOV,AAN_FILIAL,AAM_XPRDCM,AAM_XPOCLI"
 	cQuery += " FROM "+RetSQLName("AAN")+" AAN"
 	cQuery += " INNER JOIN "+RetSQLName("AAM")+" AAM ON AAM_FILIAL=AAN_FILIAL AND AAM_CONTRT=AAN_CONTRT AND AAM.D_E_L_E_T_=' '"
 	cQuery += " INNER JOIN "+RetSQLName("SE4")+" E4 ON E4_FILIAL='"+xFilial("SE4")+"' AND E4_CODIGO=AAN_CONPAG AND E4.D_E_L_E_T_=' '"
@@ -449,7 +449,8 @@ Static Function Busca(cCond,cQuinze)
 						0,;
 						0,;
 						TRB->AAM_XPRDCM,;
-						TRB->A1_EST})
+						TRB->A1_EST,;
+						TRB->AAM_XPOCLI})
 		Else
 			//Soma todos os itens do contrato para pegar o valor total.
 			aList[nPos1,02] += nNewVlr //(TRB->AAN_QUANT*TRB->AAN_VLRUNI)
@@ -1672,6 +1673,7 @@ If aList[oList:nAt,len(aQtdH)+1] > 1
 EndIf
 
 aAdd( aPerg ,{2,"Escolha uma opção : ",0,aCombo,100,"",.T.})
+aAdd( aPerg ,{1,"PO cliente : "+aList[oList:nAt,24],,"@!",'.T.',"",'.T.',40,.F.})  
 
 If !ParamBox(aPerg ,"Parametros ")
 	Return
@@ -1771,7 +1773,7 @@ ElseIf nOpcG == 1
 			cAtFat := Alltrim(aList2[nX,01])
 			If len(aItens) > 0 
 				If resumfat(aItens,aItSFt,.F.)
-					Processa({|| Pedido(cAtFat,aItens,cFilFat)},"Aguarde")
+					Processa({|| Pedido(cAtFat,aItens,cFilFat,MV_PAR02)},"Aguarde")
 				else
 					Return 
 				EndIf 
@@ -1820,6 +1822,10 @@ If len(aItens) > 0
 				// aAdd( aLinha , { "C6_TES"        , '523'                                  , Nil })  
 				aAdd( aLinha , { "C6_QTDLIB"     , aItens[nCont,02]    	                  , Nil })
 				aAdd( aLinha , { "C6_CONTRT" 	 , AAM->AAM_CONTRT						  , Nil })
+
+				If !Empty(MV_PAR02)
+					aAdd( aLinha , { "C6_PEDCLI"	,	MV_PAR02 	, Nil })
+				EndIf 
 
 				aAdd( aItC6 , aLinha ) 
 				cItem := Soma1(cItem)
@@ -1927,6 +1933,11 @@ If len(aLocac) > 0 .AND. lLoc
 			aAdd( aLinha , { "C6_TES"        , cTesLoc                                , Nil })  
 			aAdd( aLinha , { "C6_QTDLIB"     , 1			    	                  , Nil })
 			aAdd( aLinha , { "C6_CONTRT" 	 , AAM->AAM_CONTRT						  , Nil })
+
+			If !Empty(MV_PAR02)
+				aAdd( aLinha , { "C6_PEDCLI"	,	MV_PAR02 	, Nil })
+			EndIF 
+
 			nVlrFt += aLocac[nCont,02]
 			aAdd( aItC6 , aLinha ) 
 			cItem := Soma1(cItem)
@@ -2064,7 +2075,7 @@ Return
 	(examples)
 	@see (links_or_references)
 /*/
-Static Function Pedido(cAtFat,aItens,cFilFat)
+Static Function Pedido(cAtFat,aItens,cFilFat,cPoCli)
 
 Local aArea		:=	GetArea()
 Local nCont 	:=	0
@@ -2104,6 +2115,10 @@ For nCont := 1 to len(aItens)
 	aAdd( aLinha , { "C6_TES"        , '523'                                  , Nil })  
 	aAdd( aLinha , { "C6_QTDLIB"     , aItens[nCont,02]    	                  , Nil })
 	aAdd( aLinha , { "C6_CONTRT" 	 , AAM->AAM_CONTRT						  , Nil })
+
+	If !Empty(cPoCli)
+		aAdd( aLinha , { "C6_PEDCLI"	,	cPoCli 	, Nil })
+	EndIf 
 
 	aAdd( aItC6 , aLinha ) 
 	cItem := Soma1(cItem)
@@ -2384,8 +2399,9 @@ cQuery += " WHERE Z08_FILIAL='"+xFilial("Z08")+"'"
 cQuery += " AND Z08_NUMSER='"+cNumSr+"'"
 cQuery += " AND Z08_COD<>'"+cLeit+"'"
 cQuery += " AND Z08_SELECA='"+cSelec+"'"
-cQuery += " AND Z08_DATA<'"+cDtAnt+"'"
+cQuery += " AND Z08_DATA<='"+cDtAnt+"'"
 cQuery += " AND D_E_L_E_T_=' '"
+cQuery += " ORDER BY Z08_DATA DESC"
 
 If Select("QUERY") > 0
 	dbSelectArea("QUERY")

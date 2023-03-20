@@ -15,10 +15,7 @@ Local cLocal
 Local cNumOS
 Local nTpServ       :=  25
 
-If "_PROD" $ GetEnvServer()
-	RestArea(aArea)
-	Return 
-EndIf 
+/*
 
 If (INCLUI .Or. ALTERA)
 
@@ -61,11 +58,7 @@ If (INCLUI .Or. ALTERA)
 		End
 	EndIf
 
-    /*
-	//旼컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴커
-	//쿎arrega a observacao do problema na Ordem de Servico�
-	//읕컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴켸
-	*/  
+
 	For nI := 1 To Len(aItens)
 		cProblema := aItens[nI][2]
 		cOsFldAux := aItens[nI][6]
@@ -124,6 +117,7 @@ For nI := 1 to len(aItens)
         AB2->(Msunlock())
     EndIf 
 Next nI
+*/
 
 RestArea(aArea)
 
