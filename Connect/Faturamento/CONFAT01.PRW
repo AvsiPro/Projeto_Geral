@@ -63,26 +63,24 @@ Aadd(aList1,{'','','','','','','','','',''})
 oDlg1      := MSDialog():New( 085,210,628,1477,"Painel de Faturamento",,,.F.,,,,,,.T.,,,.T. )
     
     oGrp1      := TGroup():New( 008,008,060,100,"Pedidos Gerados",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
-    oSay1      := TSay():New( 020,020,{||"oSay1"},oGrp1,,oFont4,.F.,.F.,.F.,.T.,CLR_HMAGENTA,CLR_WHITE,076,034)
+    oSay1      := TSay():New( 020,020,{||""},oGrp1,,oFont4,.F.,.F.,.F.,.T.,CLR_HMAGENTA,CLR_WHITE,076,034)
     
     oGrp2      := TGroup():New( 008,112,060,204,"Notas Faturadas",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
-    oSay2      := TSay():New( 020,120,{||"oSay2"},oGrp2,,oFont4,.F.,.F.,.F.,.T.,CLR_HGREEN,CLR_WHITE,076,044)
+    oSay2      := TSay():New( 020,120,{||""},oGrp2,,oFont4,.F.,.F.,.F.,.T.,CLR_HGREEN,CLR_WHITE,076,044)
     
     oGrp3      := TGroup():New( 008,216,060,308,"Faturamento Dose",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
-    oSay3      := TSay():New( 020,222,{||"oSay3"},oGrp3,,oFont4,.F.,.F.,.F.,.T.,CLR_HBLUE,CLR_WHITE,082,024)
+    oSay3      := TSay():New( 020,222,{||""},oGrp3,,oFont4,.F.,.F.,.F.,.T.,CLR_HBLUE,CLR_WHITE,082,024)
     
     oGrp4      := TGroup():New( 008,320,060,412,"Faturamento Locação",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
-    oSay4      := TSay():New( 020,326,{||"oSay4"},oGrp4,,oFont4,.F.,.F.,.F.,.T.,CLR_HRED,CLR_WHITE,082,024)
+    oSay4      := TSay():New( 020,326,{||""},oGrp4,,oFont4,.F.,.F.,.F.,.T.,CLR_HRED,CLR_WHITE,082,024)
     
     oGrp5      := TGroup():New( 008,424,060,516,"Vendas",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
-    oSay5      := TSay():New( 020,430,{||"oSay5"},oGrp5,,oFont4,.F.,.F.,.F.,.T.,CLR_BROWN,CLR_WHITE,082,024)
+    oSay5      := TSay():New( 020,430,{||""},oGrp5,,oFont4,.F.,.F.,.F.,.T.,CLR_BROWN,CLR_WHITE,082,024)
     
     oGrp6      := TGroup():New( 008,528,060,620,"Contratos a Faturar X Faturados",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
-    oSay6      := TSay():New( 020,544,{||"oSay6"},oGrp6,,oFont4,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,082,024)
+    oSay6      := TSay():New( 020,544,{||""},oGrp6,,oFont4,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,082,024)
     
     oGrp7      := TGroup():New( 068,008,236,308,"Gráfico",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
-
-        
 
     oGrp8      := TGroup():New( 068,320,236,620,"Ranking por Cliente x Valor",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
         //oBrw1      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{076,324,232,616},,, oGrp8 ) 
@@ -95,9 +93,15 @@ oDlg1      := MSDialog():New( 085,210,628,1477,"Painel de Faturamento",,,.F.,,,,
 
     oSay7      := TSay():New( 244,008,{||"Mes/Ano"},oDlg1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
     oGet1      := TGet():New( 244,056,{|u| If(Pcount()>0,cPer:=u,cPer)},oDlg1,060,008,'@R 99/9999',,CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"","",,)
-    oSBtn1     := SButton():New( 244,132,1,{|| If(!Empty(cPer),Busca(cPer),)},oDlg1,,"", )
+    oSBtn1     := SButton():New( 244,132,1,{|| If(!Empty(cPer),Processa({|| Busca(cPer)},"Aguarde"),)},oDlg1,,"", )
     
-    oBtn1      := TButton():New( 244,580,"Sair",oDlg1,{||oDlg1:end()},037,012,,,,.T.,,"",,,,.F. )
+    //oBtn1      := TButton():New( 244,580,"Sair",oDlg1,{||oDlg1:end()},037,012,,,,.T.,,"",,,,.F. )
+    oMenu := TMenu():New(0,0,0,0,.T.)
+	oTMenuIte9 := TMenuItem():New(oDlg1,"Sair",,,,{|| oDlg1:end()},,,,,,,,,.T.)
+	oMenu:Add(oTMenuIte9)
+	oTButton9 := TButton():New( 244, 580, "Opções",oDlg1,{||},040,12,,,.F.,.T.,.F.,,.F.,,,.F. )
+	// Define botão no Menu
+	oTButton9:SetPopupMenu(oMenu)
 
 oDlg1:Activate(,,,.T.)
 
