@@ -67,7 +67,20 @@ aAdd( aLinha , { "C6_FILIAL"     , cFilFat		                          , Nil })
 aAdd( aLinha , { "C6_ITEM"       , '01'  							      , Nil })
 aAdd( aLinha , { "C6_PRODUTO"    , AAM->AAM_XPRDCM                        , Nil })
 aAdd( aLinha , { "C6_QTDVEN"     , 1                                      , Nil })
-aAdd( aLinha , { "C6_PRCVEN"     , AAM->AAM_XQTVLM                        , Nil })
+
+If AAM->AAM_XTIPMI == "2"
+	aAdd( aLinha , { "C6_PRCVEN"     , AAM->AAM_XQTVLM                        , Nil })
+ELSE
+	DbSelectArea("DA1")
+	DbSetOrder(1)
+	If Dbseek(xFilial("DA1")+AAM->AAM_XCODTA+AAM->AAM_XPRDCM)
+		nPreco := DA1->DA1_PRCVEN
+		aAdd( aLinha , { "C6_PRCVEN"     , AAM->AAM_XQTVLM*nPreco             , Nil })
+	Else 
+		MsgAlert("Produto franquia não encontrado na tabela de preço "+AAM->AAM_XCODTA)
+		Return
+	EndIf 
+EndIf 
 //aAdd( aLinha , { "C6_OPER"       , "08"                                   , Nil })
 aAdd( aLinha , { "C6_TES"        , Posicione("SB1",1,xFilial("SB1")+AAM->AAM_XPRDCM,"B1_TS")  , Nil })  
 aAdd( aLinha , { "C6_QTDLIB"     , 1            	                  , Nil })
