@@ -115,6 +115,8 @@ LOCAL _nVlrAbat    := 0
 Local lAdjustToLegacy := .F. 
 Local lDisableSetup  := .T.
 
+DbSelectArea("SE1")
+DbSetOrder(1)
 
 If DBSEEK(xFilial("SE1")+Avkey(MV_PAR01,"E1_PREFIXO")+Avkey(MV_PAR02,"E1_NUM")+Avkey(cParcela,"E1_PARCELA"))
 //
@@ -246,7 +248,8 @@ EndIf
 //            
 
 oPrint:EndPage()     // Finaliza a página
-oPrint:Preview()     // Visualiza antes de imprimir
+//oPrint:Preview()     // Visualiza antes de imprimir
+oPrint:Print()
 Return nil
 //
 /*/
