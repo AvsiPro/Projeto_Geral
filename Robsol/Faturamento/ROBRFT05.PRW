@@ -161,8 +161,7 @@ dbUseArea(.T.,"TOPCONN",TCGENQRY(,,cQuery),"TRB",.F.,.T.)
 dbSelectArea("TRB")
 
 While !EOF()
-    //nPos1 := Ascan(aAux1,{|x| x[1]+cvaltochar(x[3]) == TRB->D2_COD+cvaltochar(TRB->MESVND)})
-    //nPos1 := Ascan(aAux1,{|x| x[1] == TRB->D2_COD})
+    
     nPos1 := Ascan(aAux2,{|x| x[2]+x[8]+x[10] == TRB->A1_CGC+TRB->BM_XMODELO+TRB->D2_FILIAL})
     nPos2 := Ascan(aMeses,{|x| x[1] == TRB->MESVND})
 
@@ -370,20 +369,6 @@ oExcel:AddColumn("Clientes","Clientes","Cidade",1,1)
 oExcel:AddColumn("Clientes","Clientes","Marca",1,1)
 oExcel:AddColumn("Clientes","Clientes","Filial",1,1)
 
-/*
-Aadd(aAux3,TRB->A1_NOME) 
-        Aadd(aAux3,TRB->A1_CGC)
-        Aadd(aAux3,TRB->A1_EST)
-        Aadd(aAux3,TRB->A1_MUN)
-        Aadd(aAux3,TRB->Z01_DESBAN)
-        Aadd(aAux3,TRB->D2_COD)
-        Aadd(aAux3,TRB->B1_DESC)
-        Aadd(aAux3,TRB->BM_XMODELO)
-        Aadd(aAux3,TRB->Z03_DESGRI)
-        Aadd(aAux3,TRB->D2_FILIAL)*/
-
-
-
 For nX := 1 to len(aMeses)
     oExcel:AddColumn("Clientes","Clientes",strzero(aMeses[nX,01],2)+"/"+cvaltochar(year(ddatabase)),1,1)
 Next nX 
@@ -391,12 +376,12 @@ Next nX
 FOR nX := 1 TO len(aAux1)
     aAux := {}
 
-    Aadd(aAux,aAux1[nX,01])
-    Aadd(aAux,aAux1[nX,05])
-    Aadd(aAux,aAux1[nX,02])
+    Aadd(aAux,Alltrim(strtran(aAux1[nX,01],"&")))
+    Aadd(aAux,Alltrim(aAux1[nX,05]))
+    Aadd(aAux,Alltrim(aAux1[nX,02]))
     Aadd(aAux,aAux1[nX,03])
-    Aadd(aAux,aAux1[nX,04])
-    Aadd(aAux,aAux1[nX,09])
+    Aadd(aAux,Alltrim(aAux1[nX,04]))
+    Aadd(aAux,Alltrim(aAux1[nX,09]))
     Aadd(aAux,aAux1[nX,10])
 
     For nJ := 1 to len(aMeses)
