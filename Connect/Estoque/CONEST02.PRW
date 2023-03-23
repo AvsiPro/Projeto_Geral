@@ -991,10 +991,11 @@ For nCont := 1 to len(aCabec)
             aadd(aLinha,{"D1_COD"  	    ,aItens[nX,02]								,Nil})			
             aadd(aLinha,{"D1_QUANT"	    ,aItens[nX,04]	    						,Nil})			
             aadd(aLinha,{"D1_VUNIT"	    ,aItens[nX,05]  							,Nil})			
-            aadd(aLinha,{"D1_TOTAL"	    ,ROUND(aItens[nX,04] * aItens[nX,05],2)	            ,Nil})			
+            aadd(aLinha,{"D1_TOTAL"	    ,ROUND(aItens[nX,04] * aItens[nX,05],2)     ,Nil})			
             aadd(aLinha,{"D1_NFORI"     ,aItens[nX,07]								,Nil})			
             aadd(aLinha,{"D1_SERIORI"  	,aItens[nX,08]								,Nil})			
-            aadd(aLinha,{"D1_ITEMORI"  	,aItens[nX,09]								,Nil})			
+            aadd(aLinha,{"D1_ITEMORI"  	,aItens[nX,09]								,Nil})	
+            //aadd(aLinha,{"D1_LOCAL"  	,aItens[nX,06]								,Nil})		
             //aadd(aLinha,{"D1_TES"	,"159"										,Nil})   
             aadd(aIteNF,aLinha)		
         Next nX
@@ -1003,12 +1004,74 @@ For nCont := 1 to len(aCabec)
         MSExecAuto({|x,y,z| mata103(x,y,z)},aCabD1,aIteNF,3)		
 
         If lMsErroAuto
-            MOSTRAERRO()	
+            MOSTRAERRO()
+        Else 
+            Gerapv(aItens)	
         EndIf
     EndIf
 
 Next nCont
 
 RestArea(aArea)
+
+Return
+
+/*/{Protheus.doc} Gerapv
+    (long_description)
+    @type  Static Function
+    @author user
+    @since 22/03/2023
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function Gerapv(aItens)
+
+Local aCabec    := {}
+Local aItC6     := {}
+Local nCont
+Local cCliente  :=  '24575331 '
+Local cLoja     :=  '0001'
+Local cItem     :=  '01'
+
+Private lMsErroAuto := .F.
+
+aAdd( aCabec , { "C5_FILIAL"    , cFilant 		        , Nil } ) 
+aAdd( aCabec , { "C5_TIPO"      , 'N'                   , Nil } )
+aAdd( aCabec , { "C5_CLIENTE"   , cCliente              , Nil } )
+aAdd( aCabec , { "C5_LOJACLI"   , cLoja                 , Nil } )
+aAdd( aCabec , { "C5_XTPPED"    , 'Z'                   , Nil } )
+Aadd( aCabec , { "C5_MENNOTA"   , 'Faturamento estoque PV', Nil } )
+aAdd( aCabec , { "C5_CONDPAG"   , '001'                 , Nil } )    
+aAdd( aCabec , { "C5_NATUREZ"   , "31101001  "          , Nil } )    
+//aAdd( aCabec , { "C5_XCONTRT"	, AAM->AAM_CONTRT   	, Nil })
+
+For nCont := 1 to len(aItens)    
+    aLinha := {}
+    aAdd( aLinha , { "C6_FILIAL"     , cFilant		                          , Nil })
+    aAdd( aLinha , { "C6_ITEM"       , cItem  							      , Nil })
+    aAdd( aLinha , { "C6_PRODUTO"    , aItens[nCont,02]                       , Nil })
+    aAdd( aLinha , { "C6_QTDVEN"     , aItens[nCont,04]                       , Nil })
+    aAdd( aLinha , { "C6_PRCVEN"     , aItens[nCont,05]                       , Nil })
+    aAdd( aLinha , { "C6_QTDLIB"     , aItens[nCont,04]    	                  , Nil })
+	//aAdd( aLinha , { "C6_CONTRT" 	 , AAM->AAM_CONTRT						  , Nil })
+
+    aAdd( aItC6 , aLinha )
+
+    cItem := Soma1(cItem)
+Next nCont
+
+lMsErroAuto := .F.
+
+MSExecAuto({|x,y,z| Mata410(x,y,z)},aCabec,aItC6,3)
+    
+IF lMsErroAuto  
+    MostraErro()
+ELSE
+    MsgAlert("Erro ao gerar o pedido de baixa do estoque.")
+Endif 
 
 Return
