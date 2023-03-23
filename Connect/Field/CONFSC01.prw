@@ -501,7 +501,7 @@ Static Function Busca(cCond,cQuinze)
 		cQuery += " INNER JOIN "+RetSQLName("SC5")+" C5 ON C5_FILIAL=C6_FILIAL "
 		cQuery += " AND C5_NUM=C6_NUM AND C5_CLIENTE=C6_CLI AND C5.D_E_L_E_T_=' '"
 		cQuery += " AND C5_XTPPED IN('F','L','V','Q')"
-		cQuery += " WHERE C6_FILIAL='"+xFilial("SC6")+"'"
+		cQuery += " WHERE C6_FILIAL BETWEEN ' ' AND 'ZZ'" //'"+xFilial("SC6")+"'"
 		cQuery += " AND C6_CONTRT='"+aAux3[nCont,01]+"' "
 		cQuery += " AND C6_CLI='"+aAux3[nCont,02]+"' AND C6.D_E_L_E_T_=''"
 		
@@ -1666,6 +1666,9 @@ Local nX
 Local lDose     := .F.
 Local lLoc      := .F.
 Local cFilFat	:=	If(aList[oList:nAt,23]=="RJ","0102","0101")
+Local cBkpcFil  := cFilant 
+
+cFilant := cFilFat 
 
 If aList[oList:nAt,len(aQtdH)+1] > 1
 	MsgAlert("Contrato já faturado para o período")
@@ -1973,6 +1976,8 @@ If len(aLocac) > 0 .AND. lLoc
 EndIf 
 
 Fhelp(oList:nAt)
+
+cfilant := cBkpcFil
 
 RestArea(aArea)
 
@@ -2570,6 +2575,9 @@ Local aItens   := {}
 Local aLinha   := {}
 Local nCont	   := 0
 Local nX 	   := 0
+Local cBkpcFil := cFilant
+
+cFilant := cFilFat
 
 Private lMsErroAuto    := .F.
 Private lAutoErrNoFile := .F.
@@ -2650,5 +2658,7 @@ If !lMsErroAuto
 Else
 	MsgAlert("Não foi possível excluir o pedido")
 EndIf
+
+cFilant := cBkpcFil
 
 Return
