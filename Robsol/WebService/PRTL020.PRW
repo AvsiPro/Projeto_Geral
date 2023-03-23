@@ -124,7 +124,7 @@ WsMethod GET WsReceive CLIENTE,PAGINA,TITULO,PREFIXO,PARCELA,VENDEDOR,EMISSAO,VE
 		::SetResponse('{')
 		::SetResponse('"items": [')
 		
-		If !Empty(cPrefixo) .Or. !Empty(cParcela) .Or. !Empty(cEmissao) .Or. !Empty(cVencto) .Or. !Empty(cStatus) .Or. !Empty(cCliente)
+		If (!Empty(cPrefixo) .Or. !Empty(cParcela) .Or. !Empty(cEmissao) .Or. !Empty(cVencto) .Or. !Empty(cStatus) .Or. !Empty(cCliente)) .And. !empty(cVendedor)
 			cQuery := "SELECT *"
 			cQuery += " FROM ( SELECT "
 		Else
