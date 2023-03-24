@@ -82,13 +82,14 @@ oDlg1      := MSDialog():New( 092,232,800 /*Y*/,1200 /*X*/,"Preparar Ativos para
         oGet4      := TGet():New( 020,80,{|u| If(pcount()>0,cContrt:=u,cContrt)},oGrp1,060,008,'',{|| xatuatv(3)},CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"AAM","",,)
         
         oSay2      := TSay():New( 044,024,{||"Cliente"},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
-        oGet2      := TGet():New( 044,80,{|u| If(pcount()>0,cCodCli:=u,cCodCli)},oGrp1,060,008,'',{|| xatuatv(2)},CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"SA1","",,)
+        oGet2      := TGet():New( 044,080,{|u| If(pcount()>0,cCodCli:=u,cCodCli)},oGrp1,060,008,'',{|| xatuatv(2)},CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"SA1","",,)
         oGet3      := TGet():New( 044,155,{|u| If(pcount()>0,cLojCli:=u,cLojCli)},oGrp1,028,008,'',{|| xatuatv(2)},CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"SA1CON","",,)
+        
         oGet2:disable()
         oGet3:disable()
 
         oSay5      := TSay():New( 044,205,{||"Ponto de Venda"},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,252,008)
-        oGet5      := TGet():New( 044,255,{|u| If(pcount()>0,cPntVnd:=u,cPntVnd)},oGrp1,028,008,'',{|| },CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"NNR2","",,)
+        oGet5      := TGet():New( 044,255,{|u| If(pcount()>0,cPntVnd:=u,cPntVnd)},oGrp1,028,008,'',{|| xatuatv(3)},CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"NNR2","",,)
 
         oSay6      := TSay():New( 125,024,{||"Cliente"},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
         oSay7      := TSay():New( 125,050,{||""},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,252,008)
@@ -275,8 +276,9 @@ Static Function GeraBase()
             DbSetOrder(1)
             If Dbseek(xFilial("SN1")+aNrsSerie[nX,01])
                 Reclock("SN1",.F.)
-                    SN1->N1_XCLIENT :=  cCodCli
-                    SN1->N1_XLOJA   :=  cLojCli 
+                SN1->N1_XCLIENT :=  cCodCli
+                SN1->N1_XLOJA   :=  cLojCli 
+                SN1->N1_XTPVEND :=  cPntVnd
                 SN1->(MsUnlock())
 
                 DbSelectArea("SB1")
