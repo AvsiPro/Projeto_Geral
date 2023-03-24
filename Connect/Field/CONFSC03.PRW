@@ -43,6 +43,8 @@ Private aMapa   :=  {}
 Private aList1  :=  {}
 Private aList2  :=  {}
 
+Private cPntVnd :=  space(6)
+
 If Empty(FunName())
     RpcSetType(3)
     RPCSetEnv("01","0101")
@@ -76,9 +78,6 @@ oDlg1      := MSDialog():New( 092,232,800 /*Y*/,1200 /*X*/,"Preparar Ativos para
     
     oGrp1      := TGroup():New( 004,012,346/*Y*/, 475/*X*/,"Ativo",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
     
-        // oSay1      := TSay():New( 020,024,{||"Código do Ativo"},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,040,008)
-        // oGet1      := TGet():New( 020,80,{|u| If(pcount()>0,cAtivo:=u,cAtivo)},oGrp1,060,008,'',{|| xatuatv(1)},CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"SN1X","",,)
-        
         oSay3      := TSay():New( 020,024,{||"Contrato"},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
         oGet4      := TGet():New( 020,80,{|u| If(pcount()>0,cContrt:=u,cContrt)},oGrp1,060,008,'',{|| xatuatv(3)},CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"AAM","",,)
         
@@ -88,8 +87,9 @@ oDlg1      := MSDialog():New( 092,232,800 /*Y*/,1200 /*X*/,"Preparar Ativos para
         oGet2:disable()
         oGet3:disable()
 
-        // oSay4      := TSay():New( 096,024,{||"Informações Ativo"},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,062,008)
-        // oSay5      := TSay():New( 096,092,{||""},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,252,008)
+        oSay5      := TSay():New( 044,205,{||"Ponto de Venda"},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,252,008)
+        oGet5      := TGet():New( 044,255,{|u| If(pcount()>0,cPntVnd:=u,cPntVnd)},oGrp1,028,008,'',{|| },CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"NNR2","",,)
+
         oSay6      := TSay():New( 125,024,{||"Cliente"},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
         oSay7      := TSay():New( 125,050,{||""},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,252,008)
         oSay8      := TSay():New( 150,024,{||"Endereço"},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
@@ -182,48 +182,38 @@ Static Function xatuatv(nTip)
 
 Local aArea  :=  GetArea()
 
-    // oSay5:settext("")
+    DbSelectArea("AAM")
+    DbSetOrder(1)
+    IF Dbseek(xFilial("AAM")+cContrt)
+        cCodCli := AAM->AAM_CODCLI //Z15->Z15_CLIENT
+        cLojCli := AAM->AAM_LOJA //Z15->Z15_LOJA
+    Else
+        MsgAlert("Contrato não encontrado")
+        Return
+    EndIf 
 
-    // DbSelectArea("SN1")
-    // DbSetOrder(1)
-    // If DbSeek(xFilial("SN1")+cAtivo)
-        // IF !Empty(SN1->N1_XCLIENT)
-        //     MsgAlert("Ativo já atribuído a outro cliente")
-        //     Return .f.
-        // EndIf 
+    //cCodCli := Z15->Z15_CLIENT
+    //cLojCli := Z15->Z15_LOJA
+    
+    oSay7:settext("")
+    oSay9:settext("")
+    DbSelectArea("SA1")
+    DbSetOrder(1)
+    If DbSeek(xFilial("SA1")+cCodCli+cLojCli)
+        oSay7:settext(Alltrim(SA1->A1_NOME)+' / '+Alltrim(SA1->A1_NREDUZ))
+        oSay9:settext(Alltrim(SA1->A1_END)+' - '+Alltrim(SA1->A1_BAIRRO)+' - '+Alltrim(SA1->A1_MUN)+' - '+SA1->A1_EST)
+        if len(Alltrim(SA1->A1_END)+' - '+Alltrim(SA1->A1_BAIRRO)+' - '+Alltrim(SA1->A1_MUN)+' - '+SA1->A1_EST) > 75
+            oSay10:settext(SubStr(Alltrim(SA1->A1_END)+' - '+Alltrim(SA1->A1_BAIRRO)+' - '+Alltrim(SA1->A1_MUN)+' - '+SA1->A1_EST,75))
+        endif
+    EndIf 
 
-        // DbSelectArea("SB1")
-        // DbSetOrder(1)
-        // If Dbseek(xFilial("SB1")+SN1->N1_PRODUTO)
-        //     // oSay5:settext(SB1->B1_DESC)
-        //     cCodPro := SN1->N1_PRODUTO
-        // EndIF
+    oGet2:disable()
+    oGet3:disable()
 
-        cCodCli := Z15->Z15_CLIENT
-        cLojCli := Z15->Z15_LOJA
-        
-        oSay7:settext("")
-        oSay9:settext("")
-        DbSelectArea("SA1")
-        DbSetOrder(1)
-        If DbSeek(xFilial("SA1")+cCodCli+cLojCli)
-            oSay7:settext(Alltrim(SA1->A1_NOME)+' / '+Alltrim(SA1->A1_NREDUZ))
-            oSay9:settext(Alltrim(SA1->A1_END)+' - '+Alltrim(SA1->A1_BAIRRO)+' - '+Alltrim(SA1->A1_MUN)+' - '+SA1->A1_EST)
-            if len(Alltrim(SA1->A1_END)+' - '+Alltrim(SA1->A1_BAIRRO)+' - '+Alltrim(SA1->A1_MUN)+' - '+SA1->A1_EST) > 75
-                oSay10:settext(SubStr(Alltrim(SA1->A1_END)+' - '+Alltrim(SA1->A1_BAIRRO)+' - '+Alltrim(SA1->A1_MUN)+' - '+SA1->A1_EST,75))
-            endif
-        EndIf 
-
-        oGet2:disable()
-        oGet3:disable()
+    If !Empty(cPntVnd) .And. !Empty(cContrt)
         oBtn1:enable()       
-    // else
-    //     If !Empty(cAtivo)
-    //         MsgAlert("Ativo não encontrado na base")
-    //         Return .F. 
-    //     EndIf 
-    // EndIf 
-
+    Endif 
+    
 RestArea(aArea)
 
 Return
