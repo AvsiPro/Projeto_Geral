@@ -21,6 +21,7 @@ If Select("SM0") == 0
 EndIf
 
 cQuery := " select * from SLAPLIC.dbo.SB7_AUX "
+cQuery += " WHERE B7SEQ IS NULL"
 
 If Select("TRB") > 0
     TRB->( dbclosearea() )
@@ -46,7 +47,7 @@ EndDo
 DbSelectArea("SB2")
 DbSetOrder(1)
 For nCont := 1 to len(aSB2Sld)
-    
+
     If DbSeek(aSB2Sld[nCont,01] + aSB2Sld[nCont,02] + aSB2Sld[nCont,03] )
         aSB2Sld[nCont,07] := SaldoSb2()
         aSB2Sld[nCont,08] := aSB2Sld[nCont,04] - (aSB2Sld[nCont,07])
@@ -59,6 +60,11 @@ For nCont := 1 to len(aSB2Sld)
                 aSB2Sld[nCont,09] := "001" 
             EndIf   
         EndIf 
+    Else 
+        CriaSB2(aSB2Sld[nCont,02],aSB2Sld[nCont,03])
+        aSB2Sld[nCont,07] := 0
+        aSB2Sld[nCont,08] := aSB2Sld[nCont,04] 
+        aSB2Sld[nCont,09] := "001"
     EndIf
     
 Next nCont 
