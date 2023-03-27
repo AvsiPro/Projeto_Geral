@@ -122,10 +122,12 @@ If !Empty(cPatr)
     cQuery += " FROM "+RetSQLName("Z07")+" Z07"
     cQuery += " LEFT JOIN "+RetSQLName("SB1")+ " B1 "
     cQuery += " ON B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD=Z07_CODPRO AND B1.D_E_L_E_T_=' '"
-    cQuery += " INNER JOIN "+RetSQLNAme("SA1")+ " A1 
+    cQuery += " INNER JOIN "+RetSQLNAme("SA1")+ " A1 "
     cQuery += " ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_COD=Z07_CLIENT AND A1_LOJA=Z07_LOJA AND A1.D_E_L_E_T_=' '"
-    cQuery += " INNER JOIN "+RetSQLName("AAN")+" AAN 
+    cQuery += " INNER JOIN "+RetSQLName("AAN")+" AAN "
     cQuery += " ON AAN_FILIAL='"+xFilial("AAN")+"' AND AAN_XCBASE=Z07_CHAPA AND AAN.D_E_L_E_T_=' '"
+    cQuery += " INNER JOIN "+RetSQLName("AAM")+" AAM "
+    cQuery += " ON AAM_FILIAL=AAN_FILIAL AND AAM_CONTRT=AAN_CONTRT AND AAM_CODCLI=Z07_CLIENT AND AAM_LOJA=Z07_LOJA AND AAM.D_E_L_E_T_=' '"
     cQuery += " WHERE Z07_FILIAL='"+xFilial("Z07")+"' AND Z07_CHAPA='"+cPatr+"' AND Z07.D_E_L_E_T_=' '"
     cQuery += " ORDER BY Z07_SELECA"
 

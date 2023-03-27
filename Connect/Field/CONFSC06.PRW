@@ -113,17 +113,30 @@ If Dbseek(xFilial("SN1")+cAtivo)
     cNItem  := SN1->N1_ITEM
 EndIf 
 
-Aadd(aCab040, { "AA3_FILIAL"    , xFilial("AA3")    , NIL } )               
-Aadd(aCab040, { "AA3_CODCLI"    , cCodCli           , NIL } )               
-Aadd(aCab040, { "AA3_LOJA"      , cLojCli           , NIL } )               
-Aadd(aCab040, { "AA3_CODPRO"    , cCodPro           , NIL } )               
-Aadd(aCab040, { "AA3_NUMSER"    , cNumSer           , NIL } )                
-Aadd(aCab040, { "AA3_CBASE"     , cNCbase           , NIL } )                
-Aadd(aCab040, { "AA3_ITEM"      , cNItem            , NIL } )                
-Aadd(aCab040, { "AA3_CHAPA"     , cNCbase           , NIL } )                
-Aadd(aCab040, { "AA3_DTVEN"     , dDatabase-30      , NIL } )
+DbSelectArea("AA3")
+DbSetORder(7)
 
-TECA040(,aCab040,aItens040,3)   
+lMsErroAuto := .F.
+
+If Dbseek(xFilial("AA3")+cNCbase)
+    Reclock("AA3",.F.)
+    AA3->AA3_CODCLI := cCodCli
+    AA3->AA3_LOJA   := cLojCli
+    AA3->(MSUNLOCK())
+Else 
+    Aadd(aCab040, { "AA3_FILIAL"    , xFilial("AA3")    , NIL } )               
+    Aadd(aCab040, { "AA3_CODCLI"    , cCodCli           , NIL } )               
+    Aadd(aCab040, { "AA3_LOJA"      , cLojCli           , NIL } )               
+    Aadd(aCab040, { "AA3_CODPRO"    , cCodPro           , NIL } )               
+    Aadd(aCab040, { "AA3_NUMSER"    , cNumSer           , NIL } )                
+    Aadd(aCab040, { "AA3_CBASE"     , cNCbase           , NIL } )                
+    Aadd(aCab040, { "AA3_ITEM"      , cNItem            , NIL } )                
+    Aadd(aCab040, { "AA3_CHAPA"     , cNCbase           , NIL } )                
+    Aadd(aCab040, { "AA3_DTVEN"     , dDatabase-30      , NIL } )
+
+    TECA040(,aCab040,aItens040,3)   
+
+EndIf 
 
 If lMsErroAuto  
     MostraErro()                            
@@ -154,6 +167,14 @@ else
 	AAN->AAN_FIMCOB	:= CTOD('31/12/2030')
 	AAN->AAN_XCBASE	:= cAtivo 
 	AAN->(MsUnlock())
+
+    cUpdQry := "UPDATE "+RetSQLName("AAN")
+    cUpdQry += " SET D_E_L_E_T_='*',R_E_C_D_E_L_=R_E_C_N_O_"
+    cUpdQry += " WHERE AAN_FILIAL='"+xFilial("AAN")+"'"
+    cUpdQry += " AND AAN_CONTRT='"+cContra+"'"
+    cUpdQry += " AND AAN_CODPRO='CONTRATO'"
+    cUpdQry += " AND D_E_L_E_T_=' '"
+    TcSqlExec(cUpdQry)
 EndIf 
 
 RestArea(aArea)
