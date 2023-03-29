@@ -1667,7 +1667,8 @@ Local nX
 Local lDose     := .F.
 Local lLoc      := .F.
 Local cFilFat	:=	If(aList[oList:nAt,23]=="RJ","0102","0101")
-Local cBkpcFil  := cFilant 
+Local cBkpcFil  :=	cFilant 
+Local aFilFat	:=	{'0101=SP','0102=RJ'}
 
 cFilant := cFilFat 
 
@@ -1678,10 +1679,14 @@ EndIf
 
 aAdd( aPerg ,{2,"Escolha uma opção : ",0,aCombo,100,"",.T.})
 aAdd( aPerg ,{1,"PO cliente : "+aList[oList:nAt,24],,"@!",'.T.',"",'.T.',40,.F.})  
+aAdd( aPerg ,{2,"Filial de Faturameto : ",cFilFat,aFilFat,100,"",.T.})
 
 If !ParamBox(aPerg ,"Parametros ")
 	Return
 EndIf
+
+cFilant := MV_PAR03
+cFilFat := MV_PAR03
 
 if MV_PAR01 == "1" 
 	lDose := .T.
