@@ -185,22 +185,57 @@ export default function SaleCli({route,navigation}){
     const {control,handleSubmit,formState:{errors},reset,resetField,getValues,setValue} = useForm({ 
         resolver: yupResolver(
             yup.object({
-                contato: yup.string().required("Informe o Contato..."),
-                razao_social: yup.string().required("Informe a Razão Social..."),
-                nome_fantasia: yup.string().required("Informe o Nome Fantasia..."),
-                email: yup.string().required("Informe o Email..."),
-                celular: yup.string().required("Informe o Telefone..."),
-                fone2: yup.string().required("Informe o Telefone..."),
-                cep: yup.string().required("Informe o CEP..."),
-                endereco: yup.string().required("Informe o Endereço..."),
-                complemento: yup.string(),
-                bairro: yup.string().required("Informe o Bairro..."),
-                cidade: yup.string().required("Informe a Cidade..."),
-                uf: yup.string().required("Informe a UF..."),
-                cep1: yup.string()
+                // contato: yup.string().required("Informe o Contato..."),
+                // razao_social: yup.string().required("Informe a Razão Social..."),
+                // nome_fantasia: yup.string().required("Informe o Nome Fantasia..."),
+                // email: yup.string().required("Informe o Email..."),
+                // celular: yup.string().required("Informe o Telefone..."),
+                // fone2: yup.string().required("Informe o Telefone..."),
+                // cep: yup.string().required("Informe o CEP..."),
+                // endereco: yup.string().required("Informe o Endereço..."),
+                // complemento: yup.string(),
+                // bairro: yup.string().required("Informe o Bairro..."),
+                // cidade: yup.string().required("Informe a Cidade..."),
+                // uf: yup.string().required("Informe a UF..."),
+                // cep1: yup.string()
             })
         )
     });
+
+    function validateFields(obj) {
+
+        const exclude = ["bloqueado", 
+                         "cnpj", 
+                         "codigo", 
+                         "complemento", 
+                         "filial", 
+                         "fone2", 
+                         "id", 
+                         "insc_estadual", 
+                         "limite_credito", 
+                         "maior_atraso", 
+                         "maior_compra", 
+                         "primeira_compra", 
+                         "qtd_atrasos", 
+                         "qtd_compras", 
+                         "qtd_pagto_atraso", 
+                         "risco", 
+                         "saldo", 
+                         "saldo_dupl_aberto", 
+                         "ultima_compra"]
+
+        for (let chave in obj) {
+            if (exclude.includes(chave)) {
+                continue; // Ignora a chave e continua para a próxima iteração
+            }
+      
+            if (obj[chave].trim() === "") {
+                alert("O campo " + chave + " está vazio, corrija para prosseguir.");
+                return true;
+            }
+            }
+            return false;
+        }
 
     const handleSignIn = async(dataCad) =>{
 
@@ -208,6 +243,11 @@ export default function SaleCli({route,navigation}){
             alert('Formato de e-mail inválido, corrija para prosseguir.')
             return
         }
+
+        if (validateFields(dataCad)) {
+            return
+        }
+
         setCli(dataCad)
         setLoadPrd(true)
 
@@ -622,7 +662,7 @@ export default function SaleCli({route,navigation}){
                                 name='fone2'
                                 render={({field: {onChange,onBlur,value}})=>(
                                     <View>
-                                        <Text style={{color:'#AAADAE',fontWeight:'bold'}}>Telefone Contato 2 *</Text>
+                                        <Text style={{color:'#AAADAE',fontWeight:'bold'}}>Telefone Contato 2</Text>
                                         <TextInput
                                             onChangeText={onChange}
                                             value={value}
@@ -676,7 +716,7 @@ export default function SaleCli({route,navigation}){
                                 name='complemento'
                                 render={({field: {onChange,onBlur,value}})=>(
                                     <View>
-                                        <Text style={{color:'#AAADAE',fontWeight:'bold'}}>Complemento *</Text>
+                                        <Text style={{color:'#AAADAE',fontWeight:'bold'}}>Complemento</Text>
                                         <TextInput
                                             onChangeText={onChange}
                                             value={value}
