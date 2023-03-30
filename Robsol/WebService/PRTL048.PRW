@@ -44,78 +44,80 @@ WsMethod GET WsReceive CODIGO,VENDEDOR WsService Faturamento
 	::SetResponse('{')
 	::SetResponse('"items": [')
 	
-	cQuery := " SELECT DISTINCT SF2.R_E_C_N_O_ RECF2,SF2.*,SC5.*  "
-	cQuery += " FROM " + RetSQLName("SF2") + " SF2 "
-	cQuery += " INNER JOIN "+RetSQLName("SD2")+" SD2 ON D2_FILIAL=F2_FILIAL AND D2_DOC=F2_DOC"
-	cQuery += "  AND D2_SERIE=F2_SERIE AND D2_CLIENTE=F2_CLIENTE AND D2_LOJA=F2_LOJA AND SD2.D_E_L_E_T_=' '"
-	cQuery += " INNER JOIN "+RetSQLName("SC6")+" SC6 ON C6_FILIAL=D2_FILIAL AND C6_NUM=D2_PEDIDO"
-	cQuery += "  AND C6_ITEM=D2_ITEMPV AND SC6.D_E_L_E_T_=' '"
-	cQuery += " INNER JOIN " + RetSQLName("SC5") + " SC5   " 
-	cQuery += " 	ON C5_FILIAL = C6_FILIAL  " 
-	cQuery += " 	AND C5_CLIENTE = C6_CLI  " 
-	cQuery += " 	AND C5_LOJACLI = C6_LOJA  " 
-	cQuery += " 	AND C5_NUM = C6_NUM "
-	cQuery += " 	AND SC5.D_E_L_E_T_=''  " 
-	cQuery += " WHERE SF2.D_E_L_E_T_=' '  "
-	cQuery += " AND F2_FILIAL BETWEEN ' ' AND 'ZZ' AND F2_DOC BETWEEN ' ' AND 'ZZ' AND F2_SERIE BETWEEN ' ' AND 'ZZ'"
+	If !empty(cVendedor) .or. !empty(cCliente)
+		cQuery := " SELECT DISTINCT SF2.R_E_C_N_O_ RECF2,SF2.*,SC5.*  "
+		cQuery += " FROM " + RetSQLName("SF2") + " SF2 "
+		cQuery += " INNER JOIN "+RetSQLName("SD2")+" SD2 ON D2_FILIAL=F2_FILIAL AND D2_DOC=F2_DOC"
+		cQuery += "  AND D2_SERIE=F2_SERIE AND D2_CLIENTE=F2_CLIENTE AND D2_LOJA=F2_LOJA AND SD2.D_E_L_E_T_=' '"
+		cQuery += " INNER JOIN "+RetSQLName("SC6")+" SC6 ON C6_FILIAL=D2_FILIAL AND C6_NUM=D2_PEDIDO"
+		cQuery += "  AND C6_ITEM=D2_ITEMPV AND SC6.D_E_L_E_T_=' '"
+		cQuery += " INNER JOIN " + RetSQLName("SC5") + " SC5   " 
+		cQuery += " 	ON C5_FILIAL = C6_FILIAL  " 
+		cQuery += " 	AND C5_CLIENTE = C6_CLI  " 
+		cQuery += " 	AND C5_LOJACLI = C6_LOJA  " 
+		cQuery += " 	AND C5_NUM = C6_NUM "
+		cQuery += " 	AND SC5.D_E_L_E_T_=''  " 
+		cQuery += " WHERE SF2.D_E_L_E_T_=' '  "
+		cQuery += " AND F2_FILIAL BETWEEN ' ' AND 'ZZ' AND F2_DOC BETWEEN ' ' AND 'ZZ' AND F2_SERIE BETWEEN ' ' AND 'ZZ'"
 
-	If !Empty(cCliente)
-		cQuery += " 	AND F2_CLIENTE = '"+cvaltochar(cCliente)+"'  "
-	EndIf
-
-	If !Empty(cVendedor)
-		cQuery += " 	AND C5_VEND1 = '"+cVendedor+"'  "
-	EndIf
-
-	conout(cQuery)
-	
-	If Select('TRB') > 0
-		dbSelectArea('TRB')
-		dbCloseArea()
-	EndIf
-
-	DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
-	DbSelectArea("TRB")
-
-	While !EoF()
-
-		cPathweb := 'http://portal.robsol.com.br/'+Alltrim(Posicione('SA1',1,xFilial('SA1')+TRB->F2_CLIENTE+TRB->F2_LOJA,'A1_CGC'))+'/'
-		::SetResponse(cVirg+'{')
-
-		If File(cPasta+Alltrim(Posicione('SA1',1,xFilial('SA1')+TRB->F2_CLIENTE+TRB->F2_LOJA,'A1_CGC'))+"\"+Alltrim(TRB->F2_DOC)+".PDF")
-			::SetResponse('"boleto_gerado":"S",')
-		else
-			::SetResponse('"boleto_gerado":"N",')
+		If !Empty(cCliente)
+			cQuery += " 	AND F2_CLIENTE = '"+cvaltochar(cCliente)+"'  "
 		EndIf
 
-		If ValType(TRB->F2_EMISSAO) == 'D'
-			cEmissao := DToC(TRB->F2_EMISSAO)
-		Else
-			cEmissao := DToC(SToD(TRB->F2_EMISSAO))
+		If !Empty(cVendedor)
+			cQuery += " 	AND C5_VEND1 = '"+cVendedor+"'  "
 		EndIf
 
-		::SetResponse('"filial":"'+Alltrim(TRB->F2_FILIAL)+'",')
-		::SetResponse('"documento":"'+Alltrim(TRB->F2_DOC)+'",')
-		::SetResponse('"serie":"'+Alltrim(TRB->F2_SERIE)+'",')
-		::SetResponse('"cliente":"'+Alltrim(Posicione('SA1',1,xFilial('SA1')+TRB->F2_CLIENTE+TRB->F2_LOJA,'A1_NREDUZ'))+'",')
-		::SetResponse('"emissao":"'+cEmissao+'",')
-		::SetResponse('"valor":"'+Transform(TRB->F2_VALBRUT,"@E 999,999,999.99")+'",')
-		::SetResponse('"etiqueta":"'+Alltrim(TRB->C5_XETIQUE)+'",')
-		::SetResponse('"boleto":"'+cPathweb+'Boleto_'+Alltrim(TRB->F2_DOC)+'.pdf",')
-		::SetResponse('"danfe":"'+cPathweb+Alltrim(TRB->F2_DOC)+'.pdf",')
-		::SetResponse('"xml":"'+cPathweb+Alltrim(TRB->F2_DOC)+'.xml",')
-
-		If !Empty(TRB->C5_XETIQUE)
-			::SetResponse('"rastro":"'+fGetRastro(Alltrim(TRB->C5_XETIQUE))+'",')
-		EndIf
-
-		::SetResponse('"id":"'+cvaltochar(TRB->RECF2)+'"')
-		::SetResponse('}')
-		cVirg := ','
+		conout(cQuery)
 		
+		If Select('TRB') > 0
+			dbSelectArea('TRB')
+			dbCloseArea()
+		EndIf
 
-		Dbskip()
-	EndDo
+		DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
+		DbSelectArea("TRB")
+
+		While !EoF()
+
+			cPathweb := 'http://portal.robsol.com.br/'+Alltrim(Posicione('SA1',1,xFilial('SA1')+TRB->F2_CLIENTE+TRB->F2_LOJA,'A1_CGC'))+'/'
+			::SetResponse(cVirg+'{')
+
+			If File(cPasta+Alltrim(Posicione('SA1',1,xFilial('SA1')+TRB->F2_CLIENTE+TRB->F2_LOJA,'A1_CGC'))+"\"+Alltrim(TRB->F2_DOC)+".PDF")
+				::SetResponse('"boleto_gerado":"S",')
+			else
+				::SetResponse('"boleto_gerado":"N",')
+			EndIf
+
+			If ValType(TRB->F2_EMISSAO) == 'D'
+				cEmissao := DToC(TRB->F2_EMISSAO)
+			Else
+				cEmissao := DToC(SToD(TRB->F2_EMISSAO))
+			EndIf
+
+			::SetResponse('"filial":"'+Alltrim(TRB->F2_FILIAL)+'",')
+			::SetResponse('"documento":"'+Alltrim(TRB->F2_DOC)+'",')
+			::SetResponse('"serie":"'+Alltrim(TRB->F2_SERIE)+'",')
+			::SetResponse('"cliente":"'+Alltrim(Posicione('SA1',1,xFilial('SA1')+TRB->F2_CLIENTE+TRB->F2_LOJA,'A1_NREDUZ'))+'",')
+			::SetResponse('"emissao":"'+cEmissao+'",')
+			::SetResponse('"valor":"'+Transform(TRB->F2_VALBRUT,"@E 999,999,999.99")+'",')
+			::SetResponse('"etiqueta":"'+Alltrim(TRB->C5_XETIQUE)+'",')
+			::SetResponse('"boleto":"'+cPathweb+'Boleto_'+Alltrim(TRB->F2_DOC)+'.pdf",')
+			::SetResponse('"danfe":"'+cPathweb+Alltrim(TRB->F2_DOC)+'.pdf",')
+			::SetResponse('"xml":"'+cPathweb+Alltrim(TRB->F2_DOC)+'.xml",')
+
+			If !Empty(TRB->C5_XETIQUE)
+				::SetResponse('"rastro":"'+fGetRastro(Alltrim(TRB->C5_XETIQUE))+'",')
+			EndIf
+
+			::SetResponse('"id":"'+cvaltochar(TRB->RECF2)+'"')
+			::SetResponse('}')
+			cVirg := ','
+			
+
+			Dbskip()
+		EndDo
+	Endif 
 	
 	::SetResponse(']')
 	::SetResponse('}')

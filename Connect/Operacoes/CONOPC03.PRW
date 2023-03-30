@@ -35,7 +35,7 @@ User Function CONOPC03(cXPatr,lIncl)
 Local nOpc      :=  0
 Local nX 
 
-DEFAULT cXPatr := space(TamSX3("AA3_CBASE")[1])
+DEFAULT cXPatr := space(15) //space(TamSX3("AA3_CBASE")[1])
 DEFAULT lIncl  := .F.
 
 Private aCols   :=  {}
@@ -334,6 +334,8 @@ If !Empty(cPatr)
     DbSelectArea("TRB")  
 
     WHILE !EOF() 
+        
+        
         Aadd(aCols,{'',;
                     TRB->Z07_SELECA,;
                     TRB->Z07_CODPRO,;
@@ -373,6 +375,17 @@ If !Empty(cPatr)
     If !lAtivo .And. !"MODELO" $ cPatr 
         MsgAlert("Ativo não encontrado ou base instalada não atribuída a um cliente.")
         Return(.F.)
+    EndIf 
+
+    DbSelectArea("SN1")
+    DbSetOrder(2)
+    If Dbseek(xfilial("SN1")+cPatr)
+        cLocIn := SN1->N1_XPTVEND
+    EndIf
+
+    If !Empty(cLocIn)
+        oSay8:settext(Posicione("NNR",1,xFilial("NNR")+cLocIn,"NNR_DESCRI"))
+        oGet4:disable()
     EndIf 
 
     Asort(aCols,,,{|x,y| x[2] < y[2]})
