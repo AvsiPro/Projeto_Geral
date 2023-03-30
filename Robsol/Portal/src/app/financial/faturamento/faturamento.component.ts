@@ -14,7 +14,7 @@ export class FaturamentoComponent implements OnInit {
   @ViewChild('userDetailModal')
   userDetailModal!: PoModalComponent;
 
-  serviceApi = environment.api + `Faturamento/?VENDEDOR=${localStorage.getItem('cod_vendedor')}&CODIGO=${localStorage.getItem('cod_cliente')}`;
+  serviceApi: any
 
   quickSearchWidth: number = 3;
   rastro: String | any;
@@ -29,6 +29,13 @@ export class FaturamentoComponent implements OnInit {
   constructor( public faturamentoServices: FaturamentoService) {}
 
   ngOnInit(): void {
+
+    let cliente = localStorage.getItem('cod_cliente')
+    let vendedor = localStorage.getItem('cod_vendedor')
+
+    if(!!cliente || !!vendedor){
+      this.serviceApi = environment.api + `Faturamento/?VENDEDOR=${vendedor}&CODIGO=${cliente}`;
+    }
 
     this.tableCustomActions.push(
       {
@@ -63,6 +70,7 @@ onLoad(): PoPageDynamicTableOptions {
     ]
   };
 }
+
 
   printPage() {
     window.print();
