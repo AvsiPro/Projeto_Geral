@@ -2107,6 +2107,8 @@ aCabec := {}
 aItC6  := {}
 cItem  := '01'
 
+cNaturez := SuperGetMV("TI_NATRLOC",.F.,"31101003  ")
+
 aAdd( aCabec , { "C5_FILIAL"    , cFilFat		      , Nil } ) 
 aAdd( aCabec , { "C5_XTPPED"    , 'F'                 , Nil } )
 aAdd( aCabec , { "C5_TIPO"      , 'N'                 , Nil } )
@@ -2115,7 +2117,8 @@ aAdd( aCabec , { "C5_LOJACLI"   , aList[oList:nAt,04]    , Nil } )
 Aadd( aCabec , { "C5_MENNOTA"   , 'Faturamento de Doses - Ref. Patrimonio(s) '+cAtFat   , Nil } )
 aAdd( aCabec , { "C5_CONDPAG"   , AAM->AAM_CPAGPV     , Nil } )    
 aAdd( aCabec , { "C5_XCONTRT"	, aList[oList:nAt,01]	, Nil })
-    	
+aAdd( aCabec , { "C5_NATUREZ"   , cNaturez     			, Nil } )
+		   	
 For nCont := 1 to len(aItens)
 	aLinha := {}
 	aAdd( aLinha , { "C6_FILIAL"     , cFilFat		                          , Nil })
@@ -2123,7 +2126,8 @@ For nCont := 1 to len(aItens)
 	aAdd( aLinha , { "C6_PRODUTO"    , aItens[nCont,01]                       , Nil })
 	aAdd( aLinha , { "C6_QTDVEN"     , aItens[nCont,02]                       , Nil })
 	aAdd( aLinha , { "C6_PRCVEN"     , aItens[nCont,03]                       , Nil })
-	aAdd( aLinha , { "C6_TES"        , '523'                                  , Nil })  
+	aAdd( aLinha , { "C6_OPER"       , "08"                                   , Nil })
+	//aAdd( aLinha , { "C6_TES"        , '523'                                  , Nil })  
 	aAdd( aLinha , { "C6_QTDLIB"     , aItens[nCont,02]    	                  , Nil })
 	aAdd( aLinha , { "C6_CONTRT" 	 , AAM->AAM_CONTRT						  , Nil })
 
