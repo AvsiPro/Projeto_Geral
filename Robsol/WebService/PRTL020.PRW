@@ -124,117 +124,119 @@ WsMethod GET WsReceive CLIENTE,PAGINA,TITULO,PREFIXO,PARCELA,VENDEDOR,EMISSAO,VE
 		::SetResponse('{')
 		::SetResponse('"items": [')
 		
-		If (!Empty(cPrefixo) .Or. !Empty(cParcela) .Or. !Empty(cEmissao) .Or. !Empty(cVencto) .Or. !Empty(cStatus) .Or. !Empty(cCliente)) .And. !empty(cVendedor)
-			cQuery := "SELECT *"
-			cQuery += " FROM ( SELECT "
-		Else
-			cQuery := "SELECT TOP(50) * 
-			cQuery += " FROM(
-			cQuery += "	SELECT TOP("+If(!Empty(cPage),cvaltochar(val(cPage)*50),'50')+")"
-		EndIf
+		If !Empty(cCliente) .or. !Empty(cVendedor)
+			If (!Empty(cPrefixo) .Or. !Empty(cParcela) .Or. !Empty(cEmissao) .Or. !Empty(cVencto) .Or. !Empty(cStatus) .Or. !Empty(cCliente)) .And. !empty(cVendedor)
+				cQuery := "SELECT *"
+				cQuery += " FROM ( SELECT "
+			Else
+				cQuery := "SELECT TOP(50) * 
+				cQuery += " FROM(
+				cQuery += "	SELECT TOP("+If(!Empty(cPage),cvaltochar(val(cPage)*50),'50')+")"
+			EndIf
 
-		cQuery += " E1_PREFIXO,E1_NUM,E1_PARCELA,E1_FILORIG,E1.R_E_C_N_O_ AS RECE1,"
-        cQuery += " E1_CLIENTE,E1_LOJA,E1_EMISSAO,E1_VENCREA,E1_VALOR,E1_BAIXA,A1_NOME,A1_NREDUZ,A1_CGC"
-		cQuery += " FROM "+RetSQLName("SE1")+ " E1"
-        cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_COD=E1_CLIENTE AND A1_LOJA=E1_LOJA AND A1.D_E_L_E_T_=' '"
-		
-		If !Empty(cCliente) //.And. Empty(cVendedor)
-			cQuery += " AND A1_COD = '"+cCliente+"'"
-		endIf	
+			cQuery += " E1_PREFIXO,E1_NUM,E1_PARCELA,E1_FILORIG,E1.R_E_C_N_O_ AS RECE1,"
+			cQuery += " E1_CLIENTE,E1_LOJA,E1_EMISSAO,E1_VENCREA,E1_VALOR,E1_BAIXA,A1_NOME,A1_NREDUZ,A1_CGC"
+			cQuery += " FROM "+RetSQLName("SE1")+ " E1"
+			cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_COD=E1_CLIENTE AND A1_LOJA=E1_LOJA AND A1.D_E_L_E_T_=' '"
+			
+			If !Empty(cCliente) //.And. Empty(cVendedor)
+				cQuery += " AND A1_COD = '"+cCliente+"'"
+			endIf	
 
-		cQuery += " WHERE E1_FILIAL BETWEEN ' ' AND 'ZZZZ' AND E1.D_E_L_E_T_=' '"
+			cQuery += " WHERE E1_FILIAL BETWEEN ' ' AND 'ZZZZ' AND E1.D_E_L_E_T_=' '"
 
-		cTipVnd := Posicione("SA3",1,xFilial("SA3")+cVendedor,"A3_XFUNCAO")
+			cTipVnd := Posicione("SA3",1,xFilial("SA3")+cVendedor,"A3_XFUNCAO")
 
-		If !Empty(cVendedor) //.And. cTipVnd <> '2'
-			cQuery += " AND E1_VEND1='"+cVendedor+"' " 
-		EndIf
-		
-		If !Empty(cPrefixo)
-			cQuery += " AND E1_PREFIXO='"+cPrefixo+"'"
-		Else 
-			cQuery += " AND E1_PREFIXO BETWEEN ' ' AND 'ZZZ'"
-		EndIf
-		
-		If !Empty(cParcela)
-			cQuery += " AND E1_PARCELA='"+cParcela+"'"
-		EndIf
+			If !Empty(cVendedor) //.And. cTipVnd <> '2'
+				cQuery += " AND E1_VEND1='"+cVendedor+"' " 
+			EndIf
+			
+			If !Empty(cPrefixo)
+				cQuery += " AND E1_PREFIXO='"+cPrefixo+"'"
+			Else 
+				cQuery += " AND E1_PREFIXO BETWEEN ' ' AND 'ZZZ'"
+			EndIf
+			
+			If !Empty(cParcela)
+				cQuery += " AND E1_PARCELA='"+cParcela+"'"
+			EndIf
 
-		If !Empty(cEmissao)
-			cQuery += " AND E1_EMISSAO='"+dtos(ctod(cEmissao))+"'"
-		EndIf
+			If !Empty(cEmissao)
+				cQuery += " AND E1_EMISSAO='"+dtos(ctod(cEmissao))+"'"
+			EndIf
 
-		If !Empty(cVencto)
-			cQuery += " AND E1_VENCREA='"+dtos(ctod(cVencto))+"'"
-		EndIf
+			If !Empty(cVencto)
+				cQuery += " AND E1_VENCREA='"+dtos(ctod(cVencto))+"'"
+			EndIf
 
-		iF !Empty(cStatus)
-			cQuery += " AND E1_BAIXA "+If(cStatus=="Em Aberto","=' '","<>' '")
-		EndIf
+			iF !Empty(cStatus)
+				cQuery += " AND E1_BAIXA "+If(cStatus=="Em Aberto","=' '","<>' '")
+			EndIf
 
-		If !Empty(cPrefixo) .Or. !Empty(cParcela) .Or. !Empty(cEmissao) .Or. !Empty(cVencto) .Or. !Empty(cStatus) .Or. !Empty(cCliente)
-			cQuery += " ) TMP"
-		Else
-			cQuery += "		ORDER BY E1_CLIENTE ) TMP"
-		EndIf
+			If !Empty(cPrefixo) .Or. !Empty(cParcela) .Or. !Empty(cEmissao) .Or. !Empty(cVencto) .Or. !Empty(cStatus) .Or. !Empty(cCliente)
+				cQuery += " ) TMP"
+			Else
+				cQuery += "		ORDER BY E1_CLIENTE ) TMP"
+			EndIf
 
-		cQuery += " ORDER BY E1_CLIENTE DESC"
+			cQuery += " ORDER BY E1_CLIENTE DESC"
 
-		conout(cQuery)
+			conout(cQuery)
 
-		If Select('TRB') > 0
-			dbSelectArea('TRB')
-			dbCloseArea()
-		EndIf
+			If Select('TRB') > 0
+				dbSelectArea('TRB')
+				dbCloseArea()
+			EndIf
 
-		DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
+			DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
 
-		DbSelectArea("TRB")
+			DbSelectArea("TRB")
 
-		While !EOF()
-			Aadd(aAux,{	TRB->E1_PREFIXO,TRB->E1_NUM,TRB->E1_PARCELA,;
-                        TRB->E1_CLIENTE,TRB->E1_LOJA,TRB->E1_EMISSAO,;
-                        TRB->E1_VENCREA,TRB->E1_VALOR,TRB->A1_NOME,;
-						TRB->E1_BAIXA,TRB->E1_FILORIG,TRB->A1_CGC,TRB->RECE1})
-			Dbskip()
-		ENDDO
+			While !EOF()
+				Aadd(aAux,{	TRB->E1_PREFIXO,TRB->E1_NUM,TRB->E1_PARCELA,;
+							TRB->E1_CLIENTE,TRB->E1_LOJA,TRB->E1_EMISSAO,;
+							TRB->E1_VENCREA,TRB->E1_VALOR,TRB->A1_NOME,;
+							TRB->E1_BAIXA,TRB->E1_FILORIG,TRB->A1_CGC,TRB->RECE1})
+				Dbskip()
+			ENDDO
 
-		Asort(aAux,,,{|x,y| x[2] < y[2]})
+			Asort(aAux,,,{|x,y| x[2] < y[2]})
 
-		
-		
-		For nCont := 1 to len(aAux)
-			//Gerpdf(aAux[nCont,02],aAux[nCont,01],aAux[nCont,12],aAux[nCont,11])
-			cPathweb := 'http://portal.robsol.com.br/'+Alltrim(aAux[nCont,12])+'/'
-			::SetResponse(cVirg+'{')
+			
+			
+			For nCont := 1 to len(aAux)
+				//Gerpdf(aAux[nCont,02],aAux[nCont,01],aAux[nCont,12],aAux[nCont,11])
+				cPathweb := 'http://portal.robsol.com.br/'+Alltrim(aAux[nCont,12])+'/'
+				::SetResponse(cVirg+'{')
 
-			If File(cPasta+Alltrim(aAux[nCont,12])+"\"+Alltrim(aAux[nCont,02])+".PDF")
-				::SetResponse('"boleto_gerado":"S",')
-				conout('Boleto gerado')
-			else
-				::SetResponse('"boleto_gerado":"N",')
-				conout('Boleto nao gerado')
-			EndIf 
+				If File(cPasta+Alltrim(aAux[nCont,12])+"\"+Alltrim(aAux[nCont,02])+".PDF")
+					::SetResponse('"boleto_gerado":"S",')
+					conout('Boleto gerado')
+				else
+					::SetResponse('"boleto_gerado":"N",')
+					conout('Boleto nao gerado')
+				EndIf 
 
-			::SetResponse('"filial":"'+aAux[nCont,11]+'",')
-			::SetResponse('"titulo":"'+aAux[nCont,02]+'",')
-			::SetResponse('"prefixo":"'+Alltrim(aAux[nCont,01])+'",')
-			::SetResponse('"parcela":"'+Alltrim(aAux[nCont,03])+'",')
-			::SetResponse('"cliente":"'+Alltrim(aAux[nCont,09])+'",')
-			::SetResponse('"emissao":"'+cvaltochar(stod(aAux[nCont,06]))+'",')
-			::SetResponse('"vencimento":"'+cvaltochar(stod(aAux[nCont,07]))+'",')
-			::SetResponse('"valor":"'+Transform(aAux[nCont,08],"@E 999,999,999.99")+'",')
-			::SetResponse('"status":"'+If(!Empty(aAux[nCont,10]),'Pago',If(stod(aAux[nCont,07])>=DDATABASE,"Em Aberto","Atrasado"))+'",')
-			::SetResponse('"boleto":"'+cPathweb+'Boleto_'+Alltrim(aAux[nCont,02])+'.pdf",')
-			::SetResponse('"danfe":"'+cPathweb+Alltrim(aAux[nCont,02])+'.pdf",')
-			::SetResponse('"xml":"'+cPathweb+Alltrim(aAux[nCont,02])+'.xml",')
-			::SetResponse('"codigo":"'+aAux[nCont,04]+'",')
-			::SetResponse('"cnpj":"'+aAux[nCont,12]+'",')
-			::SetResponse('"id":"'+cvaltochar(aAux[nCont,13])+'"')
-			::SetResponse('}')
-			//conout(cPathweb+Alltrim(aAux[nCont,02])+'.pdf'+CRLF)
-			cVirg := ','
-		Next nCont
+				::SetResponse('"filial":"'+aAux[nCont,11]+'",')
+				::SetResponse('"titulo":"'+aAux[nCont,02]+'",')
+				::SetResponse('"prefixo":"'+Alltrim(aAux[nCont,01])+'",')
+				::SetResponse('"parcela":"'+Alltrim(aAux[nCont,03])+'",')
+				::SetResponse('"cliente":"'+Alltrim(aAux[nCont,09])+'",')
+				::SetResponse('"emissao":"'+cvaltochar(stod(aAux[nCont,06]))+'",')
+				::SetResponse('"vencimento":"'+cvaltochar(stod(aAux[nCont,07]))+'",')
+				::SetResponse('"valor":"'+Transform(aAux[nCont,08],"@E 999,999,999.99")+'",')
+				::SetResponse('"status":"'+If(!Empty(aAux[nCont,10]),'Pago',If(stod(aAux[nCont,07])>=DDATABASE,"Em Aberto","Atrasado"))+'",')
+				::SetResponse('"boleto":"'+cPathweb+'Boleto_'+Alltrim(aAux[nCont,02])+'.pdf",')
+				::SetResponse('"danfe":"'+cPathweb+Alltrim(aAux[nCont,02])+'.pdf",')
+				::SetResponse('"xml":"'+cPathweb+Alltrim(aAux[nCont,02])+'.xml",')
+				::SetResponse('"codigo":"'+aAux[nCont,04]+'",')
+				::SetResponse('"cnpj":"'+aAux[nCont,12]+'",')
+				::SetResponse('"id":"'+cvaltochar(aAux[nCont,13])+'"')
+				::SetResponse('}')
+				//conout(cPathweb+Alltrim(aAux[nCont,02])+'.pdf'+CRLF)
+				cVirg := ','
+			Next nCont
+		EndIf 
 		
 		
 		::SetResponse(']')

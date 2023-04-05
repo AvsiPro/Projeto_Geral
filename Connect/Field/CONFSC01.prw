@@ -368,6 +368,7 @@ Static Function Busca(cCond,cQuinze)
 	cQuery += " INNER JOIN "+RetSQLName("SE4")+" E4 ON E4_FILIAL='"+xFilial("SE4")+"' AND E4_CODIGO=AAN_CONPAG AND E4.D_E_L_E_T_=' '"
 	cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD=AAN_CODPRO AND B1_XCARACT<>'D' AND B1.D_E_L_E_T_=' '"
 	cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_COD=AAM_CODCLI AND A1_LOJA=AAM_LOJA AND A1.D_E_L_E_T_=' '"
+	cQuery += " INNER JOIN "+RetSQLName("Z01")+" Z01 ON Z01_FILIAL='"+xFilial("Z01")+"' AND Z01_CODIGO=B1_XTIPOCN AND Z01_DESCRI NOT LIKE 'GAB%' AND Z01.D_E_L_E_T_=' '"
 	cQuery += " WHERE AAN_FILIAL='"+xFilial("AAN")+"' AND AAN.D_E_L_E_T_=''" 
 
 	If !Empty(cCond)
@@ -1666,7 +1667,8 @@ Local nX
 Local lDose     := .F.
 Local lLoc      := .F.
 Local cFilFat	:=	If(aList[oList:nAt,23]=="RJ","0102","0101")
-Local cBkpcFil  := cFilant 
+Local cBkpcFil  :=	cFilant 
+Local aFilFat	:=	{'0101=SP','0102=RJ'}
 
 cFilant := cFilFat 
 
@@ -1677,10 +1679,14 @@ EndIf
 
 aAdd( aPerg ,{2,"Escolha uma opção : ",0,aCombo,100,"",.T.})
 aAdd( aPerg ,{1,"PO cliente : "+aList[oList:nAt,24],,"@!",'.T.',"",'.T.',40,.F.})  
+aAdd( aPerg ,{2,"Filial de Faturameto : ",cFilFat,aFilFat,100,"",.T.})
 
 If !ParamBox(aPerg ,"Parametros ")
 	Return
 EndIf
+
+cFilant := MV_PAR03
+cFilFat := MV_PAR03
 
 if MV_PAR01 == "1" 
 	lDose := .T.
@@ -2101,6 +2107,8 @@ aCabec := {}
 aItC6  := {}
 cItem  := '01'
 
+cNaturez := SuperGetMV("TI_NATRLOC",.F.,"31101003  ")
+
 aAdd( aCabec , { "C5_FILIAL"    , cFilFat		      , Nil } ) 
 aAdd( aCabec , { "C5_XTPPED"    , 'F'                 , Nil } )
 aAdd( aCabec , { "C5_TIPO"      , 'N'                 , Nil } )
@@ -2109,7 +2117,8 @@ aAdd( aCabec , { "C5_LOJACLI"   , aList[oList:nAt,04]    , Nil } )
 Aadd( aCabec , { "C5_MENNOTA"   , 'Faturamento de Doses - Ref. Patrimonio(s) '+cAtFat   , Nil } )
 aAdd( aCabec , { "C5_CONDPAG"   , AAM->AAM_CPAGPV     , Nil } )    
 aAdd( aCabec , { "C5_XCONTRT"	, aList[oList:nAt,01]	, Nil })
-    	
+aAdd( aCabec , { "C5_NATUREZ"   , cNaturez     			, Nil } )
+		   	
 For nCont := 1 to len(aItens)
 	aLinha := {}
 	aAdd( aLinha , { "C6_FILIAL"     , cFilFat		                          , Nil })
@@ -2117,7 +2126,8 @@ For nCont := 1 to len(aItens)
 	aAdd( aLinha , { "C6_PRODUTO"    , aItens[nCont,01]                       , Nil })
 	aAdd( aLinha , { "C6_QTDVEN"     , aItens[nCont,02]                       , Nil })
 	aAdd( aLinha , { "C6_PRCVEN"     , aItens[nCont,03]                       , Nil })
-	aAdd( aLinha , { "C6_TES"        , '523'                                  , Nil })  
+	aAdd( aLinha , { "C6_OPER"       , "08"                                   , Nil })
+	//aAdd( aLinha , { "C6_TES"        , '523'                                  , Nil })  
 	aAdd( aLinha , { "C6_QTDLIB"     , aItens[nCont,02]    	                  , Nil })
 	aAdd( aLinha , { "C6_CONTRT" 	 , AAM->AAM_CONTRT						  , Nil })
 

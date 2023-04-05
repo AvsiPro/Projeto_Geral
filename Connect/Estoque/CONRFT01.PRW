@@ -86,6 +86,7 @@ TRCell():New(oSection1,"Quantidade"	,"TRB",/*Titulo*/,/*Picture*/,TamSX3("D2_QUA
 TRCell():New(oSection1,"Preco_Venda","TRB",/*Titulo*/,'@E 999,999,999.99'/*Picture*/,TamSX3("D2_PRCVEN")[1],/*lPixel*/)
 TRCell():New(oSection1,"Valor_Total","TRB",/*Titulo*/,'@E 999,999,999.99'/*Picture*/,TamSX3("D2_TOTAL")[1],/*lPixel*/)
 TRCell():New(oSection1,"Emissao","TRB",/*Titulo*/,/*Picture*/,TamSX3("D2_EMISSAO")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
+TRCell():New(oSection1,"PontoVenda","TRB",/*Titulo*/,/*Picture*/,TamSX3("NNR_DESCRI")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
 
 Return(oReport)
 
@@ -96,7 +97,7 @@ Static Function ReportPrint(oReport)
     Local aAux      :=  {}
     Local nCont
 
-cQuery := "SELECT D2_FILIAL,D2_DOC,D2_ITEM,D2_COD,B1_DESC,D2_UM,D2_QUANT,D2_PRCVEN,D2_TOTAL,D2_EMISSAO"
+cQuery := "SELECT D2_FILIAL,D2_DOC,D2_ITEM,D2_COD,B1_DESC,D2_UM,D2_QUANT,D2_PRCVEN,D2_TOTAL,D2_EMISSAO,C5_XCODPA"
 cQuery += " FROM "+RetSQLName("SD2")+" D2"
 cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_FILIAL='01' AND B1_COD=D2_COD AND B1.D_E_L_E_T_=' '"
 cQuery += " LEFT JOIN "+RetSQLName("SC5")+" C5 ON C5_FILIAL=D2_FILIAL AND C5_NUM=D2_PEDIDO AND C5.D_E_L_E_T_=' ' AND C5_XTPPED='A' "
@@ -116,9 +117,17 @@ dbUseArea(.T.,"TOPCONN",TCGENQRY(,,cQuery),"TRB",.F.,.T.)
 dbSelectArea("TRB")
 
 While !EOF()
-        Aadd(aAux,{TRB->D2_FILIAL,TRB->D2_DOC,TRB->D2_ITEM,TRB->D2_COD,;
-                    TRB->B1_DESC,TRB->D2_UM,TRB->D2_QUANT,TRB->D2_PRCVEN,;
-                    TRB->D2_TOTAL,TRB->D2_EMISSAO})  
+        Aadd(aAux,{TRB->D2_FILIAL,;
+                    TRB->D2_DOC,;
+                    TRB->D2_ITEM,;
+                    TRB->D2_COD,;
+                    TRB->B1_DESC,;
+                    TRB->D2_UM,;
+                    TRB->D2_QUANT,;
+                    TRB->D2_PRCVEN,;
+                    TRB->D2_TOTAL,;
+                    TRB->D2_EMISSAO,;
+                    TRB->C5_XCODPA})  
     Dbskip()
 ENDDO
 
@@ -143,6 +152,7 @@ For nCont := 1 to len(aAux)
     oSection1:Cell('Preco_Venda'):SetValue(aAux[nCont,08])
     oSection1:Cell('Valor_Total'):SetValue(aAux[nCont,09])
     oSection1:Cell('Emissao'):SetValue(stod(aAux[nCont,10]))
+    oSection1:Cell('PontoVenda'):SetValue(aAux[nCont,11]+"-"+Posicione("NNR",1,xFilial("NNR")+aAux[nCont,11],"NNR_DESCRI"))
 
 	oReport:IncMeter()
 

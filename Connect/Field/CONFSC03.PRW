@@ -278,7 +278,7 @@ Static Function GeraBase()
                 Reclock("SN1",.F.)
                 SN1->N1_XCLIENT :=  cCodCli
                 SN1->N1_XLOJA   :=  cLojCli 
-                SN1->N1_XTPVEND :=  cPntVnd
+                SN1->N1_XPTVEND :=  cPntVnd
                 SN1->(MsUnlock())
 
                 DbSelectArea("SB1")

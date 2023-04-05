@@ -77,8 +77,8 @@ oDlg1      := MSDialog():New( 085,210,628,1477,"Painel de Faturamento",,,.F.,,,,
     oGrp5      := TGroup():New( 008,424,060,516,"Vendas",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
     oSay5      := TSay():New( 020,430,{||""},oGrp5,,oFont4,.F.,.F.,.F.,.T.,CLR_BROWN,CLR_WHITE,082,024)
     
-    oGrp6      := TGroup():New( 008,528,060,620,"Contratos a Faturar X Faturados",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
-    oSay6      := TSay():New( 020,544,{||""},oGrp6,,oFont4,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,082,024)
+    oGrp6      := TGroup():New( 008,528,060,620,"Contratos X Faturados X A Faturar",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
+    oSay6      := TSay():New( 020,534,{||""},oGrp6,,oFont4,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,082,024)
     
     oGrp7      := TGroup():New( 068,008,236,308,"Gráfico",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
 
@@ -98,7 +98,7 @@ oDlg1      := MSDialog():New( 085,210,628,1477,"Painel de Faturamento",,,.F.,,,,
     //oBtn1      := TButton():New( 244,580,"Sair",oDlg1,{||oDlg1:end()},037,012,,,,.T.,,"",,,,.F. )
     oMenu := TMenu():New(0,0,0,0,.T.)
 
-    oTMenuIte1 := TMenuItem():New(oDlg1,"Contratos fat.",,,,{|| ContrFat()},,,,,,,,,.T.)
+    oTMenuIte1 := TMenuItem():New(oDlg1,"Opções",,,,{|| ContrFat()},,,,,,,,,.T.)
 	oTMenuIte9 := TMenuItem():New(oDlg1,"Sair",,,,{|| oDlg1:end()},,,,,,,,,.T.)
 	
     oMenu:Add(oTMenuIte1)
@@ -435,7 +435,7 @@ oSay2:settext(cvaltochar(nNotM)+" "+Transform(nTotD3+nTotL3+nTotV3,"@E 999,999,9
 oSay3:settext(cvaltochar(Transform(nTotD3,"@E 999,999,999.99")))
 oSay4:settext(cvaltochar(Transform(nTotL3,"@E 999,999,999.99")))
 oSay5:settext(cvaltochar(Transform(nTotV3,"@E 999,999,999.99")))
-oSay6:settext(cvaltochar(len(aContra))+" / "+cvaltochar(nCntFt))
+oSay6:settext(cvaltochar(len(aContra))+" / "+cvaltochar(nCntFt)+" / "+cvaltochar(len(aContra)-nCntFt))
 
 
 oChart := FWChartFactory():New()
@@ -552,6 +552,10 @@ Static Function ContrFat()
 
 Local aArea := GetArea()
 Local nCont
+Local aTipo    :=  {"1=Todos","2=Faturados","3=A Faturar"}
+Local cTipo    :=  aTipo[1]
+Local aPergs   :=  {}
+Local aRet     :=  {}
 
 Private oContra
 Private oItemC
@@ -565,9 +569,31 @@ Private oDlg2,oContr,oItem,oFatura,oDetalhe,oSay1,oSay2,oSair
 Aadd(aItemC,{'','',''})
 Aadd(aFatura,{'','',''})
 
-For nCont := 1 to len(aContra)
-    Aadd(aDetCon,aContra[nCont])
-Next nCont
+aAdd( aPergs ,{2,"Tipo?"	,cTipo,aTipo,080,'',.T.})
+
+If !ParamBox(aPergs ,"Parametros ",aRet)
+    Return 
+Else 
+    cTipo := aRet[1]
+EndIf 
+
+If cTipo == "1"
+    For nCont := 1 to len(aContra)
+        Aadd(aDetCon,aContra[nCont])
+    Next nCont
+ElseIf cTipo == "2" 
+    For nCont := 1 to len(aContra)
+        If aContra[nCont,12] > 0
+            Aadd(aDetCon,aContra[nCont])
+        EndIf 
+    Next nCont
+Else
+    For nCont := 1 to len(aContra)
+        If aContra[nCont,12] == 0
+            Aadd(aDetCon,aContra[nCont])
+        EndIf 
+    Next nCont
+EndIf 
 
 oDlg2      := MSDialog():New( 092,232,602,1258,"Contratos",,,.F.,,,,,,.T.,,,.T. )
 
