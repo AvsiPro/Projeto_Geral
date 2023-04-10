@@ -26,6 +26,20 @@ M->C5_XQUANT    := _nTotQTD
 M->C5_XTOTAL    := _nTotVAL
 M->C5_XTOTDES   := _nTotDSC
 
+If _nOPC == 4 .And. _PMantLiB
+    nPosItm := Ascan(aHeader,{|x| AllTrim(x[2]) == "C6_ITEM" })
+    nPosLib := Ascan(aHeader,{|x| AllTrim(x[2]) == "C6_QTDLIB" })
+
+    SC9->(DbSetOrder(2))
+	For _nX := 1 To Len(aCols)
+		If SC9->(DbSeek(xFilial('SC9')+M->C5_CLIENTE+M->C5_LOJACLI+M->C5_NUM+aCols[_nX,nPosItm]))
+			aCols[_nX,nPosLib] := SC9->C9_QTDLIB
+		EndIf
+	Next _nX
+
+	_PMantLiB := .F.
+EndIf
+
 //Faz a chamada na static function para gerar o log de alteração Cabeçalho Pedidos de venda 
 Processa({||LogSC5() },,,)
 
