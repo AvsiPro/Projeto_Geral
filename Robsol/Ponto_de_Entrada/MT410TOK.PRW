@@ -14,6 +14,8 @@ Local _nTotDSC  := 0
 
 Local lRet      := .T.
 
+Default _PMantLiB := .F.
+
 If _nOPC == 3 .OR. _nOPC == 4 //3=Inclusão / 4=Alteração
     For _nX := 1 To LEN(aCols)
         _nTotQTD += aCols[_nX][nPosQTD]
