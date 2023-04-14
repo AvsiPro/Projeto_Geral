@@ -7,15 +7,20 @@ Local cChamado		:= AB1->AB1_NRCHAM
 Local cCliente		:= AB1->AB1_CODCLI
 Local cLoja			:= AB1->AB1_LOJA
 Local cContato		:= AB1->AB1_CONTAT
-Local nI 
+Local nI			:= 0
 Local aItens        := {}
 Local nPosFim		:= TamSX3("AB2_NUMOS")[1]
 Local aDoc          :=  {}
 Local cLocal
 Local cNumOS
 Local nTpServ       :=  25
+Local lInclMq		:=	.F.
+__cErroA := ''
+While ( !Empty(ProcName(ni)) )
+	__cErroA +=	Trim(ProcName(ni)) +"(" + Alltrim(Str(ProcLine(ni))) + ") " + CRLF
+	ni++
+End
 
-/*
 
 If (INCLUI .Or. ALTERA)
 
@@ -117,7 +122,7 @@ For nI := 1 to len(aItens)
         AB2->(Msunlock())
     EndIf 
 Next nI
-*/
+
 
 RestArea(aArea)
 
