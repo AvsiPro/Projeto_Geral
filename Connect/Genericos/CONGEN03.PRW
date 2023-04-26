@@ -66,9 +66,11 @@ User Function CONGEN03()
 	cFilD := MV_PAR03
 	cFilA := MV_PAR04
 
-    cQuery := "SELECT DISTINCT D2_PEDIDO,D2_PRCVEN,D2_TOTAL,F2_EMISSAO,F2_DOC,F2_EMISSAO,C6_PEDCLI,A1_NOME,A1_CGC,A1_END,A1_NREDUZ,B1_DESC"
+    cQuery := "SELECT DISTINCT D2_PEDIDO,D2_PRCVEN,D2_TOTAL,F2_EMISSAO,F2_DOC,F2_EMISSAO,"
+	cQuery += " C5_XTPPED,C6_PEDCLI,A1_NOME,A1_CGC,A1_END,A1_NREDUZ,B1_DESC"
 	cQuery += " FROM "+RetSQLName("SF2")+" F2 "
 	cQuery += " INNER JOIN "+RetSQLName("SD2")+" D2 ON D2_FILIAL=F2_FILIAL AND D2_DOC=F2_DOC AND D2_SERIE=F2_SERIE AND D2.D_E_L_E_T_=' '"
+	cQuery += " INNER JOIN "+RetSQLName("SC5")+" C5 ON C5_FILIAL=D2_FILIAL AND C5_NUM=D2_PEDIDO AND C5_CLIENTE=F2_CLIENTE AND C5_LOJACLI=F2_LOJA AND C5.D_E_L_E_T_=' '"
 	cQuery += " INNER JOIN "+RetSQLName("SC6")+" C6 ON C6_FILIAL=D2_FILIAL AND C6_NUM=D2_PEDIDO AND C6_ITEM=D2_ITEMPV AND C6.D_E_L_E_T_=' '"
 	cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_COD=F2_CLIENTE AND A1_LOJA=F2_LOJA AND A1.D_E_L_E_T_=' '"
 	cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD=D2_COD AND B1.D_E_L_E_T_=' '"
@@ -87,19 +89,20 @@ User Function CONGEN03()
 	DbUseArea(.T.,"TOPCONN",TcGenQry(,,cQuery),'TRB',.F.,.T.)
 
 	while !EOF()
-		Aadd(aAux,{TRB->D2_PEDIDO,;	//01
-				TRB->F2_EMISSAO,;	//02
-				TRB->D2_PRCVEN,;	//03
-				TRB->D2_TOTAL,;		//04
-				TRB->F2_DOC,;		//05
-				TRB->F2_EMISSAO,;	//06
-				TRB->C6_PEDCLI,;	//07
-				TRB->A1_NOME,;		//08
-				TRB->A1_CGC,;		//09
-				TRB->A1_END,;		//10
-				TRB->A1_NREDUZ,;	//11
-				TRB->F2_DOC,;		//12
-				TRB->B1_DESC})		//13
+		Aadd(aAux,{	TRB->D2_PEDIDO,;	//01
+					TRB->F2_EMISSAO,;	//02
+					TRB->D2_PRCVEN,;	//03
+					TRB->D2_TOTAL,;		//04
+					TRB->F2_DOC,;		//05
+					TRB->F2_EMISSAO,;	//06
+					TRB->C6_PEDCLI,;	//07
+					TRB->A1_NOME,;		//08
+					TRB->A1_CGC,;		//09
+					TRB->A1_END,;		//10
+					TRB->A1_NREDUZ,;	//11
+					TRB->F2_DOC,;		//12
+					TRB->B1_DESC,;		//13
+					TRB->C5_XTPPED})	//14
 				
 		lOK := .T.
 		DBSKIP()
@@ -141,7 +144,7 @@ User Function CONGEN03()
 		cCli := aAux[nCont,8]
 		cCli1 := aAux[nCont,11]
 		cCnpj := Transform(val(aAux[nCont,9]), "@E 99,999,999/9999-99")
-		cPeriodo := "Locação de máquina referente mês " + SubStr(aAux[nCont,6],5,2) + "/" + SubStr(aAux[nCont,6],3,2)
+		cPeriodo := If(aAux[nCont,14] <> "G","Locação de máquina referente mês " + SubStr(aAux[nCont,6],5,2) + "/" + SubStr(aAux[nCont,6],3,2),"")
 		cPonto := aAux[nCont,13]
 		cEmitente := SM0->M0_NOMECOM + " " + Transform(val(SM0->M0_CGC), "@E 99,999,999/9999-99")
 		cEnd :=  aAux[nCont,10]
@@ -172,7 +175,7 @@ User Function CONGEN03()
 		oPrinter:SayBitmap(031,013,cLogoD,040,040)
 
 		oPrinter:Box( 25, 5, 25, 590, "-9" )
-		oPrinter:Say( 55, 125,"FATURA " + cNum + " - LOCAÇÃO DE " + Upper(cMes), oF20TFF )
+		oPrinter:Say( 55, 125,"FATURA " + cNum + If(aAux[nCont,14] <> "G"," - LOCAÇÃO DE " + Upper(cMes)," - FRETE "), oF20TFF )
 		oPrinter:Say( 35, 510,"NÚMERO", oF10FFF,, rgb(102, 102, 102)/*Cor*/ )
 		oPrinter:Say( 55, 530,cNum, oF20TFF )
 		oPrinter:Box( 75, 5, 75, 590, "-9" )

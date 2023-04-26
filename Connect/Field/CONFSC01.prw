@@ -987,7 +987,7 @@ If aList[nLinha2,20] > 0
 	nAbater := 0
 	nVlrAbt	:= 0
 
-	If cQuinze == '2'
+	If cQuinze == '2' .And. AAM->AAM_XFORFA == "2"
 		For nCont := 1 to len(aList5B)
 			If aList5B[nCont,01] == aList[nLinha2,01]
 				For nX := 5 to len(aList5B[nCont])

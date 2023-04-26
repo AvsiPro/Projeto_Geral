@@ -77,8 +77,8 @@ aCliFor := U_WSKPF002(nTipo,cCliFor,cLoja,cNumChapa,cCodPA,cContato,cDepto,cTel,
 
 If aCliFor <> Nil .And. Len(aCliFor) > 0
 
-    If nTpServ == 25
-        cXMLOS := ChmTec01()
+    If nTpServ > 0 //== 25
+        cXMLOS := ChmTec01(nTpServ)
     EndIf 
 
     If !Empty(cXMLOS)
@@ -748,42 +748,49 @@ Return lRet
     (examples)
     @see (links_or_references)
 /*/
-Static Function ChmTec01()
+Static Function ChmTec01(nTpServ)
 
 Local aArea     :=  GetArea()
 Local cRetXml   :=  ''
 
 cRetXml := '<?xml version="1.0" encoding="utf-8"?>'
 cRetXml += '<DynFormAnswer>'
-cRetXml += '<ItemAnswer>'
-cRetXml += '<ItemCode>1</ItemCode>'
-cRetXml += '<TextAnswer>TIPO_DE_INTERVENCAO</TextAnswer>'
-cRetXml += '</ItemAnswer>'
-cRetXml += '<ItemAnswer>'
-cRetXml += '<ItemCode>2</ItemCode>'
-cRetXml += '<TextAnswer>NOME_DO_RECLAMANTE</TextAnswer>'
-cRetXml += '</ItemAnswer>'
-cRetXml += '<ItemAnswer>'
-cRetXml += '<ItemCode>3</ItemCode>'
-cRetXml += '<TextAnswer>DEPARTAMENTO_DO_RECLAMANTE</TextAnswer>'
-cRetXml += '</ItemAnswer>'
-/*cRetXml += '<ItemAnswer>'
-cRetXml += '<ItemCode>4</ItemCode>'
-cRetXml += '<TextAnswer>E_MAIL_DO_RECLAMANTE</TextAnswer>'
-cRetXml += '</ItemAnswer>'
-cRetXml += '<ItemAnswer>'
-cRetXml += '<ItemCode>5</ItemCode>'
-cRetXml += '<TextAnswer>TELEFONE_DO_RECLAMANTE</TextAnswer>'
-cRetXml += '</ItemAnswer>'
-cRetXml += '<ItemAnswer>'
-cRetXml += '<ItemCode>6</ItemCode>'
-cRetXml += '<TextAnswer>EQUIPAMENTO</TextAnswer>'
-cRetXml += '</ItemAnswer>'
-cRetXml += '<ItemAnswer>'
-cRetXml += '<ItemCode>7</ItemCode>'
-cRetXml += '<TextAnswer>PECAS_SUGERIDAS</TextAnswer>'
-cRetXml += '</ItemAnswer>'*/
+
+If nTpServ == 15
+	cRetXml += '<ItemAnswer>'
+	cRetXml += '<ItemCode>Patri_Maquina</ItemCode>'
+	cRetXml += '<TextAnswer>123</TextAnswer>' //@PATRIMONIO_MAQUINA
+	cRetXml += '</ItemAnswer>'
+	cRetXml += '<ItemAnswer>'
+	cRetXml += '<ItemCode>Modelo_Maq</ItemCode>'
+	cRetXml += '<TextAnswer>modelo</TextAnswer>' //@MODELO_MAQUINA
+	cRetXml += '</ItemAnswer>'
+	cRetXml += '<ItemAnswer>'
+	cRetXml += '<ItemCode>Loc_Inter_Maq</ItemCode>'
+	cRetXml += '<TextAnswer>local instalacao</TextAnswer>' //@LOCAL_INTER_DA_MAQUINA
+	cRetXml += '</ItemAnswer>'
+	cRetXml += '<ItemAnswer>'
+	cRetXml += '<ItemCode>Contato_Reclamante</ItemCode>'
+	cRetXml += '<TextAnswer>reclamante</TextAnswer>' //@CONTATO/RECLAMANTE
+	cRetXml += '</ItemAnswer>'
+
+ElseIf nTpServ == 25
+	cRetXml += '<ItemAnswer>'
+	cRetXml += '<ItemCode>1</ItemCode>'
+	cRetXml += '<TextAnswer>TIPO_DE_INTERVENCAO</TextAnswer>'
+	cRetXml += '</ItemAnswer>'
+	cRetXml += '<ItemAnswer>'
+	cRetXml += '<ItemCode>2</ItemCode>'
+	cRetXml += '<TextAnswer>NOME_DO_RECLAMANTE</TextAnswer>'
+	cRetXml += '</ItemAnswer>'
+	cRetXml += '<ItemAnswer>'
+	cRetXml += '<ItemCode>3</ItemCode>'
+	cRetXml += '<TextAnswer>DEPARTAMENTO_DO_RECLAMANTE</TextAnswer>'
+	cRetXml += '</ItemAnswer>'
+EndIf 
+
 cRetXml += '</DynFormAnswer>'
+
 
 RestArea(aArea)
 
