@@ -101,7 +101,7 @@ oDlg1      := MSDialog():New( 092,232,800 /*Y*/,1200 /*X*/,"Retirar Ativos do co
         oBtn3      := TButton():New( 200/*Y*/,225/*X*/,"+",oDlg1,{|| inclin()},021,012,,,,.T.,,"",,,,.F. )
         oBtn4      := TButton():New( 215/*Y*/,225/*X*/,"-",oDlg1,{|| dellin(oList1:nAt)},021,012,,,,.T.,,"",,,,.F. )
 
-        oBtn1:disable()
+        //oBtn1:disable()
 
         if !Empty(cXContrato) 
             xatuatv(3)
