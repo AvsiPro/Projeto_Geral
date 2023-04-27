@@ -224,20 +224,22 @@ Local aMeses    :=  {}
 Local nQtdM     :=  DateDiffMonth(aRet[3],aRet[4])
 Local dPrim     :=  aRet[3]
 Local nX 
+Local aClassf   :=  {{'1','Venda'},{'2','Garantia'},{'3','Mostruario'},{'4','Armarinho'},{'5','Bon.Cliente'},{'6','Bon.MKT'},{'7','Bon.Gerencia'},{'P','Garantia-Portal'}}
 
 For nX := 1 to nQtdM+1
     Aadd(aMeses,{month(dPrim),0})
     dPrim := MonthSum(dPrim,1)
 Next nX 
 
-cQuery := "SELECT D2_FILIAL,D2_COD,B1_DESC,MONTH(D2_EMISSAO) AS MESVND ,SUM(D2_QUANT) AS TOTAL"
+cQuery := "SELECT D2_FILIAL,D2_COD,B1_DESC,C5_XCLASPV,MONTH(D2_EMISSAO) AS MESVND ,SUM(D2_QUANT) AS TOTAL"
 cQuery += " FROM "+RetSQLName("SD2")+" D2"
 cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_FILIAL='01' AND B1_COD=D2_COD AND B1.D_E_L_E_T_=' '"
+cQuery += " INNER JOIN "+RetSQLName("SC5")+" C5 ON C5_FILIAL=D2_FILIAL AND C5_NUM=D2_PEDIDO AND C5.D_E_L_E_T_=' '"
 cQuery += " WHERE D2_FILIAL BETWEEN ' ' AND 'ZZZ'"
 cQuery += " AND D2_EMISSAO BETWEEN '"+DTOS(aRet[3])+"' AND '"+DTOS(aRet[4])+"'"
 cQuery += " AND D2.D_E_L_E_T_=' '"
-cQuery += " GROUP BY D2_FILIAL,D2_COD,B1_DESC,MONTH(D2_EMISSAO)"
-cQuery += " ORDER BY D2_COD"
+cQuery += " GROUP BY D2_FILIAL,D2_COD,B1_DESC,C5_XCLASPV,MONTH(D2_EMISSAO)"
+cQuery += " ORDER BY D2_FILIAL,C5_XCLASPV,D2_COD"
 
 If Select('TRB') > 0
 	dbSelectArea('TRB')
@@ -251,8 +253,9 @@ dbUseArea(.T.,"TOPCONN",TCGENQRY(,,cQuery),"TRB",.F.,.T.)
 dbSelectArea("TRB")
 
 While !EOF()
-    
-    nPos1 := Ascan(aAux1,{|x| x[1]+x[3] == TRB->D2_COD+TRB->D2_FILIAL})
+    nPosCf := Ascan(aClassf,{|x| x[1] == Alltrim(TRB->C5_XCLASPV)})
+
+    nPos1 := Ascan(aAux1,{|x| x[1]+x[3]+x[4] == TRB->D2_COD+TRB->D2_FILIAL+If(nPosCf>0,aClassf[nPosCf,02],"Sem_Classificacao")})
     nPos2 := Ascan(aMeses,{|x| x[1] == TRB->MESVND})
     
     aMeses[nPos2,02] := TRB->TOTAL
@@ -264,6 +267,7 @@ While !EOF()
         Aadd(aAux3,TRB->D2_COD)
         Aadd(aAux3,TRB->B1_DESC)
         Aadd(aAux3,TRB->D2_FILIAL)
+        Aadd(aAux3,If(nPosCf>0,aClassf[nPosCf,02],"Sem_Classificacao"))
         
         For nX := 1 to len(aMeses)
             Aadd(aAux3,{aMeses[nX,01],aMeses[nX,02]})
@@ -272,7 +276,7 @@ While !EOF()
         Aadd(aAux1,aAux3)
 
     Else 
-        aAux1[nPos1,nPos2+3,2] += TRB->TOTAL
+        aAux1[nPos1,nPos2+4,2] += TRB->TOTAL
     EndIf 
     
     aMeses[nPos2,02] := 0
@@ -310,6 +314,8 @@ oExcel:AddTable ("Produtos","Produtos")
 oExcel:AddColumn("Produtos","Produtos","Codigo",1,1)
 oExcel:AddColumn("Produtos","Produtos","Descricao",1,1)
 oExcel:AddColumn("Produtos","Produtos","Filial",1,1)
+oExcel:AddColumn("Produtos","Produtos","Tipo_Pedido",1,1)
+
 
 For nX := 1 to len(aMeses)
     oExcel:AddColumn("Produtos","Produtos",strzero(aMeses[nX,01],2)+"/"+cvaltochar(year(ddatabase)),1,1)
@@ -318,12 +324,13 @@ Next nX
 FOR nX := 1 TO len(aAux1)
     aAux := {}
 
-    Aadd(aAux,aAux1[nX,01])
-    Aadd(aAux,aAux1[nX,02])
-    Aadd(aAux,aAux1[nX,03])
+    Aadd(aAux,Alltrim(aAux1[nX,01]))
+    Aadd(aAux,Alltrim(aAux1[nX,02]))
+    Aadd(aAux,Alltrim(aAux1[nX,03]))
+    Aadd(aAux,Alltrim(aAux1[nX,04]))
 
     For nJ := 1 to len(aMeses)
-        Aadd(aAux,aAux1[nX,nJ+3,02])
+        Aadd(aAux,cvaltochar(aAux1[nX,nJ+4,02]))
     Next nJ
 
     oExcel:AddRow("Produtos","Produtos",aAux)

@@ -16,17 +16,18 @@ Local lRet      := .T.
 
 Default _PMantLiB := .F.
 
-If _nOPC == 3 .OR. _nOPC == 4 //3=Inclusão / 4=Alteração
+If _nOPC == 3 //.OR. _nOPC == 4 //3=Inclusão / 4=Alteração
     For _nX := 1 To LEN(aCols)
         _nTotQTD += aCols[_nX][nPosQTD]
         _nTotVAL += aCols[_nX][nPosTOT]
         _nTotDSC += aCols[_nX][nPosDSC]
     Next _nX
+
+	M->C5_XQUANT    := _nTotQTD
+	M->C5_XTOTAL    := _nTotVAL
+	M->C5_XTOTDES   := _nTotDSC
 EndIf
 
-M->C5_XQUANT    := _nTotQTD
-M->C5_XTOTAL    := _nTotVAL
-M->C5_XTOTDES   := _nTotDSC
 
 If _nOPC == 4 .And. _PMantLiB
     nPosItm := Ascan(aHeader,{|x| AllTrim(x[2]) == "C6_ITEM" })

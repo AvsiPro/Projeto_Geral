@@ -64,9 +64,20 @@ USER FUNCTION PE01NFESEFAZ()
         EndIF 
     EndIf 
 
+	DbSelectArea("SC6")
+	DbSetOrder(1)
+	If Dbseek(SD2->D2_FILIAL+SD2->D2_PEDIDO)
+		While !EOF() .And. SC6->C6_FILIAL == SD2->D2_FILIAL .And. SC6->C6_NUM == SD2->D2_PEDIDO 
+			If !EMPTY(SC6->C6_XKRDCLI)
+				cMensCli += "Codigo "+SC6->C6_PRODUTO+" Kardex - "+SC6->C6_XKRDCLI+" "
+			EndIf
+			Dbskip()
+		EndDo
+	EndIf
+
 	aadd(aRetorno,aProd)
-	aadd(aRetorno,cMensFis)
 	aadd(aRetorno,cMensCli)
+	aadd(aRetorno,cMensFis)
 	aadd(aRetorno,aDest)
 	aadd(aRetorno,aNota)
 	aadd(aRetorno,aInfoItem)

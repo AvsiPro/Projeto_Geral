@@ -325,7 +325,7 @@ cQuery += " BM_XMODELO,"
 cQuery += " Z03_DESGRI,Z03_CODGRI,"
 cQuery += " A31.A3_NOME AS VEND1N,A31.A3_GEREN AS GEREN1N,"
 cQuery += " A32.A3_NOME AS VEND2N,A32.A3_GEREN AS GEREN2N,"
-cQuery += " A1_XBANDEI,Z01_DESBAN,Z01_DSCESP, Z01_CODBAN,"
+cQuery += " A1_XBANDEI,A1_MUN,A1_EST,Z01_DESBAN,Z01_DSCESP, Z01_CODBAN,"
 cQuery += " (SELECT SUM(C6_VALOR) FROM "+RetSQLName("SC6")+" WHERE C6_FILIAL=D2_FILIAL AND C6_NUM=D2_PEDIDO  AND D_E_L_E_T_=' ') AS VALORPEDIDO"
 
 cQuery += " FROM "+RetSQLName("SD2")+" D2"
@@ -409,7 +409,9 @@ While !EOF()
                     TRB->DESCRIPAGTO,;                  //31                  
                     TRB->Z01_CODBAN,;                   //32                                    
                     TRB->C6_QTDVEN,;                    //33
-                    TRB->D2_FILIAL})                    //34
+                    TRB->D2_FILIAL,;                    //34
+                    TRB->A1_MUN,;                       //35
+                    TRB->A1_EST})                       //36
     Else 
         aRet[nPos,14] += TRB->D2_QUANT
         aRet[nPos,15] += TRB->D2_TOTAL        
@@ -475,7 +477,9 @@ While !EOF()
                         TRB->DESCRIPAGTO,;                  //31                  
                         TRB->Z01_CODBAN,;                   //32
                         TRB->C6_QTDVEN,;                    //33
-                        TRB->D2_FILIAL})                    //34
+                        TRB->D2_FILIAL,;                    //34
+                        TRB->A1_MUN,;                       //35
+                        TRB->A1_EST})                       //36
         Else 
             aRet[nPos,14] += TRB->D2_QUANT
             aRet[nPos,15] += TRB->D2_TOTAL        
@@ -499,7 +503,7 @@ ENDDO
 
 
 cQuery := "SELECT E1_PEDIDO,E1_PREFIXO,E1_VEND1,E1_NUM,E1_PARCELA,E1_CLIENTE,E1_LOJA,E1_FILORIG,"
-cQuery += " CONVERT(VARCHAR,MONTH(E1_EMISSAO)) AS MES,Z40_PRCCOM,Z40_VLRCOM,"
+cQuery += " CONVERT(VARCHAR,MONTH(E1_EMISSAO)) AS MES,Z40_PRCCOM,Z40_VLRCOM,A1_MUN,A1_EST,"
 cQuery += " Z40_MARCA,E1_EMISSAO,A3_NOME,Z01_DESBAN,Z01_CODBAN,A1_XBANDEI,SUM(E1_VALOR) AS VLRSE1"
 cQuery += " FROM "+RetSQLName("SE1")+" E1"
 cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL=E1_FILIAL AND A1_COD=E1_CLIENTE AND A1_LOJA=E1_LOJA AND A1.D_E_L_E_T_=' '"
@@ -518,7 +522,7 @@ cQuery += " AND E1_PEDIDO+E1_NUM+E1_PREFIXO+E1_CLIENTE+E1_LOJA NOT IN(SELECT Z40
 
 cQuery += " GROUP BY E1_PEDIDO,E1_PREFIXO,E1_VEND1,E1_NUM,E1_PARCELA,E1_CLIENTE,"
 cQuery += " E1_LOJA,CONVERT(VARCHAR,MONTH(E1_EMISSAO)),Z40_PRCCOM,"
-cQuery += " Z40_VLRCOM,Z40_MARCA,E1_EMISSAO,A3_NOME,Z01_DESBAN,Z01_CODBAN,A1_XBANDEI,E1_FILORIG"
+cQuery += " Z40_VLRCOM,A1_MUN,A1_EST,Z40_MARCA,E1_EMISSAO,A3_NOME,Z01_DESBAN,Z01_CODBAN,A1_XBANDEI,E1_FILORIG"
 
 If Select('TRB') > 0
     dbSelectArea('TRB')
@@ -566,14 +570,16 @@ While !EOF()
                 '',;                                //31 
                 TRB->Z01_CODBAN,;                   //32
                 0,;                                 //33
-                TRB->E1_FILORIG})                   //34
+                TRB->E1_FILORIG,;                    //34
+                TRB->A1_MUN,;                       //35
+                TRB->A1_EST})                       //36
     Dbskip()
 EndDo 
 
 cQuery := "SELECT D1_NFORI,D1_SERIORI,D1_ITEMORI,D1_DOC,D1_SERIE,D1_COD,B1_DESC,D1_EMISSAO,D1_FILIAL,"
 cQuery += " BM_XMODELO,Z03_CODGRI,C5_CONDPAG,C5_VEND1,C5_XCLASPV,Z01_CODBAN,Z01_DESBAN,C5_EMISSAO,D2_DESC,"
 cQuery += " Z01_DSCESP,A1_XBANDEI,D2_PEDIDO,D1_QUANT,D1_VUNIT,D1_TOTAL,C5_CLIENTE,C5_LOJACLI,"
-cQuery += " A31.A3_NOME AS VEND1N,A31.A3_GEREN AS GEREN1N"
+cQuery += " A31.A3_NOME AS VEND1N,A31.A3_GEREN AS GEREN1N,A1_MUN,A1_EST"
 cQuery += " FROM "+RetSQLName("SD1")+" D1"
 cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD=D1_COD AND B1.D_E_L_E_T_=' '"
 cQuery += " INNER JOIN "+RetSQLName("SD2")+" D2 ON D2_FILIAL=D1_FILIAL AND D2_DOC=D1_NFORI AND D2_SERIE=D1_SERIORI AND D2_COD=D1_COD AND D2_ITEM=D1_ITEMORI AND D2.D_E_L_E_T_=' '"
@@ -633,7 +639,9 @@ While !EOF()
                     'TRB->DESCRIPAGTO',;                //31                  
                     TRB->Z01_CODBAN,;                   //32
                     0,;                                 //33
-                    TRB->D1_FILIAL})                    //34
+                    TRB->D1_FILIAL,;                    //34
+                    TRB->A1_MUN,;                       //35
+                    TRB->A1_EST})                       //36
     Else 
         aRet[nPos,14] += TRB->D1_QUANT
         aRet[nPos,15] += TRB->D1_TOTAL  
@@ -1110,6 +1118,8 @@ oExcel:AddColumn("Conferencia","Representantes","Valor_Peças",1,1)     //17
 oExcel:AddColumn("Conferencia","Representantes","%_Comissao",1,1)      //20
 oExcel:AddColumn("Conferencia","Representantes","Valor_Comissao",1,1)  //21
 oExcel:AddColumn("Conferencia","Representantes","Evento",1,1)          //27
+oExcel:AddColumn("Conferencia","Representantes","Municipio",1,1)       //35
+oExcel:AddColumn("Conferencia","Representantes","Estado",1,1)          //36
 
 Asort(aList2B,,,{|x,y| x[1]+DTOS(X[10]) < y[1]+DTOS(Y[10])})
 cVendAux := aList2B[1,1]
@@ -1142,6 +1152,8 @@ For nX := 1 to len(aList2B)
                                                         "",;
                                                         "",;
                                                         "",;
+                                                        "",;
+                                                        "",;
                                                         ""})
 
         oExcel:AddRow("Conferencia","Representantes",{  "",;
@@ -1162,6 +1174,7 @@ For nX := 1 to len(aList2B)
                                                         "",;
                                                         "",;
                                                         "",; 
+                                                        "",;
                                                         "",;
                                                         "",;
                                                         ""})
@@ -1192,7 +1205,9 @@ For nX := 1 to len(aList2B)
                                                     aList2B[nX,15],;
                                                     aList2B[nX,19],;
                                                     aList2B[nX,20],;
-                                                    aList2B[nX,27]})
+                                                    aList2B[nX,27],;
+                                                    aList2B[nX,35],;
+                                                    aList2B[nX,36]})
 
 Next nX
 
@@ -1213,6 +1228,8 @@ oExcel:AddRow("Conferencia","Representantes",{  "",;
                                                 "",;
                                                 "",;
                                                 "",; 
+                                                "",;
+                                                "",;
                                                 "",;
                                                 "",;
                                                 "",;
