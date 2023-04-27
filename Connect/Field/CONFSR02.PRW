@@ -195,7 +195,19 @@ Static Function ExtLeitura()
 		For nX := 1 to len(aProd)
 			nPos := Ascan(aAux,{|x| Alltrim(x[2]) == Alltrim(aProd[nX,02])})
 			If nPos == 0
-				aAdd(aAux, aProd[nX])
+				aAdd(aAux, {aProd[nX,01],;
+							aProd[nX,02],;
+							aProd[nX,03],;
+							aProd[nX,04],;
+							aProd[nX,05],;
+							aProd[nX,06],;
+							aProd[nX,07],;
+							aProd[nX,08],;
+							aProd[nX,09],;
+							aProd[nX,10],;
+							aProd[nX,11],;
+							aProd[nX,12],;
+							aProd[nX,13]})
 			Else 
 				aAux[nPos,3] += aProd[nX,3]
 				aAux[nPos,4] += aProd[nX,4]
