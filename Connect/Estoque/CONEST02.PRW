@@ -695,10 +695,19 @@ For nCont := 1 to len(aList1)
             EndIf 
 
             If aList4B[nX,10] > 0
+                DbSelectArea("SB1")
+                DbSetOrder(1)
+                DbSeek(xFilial("SB1")+aList4B[nX,01])
+                cUn := SB1->B1_UM
+                cSe := SB1->B1_SEGUM
+                nCn := SB1->B1_CONV
+                //Convertendo quantidades para subir pacotes na devolucao
+                //aList4B[nX,10]
+                nVlrBxD1 := Round((aList4B[nX,10]*nCn)/nCn,0)
                 Aadd(aAux[len(aAux)],{  aList4B[nX,01],;
-                                        aList4B[nX,10],;
+                                        nVlrBxD1,;
                                         aList4B[nX,07],;
-                                        aList4B[nX,10]})
+                                        nVlrBxD1})
             EndIf 
 
         Next nX 
