@@ -1177,6 +1177,7 @@ For nX := 1 to len(aList2B)
                                                         "",;
                                                         "",;
                                                         "",;
+                                                        "",;
                                                         ""})
         
         cVendAux := aList2B[nX,01]
