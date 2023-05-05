@@ -78,7 +78,7 @@ aCliFor := U_WSKPF002(nTipo,cCliFor,cLoja,cNumChapa,cCodPA,cContato,cDepto,cTel,
 If aCliFor <> Nil .And. Len(aCliFor) > 0
 
     If nTpServ > 0 //== 25
-        cXMLOS := ChmTec01(nTpServ)
+        cXMLOS := ChmTec01(nTpServ,aDoc,cContato)
     EndIf 
 
     If !Empty(cXMLOS)
@@ -748,7 +748,7 @@ Return lRet
     (examples)
     @see (links_or_references)
 /*/
-Static Function ChmTec01(nTpServ)
+Static Function ChmTec01(nTpServ,aDoc,cContato)
 
 Local aArea     :=  GetArea()
 Local cRetXml   :=  ''
@@ -759,19 +759,19 @@ cRetXml += '<DynFormAnswer>'
 If nTpServ == 15
 	cRetXml += '<ItemAnswer>'
 	cRetXml += '<ItemCode>Patri_Maquina</ItemCode>'
-	cRetXml += '<TextAnswer>123</TextAnswer>' //@PATRIMONIO_MAQUINA
+	cRetXml += '<TextAnswer>'+Alltrim(aDoc[5])+'</TextAnswer>' //@PATRIMONIO_MAQUINA
 	cRetXml += '</ItemAnswer>'
 	cRetXml += '<ItemAnswer>'
 	cRetXml += '<ItemCode>Modelo_Maq</ItemCode>'
-	cRetXml += '<TextAnswer>modelo</TextAnswer>' //@MODELO_MAQUINA
+	cRetXml += '<TextAnswer>'+Alltrim(aDoc[6])+'</TextAnswer>' //@MODELO_MAQUINA
 	cRetXml += '</ItemAnswer>'
 	cRetXml += '<ItemAnswer>'
 	cRetXml += '<ItemCode>Loc_Inter_Maq</ItemCode>'
-	cRetXml += '<TextAnswer>local instalacao</TextAnswer>' //@LOCAL_INTER_DA_MAQUINA
+	cRetXml += '<TextAnswer>'+Alltrim(aDoc[12])+'</TextAnswer>' //@LOCAL_INTER_DA_MAQUINA
 	cRetXml += '</ItemAnswer>'
 	cRetXml += '<ItemAnswer>'
 	cRetXml += '<ItemCode>Contato_Reclamante</ItemCode>'
-	cRetXml += '<TextAnswer>reclamante</TextAnswer>' //@CONTATO/RECLAMANTE
+	cRetXml += '<TextAnswer>'+cContato+'</TextAnswer>' //@CONTATO/RECLAMANTE
 	cRetXml += '</ItemAnswer>'
 
 ElseIf nTpServ == 25

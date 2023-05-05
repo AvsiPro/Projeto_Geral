@@ -14,14 +14,10 @@ Local aDoc          :=  {}
 Local cLocal
 Local cNumOS
 Local nTpServ       :=  25
+Local cCbase		:=	""
 Local lChamados		:=	SUPERGETMV( "CN_CHGOON", .F., .F. )
-
-__cErroA := ''
-
-While ( !Empty(ProcName(ni)) )
-	__cErroA +=	Trim(ProcName(ni)) +"(" + Alltrim(Str(ProcLine(ni))) + ") " + CRLF
-	ni++
-End
+Local nAgente		:=	0
+Local cPntVnd		:=	''
 
 If lChamados
 	If (INCLUI .Or. ALTERA)
@@ -39,29 +35,49 @@ If lChamados
 			While AB2->AB2_FILIAL == AB1->AB1_FILIAL .And. AB2->AB2_NRCHAM == cChamado ;
 							.And. AB2->AB2_CODCLI == cCliente .And. AB2->AB2_LOJA == cLoja .And. AB2->( !EOF() )
 				
-				lAltTec := .F.		
+				If !Empty(AB2->AB2_XTEC)
+					lAltTec := .F.		
 
-				cDescri := Posicione("SN1",1,xFilial("SN1") +AvKey(AB2->AB2_NUMSER,"N1_CHAPA"),"N1_DESCRIC")                                     
-				dbSelectArea("AB2")
-					
-				AADD(aItens, { AllTrim(AB2->AB2_NUMSER),;						// [1] patrimonio
-								AllTrim(MSMM(AB2->AB2_MEMO)),;					// [2] defeito apresentado	-> RETIRAR DEPOIS A DESCRICAO DA MAQUINA
-								Recno(),; 										// [3] recno do registro do item do chamado - AB2
-								"",;                    						// [4] OS Mobile que sera gerada
-								cDescri,;										// [5] descricao patrimonio
-								AllTrim(AB2->AB2_NUMOS),;						// [6] numero OS Field
-								0,;												// [7] recno do registro do item da OS - AB7
-								lAltTec,;										// [8] transferencia de OS
-								AB2->AB2_XTEC,;									// [9] tecnico do item do chamado.
-								"",;                                            // [10] codigo da os a ser gerada
-								"",;                                            //[11] SLA
-								AB2->AB2_NRCHAM,;
-								AB2->AB2_ITEM,;
-								AB2->AB2_CODPRO,;
-								AB2->AB2_NUMSER,;
-								'',;
-								POSICIONE("AAG",1,XFILIAL("AAG")+AB2->AB2_CODPRB,"AAG_XFORGO")})
+					//cDescri := Posicione("SN1",1,xFilial("SN1") +AvKey(AB2->AB2_NUMSER,"N1_CHAPA"),"N1_DESCRIC")
+					cCbase := Posicione("AA3",6,xFilial("AA3")+AB2->AB2_NUMSER,"AA3_CBASE")
+					DbSelectArea("SN1")
+					DbSetOrder(1)
+					DbSeek(xFilial("SN1")+cCbase)
+					cDescri := SN1->N1_DESCRIC
+					cPntVnd := SN1->N1_XPTVEND
 
+					If !Empty(cPntVnd)
+						DBSelectArea("NNR")
+						DbSetOrder(1)
+						DbSeek(xFilial("NNR")+cPntVnd)
+
+						cPntVnd := Alltrim(cPntVnd)+" - "+Alltrim(NNR->NNR_DESCRI)
+						If !Empty(NNR->NNR_XEND)
+							cPntVnd += " / " + Alltrim(NNR->NNR_XEND) + " - " + Alltrim(NNR->NNR_XBAIRR)+" - "+Alltrim(NNR->NNR_XMUN)
+						EndIf
+					EndIf
+
+					dbSelectArea("AB2")
+						
+					AADD(aItens, { AllTrim(cCbase),;								// [1] patrimonio - AB2->AB2_NUMSER
+									AllTrim(MSMM(AB2->AB2_MEMO)),;					// [2] defeito apresentado	-> RETIRAR DEPOIS A DESCRICAO DA MAQUINA
+									Recno(),; 										// [3] recno do registro do item do chamado - AB2
+									"",;                    						// [4] OS Mobile que sera gerada
+									cDescri,;										// [5] descricao patrimonio
+									AllTrim(AB2->AB2_NUMOS),;						// [6] numero OS Field
+									0,;												// [7] recno do registro do item da OS - AB7
+									lAltTec,;										// [8] transferencia de OS
+									AB2->AB2_XTEC,;									// [9] tecnico do item do chamado.
+									"",;                                            // [10] codigo da os a ser gerada
+									"",;                                            //[11] SLA
+									AB2->AB2_NRCHAM,;								//[12]
+									AB2->AB2_ITEM,;									//[13]
+									AB2->AB2_CODPRO,;								//[14]
+									AB2->AB2_NUMSER,;								//[15]
+									'',;											//[16]
+									POSICIONE("AAG",1,XFILIAL("AAG")+AB2->AB2_CODPRB,"AAG_XFORGO"),;	//[17]
+									cPntVnd})										//[18]
+				EndIf
 				AB2->( dbSkip() ) 
 			End
 		EndIf
@@ -103,13 +119,13 @@ If lChamados
 				AADD(aDoc, cRota)			// rota 
 				
 				AADD(aDoc, cLocal)			// local pa
-				AADD(aDoc, cEndCli)		    // endereco pa
-				AADD(aDoc, aItens[nI][2])	// defeito apresentado
+				AADD(aDoc, aItens[nI][18])		    // endereco pa
+				AADD(aDoc, aItens[nI][02])	// defeito apresentado
 
 				cHoraAgen := cvaltochar(time())
 				cDtAgen   := ddatabase
 
-				Processa( { || aItens[nI,16] := EnviaOS(cNumOS,VAL(aItens[nI,17]),cCliente,cLoja,aDoc,nAgente,cHoraAgen,cDtAgen,AA1->AA1_CODTEC,cContato,aItens[nI,17])  },"Geração de ordem de serviço, aguarde..")
+				Processa( { || aItens[nI,16] := EnviaOS(cNumOS,VAL(aItens[nI,17]),cCliente,cLoja,aDoc,nAgente,cHoraAgen,cDtAgen,AA1->AA1_CODTEC,cContato,aItens[nI,17],aItens[nI,05])  },"Geração de ordem de serviço, aguarde..")
 				
 			endif
 		Next nI
@@ -132,7 +148,7 @@ RestArea(aArea)
 Return
 
 
-Static Function EnviaOS(cNumOs,nTpServ,cCliente,cLoja,aDoc,nAgente,cHoraAgen,cDtAten,cCodTec,cContato,cForm)
+Static Function EnviaOS(cNumOs,nTpServ,cCliente,cLoja,aDoc,nAgente,cHoraAgen,cDtAten,cCodTec,cContato,cForm,cDesAtv)
                    
 Local aArea     :=  Getarea()
 Local aDadosOS  := {}
@@ -147,7 +163,7 @@ aDadosOS := {   Alltrim(cForm),;
 				cCodTec,;
 				AllTrim(AA1->AA1_NOMTEC),;
 				AllTrim(aDoc[1]),;
-				Posicione("SN1",2,xFilial("SN1")+AvKey(aDoc[1],"N1_CHAPA"),"N1_DESCRIC" ) ,;
+				cDesAtv ,;
 				"",;
 				"",;
 				cDtAten,;
@@ -164,7 +180,8 @@ aDadosOS := {   Alltrim(cForm),;
 				cCliente,;
 				cLoja,;
 				{},;
-				"" }
+				"" ,;
+				aDoc[4]}
 
 cNumOs := U_CONWSC04(nTpServ,cCliente,cLoja,aDadosOS,nAgente,cHoraAgen,.F.,cDtAgen,'','','',cContato,'','','')
 

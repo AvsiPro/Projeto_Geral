@@ -97,9 +97,10 @@ Static Function ReportPrint(oReport)
     Local aAux      :=  {}
     Local nCont
 
-cQuery := "SELECT D2_FILIAL,D2_DOC,D2_ITEM,D2_COD,B1_DESC,D2_UM,D2_QUANT,D2_PRCVEN,D2_TOTAL,D2_EMISSAO,C5_XCODPA"
+cQuery := "SELECT D2_FILIAL,D2_DOC,D2_ITEM,D2_COD,B1_DESC,D2_UM,D2_QUANT,D2_PRCVEN,D2_TOTAL,D2_EMISSAO,C5_XCODPA,A1_COD,A1_NOME"
 cQuery += " FROM "+RetSQLName("SD2")+" D2"
-cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_FILIAL='01' AND B1_COD=D2_COD AND B1.D_E_L_E_T_=' '"
+cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD=D2_COD AND B1.D_E_L_E_T_=' '"
+cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_COD=D2_CLIENTE AND A1_LOJA=D2_LOJA AND A1.D_E_L_E_T_=' '"
 cQuery += " LEFT JOIN "+RetSQLName("SC5")+" C5 ON C5_FILIAL=D2_FILIAL AND C5_NUM=D2_PEDIDO AND C5.D_E_L_E_T_=' ' AND C5_XTPPED='A' "
 cQuery += " WHERE D2.D_E_L_E_T_=' '"
 cQuery += " AND D2_FILIAL = '"+ MV_PAR01  +"' AND D2_EMISSAO BETWEEN '"+DTOS(MV_PAR02)+"' AND '"+DTOS(MV_PAR03)+"'"
@@ -127,7 +128,9 @@ While !EOF()
                     TRB->D2_PRCVEN,;
                     TRB->D2_TOTAL,;
                     TRB->D2_EMISSAO,;
-                    TRB->C5_XCODPA})  
+                    TRB->C5_XCODPA,;
+                    TRB->A1_COD,;
+                    TRB->A1_NOME})  
     Dbskip()
 ENDDO
 
@@ -142,6 +145,14 @@ oSection1:Init()
 //While !oReport:Cancel() .And. !TRB->(Eof()) 
 For nCont := 1 to len(aAux) 
 
+    cDestino := ""
+
+    If !Empty(aAux[nCont,11])
+        cDestino := aAux[nCont,11]+"-"+Posicione("NNR",1,xFilial("NNR")+aAux[nCont,11],"NNR_DESCRI")
+    Else 
+        cDestino := aAux[nCont,12]+"-"+Alltrim(aAux[nCont,13])
+    EndIf 
+
     oSection1:Cell('Filial'):SetValue(aAux[nCont,01])
     oSection1:Cell('Documento'):SetValue(aAux[nCont,02])
     oSection1:Cell('Item'):SetValue(aAux[nCont,03])
@@ -152,7 +163,7 @@ For nCont := 1 to len(aAux)
     oSection1:Cell('Preco_Venda'):SetValue(aAux[nCont,08])
     oSection1:Cell('Valor_Total'):SetValue(aAux[nCont,09])
     oSection1:Cell('Emissao'):SetValue(stod(aAux[nCont,10]))
-    oSection1:Cell('PontoVenda'):SetValue(aAux[nCont,11]+"-"+Posicione("NNR",1,xFilial("NNR")+aAux[nCont,11],"NNR_DESCRI"))
+    oSection1:Cell('PontoVenda'):SetValue(cDestino)
 
 	oReport:IncMeter()
 
