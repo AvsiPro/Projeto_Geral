@@ -11,6 +11,8 @@ Local aSB2Sld       :=  {}
 Local nCont         :=  0
 Local _atuB7X       :=  {}
 Local nX    
+Local aAuxX3        :=  {}
+Local aAuxB1        :=  {}
 
 Private lMsHelpAuto := .t. // se .t. direciona as mensagens de help
 Private lMsErroAuto := .f. //necessario a criacao
@@ -40,9 +42,39 @@ While !EOF()
                     0,;
                     '',;
                     0,;
-                    TRB->B7CR})
+                    TRB->B7CR,;
+                    TRB->B7DESC,;
+                    TRB->B7MODELO})
     Dbskip()
 EndDo 
+
+DbSelectArea("SB1")
+DbSetOrder(1)
+
+aAuxX3 := FWSX3Util():GetAllFields( "SB1" , .F. )
+
+For nCont := 1 to len(aSB2Sld)
+    
+    If !DbSeek(xFilial("SB1") + aSB2Sld[nCont,02])
+        If DbSeek(xFilial("SB1")+aSB2Sld[nCont,13])
+            For nX := 1 to len(aAuxX3)
+                If !aAuxX3[nX] $ "B1_COD/B1_DESC"
+                    Aadd(aAuxB1,{aAuxX3[nX],&('SB1->'+aAuxX3[nX])})
+                EndIf
+            Next nX
+        EndIf 
+
+        Reclock("SB1",.T.)
+        SB1->B1_COD    := aSB2Sld[nCont,02]
+        SB1->B1_DESC   := aSB2Sld[nCont,12]
+        
+        For nX := 1 to len(aAuxB1)
+            &("SB1->"+aAuxB1[nX,01]) := aAuxB1[nX,02]
+        Next nX 
+        SB1->(MSUNLOCK())
+    EndIf
+
+Next nCont
 
 DbSelectArea("SB2")
 DbSetOrder(1)
