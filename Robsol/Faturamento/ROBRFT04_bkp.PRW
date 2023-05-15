@@ -30,7 +30,7 @@ EndIf
 Return
 
 
-Static Function ROBTFT04A()
+Static Function ROBTFT04()
 
 Local cStat   := ''
 Local cAux    := ''
@@ -110,7 +110,7 @@ While QRYAUX->(!EoF())
         cAux += " / Faturado"
     EndIf
 
-    aAdd(aAnaAux, {QRYAUX->C5_FILIAL, StrTokArr(cAux, "/")[1], /*StrTokArr(cAux, "/")[3],*/ aNomAux[nAux], StrTokArr(cAux, "/")[2], QRYAUX->C5_NUM, QRYAUX->C5_CLIENTE, QRYAUX->C5_LOJACLI, QRYAUX->C5_VEND1, QRYAUX->C5_EMISSAO, AllTrim(FwCutOff(QRYAUX->C5_X_OBS,.T.)), cAux2})
+    aAdd(aAnaAux, {QRYAUX->C5_FILIAL, StrTokArr(cAux, "/")[1], StrTokArr(cAux, "/")[3], aNomAux[nAux], StrTokArr(cAux, "/")[2], QRYAUX->C5_NUM, QRYAUX->C5_CLIENTE, QRYAUX->C5_LOJACLI, QRYAUX->C5_VEND1, QRYAUX->C5_EMISSAO, AllTrim(FwCutOff(QRYAUX->C5_X_OBS,.T.)), cAux2})
 
     QRYAUX->(DbSkip())
 EndDo
@@ -421,7 +421,7 @@ oExcel:AddworkSheet(cNome3)
 oExcel:AddTable(cNome3,cTabela)
 oExcel:AddColumn(cNome3,cTabela,"Filial",2,1)
 oExcel:AddColumn(cNome3,cTabela,"Status Protheus",2,1)
-//oExcel:AddColumn(cNome3,cTabela,"Status Robsol",2,1)
+oExcel:AddColumn(cNome3,cTabela,"Status Robsol",2,1)
 oExcel:AddColumn(cNome3,cTabela,"Status Controle",2,1)
 oExcel:AddColumn(cNome3,cTabela,"Detalhes Pendencias",2,1)
 oExcel:AddColumn(cNome3,cTabela,"Numero Pedido",2,1)
@@ -437,7 +437,7 @@ For nX := 1 To Len(aAnaAux)
 Next nX
 
 If Len(aAnaAux) == 0
-    oExcel:AddRow(cNome3, cTabela, {'','','','','','','','','','',''})
+    oExcel:AddRow(cNome3, cTabela, {'','','','','','','','','','','',''})
 EndIf
 
 cDirTmp := cGetFile( '*.csv|*.csv' , 'Selecionar um diretório para salvar', 1, 'C:\', .F., nOR( GETF_LOCALHARD, GETF_LOCALFLOPPY, GETF_RETDIRECTORY ),.T., .T. )
