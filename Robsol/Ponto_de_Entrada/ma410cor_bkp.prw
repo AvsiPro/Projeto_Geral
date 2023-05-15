@@ -35,8 +35,8 @@ aAdd( aCores, {"C5_MSBLQL == '2'.AND. Empty(C5_ZZSTATU)",                       
 aAdd( aCores, {"C5_BLQ == '2'.AND. Empty(C5_ZZSTATU)",                                                                    "BR_LARANJA", 'Pedido Aguardando Financeiro'} ) // Pedido Bloquedo por verba
 aAdd( aCores, {"C5_ZZSTATU == 'A'",                                                                                        "BR_MARROM",             'Pedido Conferido'} ) // Pedido "Em Separação"
 aAdd( aCores, {"C5_ZZSTATU == 'B'",                                                                                          "BR_PINK",       'Bloqueio Inadimplência'} ) // Pedido "Em Conferencia"
-aAdd( aCores, {"C5_ZZSTATU == 'C'",                                                                                  "BR_VERDE_ESCURO",  'Aguardando Resposta Cliente'} ) // Pedido "Em Conferencia"
-aAdd( aCores, {"C5_ZZSTATU == 'F'",                                                                                         "BR_CINZA",                     'Impresso'} ) // Pedido "Em Conferencia"
+aAdd( aCores, {"C5_ZZSTATU == 'C'",                                                                                       "BR_LARANJA",  'Aguardando Resposta Cliente'} ) // Pedido "Em Conferencia"
+aAdd( aCores, {"C5_ZZSTATU == 'F'",                                                                                         "BR_CINZA",                    'Impresso'} ) // Pedido "Em Conferencia"
 aAdd( aCores, {"C5_ZZSTATU == 'G'",                                                                                         "BR_PRETO",                    'Cancelado'} ) // Pedido "Em Conferencia"
 aAdd( aCores, {"C5_ZZSTATU == 'H'",                                                                                        "BR_BRANCO",        'Liberado Para Estoque'} ) // Pedido "Em Conferencia"
 aAdd( aCores, {"C5_ZZSTATU == 'X'",                                                                                       "BR_VIOLETA",       'Pedido Gerado Pelo APP'} ) // PRE NOTA FISCAL
@@ -49,13 +49,10 @@ User Function MA410LEG()
  
 Local aLegNew := PARAMIXB
 
-aLegNew[5][2] := "Pedido de venda em analise."
-
-AADD( aLegNew, {"BR_MARROM",                     "Pedido Conferido"} )
-AADD( aLegNew, {"BR_PINK",                 "Bloqueio Inadimplência"} )
-AADD( aLegNew, {"BR_VERDE_ESCURO",    "Aguardando Resposta Cliente"} )
-AADD( aLegNew, {"BR_VIOLETA",              "Pedido Gerado Pelo App"} )
-
+AADD( aLegNew, {"BR_MARROM",             "Pedido Conferido"} )
+AADD( aLegNew, {"BR_PINK",         "Bloqueio Inadimplência"} )
+AADD( aLegNew, {"BR_PINK",    "Aguardando Resposta Cliente"} )
+AADD( aLegNew, {"BR_VIOLETA",      "Pedido Gerado Pelo App"} )
 
 Return( aLegNew )
 
