@@ -161,7 +161,7 @@ oGrp2      := TGroup():New( 124,008,308,632,"Dados Pedido x Dados do Cliente",oD
                         aList2[oList2:nAt,09]}}
 
     oList3:= 	TCBrowse():New(004,004,600,143,, {'Pedido','Emissão','Nota','Vendedor','Material PVD'},;
-                                                {40,40,40,80,120},;
+                                                {40,40,40,100},;
                                         oFld1:aDialogs[4],,,,{|| /*Fhelp2(oList2:nAt)*/},{|| /*editcol(oList2:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
     
     oList3:SetArray(aList3)
@@ -184,8 +184,6 @@ oGrp2      := TGroup():New( 124,008,308,632,"Dados Pedido x Dados do Cliente",oD
                         Transform(aList4[oList4:nAt,05],"@E 999,999,999.99"),;
                         Transform(aList4[oList4:nAt,06],"@E 999,999,999.99"),;
                         aList4[oList4:nAt,07]}}
-
-
 
 oBtn1      := TButton():New( 312,212,"Salvar",oDlg1,{|| oDlg1:end(nOpc:=1)},037,012,,,,.T.,,"",,,,.F. )
 oBtn2      := TButton():New( 312,296,"Cancelar",oDlg1,{|| oDlg1:end(nOpc:=0)},037,012,,,,.T.,,"",,,,.F. )
@@ -301,7 +299,6 @@ cQuery += " INNER JOIN "+RetSQLName("SA3")+ " A3 ON A3_FILIAL='"+xFilial("SA3")+
 cQuery += " INNER JOIN "+RetSQLName("SB1")+ " B1 ON B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD=C6_PRODUTO AND B1.D_E_L_E_T_=' '"
 cQuery += " WHERE C5_CLIENTE='"+ccli+"' AND C5_LOJACLI='"+cloja+"' AND C5.D_E_L_E_T_=' '"
 cQuery += " AND C5_FILIAL BETWEEN ' ' AND 'ZZZ'"
-cQuery += " ORDER BY C5_EMISSAO "
 
 If Select('TRB') > 0
     dbSelectArea('TRB')
@@ -329,7 +326,7 @@ While !EOF()
         Aadd(aList3,{TRB->C5_NUM,;
                     STOD(TRB->C5_EMISSAO),;
                     TRB->C5_NOTA,;
-                    ALLTRIM(TRB->A3_NOME),;
+                    TRB->A3_NOME,;
                     cAuxGr})
     else
         aList3[nPos,05] := Alltrim(aList3[nPos,05]) + cAuxGr
