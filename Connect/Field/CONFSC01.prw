@@ -2188,7 +2188,7 @@ ELSE
 					SC5->C5_FILIAL})
 
 	For nCont := 1 to len(aList5B)
-		If aList5B[nCont,01] == aList[oList:nAt,01] .And. len(aList5b[nCont]) > 4
+		If aList5B[nCont,01] == aList[oList:nAt,01] .And. len(aList5b[nCont]) > 4 .AND. Alltrim(aList5B[nCont,02]) == Alltrim(cAtFat)
 			For nJ := 5 to len(aList5b[nCont])
 				aList5B[nCont,nJ,04] := aList5B[nCont,nJ,06]
 				aList5B[nCont,nJ,05] := aList5B[nCont,nJ,07]
