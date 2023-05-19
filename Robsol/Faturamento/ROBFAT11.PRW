@@ -104,7 +104,7 @@ Static Function Busca()
     cQuery += "        AND C6_FILIAL = B2_FILIAL   " 
     cQuery += "        AND SB2.D_E_L_E_T_ = ' '   " 
     cQuery += " WHERE  C6_NUM = '" + SC5->C5_NUM + "'   " 
-    cQuery += "        AND C6_FILIAL = '" + SC5->C5_FILIAL + "' " 
+    cQuery += "        AND C6_FILIAL = '" + SC5->C5_FILIAL + "' AND SC6.D_E_L_E_T_=' '" 
     cQuery += " ORDER BY  C6_ITEM   " 
 
     If Select("TRB") > 0
