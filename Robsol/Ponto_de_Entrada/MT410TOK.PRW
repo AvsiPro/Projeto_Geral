@@ -32,10 +32,21 @@ EndIf
 If _nOPC == 4 .And. _PMantLiB
     nPosItm := Ascan(aHeader,{|x| AllTrim(x[2]) == "C6_ITEM" })
     nPosLib := Ascan(aHeader,{|x| AllTrim(x[2]) == "C6_QTDLIB" })
+	nPosPrd := Ascan(aHeader,{|x| AllTrim(x[2]) == "C6_PRODUTO" })
+	
 
     SC9->(DbSetOrder(2))
+	SC6->(DbSetOrder(1))
 	For _nX := 1 To Len(aCols)
+		lTrcPrd := .F.
+		SC6->(DbSeek(xFilial("SC6")+M->C5_NUM+aCols[_nX,nPosItm]))
+		If SC6->C6_PRODUTO <> aCols[_nX,nPosPrd]
+			lTrcPrd := .T.
+		EndIf 
 		If SC9->(DbSeek(xFilial('SC9')+M->C5_CLIENTE+M->C5_LOJACLI+M->C5_NUM+aCols[_nX,nPosItm]))
+			IF lTrcPrd
+				A460Estorna(.T.)
+			EndIf 
 			aCols[_nX,nPosLib] := SC9->C9_QTDLIB
 		EndIf
 	Next _nX

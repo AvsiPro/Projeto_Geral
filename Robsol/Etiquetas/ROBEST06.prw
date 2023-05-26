@@ -353,7 +353,7 @@ Static Function ImpEtiq(aItens)
                 oPrinter:FwMSBAR("CODE128" , nLl1, nCl2 ,aItens[nZ,2,nR],oPrinter,.F. ,Nil ,Nil ,0.045,0.7 ,Nil ,Nil,"A" ,.F. )
             ENDIF
             
-            oPrinter:FwMSBAR("CODE128" , nLl2-5, nCl2+15-15 ,SA1->A1_CEP,oPrinter,.F. ,Nil ,Nil ,0.0164,0.7 ,Nil ,Nil,"A" ,.F. )
+            oPrinter:FwMSBAR("CODE128" , nLl2-5, nCl2+15-15 ,If(!Empty(SA1->A1_CEPE),SA1->A1_CEPE,SA1->A1_CEP),oPrinter,.F. ,Nil ,Nil ,0.0164,0.7 ,Nil ,Nil,"A" ,.F. )
 
 
             //****************  TEXTOS    ***********************//
@@ -424,7 +424,7 @@ Static Function ImpEtiq(aItens)
                 cEndE      := AllTrim(SA1->A1_ENDENT) + " " + AllTrim(SA1->A1_COMPENT)
                 cBairroE   := SA1->A1_BAIRROE
                 cCepE      := SA1->A1_CEPE
-                cMunE      := SA1->A1_CODMUNE
+                cMunE      := Alltrim(Posicione("CC2",1,xFilial("CC2")+SA1->A1_ESTE+SA1->A1_CODMUNE,"CC2_MUN"))
                 cEstE      := SA1->A1_ESTE
             ELSE
                 cEndE      := AllTrim(SA1->A1_END) + " " + AllTrim(SA1->A1_COMPLEM)

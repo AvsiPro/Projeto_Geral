@@ -1018,7 +1018,8 @@ For nCont := 1 to len(aCabec)
         If lMsErroAuto
             MOSTRAERRO()
         Else 
-            Gerapv(aItens,SF1->F1_DOC)	
+            //Gerapv(aItens,SF1->F1_DOC)	
+            //Nao vai gerar pedido mais, a saida sera via movimentação interna
         EndIf
     EndIf
 

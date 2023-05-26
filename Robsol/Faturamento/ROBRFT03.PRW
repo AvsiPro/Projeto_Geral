@@ -134,6 +134,17 @@ Local oSection1 := oReport:Section(1)
 Local cQuery 	:= ""
 Local aAux      :=  {}
 Local nCont
+Local aStatus   :=  {'Aberto','Atendido','Negado'}
+Local aOpcTrc   :=  {'Troca Tudo','Trocar Pecas'}
+Local aDefeit   :=  {'Frontal','Hastes','Charneiras','Lentes'}
+Local aTpDefe   :=  strtokarr(U_ROBFAT14(),";")
+
+For nCont := 1 to len(aTpDefe)
+    Aadd(aAux,strtokarr(aTpDefe[nCont],"="))
+Next nCont
+
+aTpDefe := aClone(aAux)
+aAux := {}
 
 cQuery := "SELECT ISNULL(CAST(CAST(Z50_OBSATD AS VARBINARY(8000)) AS VARCHAR(8000)),'') AS OBS_ATD,"
 cQuery += " A1_NOME AS RAZAO,E1_NUM,E1_VENCREA,E1_VALOR,Z50_PROCED,*"
@@ -205,11 +216,19 @@ For nCont := 1 to len(aAux)
     oSection1:Cell('Obs_Chamado'):SetValue(aAux[nCont,12])
     oSection1:Cell('Data_Criacao'):SetValue(stod(aAux[nCont,13]))
     oSection1:Cell('Hora_Criacao'):SetValue(aAux[nCont,14])
-    oSection1:Cell('Status'):SetValue(aAux[nCont,15])
-    oSection1:Cell('Opcao_Troca'):SetValue(aAux[nCont,16])
-    oSection1:Cell('Defeito'):SetValue(aAux[nCont,17])
-    oSection1:Cell('Tipo_Defeito'):SetValue(aAux[nCont,18])
-    oSection1:Cell('Procede'):SetValue(If(aAux[nCont,19]=="1","Sim","Nao"))
+
+    oSection1:Cell('Status'):SetValue(If(!Empty(aAux[nCont,15]) .AND. val(aAux[nCont,15]) <= len(aStatus),aStatus[val(aAux[nCont,15])],""))
+    oSection1:Cell('Opcao_Troca'):SetValue(If(!Empty(aAux[nCont,16]),aOpcTrc[val(aAux[nCont,16])],""))
+    oSection1:Cell('Defeito'):SetValue(If(!Empty(aAux[nCont,17]),aDefeit[val(aAux[nCont,17])],""))
+
+    nPos := Ascan(aTpDefe,{|x| x[1] == aAux[nCont,18]})
+    If nPos > 0
+        oSection1:Cell('Tipo_Defeito'):SetValue(aTpDefe[nPos,2])
+    Else
+        oSection1:Cell('Tipo_Defeito'):SetValue(aAux[nCont,18])
+    EndIf 
+    
+    oSection1:Cell('Procede'):SetValue(If(aAux[nCont,19]=="1","Sim",If(!Empty(aAux[nCont,19]),"Nao","")))
     oSection1:Cell('Obs_Atend'):SetValue(aAux[nCont,20])
     oSection1:Cell('Titulo_Cobrar'):SetValue(aAux[nCont,21])
     oSection1:Cell('Vencimento'):SetValue(cvaltochar(stod(aAux[nCont,22])))
