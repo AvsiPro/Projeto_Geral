@@ -704,6 +704,9 @@ For nCont := 1 to len(aList1)
                 //Convertendo quantidades para subir pacotes na devolucao
                 //aList4B[nX,10]
                 nVlrBxD1 := Round((aList4B[nX,10]*nCn)/nCn,0)
+                If nVlrBxD1 <= 0
+                    nVlrBxD1 := 1
+                EndIF 
                 Aadd(aAux[len(aAux)],{  aList4B[nX,01],;
                                         nVlrBxD1,;
                                         aList4B[nX,07],;
@@ -1015,7 +1018,7 @@ For nCont := 1 to len(aCabec)
         If lMsErroAuto
             MOSTRAERRO()
         Else 
-            Gerapv(aItens)	
+            Gerapv(aItens,SF1->F1_DOC)	
         EndIf
     EndIf
 
@@ -1037,7 +1040,7 @@ Return
     (examples)
     @see (links_or_references)
 /*/
-Static Function Gerapv(aItens)
+Static Function Gerapv(aItens,cDodEnt)
 
 Local aCabec    := {}
 Local aItC6     := {}
@@ -1052,7 +1055,7 @@ aAdd( aCabec , { "C5_FILIAL"    , cFilant 		        , Nil } )
 aAdd( aCabec , { "C5_TIPO"      , 'N'                   , Nil } )
 aAdd( aCabec , { "C5_CLIENTE"   , cCliente              , Nil } )
 aAdd( aCabec , { "C5_LOJACLI"   , cLoja                 , Nil } )
-aAdd( aCabec , { "C5_XTPPED"    , 'Z'                   , Nil } )
+aAdd( aCabec , { "C5_XTPPED"    , 'A'                   , Nil } )
 Aadd( aCabec , { "C5_MENNOTA"   , 'Faturamento estoque PV', Nil } )
 aAdd( aCabec , { "C5_CONDPAG"   , '001'                 , Nil } )    
 aAdd( aCabec , { "C5_NATUREZ"   , "31101001  "          , Nil } )    
@@ -1066,7 +1069,7 @@ For nCont := 1 to len(aItens)
     aAdd( aLinha , { "C6_QTDVEN"     , aItens[nCont,04]                       , Nil })
     aAdd( aLinha , { "C6_PRCVEN"     , aItens[nCont,05]                       , Nil })
     aAdd( aLinha , { "C6_QTDLIB"     , aItens[nCont,04]    	                  , Nil })
-	//aAdd( aLinha , { "C6_CONTRT" 	 , AAM->AAM_CONTRT						  , Nil })
+	aAdd( aLinha , { "C6_TES" 	     , '537'        						  , Nil })
 
     aAdd( aItC6 , aLinha )
 
@@ -1080,7 +1083,10 @@ MSExecAuto({|x,y,z| Mata410(x,y,z)},aCabec,aItC6,3)
 IF lMsErroAuto  
     MostraErro()
 ELSE
-    MsgAlert("Erro ao gerar o pedido de baixa do estoque.")
+    MsgAlert("Pedido "+SC5->C5_NUM+CRLF+"Nota "+cDodEnt)
+    Reclock("SC5",.F.)
+    SC5->C5_XTPPED := 'Z'
+    SC5->(Msunlock())
 Endif 
 
 Return
