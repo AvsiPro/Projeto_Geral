@@ -554,7 +554,7 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
 								AI3->(MsUnlock())
 							EndIf
 
-							aadd(aLinha,{"C6_TES"		, '626'			 				, Nil})
+							aadd(aLinha,{"C6_TES"		, '627'			 				, Nil})
 							aadd(aCabec, {"C5_MENNOTA"    , 'Produto '+Alltrim(aItensCad[nX]:PRODUTO)+' enviar como Brinde'		,Nil})
 						Else
 							aadd(aLinha,{"C6_TES"		, '502'			 				, Nil})

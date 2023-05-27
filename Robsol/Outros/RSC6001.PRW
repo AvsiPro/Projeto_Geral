@@ -83,34 +83,40 @@ Else
 	aAdd(aColPr,{ "Produto","Quantidade","","","" })
 
 	aCheck := {}
-	aAdd(aCheck,"liberado:")//01
-	aAdd(aCheck,"data:") //02
-	aAdd(aCheck,"hora:") //03
-	aAdd(aCheck,"tirado:") //04
-	aAdd(aCheck,"data:") //05
-	aAdd(aCheck,"hora:") //06
-	aAdd(aCheck,"confirmado:")//07
-	aAdd(aCheck,"data:")//08
-	aAdd(aCheck,"hora:")//09
-	aAdd(aCheck,"embalado:")//10
-	aAdd(aCheck,"data:")//11
-	aAdd(aCheck,"hora:")//12
-	aAdd(aCheck,"")//13
+	aAdd(aCheck,"liberado:")	//01
+	aAdd(aCheck,"data:")		//02
+	aAdd(aCheck,"hora:") 		//03
+	aAdd(aCheck,"tirado:") 		//04
+	aAdd(aCheck,"data:") 		//05
+	//aAdd(aCheck,"hora:") 		//06
+	aAdd(aCheck,"confirmado:")	//07
+	aAdd(aCheck,"data:")		//08
+	//aAdd(aCheck,"hora:")		//09
+	aAdd(aCheck,"embalado:")	//10
+	aAdd(aCheck,"data:")		//11
+	aAdd(aCheck,"hora:")		//12
+	aAdd(aCheck,"")				//13
 	aAdd(aCheck,"tirado da mesa:")//14
-	aAdd(aCheck,"data:")//15
-	aAdd(aCheck,"hora:")//16
+	aAdd(aCheck,"data:")		//15
+	aAdd(aCheck,"hora:")		//16
+	aAdd(aCheck,"")				//13
 	aAdd(aCheck,"fechado caixa:")//17
-	aAdd(aCheck,"data:")//18
-	aAdd(aCheck,"hora:")//19
-	aAdd(aCheck,"")//20
-	aAdd(aCheck,"Altura:")//21
-	aAdd(aCheck,"")//22
-	aAdd(aCheck,"Largura:")//23
-	aAdd(aCheck,"")//24
+	aAdd(aCheck,"data:")		//18
+	aAdd(aCheck,"hora:")		//19
+	//aAdd(aCheck,"")				//20
+	aAdd(aCheck,"Altura:")		//21
+	//aAdd(aCheck,"")//22
+	aAdd(aCheck,"Largura:")		//23
+	//aAdd(aCheck,"")//24
 	aAdd(aCheck,"Comprimento:")//25
-	aAdd(aCheck,"")//26
+	///aAdd(aCheck,"")//26
 	aAdd(aCheck,"Peso:")//27
-
+	aAdd(aCheck,"")//27
+	aAdd(aCheck,"Garantia:")//27
+	aAdd(aCheck,"Sacola:")//27
+	aAdd(aCheck,"Flanela:")//27
+	aAdd(aCheck,"Estojo:")//27
+	
 	nSel:=0
 	nTotalVendor :=0
 	DbSelectArea("XQRY")
@@ -234,7 +240,7 @@ Else
 											};
 											)
 
-				If nSel>0 .And. nSel<=27
+				If nSel>0 .And. nSel<=26
 					aDados[Len(aDados)][4] := aCheck[nSel]
 					If nSel==1
 						aDados[nSel][5] := cUserName
@@ -555,34 +561,35 @@ Static Function ImpCab(nPagina)
 	oPrn:Say(0940,1510,""          				 ,oFont14n)
 	oPrn:Say(0940,1960,""          				 ,oFont14n)
 	
-	oPrn:Say(0990,1510,"liberado: "+cUserName 				,oFont14n) 	//01
-	oPrn:Say(1040,1510,"data: "+DTOC(Date())					,oFont14n) 	//02
-	oPrn:Say(1090,1510,"hora: "+Time()								,oFont14n) 	//03
-	oPrn:Say(1140,1510,"tirado: "   									,oFont14n) 	//04
-	oPrn:Say(1190,1510,"data: "     									,oFont14n) 	//05
-	oPrn:Say(1240,1510,"hora: "     									,oFont14n) 	//06
-	oPrn:Say(1290,1510,"confirmado: "									,oFont14n) 	//07
-	oPrn:Say(1340,1510,"data: "												,oFont14n) 	//08
-	oPrn:Say(1390,1510,"hora: "												,oFont14n) 	//09
-	oPrn:Say(1440,1510,"embalado: "										,oFont14n) 	//10
-	oPrn:Say(1490,1510,"data: "												,oFont14n) 	//11
-	oPrn:Say(1540,1510,"hora: "												,oFont14n) 	//12
-	oPrn:Say(1590,1510,""															,oFont14n) 	//13
-	oPrn:Say(1640,1510,"tirado da mesa: "							,oFont14n) 	//14
-	oPrn:Say(1690,1510,"data: "												,oFont14n) 	//15
-	oPrn:Say(1740,1510,"hora: "												,oFont14n) 	//16
-	oPrn:Say(1790,1510,"fechado caixa: "							,oFont14n) 	//17
-	oPrn:Say(1840,1510,"data: "												,oFont14n) 	//18
-	oPrn:Say(1890,1510,"hora: "												,oFont14n) 	//19
-	oPrn:Say(1940,1510,""															,oFont14n) 	//20
-	oPrn:Say(1990,1510,"Altura: "											,oFont14n) 	//21
-	oPrn:Say(2040,1510,""															,oFont14n) 	//22
-	oPrn:Say(2090,1510,"Largura: "										,oFont14n) 	//23
-	oPrn:Say(2140,1510,""															,oFont14n) 	//24
-	oPrn:Say(2190,1510,"Comprimento: "								,oFont14n) 	//25
-	oPrn:Say(2240,1510,""															,oFont14n) 	//26
-	oPrn:Say(2290,1510,"Peso: "												,oFont14n) 	//27
+	oPrn:Say(0990,1510,"liberado: "+cUserName 			,oFont14n) 	//01
+	oPrn:Say(1040,1510,"data: "+DTOC(Date())			,oFont14n) 	//02
+	oPrn:Say(1090,1510,"hora: "+Time()					,oFont14n) 	//03
+	oPrn:Say(1140,1510,"tirado: "   					,oFont14n) 	//04
+	oPrn:Say(1190,1510,"data: "     					,oFont14n) 	//05
+	oPrn:Say(1290,1510,"confirmado: "					,oFont14n) 	//07
+	oPrn:Say(1340,1510,"data: "							,oFont14n) 	//08
+	oPrn:Say(1440,1510,"embalado: "						,oFont14n) 	//10
+	oPrn:Say(1490,1510,"data: "							,oFont14n) 	//11
+	oPrn:Say(1540,1510,"hora: "							,oFont14n) 	//12
+	oPrn:Say(1590,1510,""								,oFont14n) 	//13
+	oPrn:Say(1640,1510,"tirado da mesa: "				,oFont14n) 	//14
+	oPrn:Say(1690,1510,"data: "							,oFont14n) 	//15
+	oPrn:Say(1740,1510,"hora: "							,oFont14n) 	//16
+	oPrn:Say(1840,1510,"fechado caixa: "				,oFont14n) 	//17
+	oPrn:Say(1890,1510,"data: "							,oFont14n) 	//18
+	oPrn:Say(1940,1510,"hora: "							,oFont14n) 	//19
+	oPrn:Say(1990,1510,"Altura: "						,oFont14n) 	//21
+	oPrn:Say(2040,1510,"Largura: "						,oFont14n) 	//23
+	oPrn:Say(2090,1510,"Comprimento: "					,oFont14n) 	//25
+	oPrn:Say(2140,1510,"Peso: "							,oFont14n) 	//27
 
+	oPrn:Say(2190,1510,""								,oFont14n) 	//13
+	oPrn:Say(2240,1510,"Garantia"						,oFont14n) 	//13
+	oPrn:Say(2290,1510,"Sacola"							,oFont14n) 	//13
+	oPrn:Say(2340,1510,"Flanela"						,oFont14n) 	//13
+	oPrn:Say(2390,1510,"Estojo"							,oFont14n) 	//13
+	oPrn:Say(2440,1510,""								,oFont14n) 	//13
+	
 	nLinha  := 0990
 	While XQRY->(!Eof()) 
 
@@ -653,6 +660,14 @@ Static Function ImpCab(nPagina)
 	oPrn:Say(nLinha,060,"TOTAL ",oFont16n)
 	oPrn:Say(nLinha,960,Transform(nTotal,"@E 9,999,999.99"),oFont16n)
 	
+	If nLinha < 2700
+		While nLinha < 2900
+			oPrn:Line(nLinha+10,050,nLinha+10, 2350 , /*nColor*/ , "-4" )
+
+			nLinha += 50
+		ENDDO
+	EndIf 
+
 	oPrn:EndPage()
 
 	oPrn:SetViewPDF(.T.)
