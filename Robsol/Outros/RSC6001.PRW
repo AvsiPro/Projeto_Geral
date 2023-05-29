@@ -222,9 +222,8 @@ Else
 											};
 											)
 
-	//printTotLi( @oFWMsExcel,"Pedido de Venda","Pedido de Venda "+MV_PAR02, aEnd2[1] , {1,2,3,4,5} )
-	printInfo( @oFWMsExcel,"Pedido de Venda","Pedido de Venda "+MV_PAR02, aEnd2[1] , {1,2,3,4,5} )
-
+	printTotLi( @oFWMsExcel,"Pedido de Venda","Pedido de Venda "+MV_PAR02, aEnd2[1] , {1,2,3,4,5} )
+	
 	printInfo( @oFWMsExcel,"Pedido de Venda","Pedido de Venda "+MV_PAR02, aEmpty[1] , {1,2,3,4,5} )
 	printTotLi( @oFWMsExcel,"Pedido de Venda","Pedido de Venda "+MV_PAR02, aColPr[1] , {1,2,3,4,5} )
 	XQRY->(DbGoTop())
