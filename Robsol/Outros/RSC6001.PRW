@@ -102,7 +102,7 @@ Else
 	aAdd(aCheck,"")				//13
 	aAdd(aCheck,"fechado caixa:")//17
 	aAdd(aCheck,"data:")		//18
-	aAdd(aCheck,"hora:")		//19
+	//aAdd(aCheck,"hora:")		//19
 	//aAdd(aCheck,"")				//20
 	aAdd(aCheck,"Altura:")		//21
 	//aAdd(aCheck,"")//22
@@ -114,6 +114,7 @@ Else
 	aAdd(aCheck,"")//27
 	aAdd(aCheck,"Garantia:")//27
 	aAdd(aCheck,"Sacola:")//27
+	aAdd(aCheck,"")//27
 	aAdd(aCheck,"Flanela:")//27
 	aAdd(aCheck,"Estojo:")//27
 	
@@ -221,8 +222,8 @@ Else
 											};
 											)
 
-	printTotLi( @oFWMsExcel,"Pedido de Venda","Pedido de Venda "+MV_PAR02, aEnd2[1] , {1,2,3,4,5} )
-
+	//printTotLi( @oFWMsExcel,"Pedido de Venda","Pedido de Venda "+MV_PAR02, aEnd2[1] , {1,2,3,4,5} )
+	printInfo( @oFWMsExcel,"Pedido de Venda","Pedido de Venda "+MV_PAR02, aEnd2[1] , {1,2,3,4,5} )
 
 	printInfo( @oFWMsExcel,"Pedido de Venda","Pedido de Venda "+MV_PAR02, aEmpty[1] , {1,2,3,4,5} )
 	printTotLi( @oFWMsExcel,"Pedido de Venda","Pedido de Venda "+MV_PAR02, aColPr[1] , {1,2,3,4,5} )
@@ -240,7 +241,7 @@ Else
 											};
 											)
 
-				If nSel>0 .And. nSel<=26
+				If nSel>0 .And. nSel<=28
 					aDados[Len(aDados)][4] := aCheck[nSel]
 					If nSel==1
 						aDados[nSel][5] := cUserName
@@ -577,17 +578,17 @@ Static Function ImpCab(nPagina)
 	oPrn:Say(1740,1510,"hora: "							,oFont14n) 	//16
 	oPrn:Say(1840,1510,"fechado caixa: "				,oFont14n) 	//17
 	oPrn:Say(1890,1510,"data: "							,oFont14n) 	//18
-	oPrn:Say(1940,1510,"hora: "							,oFont14n) 	//19
-	oPrn:Say(1990,1510,"Altura: "						,oFont14n) 	//21
-	oPrn:Say(2040,1510,"Largura: "						,oFont14n) 	//23
-	oPrn:Say(2090,1510,"Comprimento: "					,oFont14n) 	//25
-	oPrn:Say(2140,1510,"Peso: "							,oFont14n) 	//27
+	//oPrn:Say(1940,1510,"hora: "							,oFont14n) 	//19 1940
+	oPrn:Say(1940,1510,"Altura: "						,oFont14n) 	//21 1990
+	oPrn:Say(1990,1510,"Largura: "						,oFont14n) 	//23 2040
+	oPrn:Say(2040,1510,"Comprimento: "					,oFont14n) 	//25 2090
+	oPrn:Say(2090,1510,"Peso: "							,oFont14n) 	//27 2140
 
-	oPrn:Say(2190,1510,""								,oFont14n) 	//13
-	oPrn:Say(2240,1510,"Garantia"						,oFont14n) 	//13
-	oPrn:Say(2290,1510,"Sacola"							,oFont14n) 	//13
-	oPrn:Say(2340,1510,"Flanela"						,oFont14n) 	//13
-	oPrn:Say(2390,1510,"Estojo"							,oFont14n) 	//13
+	//oPrn:Say(2190,1510,""								,oFont14n) 	//13 2190
+	oPrn:Say(2190,1510,"Garantia"						,oFont14n) 	//13 2240
+	oPrn:Say(2240,1510,"Sacola"							,oFont14n) 	//13 2290
+ 	oPrn:Say(2390,1510,"Flanela"						,oFont14n) 	//13 2340
+	oPrn:Say(2590,1510,"Estojo"							,oFont14n) 	//13 2390
 	oPrn:Say(2440,1510,""								,oFont14n) 	//13
 	
 	nLinha  := 0990

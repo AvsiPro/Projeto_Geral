@@ -959,12 +959,18 @@ Local aIteNF    :=  {}
 Local aLinha    :=  {}
 Local cFornec   :=  '24575331 '
 Local cLojFor   :=  '0001'
-
+Local _atotitem :=  {}
+Local _aitem    :=  {}
+Local cTM			:=	GetMv("MV_XTMSD3S",,"500")
+	
 Asort(aItemD1,,,{|x,y| x[10]+x[11] < y[10]+y[11]})
 Asort(aCabec,,,{|x,y| x[2]+x[3] < y[2]+y[3]})
 
 For nCont := 1 to len(aCabec)
     aCabD1 := {}
+    _atotitem :=  {}
+    _aitem    :=  {}
+
     //cDoc := GetSXenum("SF1","F1_DOC")
     DbSelectArea("SX5")
     SX5->(MsSeek(cFilant +'01' + "1     "))
@@ -1010,6 +1016,16 @@ For nCont := 1 to len(aCabec)
             //aadd(aLinha,{"D1_LOCAL"  	,aItens[nX,06]								,Nil})		
             //aadd(aLinha,{"D1_TES"	,"159"										,Nil})   
             aadd(aIteNF,aLinha)		
+
+            _aItem:={{"D3_COD"      ,aItens[nX,02]      ,NIL},;
+                    {"D3_UM"        ,Posicione("SB1",1,xFilial("SB1")+aItens[nX,02],"B1_UM")         ,NIL},;
+                    {"D3_QUANT"     ,aItens[nX,04]      ,NIL},;
+                    {"D3_LOCAL"     ,aItens[nX,06]      ,NIL},;
+                    {"D3_LOTECTL"   ,""                 ,NIL},;
+                    {"D3_LOCALIZ"   , ""                ,NIL}}
+
+			aadd(_atotitem,_aitem)
+    
         Next nX
 
         lMsErroAuto := .F.
@@ -1020,7 +1036,22 @@ For nCont := 1 to len(aCabec)
         Else 
             //Gerapv(aItens,SF1->F1_DOC)	
             //Nao vai gerar pedido mais, a saida sera via movimentação interna
-        EndIf
+            _aCab1 := {{"D3_DOC" ,SF1->F1_DOC, NIL},;
+                        {"D3_TM" ,cTM , NIL},;
+                        {"D3_CC" ,"        ", NIL},;
+                        {"D3_EMISSAO" ,ddatabase, NIL}}
+            
+            If len(_aCab1) > 0 .And. Len(_atotitem) > 0
+                MSExecAuto({|x,y,z| MATA241(x,y,z)},_aCab1,_atotitem,3)
+                
+                If lMsErroAuto
+                    Mostraerro()
+                    DisarmTransaction()
+                    break
+                EndIf
+            EndIf 
+
+	    EndIf
     EndIf
 
 Next nCont

@@ -53,7 +53,7 @@ User Function MSD2460()
 
 			aadd(_atotitem,_aitem)
 		
-	//Faturamento de doses movimenta a SD3 pelos itens da estrutura
+	//Faturamento de doses atualiza a tabela de leituras com o numero da nota gerada
 	ElseIf SC5->C5_XTPPED == "F"
 		If !Empty(SC5->C5_XCONTRT)
 			cUpd := "UPDATE Z08010 SET Z08_NOTA='"+SD2->D2_DOC+"',Z08_SERIE='"+SD2->D2_SERIE+"'"
@@ -61,7 +61,7 @@ User Function MSD2460()
 			cUpd += " AND Z08_PEDIDO='"+SC5->C5_NUM+"' AND D_E_L_E_T_=' '"
 			TcSqlExec(cUpd)
 		EndIF 
-	//Faturamento de pedidos de remessa de maquina
+	//Faturamento de pedidos de remessa de maquina atualiza o contrato
 	ElseIf SC5->C5_XTPPED == "I"
 		// cOS 	:= SC6->C6_NUMOS
 		// cCham 	:= Posicione("AB7",1,xFilial("AB7")+cOS,"AB7_NRCHAM")
