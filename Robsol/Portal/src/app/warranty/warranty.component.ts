@@ -74,7 +74,8 @@ export class WarrantyComponent implements OnInit {
     { property: 'preco', label: 'Valor', gridLgColumns: 4 },
     { property: 'defeito', label: 'Defeito', gridLgColumns: 4 },
     { property: 'tipodefeito', label: 'Tipo Defeito', gridLgColumns: 4 },
-    { property: 'rastreio', label: 'Num. Rastreamento', gridLgColumns: 4 }
+    { property: 'rastreio', label: 'Num. Rastreamento', gridLgColumns: 4 },
+    { property: 'pedido', label: 'Num. Pedido', gridLgColumns: 4 }
   ];
 
 
@@ -107,6 +108,8 @@ export class WarrantyComponent implements OnInit {
 
 
   onClickUserDetail(event: any) {
+
+    console.log(event)
     
     this.numChamado = event.chamado
     this.loadNotify(event.chamado)
@@ -121,7 +124,9 @@ export class WarrantyComponent implements OnInit {
       quantidade:event.quantidade,
       defeito:event.defeito,
       tipodefeito:event.tipodefeito,
-      preco:event.preco      
+      preco:event.preco,
+      rastreio:event.rastreio,
+      pedido:event.pedido
     }
     this.obsatendente = event.obsatend.trim()
     this.poModal.open();
@@ -143,7 +148,9 @@ export class WarrantyComponent implements OnInit {
       quantidade:row.quantidade,
       defeito:row.defeito,
       tipodefeito:row.tipodefeito,
-      preco:row.preco      
+      preco:row.preco,
+      rastreio: row.rastreio,
+      pedido:row.pedido
     }
     this.obsatendente = row.obsatend.trim()
     this.poModal.open();
@@ -356,7 +363,9 @@ export class WarrantyComponent implements OnInit {
           preco:element.preco,
           obsatend:element.obsatend,
           status:element.status,
-          notification: element.notification
+          notification: element.notification,
+          rastreio: element.rastreio,
+          pedido:element.pedido
         })
       })
 

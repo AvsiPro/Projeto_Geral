@@ -91,6 +91,7 @@ WsMethod GET WsReceive COD_CLIENTE,LOJA_CLIENTE WsService EnvChamdo
 		::SetResponse('"defeito":"'+fComboDefeito(1,TRB->Z50_DEFEIT)+'",')
 		::SetResponse('"tipodefeito":"'+fComboDefeito(2,TRB->Z50_TPDEFE)+'",')
 		::SetResponse('"preco":"'+Alltrim(transform(TRB->Z50_PRECO,"@E 999,999,999.99"))+'",')
+		::SetResponse('"pedido":"'+AllTrim(TRB->Z50_PEDVEN)+'",')
 
 		Z50->(DbSetOrder(1))
 		If Z50->(DbSeek(xFilial('Z50')+TRB->Z50_NOTA+TRB->Z50_CODCLI+TRB->Z50_LOJCLI+TRB->Z50_EMISSA+TRB->Z50_PROD))
