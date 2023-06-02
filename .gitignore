@@ -39,3 +39,4 @@
 *.pack
 *.old
 *.launch.json
+.vscode/launch.json
