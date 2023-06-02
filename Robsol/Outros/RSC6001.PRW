@@ -16,6 +16,11 @@ Funcao para adicionar linha vazia
 
 User Function RSC6001()
 
+If Empty(FunName())
+	RpcSetType(3)
+    RPCSetEnv("01","0103")
+EndIf	
+
 Private nTaxa     := 0
 Private cDtTime 	:= DTOS(dDatabase)+StrTran(Time(),":")
 Private npZebrado	:= 0
@@ -115,8 +120,17 @@ Else
 	aAdd(aCheck,"Garantia:")//27
 	aAdd(aCheck,"Sacola:")//27
 	aAdd(aCheck,"")//27
+	aAdd(aCheck,"")//27
+	aAdd(aCheck,"")//27
 	aAdd(aCheck,"Flanela:")//27
+	aAdd(aCheck,"")//27
+	aAdd(aCheck,"")//27
+	aAdd(aCheck,"")//27
+	aAdd(aCheck,"")//27
 	aAdd(aCheck,"Estojo:")//27
+	aAdd(aCheck,"")//27
+	aAdd(aCheck,"")//27
+	aAdd(aCheck,"")//27
 	
 	nSel:=0
 	nTotalVendor :=0
@@ -240,7 +254,7 @@ Else
 											};
 											)
 
-				If nSel>0 .And. nSel<=28
+				If nSel>0 .And. nSel<=36
 					aDados[Len(aDados)][4] := aCheck[nSel]
 					If nSel==1
 						aDados[nSel][5] := cUserName
@@ -261,9 +275,9 @@ Else
 		XQRY->(DbSkip()) 													
 	End	
 
-	If nSel<27
+	If nSel<35
 		nUlt := Len(aDados) + 1
-		For nP := nUlt  To 27
+		For nP := nUlt  To 35
 			aAdd(aDados,{;
 											"",;
 											"",;
