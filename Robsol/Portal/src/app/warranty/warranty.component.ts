@@ -320,6 +320,8 @@ export class WarrantyComponent implements OnInit {
           { value: '1', color: 'color-08', label: 'Em Aberto' },
           { value: '3', color: 'color-07', label: 'Negado' },
           { value: '4', color: 'color-11', label: 'Finalizado' },
+          { value: '5', color: 'color-12', label: 'Envio pendente de documentos' },
+          { value: '6', color: 'color-07', label: 'Cancelado pelo atendente' },
         ] 
       },
       {

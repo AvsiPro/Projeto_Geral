@@ -332,7 +332,7 @@ export class FormularioComponent implements OnInit {
             lOk = true
 
             itmChamado.filter((event: any)=>{
-              if(event.produto.trim()+event.nota.trim() === element.cod_produto.trim()+element.nota.trim() && lOk){
+              if(event.produto.trim()+event.nota.trim() === element.cod_produto.trim()+element.nota.trim() && event.status !== '6' && lOk){
                 lOk = false
               }
             })
