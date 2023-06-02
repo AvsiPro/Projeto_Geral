@@ -36,7 +36,7 @@ User Function ROBEST06(lDnfB)
 
     IF Select("SM0") == 0
         RpcSetType(3)
-        RPCSetEnv("01","0101")
+        RPCSetEnv("01","0103")
     ENDIF
 
     IF !lDnfB
@@ -262,12 +262,19 @@ Static Function ImpEtiq(aItens)
             
             SA1->(DbSeek(xFilial('SA1')+SF2->(F2_CLIENTE+F2_LOJA)))
 
+            /*
             IF nEtiq > 4 
                 //oPrinter:EndPage()
                 //oPrinter:Print()
                 oPrinter:StartPage()
                 nEtiq := 1
             ENDIF
+            */
+
+            If (MV_PAR04 == 1 .And. nZ > 1) .Or. nEtiq > 4
+                nEtiq := 1
+                oPrinter:StartPage()
+            EndIf
             
             // ************  SUPERIOR  ***********************//
             oBrush1 := TBrush():New( , CLR_HRED)
@@ -306,15 +313,15 @@ Static Function ImpEtiq(aItens)
                 ''                          //reserva para cliente
             ENDIF 
 
-            nLin := IF(nEtiq == 1 .or. nEtiq == 2,10,410)
+            nLin := IF(nEtiq == 1 .or. nEtiq == 2,10,440)
             nCol := 23
 
             nCl1 := IF(nEtiq == 1 .or. nEtiq == 3,10,310)
             nCl2 := IF(nEtiq == 1 .or. nEtiq == 3,290,590)
             
             
-            nLl1 := IF(nEtiq == 1 .or. nEtiq == 2,140,550)//165,565
-            nLl2 := IF(nEtiq == 1 .or. nEtiq == 2,155,565)//180,580
+            nLl1 := IF(nEtiq == 1 .or. nEtiq == 2,140,580)//165,565
+            nLl2 := IF(nEtiq == 1 .or. nEtiq == 2,155,595)//180,580
 
             // oPrinter:Fillrect( {nLl1, nCl1, nLl2, nCl2 }, oBrush1, "-2")  
             if lTransp
@@ -326,18 +333,18 @@ Static Function ImpEtiq(aItens)
             endif
             // oPrinter:SayBitmap(nLin ,IF(nEtiq == 1 .or. nEtiq == 3,nCol+215,nCol+515) ,cSedex,50,45) 
             
-            nLl1 := IF(nEtiq == 1 .or. nEtiq == 2,175,586)//200,600
-            nLl2 := IF(nEtiq == 1 .or. nEtiq == 2,230,641)//275,619//300,700
+            nLl1 := IF(nEtiq == 1 .or. nEtiq == 2,175,606)//200,600
+            nLl2 := IF(nEtiq == 1 .or. nEtiq == 2,230,671)//275,619//300,700
 
             // oPrinter:Box( nLl1 - 30, nCl1, nLl2 - 30, nCl2, "-4")
             
-            nLl1 := IF(nEtiq == 1 .or. nEtiq == 2,175,586)//200,600
-            nLl2 := IF(nEtiq == 1 .or. nEtiq == 2,230,590)//275,619//300,700
+            nLl1 := IF(nEtiq == 1 .or. nEtiq == 2,175,606)//200,600
+            nLl2 := IF(nEtiq == 1 .or. nEtiq == 2,230,620)//275,619//300,700
 
             // oPrinter:Fillrect( {nLl1, nCl1, nLl1+10, nCl2 }, oBrush1, "-2")
             
             nCl1 := IF(nEtiq == 1 .or. nEtiq == 3,20,320)
-            nLl1 := IF(nEtiq == 1 .or. nEtiq == 2,75,485)
+            nLl1 := IF(nEtiq == 1 .or. nEtiq == 2,75,515)
             if !lTransp
                 oPrinter:QRCode(nLl1,nCl1,cCodigo, 75) //60
             endif
@@ -346,8 +353,8 @@ Static Function ImpEtiq(aItens)
             nCl2 := IF(nEtiq == 1 .or. nEtiq == 3,1.4,27.4)
             //nLl1 := IF(nEtiq == 1 .or. nEtiq == 2,8,42.8)
 
-            nLl1 := IF(nEtiq == 1 .or. nEtiq == 2, 6.8, (6.8*6)+0.8)
-            nLl2 := IF(nEtiq == 1 .or. nEtiq == 2, 22, 56)
+            nLl1 := IF(nEtiq == 1 .or. nEtiq == 2, 6.8, (6.8*6)+3.2)
+            nLl2 := IF(nEtiq == 1 .or. nEtiq == 2, 22, 59.3)
 
             IF AllTrim(aItens[nZ,2,nR]) != "" .and. !lTransp
                 oPrinter:FwMSBAR("CODE128" , nLl1, nCl2 ,aItens[nZ,2,nR],oPrinter,.F. ,Nil ,Nil ,0.045,0.7 ,Nil ,Nil,"A" ,.F. )
@@ -369,7 +376,7 @@ Static Function ImpEtiq(aItens)
             nLin+= 10
             oPrinter:Say(nLin ,IF(nEtiq == 1 .or. nEtiq == 3,nCol+155,nCol+455),"Peso (g): "+cvaltochar(aItens[nZ,6]*1000),oFont8)
             
-            nLin := IF(nEtiq == 1 .or. nEtiq == 2, 35, 435)
+            nLin := IF(nEtiq == 1 .or. nEtiq == 2, 35, 465)
             if !lTransp
                 oPrinter:Say(nLin ,IF(nEtiq == 1 .or. nEtiq == 3,nCol+75,nCol+375),"Contrato: "+cCorrCont,oFont8)
             endif
@@ -454,7 +461,7 @@ Static Function ImpEtiq(aItens)
               
             
             // *****   LINHAS DIVISORIAS  ******  //
-            nLin := 400
+            nLin := 430
             FOR nX := 1 TO 600 step 8
                 oPrinter:Say(nLin,nX+4,'_',oFont8)
             NEXT nX
@@ -492,13 +499,16 @@ Static Function ValidPerg()
     Local cNotaDe      := space(TamSX3("F2_DOC")[1])
     Local cNotaAt      := space(TamSX3("F2_DOC")[1])
     Local cSerie       := space(TamSX3("F2_SERIE")[1])
+    Local nTipo        := 1
         
     aAdd(aParamBox,{01,"Nota de"             ,cNotaDe    ,""           ,"","SF2"    ,"", 60,.F.})    // MV_PAR01
     aAdd(aParamBox,{01,"Nota Ate"            ,cNotaAt    ,""           ,"","SF2"    ,"", 60,.F.})    // MV_PAR02
     aAdd(aParamBox,{01,"Serie"               ,cSerie    ,""            ,"",""       ,"", 60,.F.})    // MV_PAR03
+    aAdd(aParamBox,{2, "Tipo impressão"      ,nTipo, {"1 por pagina","4 por pagina"}   , 60, ".T.", .F.}) // MV_PAR04
     //aAdd(aParamBox,{01,"Quantidade Etiqueta" ,1          ,"@E 9999"     ,"",""       ,"", 60,.F.})    // MV_PAR04
     
     IF ParamBox(aParamBox,"Etiqueta de Produtos X NF",/*aRet*/,/*bOk*/,/*aButtons*/,.T.,,,,FUNNAME(),.T.,.T.)
+        MV_PAR04 := Iif(ValType(MV_PAR04) == 'N', MV_PAR04, Val(MV_PAR04))
         lRet := .T.
     ENDIF
     
