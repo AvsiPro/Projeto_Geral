@@ -26,7 +26,12 @@ SetPrvt("oDlg1","oGrp1","oGrp2","oFld1","oBtn1","oBtn2","oList0","oList1","oComb
 SetPrvt("oSay1","oSay2","oSay3","oSay4","oSay5","oSay6","oSay7","oSay8","oSay9","oSay10","oSay11","oSay12","oSay13","oSay14","oSay16","oSay17")
 
     If Z50->Z50_STATUS == '4'
-        MsgAlert('Não é possível atender um pedido finalizado.')
+        MsgAlert('Não é possível atender um chamado finalizado.')
+        Return
+    EndIf
+
+    If Z50->Z50_STATUS == '6'
+        MsgAlert('Não é possível atender um chamado cancelado.')
         Return
     EndIf
 
@@ -281,7 +286,7 @@ Local aParam := {{ 2, "Status Chamado",nStatus,aStatus,60,, .T. },;
                 
                 If lAtStat
                     RecLock('Z50', .F.)
-                        Z50->Z50_STATUS := If(cPar1 == 4,'1',cValToChar(cPar1))
+                        Z50->Z50_STATUS := If(cPar1 == 4,'5',cValToChar(cPar1))
                         Z50->Z50_OBSATD := cObsOld + CRLF + Alltrim(cMsgGrv)
                         Z50->Z50_ATENDE := cUserName
                         //Z50->Z50_FILPED := aRetPed[3]

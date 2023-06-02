@@ -27,8 +27,10 @@ User Function ROBZ50()
     oBrowseZ50:AddLegend( "Z50->Z50_STATUS == '2'", "BLUE",   "Chamado Atendido",'1')
     oBrowseZ50:AddLegend( "Z50->Z50_STATUS == '3'", "RED",    "Chamado Negado",'1')
     oBrowseZ50:AddLegend( "Z50->Z50_STATUS == '4'", "GREEN",  "Chamado Finalizado",'1')
+    oBrowseZ50:AddLegend( "Z50->Z50_STATUS == '5'", "ORANGE", "Aguardando Docs",'1')
+    oBrowseZ50:AddLegend( "Z50->Z50_STATUS == '6'", "BLACK", "Cancelado",'1')
 
-    oBrowseZ50:AddLegend( "u_ROBNOTF()", "EDITABLE",  "Chamado Finalizado",'2')
+    oBrowseZ50:AddLegend( "u_ROBNOTF()", "EDITABLE",  "notification",'2')
 
     //Tratativa para ignorar warnings de ViewDef e ModelDef nunca chamados
     If nIgnore == 0
@@ -49,6 +51,7 @@ Local aRot := {}
     ADD OPTION aRot TITLE 'Atender Chamado'   ACTION 'u_ROBFAT06'      OPERATION 3                     ACCESS 0
     ADD OPTION aRot TITLE 'Finalizar Chamado' ACTION 'u_ENCERCHM'      OPERATION 6                     ACCESS 0
     ADD OPTION aRot TITLE 'Espelho Nota'      ACTION 'U__XESPELHO(Z50->Z50_NOTA,Z50->Z50_FILPED)'      OPERATION 6                     ACCESS 0
+    ADD OPTION aRot TITLE 'Cancelar Chamado'  ACTION 'U_CANCCHM'       OPERATION 6                     ACCESS 0
     ADD OPTION aRot TITLE 'Legenda'           ACTION 'u_ROBTLEG'       OPERATION 7                     ACCESS 0
 
 Return aRot
@@ -97,6 +100,8 @@ Local aLegenda := {}
     AADD(aLegenda,{"BR_AMARELO",     "Chamado Aberto"     })
     AADD(aLegenda,{"BR_VERMELHO",    "Chamado Negado"     })
     AADD(aLegenda,{"BR_VERDE",       "Chamado Finalizado" })
+    AADD(aLegenda,{"BR_LARANJA",     "Aguardando Docs"    })
+    AADD(aLegenda,{"BR_PRETO",       "Cancelado"          })
      
     BrwLegenda(cTitulo, "Status", aLegenda)
 Return
@@ -117,3 +122,15 @@ If (oFile:Open())
 EndIf
 
 Return cNotif == 'visualizou'
+
+
+User Function CANCCHM()
+
+    If MsgYesNo('Deseja realmente cancelar o chamado?'+CRLF+'Se cancelar o chamado, não poderá atende-lo futuramente.')
+        RecLock('Z50', .F.)
+            Z50->Z50_STATUS := '6'
+            Z50->Z50_OBSATD := Alltrim(Z50->Z50_OBSATD)+CRLF+'-------------' + CRLF + 'Chamado Cancelado pelo usuário '+cUserName
+        Z50->(MsUnlock())
+    EndIf
+
+Return
