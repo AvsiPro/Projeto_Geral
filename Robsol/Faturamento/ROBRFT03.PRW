@@ -57,6 +57,7 @@ Local cTitle := "Relatório de Chamados"
 //³ Variaveis utilizadas para parametros                         ³
 //³ mv_par01    Data De                                          ³
 //³ mv_par02    Data Ate                                         ³
+//³ mv_par03    Finalizado                                       ³
 //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
 
 Pergunte("ROBRFT03",.F.)
@@ -143,8 +144,9 @@ For nCont := 1 to len(aTpDefe)
     Aadd(aAux,strtokarr(aTpDefe[nCont],"="))
 Next nCont
 
-aTpDefe := aClone(aAux)
-aAux := {}
+aTpDefe  := aClone(aAux)
+aAux     := {}
+MV_PAR03 := Iif(ValType(MV_PAR03) == 'N', MV_PAR03, Val(MV_PAR03))
 
 cQuery := "SELECT ISNULL(CAST(CAST(Z50_OBSATD AS VARBINARY(8000)) AS VARCHAR(8000)),'') AS OBS_ATD,"
 cQuery += " A1_NOME AS RAZAO,E1_NUM,E1_VENCREA,E1_VALOR,Z50_PROCED,*"
@@ -153,6 +155,7 @@ cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"
 cQuery += " LEFT JOIN "+RetSQLName("SE1")+" E1 ON E1_FILIAL='"+xFilial("SE1")+"' AND E1_NUM=Z50_NOTA AND E1_FILORIG=Z50_FILPED AND E1_PREFIXO='GAR' AND E1.D_E_L_E_T_=' '"
 cQuery += " WHERE Z50.D_E_L_E_T_=' '
 cQuery += " AND Z50_DTCRIA BETWEEN '"+DTOS(MV_PAR01)+"' AND '"+DTOS(MV_PAR02)+"'"
+cQuery += " AND Z50_STATUS "+Iif(MV_PAR03 == 1, "", "NOT")+" IN ('3','4')"
 
 If Select('TRB') > 0
 	dbSelectArea('TRB')
