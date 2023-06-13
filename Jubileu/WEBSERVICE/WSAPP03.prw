@@ -66,7 +66,7 @@ Default oself:byId		:=.F.
 		EndIf
 	EndIf
 
-	cQuery := " SELECT B1_COD, B1_DESC, B1_TIPO, B1_GRUPO, B1_CODBAR, B1_POSIPI "
+	cQuery := " SELECT B1_COD, B1_DESC, B1_TIPO, B1_GRUPO, B1_CODBAR, B1_POSIPI, B1_FABRIC, B1_PRV1 "
 	cQuery += " FROM "+RetSqlName('SB1')+" SB1 "
 	cQuery += " WHERE SB1.D_E_L_E_T_ = ' ' ""
 	cQuery += " AND SB1.B1_MSBLQL <> '1' "+cWhere
@@ -94,11 +94,11 @@ Default oself:byId		:=.F.
 		aListAux[nAux]['group']       		:= Alltrim(EncodeUTF8(Posicione("SBM",1,FwxFilial("SBM")+(cAliasTMP)->B1_GRUPO,"BM_DESC")))
 		aListAux[nAux]['ncm']       		:= Alltrim(EncodeUTF8((cAliasTMP)->B1_POSIPI))
 		aListAux[nAux]['ean']       		:= Alltrim(EncodeUTF8((cAliasTMP)->B1_CODBAR))
-		aListAux[nAux]['brand']       		:= "Fox"
+		aListAux[nAux]['brand']       		:= Alltrim(EncodeUTF8((cAliasTMP)->B1_FABRIC))
 		aListAux[nAux]['gender']       		:= "F"
 		aListAux[nAux]['line']       		:= "Oculos Receituario"
 		aListAux[nAux]['material']       	:= "Acetato"
-		aListAux[nAux]['price']       		:= 120.7
+		aListAux[nAux]['price']       		:= (cAliasTMP)->B1_PRV1
 		aListAux[nAux]['balance']       	:= 200
 		aListAux[nAux]['selected_quantity']	:= 0
 		aListAux[nAux]['marked']	       	:= .F.

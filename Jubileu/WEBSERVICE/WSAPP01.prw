@@ -51,24 +51,32 @@ WsMethod POST WsReceive RECEIVE WsService WSAPP01
             Z01->(DbSetOrder(1))
             If Z01->(DbSeek(xFilial('Z01')+AvKey(Alltrim(Upper(cUser)),'Z01_USER')))
                 If Alltrim(cPass) == Alltrim(Z01->Z01_PASS)
-                    
-                    cQuery := " SELECT A3_NREDUZ, A3_EMAIL, A3_END, A3_BAIRRO, A3_MUN, A3_DDDTEL, A3_TEL FROM "+RetSqlName('SA3')+" "
-                    cQuery += " WHERE A3_TOKEN = '"+Z01->Z01_TOKEN+"'
+                    If Z01->Z01_TYPE == 'V'
+                        cQuery := " SELECT A3_NREDUZ NOME, A3_EMAIL EMAIL, A3_END ENDER, A3_BAIRRO BAIRRO, A3_MUN MUN, A3_DDDTEL DDD, A3_TEL TEL FROM "+RetSqlName('SA3')+" "
+                        cQuery += " WHERE A3_TOKEN = '"+Z01->Z01_TOKEN+"'
+                    Else
+                        cQuery := " SELECT A1_NREDUZ NOME, A1_EMAIL EMAIL, A1_END ENDER, A1_BAIRRO BAIRRO, A1_MUN MUN, A1_DDD DDD, A1_TEL TEL FROM "+RetSqlName('SA1')+" "
+                        cQuery += " WHERE A1_TOKEN = '"+Z01->Z01_TOKEN+"'
+                    EndIf
 
                     cAliasTMP := GetNextAlias()
                     MPSysOpenQuery(cQuery, cAliasTMP)
 
-                    cAddress := Alltrim((cAliasTMP)->A3_END) + " - " + Alltrim((cAliasTMP)->A3_BAIRRO) + " - " + Alltrim((cAliasTMP)->A3_MUN)
-                    cPhone   := Alltrim((cAliasTMP)->A3_DDDTEL) + Alltrim((cAliasTMP)->A3_TEL)
+                    If (cAliasTMP)->(!Eof())
+                        cResultAux := '"user" : "'+Alltrim(cUser)+'",'
+                        cResultAux += '"password" : "'+Alltrim(cPass)+'",'
+                        cResultAux += '"token" : "'+Z01->Z01_TOKEN+'",'
+                        cResultAux += '"name" : "'+fRemoveCarc((cAliasTMP)->NOME)+'",'
+                        cResultAux += '"email" : "'+Alltrim(Lower((cAliasTMP)->EMAIL))+'",'
+                        cResultAux += '"address" : "'+fRemoveCarc(Alltrim((cAliasTMP)->ENDER) + " - " + Alltrim((cAliasTMP)->BAIRRO) + " - " + Alltrim((cAliasTMP)->MUN))+'",'
+                        cResultAux += '"phone" : "'+fRemoveCarc(Alltrim((cAliasTMP)->DDD) + Alltrim((cAliasTMP)->TEL))+'",'
+                        cResultAux += '"type" : "'+Z01->Z01_TYPE+'"'
 
-                    cResultAux := '"token" : "'+Z01->Z01_TOKEN+'",'
-                    cResultAux += '"name" : "'+fRemoveCarc((cAliasTMP)->A3_NREDUZ)+'",'
-                    cResultAux += '"email" : "'+Alltrim(Lower((cAliasTMP)->A3_EMAIL))+'",'
-                    cResultAux += '"address" : "'+fRemoveCarc(cAddress)+'",'
-                    cResultAux += '"phone" : "'+fRemoveCarc(cPhone)+'",'
-                    cResultAux += '"type" : "'+Z01->Z01_TYPE+'"'
-
-                    cMessage := 'sucesso'
+                        cMessage := 'sucesso'
+                    Else
+                        cMessage := 'notfound'
+                        cCode := "#404"
+                    EndIf
                 Else
                     cMessage := "invalidpass"
                     cCode := "#400"
@@ -79,7 +87,7 @@ WsMethod POST WsReceive RECEIVE WsService WSAPP01
             EndIf
             
             Z01->(DbCloseArea())
-            
+            (cAliasTMP)->(DbCloseArea())
         EndIf
 
 	EndIf
