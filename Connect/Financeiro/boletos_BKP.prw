@@ -395,11 +395,6 @@ Static Function MontaRel()
 		if !DbSeek(xFilial("SA1")+SE1->E1_CLIENTE+SE1->E1_LOJA)
 			alert('Cliente não encontrado')
 			loop
-		Else
-			If SA1->A1_XBOL == 'N'
-				alert('Cliente '+ SA1->A1_COD +' '+ SA1->A1_LOJA +', com configuração para não gerar boleto, revise o cadastro do cliente.')
-				SE1->(dbSkip())
-			EndiF
 		endif
 
 		//Posiciona o SE1 (Contas a Receber)
@@ -496,13 +491,6 @@ Static Function MontaRel()
 			cInst1:= strtran(SEE->EE_FORMEN1,"'","")
 			cInst2:= strtran(SEE->EE_FORMEN2,"'","")
 			cInst3:= strtran(SEE->EE_FOREXT1,"'","")
-		Elseif Alltrim(SA6->A6_COD) == "422"
-			nMulta :=  Round(SE1->E1_VALOR*(2/100),2)
-			nMulta :=  Transform(nMulta,"@E 9,999.99")
-			cInst0:= "A partir do dia " + dtoc(DaySum(SE1->E1_VENCREA,1)) + ", cobrar multa de R$ "+cvaltochar(nMulta)+" 02,00% "
-			cInst1:= strtran(SEE->EE_FORMEN2,"'","")
-			cInst2:= strtran(SEE->EE_FOREXT1,"'","")
-			cInst3:= ""
 		Else
 			cInst0:= strtran(SEE->EE_FORMEN1,"'","")
 			cInst1:= strtran(SEE->EE_FORMEN2,"'","")
@@ -517,10 +505,9 @@ Static Function MontaRel()
 		cJurdia := ""
 
 		If SA6->A6_COD == '422'
-			nVlrDia := 	ROUND((SE1->E1_VALOR*((1/30)/100)),2)
+			nVlrDia := Round((SE1->E1_VALOR*(GETMV('MV_TXPER')/30)),2)
 			nVlrDia := Transform(nVlrDia,"@E 9,999.99")
-			cJurdia := 'A partir do dia ' + DTOC(DaySum(SE1->E1_VENCREA,1)) +', cobrar juros de R$ '+cvaltochar(nVlrDia)+' ao dia. "'// + Chr(13) + Chr(10) +'"'
-			//cJurdia += 'A partir do dia ' + DaySum(SE1->E1_VENCREA,1) +', cobrar multa de R$ '+cvaltochar(nMulta)+' 02,00% '
+			cJurdia := 'Após o vencimento cobrar juros de R$ '+nVlrDia+' ao dia'
 		ENDIF
 
 		aBolText    := { cJurdia+mv_par12+mv_par13,mv_par14+mv_par15,mv_par16+mv_par17}
@@ -564,7 +551,7 @@ Static Function MontaRel()
 			ElseIf SA6->A6_COD == '033'  //GRAVA NOSSO NUMERO NO TITULO
 				SE1->E1_NUMBCO := cNNum
 				//itau
-			ElseIf SA6->A6_COD == '341'
+			ElseIf SA6->A6_COD == '341'  
 				SE1->E1_NUMBCO := strtran(SUBSTR(CB_RN_NN[3],1,15),"/")
 			ElseIf SA6->A6_COD == '409'
 				SE1->E1_NUMBCO := SUBSTR(CB_RN_NN[3],3,10)
@@ -769,8 +756,8 @@ Static Function Impress(oPrint,aBitmap,aDadosEmp,aDadosTit,aDadosBanco,aDatSacad
 		oPrint:Say  (782,100, "SANTANDER",oFont20 )
 	ElseIf aDadosBanco[1] == "237"
 		oPrint:Say  (782,100, "BRADESCO",oFont20 )
-	ElseIf aDadosBanco[1] == "422"
-		oPrint:Say  (782,100, "SAFRA",oFont20 )
+		//ElseIf aDadosBanco[1] == "422"
+		//	oPrint:Say  (782,100, "SAFRA",oFont20 )
 	Endif
 
 	oPrint:Line (0970,100,0970,2300 )
@@ -999,8 +986,8 @@ Static Function Impress(oPrint,aBitmap,aDadosEmp,aDadosTit,aDadosBanco,aDatSacad
 		oPrint:Say  (1900,100, "SANTANDER",oFont20 )
 	ElseIf aDadosBanco[1] == "237"
 		oPrint:Say  (1900,100, "BRADESCO",oFont20 )
-	ElseIf aDadosBanco[1] == "422"
-		oPrint:Say  (1900,100, "SAFRA",oFont20 )
+		//ElseIf aDadosBanco[1] == "422"
+		//	oPrint:Say  (1900,100, "SAFRA",oFont20 )
 	Endif
 
 	oPrint:Line (2090,100,2090,2300 )
@@ -1730,7 +1717,7 @@ Static Function Ret_cBarra(cBanco,cAgencia,cConta,cDacCC,cCarteira,cNroDoc,nValo
 		//	cNossoNum := cCarteira+"/"+strzero(val(cNroDoc),6)+ _cParcela +'-' + AllTrim( Str( modulo10( StrZero(Val(cAgencia),4) + StrZero(Val(cConta),5) + cNNumSDig ) ) )
 		cCalcDig      := AllTrim( Str( modulo10( StrZero(Val(cAgencia),4) + StrZero(Val(cConta),5) + cNNumSDig ) ) )
 		cNossoNum := cCarteira + '/' + cNumbco + '-' + cCalcDig
-
+		
 		cCpoLivre := cNNumSDig + cCalcDig + StrZero(Val(cAgencia),4) + StrZero(Val(cConta),5) + cDacCC + "000"
 
 	Elseif Substr(cBanco,1,3) == "356" // Banco REAL
