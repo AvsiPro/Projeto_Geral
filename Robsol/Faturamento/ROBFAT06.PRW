@@ -16,7 +16,7 @@ User Function ROBFAT06()
 Local aList0    := {}
 Local cQuery    := ''
 Local cAliasSQL := GetNextAlias()
-Local aStatus   := {'Aberto','Atendido','Negado','Aguardando Cliente'}
+Local aStatus   := {'Aberto','Atendido','Negado','Aguardando Cliente','Aguardando Docs','Cancelado'}
 Local lZ52      :=  .F.
 
 Private cMsgNew   := space(1024)
