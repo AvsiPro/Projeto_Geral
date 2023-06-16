@@ -1581,11 +1581,14 @@ If nOpcG == 0
 			//Doses
 			cBarra := ""
 
-			If cTipFat $ "1/3"
-				For nCont := 1 to len(aList5B)
+			If cTipFat $ "1/2/3"
+
+				nPosL5 := Ascan(aList5B,{|x| x[1]+x[2] == aList2B[nCont,04]+aList2B[nCont,01]})
+
+				For nCont := nPosL5 to len(aList5B)
 					aItens := {}
 					aItSFt := {}
-
+					
 					If aList5B[nCont,01] == aList[nCntG,01] .And. len(aList5b[nCont]) > 4
 						cAtFat += cBarra + Alltrim(aList5b[nCont,02])
 						cBarra := "/"
@@ -1614,7 +1617,7 @@ If nOpcG == 0
 								aList[nCntG,21]})
 				EndIf 
 			
-			ElseIf cTipFat == "2"
+			ElseIf cTipFat == "22"
 				//For nX := 1 to len(aList2B)
 					aItens := {}
 					aItSFt := {}
@@ -1661,6 +1664,120 @@ If nOpcG == 0
 			EndIf 
 		Next nCont
 
+		//Faturamento Doses
+		If len(aItens) > 0
+			If len(aItens) > 0 .AND. lDose
+			//PEDIDOS DE DOSES
+				
+				If Empty(cAtFat)
+					cAtFat := Alltrim(aList2[nCntG,01])
+				EndIF 
+
+				DbSelectArea("AAM")
+				DbSetOrder(1)
+				DbSeek(xFilial("AAM")+aList[nCntG,01])
+				aCabec := {}
+				aItC6  := {}
+				cItem  := '01'
+
+				aAdd( aCabec , { "C5_FILIAL"    , cFilFat		      , Nil } ) 
+				aAdd( aCabec , { "C5_XTPPED"    , 'F'                 , Nil } )
+				aAdd( aCabec , { "C5_TIPO"      , 'N'                 , Nil } )
+				aAdd( aCabec , { "C5_CLIENTE"   , aList[nCntG,03]    , Nil } )
+				aAdd( aCabec , { "C5_LOJACLI"   , aList[nCntG,04]    , Nil } )
+				Aadd( aCabec , { "C5_MENNOTA"   , 'Faturamento de Doses - Ref. Patrimonio(s) '+cAtFat   , Nil } )
+				aAdd( aCabec , { "C5_CONDPAG"   , AAM->AAM_CPAGPV     , Nil } )    
+				aAdd( aCabec , { "C5_NATUREZ"   , "31101001  "     , Nil } )    
+				aAdd( aCabec , { "C5_XCONTRT"	, aList[nCntG,01]	, Nil })
+					
+				For nCont := 1 to len(aItens)
+					aLinha := {}
+					aAdd( aLinha , { "C6_FILIAL"     , cFilFat		                          , Nil })
+					aAdd( aLinha , { "C6_ITEM"       , cItem 							      , Nil })
+					aAdd( aLinha , { "C6_PRODUTO"    , aItens[nCont,01]                       , Nil })
+					aAdd( aLinha , { "C6_QTDVEN"     , aItens[nCont,02]                       , Nil })
+					aAdd( aLinha , { "C6_PRCVEN"     , aItens[nCont,03]                       , Nil })
+					aAdd( aLinha , { "C6_OPER"       , "08"                                   , Nil })
+					// aAdd( aLinha , { "C6_TES"        , '523'                                  , Nil })  
+					aAdd( aLinha , { "C6_QTDLIB"     , aItens[nCont,02]    	                  , Nil })
+					aAdd( aLinha , { "C6_CONTRT" 	 , AAM->AAM_CONTRT						  , Nil })
+
+					If !Empty(MV_PAR02)
+						aAdd( aLinha , { "C6_PEDCLI"	,	MV_PAR02 	, Nil })
+					EndIf 
+
+					aAdd( aItC6 , aLinha ) 
+					cItem := Soma1(cItem)
+				Next nCont
+
+				lMsErroAuto := .F.
+				MSExecAuto({|x,y,z| Mata410(x,y,z)},aCabec,aItC6,3)
+					
+				IF lMsErroAuto  
+					MostraErro()
+				ELSE
+					aDadNF := GeraNF(SC5->C5_NUM,SC5->C5_CONDPAG,'1')
+					nVlrFt := 0
+					Msgalert("Pedido gerado de faturamento de doses "+SC5->C5_NUM)
+					DbSelectArea("Z08")
+					DbSetOrder(3)
+					For nCont := 1 to len(aList5B)
+						If aList5B[nCont,01] == aList[nCntG,01] .And. len(aList5b[nCont]) > 4
+							For nJ := 5 to len(aList5b[nCont])
+								If Dbseek(xFilial("Z08")+aList5b[nCont,nJ,11]+aList5b[nCont,nJ,01]+aList5B[nCont,02])
+									RecLock("Z08", .F.)
+									Z08->Z08_FATURA := 'S'
+									Z08->Z08_PEDIDO := SC5->C5_NUM
+									Z08->Z08_CONSUM := aList5b[nCont,nJ,08]
+									Z08->Z08_VLRFAT := aList5b[nCont,nJ,10]
+									Z08->Z08_NOTA	:= aDadNF[1]
+									Z08->Z08_SERIE	:= aDadNF[2]
+									nVlrFt += aList5b[nCont,nJ,10]
+									Z08->(MsUnlock())
+									aList5b[nCont,nJ,12] := 'S'
+									Dbskip() 
+								EndIf 
+							Next nJ
+						EndIf 
+					Next nCont
+
+					Aadd(aList3b,{	SC5->C5_NUM,;
+									SC5->C5_EMISSAO,;
+									nVlrFt,;
+									aDadNF[1],;
+									aList[nCntG,01],;
+									aList[nCntG,03],;
+									aList[nCntG,04],;
+									SC5->C5_FILIAL})
+
+					Aadd(aList3,{	SC5->C5_NUM,;
+									SC5->C5_EMISSAO,;
+									nVlrFt,;
+									aDadNF[1],;
+									aList[nCntG,01],;
+									aList[nCntG,03],;
+									aList[nCntG,04],;
+									SC5->C5_FILIAL})
+
+					For nCont := 1 to len(aList5B)
+						If aList5B[nCont,01] == aList[nCntG,01] .And. len(aList5b[nCont]) > 4
+							For nJ := 5 to len(aList5b[nCont])
+								aList5B[nCont,nJ,04] := aList5B[nCont,nJ,06]
+								aList5B[nCont,nJ,05] := aList5B[nCont,nJ,07]
+								aList5B[nCont,nJ,06] := ""
+								aList5B[nCont,nJ,07] := 0
+								aList5B[nCont,nJ,08] := 0
+								aList5B[nCont,nJ,10] := 0
+								aList5B[nCont,nJ,12] := "S"
+								aList5B[nCont,nJ,17] := SC5->C5_NUM
+							Next nJ
+						EndIF 
+					Next nCont
+				ENDIF
+
+			EndIF 
+		
+		EndIf
 		//Faturamento locacao
 		If len(aLocac) > 0 .AND. lLoc
 			cProdLoc := SuperGetMV("TI_PRODLOC",.F.,"SLOC000001")
