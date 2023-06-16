@@ -553,20 +553,6 @@ Static Function Busca(cCond,cQuinze,cLocacS)
 		EndDo
 		
 	Next nCont     
-/*
-	For nCont := 1 to len(aList3b)
-		nPos := Ascan(aList,{|x| Alltrim(x[1]) == aList3b[nCont,05]})
-		If nPos > 0 .And. (strzero(month(aList3b[nCont,02]),2)+cvaltochar(year(aList3b[nCont,02])) == strzero(month(ddatabase),2)+cvaltochar(year(ddatabase)))
-			If aList[nPos,len(aQtdH)+1] == 0
-				IF !Empty(aList3b[nCont,04])
-					aList[nPos,len(aQtdH)+1] += 2
-				Else
-					aList[nPos,len(aQtdH)+1] += 1
-				EndIf
-			EndIf
-		EndIf
-	Next nCont
-*/
 
 	cQuery := "SELECT AAM_CONTRT,DA1_CODPRO,B1_DESC,DA1_PRCVEN,DA1_XCONSU"
 	cQuery += " FROM "+RetSQLName("AAM")+" AAM"
@@ -1162,8 +1148,6 @@ If DbSeek(xFilial("SC9")+cPedido)
 							SB1->(Recno(Posicione("SB1",1,xFilial("SB1")+SC9->C9_PRODUTO,""))),;
 							SB2->(Recno(Posicione("SB2",1,xFilial("SB2")+SC9->C9_PRODUTO,""))),;
 							SF4->(Recno(Posicione("SF4",1,xFilial("SF4")+cTES,""))) })
-							//SF4->(Recno(Posicione("SF4",1,xFilial("SF4")+_cTESPV,""))) })
-		//EndIf
 		
 		DbSelectArea("SC9")
 		DbSkip()
@@ -1434,145 +1418,6 @@ oDlg1:refresh()
 RestArea(aArea)
 
 Return
-/*
-ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
-±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
-±±ÉÍÍÍÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍ»±±
-±±ºPrograma  ³CONFSC01  ºAutor  ³Microsiga           º Data ³  09/16/16   º±±
-±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
-±±ºDesc.     ³ Gera html de envio do email ao cliente                     º±±
-±±º          ³                                                            º±±
-±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
-±±ºUso       ³ AP                                                         º±±
-±±ÈÍÍÍÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼±±
-±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
-ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
-*/
-
-Static Function cHtml(ccodbar,nnota)
-
-Local aArea	:=	GetArea()
-Local cRet	:=	''
-
-If cFilAnt == "01"
-
-	cRet := "<p><img style='float: left;' src='http://www.amaquinadecafe.com.br/upload/57a9089789a19_thumb.png' alt='interactive connection' width='185&quot;' /> <img style='float: left;' src='http://www.amaquinadecafe.com.br/images/logo_grupo.png' alt='interactive connection' width='265' /> <br /><br /><br /><br /> <br /><br /><br /><br /></p>"
-	cRet += "<table border='0'>"
-	cRet += "<thead>"
-	cRet += "<tr><td><h2 style='color: #2e6c80;'>Segue anexo Fatura referente a Loca&ccedil;&atilde;o de sua(s) M&aacute;quina(s) de Caf&eacute; do m&ecirc;s de <span style='color: #2b2301;'> "+mesextenso(ddatabase)+"/"+cvaltochar(year(ddatabase))+"</span></h2></td></tr>"
-	cRet += "<tr><tr><td><h2 style='color: #2e6c80;'>"+GetMV("MV_XMSGBL1")+"</span></h2></tr></tr></td>"
-	
-	If !Empty(ccodbar)
-		cRet += "<tr></tr><tr></tr><tr></tr><tr><td><h4>Caso não consiga visualizar o PDF anexo, clique no link para baixar seu boleto <a href='http://danfeamc.toktake.com.br/01/"+nnota+".pdf'>Boleto</a></h4></td></tr><tr></tr><tr></tr><tr></tr>"
-		cRet += "<tr></tr><tr></tr><tr></tr><tr><td><h4>Caso prefira, segue aqui o seu código de barras para pagamento:</h4></td></tr><tr></tr><tr></tr><tr></tr>"
-		cRet += "<tr><td><h2>"+ccodbar+"</h2></td></tr>"
-	EndIf  
-	
-	cRet += "<tr></tr><tr></tr><tr></tr><tr><td><h3>Em caso de d&uacute;vidas, favor entrar em contato abaixo:</h3></td></tr><tr></tr><tr></tr><tr></tr>"
-	cRet += "<tr></tr><tr></tr><tr></tr><tr><td><h4>C&aacute;ssio - Email: <a href='MAILTO:amc.centro@maquinadecafe.com.br'>amc.centro@maquinadecafe.com.br</a></h4></td></tr><tr></tr><tr></tr><tr></tr>"
-	cRet += "<tr><td><h5>Tel.: (11) 3256-9662 , (11) 3256-9026 ou Cel.: (11) 98630-0602</h5></td></tr>"
-	
-	If ddatabase < ctod("31/12/2018")
-		//Mensagem de natal amc
-		cRet += "<tr><td><h2 style='color: #FF0000;'>Que as realizações alcançadas este ano, sejam apenas sementes plantadas, que serão colhidas com maior sucesso no ano vindouro. São os votos da Equipe da AMC Matriz. Agradeçemos por nossa parceria.</h2></td></tr>"
-	EndIF
-	
-	cRet += "</thead>"
-	cRet += "</table>"
-
-Elseif cFilAnt == "02"
-
-	cRet := "<p><img style='float: left;' src='http://www.amaquinadecafe.com.br/upload/57a9089789a19_thumb.png' alt='interactive connection' width='185&quot;' /> <img style='float: left;' src='http://www.amaquinadecafe.com.br/images/logo_grupo.png' alt='interactive connection' width='265' /> <br /><br /><br /><br /> <br /><br /><br /><br /></p>"
-	cRet += "<table border='0'>"
-	cRet += "<thead>"
-	cRet += "<tr><td><h2 style='color: #2e6c80;'>Segue anexo "+if(ddatabase==ctod("30/03/2017"),"Nova ","")+"Fatura referente a Loca&ccedil;&atilde;o de sua(s) M&aacute;quina(s) de Caf&eacute; do m&ecirc;s de <span style='color: #2b2301;'> "+mesextenso(ddatabase)+"/"+cvaltochar(year(ddatabase))+"</span></h2></td></tr>"
-	
-	if ddatabase==ctod("30/03/2017")
-		cRet += "<tr></tr><tr></tr><tr></tr><tr><td><h3> Pedimos desconsiderar o e-mail recebido esta semana com a nota e boleto da Locação de sua máquina, pois nosso sistema gerou com inconsistência.<br>Informamos ainda que a nota permanece inalterada.</h3></td></tr><tr></tr><tr></tr><tr></tr>"
-	EndIf
-	
-	cRet += "<tr><tr><td><h2 style='color: #2e6c80;'>"+GetMV("MV_XMSGBL1")+"</span></h2></tr></tr></td>"
-	                    //2 style='color: #FF0000;'
-	If !Empty(ccodbar)
-		cRet += "<tr></tr><tr></tr><tr></tr><tr><td><h4>Caso não consiga visualizar o PDF anexo, clique no link para baixar seu boleto <a href='http://danfeamc.toktake.com.br/02/"+nnota+".pdf'>Boleto</a></h4></td></tr><tr></tr><tr></tr><tr></tr>"
-		cRet += "<tr></tr><tr></tr><tr></tr><tr><td><h4>Caso prefira, segue aqui o seu código de barras para pagamento:</h4></td></tr><tr></tr><tr></tr><tr></tr>"
-		cRet += "<tr><td><h2>"+ccodbar+"</h2></td></tr>"
-	EndIf  
-	
-	cRet += "<tr></tr><tr></tr><tr></tr><tr><td><h3>Em caso de d&uacute;vidas, favor entrar em contato abaixo:</h3></td></tr><tr></tr><tr></tr><tr></tr>"
-	cRet += "<tr></tr><tr></tr><tr></tr><tr><td><h4>Fernanda ou Simone - Email: <a href='MAILTO:amc.sul@maquinadecafe.com.br'>amc.sul@maquinadecafe.com.br</a></h4></td></tr><tr></tr><tr></tr><tr></tr>"
-	cRet += "<tr><td><h5>Tel.: (11) 5182-2877 , (11) 5182-7024 ou cel.: (11) 94724-8292</h5></td></tr>"
-	
-	If ddatabase < ctod("31/12/2018")
-		//Mensagem de natal amc
-		cRet += "<tr><td><h2 style='color: #FF0000;'>Que as realizações alcançadas este ano, sejam apenas sementes plantadas, que serão colhidas com maior sucesso no ano vindouro. São os votos da Equipe da AMC SUL. Agradeçemos por nossa parceria.</h2></td></tr>"
-	EndIF
-	
-	cRet += "</thead>"
-	cRet += "</table>"
-
-Elseif cFilAnt == "03"
-
-	cRet := "<p><img style='float: left;' src='http://www.amaquinadecafe.com.br/upload/57a9089789a19_thumb.png' alt='interactive connection' width='185&quot;' /> <img style='float: left;' src='http://www.amaquinadecafe.com.br/images/logo_grupo.png' alt='interactive connection' width='265' /> <br /><br /><br /><br /> <br /><br /><br /><br /></p>"
-	cRet += "<table border='0'>"
-	cRet += "<thead>"
-	cRet += "<tr><td><h2 style='color: #2e6c80;'>Segue anexo "+if(ddatabase==ctod("30/03/2017"),"Nova ","")+" Fatura referente a Loca&ccedil;&atilde;o de sua(s) M&aacute;quina(s) de Caf&eacute; do m&ecirc;s de <span style='color: #2b2301;'> "+mesextenso(ddatabase)+"/"+cvaltochar(year(ddatabase))+"</span></h2></td></tr>"
-	                         
-	if ddatabase==ctod("30/03/2017")
-		cRet += "<tr></tr><tr></tr><tr></tr><tr><td><h3> Pedimos desconsiderar o e-mail recebido esta semana com a nota e boleto da Locação de sua máquina, pois nosso sistema gerou com inconsistência.<br>Informamos ainda que a nota permanece inalterada.</h3></td></tr><tr></tr><tr></tr><tr></tr>"
-	EndIf
-	
-	cRet += "<tr><tr><td><h2 style='color: #2e6c80;'>"+GetMV("MV_XMSGBL1")+"</span></h2></tr></tr></td>"
-	
-	If !Empty(ccodbar)
-		cRet += "<tr></tr><tr></tr><tr></tr><tr><td><h4>Caso não consiga visualizar o PDF anexo, clique no link para baixar seu boleto <a href='http://danfeamc.toktake.com.br/03/"+nnota+".pdf'>Boleto</a></h4></td></tr><tr></tr><tr></tr><tr></tr>"
-		cRet += "<tr></tr><tr></tr><tr></tr><tr><td><h4>Caso prefira, segue aqui o seu código de barras para pagamento:</h4></td></tr><tr></tr><tr></tr><tr></tr>"
-		cRet += "<tr><td><h2>"+ccodbar+"</h2></td></tr>"
-	EndIf  
-	
-	cRet += "<tr></tr><tr></tr><tr></tr><tr><td><h3>Em caso de d&uacute;vidas, favor entrar em contato abaixo:</h3></td></tr><tr></tr><tr></tr><tr></tr>"
-	cRet += "<tr></tr><tr></tr><tr></tr><tr><td><h4>C&aacute;ssio, Lethicia ou Paulo - Email: <a href='MAILTO:amc.centro@maquinadecafe.com.br'>amc.centro@maquinadecafe.com.br</a></h4></td></tr><tr></tr><tr></tr><tr></tr>"
-	cRet += "<tr><td><h5>Tel.: (11) 3256-9662 , (11) 3256-9026 ou Cel.: (11) 98630-0602</h5></td></tr>"
-	
-	If ddatabase < ctod("31/12/2018")
-		//Mensagem de natal amc
-		cRet += "<tr><td><h2 style='color: #FF0000;'>Que as realizações alcançadas este ano, sejam apenas sementes plantadas, que serão colhidas com maior sucesso no ano vindouro. São os votos da Equipe da AMC CENTRO. Agradeçemos por nossa parceria.</h2></td></tr>"
-	EndIF
-	
-	cRet += "</thead>"
-	cRet += "</table>"
-
-Elseif cFilAnt == "04"
-
-	cRet := "<p><img style='float: left;' src='http://www.amaquinadecafe.com.br/upload/57a9089789a19_thumb.png' alt='interactive connection' width='185&quot;' /> <img style='float: left;' src='http://www.amaquinadecafe.com.br/images/logo_grupo.png' alt='interactive connection' width='265' /> <br /><br /><br /><br /> <br /><br /><br /><br /></p>"
-	cRet += "<table border='0'>"
-	cRet += "<thead>"
-	cRet += "<tr><td><h2 style='color: #2e6c80;'>Segue anexo Fatura referente a Loca&ccedil;&atilde;o de sua(s) M&aacute;quina(s) de Caf&eacute; do m&ecirc;s de <span style='color: #2b2301;'> "+mesextenso(ddatabase)+"/"+cvaltochar(year(ddatabase))+"</span></h2></td></tr>"
-	cRet += "<tr><tr><td><h2 style='color: #2e6c80;'>"+GetMV("MV_XMSGBL1")+"</span></h2></tr></tr></td>"
-	If !Empty(ccodbar)
-		cRet += "<tr></tr><tr></tr><tr></tr><tr><td><h4>Caso não consiga visualizar o PDF anexo, clique no link para baixar seu boleto <a href='http://danfeamc.toktake.com.br/04/"+nnota+".pdf'>Boleto</a></h4></td></tr><tr></tr><tr></tr><tr></tr>"
-		cRet += "<tr></tr><tr></tr><tr></tr><tr><td><h4>Caso prefira, segue aqui o seu código de barras para pagamento:</h4></td></tr><tr></tr><tr></tr><tr></tr>"
-		cRet += "<tr><td><h2>"+ccodbar+"</h2></td></tr>"
-	EndIf  
-	
-	cRet += "<tr></tr><tr></tr><tr></tr><tr><td><h3>Em caso de d&uacute;vidas, favor entrar em contato abaixo:</h3></td></tr><tr></tr><tr></tr><tr></tr>"
-	cRet += "<tr></tr><tr></tr><tr></tr><tr><td><h4>Lilian ou Vitor - Email: <a href='MAILTO:amc.oeste@maquinadecafe.com.br'>amc.oeste@maquinadecafe.com.br</a></h4></td></tr><tr></tr><tr></tr><tr></tr>"
-	cRet += "<tr><td><h5>Tel.: (11) 3622-3640 , (11) 3622-3616 ou Cel.: (11) 97408.7130</h5></td></tr>"
-	
-	If ddatabase < ctod("31/12/2018")
-		//Mensagem de natal amc
-		cRet += "<tr><td><h2 style='color: #FF0000;'>Que as realizações alcançadas este ano, sejam apenas sementes plantadas, que serão colhidas com maior sucesso no ano vindouro. São os votos da Equipe da AMC OESTE. Agradeçemos por nossa parceria.</h2></td></tr>"
-	EndIF
-	
-	cRet += "</thead>"
-	cRet += "</table>"
-
-Endif
-
-RestArea(aArea)
-
-Return(cRet)                                                                   
-
 
 /*
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
@@ -1681,6 +1526,7 @@ Local lLoc      := .F.
 Local cFilFat	:=	If(aList[oList:nAt,23]=="RJ","0102","0101")
 Local cBkpcFil  :=	cFilant 
 Local aFilFat	:=	{'0101=SP','0102=RJ'}
+Local nLst5
 
 cFilant := cFilFat 
 
@@ -1712,12 +1558,14 @@ endif
 If nOpcG == 0
 	//Faturar todos os itens liberados do array alist
 	Asort(aList2B,,,{|x,y| x[4] < y[4]})
+	Asort(aList5B,,,{|x,y| x[1]+x[2] < y[1]+y[2]})
 
 	For nCntG := 1 to len(aList)
 		cForFat :=	aList[nCntG,14]
 		cTipFat	:=	aList[nCntG,15]
 		aLocac  :=  {}
 		nPos2B  :=	Ascan(aList2B,{|x| x[4] == aList[nCntG,01]})
+
 		For nCont := nPos2B to len(aList2B)
 			//Locações
 			If aList2B[nCont,04] == aList[nCntG,01]
@@ -1767,39 +1615,40 @@ If nOpcG == 0
 				EndIf 
 			
 			ElseIf cTipFat == "2"
-				For nX := 1 to len(aList2)
+				//For nX := 1 to len(aList2B)
 					aItens := {}
 					aItSFt := {}
+					nPosL5 := Ascan(aList5B,{|x| x[1]+x[2] == aList2B[nCont,04]+aList2B[nCont,01]})
 
-					For nCont := 1 to len(aList5B)
-						If aList5B[nCont,01] == aList2[nX,04] .And. len(aList5b[nCont]) > 4 .And. aList5B[nCont,02] == aList2[nX,01]
-							For nJ := 5 to len(aList5b[nCont])
-								If aList5B[nCont,nJ,08] > 0 .And. aList5B[nCont,nJ,09] > 0
-									nPosloc := Ascan(aItens,{|x| x[1] == aList5B[nCont,nJ,02]})
+					For nLst5 := nPosL5 to len(aList5B)
+						If aList5B[nLst5,01] == aList2B[nCont,04] .And. len(aList5b[nLst5]) > 4 .And. aList5B[nLst5,02] == aList2B[nCont,01]
+							For nJ := 5 to len(aList5b[nLst5])
+								If aList5B[nLst5,nJ,08] > 0 .And. aList5B[nLst5,nJ,09] > 0
+									nPosloc := Ascan(aItens,{|x| x[1] == aList5B[nLst5,nJ,02]})
 									
 									If nPosloc == 0
 										
-										Aadd(aItens,{	aList5B[nCont,nJ,02],;
-														aList5B[nCont,nJ,08],;
-														aList5B[nCont,nJ,09]})
+										Aadd(aItens,{	aList5B[nLst5,nJ,02],;
+														aList5B[nLst5,nJ,08],;
+														aList5B[nLst5,nJ,09]})
 									Else 
-										aItens[nPosloc,02] += aList5B[nCont,nJ,08]
+										aItens[nPosloc,02] += aList5B[nLst5,nJ,08]
 									EndIf
 								Else 
-									Aadd(aItSFt,{	aList5B[nCont,nJ,02],;
-													aList5B[nCont,nJ,08],;
-													aList5B[nCont,nJ,09]}) 
+									Aadd(aItSFt,{	aList5B[nLst5,nJ,02],;
+													aList5B[nLst5,nJ,08],;
+													aList5B[nLst5,nJ,09]}) 
 								EndIf
 							Next nJ 
 						EndIf
-					Next nCont
+					Next nLst5
 
-					If (aList2[nX,11] > 0 .And. cQuinze == "2") .OR.(cForFat=="1" .AND. cTipFat=="2" .and. aList2[nX,11] > 0) //cCond == "2"
+					If (aList2B[nCont,11] > 0 .And. cQuinze == "2") .OR.(cForFat=="1" .AND. cTipFat=="2" .and. aList2B[nCont,11] > 0) //cCond == "2"
 						Aadd(aItens,{	aList[nCntG,22],;
-										aList2[nX,11],;
+										aList2B[nCont,11],;
 										Posicione("DA1",1,xFilial("DA1")+AAM->AAM_XCODTA+aList[nCntG,22],"DA1_PRCVEN")})
 					EndIf 
-					cAtFat := Alltrim(aList2[nX,01])
+					cAtFat := Alltrim(aList2B[nCont,01])
 					If len(aItens) > 0 
 						//If resumfat(aItens,aItSFt,.F.)
 							Processa({|| Pedido(cAtFat,aItens,cFilFat,MV_PAR02)},"Aguarde")
@@ -1808,7 +1657,7 @@ If nOpcG == 0
 						//EndIf 
 						aItens := {}
 					EndIF		
-				Next nX
+				//Next nX
 			EndIf 
 		Next nCont
 
@@ -2523,7 +2372,7 @@ For nCont := 1 to len(aEmail)
 		
 		cRemete := 'nf.erp@connectvending.com.br'
 		cDestino := Alltrim(aEmail[nCont,05])
-		cDestino += SUPERGETMV( "MV_XMAILFT", .F., 'faturas@connectvending.com.br' )
+		cDestino += ';'+Alltrim(SUPERGETMV( "MV_XMAILFT", .F., 'faturas@connectvending.com.br' ))
 		
 		cSubject := 'Faturamento'
 		CPYT2S('C:\BOLETOS\'+cCnpjj+'\'+MV_PAR02+'.pdf','\SPOOL\')
@@ -2565,18 +2414,21 @@ Static Function corpo
 Local cRet := ""
 
 cRet := If(val(substr(time(),1,2))<12 .and.val(substr(time(),1,2))>=0,'Bom dia','Boa tarde' )+'<br><br>'
-
-/*Dose 1ª quinzena:
-"Olá, você está recebendo a fatura referente a 1ª quinzena de xx de 2023 da sua máquina de café. Em caso de dúvidas, basta entrar em contato conosco."
-
-Dose 2ª quinzena:
-"Olá, você está recebendo a fatura referente a 2ª quinzena de xx de 2023 da sua máquina de café. Em caso de dúvidas, basta entrar em contato conosco."
-*/
+/*
 If cQuinze == "1"
 	cRet += "Olá, você está recebendo a fatura referente a 1ª quinzena de "+MesExtenso(ddatabase)+" de "+cvaltochar(year(ddatabase))+" da sua máquina de café. Em caso de dúvidas, basta entrar em contato conosco."
 Else 
 	cRet += "Olá, você está recebendo a fatura referente a 2ª quinzena de "+MesExtenso(ddatabase)+" de "+cvaltochar(year(ddatabase))+" da sua máquina de café. Em caso de dúvidas, basta entrar em contato conosco."
 EndIF 
+*/
+
+cRet += "Prezados(as),<br><br>"
+cRet += "Você está recebendo em anexo a fatura referente ao consumo de doses ou locação de sua(s) máquina(s) de café.<br><br>"
+cRet += "Em caso de dúvidas, basta entrar em contato conosco.<br><br>"
+
+cRet += "Atenciosamente,<br><br>"
+
+cRet += "Connect Vending Comércio de Máquinas Automatizadas Ltda.<br><br>"
 
 cRet += "Dicas de Segurança<br>"
 cRet += "Fique atento: Seus boletos sempre chegarão pelo remetente do Dominio: <p> CONNECTVENDING.COM.BR </p><br>"
