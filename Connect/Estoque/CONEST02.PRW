@@ -961,7 +961,7 @@ Local cFornec   :=  '24575331 '
 Local cLojFor   :=  '0001'
 Local _atotitem :=  {}
 Local _aitem    :=  {}
-Local cTM			:=	GetMv("MV_XTMSD3S",,"500")
+Local cTM			:=	GetMv("MV_XTMSD3S",,"501")
 	
 Asort(aItemD1,,,{|x,y| x[10]+x[11] < y[10]+y[11]})
 Asort(aCabec,,,{|x,y| x[2]+x[3] < y[2]+y[3]})
@@ -1005,7 +1005,7 @@ For nCont := 1 to len(aCabec)
         For nX := 1 To len(aItens)
             aLinha := {}			
             aadd(aLinha,{"D1_DOC"  	    ,cDoc    									,Nil})
-            aadd(aLinha,{"D1_ITEM"      ,STRZERO(nX,2) 								,NIL})
+            aadd(aLinha,{"D1_ITEM"      ,STRZERO(nX,3) 								,NIL})
             aadd(aLinha,{"D1_COD"  	    ,aItens[nX,02]								,Nil})			
             aadd(aLinha,{"D1_QUANT"	    ,aItens[nX,04]	    						,Nil})			
             aadd(aLinha,{"D1_VUNIT"	    ,aItens[nX,05]  							,Nil})			

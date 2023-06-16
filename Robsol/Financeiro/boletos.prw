@@ -31,7 +31,7 @@ User Function boletos()
 	PRIVATE cIndexName := ''
 	PRIVATE cIndexKey  := ''
 	PRIVATE cFilter    := ''
-	PRIVATE cPerg	   := "BOLY01"
+	PRIVATE cPerg	   := "BOLY"
 	Private _lBcoCorrespondente := .f.
 
 	ValidPerg()
@@ -55,30 +55,6 @@ User Function boletos()
 	//MV_PAR16       TEXTO 3 DA INSTRUCAO
 	//MV_PAR17       CONTINUACAO DO TEXTO3
 
-	//rodrigo barreto
-	//Parametros de BOLLSR:
-	//MV_PAR01	 C3	 Do Prefixo:
-	//MV_PAR02   C3  Ate o Prefixo:
-	//MV_PAR03   C6  Do Titulo:
-	//MV_PAR04   C6  Ate o Titulo:
-	//MV_PAR05   C9 Do Cliente:
-	//MV_PAR06	 C4 Da Loja:
-	//MV_PAR07	 C9 Até o cliente:
-	//MV_PAR08	 C4 Até a loja:
-	//MV_PAR09   C3  Do Banco:
-	//MV_PAR010   C4  Agencia:
-	//MV_PAR011   C6  Conta:
-	//MV_PAR012   C2  SubConta:
-	//MV_PAR013   C6  Do bordero
-	//MV_PAR14   C6  Ate o Bordero
-	//MV_PAR15   N1  Selecionar Títulos? 1-Sim 2-Não
-	//MV_PAR16       TEXTO 1 DA INSTRUCAO
-	//MV_PAR17       CONTINUACAO DO TEXTO1
-	//MV_PAR18       TEXTO 2 DA INSTRUCAO
-	//MV_PAR19       CONTINUACAO DO TEXTO2
-	//MV_PAR20       TEXTO 3 DA INSTRUCAO
-	//MV_PAR21       CONTINUACAO DO TEXTO3
-
 	dbSelectArea("SE1")
 
 	If !Pergunte (cPerg,.t.)
@@ -98,14 +74,10 @@ User Function boletos()
 		cSql := "SELECT 'S' AS EE_X_BOL FROM " + RETSQLNAME('SEE') //EE_X_BOL
 		cSql += " WHERE D_E_L_E_T_ <> '*'"
 		cSql += "   AND EE_FILIAL  = '" + xFilial('SEE') + "'"
-		cSql += "   AND EE_CODIGO  = '" + MV_PAR09 + "'"
-		cSql += "   AND EE_AGENCIA = '" + MV_PAR10 + "'"
-		cSql += "   AND EE_CONTA   = '" + MV_PAR11 + "'"
-		cSql += "   AND EE_SUBCTA  = '" + MV_PAR12 + "'"
-		/*cSql += "   AND EE_CODIGO  = '" + MV_PAR05 + "'"
-	cSql += "   AND EE_AGENCIA = '" + MV_PAR06 + "'"
-	cSql += "   AND EE_CONTA   = '" + MV_PAR07 + "'"
-		cSql += "   AND EE_SUBCTA  = '" + MV_PAR08 + "'"*/
+		cSql += "   AND EE_CODIGO  = '" + MV_PAR05 + "'"
+		cSql += "   AND EE_AGENCIA = '" + MV_PAR06 + "'"
+		cSql += "   AND EE_CONTA   = '" + MV_PAR07 + "'"
+		cSql += "   AND EE_SUBCTA  = '" + MV_PAR08 + "'"
 
 		If select('QRY') > 0
 			QRY->(dbCloseArea())
@@ -126,14 +98,11 @@ User Function boletos()
 
 				cFilter    := "E1_PREFIXO >= '" + MV_PAR01  + "' .And. E1_PREFIXO <= '" + MV_PAR02 + "' .And. " + ; // E1_EMISSAO <> E1_VENCTO .AND. " + ;
 					"E1_NUM     >= '" + MV_PAR03  + "' .And. E1_NUM     <= '" + MV_PAR04 + "' .And. " + ;
-					"E1_CLIENTE     >= '" + MV_PAR05  + "' .And. E1_CLIENTE     <= '" + MV_PAR07 + "' .And. " + ; //RODRIGO
-					"E1_LOJA     >= '" + MV_PAR06  + "' .And. E1_LOJA     <= '" + MV_PAR08 + "' .And. " + ; //RODRIGO
 					"E1_FILIAL  =  '" + xFilial('SE1') + "' .And. E1_SALDO   >     0 .And. " + ;
 					"SubsTring(E1_TIPO,3,1) != '-' "
-				//rodrigo barreto
-				If AllTrim(MV_PAR13)<>"" .And. AllTrim(MV_PAR14) <> ""
-					//If AllTrim(MV_PAR09)<>"" .And. AllTrim(MV_PAR10) <> ""
-					cFilter += " .And. E1_NUMBOR  >= '" + MV_PAR13  + "' .And. E1_NUMBOR  <= '" + MV_PAR14 + "' "
+
+				If AllTrim(MV_PAR09)<>"" .And. AllTrim(MV_PAR10) <> ""
+					cFilter += " .And. E1_NUMBOR  >= '" + MV_PAR09  + "' .And. E1_NUMBOR  <= '" + MV_PAR10 + "' "
 				EndIf
 
 				IndRegua("SE1", cIndexName, cIndexKey,, cFilter, "Aguarde, selecionando registros....")
@@ -145,7 +114,7 @@ User Function boletos()
 				dbGoTop()
 				do while !eof()
 					reclock('SE1',.f.)
-					if mv_par15 == 1
+					if mv_par11 == 1
 						replace E1_OK with cMarca
 					else
 						replace E1_OK with space(01)
@@ -391,8 +360,7 @@ Static Function MontaRel()
 		DbSetOrder(1)
 
 		If bDanfe==.F.
-			//if !DbSeek(xFilial("SA6")+MV_PAR05+MV_PAR06+MV_PAR07) rodrigo
-			if !DbSeek(xFilial("SA6")+MV_PAR09+MV_PAR10+MV_PAR11)
+			if !DbSeek(xFilial("SA6")+MV_PAR05+MV_PAR06+MV_PAR07)
 				alert('Banco não encontrado')
 				loop
 			endif
@@ -400,8 +368,7 @@ Static Function MontaRel()
 			//Posiciona o SEE (Parametros banco)
 			DbSelectArea("SEE")
 			DbSetOrder(1)
-			//if !DbSeek(xFilial("SEE")+MV_PAR05+MV_PAR06+MV_PAR07+MV_PAR08) Rodrigo
-			if !DbSeek(xFilial("SEE")+MV_PAR09+MV_PAR10+MV_PAR11+MV_PAR12)
+			if !DbSeek(xFilial("SEE")+MV_PAR05+MV_PAR06+MV_PAR07+MV_PAR08)
 				alert('Banco não encontrado nos parametros')
 				loop
 			endif
@@ -428,6 +395,11 @@ Static Function MontaRel()
 		if !DbSeek(xFilial("SA1")+SE1->E1_CLIENTE+SE1->E1_LOJA)
 			alert('Cliente não encontrado')
 			loop
+		Else
+			If SA1->A1_XBOL == 'N'
+				alert('Cliente '+ SA1->A1_COD +' '+ SA1->A1_LOJA +', com configuração para não gerar boleto, revise o cadastro do cliente.')
+				SE1->(dbSkip())
+			EndiF
 		endif
 
 		//Posiciona o SE1 (Contas a Receber)
@@ -436,8 +408,7 @@ Static Function MontaRel()
 
 		If bDanfe==.F.
 			//Confere banco para não reimprimir um boleto que já foi impresso por outro banco
-			//If(AllTrim(SE1->E1_PORTADO) <> "" .And. AllTrim(SE1->E1_PORTADO) <> AllTrim(MV_PAR05)) rodrigo
-			If(AllTrim(SE1->E1_PORTADO) <> "" .And. AllTrim(SE1->E1_PORTADO) <> AllTrim(MV_PAR09))
+			If(AllTrim(SE1->E1_PORTADO) <> "" .And. AllTrim(SE1->E1_PORTADO) <> AllTrim(MV_PAR05))
 				SE1->(dbSkip())
 				IncProc()
 				i++
@@ -445,8 +416,7 @@ Static Function MontaRel()
 			EndIf
 
 			//Confere agencia para não reimprimir um boleto que já foi impresso por outra agencia
-			//If(AllTrim(SE1->E1_AGEDEP) <> "" .And. AllTrim(SE1->E1_AGEDEP) <> AllTrim(MV_PAR06)) rodrigo
-			If(AllTrim(SE1->E1_AGEDEP) <> "" .And. AllTrim(SE1->E1_AGEDEP) <> AllTrim(MV_PAR10))
+			If(AllTrim(SE1->E1_AGEDEP) <> "" .And. AllTrim(SE1->E1_AGEDEP) <> AllTrim(MV_PAR06))
 				SE1->(dbSkip())
 				IncProc()
 				i++
@@ -454,8 +424,7 @@ Static Function MontaRel()
 			EndIf
 
 			//Confere conta para não reimprimir um boleto que já foi impresso por outra conta
-			//If(AllTrim(SE1->E1_CONTA) <> "" .And. AllTrim(SE1->E1_CONTA) <> AllTrim(MV_PAR07)) rodrigo
-			If(AllTrim(SE1->E1_CONTA) <> "" .And. AllTrim(SE1->E1_CONTA) <> AllTrim(MV_PAR11))
+			If(AllTrim(SE1->E1_CONTA) <> "" .And. AllTrim(SE1->E1_CONTA) <> AllTrim(MV_PAR07))
 				SE1->(dbSkip())
 				IncProc()
 				i++
@@ -527,13 +496,18 @@ Static Function MontaRel()
 			cInst1:= strtran(SEE->EE_FORMEN1,"'","")
 			cInst2:= strtran(SEE->EE_FORMEN2,"'","")
 			cInst3:= strtran(SEE->EE_FOREXT1,"'","")
+		Elseif Alltrim(SA6->A6_COD) == "422"
+			nMulta :=  Round(SE1->E1_VALOR*(2/100),2)
+			nMulta :=  Transform(nMulta,"@E 9,999.99")
+			cInst0:= "A partir do dia " + dtoc(DaySum(SE1->E1_VENCREA,1)) + ", cobrar multa de R$ "+cvaltochar(nMulta)+" 02,00% "
+			cInst1:= strtran(SEE->EE_FORMEN2,"'","")
+			cInst2:= strtran(SEE->EE_FOREXT1,"'","")
+			cInst3:= ""
 		Else
 			cInst0:= strtran(SEE->EE_FORMEN1,"'","")
 			cInst1:= strtran(SEE->EE_FORMEN2,"'","")
 			cInst2:= strtran(SEE->EE_FOREXT1,"'","")
 			cInst3:= ""
-			cJurDia := 0.03 //GetMv("MV_LJJUROS")
-			cInst4:= "APÓS O VENCIMENTO MORA DIA R$" + transform(SE1->E1_SALDO*(cJurDia/100),'@E 999999.99') + " E MULTA DE R$"+transform(SE1->E1_SALDO*(2/100),'@E 999999.99')
 		EndIF
 
 		If alltrim(SE1->E1_TIPO) == 'NF'
@@ -543,14 +517,13 @@ Static Function MontaRel()
 		cJurdia := ""
 
 		If SA6->A6_COD == '422'
-			nVlrDia := Round((SE1->E1_VALOR*(GETMV('MV_TXPER')/30)),2)
+			nVlrDia := Round((SE1->E1_VALOR*((1/30)/100)),2)
 			nVlrDia := Transform(nVlrDia,"@E 9,999.99")
-			cJurdia := 'Após o vencimento cobrar juros de R$ '+nVlrDia+' ao dia'
+			cJurdia := 'A partir do dia ' + DTOC(DaySum(SE1->E1_VENCREA,1)) +', cobrar juros de R$ '+cvaltochar(nVlrDia)+' ao dia. "'// + Chr(13) + Chr(10) +'"'
+			//cJurdia += 'A partir do dia ' + DaySum(SE1->E1_VENCREA,1) +', cobrar multa de R$ '+cvaltochar(nMulta)+' 02,00% '
 		ENDIF
 
-		//aBolText    := { cJurdia+mv_par12+mv_par13,mv_par14+mv_par15,mv_par16+mv_par17} rodrigo
-		aBolText    := { cJurdia+mv_par16+mv_par17,mv_par18+mv_par19,mv_par20+mv_par21}
-
+		aBolText    := { cJurdia+mv_par12+mv_par13,mv_par14+mv_par15,mv_par16+mv_par17}
 
 		CB_RN_NN    := Ret_cBarra(Subs(aDadosBanco[1],1,3)+"9",Subs(aDadosBanco[3],1,4),aDadosBanco[4],aDadosBanco[5],;
 			aDadosBanco[6],AllTrim(E1_NUM)+AllTrim(E1_PARCELA),(E1_SALDO-_nVlrAbat),SE1->E1_VENCREA,SEE->EE_CODEMP,SEE->EE_FAXATU,Iif(SE1->E1_DECRESC > 0,.t.,.f.),SE1->E1_PARCELA,aDadosBanco[3])
@@ -588,8 +561,11 @@ Static Function MontaRel()
 
 			If SA6->A6_COD == "001"
 				SE1->E1_NUMBCO := cNNumSDig
-			eLSEIf SA6->A6_COD == '033'  //GRAVA NOSSO NUMERO NO TITULO
+			ElseIf SA6->A6_COD == '033'  //GRAVA NOSSO NUMERO NO TITULO
 				SE1->E1_NUMBCO := cNNum
+				//itau
+			ElseIf SA6->A6_COD == '341'
+				SE1->E1_NUMBCO := strtran(SUBSTR(CB_RN_NN[3],1,15),"/")
 			ElseIf SA6->A6_COD == '409'
 				SE1->E1_NUMBCO := SUBSTR(CB_RN_NN[3],3,10)
 			ElseIf SA6->A6_COD == "237"
@@ -599,12 +575,9 @@ Static Function MontaRel()
 			Endif
 
 			If bDanfe==.F.
-				//SE1->E1_PORTADO	:= if(Alltrim(SE1->E1_PORTADO)="",AllTrim(MV_PAR05),Alltrim(SE1->E1_PORTADO)) rodrigo
-				SE1->E1_PORTADO	:= if(Alltrim(SE1->E1_PORTADO)="",AllTrim(MV_PAR09),Alltrim(SE1->E1_PORTADO))
-				//SE1->E1_AGEDEP	:= if(AllTrim(SE1->E1_AGEDEP)="",AllTrim(MV_PAR06),AllTrim(SE1->E1_AGEDEP)) rodrigo
-				SE1->E1_AGEDEP	:= if(AllTrim(SE1->E1_AGEDEP)="",AllTrim(MV_PAR10),AllTrim(SE1->E1_AGEDEP))
-				//SE1->E1_CONTA		:= if(AllTrim(SE1->E1_CONTA)="",AllTrim(MV_PAR07),AllTrim(SE1->E1_CONTA)) rodrigo
-				SE1->E1_CONTA		:= if(AllTrim(SE1->E1_CONTA)="",AllTrim(MV_PAR11),AllTrim(SE1->E1_CONTA))
+				SE1->E1_PORTADO	:= if(Alltrim(SE1->E1_PORTADO)="",AllTrim(MV_PAR05),Alltrim(SE1->E1_PORTADO))
+				SE1->E1_AGEDEP	:= if(AllTrim(SE1->E1_AGEDEP)="",AllTrim(MV_PAR06),AllTrim(SE1->E1_AGEDEP))
+				SE1->E1_CONTA		:= if(AllTrim(SE1->E1_CONTA)="",AllTrim(MV_PAR07),AllTrim(SE1->E1_CONTA))
 			Else
 				SE1->E1_PORTADO	:= if(Alltrim(SE1->E1_PORTADO)="",AllTrim(xcBanco),Alltrim(SE1->E1_PORTADO))
 				SE1->E1_AGEDEP	:= if(AllTrim(SE1->E1_AGEDEP)="",AllTrim(xcAgenc),AllTrim(SE1->E1_AGEDEP))
@@ -679,23 +652,23 @@ Static Function Impress(oPrint,aBitmap,aDadosEmp,aDadosTit,aDadosBanco,aDatSacad
 
 
 	If aDadosBanco[1] == "001"
-		oPrint:SayBitMap(750,100,"\Images\bb.bmp",500,130)
-		oPrint:SayBitMap(1870,100,"\Images\bb.bmp",500,130)
+		oPrint:SayBitMap(750,100,"\system\bb.bmp",500,130)
+		oPrint:SayBitMap(1870,100,"\system\bb.bmp",500,130)
 	ElseIf aDadosBanco[1] == "341"
-		oPrint:SayBitMap (750,100,"\Images\itau.bmp",500,130)
-		oPrint:SayBitMap (1870,100,"\Images\itau.bmp",500,130)
+		oPrint:SayBitMap (750,100,"\system\itau.bmp",500,130)
+		oPrint:SayBitMap (1870,100,"\system\itau.bmp",500,130)
 	ElseIf aDadosBanco[1] == "033"
-		oPrint:SayBitMap (750,100,"\Images\santander.bmp",500,120)
-		oPrint:SayBitMap (1870,100,"\Images\santander.bmp",500,120)
+		oPrint:SayBitMap (750,100,"\system\santander.bmp",500,120)
+		oPrint:SayBitMap (1870,100,"\system\santander.bmp",500,120)
 	ElseIf aDadosBanco[1] == "237"
-		oPrint:SayBitMap (750,100,"\Images\bradesco.bmp",500,120)
-		oPrint:SayBitMap (1870,100,"\Images\bradesco.bmp",500,120)
+		oPrint:SayBitMap (750,100,"\system\bradesco.bmp",500,120)
+		oPrint:SayBitMap (1870,100,"\system\bradesco.bmp",500,120)
 	ElseIf aDadosBanco[1] == "422"
-		oPrint:SayBitMap (750,100,"\Images\safra.bmp",500,120)
-		oPrint:SayBitMap (1870,100,"\Images\safra.bmp",500,120)
+		oPrint:SayBitMap (750,100,"\system\safra.bmp",500,120)
+		oPrint:SayBitMap (1870,100,"\system\safra.bmp",500,120)
 	ElseIf aDadosBanco[1] == "084"
-		oPrint:SayBitMap (750,100,"\Images\prime.bmp",500,120)
-		oPrint:SayBitMap (1870,100,"\Images\prime.bmp",500,120)
+		oPrint:SayBitMap (750,100,"\system\prime.bmp",500,120)
+		oPrint:SayBitMap (1870,100,"\system\prime.bmp",500,120)
 	Endif
 
 	oPrint:Say  (84,1850,"Comprovante de Entrega"                             ,oFont10)
@@ -791,13 +764,13 @@ Static Function Impress(oPrint,aBitmap,aDadosEmp,aDadosTit,aDadosBanco,aDatSacad
 	If aDadosBanco[1] == "001"
 		//oPrint:Say  (782,100, "BANCO DO BRASIL",oFont14n )
 	ElseIf aDadosBanco[1] == "341"
-		oPrint:Say  (782,100, "BANCO ITAÚ",oFont20 )
+		//oPrint:Say  (782,100, "BANCO ITAÚ",oFont20 )
 	ElseIf aDadosBanco[1] == "033"
 		oPrint:Say  (782,100, "SANTANDER",oFont20 )
 	ElseIf aDadosBanco[1] == "237"
 		oPrint:Say  (782,100, "BRADESCO",oFont20 )
 	ElseIf aDadosBanco[1] == "422"
-		oPrint:Say  (782,100, "SAFRA",oFont20 )
+		oPrint:Say  (782,100, "BANCO SAFRA S.A.",oFont20 )
 	Endif
 
 	oPrint:Line (0970,100,0970,2300 )
@@ -951,6 +924,8 @@ Static Function Impress(oPrint,aBitmap,aDadosEmp,aDadosTit,aDadosBanco,aDatSacad
 
 	If aDadosBanco[1] == "341"
 		oPrint:Say  (1210,100 ,"Instruções/Todos as informações deste bloqueto são de exclusiva responsabilidade do beneficiário",oFont8)
+	ElseIf aDadosBanco[1] == "001"
+		oPrint:Say  (1210,100 ,"PAGÁVEL EM QUALQUER BANCO",oFont8)
 	Else
 		oPrint:Say  (1210,100 ,"Instruções/Texto de responsabilidade do beneficiário"        ,oFont8)
 	Endif
@@ -961,14 +936,15 @@ Static Function Impress(oPrint,aBitmap,aDadosEmp,aDadosTit,aDadosBanco,aDatSacad
 		oPrint:Say  (1240,2045,PadL(AllTrim(Transform( aDadosTit[5] * (aDadosTit[7]/100),"@E 999,999,999.99")),16," "),oFont10)
 	Endif
 
-	oPrint:Say  (1260,100 ,cInst0 ,oFontCN)
+	//oPrint:Say  (1260,100 ,cInst0 ,oFontCN)
+	oPrint:Say  (1260,100 ,cInst3 ,oFontCN)
 	oPrint:Say  (1290,100 ,cInst1 ,oFontCN)
 	oPrint:Say  (1320,100 ,cInst2 ,oFontCN)
-	oPrint:Say  (1350,100 ,cInst3 ,oFontCN)
-	oPrint:Say  (1380,100 ,cInst4 ,oFontCN)
-	oPrint:Say  (1410,100 ,aBolText[1],oFontCN)
-	oPrint:Say  (1440,100 ,aBolText[2],oFontCN)
-	oPrint:Say  (1470,100 ,aBolText[3],oFontCN)
+	//oPrint:Say  (1350,100 ,cInst3 ,oFontCN)
+	oPrint:Say  (1350,100 ,cInst0 ,oFontCN)
+	oPrint:Say  (1380,100 ,aBolText[1],oFontCN)
+	oPrint:Say  (1410,100 ,aBolText[2],oFontCN)
+	oPrint:Say  (1440,100 ,aBolText[3],oFontCN)
 
 	oPrint:Say  (1210,1910,"(-)Desconto/Abatimento"                                     ,oFont8)
 	oPrint:Say  (1280,1910,"(-)Outras Deduções"                                         ,oFont8)
@@ -1018,13 +994,13 @@ Static Function Impress(oPrint,aBitmap,aDadosEmp,aDadosTit,aDadosBanco,aDatSacad
 	If aDadosBanco[1] == "001"
 		//oPrint:Say  (1900,100, "BANCO DO BRASIL",oFont14n )
 	ElseIf aDadosBanco[1] == "341"
-		oPrint:Say  (1900,100, "BANCO ITAÚ",oFont20 )
+		//oPrint:Say  (1900,100, "BANCO ITAÚ",oFont20 )
 	ElseIf aDadosBanco[1] == "033"
 		oPrint:Say  (1900,100, "SANTANDER",oFont20 )
 	ElseIf aDadosBanco[1] == "237"
 		oPrint:Say  (1900,100, "BRADESCO",oFont20 )
-	ElseIf aDadosBanco[1] == "422"
-		oPrint:Say  (1900,100, "SAFRA",oFont20 )
+		//ElseIf aDadosBanco[1] == "422"
+		//	oPrint:Say  (1900,100, "SAFRA",oFont20 )
 	Endif
 
 	oPrint:Line (2090,100,2090,2300 )
@@ -1146,6 +1122,8 @@ Static Function Impress(oPrint,aBitmap,aDadosEmp,aDadosTit,aDadosBanco,aDatSacad
 
 	If aDadosBanco[1] == "341"
 		oPrint:Say  (2330,100 ,"Instruções/Todos as informações deste bloqueto são de exclusiva responsabilidade do beneficiário",oFont8)
+	Elseif aDadosBanco[1] == "001"
+		oPrint:Say  (2330,100 ,"PAGÁVEL EM QUALQUER BANCO",oFont8)
 	Else
 		oPrint:Say  (2330,100 ,"Instruções/Texto de responsabilidade do beneficiário",oFont8)
 	Endif
@@ -1156,14 +1134,15 @@ Static Function Impress(oPrint,aBitmap,aDadosEmp,aDadosTit,aDadosBanco,aDatSacad
 		oPrint:Say  (2360,2045,PadL(AllTrim(Transform( aDadosTit[5] * (aDadosTit[7]/100),"@E 999,999,999.99")),16," "),oFont10)
 	Endif
 
-	oPrint:Say  (2370,100 ,cInst0 ,oFontCN)
+	//oPrint:Say  (2370,100 ,cInst0 ,oFontCN)
+	oPrint:Say  (2370,100 ,cInst3 ,oFontCN)
 	oPrint:Say  (2400,100 ,cInst1 ,oFontCN)
 	oPrint:Say  (2430,100 ,cInst2 ,oFontCN)
-	oPrint:Say  (2460,100 ,cInst3 ,oFontCN)
-	oPrint:Say  (2480,100 ,cInst4 ,oFontCN)
-	oPrint:Say  (2530,100 ,aBolText[1],oFontCN)
-	oPrint:Say  (2560,100 ,aBolText[2],oFontCN)
-	oPrint:Say  (2590,100 ,aBolText[3],oFontCN)
+	//oPrint:Say  (2460,100 ,cInst3 ,oFontCN)
+	oPrint:Say  (2460,100 ,cInst0 ,oFontCN)
+	oPrint:Say  (2480,100 ,aBolText[1],oFontCN)
+	oPrint:Say  (2530,100 ,aBolText[2],oFontCN)
+	oPrint:Say  (2580,100 ,aBolText[3],oFontCN)
 
 	oPrint:Say  (2330,1910,"(-)Desconto/Abatimento"                         ,oFont8)
 	oPrint:Say  (2400,1910,"(-)Outras Deduções"                             ,oFont8)
@@ -1177,8 +1156,8 @@ Static Function Impress(oPrint,aBitmap,aDadosEmp,aDadosTit,aDadosBanco,aDatSacad
 	oPrint:Say  (2788,210 ,aDatSacado[6]+"  "+aDatSacado[4]+" - "+aDatSacado[5]+"         CGC/CPF: "+Iif(Len(AllTrim(aDatSacado[7]))==14,Transform(aDatSacado[7],"@R 99.999.999/9999-99"),Transform(aDatSacado[7],"@R 999.999.999-99")) ,oFont8)
 
 	If aDadosBanco[1] == "422"
-		oPrint:Say  (1525,100 ,"Sacador/Avalista "+Iif(_lBcoCorrespondente,aDadosEmp[1],"")  ,oFont8)
-		oPrint:Say  (2830,100 ,"Sacador/Avalista "+Iif(_lBcoCorrespondente,aDadosEmp[1],"")  ,oFont8)
+		oPrint:Say  (1525,100 ,"Beneficiário final "+Iif(_lBcoCorrespondente,aDadosEmp[1],"")  ,oFont8)
+		oPrint:Say  (2830,100 ,"Beneficiário final "+Iif(_lBcoCorrespondente,aDadosEmp[1],"")  ,oFont8)
 	Else
 		oPrint:Say  (1525,100 ,"Pagador/Avalista "+Iif(_lBcoCorrespondente,aDadosEmp[1],"")  ,oFont8)
 	EndIf
@@ -1949,40 +1928,20 @@ Static Function ValidPerg
 	aAdd(aRegs,{cPerg,"02","Ate o Prefixo:      ","","","mv_ch2" ,"C", 3,0,0,"G","","mv_par02","","","","","","","","","","","","","","","","","","","","","","","","","",""})
 	aAdd(aRegs,{cPerg,"03","Do Titulo:          ","","","mv_ch3" ,"C", 9,0,0,"G","","mv_par03","","","","","","","","","","","","","","","","","","","","","","","","","",""})
 	aAdd(aRegs,{cPerg,"04","Ate o Titulo:       ","","","mv_ch4" ,"C", 9,0,0,"G","","mv_par04","","","","","","","","","","","","","","","","","","","","","","","","","",""})
-	//Rodrigo Barreto 15/02/2023
-	aAdd(aRegs,{cPerg,"05","Do Cliente:            ","","","mv_ch5" ,"C", 9,0,0,"G","","mv_par05","","","","","","","","","","","","","","","","","","","","","","","","","SA1",""})
-	aAdd(aRegs,{cPerg,"06","Da Loja::            ","","","mv_ch6" ,"C", 4,0,0,"G","","mv_par06","","","","","","","","","","","","","","","","","","","","","","","","","",""})
-	aAdd(aRegs,{cPerg,"07","Até o Cliente:            ","","","mv_ch7" ,"C", 9,0,0,"G","","mv_par07","","","","","","","","","","","","","","","","","","","","","","","","","SA1",""})
-	aAdd(aRegs,{cPerg,"08","Até a Loja::            ","","","mv_ch8" ,"C", 4,0,0,"G","","mv_par08","","","","","","","","","","","","","","","","","","","","","","","","","",""})
-
-	aAdd(aRegs,{cPerg,"09","Do Banco            ","","","mv_ch9" ,"C", 3,0,0,"G","","mv_par09","","","","","","","","","","","","","","","","","","","","","","","","","SA6",""})
-	aAdd(aRegs,{cPerg,"10","Agencia             ","","","mv_ch10" ,"C", 5,0,0,"G","","mv_par10","","","","","","","","","","","","","","","","","","","","","","","","","",""})
-	aAdd(aRegs,{cPerg,"11","Conta               ","","","mv_ch11" ,"C",10,0,0,"G","","mv_par11","","","","","","","","","","","","","","","","","","","","","","","","","",""})
-	aAdd(aRegs,{cPerg,"12","SubConta            ","","","mv_ch12" ,"C", 3,0,0,"G","","mv_par12","","","","","","","","","","","","","","","","","","","","","","","","","",""})
-	aAdd(aRegs,{cPerg,"13","Do bordero          ","","","mv_ch13" ,"C", 6,0,0,"G","","mv_par13","","","","","","","","","","","","","","","","","","","","","","","","","",""})
-	aAdd(aRegs,{cPerg,"14","Ate o Bordero       ","","","mv_ch14","C", 6,0,0,"G","","mv_par14","","","","","","","","","","","","","","","","","","","","","","","","","",""})
-	aAdd(aRegs,{cPerg,"15","Traz marcado        ","","","mv_ch15","N", 1,0,0,"C","","mv_par15","1-Sim","","","","","2-Nao","","","","","","","","","","","","","","","","","","","",""})
-	aAdd(aRegs,{cPerg,"16","Texto 1 da instrucao","","","mv_ch16","C",50,0,0,"G","","mv_par16","","","","","","","","","","","","","","","","","","","","","","","","","",""})
+	aAdd(aRegs,{cPerg,"05","Do Banco            ","","","mv_ch5" ,"C", 3,0,0,"G","","mv_par05","","","","","","","","","","","","","","","","","","","","","","","","","SA6",""})
+	aAdd(aRegs,{cPerg,"06","Agencia             ","","","mv_ch6" ,"C", 5,0,0,"G","","mv_par06","","","","","","","","","","","","","","","","","","","","","","","","","",""})
+	aAdd(aRegs,{cPerg,"07","Conta               ","","","mv_ch7" ,"C",10,0,0,"G","","mv_par07","","","","","","","","","","","","","","","","","","","","","","","","","",""})
+	aAdd(aRegs,{cPerg,"08","SubConta            ","","","mv_ch8" ,"C", 3,0,0,"G","","mv_par08","","","","","","","","","","","","","","","","","","","","","","","","","",""})
+	aAdd(aRegs,{cPerg,"09","Do bordero          ","","","mv_ch9" ,"C", 6,0,0,"G","","mv_par09","","","","","","","","","","","","","","","","","","","","","","","","","",""})
+	aAdd(aRegs,{cPerg,"10","Ate o Bordero       ","","","mv_ch10","C", 6,0,0,"G","","mv_par10","","","","","","","","","","","","","","","","","","","","","","","","","",""})
+	aAdd(aRegs,{cPerg,"11","Traz marcado        ","","","mv_ch11","N", 1,0,0,"C","","mv_par11","1-Sim","","","","","2-Nao","","","","","","","","","","","","","","","","","","","",""})
+	aAdd(aRegs,{cPerg,"12","Texto 1 da instrucao","","","mv_ch12","C",50,0,0,"G","","mv_par12","","","","","","","","","","","","","","","","","","","","","","","","","",""})
+	aAdd(aRegs,{cPerg,"13","                    ","","","mv_ch13","C",50,0,0,"G","","mv_par13","","","","","","","","","","","","","","","","","","","","","","","","","",""})
+	aAdd(aRegs,{cPerg,"14","Texto 2 da instrucao","","","mv_ch14","C",50,0,0,"G","","mv_par14","","","","","","","","","","","","","","","","","","","","","","","","","",""})
+	aAdd(aRegs,{cPerg,"15","                    ","","","mv_ch15","C",50,0,0,"G","","mv_par15","","","","","","","","","","","","","","","","","","","","","","","","","",""})
+	aAdd(aRegs,{cPerg,"16","Texto 3 da instrucao","","","mv_ch16","C",50,0,0,"G","","mv_par16","","","","","","","","","","","","","","","","","","","","","","","","","",""})
 	aAdd(aRegs,{cPerg,"17","                    ","","","mv_ch17","C",50,0,0,"G","","mv_par17","","","","","","","","","","","","","","","","","","","","","","","","","",""})
-	aAdd(aRegs,{cPerg,"18","Texto 2 da instrucao","","","mv_ch18","C",50,0,0,"G","","mv_par18","","","","","","","","","","","","","","","","","","","","","","","","","",""})
-	aAdd(aRegs,{cPerg,"19","                    ","","","mv_ch19","C",50,0,0,"G","","mv_par19","","","","","","","","","","","","","","","","","","","","","","","","","",""})
-	aAdd(aRegs,{cPerg,"20","Texto 3 da instrucao","","","mv_ch20","C",50,0,0,"G","","mv_par20","","","","","","","","","","","","","","","","","","","","","","","","","",""})
-	aAdd(aRegs,{cPerg,"21","                    ","","","mv_ch21","C",50,0,0,"G","","mv_par21","","","","","","","","","","","","","","","","","","","","","","","","","",""})
 
-	/*aAdd(aRegs,{cPerg,"05","Do Banco            ","","","mv_ch5" ,"C", 3,0,0,"G","","mv_par05","","","","","","","","","","","","","","","","","","","","","","","","","SA6",""})
-aAdd(aRegs,{cPerg,"06","Agencia             ","","","mv_ch6" ,"C", 5,0,0,"G","","mv_par06","","","","","","","","","","","","","","","","","","","","","","","","","",""})
-aAdd(aRegs,{cPerg,"07","Conta               ","","","mv_ch7" ,"C",10,0,0,"G","","mv_par07","","","","","","","","","","","","","","","","","","","","","","","","","",""})
-aAdd(aRegs,{cPerg,"08","SubConta            ","","","mv_ch8" ,"C", 3,0,0,"G","","mv_par08","","","","","","","","","","","","","","","","","","","","","","","","","",""})
-aAdd(aRegs,{cPerg,"09","Do bordero          ","","","mv_ch9" ,"C", 6,0,0,"G","","mv_par09","","","","","","","","","","","","","","","","","","","","","","","","","",""})
-aAdd(aRegs,{cPerg,"10","Ate o Bordero       ","","","mv_ch10","C", 6,0,0,"G","","mv_par10","","","","","","","","","","","","","","","","","","","","","","","","","",""})
-aAdd(aRegs,{cPerg,"11","Traz marcado        ","","","mv_ch11","N", 1,0,0,"C","","mv_par11","1-Sim","","","","","2-Nao","","","","","","","","","","","","","","","","","","","",""})
-aAdd(aRegs,{cPerg,"12","Texto 1 da instrucao","","","mv_ch12","C",50,0,0,"G","","mv_par12","","","","","","","","","","","","","","","","","","","","","","","","","",""})
-aAdd(aRegs,{cPerg,"13","                    ","","","mv_ch13","C",50,0,0,"G","","mv_par13","","","","","","","","","","","","","","","","","","","","","","","","","",""})
-aAdd(aRegs,{cPerg,"14","Texto 2 da instrucao","","","mv_ch14","C",50,0,0,"G","","mv_par14","","","","","","","","","","","","","","","","","","","","","","","","","",""})
-aAdd(aRegs,{cPerg,"15","                    ","","","mv_ch15","C",50,0,0,"G","","mv_par15","","","","","","","","","","","","","","","","","","","","","","","","","",""})
-aAdd(aRegs,{cPerg,"16","Texto 3 da instrucao","","","mv_ch16","C",50,0,0,"G","","mv_par16","","","","","","","","","","","","","","","","","","","","","","","","","",""})
-aAdd(aRegs,{cPerg,"17","                    ","","","mv_ch17","C",50,0,0,"G","","mv_par17","","","","","","","","","","","","","","","","","","","","","","","","","",""})
-	*/
 	For i:=1 to Len(aRegs)
 		If !dbSeek(cPerg+'    '+aRegs[i,2])
 			RecLock("SX1",.T.)
