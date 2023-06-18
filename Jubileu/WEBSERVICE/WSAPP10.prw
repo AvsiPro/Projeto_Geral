@@ -39,10 +39,10 @@ WsMethod POST WsReceive RECEIVE WsService WSAPP10
 			+AvKey(oParser:customer_branch,'Z50_LOJCLI');
 			+AvKey(oParser:emission,'Z50_EMISSA');
 			+AvKey(oParser:product,'Z50_PROD')
-
-        cWarranty := GetSXEnum("Z50","Z50_CODIGO")
         
         If !Z50->(DbSeek(cKeyZ50))
+            cWarranty := GetSXEnum("Z50","Z50_CODIGO")
+
 			RecLock('Z50', .T.)
 				Z50->Z50_CODIGO := cWarranty
 				Z50->Z50_NOTA 	:= oParser:invoice
@@ -62,31 +62,40 @@ WsMethod POST WsReceive RECEIVE WsService WSAPP10
 				Z50->Z50_TPDEFE := oParser:defect_type
 				Z50->Z50_OUTEND := fRemoveCarc(oParser:another_address)
 				Z50->Z50_FILPED := oParser:branch_invoice
-				ConfirmSx8()
 			Z50->(MsUnlock())
-
-            cPatch := '\updchamados\chamado_'+Alltrim(cWarranty)
-
-            If !ExistDir(cPatch)
-                Makedir(cPatch)
-            EndIf
-            
-            nHandle := FCREATE(cPatch+'\notification.txt')
-
-			If nHandle = -1
-				conout("Erro ao criar arquivo - ferror " + Str(Ferror()))
-			Else
-				FWrite(nHandle, 'visualizou')
-				FClose(nHandle)
-			EndIf
+			ConfirmSx8()
 
             cMessage := 'Chamado criado com sucesso: '+cWarranty
         Else
-            RollbackSx8()
-			cMessage := 'chamado ja criado para esse produto e nota'+Z50->Z50_CODIGO
-            cCode := '#400'
+            cWarranty := Z50->Z50_CODIGO
+            
+            cMsgGrv := 'Data :'+cValToChar(Date())+' Hora :'+cValToChar(Time())+CRLF
+            cMsgGrv += 'Usuário :'+oParser:customer_user+CRLF 
+            cMsgGrv += 'Observações anotadas :'+oParser:customer_response
+
+            cObsOld := Alltrim(Z50->Z50_OBSATD)+CRLF+'-------------'
+
+            RecLock('Z50', .F.)
+                Z50->Z50_OBSATD := cObsOld + CRLF + Alltrim(cMsgGrv)
+            Z50->(MsUnlock())
+
+			cMessage := EncodeUTF8("Interação realizada com sucesso!")
 		EndIf
-	
+
+        cPatch := '\updchamados\chamado_'+Alltrim(cWarranty)
+
+        If !ExistDir(cPatch)
+            Makedir(cPatch)
+        EndIf
+        
+        nHandle := FCREATE(cPatch+'\notification.txt')
+
+        If nHandle = -1
+            conout("Erro ao criar arquivo - ferror " + Str(Ferror()))
+        Else
+            FWrite(nHandle, 'visualizou')
+            FClose(nHandle)
+        EndIf
 	EndIf
 
     cResult := '{'

@@ -8,6 +8,7 @@ WsRestFul WSAPP09 Description "chamadosXnotas API" FORMAT APPLICATION_JSON
 	WsData pageSize  AS Integer	Optional
 	WsData token     AS String
 	WsData product   AS String
+	WsData invoice 	 AS String Optional
 
 WsMethod GET warrantyxinvoices;
     Description 'Lista de chamadosXnotas';
@@ -23,11 +24,12 @@ Retorna a lista de chamadosXnotas.
 		PageSize   , numerico, quantidade de registros por pagina
 		token      , caracter, token vendedor que usara como filtro
 		product    , caracter, codigo do produto
+		invoice    , caracter, filtrar para espelho da nota
 
 @return cResponse  , caracter, JSON contendo a lista de chamadosXnotas
 /*/
 
-WsMethod GET warrantyxinvoices WsReceive page, pageSize, token, product WsRest WSAPP09
+WsMethod GET warrantyxinvoices WsReceive page, pageSize, token, product, invoice WsRest WSAPP09
 	Local lRet:= .T.
 	lRet := warrantyxinvoices( self )
 Return( lRet )
@@ -43,6 +45,7 @@ Default oself:page		:= 1
 Default oself:pageSize	:= 20
 Default oself:token  	:= ''
 Default oself:product   := ''
+Default oself:invoice   := ''
 	
     RpcSetType(3)
     RPCSetEnv('01','0101')
@@ -76,6 +79,11 @@ Default oself:product   := ''
 	cQuery += "        AND UPPER(A1_TOKEN) = '"+Upper(oself:token)+"'   " 
 	cQuery += "        AND SA1.D_E_L_E_T_ = ' '   " 
 	cQuery += " WHERE  D2_COD='"+oself:product+"'   " 
+
+	If !Empty(oself:invoice)
+		cQuery += " AND D2_DOC='"+oself:invoice+"'"
+	EndIf
+
 	cQuery += " ORDER BY " + SqlOrder(SD2->(IndexKey(1)))
 	cQuery += " OFFSET (("+cValToChar(oself:page)+" - 1) * "+cValToChar(oself:pageSize)+") ROWS "
 	cQuery += " FETCH NEXT "+cValToChar(oself:pageSize)+" ROWS ONLY "
@@ -90,7 +98,7 @@ Default oself:product   := ''
 			+AvKey((cAliasTMP)->D2_EMISSAO,'Z50_EMISSA');
 			+AvKey((cAliasTMP)->D2_COD,'Z50_PROD')
 
-		If !Z50->(DbSeek(cKeyZ50))	
+		If !Z50->(DbSeek(cKeyZ50)) .Or. !Empty(oself:invoice)
 			nAux++
 			aAdd(aListAux , JsonObject():New() )
 

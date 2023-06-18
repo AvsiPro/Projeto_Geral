@@ -88,21 +88,23 @@ Default oself:token  	:= ''
 			oFile:Close()
 		EndIf
 
-		aListAux[nAux]['id']	        := Encode64(cIdAux)
-		aListAux[nAux]['warranty']	    := Alltrim(EncodeUTF8((cAliasTMP)->Z50_CODIGO))
-		aListAux[nAux]['invoice']	    := Alltrim(EncodeUTF8((cAliasTMP)->Z50_NOTA))
-		aListAux[nAux]['item']	     	:= Alltrim(EncodeUTF8((cAliasTMP)->Z50_ITEM))
-		aListAux[nAux]['emission']	    := Alltrim(EncodeUTF8((cAliasTMP)->Z50_EMISSA))
-		aListAux[nAux]['product']	    := Alltrim(EncodeUTF8((cAliasTMP)->Z50_PROD))
-		aListAux[nAux]['description']	:= Alltrim(EncodeUTF8(Posicione("SB1",1,FWxFilial("SB1")+(cAliasTMP)->Z50_PROD,"B1_DESC")))
-		aListAux[nAux]['quantity']	    := (cAliasTMP)->Z50_QUANT
-		aListAux[nAux]['defect']	    := fComboDefeito(1,(cAliasTMP)->Z50_DEFEIT)
-		aListAux[nAux]['defect_type']	:= fComboDefeito(2,(cAliasTMP)->Z50_TPDEFE)
-		aListAux[nAux]['price']	     	:= (cAliasTMP)->Z50_PRECO
-		aListAux[nAux]['order']	     	:= Alltrim(EncodeUTF8((cAliasTMP)->Z50_PEDVEN))
-		aListAux[nAux]['obs_atend']	    := Alltrim(EncodeUTF8((cAliasTMP)->Z50_OBSATD))
-		aListAux[nAux]['notification']	:= Alltrim(cNotif)
-		aListAux[nAux]['status']	    := Alltrim(EncodeUTF8((cAliasTMP)->Z50_STATUS))
+		aListAux[nAux]['id']	          := Encode64(cIdAux)
+		aListAux[nAux]['warranty']	      := Alltrim(EncodeUTF8((cAliasTMP)->Z50_CODIGO))
+		aListAux[nAux]['invoice']	      := Alltrim(EncodeUTF8((cAliasTMP)->Z50_NOTA))
+		aListAux[nAux]['item']	     	  := Alltrim(EncodeUTF8((cAliasTMP)->Z50_ITEM))
+		aListAux[nAux]['emission']	      := Alltrim(EncodeUTF8((cAliasTMP)->Z50_EMISSA))
+		aListAux[nAux]['product']	      := Alltrim(EncodeUTF8((cAliasTMP)->Z50_PROD))
+		aListAux[nAux]['description']	  := Alltrim(EncodeUTF8(Posicione("SB1",1,FWxFilial("SB1")+(cAliasTMP)->Z50_PROD,"B1_DESC")))
+		aListAux[nAux]['quantity']	      := (cAliasTMP)->Z50_QUANT
+		aListAux[nAux]['defect']	      := EncodeUTF8(fComboDefeito(1,(cAliasTMP)->Z50_DEFEIT))
+		aListAux[nAux]['defect_type']	  := EncodeUTF8(fComboDefeito(2,(cAliasTMP)->Z50_TPDEFE))
+		aListAux[nAux]['price']	     	  := (cAliasTMP)->Z50_PRECO
+		aListAux[nAux]['order']	     	  := Alltrim(EncodeUTF8((cAliasTMP)->Z50_PEDVEN))
+		aListAux[nAux]['obs_atend']	      := Alltrim(EncodeUTF8((cAliasTMP)->Z50_OBSATD))
+		aListAux[nAux]['notification']	  := Alltrim(cNotif)
+		aListAux[nAux]['status']	      := Alltrim(EncodeUTF8((cAliasTMP)->Z50_STATUS))
+		aListAux[nAux]['customer']     	  := Alltrim(EncodeUTF8((cAliasTMP)->Z50_CODCLI))
+		aListAux[nAux]['customer_branch'] := Alltrim(EncodeUTF8((cAliasTMP)->Z50_LOJCLI))
 
 		(cAliasTMP)->(DBSkip())
 	EndDo
