@@ -418,7 +418,7 @@ Local cRet := ''
 	
 	cQuery := " SELECT * FROM "+RetSqlName('SA3')+" " + CRLF
 	cQuery += " WHERE D_E_L_E_T_ = ' ' " + CRLF
-	cQuery += " AND UPPER(A3_TOKEN) = '"+Upper(cToken)"' " + CRLF
+	cQuery += " AND UPPER(A3_TOKEN) = '"+Upper(cToken)+"' " + CRLF
 	
 	cAliasTMP := GetNextAlias()
 	MPSysOpenQuery(cQuery, cAliasTMP)
