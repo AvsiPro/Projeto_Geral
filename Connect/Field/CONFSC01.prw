@@ -1607,7 +1607,9 @@ If nOpcG == 0
 												aList5B[nCont,nJ,08],;
 												aList5B[nCont,nJ,09]}) 
 							EndIf
-						Next nJ 
+						Next nJ
+					Else 
+						exit 
 					EndIf
 				Next nCont
 			

@@ -8,6 +8,7 @@ WsRestFul WSAPP02 Description "Clientes API" FORMAT APPLICATION_JSON
 	WsData pageSize  AS Integer	Optional
 	WsData searchKey AS String	Optional
 	WsData byId		 AS Boolean	Optional
+	WsData cCodVend	 AS String  Optional
 
 WsMethod GET customers;
     Description 'Lista de Clientes';
@@ -23,14 +24,17 @@ Retorna a lista de clientes.
 		Page	   , numerico, numero da pagina
 		PageSize   , numerico, quantidade de registros por pagina
 		byId	   , logico, indica se deve filtrar apenas pelo codigo
+		cCodVend   , codigo do vendedor da pesquisa.
 
 @return cResponse  , caracter, JSON contendo a lista de clientes
 
 /*/
 
-WsMethod GET customers WsReceive searchKey, page, pageSize WsRest WSAPP02
+WsMethod GET customers WsReceive cCodVend, searchKey, page, pageSize WsRest WSAPP02
+	
 	Local lRet:= .T.
 	lRet := Customers( self )
+
 Return( lRet )
 
 Static Function Customers( oSelf )
@@ -39,13 +43,17 @@ Local aListCli	    := {}
 Local oJsonAux	    := Nil
 Local cJsonCli		:= ''
 Local cSearch		:= ''
+Local cVend 		:= ''
 Local cWhere		:= ''
 Local nAux			:= 0
+Local aRegiao 		:=	{}
+Local nCont 
 
-Default oself:searchKey := ''
-Default oself:page		:= 1
-Default oself:pageSize	:= 20
-Default oself:byId		:=.F.
+Default oself:searchKey :=	''
+Default oself:page		:=	1
+Default oself:pageSize	:= 	20
+Default oself:byId		:=	.F.
+Default oself:cCodVend	:=	''
 	
     RpcSetType(3)
     RPCSetEnv('01','0101')
@@ -57,6 +65,7 @@ Default oself:byId		:=.F.
 	// Tratativas para realizar os filtros
 	If !Empty(oself:searchKey) //se tiver chave de busca no request
 		cSearch := Upper( oself:SearchKey )
+		cVend   := Alltrim( oself:cCodVend )
 
 		If oself:byId //se filtra somente por ID
 			cWhere += " AND SA1.A1_COD = '"	+ cSearch + "'"
@@ -68,6 +77,43 @@ Default oself:byId		:=.F.
 			cWhere	+= " SA1.A1_NREDUZ LIKE 	'%" + cSearch  + "%' OR "
 			cWhere	+= " SA1.A1_CGC LIKE	 	'%" + StrTran(StrTran(StrTran(StrTran(cSearch, " ", ""), "-", ""), ".", ""), "/", "")  + "%' OR "
 			cWhere	+= " SA1.A1_NOME LIKE 		'%" + cSearch + "%' ) "
+
+			If !Empty(cVend)
+				aRegiao := BuscaRegiao(cVend)
+
+				IF len(aRegiao) > 0
+					cRegiao := ""
+					nCont   := 0
+					cVirgula:= ""
+					For nCont := 1 to len(aRegiao)
+						cRegiao += cVirgula + aRegiao[nCont]
+						cVirgula := "','"
+						
+					Next nCont
+					cWhere += " AND SA1.A1_EST IN('"+upper(cRegiao)+"')"
+				EndIf
+				
+			EndIf
+		EndIf
+
+	ElseIf !Empty(oself:cCodVend) //se tiver chave de busca no request
+		cVend   := Alltrim( oself:cCodVend )
+
+		If !Empty(cVend)
+			aRegiao := BuscaRegiao(cVend)
+			
+			IF len(aRegiao) > 0
+				cRegiao := ""
+				nCont   := 0
+				cVirgula:= ""
+				For nCont := 1 to len(aRegiao)
+					cRegiao += cVirgula + aRegiao[nCont]
+					cVirgula := "','"
+					
+				Next nCont
+				cWhere += " AND SA1.A1_EST IN('"+upper(cRegiao)+"')"
+			EndIf
+			
 		EndIf
 	EndIf
 
@@ -315,3 +361,45 @@ Local aArea    := GetArea()
 	RestArea(aArea)
 
 Return aListAux
+
+/*/{Protheus.doc} BuscaRegiao
+	(long_description)
+	@type  Static Function
+	@author user
+	@since 19/06/2023
+	@version version
+	@param param_name, param_type, param_descr
+	@return return_var, return_type, return_description
+	@example
+	(examples)
+	@see (links_or_references)
+/*/
+STATIC Function BuscaRegiao(cVendedor)
+
+Local aArray := {}
+Local aAux   := {}
+Local cQuery
+Local nCont  := 0
+
+cQuery := "SELECT Z30_REGIAO FROM "+RetSQLName("Z30")
+cQuery += " WHERE Z30_CODVEN='"+cVendedor+"'"
+
+If Select('TRB') > 0
+	dbSelectArea('TRB')
+	dbCloseArea()
+EndIf
+
+DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
+
+DbSelectArea("TRB")
+
+While !EOF()
+	aAux := Strtokarr(Alltrim(TRB->Z30_REGIAO),"/")
+	For nCont := 1 to len(aAux)
+		Aadd(aArray,aAux[nCont])
+	Next nCont
+	Dbskip()
+EndDo
+	
+conout(cvaltochar(aArray))
+Return(aArray)
