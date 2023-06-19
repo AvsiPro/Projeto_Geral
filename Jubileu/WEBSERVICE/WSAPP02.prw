@@ -8,7 +8,7 @@ WsRestFul WSAPP02 Description "Clientes API" FORMAT APPLICATION_JSON
 	WsData pageSize  AS Integer	Optional
 	WsData searchKey AS String	Optional
 	WsData byId		 AS Boolean	Optional
-	WsData cCodVend	 AS String  Optional
+	WsData token	 AS String  Optional
 
 WsMethod GET customers;
     Description 'Lista de Clientes';
@@ -24,13 +24,13 @@ Retorna a lista de clientes.
 		Page	   , numerico, numero da pagina
 		PageSize   , numerico, quantidade de registros por pagina
 		byId	   , logico, indica se deve filtrar apenas pelo codigo
-		cCodVend   , codigo do vendedor da pesquisa.
+		token      , token vendedor
 
 @return cResponse  , caracter, JSON contendo a lista de clientes
 
 /*/
 
-WsMethod GET customers WsReceive cCodVend, searchKey, page, pageSize WsRest WSAPP02
+WsMethod GET customers WsReceive searchKey, page, pageSize, token WsRest WSAPP02
 	
 	Local lRet:= .T.
 	lRet := Customers( self )
@@ -53,7 +53,7 @@ Default oself:searchKey :=	''
 Default oself:page		:=	1
 Default oself:pageSize	:= 	20
 Default oself:byId		:=	.F.
-Default oself:cCodVend	:=	''
+Default oself:token		:=	''
 	
     RpcSetType(3)
     RPCSetEnv('01','0101')
@@ -65,7 +65,7 @@ Default oself:cCodVend	:=	''
 	// Tratativas para realizar os filtros
 	If !Empty(oself:searchKey) //se tiver chave de busca no request
 		cSearch := Upper( oself:SearchKey )
-		cVend   := Alltrim( oself:cCodVend )
+		cVend   := fVendToken( oself:token )
 
 		If oself:byId //se filtra somente por ID
 			cWhere += " AND SA1.A1_COD = '"	+ cSearch + "'"
@@ -96,8 +96,8 @@ Default oself:cCodVend	:=	''
 			EndIf
 		EndIf
 
-	ElseIf !Empty(oself:cCodVend) //se tiver chave de busca no request
-		cVend   := Alltrim( oself:cCodVend )
+	ElseIf !Empty(oself:token) //se tiver chave de busca no request
+		cVend   := Alltrim( oself:token )
 
 		If !Empty(cVend)
 			aRegiao := BuscaRegiao(cVend)
@@ -403,3 +403,30 @@ EndDo
 	
 conout(cvaltochar(aArray))
 Return(aArray)
+
+
+/*/{Protheus.doc} fVendToken
+   @description: Token Vendedor
+   @type: Static Function
+   @author: Felipe Mayer
+   @since: 19/06/2023
+/*/
+
+Static Function fVendToken(cToken)
+
+Local cRet := ''
+	
+	cQuery := " SELECT * FROM "+RetSqlName('SA3')+" " + CRLF
+	cQuery += " WHERE D_E_L_E_T_ = ' ' " + CRLF
+	cQuery += " AND UPPER(A3_TOKEN) = '"+Upper(cToken)"' " + CRLF
+	
+	cAliasTMP := GetNextAlias()
+	MPSysOpenQuery(cQuery, cAliasTMP)
+	
+	If (cAliasTMP)->(!EoF())
+		cRet := (cAliasTMP)->A3_COD
+	EndIf
+	
+	(cAliasTMP)->(DbCloseArea())
+
+Return cRet

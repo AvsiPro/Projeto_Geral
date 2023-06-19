@@ -9,8 +9,6 @@ WsRestFul WSAPP05 Description "titulos API" FORMAT APPLICATION_JSON
 	WsData searchKey AS String	Optional
 	WsData byId		 AS Boolean	Optional
 	WsData customer  AS String
-	WsData token     AS String
-	WsData type		 AS String
 
 WsMethod GET financial;
     Description 'Lista de titulos';
@@ -27,14 +25,12 @@ Retorna a lista de titulos.
 		PageSize   , numerico, quantidade de registros por pagina
 		byId	   , logico  , indica se deve filtrar apenas pelo codigo
 		customer   , caracter, cliente que usara como filtro
-		token      , caracter, token vendedor que usara como filtro
-		type 	   , caracter, tipo cliente ou vendedor
 
 @return cResponse  , caracter, JSON contendo a lista de titulos
 
 /*/
 
-WsMethod GET financial WsReceive searchKey, page, pageSize, customer, token, type WsRest WSAPP05
+WsMethod GET financial WsReceive searchKey, page, pageSize, customer WsRest WSAPP05
 	Local lRet:= .T.
 	lRet := financial( self )
 Return( lRet )
@@ -53,8 +49,6 @@ Default oself:page		:= 1
 Default oself:pageSize	:= 20
 Default oself:byId		:= .F.
 Default oself:customer  := ''
-Default oself:token  	:= ''
-Default oself:type  	:= ''
 	
     RpcSetType(3)
     RPCSetEnv('01','0101')
@@ -81,22 +75,7 @@ Default oself:type  	:= ''
 		cQuery += " AND SA1.A1_COD=E1_CLIENTE "
 		cQuery += " AND SA1.A1_LOJA=E1_LOJA "
 		cQuery += " AND SA1.D_E_L_E_T_=' ' "
-		
-		If oself:type == 'V'
-			cQuery += " INNER JOIN " + RetSqlName("SA3") + " SA3 "
-			cQuery += " ON A3_FILIAL = '"+FwxFilial("SA3")+"' "
-			cQuery += " AND A3_COD = E1_VEND1 "
-			cQuery += " AND SA3.D_E_L_E_T_ = ' '   "
-		EndIf
-
 		cQuery += " WHERE SE1.D_E_L_E_T_=' ' "
-
-		If oself:type == 'V'
-			cQuery += " AND UPPER(A3_TOKEN) = '"+Upper(oself:token)+"' "
-		Else
-			cQuery += " AND UPPER(A1_TOKEN) = '"+Upper(oself:token)+"' "
-		EndIf
-
 		cQuery += " AND SA1.A1_CGC = '"+oself:customer+"' "+cWhere
 		cQuery += " ORDER BY " + SqlOrder(SE1->(IndexKey(1)))
 		cQuery += " OFFSET (("+cValToChar(oself:page)+" - 1) * "+cValToChar(oself:pageSize)+") ROWS "
