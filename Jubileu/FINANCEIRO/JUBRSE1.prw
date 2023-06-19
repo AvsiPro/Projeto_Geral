@@ -112,10 +112,10 @@ Static Function GeraExcel()
 		cQuery += " AND E1_SITUACA <> '' AND E1_SALDO > 0 " 
 		cQuery += " AND E1.R_E_C_N_O_>0 "
 	elseif cPar7 == "2"
-		cQuery += " AND E1_BAIXA <> '' "
+		cQuery += " AND E1_BAIXA <> '' AND E5_TIPODOC NOT IN ('JR') "
 		cQuery += " AND E1.R_E_C_N_O_>0 "
 	Else
-		cQuery += " AND E1.R_E_C_N_O_>0"
+		cQuery += " AND E1.R_E_C_N_O_>0 AND E5_TIPODOC NOT IN ('JR') "
 	EndIf
 
 	If Select("TMP")<>0
