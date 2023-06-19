@@ -279,7 +279,7 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
 	cObsApp := oBody:OBSERVATION
 	nDescon := oBody:DESCONTO
 
-	If !lForce .And. oBody:ORCAMENTO <> 'S'
+	/*If !lForce .And. oBody:ORCAMENTO <> 'S'
 		aSaldos := ValSald(oBody:ITEMS)
 	ENDIF
 	
@@ -292,7 +292,7 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
 		Next nX
 		aSld := aSaldos
 		
-	Else
+	Else*/
 		If cCondPg == "000"
 			cCondPg := '001'
 		EndIf
@@ -380,14 +380,6 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
 					SA1->A1_TEL := substr(oBody:Cliente:CELULAR,3)
 				ENDIF
 
-				//If Alltrim(SA1->A1_XTELEFO) <> substr(oBody:Cliente:FONE2,3)
-				//	SA1->A1_XTELEFO := substr(oBody:Cliente:FONE2,3)
-				//ENDIF
-
-				//IF Alltrim(SA1->A1_XDDD) <> substr(oBody:Cliente:FONE2,1,2)
-				//	SA1->A1_XDDD := substr(oBody:Cliente:FONE2,1,2)
-				//ENDIF
-
 				If oBody:CLIENTE:GetJsonObject("OBSERVACAO_ENTREGA") <> Nil
 					If Alltrim(SA1->A1_ENDENT) <> Alltrim(oBody:CLIENTE:GetJsonObject("ENDERECO_ENTREGA"))
 						SA1->A1_ENDENT := oBody:CLIENTE:GetJsonObject("ENDERECO_ENTREGA")
@@ -428,8 +420,6 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
 				Aadd(aDadCl,{"A1_EMAIL" ,   upper(oBody:Cliente[1]:EMAIL)                  	, NIL})
 				Aadd(aDadCl,{"A1_DDD"   ,   Substr(oBody:Cliente[1]:CELULAR,1,2)            , NIL})
 				Aadd(aDadCl,{"A1_TEL"   ,   substr(oBody:Cliente[1]:CELULAR,3)              , NIL})
-				//Aadd(aDadCl,{"A1_XDDD"   ,   Substr(oBody:Cliente[1]:FONE2,1,2)             , NIL})
-				//Aadd(aDadCl,{"A1_XTELEFO",   substr(oBody:Cliente[1]:FONE2,3)               , NIL})
 				Aadd(aDadCl,{"A1_CONTATO",  oBody:Cliente[1]:CONTATO			          	, NIL})
 				
 			else
@@ -443,8 +433,6 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
 				Aadd(aDadCl,{"A1_EMAIL" ,   upper(oBody:Cliente:EMAIL)                  	, NIL})
 				Aadd(aDadCl,{"A1_DDD"   ,   Substr(oBody:Cliente:CELULAR,1,2)               , NIL})
 				Aadd(aDadCl,{"A1_TEL"   ,   substr(oBody:Cliente:CELULAR,3)                 , NIL})	
-				//Aadd(aDadCl,{"A1_XDDD"  ,   Substr(oBody:Cliente:FONE2,1,2) 	            , NIL})
-				//Aadd(aDadCl,{"A1_XTELEFO",  substr(oBody:Cliente:FONE2,3)	                , NIL})	
 				Aadd(aDadCl,{"A1_CONTATO",  oBody:Cliente:CONTATO			                , NIL})
 				
 			EndIf
@@ -513,11 +501,9 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
 				aadd(aCabec, {"C5_TIPOPV" 	, '1'			,Nil}) //
 				aadd(aCabec, {"C5_MOEDA"  	, 1				,Nil})  // Moeda
 				aadd(aCabec, {"C5_CONDPAG"	, cCondPg		,Nil})
-				aadd(aCabec, {"C5_NATUREZ"  ,"11010007"     ,Nil})  
+				aadd(aCabec, {"C5_NATUREZ"  ,"11010001"     ,Nil})  
 				aadd(aCabec, {"C5_VEND1"    , cCodVnd       ,Nil})
-				//aadd(aCabec, {"C5_X_OBS"    , cObsApp		,Nil})
-				//aadd(aCabec, {"C5_ZZSTATU"  , 'X'			,Nil})
-
+			
 				cItem := '01'
 
 				FOR nX := 1 to len(aItensCad)  
@@ -538,17 +524,16 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
 					aadd(aLinha,{"C6_PRCVEN"	, val(STRTRAN(aItensCad[nX]:VALOR,",","."))	, Nil})
 					aadd(aLinha,{"C6_PRUNIT"	, val(STRTRAN(aItensCad[nX]:VALOR,",","."))	, Nil})
 					aadd(aLinha,{"C6_VALOR"		, val(STRTRAN(aItensCad[nX]:VALOR,",",".")) * nQtd	, Nil})
-					//aadd(aLinha,{"C6_XQTDORI"	, nQtd							, Nil})
 					
 					cItem := Soma1(cItem)
-					
+					/*
 					If aItensCad[nX]:GetJsonObject("BENEF") <> Nil
 						If aItensCad[nX]:BENEF == "B"
 
 							DbSelectArea("AI3")
 							AI3->(DbsetOrder(1))
 							
-							If AI3->(Dbseek('0101'+AvKey(cUserCod,'AI3_CODUSU')))
+							If AI3->(Dbseek('0801'+AvKey(cUserCod,'AI3_CODUSU')))
 								RecLock('AI3', .F.)
 									AI3->AI3_ULTBEN := Date()
 								AI3->(MsUnlock())
@@ -562,7 +547,9 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
 					else
 						aadd(aLinha,{"C6_TES"		, '502'			 				, Nil})
 					EndIf 
-					
+                    */
+
+					aadd(aLinha,{"C6_TES"		, '501'			 				, Nil})
 					aadd(aLinha,{"C6_LOCAL"		, SB1->B1_LOCPAD	 			, Nil})
 					aadd(aLinha,{"C6_DESCONT"	, VAL(nDescon)			  	 	, Nil})
 					
@@ -581,7 +568,7 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
 					ConOut("Incluído com sucesso! " + cDoc)
 					ConfirmSX8()
 					cPedido := SC5->C5_NUM
-					GERHTML(cPedido)
+					//GERHTML(cPedido)
 					cMessage := 'Pedido gerado com sucesso'
 					lRet := .T.
 				Else
@@ -628,7 +615,7 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
 					aadd(aLinha,{"CK_PRUNIT"	,val(STRTRAN(aItensCad[nX]:VALOR,",",".")),Nil})           
 					aadd(aLinha,{"CK_VALOR"		,val(STRTRAN(aItensCad[nX]:VALOR,",",".")) * nQtd,Nil})
 					
-					If aItensCad[nX]:GetJsonObject("BENEF") <> Nil
+					/*If aItensCad[nX]:GetJsonObject("BENEF") <> Nil
 						If aItensCad[nX]:BENEF == "B"
 							aadd(aLinha,{"CK_TES"		, '626'			 				, Nil})
 						Else
@@ -636,8 +623,9 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
 						EndIf 
 					else
 						aadd(aLinha,{"CK_TES"		, '502'			 				, Nil})
-					EndIf 
+					EndIf */
 					
+                    aadd(aLinha,{"CK_TES"		, '501'			 				, Nil})
 					aadd(aLinha,{"CK_LOCAL"		, SB1->B1_LOCPAD	 			, Nil})
 					aadd(aLinha,{"CK_DESCONT"	, VAL(nDescon)			  	 	, Nil})
 					
@@ -671,7 +659,7 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
 		
 
 		EndIf
-	EndIf
+	//EndIf
 	
 	aRetExec := {cPedido,cMessage,cProdsSld}
 
