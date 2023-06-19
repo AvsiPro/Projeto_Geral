@@ -2185,6 +2185,11 @@ Local cCnAt    :=   'ZZZZZZZZZZZZZZZ'
 LOCAL cData    :=    ''
 LOCAL nX
 LOCAL nY
+Local cCn1 
+Local cCn2 
+Local cAt1
+Local cAt2
+Local lDataG       :=   .F.
 
 PRIVATE aPergs     :=    {}
 PRIVATE aRet       :=    {}
@@ -2197,26 +2202,39 @@ aAdd(aPergs ,{1, "Contrato Até?",   cCnAt, "", "", "AAM", "", 070, .F.})
 
 
 IF ParamBox(aPergs ,"Periodo de vendas",@aRet)
+    cAt1 := aRet[1]
+    cAt2 := aRet[2]
+    cCn1 := If(!empty(aRet[3]),strzero(val(aRet[3]),15),aRet[3])
+    cCn2 := If(!empty(aRet[4]) .And. !'Z' $ aRet[4],strzero(val(aRet[4]),15),aRet[4])
+    
     for nX := 1 to len(aList)
-        If Alltrim(aList[nX,02]) >= Alltrim(MV_PAR01) .AND. Alltrim(aList[nX,02]) <= Alltrim(MV_PAR02) .AND. ;
-            Alltrim(aList[nX,22]) >= Alltrim(MV_PAR03) .AND. Alltrim(aList[nX,22]) <= Alltrim(MV_PAR04)
-            dUltLei := UltLei(aList[nX,02])
-            If Empty(dtos(dUltLei))
-                dUltLei := ddatabase-30
+        If Alltrim(aList[nX,02]) >= Alltrim(cAt1) .AND. Alltrim(aList[nX,02]) <= Alltrim(cAt2) .AND. ;
+            Alltrim(aList[nX,22]) >= Alltrim(cCn1) .AND. Alltrim(aList[nX,22]) <= Alltrim(cCn2)
+           
+            If !lDataG
+                dUltLei := UltLei(aList[nX,02])
+                If Empty(dtos(dUltLei))
+                    dUltLei := ddatabase-30
+                EndIf 
+
+                aPergs := {}
+                aRet   := {}
+                aAdd(aPergs ,{1, "Data Inicial?",   dUltLei, "", "", "", "", 070, .T.})    
+                aAdd(aPergs ,{1, "Data Final?",     daySub(ddatabase, 1), "", "", "", "", 070, .T.}) 
             EndIf 
 
-            aPergs := {}
-            aRet   := {}
-            aAdd(aPergs ,{1, "Data Inicial?",   dUltLei, "", "", "", "", 070, .T.})    
-            aAdd(aPergs ,{1, "Data Final?",     daySub(ddatabase, 1), "", "", "", "", 070, .T.}) 
-            
-            If ParamBox(aPergs ,"Confirma o Periodo",@aRet) 
-            //daySub(ddatabase, 1)
-                dUltLei := aRet[1]
-                dLeiFim := aRet[2]
-                Aadd(aVendas, U_CONWSC03(aList[nX,02],2,dUltLei,dLeiFim,cHri,cHrf))
+            IF !lDataG
+                If ParamBox(aPergs ,"Confirma o Periodo",@aRet) 
+                //daySub(ddatabase, 1)
+                    dUltLei := aRet[1]
+                    dLeiFim := aRet[2]
+                    Aadd(aVendas, U_CONWSC03(aList[nX,02],2,dUltLei,dLeiFim,cHri,cHrf))
+                    lDataG := .T.
+                else
+                    RETURN
+                EndIf 
             else
-                RETURN
+                Aadd(aVendas, U_CONWSC03(aList[nX,02],2,dUltLei,dLeiFim,cHri,cHrf))
             EndIf 
         EndIf
     next

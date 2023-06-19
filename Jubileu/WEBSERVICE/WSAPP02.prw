@@ -247,5 +247,71 @@ Static Function fGeraResult(aListCli, nAux, aListAux)
 	aListCli[nAux]['amount_delays']     := aListAux[24]
 	aListCli[nAux]['biggest_delays']    := aListAux[25]
 	aListCli[nAux]['late_payments']     := aListAux[26]
+	aListCli[nAux]['financial']			:= fTitulos(aListAux[2],aListAux[3])
 
 Return
+
+
+/*/{Protheus.doc} fTitulos
+   @description: Verifica se possui titulos em aberto
+   @type: Static Function
+   @author: Felipe Mayer
+   @since: 18/06/2023
+/*/
+Static Function fTitulos(cCodeA1, cLojaA1)
+
+Local nAux 	   := 0
+Local aListAux := {}
+Local aArea    := GetArea()
+
+	cQuery := " SELECT E1_PREFIXO,E1_NUM,E1_PARCELA,E1_CLIENTE,E1_LOJA,"
+	cQuery += " E1_EMISSAO,E1_VENCREA,E1_VALOR,E1_BAIXA,A1_NOME,A1_CGC "
+	cQuery += " FROM "+RetSqlName('SE1')+" SE1 "
+	cQuery += " INNER JOIN "+RetSqlName("SA1")+" SA1 "
+	cQuery += " 	ON SA1.A1_FILIAL='"+FwxFilial("SA1")+"' "
+	cQuery += " 	AND SA1.A1_COD = E1_CLIENTE "
+	cQuery += " 	AND SA1.A1_LOJA = E1_LOJA "
+	cQuery += " 	AND SA1.D_E_L_E_T_ = ' ' "
+	cQuery += " WHERE SE1.D_E_L_E_T_ = ' ' "
+	cQuery += "		AND SE1.E1_BAIXA = ' ' "
+	cQuery += " 	AND SA1.A1_COD = '"+cCodeA1+"' "
+	cQuery += " 	AND SA1.A1_LOJA = '"+cLojaA1+"' "
+
+	cAliasE1 := GetNextAlias()
+	MPSysOpenQuery(cQuery, cAliasE1)
+
+	While (cAliasE1)->(!Eof())
+		nAux++
+		aAdd(aListAux , JsonObject():New() )
+
+		cIdAux := '{"SE1",'+;
+			'"'+Alltrim(EncodeUTF8((cAliasE1)->E1_NUM))+'",'+;
+			'"'+Alltrim(EncodeUTF8((cAliasE1)->E1_PARCELA))+'",'+;
+			'"'+Alltrim(EncodeUTF8((cAliasE1)->E1_PREFIXO))+'",'+;
+			'"'+Alltrim(EncodeUTF8((cAliasE1)->E1_CLIENTE))+'",'+;
+			'"'+Alltrim(EncodeUTF8((cAliasE1)->E1_LOJA))+'",'+;
+			'"'+Alltrim(EncodeUTF8((cAliasE1)->E1_VENCREA))+'"'+;
+		'}
+
+		cStatus := If(SToD((cAliasE1)->E1_VENCREA) >= Date(),"Em Aberto","Atrasado")
+
+		aListAux[nAux]['id']	            := Encode64(cIdAux)
+		aListAux[nAux]['document']	        := Alltrim(EncodeUTF8((cAliasE1)->E1_NUM))
+		aListAux[nAux]['prefix']     		:= Alltrim(EncodeUTF8((cAliasE1)->E1_PREFIXO))
+		aListAux[nAux]['installments']		:= Alltrim(EncodeUTF8((cAliasE1)->E1_PARCELA))
+		aListAux[nAux]['customer']			:= Alltrim(EncodeUTF8((cAliasE1)->E1_CLIENTE))
+		aListAux[nAux]['emission']			:= Alltrim(EncodeUTF8((cAliasE1)->E1_EMISSAO))
+		aListAux[nAux]['expiration']		:= Alltrim(EncodeUTF8((cAliasE1)->E1_VENCREA))
+		aListAux[nAux]['value']				:= (cAliasE1)->E1_VALOR
+		aListAux[nAux]['status']			:= Alltrim(EncodeUTF8(cStatus))
+		aListAux[nAux]['customerName']		:= Alltrim(EncodeUTF8((cAliasE1)->A1_NOME))
+		aListAux[nAux]['customerCNPJ']		:= Alltrim(EncodeUTF8((cAliasE1)->A1_CGC))
+
+		(cAliasE1)->(DBSkip())
+	EndDo
+
+	(cAliasE1)->(DbCloseArea())
+	
+	RestArea(aArea)
+
+Return aListAux

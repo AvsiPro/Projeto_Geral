@@ -49,7 +49,7 @@ Private cTpCnt		:=	space(3)
 
 Private oDlg1,oGrp1,oGrp2,oSay1,oSay2,oSay6,oGrp3,oBrw1
 Private oGrp5,oBrw3,oBtn1,oMenu,oGrp6,oSay3,oSay4,oSay5
-Private oList,oList2,oList3,oList4,oList5,oGrp4,oSay7,oSay8
+Private oList,oList2,oList3,oList4,oList5,oGrp4,oSay7,oSay8,oSay9
 Private aList	:=	{}
 Private aList2	:=	{}
 Private aList3	:=	{} 
@@ -77,6 +77,7 @@ Private oNo   	:= LoadBitmap(GetResources(),'br_vermelho')
 
 Private aTabPrc :=	{}
 Private cQuinze	:=	""
+Private cLocacS	:=	""
 
 Private aAbater	:=	{}
 
@@ -135,7 +136,8 @@ aAdd( aPergs ,{1,"Contrato Ate: "				,cCont2	,"@!",'.T.',"AAM",'.T.',80,.F.})
 aAdd( aPergs ,{1,"Cliente de : " 				,cCli1	,"@!",'.T.',"SA1",'.T.',60,.F.})  
 aAdd( aPergs ,{1,"Cliente Ate: " 				,cCli2	,"@!",'.T.',"SA1",'.T.',60,.F.})  
 aAdd( aPergs ,{1,"Tipo Contrato:"				,cTpCnt	,"@!",'.T.',"A7",'.T.',40,.F.})  
-    
+aAdd( aPergs ,{2,"Somente Locações?"			,"1"	,{"1=Não","2=Sim"},080,'',.T.})
+
 		
 If !ParamBox(aPergs ,"Parametros ",aRet)
 	Return
@@ -143,14 +145,15 @@ Else
 	cCond 	:= aRet[1]
 	cPeri 	:= aRet[2]
 	cQuinze := aRet[3]
-	cCont1	:= strzero(val(aRet[4]),15)
-	cCont2	:= strzero(val(aRet[5]),15)
+	cCont1	:= iF(!empty(aRet[4]),strzero(val(aRet[4]),15),aRet[4])
+	cCont2	:= If(!empty(aRet[5]) .and. !'Z' $ aRet[5],strzero(val(aRet[5]),15),aRet[5])
 	cCli1	:= aRet[6]
 	cCli2	:= aRet[7]
 	cTpCnt	:= aRet[8]
+	cLocacS := aRet[9]
 EndIf
 
-Processa( { || Busca(cCond,cQuinze),"Aguarde"})
+Processa( { || Busca(cCond,cQuinze,cLocacS),"Aguarde"})
 
 Aadd(aList2,{'','',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0})
 Aadd(aList3,{'','',0})
@@ -163,6 +166,9 @@ If len(aList) > 0
 	oGrp1      := TGroup():New( 002,004,336,710,"",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
 
 		oGrp2      := TGroup():New( 008,008,072,612,"Dados do Cliente",oGrp1,CLR_BLACK,CLR_WHITE,.T.,.F. )
+			
+			oSay9      := TSay():New( 013,250,{||"Quantidade de contratos selecionados " +cvaltochar(len(aList))},oGrp2,,oFont1,.F.,.F.,.F.,.T.,CLR_RED,CLR_WHITE,552,008)
+		
 			oSay1      := TSay():New( 024,012,{||"Cliente"},oGrp2,,oFont2,.F.,.F.,.F.,.T.,CLR_GREEN,CLR_WHITE,032,008)
 			oSay2      := TSay():New( 024,052,{||"oSay2"},oGrp2,,oFont4,.F.,.F.,.F.,.T.,CLR_BLUE,CLR_WHITE,492,016)
 			oSay3      := TSay():New( 040,012,{||"Endereço"},oGrp2,,oFont2,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
@@ -257,13 +263,14 @@ If len(aList) > 0
 	// Adiciona itens no Menu
 	oTMenuIte1 := TMenuItem():New(oDlg1,"Procurar",,,,{|| procurar()},,,,,,,,,.T.)
 	oTMenuIte2 := TMenuItem():New(oDlg1,"Listar-Faturamento",,,,{|| Processa({||PreFat(),"Aguarde"})} ,,,,,,,,,.T.)
-	// oTMenuIte3 := TMenuItem():New(oDlg1,"Faturar",,,,{|| Processa({||GeraPv(0),"Aguarde"})} ,,,,,,,,,.T.)
+	oTMenuIte3 := TMenuItem():New(oDlg1,"Faturar",,,,{|| Processa({||GeraPv(0),"Aguarde"})} ,,,,,,,,,.T.)
 	oTMenuIte4 := TMenuItem():New(oDlg1,"Envio NF/Boleto",,,,{|| NFBol()} ,,,,,,,,,.T.)
 	oTMenuIte7 := TMenuItem():New(oDlg1,"Impressoes",,,,{|| Processa({||U_CONFSR02(oSay6:cTitle,.F.),"Aguarde"})} ,,,,,,,,,.T.)
 
 
 	oMenu:Add(oTMenuIte1)
 	oMenu:Add(oTMenuIte2)
+	oMenu:Add(oTMenuIte3)
 	oMenu:Add(oTMenuIte4)
 	oMenu:Add(oTMenuIte7)
 
@@ -337,7 +344,7 @@ Return
 ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
 */
 
-Static Function Busca(cCond,cQuinze)
+Static Function Busca(cCond,cQuinze,cLocacS)
 
 	Local aArea		:=	GetArea()
 	Local cQuery   
@@ -380,6 +387,10 @@ Static Function Busca(cCond,cQuinze)
 
 	If !Empty(cTpCnt)
 		cQuery += " AND AAM_CLASSI='"+cTpCnt+"'"
+	EndIF 
+
+	If cLocacS == "2"
+		cQuery += " AND AAN_VLRUNI>1"
 	EndIF 
 
 	If Select("TRB") > 0
@@ -542,20 +553,6 @@ Static Function Busca(cCond,cQuinze)
 		EndDo
 		
 	Next nCont     
-/*
-	For nCont := 1 to len(aList3b)
-		nPos := Ascan(aList,{|x| Alltrim(x[1]) == aList3b[nCont,05]})
-		If nPos > 0 .And. (strzero(month(aList3b[nCont,02]),2)+cvaltochar(year(aList3b[nCont,02])) == strzero(month(ddatabase),2)+cvaltochar(year(ddatabase)))
-			If aList[nPos,len(aQtdH)+1] == 0
-				IF !Empty(aList3b[nCont,04])
-					aList[nPos,len(aQtdH)+1] += 2
-				Else
-					aList[nPos,len(aQtdH)+1] += 1
-				EndIf
-			EndIf
-		EndIf
-	Next nCont
-*/
 
 	cQuery := "SELECT AAM_CONTRT,DA1_CODPRO,B1_DESC,DA1_PRCVEN,DA1_XCONSU"
 	cQuery += " FROM "+RetSQLName("AAM")+" AAM"
@@ -1113,13 +1110,13 @@ Return(.T.)
 ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
 */
 
-Static function GeraNF(cPedido,cCond)
+Static function GeraNF(cPedido,cCond,cSerie)
 
 Local aArea	:=	GetArea()
 Local cNota	:=	''
 Private _aPVlNFs	:=	{}
 Private _cCondPag	:=	cCond
-Private _cSerie		:=	"D"
+Private _cSerie		:=	cSerie
              
 
 dbSelectArea("SC9")
@@ -1136,7 +1133,7 @@ If DbSeek(xFilial("SC9")+cPedido)
 	While SC9->(!EOF()) .And. SC9->C9_FILIAL+SC9->C9_PEDIDO == xFilial("SC9")+cPedido .AND. EMPTY(SC9->C9_NFISCAL)
 		//If Alltrim(SC9->C9_BLCRED) == "" .And. Alltrim(SC9->C9_BLEST) == ""
 		    cTES := Posicione("SC6",1,xFilial("SC6")+SC9->C9_PEDIDO+SC9->C9_ITEM+SC9->C9_PRODUTO,"C6_TES")
-		    /*
+		    
 			Aadd(_aPVlNFs,{ SC9->C9_PEDIDO,;
 							SC9->C9_ITEM,;
 							SC9->C9_SEQUEN,;
@@ -1151,9 +1148,7 @@ If DbSeek(xFilial("SC9")+cPedido)
 							SB1->(Recno(Posicione("SB1",1,xFilial("SB1")+SC9->C9_PRODUTO,""))),;
 							SB2->(Recno(Posicione("SB2",1,xFilial("SB2")+SC9->C9_PRODUTO,""))),;
 							SF4->(Recno(Posicione("SF4",1,xFilial("SF4")+cTES,""))) })
-							//SF4->(Recno(Posicione("SF4",1,xFilial("SF4")+_cTESPV,""))) })
-		//EndIf
-		*/
+		
 		DbSelectArea("SC9")
 		DbSkip()
 	End
@@ -1196,7 +1191,7 @@ EndIf
 
 RestArea(aArea)
 
-Return(cNota)
+Return({cNota,_cSerie})
       
 
 /*
@@ -1423,145 +1418,6 @@ oDlg1:refresh()
 RestArea(aArea)
 
 Return
-/*
-ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
-±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
-±±ÉÍÍÍÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍ»±±
-±±ºPrograma  ³CONFSC01  ºAutor  ³Microsiga           º Data ³  09/16/16   º±±
-±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
-±±ºDesc.     ³ Gera html de envio do email ao cliente                     º±±
-±±º          ³                                                            º±±
-±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
-±±ºUso       ³ AP                                                         º±±
-±±ÈÍÍÍÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼±±
-±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
-ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
-*/
-
-Static Function cHtml(ccodbar,nnota)
-
-Local aArea	:=	GetArea()
-Local cRet	:=	''
-
-If cFilAnt == "01"
-
-	cRet := "<p><img style='float: left;' src='http://www.amaquinadecafe.com.br/upload/57a9089789a19_thumb.png' alt='interactive connection' width='185&quot;' /> <img style='float: left;' src='http://www.amaquinadecafe.com.br/images/logo_grupo.png' alt='interactive connection' width='265' /> <br /><br /><br /><br /> <br /><br /><br /><br /></p>"
-	cRet += "<table border='0'>"
-	cRet += "<thead>"
-	cRet += "<tr><td><h2 style='color: #2e6c80;'>Segue anexo Fatura referente a Loca&ccedil;&atilde;o de sua(s) M&aacute;quina(s) de Caf&eacute; do m&ecirc;s de <span style='color: #2b2301;'> "+mesextenso(ddatabase)+"/"+cvaltochar(year(ddatabase))+"</span></h2></td></tr>"
-	cRet += "<tr><tr><td><h2 style='color: #2e6c80;'>"+GetMV("MV_XMSGBL1")+"</span></h2></tr></tr></td>"
-	
-	If !Empty(ccodbar)
-		cRet += "<tr></tr><tr></tr><tr></tr><tr><td><h4>Caso não consiga visualizar o PDF anexo, clique no link para baixar seu boleto <a href='http://danfeamc.toktake.com.br/01/"+nnota+".pdf'>Boleto</a></h4></td></tr><tr></tr><tr></tr><tr></tr>"
-		cRet += "<tr></tr><tr></tr><tr></tr><tr><td><h4>Caso prefira, segue aqui o seu código de barras para pagamento:</h4></td></tr><tr></tr><tr></tr><tr></tr>"
-		cRet += "<tr><td><h2>"+ccodbar+"</h2></td></tr>"
-	EndIf  
-	
-	cRet += "<tr></tr><tr></tr><tr></tr><tr><td><h3>Em caso de d&uacute;vidas, favor entrar em contato abaixo:</h3></td></tr><tr></tr><tr></tr><tr></tr>"
-	cRet += "<tr></tr><tr></tr><tr></tr><tr><td><h4>C&aacute;ssio - Email: <a href='MAILTO:amc.centro@maquinadecafe.com.br'>amc.centro@maquinadecafe.com.br</a></h4></td></tr><tr></tr><tr></tr><tr></tr>"
-	cRet += "<tr><td><h5>Tel.: (11) 3256-9662 , (11) 3256-9026 ou Cel.: (11) 98630-0602</h5></td></tr>"
-	
-	If ddatabase < ctod("31/12/2018")
-		//Mensagem de natal amc
-		cRet += "<tr><td><h2 style='color: #FF0000;'>Que as realizações alcançadas este ano, sejam apenas sementes plantadas, que serão colhidas com maior sucesso no ano vindouro. São os votos da Equipe da AMC Matriz. Agradeçemos por nossa parceria.</h2></td></tr>"
-	EndIF
-	
-	cRet += "</thead>"
-	cRet += "</table>"
-
-Elseif cFilAnt == "02"
-
-	cRet := "<p><img style='float: left;' src='http://www.amaquinadecafe.com.br/upload/57a9089789a19_thumb.png' alt='interactive connection' width='185&quot;' /> <img style='float: left;' src='http://www.amaquinadecafe.com.br/images/logo_grupo.png' alt='interactive connection' width='265' /> <br /><br /><br /><br /> <br /><br /><br /><br /></p>"
-	cRet += "<table border='0'>"
-	cRet += "<thead>"
-	cRet += "<tr><td><h2 style='color: #2e6c80;'>Segue anexo "+if(ddatabase==ctod("30/03/2017"),"Nova ","")+"Fatura referente a Loca&ccedil;&atilde;o de sua(s) M&aacute;quina(s) de Caf&eacute; do m&ecirc;s de <span style='color: #2b2301;'> "+mesextenso(ddatabase)+"/"+cvaltochar(year(ddatabase))+"</span></h2></td></tr>"
-	
-	if ddatabase==ctod("30/03/2017")
-		cRet += "<tr></tr><tr></tr><tr></tr><tr><td><h3> Pedimos desconsiderar o e-mail recebido esta semana com a nota e boleto da Locação de sua máquina, pois nosso sistema gerou com inconsistência.<br>Informamos ainda que a nota permanece inalterada.</h3></td></tr><tr></tr><tr></tr><tr></tr>"
-	EndIf
-	
-	cRet += "<tr><tr><td><h2 style='color: #2e6c80;'>"+GetMV("MV_XMSGBL1")+"</span></h2></tr></tr></td>"
-	                    //2 style='color: #FF0000;'
-	If !Empty(ccodbar)
-		cRet += "<tr></tr><tr></tr><tr></tr><tr><td><h4>Caso não consiga visualizar o PDF anexo, clique no link para baixar seu boleto <a href='http://danfeamc.toktake.com.br/02/"+nnota+".pdf'>Boleto</a></h4></td></tr><tr></tr><tr></tr><tr></tr>"
-		cRet += "<tr></tr><tr></tr><tr></tr><tr><td><h4>Caso prefira, segue aqui o seu código de barras para pagamento:</h4></td></tr><tr></tr><tr></tr><tr></tr>"
-		cRet += "<tr><td><h2>"+ccodbar+"</h2></td></tr>"
-	EndIf  
-	
-	cRet += "<tr></tr><tr></tr><tr></tr><tr><td><h3>Em caso de d&uacute;vidas, favor entrar em contato abaixo:</h3></td></tr><tr></tr><tr></tr><tr></tr>"
-	cRet += "<tr></tr><tr></tr><tr></tr><tr><td><h4>Fernanda ou Simone - Email: <a href='MAILTO:amc.sul@maquinadecafe.com.br'>amc.sul@maquinadecafe.com.br</a></h4></td></tr><tr></tr><tr></tr><tr></tr>"
-	cRet += "<tr><td><h5>Tel.: (11) 5182-2877 , (11) 5182-7024 ou cel.: (11) 94724-8292</h5></td></tr>"
-	
-	If ddatabase < ctod("31/12/2018")
-		//Mensagem de natal amc
-		cRet += "<tr><td><h2 style='color: #FF0000;'>Que as realizações alcançadas este ano, sejam apenas sementes plantadas, que serão colhidas com maior sucesso no ano vindouro. São os votos da Equipe da AMC SUL. Agradeçemos por nossa parceria.</h2></td></tr>"
-	EndIF
-	
-	cRet += "</thead>"
-	cRet += "</table>"
-
-Elseif cFilAnt == "03"
-
-	cRet := "<p><img style='float: left;' src='http://www.amaquinadecafe.com.br/upload/57a9089789a19_thumb.png' alt='interactive connection' width='185&quot;' /> <img style='float: left;' src='http://www.amaquinadecafe.com.br/images/logo_grupo.png' alt='interactive connection' width='265' /> <br /><br /><br /><br /> <br /><br /><br /><br /></p>"
-	cRet += "<table border='0'>"
-	cRet += "<thead>"
-	cRet += "<tr><td><h2 style='color: #2e6c80;'>Segue anexo "+if(ddatabase==ctod("30/03/2017"),"Nova ","")+" Fatura referente a Loca&ccedil;&atilde;o de sua(s) M&aacute;quina(s) de Caf&eacute; do m&ecirc;s de <span style='color: #2b2301;'> "+mesextenso(ddatabase)+"/"+cvaltochar(year(ddatabase))+"</span></h2></td></tr>"
-	                         
-	if ddatabase==ctod("30/03/2017")
-		cRet += "<tr></tr><tr></tr><tr></tr><tr><td><h3> Pedimos desconsiderar o e-mail recebido esta semana com a nota e boleto da Locação de sua máquina, pois nosso sistema gerou com inconsistência.<br>Informamos ainda que a nota permanece inalterada.</h3></td></tr><tr></tr><tr></tr><tr></tr>"
-	EndIf
-	
-	cRet += "<tr><tr><td><h2 style='color: #2e6c80;'>"+GetMV("MV_XMSGBL1")+"</span></h2></tr></tr></td>"
-	
-	If !Empty(ccodbar)
-		cRet += "<tr></tr><tr></tr><tr></tr><tr><td><h4>Caso não consiga visualizar o PDF anexo, clique no link para baixar seu boleto <a href='http://danfeamc.toktake.com.br/03/"+nnota+".pdf'>Boleto</a></h4></td></tr><tr></tr><tr></tr><tr></tr>"
-		cRet += "<tr></tr><tr></tr><tr></tr><tr><td><h4>Caso prefira, segue aqui o seu código de barras para pagamento:</h4></td></tr><tr></tr><tr></tr><tr></tr>"
-		cRet += "<tr><td><h2>"+ccodbar+"</h2></td></tr>"
-	EndIf  
-	
-	cRet += "<tr></tr><tr></tr><tr></tr><tr><td><h3>Em caso de d&uacute;vidas, favor entrar em contato abaixo:</h3></td></tr><tr></tr><tr></tr><tr></tr>"
-	cRet += "<tr></tr><tr></tr><tr></tr><tr><td><h4>C&aacute;ssio, Lethicia ou Paulo - Email: <a href='MAILTO:amc.centro@maquinadecafe.com.br'>amc.centro@maquinadecafe.com.br</a></h4></td></tr><tr></tr><tr></tr><tr></tr>"
-	cRet += "<tr><td><h5>Tel.: (11) 3256-9662 , (11) 3256-9026 ou Cel.: (11) 98630-0602</h5></td></tr>"
-	
-	If ddatabase < ctod("31/12/2018")
-		//Mensagem de natal amc
-		cRet += "<tr><td><h2 style='color: #FF0000;'>Que as realizações alcançadas este ano, sejam apenas sementes plantadas, que serão colhidas com maior sucesso no ano vindouro. São os votos da Equipe da AMC CENTRO. Agradeçemos por nossa parceria.</h2></td></tr>"
-	EndIF
-	
-	cRet += "</thead>"
-	cRet += "</table>"
-
-Elseif cFilAnt == "04"
-
-	cRet := "<p><img style='float: left;' src='http://www.amaquinadecafe.com.br/upload/57a9089789a19_thumb.png' alt='interactive connection' width='185&quot;' /> <img style='float: left;' src='http://www.amaquinadecafe.com.br/images/logo_grupo.png' alt='interactive connection' width='265' /> <br /><br /><br /><br /> <br /><br /><br /><br /></p>"
-	cRet += "<table border='0'>"
-	cRet += "<thead>"
-	cRet += "<tr><td><h2 style='color: #2e6c80;'>Segue anexo Fatura referente a Loca&ccedil;&atilde;o de sua(s) M&aacute;quina(s) de Caf&eacute; do m&ecirc;s de <span style='color: #2b2301;'> "+mesextenso(ddatabase)+"/"+cvaltochar(year(ddatabase))+"</span></h2></td></tr>"
-	cRet += "<tr><tr><td><h2 style='color: #2e6c80;'>"+GetMV("MV_XMSGBL1")+"</span></h2></tr></tr></td>"
-	If !Empty(ccodbar)
-		cRet += "<tr></tr><tr></tr><tr></tr><tr><td><h4>Caso não consiga visualizar o PDF anexo, clique no link para baixar seu boleto <a href='http://danfeamc.toktake.com.br/04/"+nnota+".pdf'>Boleto</a></h4></td></tr><tr></tr><tr></tr><tr></tr>"
-		cRet += "<tr></tr><tr></tr><tr></tr><tr><td><h4>Caso prefira, segue aqui o seu código de barras para pagamento:</h4></td></tr><tr></tr><tr></tr><tr></tr>"
-		cRet += "<tr><td><h2>"+ccodbar+"</h2></td></tr>"
-	EndIf  
-	
-	cRet += "<tr></tr><tr></tr><tr></tr><tr><td><h3>Em caso de d&uacute;vidas, favor entrar em contato abaixo:</h3></td></tr><tr></tr><tr></tr><tr></tr>"
-	cRet += "<tr></tr><tr></tr><tr></tr><tr><td><h4>Lilian ou Vitor - Email: <a href='MAILTO:amc.oeste@maquinadecafe.com.br'>amc.oeste@maquinadecafe.com.br</a></h4></td></tr><tr></tr><tr></tr><tr></tr>"
-	cRet += "<tr><td><h5>Tel.: (11) 3622-3640 , (11) 3622-3616 ou Cel.: (11) 97408.7130</h5></td></tr>"
-	
-	If ddatabase < ctod("31/12/2018")
-		//Mensagem de natal amc
-		cRet += "<tr><td><h2 style='color: #FF0000;'>Que as realizações alcançadas este ano, sejam apenas sementes plantadas, que serão colhidas com maior sucesso no ano vindouro. São os votos da Equipe da AMC OESTE. Agradeçemos por nossa parceria.</h2></td></tr>"
-	EndIF
-	
-	cRet += "</thead>"
-	cRet += "</table>"
-
-Endif
-
-RestArea(aArea)
-
-Return(cRet)                                                                   
-
 
 /*
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
@@ -1652,6 +1508,7 @@ Static Function GeraPv(nOpcG)
 
 Local aArea 	:=	GetArea()
 Local nCont 
+Local nCntG
 Local aItens	:=	{}
 Local aItSFt	:=	{}
 Local aLocac 	:=	{}
@@ -1669,6 +1526,7 @@ Local lLoc      := .F.
 Local cFilFat	:=	If(aList[oList:nAt,23]=="RJ","0102","0101")
 Local cBkpcFil  :=	cFilant 
 Local aFilFat	:=	{'0101=SP','0102=RJ'}
+Local nLst5
 
 cFilant := cFilFat 
 
@@ -1699,6 +1557,301 @@ endif
 
 If nOpcG == 0
 	//Faturar todos os itens liberados do array alist
+	Asort(aList2B,,,{|x,y| x[4] < y[4]})
+	Asort(aList5B,,,{|x,y| x[1]+x[2] < y[1]+y[2]})
+
+	For nCntG := 1 to len(aList)
+		cForFat :=	aList[nCntG,14]
+		cTipFat	:=	aList[nCntG,15]
+		aLocac  :=  {}
+		nPos2B  :=	Ascan(aList2B,{|x| x[4] == aList[nCntG,01]})
+
+		For nCont := nPos2B to len(aList2B)
+			//Locações
+			If aList2B[nCont,04] == aList[nCntG,01]
+				cAtLoc += cBarra + Alltrim(aList2b[nCont,01])
+				cBarra := "/"
+				If aList2B[nCont,03] > 1
+					Aadd(aLocac,{aList2B[nCont,01],;
+								aList2B[nCont,03],;
+								aList2B[nCont,12]})
+				EndIf 
+			EndIf 
+
+			//Doses
+			cBarra := ""
+
+			If cTipFat $ "1/2/3"
+
+				nPosL5 := Ascan(aList5B,{|x| x[1]+x[2] == aList2B[nCont,04]+aList2B[nCont,01]})
+
+				For nCont := nPosL5 to len(aList5B)
+					aItens := {}
+					aItSFt := {}
+					
+					If aList5B[nCont,01] == aList[nCntG,01] .And. len(aList5b[nCont]) > 4
+						cAtFat += cBarra + Alltrim(aList5b[nCont,02])
+						cBarra := "/"
+						For nJ := 5 to len(aList5b[nCont])
+							If aList5B[nCont,nJ,08] > 0 .And. aList5B[nCont,nJ,09] > 0
+								nPos := Ascan(aItens,{|x| x[1] == aList5B[nCont,nJ,02]})
+								If nPos == 0
+									Aadd(aItens,{	aList5B[nCont,nJ,02],;
+													aList5B[nCont,nJ,08],;
+													aList5B[nCont,nJ,09]})
+								Else 
+									aItens[nPos,02] += aList5B[nCont,nJ,08]
+								EndIf
+							Else 
+								Aadd(aItSFt,{	aList5B[nCont,nJ,02],;
+												aList5B[nCont,nJ,08],;
+												aList5B[nCont,nJ,09]}) 
+							EndIf
+						Next nJ 
+					EndIf
+				Next nCont
+			
+				If aList[nCntG,20] > 0 .And. len(aItens) > 0
+					Aadd(aItens,{aList[nCntG,22],;
+								aList[nCntG,20],;
+								aList[nCntG,21]})
+				EndIf 
+			
+			ElseIf cTipFat == "22"
+				//For nX := 1 to len(aList2B)
+					aItens := {}
+					aItSFt := {}
+					nPosL5 := Ascan(aList5B,{|x| x[1]+x[2] == aList2B[nCont,04]+aList2B[nCont,01]})
+
+					For nLst5 := nPosL5 to len(aList5B)
+						If aList5B[nLst5,01] == aList2B[nCont,04] .And. len(aList5b[nLst5]) > 4 .And. aList5B[nLst5,02] == aList2B[nCont,01]
+							For nJ := 5 to len(aList5b[nLst5])
+								If aList5B[nLst5,nJ,08] > 0 .And. aList5B[nLst5,nJ,09] > 0
+									nPosloc := Ascan(aItens,{|x| x[1] == aList5B[nLst5,nJ,02]})
+									
+									If nPosloc == 0
+										
+										Aadd(aItens,{	aList5B[nLst5,nJ,02],;
+														aList5B[nLst5,nJ,08],;
+														aList5B[nLst5,nJ,09]})
+									Else 
+										aItens[nPosloc,02] += aList5B[nLst5,nJ,08]
+									EndIf
+								Else 
+									Aadd(aItSFt,{	aList5B[nLst5,nJ,02],;
+													aList5B[nLst5,nJ,08],;
+													aList5B[nLst5,nJ,09]}) 
+								EndIf
+							Next nJ 
+						EndIf
+					Next nLst5
+
+					If (aList2B[nCont,11] > 0 .And. cQuinze == "2") .OR.(cForFat=="1" .AND. cTipFat=="2" .and. aList2B[nCont,11] > 0) //cCond == "2"
+						Aadd(aItens,{	aList[nCntG,22],;
+										aList2B[nCont,11],;
+										Posicione("DA1",1,xFilial("DA1")+AAM->AAM_XCODTA+aList[nCntG,22],"DA1_PRCVEN")})
+					EndIf 
+					cAtFat := Alltrim(aList2B[nCont,01])
+					If len(aItens) > 0 
+						//If resumfat(aItens,aItSFt,.F.)
+							Processa({|| Pedido(cAtFat,aItens,cFilFat,MV_PAR02)},"Aguarde")
+						//else
+						//	Return 
+						//EndIf 
+						aItens := {}
+					EndIF		
+				//Next nX
+			EndIf 
+		Next nCont
+
+		//Faturamento Doses
+		If len(aItens) > 0
+			If len(aItens) > 0 .AND. lDose
+			//PEDIDOS DE DOSES
+				
+				If Empty(cAtFat)
+					cAtFat := Alltrim(aList2[nCntG,01])
+				EndIF 
+
+				DbSelectArea("AAM")
+				DbSetOrder(1)
+				DbSeek(xFilial("AAM")+aList[nCntG,01])
+				aCabec := {}
+				aItC6  := {}
+				cItem  := '01'
+
+				aAdd( aCabec , { "C5_FILIAL"    , cFilFat		      , Nil } ) 
+				aAdd( aCabec , { "C5_XTPPED"    , 'F'                 , Nil } )
+				aAdd( aCabec , { "C5_TIPO"      , 'N'                 , Nil } )
+				aAdd( aCabec , { "C5_CLIENTE"   , aList[nCntG,03]    , Nil } )
+				aAdd( aCabec , { "C5_LOJACLI"   , aList[nCntG,04]    , Nil } )
+				Aadd( aCabec , { "C5_MENNOTA"   , 'Faturamento de Doses - Ref. Patrimonio(s) '+cAtFat   , Nil } )
+				aAdd( aCabec , { "C5_CONDPAG"   , AAM->AAM_CPAGPV     , Nil } )    
+				aAdd( aCabec , { "C5_NATUREZ"   , "31101001  "     , Nil } )    
+				aAdd( aCabec , { "C5_XCONTRT"	, aList[nCntG,01]	, Nil })
+					
+				For nCont := 1 to len(aItens)
+					aLinha := {}
+					aAdd( aLinha , { "C6_FILIAL"     , cFilFat		                          , Nil })
+					aAdd( aLinha , { "C6_ITEM"       , cItem 							      , Nil })
+					aAdd( aLinha , { "C6_PRODUTO"    , aItens[nCont,01]                       , Nil })
+					aAdd( aLinha , { "C6_QTDVEN"     , aItens[nCont,02]                       , Nil })
+					aAdd( aLinha , { "C6_PRCVEN"     , aItens[nCont,03]                       , Nil })
+					aAdd( aLinha , { "C6_OPER"       , "08"                                   , Nil })
+					// aAdd( aLinha , { "C6_TES"        , '523'                                  , Nil })  
+					aAdd( aLinha , { "C6_QTDLIB"     , aItens[nCont,02]    	                  , Nil })
+					aAdd( aLinha , { "C6_CONTRT" 	 , AAM->AAM_CONTRT						  , Nil })
+
+					If !Empty(MV_PAR02)
+						aAdd( aLinha , { "C6_PEDCLI"	,	MV_PAR02 	, Nil })
+					EndIf 
+
+					aAdd( aItC6 , aLinha ) 
+					cItem := Soma1(cItem)
+				Next nCont
+
+				lMsErroAuto := .F.
+				MSExecAuto({|x,y,z| Mata410(x,y,z)},aCabec,aItC6,3)
+					
+				IF lMsErroAuto  
+					MostraErro()
+				ELSE
+					aDadNF := GeraNF(SC5->C5_NUM,SC5->C5_CONDPAG,'1')
+					nVlrFt := 0
+					Msgalert("Pedido gerado de faturamento de doses "+SC5->C5_NUM)
+					DbSelectArea("Z08")
+					DbSetOrder(3)
+					For nCont := 1 to len(aList5B)
+						If aList5B[nCont,01] == aList[nCntG,01] .And. len(aList5b[nCont]) > 4
+							For nJ := 5 to len(aList5b[nCont])
+								If Dbseek(xFilial("Z08")+aList5b[nCont,nJ,11]+aList5b[nCont,nJ,01]+aList5B[nCont,02])
+									RecLock("Z08", .F.)
+									Z08->Z08_FATURA := 'S'
+									Z08->Z08_PEDIDO := SC5->C5_NUM
+									Z08->Z08_CONSUM := aList5b[nCont,nJ,08]
+									Z08->Z08_VLRFAT := aList5b[nCont,nJ,10]
+									Z08->Z08_NOTA	:= aDadNF[1]
+									Z08->Z08_SERIE	:= aDadNF[2]
+									nVlrFt += aList5b[nCont,nJ,10]
+									Z08->(MsUnlock())
+									aList5b[nCont,nJ,12] := 'S'
+									Dbskip() 
+								EndIf 
+							Next nJ
+						EndIf 
+					Next nCont
+
+					Aadd(aList3b,{	SC5->C5_NUM,;
+									SC5->C5_EMISSAO,;
+									nVlrFt,;
+									aDadNF[1],;
+									aList[nCntG,01],;
+									aList[nCntG,03],;
+									aList[nCntG,04],;
+									SC5->C5_FILIAL})
+
+					Aadd(aList3,{	SC5->C5_NUM,;
+									SC5->C5_EMISSAO,;
+									nVlrFt,;
+									aDadNF[1],;
+									aList[nCntG,01],;
+									aList[nCntG,03],;
+									aList[nCntG,04],;
+									SC5->C5_FILIAL})
+
+					For nCont := 1 to len(aList5B)
+						If aList5B[nCont,01] == aList[nCntG,01] .And. len(aList5b[nCont]) > 4
+							For nJ := 5 to len(aList5b[nCont])
+								aList5B[nCont,nJ,04] := aList5B[nCont,nJ,06]
+								aList5B[nCont,nJ,05] := aList5B[nCont,nJ,07]
+								aList5B[nCont,nJ,06] := ""
+								aList5B[nCont,nJ,07] := 0
+								aList5B[nCont,nJ,08] := 0
+								aList5B[nCont,nJ,10] := 0
+								aList5B[nCont,nJ,12] := "S"
+								aList5B[nCont,nJ,17] := SC5->C5_NUM
+							Next nJ
+						EndIF 
+					Next nCont
+				ENDIF
+
+			EndIF 
+		
+		EndIf
+		//Faturamento locacao
+		If len(aLocac) > 0 .AND. lLoc
+			cProdLoc := SuperGetMV("TI_PRODLOC",.F.,"SLOC000001")
+			cNaturez := SuperGetMV("TI_NATRLOC",.F.,"31101003  ")
+			cTesLoc  := Posicione("SB1",1,xFilial("SB1")+cProdLoc,"B1_TS")
+			DbSelectArea("AAM")
+			DbSetOrder(1)
+			DbSeek(xFilial("AAM")+aList[nCntG,01])
+			aCabec := {}
+			aItC6  := {}
+			cItem  := '01'
+
+			aAdd( aCabec , { "C5_FILIAL"    , cFilFat		      	, Nil } ) 
+			aAdd( aCabec , { "C5_XTPPED"    , 'L'                 	, Nil } )
+			aAdd( aCabec , { "C5_TIPO"      , 'N'                 	, Nil } )
+			aAdd( aCabec , { "C5_CLIENTE"   , aList[nCntG,03]   , Nil } )
+			aAdd( aCabec , { "C5_LOJACLI"   , aList[nCntG,04]   , Nil } )
+			Aadd( aCabec , { "C5_MENNOTA"   , 'Locacao de Maquinas Ref. Patrimonio(s) '+cAtLoc    , Nil } )
+			aAdd( aCabec , { "C5_CONDPAG"   , aLocac[1,3]     		, Nil } )    //AAM->AAM_CPAGPV
+			aAdd( aCabec , { "C5_NATUREZ"   , cNaturez     			, Nil } )
+			aAdd( aCabec , { "C5_XCONTRT"	, aList[nCntG,01]	, Nil })
+			
+			nVlrFt := 0
+			For nCont := 1 to len(aLocac)
+				aLinha := {}
+				aAdd( aLinha , { "C6_FILIAL"     , cFilFat		                          , Nil })
+				aAdd( aLinha , { "C6_ITEM"       , cItem 							      , Nil })
+				aAdd( aLinha , { "C6_PRODUTO"    , cProdLoc		                          , Nil })
+				aAdd( aLinha , { "C6_QTDVEN"     , 1				                      , Nil })
+				aAdd( aLinha , { "C6_PRCVEN"     , aLocac[nCont,02]                       , Nil })
+				aAdd( aLinha , { "C6_TES"        , cTesLoc                                , Nil })  
+				aAdd( aLinha , { "C6_QTDLIB"     , 1			    	                  , Nil })
+				aAdd( aLinha , { "C6_CONTRT" 	 , AAM->AAM_CONTRT						  , Nil })
+
+				If !Empty(MV_PAR02)
+					aAdd( aLinha , { "C6_PEDCLI"	,	MV_PAR02 	, Nil })
+				EndIF 
+
+				nVlrFt += aLocac[nCont,02]
+				aAdd( aItC6 , aLinha ) 
+				cItem := Soma1(cItem)
+			Next nCont
+
+			lMsErroAuto := .F.
+			MSExecAuto({|x,y,z| Mata410(x,y,z)},aCabec,aItC6,3)
+				
+			IF lMsErroAuto  
+				MostraErro()
+			ELSE
+				aDadNF := GeraNF(SC5->C5_NUM,SC5->C5_CONDPAG,If(cFilfat=='0101','LOC','LRJ'))
+
+				Aadd(aList3b,{	SC5->C5_NUM,;
+									SC5->C5_EMISSAO,;
+									nVlrFt,;
+									aDadNF[1],;
+									aList[nCntG,01],;
+									aList[nCntG,03],;
+									aList[nCntG,04],;
+									SC5->C5_FILIAL})
+									
+					Aadd(aList3,{	SC5->C5_NUM,;
+									SC5->C5_EMISSAO,;
+									nVlrFt,;
+									aDadNF[1],;
+									aList[nCntG,01],;
+									aList[nCntG,03],;
+									aList[nCntG,04],;
+									SC5->C5_FILIAL})
+				aLocac := {}
+				
+			ENDIF    
+		EndIf 
+	Next nCntG
+
 ElseIf nOpcG == 1	
 	cForFat :=	aList[oList:nAt,14]
 	cTipFat	:=	aList[oList:nAt,15]
@@ -1846,6 +1999,7 @@ If len(aItens) > 0
 			IF lMsErroAuto  
 				MostraErro()
 			ELSE
+				aDadNF := GeraNF(SC5->C5_NUM,SC5->C5_CONDPAG,'1')
 				nVlrFt := 0
 				Msgalert("Pedido gerado de faturamento de doses "+SC5->C5_NUM)
 				DbSelectArea("Z08")
@@ -1859,6 +2013,8 @@ If len(aItens) > 0
 								Z08->Z08_PEDIDO := SC5->C5_NUM
 								Z08->Z08_CONSUM := aList5b[nCont,nJ,08]
 								Z08->Z08_VLRFAT := aList5b[nCont,nJ,10]
+								Z08->Z08_NOTA	:= aDadNF[1]
+								Z08->Z08_SERIE	:= aDadNF[2]
 								nVlrFt += aList5b[nCont,nJ,10]
 								Z08->(MsUnlock())
 								aList5b[nCont,nJ,12] := 'S'
@@ -1871,7 +2027,7 @@ If len(aItens) > 0
 				Aadd(aList3b,{	SC5->C5_NUM,;
 								SC5->C5_EMISSAO,;
 								nVlrFt,;
-								'',;
+								aDadNF[1],;
 								aList[oList:nAt,01],;
 								aList[oList:nAt,03],;
 								aList[oList:nAt,04],;
@@ -1880,7 +2036,7 @@ If len(aItens) > 0
 				Aadd(aList3,{	SC5->C5_NUM,;
 								SC5->C5_EMISSAO,;
 								nVlrFt,;
-								'',;
+								aDadNF[1],;
 								aList[oList:nAt,01],;
 								aList[oList:nAt,03],;
 								aList[oList:nAt,04],;
@@ -1959,10 +2115,12 @@ If len(aLocac) > 0 .AND. lLoc
 			MostraErro()
 		ELSE
 			Msgalert("Pedido gerado de locação "+SC5->C5_NUM)
+			aDadNF := GeraNF(SC5->C5_NUM,SC5->C5_CONDPAG,If(cFilfat=='0101','LOC','LRJ'))
+
 			Aadd(aList3b,{	SC5->C5_NUM,;
 								SC5->C5_EMISSAO,;
 								nVlrFt,;
-								'',;
+								aDadNF[1],;
 								aList[oList:nAt,01],;
 								aList[oList:nAt,03],;
 								aList[oList:nAt,04],;
@@ -1971,7 +2129,7 @@ If len(aLocac) > 0 .AND. lLoc
 				Aadd(aList3,{	SC5->C5_NUM,;
 								SC5->C5_EMISSAO,;
 								nVlrFt,;
-								'',;
+								aDadNF[1],;
 								aList[oList:nAt,01],;
 								aList[oList:nAt,03],;
 								aList[oList:nAt,04],;
@@ -2145,6 +2303,7 @@ MSExecAuto({|x,y,z| Mata410(x,y,z)},aCabec,aItC6,3)
 IF lMsErroAuto  
 	MostraErro()
 ELSE
+	aDadNF := GeraNF(SC5->C5_NUM,SC5->C5_CONDPAG,'1')
 	nVlrFt := 0
 	Msgalert("Pedido gerado de faturamento de doses "+SC5->C5_NUM)
 	DbSelectArea("Z08")
@@ -2159,6 +2318,8 @@ ELSE
 						Z08->Z08_PEDIDO := SC5->C5_NUM
 						Z08->Z08_CONSUM := aList5b[nCont,nJ,08]
 						Z08->Z08_VLRFAT := aList5b[nCont,nJ,10]
+						Z08->Z08_NOTA	:= aDadNF[1]
+						Z08->Z08_SERIE	:= aDadNF[2]
 						nVlrFt += aList5b[nCont,nJ,10]
 						Z08->(MsUnlock())
 						aList5b[nCont,nJ,12] := 'S'
@@ -2172,7 +2333,7 @@ ELSE
 	Aadd(aList3b,{	SC5->C5_NUM,;
 					SC5->C5_EMISSAO,;
 					nVlrFt,;
-					'',;
+					aDadNF[1],;
 					aList[oList:nAt,01],;
 					aList[oList:nAt,03],;
 					aList[oList:nAt,04],;
@@ -2181,7 +2342,7 @@ ELSE
 	Aadd(aList3,{	SC5->C5_NUM,;
 					SC5->C5_EMISSAO,;
 					nVlrFt,;
-					'',;
+					aDadNF[1],;
 					aList[oList:nAt,01],;
 					aList[oList:nAt,03],;
 					aList[oList:nAt,04],;
@@ -2328,7 +2489,7 @@ For nCont := 1 to len(aEmail)
 		
 		cRemete := 'nf.erp@connectvending.com.br'
 		cDestino := Alltrim(aEmail[nCont,05])
-		cDestino += SUPERGETMV( "MV_XMAILFT", .F., 'faturas@connectvending.com.br' )
+		cDestino += ';'+Alltrim(SUPERGETMV( "MV_XMAILFT", .F., 'faturas@connectvending.com.br' ))
 		
 		cSubject := 'Faturamento'
 		CPYT2S('C:\BOLETOS\'+cCnpjj+'\'+MV_PAR02+'.pdf','\SPOOL\')
@@ -2370,18 +2531,21 @@ Static Function corpo
 Local cRet := ""
 
 cRet := If(val(substr(time(),1,2))<12 .and.val(substr(time(),1,2))>=0,'Bom dia','Boa tarde' )+'<br><br>'
-
-/*Dose 1ª quinzena:
-"Olá, você está recebendo a fatura referente a 1ª quinzena de xx de 2023 da sua máquina de café. Em caso de dúvidas, basta entrar em contato conosco."
-
-Dose 2ª quinzena:
-"Olá, você está recebendo a fatura referente a 2ª quinzena de xx de 2023 da sua máquina de café. Em caso de dúvidas, basta entrar em contato conosco."
-*/
+/*
 If cQuinze == "1"
 	cRet += "Olá, você está recebendo a fatura referente a 1ª quinzena de "+MesExtenso(ddatabase)+" de "+cvaltochar(year(ddatabase))+" da sua máquina de café. Em caso de dúvidas, basta entrar em contato conosco."
 Else 
 	cRet += "Olá, você está recebendo a fatura referente a 2ª quinzena de "+MesExtenso(ddatabase)+" de "+cvaltochar(year(ddatabase))+" da sua máquina de café. Em caso de dúvidas, basta entrar em contato conosco."
 EndIF 
+*/
+
+cRet += "Prezados(as),<br><br>"
+cRet += "Você está recebendo em anexo a fatura referente ao consumo de doses ou locação de sua(s) máquina(s) de café.<br><br>"
+cRet += "Em caso de dúvidas, basta entrar em contato conosco.<br><br>"
+
+cRet += "Atenciosamente,<br><br>"
+
+cRet += "Connect Vending Comércio de Máquinas Automatizadas Ltda.<br><br>"
 
 cRet += "Dicas de Segurança<br>"
 cRet += "Fique atento: Seus boletos sempre chegarão pelo remetente do Dominio: <p> CONNECTVENDING.COM.BR </p><br>"
@@ -2649,6 +2813,8 @@ If !lMsErroAuto
 						Z08->Z08_FATURA := ' '
 						Z08->Z08_CONSUM := 0
 						Z08->Z08_VLRFAT := 0
+						Z08->Z08_NOTA	:= ' '
+						Z08->Z08_SERIE	:= ' '
 						Z08->(MSUNLOCK()) 
 					EndIF
 				Next nX
