@@ -66,7 +66,8 @@ WsMethod POST WsReceive RECEIVE WsService WSAPP12
 	
 	Local aItens			:=	{}
 	Local aCliente			:=	{}
-
+    Local cJsonRet          :=  ''
+    
 	Private cUser			As Character
 	Private cUserCod		As Character
 
@@ -279,8 +280,8 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
 	cObsApp := oBody:OBSERVATION
 	nDescon := oBody:DESCONTO
 
-	/*If !lForce .And. oBody:ORCAMENTO <> 'S'
-		aSaldos := ValSald(oBody:ITEMS)
+	/*If !lForce .And. oBody:BODY:ORCAMENTO <> 'S'
+		aSaldos := ValSald(oBody:BODY:ITEMS)
 	ENDIF
 	
 	If len(aSaldos) > 0
@@ -300,36 +301,36 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
 		DbSelectArea("CC2")
 		DbSetOrder(4)
 		
-		If Valtype(oBody:Cliente) == "A"
-			If Dbseek(xFilial("CC2")+upper(oBody:Cliente[1]:UF)+upper(oBody:Cliente[1]:CIDADE))
+		If Valtype(oBody:BODY:Cliente) == "A"
+			If Dbseek(xFilial("CC2")+upper(oBody:BODY:Cliente[1]:uf)+upper(oBody:BODY:Cliente[1]:CIDADE))
 				codmun := CC2->CC2_CODMUN
 			else
 				codmun := '50308'
 			endif
 		else
-			If Dbseek(xFilial("CC2")+upper(oBody:Cliente:UF)+upper(oBody:Cliente:CIDADE))
+			If Dbseek(xFilial("CC2")+upper(oBody:BODY:CLIENTE:getJsonText("uf"))+upper(oBody:BODY:getJsonText("cidade")))
 				codmun := CC2->CC2_CODMUN
 			else
 				codmun := '50308'
 			EndIf
 		endIf
 		
-		If Valtype(oBody:Cliente) == "A"
+		If Valtype(oBody:BODY:Cliente) == "A"
 			DbSelectArea("SA1")
-			If oBody:CLIENTE[1]:GetJsonObject("CNPJ") <> NIL //AttIsMemberOf(oBody:Cliente[1],"CNPJ")
-				ccnpjx := oBody:Cliente[1]:cnpj
+			If oBody:BODY:CLIENTE[1]:GetJsonObject("CNPJ") <> NIL //AttIsMemberOf(oBody:BODY:Cliente[1],"CNPJ")
+				ccnpjx := oBody:BODY:Cliente[1]:cnpj
 				DbSetOrder(3)
 			Else
-				ccnpjx := oBody:Cliente[1]:codigo
+				ccnpjx := oBody:BODY:Cliente[1]:codigo
 				DbSetOrder(1)
 			EndIf
 		else
 			DbSelectArea("SA1")
-			If oBody:CLIENTE:GetJsonObject("CNPJ") <> NIL //AttIsMemberOf(oBody:Cliente[1],"CNPJ")
-				ccnpjx := oBody:Cliente:cnpj
+			If oBody:BODY:CLIENTE:GetJsonObject("CNPJ") <> NIL //AttIsMemberOf(oBody:BODY:Cliente[1],"CNPJ")
+				ccnpjx := oBody:BODY:Cliente:cnpj
 				DbSetOrder(3)
 			Else
-				ccnpjx := oBody:Cliente:codigo
+				ccnpjx := oBody:BODY:Cliente:codigo
 				DbSetOrder(1)
 			EndIf
 		EndIF 
@@ -339,54 +340,54 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
 			cloja 	:= SA1->A1_LOJA
 			//CONTATO CELULAR ENDERECO BAIRRO CIDADE 
 			Reclock("SA1",.F.)
-			If Valtype(oBody:Cliente) == "A"
-				If Alltrim(SA1->A1_CONTATO) <> Alltrim(oBody:Cliente[1]:CONTATO)
-					SA1->A1_CONTATO := oBody:Cliente[1]:CONTATO
+			If Valtype(oBody:BODY:Cliente) == "A"
+				If Alltrim(SA1->A1_CONTATO) <> Alltrim(oBody:BODY:Cliente[1]:CONTATO)
+					SA1->A1_CONTATO := oBody:BODY:Cliente[1]:CONTATO
 				EndIF
 
-				If Alltrim(SA1->A1_EMAIL) <> Alltrim(oBody:Cliente[1]:EMAIL)
-					SA1->A1_EMAIL := oBody:Cliente[1]:EMAIL
+				If Alltrim(SA1->A1_EMAIL) <> Alltrim(oBody:BODY:Cliente[1]:EMAIL)
+					SA1->A1_EMAIL := oBody:BODY:Cliente[1]:EMAIL
 				EndIF
 
-				If Alltrim(SA1->A1_END) <> Alltrim(oBody:Cliente[1]:ENDERECO)
-					SA1->A1_END := Alltrim(oBody:Cliente[1]:ENDERECO)
+				If Alltrim(SA1->A1_END) <> Alltrim(oBody:BODY:Cliente[1]:ENDERECO)
+					SA1->A1_END := Alltrim(oBody:BODY:Cliente[1]:ENDERECO)
 				ENDIF
 
 				If Alltrim(SA1->A1_TEL) <> fRemoveCarc(substr(oBody:Cliente[1]:TEL,3) )
 					SA1->A1_TEL := fRemoveCarc(substr(oBody:Cliente[1]:TEL,3))
 				ENDIF
 
-				//If Alltrim(SA1->A1_XTELEFO) <> substr(oBody:Cliente[1]:FONE2,3)
-				//	SA1->A1_XTELEFO := substr(oBody:Cliente[1]:FONE2,3)
+				//If Alltrim(SA1->A1_XTELEFO) <> substr(oBody:BODY:Cliente[1]:FONE2,3)
+				//	SA1->A1_XTELEFO := substr(oBody:BODY:Cliente[1]:FONE2,3)
 				//ENDIF
 
-				//IF Alltrim(SA1->A1_XDDD) <> substr(oBody:Cliente[1]:FONE2,1,2)
-				//	SA1->A1_XDDD := substr(oBody:Cliente[1]:FONE2,1,2)
+				//IF Alltrim(SA1->A1_XDDD) <> substr(oBody:BODY:Cliente[1]:FONE2,1,2)
+				//	SA1->A1_XDDD := substr(oBody:BODY:Cliente[1]:FONE2,1,2)
 				//ENDIF
 			ELSE
-				If Alltrim(SA1->A1_CONTATO) <> Alltrim(oBody:Cliente:CONTATO)
-					SA1->A1_CONTATO := oBody:Cliente:CONTATO
+				If Alltrim(SA1->A1_CONTATO) <> Alltrim(oBody:BODY:Cliente:CONTATO)
+					SA1->A1_CONTATO := oBody:BODY:Cliente:CONTATO
 				EndIF
 
-				If Alltrim(SA1->A1_EMAIL) <> Alltrim(oBody:Cliente:EMAIL)
-					SA1->A1_EMAIL := oBody:Cliente:EMAIL
+				If Alltrim(SA1->A1_EMAIL) <> Alltrim(oBody:BODY:Cliente:EMAIL)
+					SA1->A1_EMAIL := oBody:BODY:Cliente:EMAIL
 				EndIF
 
-				If Alltrim(SA1->A1_END) <> Alltrim(oBody:Cliente:ENDERECO)
-					SA1->A1_END := Alltrim(oBody:Cliente:ENDERECO)
+				If Alltrim(SA1->A1_END) <> Alltrim(oBody:BODY:Cliente:ENDERECO)
+					SA1->A1_END := Alltrim(oBody:BODY:Cliente:ENDERECO)
 				ENDIF
 
 				If Alltrim(SA1->A1_TEL) <> fRemoveCarc(substr(oBody:Cliente:TEL,3)) 
 					SA1->A1_TEL := fRemoveCarc(substr(oBody:Cliente:TEL,3))
 				ENDIF
 
-				If oBody:CLIENTE:GetJsonObject("OBSERVACAO_ENTREGA") <> Nil
-					If Alltrim(SA1->A1_ENDENT) <> Alltrim(oBody:CLIENTE:GetJsonObject("ENDERECO_ENTREGA"))
-						SA1->A1_ENDENT := oBody:CLIENTE:GetJsonObject("ENDERECO_ENTREGA")
+				If oBody:BODY:CLIENTE:GetJsonObject("OBSERVACAO_ENTREGA") <> Nil
+					If Alltrim(SA1->A1_ENDENT) <> Alltrim(oBody:BODY:CLIENTE:GetJsonObject("ENDERECO_ENTREGA"))
+						SA1->A1_ENDENT := oBody:BODY:CLIENTE:GetJsonObject("ENDERECO_ENTREGA")
 					EndIf
 
-					If Alltrim(SA1->A1_BAIRROE) <> oBody:CLIENTE:GetJsonObject("BAIRRO_ENTREGA")
-						SA1->A1_BAIRROE := oBody:CLIENTE:GetJsonObject("BAIRRO_ENTREGA")
+					If Alltrim(SA1->A1_BAIRROE) <> oBody:BODY:CLIENTE:GetJsonObject("BAIRRO_ENTREGA")
+						SA1->A1_BAIRROE := oBody:BODY:CLIENTE:GetJsonObject("BAIRRO_ENTREGA")
 					EndIf 
 
 					If Alltrim(SA1->A1_CEPE) <> oBody:CLIENTE:GetJsonObject("CEP_ENTREGA")
@@ -489,8 +490,9 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
 		EndIf
 
 		If !Empty(ccnpj) 
-			If oBody:ORCAMENTO <> 'S'
-				aItensCad := oBody:ITEMS
+			If oBody:BODY:ORCAMENTO <> 'S'
+				aItensCad := oBody:BODY:ITEMS
+                aadd(aCabec, {"C5_FILIAL"	, xFilial("SC5"),Nil})
 				aadd(aCabec, {"C5_NUM"		, cDoc			,Nil})
 				aadd(aCabec, {"C5_TIPO"		, "N"			,Nil})
 				aadd(aCabec, {"C5_CLIENTE"	, ccnpj			,Nil})
@@ -518,6 +520,8 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
 					else
 						nQtd := aItensCad[nX]:QUANTIDADE
 					EndIf 
+					
+					aadd(aLinha,{"C6_FILIAL"	, xFilial("SC6")	, Nil}) //STRZERO(nX,2)	
 					aadd(aLinha,{"C6_ITEM"		, cItem				, Nil}) //STRZERO(nX,2)	
 					aadd(aLinha,{"C6_PRODUTO"	, aItensCad[nX]:PRODUTO			, Nil})
 					aadd(aLinha,{"C6_QTDVEN"	, nQtd							, Nil})
@@ -580,14 +584,14 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
 
 				End Transaction 
 			else
-				If Empty(oBody:NUMORC) 
+				If Empty(oBody:BODY:NUMORC)
 					cDoc := GetSxeNum("SCJ","CJ_NUM")
 				else
-					cDoc := oBody:NUMORC 
+					cDoc := oBody:BODY:NUMORC 
 				EndIf 
 				aCabec := {}
 				aItens := {}
-				aItensCad := oBody:ITEMS
+				aItensCad := oBody:BODY:ITEMS
 				
 				aadd(aCabec,{"CJ_NUM"   	,cDoc			,Nil})
 				aadd(aCabec,{"CJ_CLIENTE"	,ccnpj			,Nil})
@@ -638,7 +642,7 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
 				Begin Transaction 
 
 						
-				MATA415(aCabec,aItens,If(Empty(oBody:NUMORC),3,4))
+				MATA415(aCabec,aItens,If(Empty(oBody:BODY:NUMORC),3,4))
 
 				If !lMsErroAuto .Or. SCJ->CJ_NUM =cDoc
 					ConOut("Incluído com sucesso! " + cDoc)
@@ -668,7 +672,7 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
 Return oJsonRet
 
 
-user function xxtes
+user function xxtes2
 
 Local cBody := '{"BODY":"{\"CLIENTE\":{\"CNPJ\":\"01152829000172\",\"INSC_ESTADUAL\":\"43971204          \",\"CODIGO\":\"01152829000172\",\"FILIAL\":\"0001\",\"RAZAO_SOCIAL\":\"OTICA VITORIA DE JUAZEIRO LTDA\",\"NOME_FANTASIA\":\"OTICA VITORIA\",\"ENDERECO\":\"AV. ADOLFO VIANA - ATE 200/201184\",\"BAIRRO\":\"CENTRO\",\"CIDADE\":\"JUAZEIRO\",\"UF\":\"BA\",\"CEP\":\"48903580\",\"CONTATO\":\"DORA\",\"EMAIL\":\"AUXILIADORA@BOL.COM.BR\",\"CELULAR\":\"74 36110325       \",\"FONE2\":\"74 36110325       \",\"ULTIMA_COMPRA\":\"  /  /  \",\"PRIMEIRA_COMPRA\":\"  /  /  \",\"RISCO\":\"A\",\"LIMITE_CREDITO\":\" 10.000,00\",\"SALDO\":\" 10.000,00\",\"MAIOR_COMPRA\":\"      0,00\",\"QTD_COMPRAS\":\"    0\",\"SALDO_DUPL_ABERTO\":\"      0,00\",\"QTD_ATRASOS\":\"   0\",\"MAIOR_ATRASO\":\"   0\",\"QTD_PAGTO_ATRASO\":\"   0\",\"ID\":\"179\"},\"CONDPAGTO\":\"005\",\"DESCONTO\":\"\",\"FORCE\":\"FALSE\",\"ITEMS\":[{\"ID\":6480,\"ITEM\":\"ID\",\"DESCONTO\":0,\"QUANTIDADE\":6,\"PRODUTO\":\"CV-H05 C2\",\"DESCRICAO\":\"ARM METAL 55-17-140/PROM / SALDO DISPONIVEL\",\"VALOR\":\"39,00\",\"TOTAL\":39}],\"VENDEDOR\":\"000019\",\"OBSERVATION\":\"TESTE APP\",\"ORCAMENTO\":\"N\",\"NUMORC\":\"000008\"}"}'
 Local oJsonIM 
@@ -679,7 +683,7 @@ Local aErro		:=	{}
 
 If Select("SM0") == 0
 	RpcSetType(3)
-	RPCSetEnv("01","0103")
+	RPCSetEnv("01","0801")
 EndIf
 
 IF FWJsonDeserialize(cBody,@oJsonIM)
@@ -765,7 +769,7 @@ EndIf
 
 Return 
 
-/*/{Protheus.doc} ValSald(oBody:ITEMS)
+/*/{Protheus.doc} ValSald(oBody:BODY:ITEMS)
 	(long_description)
 	@type  Static Function
 	@author user
@@ -793,12 +797,12 @@ FOR nX := 1 to len(aProds)
 	
 	DbSelectArea("SB2")
 	DbSetOrder(1)
-	If DbSeek('0103'+Avkey(aProds[nX]:PRODUTO,"B2_COD")+SB1->B1_LOCPAD)
+	If DbSeek('0801'+Avkey(aProds[nX]:PRODUTO,"B2_COD")+SB1->B1_LOCPAD)
 		nSaldo += SaldoSb2()
 	EndIf 
-	If DbSeek('0103'+Avkey(aProds[nX]:PRODUTO,"B2_COD")+SB1->B1_LOCPAD)
+	If DbSeek('0801'+Avkey(aProds[nX]:PRODUTO,"B2_COD")+SB1->B1_LOCPAD)
 		nSaldo += SaldoSb2()
-	EndIf 
+	EndIf  
 
 	If nSaldo > 0
 		If nSaldo - 10 < If(valtype(aProds[nX]:QUANTIDADE)=="C",val(aProds[nX]:QUANTIDADE),aProds[nX]:QUANTIDADE)
