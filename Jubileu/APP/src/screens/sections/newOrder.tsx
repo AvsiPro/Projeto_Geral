@@ -10,28 +10,36 @@ import NetInfo from "@react-native-community/netinfo";
 import LottieView from 'lottie-react-native'
 import { PropItemCartContext } from '../../interfaces';
 
+import ModalObs from '../../modals/modalObs';
 import ModalCustomers from '../../modals/modalCustomers';
 import ModalProducts from '../../modals/modalProducts';
 import ModalPayment from '../../modals/modalPayment';
+import Popups from '../../modals/popups';
 
 export default function Neworder(){
     const navigation: any = useNavigation();
     const animation = useRef(null);
-    const { itemCart, setItemCart, customerSelected, setCustomerSelected, paymentSelected, setPaymentSelected } = useContext(AppContext);
+    const { itemCart, setItemCart, customerSelected, setCustomerSelected, paymentSelected, setPaymentSelected, authDetail } = useContext(AppContext);
     const { colors } = useContext(ThemeContext);
     
-    const [visibleModalProducts, setVisibleModalProducts] = useState(false)
-    const [visibleModalCustomers, setVisibleModalCustomers] = useState(false)
-    const [visibleModalPayment, setVisibleModalPayment] = useState(false)
+    const [visibleModalProducts, setVisibleModalProducts] = useState(false);
+    const [visibleModalCustomers, setVisibleModalCustomers] = useState(false);
+    const [visibleModalPayment, setVisibleModalPayment] = useState(false);
+    const [visibleModalObs, setVisibleModalObs] = useState(false);
     const [dataItens, setDataItens] = useState<any>([]);
     const [dataCustomers, setDataCustomers] = useState<any>(null);
     const [dataPayment, setDataPayment] = useState<any>(null);
-    const [discountInput, setDiscountInput] = useState<string>('')
+    const [discountInput, setDiscountInput] = useState<string>('');
+    const [discountPercent, setDiscountPercent] = useState<number>(0);
     const [products, setProducts] = useState<PropItemCartContext[]>([]);
     const [customers, setCustomers] = useState<any>([]);
     const [payment, setPayment] = useState<any>([]);
-    const [keyboardActived, setKeyboardActived] = useState(false)
+    const [keyboardActived, setKeyboardActived] = useState(false);
     const [isOnline, setIsOnline] = useState(true);
+    const [visiblePopup, setVisiblePopup] = useState<boolean>(false);
+    const [messageError, setMessageError] = useState<string>('');
+
+    const [textObs, setTextObs] = useState<string>('');
 
 
     /** verifica se esta online ou offline **/
@@ -228,8 +236,89 @@ export default function Neworder(){
 
     /** seta o disconto **/
     const handleDiscount = (text: string) => {
+        let discountValue: number = 0
         setDiscountInput(text);
+
+        const discountAux: number = parseFloat(text.replace(",", "."))
+
+        if(discountAux > 0){
+            discountValue = discountAux
+        }
+
+        setDiscountPercent(discountValue)
     };
+
+
+    /** botao finalizar **/
+    const finishOrder = () => {
+
+        if(!customerSelected) {
+            setMessageError('Necessário selecionar um cliente')
+            setVisiblePopup(true)
+            return
+        }
+
+        if(!paymentSelected) {
+            setMessageError('Necessário selecionar uma condição de pagamento')
+            setVisiblePopup(true)
+            return
+        }
+
+        if(itemCart.length <= 0) {
+            setMessageError('Necessário selecionar ao menos um produto')
+            setVisiblePopup(true)
+            return
+        }
+
+
+        const items = itemCart.map((item: any) => {
+            return {
+                produto: item.code,
+                quantidade: item.selected_quantity,
+                valor: item.price,
+            };
+        });
+
+        const pedido = {
+            endereco_entrega: customerSelected.another_address,
+            cep_entrega: customerSelected.another_cep,
+            bairro_entrega: customerSelected.another_district,
+            condpagto: paymentSelected.code,
+            desconto: discountPercent,
+            numorc: "",
+            orcamento: "N",
+            observation: "",
+            token: authDetail.token,
+            cliente: {
+                filial: customerSelected.branch,
+                endereco: customerSelected.address,
+                bairro: customerSelected.district,
+                cep: customerSelected.cep,
+                uf: customerSelected.uf,
+                cidade: customerSelected.city,
+                tel: customerSelected.phone,
+                cnpj: customerSelected.cnpj,
+                codigo: customerSelected.code,
+                contato: customerSelected.contact,
+                email: customerSelected.email,
+                nome_fantasia: customerSelected.short_name,
+                razao_social: customerSelected.name
+            },
+            items: items
+        }
+
+        console.log(pedido)
+        setVisibleModalObs(true)
+    
+    }
+
+    const handleGeraPedido = () => {
+        console.log(textObs)
+    }
+
+    const handleGeraOrcamento = () => {
+
+    }
 
 
     return(<>
@@ -374,7 +463,7 @@ export default function Neworder(){
                                 <Style.TextFooterOrder color={colors.primary}>Limpar</Style.TextFooterOrder>
                             </Style.ButtonClearOrder>
 
-                            <Style.ButtonFinishOrder>
+                            <Style.ButtonFinishOrder onPress={finishOrder}>
                                 <Style.TextFooterOrder color='#fff'>Finalizar</Style.TextFooterOrder>
                             </Style.ButtonFinishOrder>
                         </Style.TotalsFooterOrder>
@@ -407,6 +496,23 @@ export default function Neworder(){
             handleModalPayment={handleModalPayment}
             payment={payment}
             atualizaPagamentos={atualizaPagamentos}
+        />
+
+        <ModalObs
+            getVisible={visibleModalObs}
+            handleModalObs={() => setVisibleModalObs(!visibleModalObs) }
+            changeTextObs={(change) => setTextObs(change)}
+            textObs={textObs}
+            handleGeraPedido={handleGeraPedido}
+            handleGeraOrcamento={handleGeraOrcamento}
+        />
+
+        <Popups 
+            getVisible={visiblePopup}
+            handlePopup={() => setVisiblePopup(!visiblePopup)}
+            type={'warning'}
+            filter={null}
+            message={messageError}
         />
     </>)
 }

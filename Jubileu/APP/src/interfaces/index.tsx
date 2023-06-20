@@ -1,5 +1,3 @@
-import { UseFormHandleSubmit } from 'react-hook-form';
-
 export interface ApiResponse {
     status: {
       code: string;
@@ -20,6 +18,15 @@ export interface PropsProdDetail{
     getVisible: boolean;
     handleModalProducts: () => void;
     products: any;
+}
+
+export interface PropsModalObs{
+    getVisible: boolean;
+    handleModalObs: () => void;
+    changeTextObs: (change: string) => void;
+    textObs: any;
+    handleGeraPedido: () => void;
+    handleGeraOrcamento: () => void;
 }
 
 export interface PropsCostumersModal{

@@ -113,6 +113,32 @@ export default function Form({formSchema} : Props) {
         error={formSchema.errors.phone}
       />
 
+      <ControlledInput
+        name="another_address"
+        control={formSchema.control}
+        placeholder="Outro endereço entrega"
+        error={formSchema.errors.another_address}
+      />
+
+      <ControlledInputMask
+        name="another_cep"
+        mask={'custom'}
+        options={{
+          mask: '99999-999',
+        }}
+        control={formSchema.control}
+        keyboardType="numeric"
+        placeholder="Outro CEP entrega"
+        error={formSchema.errors.another_cep}
+      />
+
+      <ControlledInput
+        name="another_district"
+        control={formSchema.control}
+        placeholder="Outro bairro entrega"
+        error={formSchema.errors.another_district}
+      />
+
     </Style.ContainerForm>
   )
 }

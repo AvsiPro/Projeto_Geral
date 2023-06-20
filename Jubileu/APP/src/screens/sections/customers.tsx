@@ -61,6 +61,8 @@ export default function Customers(){
 
     },[]);
 
+    const keyboardDidShow = () => { setDisableFooter(true) }
+    const keyboardDidHide = () => { setDisableFooter(false) }
 
     /** verifica se esta online ou offline **/
     useEffect(() => {
@@ -73,8 +75,6 @@ export default function Customers(){
         };
     }, []);
 
-    const keyboardDidShow = () => { setDisableFooter(true) }
-    const keyboardDidHide = () => { setDisableFooter(false) }
 
     const handlePopup = (index: any) =>{
         setVisiblePopup(!visiblePopup)
@@ -294,8 +294,8 @@ export default function Customers(){
                                                 Atualizar cadastro
                                             </Style.ButtomSubmitTitle>
                                         </Style.ButtomSubmitRight>
-                                        
                                     </Style.ContainerButtonSubmit>
+                                    
                                 </Style.containerFormModal1>
                             }
                             </ScrollView>

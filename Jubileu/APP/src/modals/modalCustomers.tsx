@@ -44,11 +44,10 @@ export default function modalCustomers({getVisible, handleModalCustomers, custom
     const [updateCustomer, setUpdateCustomer] = useState(false);
     const [financial, setFinancial] = useState(false);
     const [financialCustomer, setFinancialCustomer] = useState('')
-
     const [visiblePopup, setVisiblePopup] = useState(false)
 
 
-    const { control, handleSubmit, formState: { errors }, setValue } = useForm<FormDataCustomer>({
+    const { control, handleSubmit, formState: { errors }, reset, setValue } = useForm<FormDataCustomer>({
         resolver: yupResolver(schema)
     });
 
@@ -146,6 +145,7 @@ export default function modalCustomers({getVisible, handleModalCustomers, custom
             handleFinancial()
 
         } else{
+            reset()
             setValue('name', item.name)
             setValue('short_name', item.short_name)
             setValue('cnpj', item.cnpj)

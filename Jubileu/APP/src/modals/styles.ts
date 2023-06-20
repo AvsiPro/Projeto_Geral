@@ -376,6 +376,15 @@ export const ButtomSubmitLeft = styled.TouchableOpacity`
     justify-content: center;
 `;
 
+export const ButtomSubmitLeft2 = styled.TouchableOpacity`
+    padding: 15px;
+    align-items: center;
+    justify-content: center;
+    background-color: #FF9F47;
+    border-radius: 15px;
+`;
+
+
 export const ButtomSubmitRight = styled.TouchableOpacity`
     padding: 15px;
     align-items: center;
@@ -456,3 +465,11 @@ export const MiddleCardText = styled.Text`
 export const ModalItensContainer = styled.View`
     padding:25px;
 `
+
+export const ObservationsInput = styled.TextInput`
+    height: 200px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    margin: 10px;
+`;
