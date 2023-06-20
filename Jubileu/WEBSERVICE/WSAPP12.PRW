@@ -131,35 +131,36 @@ WsMethod POST WsReceive RECEIVE WsService WSAPP12
     // Chama Rotina que irÃ¡ analisar os dados recebidos.
     If lRet .And. Empty(cCode) .And. Empty(cMessage)
         StatPed(oBody,@aRetExec, @aErro,@aSld)
-        conout("passou statped")
-        
-        cCode 		:= aRetExec[1]
-        cCodUsu		:= aRetExec[2]
-        cProdsld	:= aRetExec[3]
-        
+        conout("passou statped")       
 
-        If len(aSld) > 0
-            cJsonError := ' ['            
-            cBarra := ''
+		If aRetExec[1] != '#400'
+			If len(aSld) > 0
+				cJsonError := ' ['            
+				cBarra := ''
 
-			cCode 	 := '#410'
-			cMessage := 'Produtos sem saldo'
-            
-            For nX := 1 to len(aSld)
-                If !Empty(aSld[nX,01])
-                    cJsonError += cBarra+'{'
-                    cJsonError += '"codigo":"'+cvaltochar(aSld[nX,01])+' / Saldo '+cvaltochar(aSld[nX,02])+'",
-                    cJsonError += '"saldo": "'+cvaltochar(aSld[nX,02])+'" }'
-                    cBarra := ','
-                EndIf
-            Next nX
+				cCode 	 := '#410'
+				cMessage := 'Produtos sem saldo'
+				
+				For nX := 1 to len(aSld)
+					If !Empty(aSld[nX,01])
+						cJsonError += cBarra+'{'
+						cJsonError += '"codigo":"'+cvaltochar(aSld[nX,01])+' / Saldo '+cvaltochar(aSld[nX,02])+'",
+						cJsonError += '"saldo": "'+cvaltochar(aSld[nX,02])+'" }'
+						cBarra := ','
+					EndIf
+				Next nX
 
-            cJsonError += ']'
-        Else
-            cCode 	   := '#200'
-			cMessage   := 'Pedido gerado com sucesso '+aRetExec[1]		
-			cJsonError := '[]'	
-        EndIf
+				cJsonError += ']'
+			Else
+				cCode 	   := '#200'
+				cMessage   := aRetExec[1]		
+				cJsonError := '[]'
+			EndIf
+		Else
+			cCode 	   := aRetExec[1]
+			cMessage   := aRetExec[2]
+			cJsonError := '[]'
+		EndIf
 
 		cResult := '{'
 		cResult += '"status" : {'
@@ -577,7 +578,7 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
 					cMessage := 'Pedido gerado com sucesso'
 					lRet := .T.
 				Else
-					cPedido := '400'
+					cPedido := '#400'
 					cMessage := 'Erro ao gerar o pedido'
 					mostraerro('\system\','pedido_'+dtos(ddatabase)+strtran(cvaltochar(time()),":"))
 					lRet := .F.
@@ -653,7 +654,7 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
 					cMessage := 'NUMORC:'+cDoc
 					lRet := .T.
 				Else
-					cPedido := '400'
+					cPedido := '#400'
 					cMessage := 'Erro ao gerar o orçamento'
 					mostraerro('\system\','pedido_'+dtos(ddatabase)+strtran(cvaltochar(time()),":"))
 					lRet := .F.
