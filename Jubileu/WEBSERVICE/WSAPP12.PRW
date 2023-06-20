@@ -352,8 +352,8 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
 					SA1->A1_END := Alltrim(oBody:Cliente[1]:ENDERECO)
 				ENDIF
 
-				If Alltrim(SA1->A1_TEL) <> substr(oBody:Cliente[1]:CELULAR,3) 
-					SA1->A1_TEL := substr(oBody:Cliente[1]:CELULAR,3)
+				If Alltrim(SA1->A1_TEL) <> fRemoveCarc(substr(oBody:Cliente[1]:TEL,3) )
+					SA1->A1_TEL := fRemoveCarc(substr(oBody:Cliente[1]:TEL,3))
 				ENDIF
 
 				//If Alltrim(SA1->A1_XTELEFO) <> substr(oBody:Cliente[1]:FONE2,3)
@@ -376,8 +376,8 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
 					SA1->A1_END := Alltrim(oBody:Cliente:ENDERECO)
 				ENDIF
 
-				If Alltrim(SA1->A1_TEL) <> substr(oBody:Cliente:CELULAR,3) 
-					SA1->A1_TEL := substr(oBody:Cliente:CELULAR,3)
+				If Alltrim(SA1->A1_TEL) <> fRemoveCarc(substr(oBody:Cliente:TEL,3)) 
+					SA1->A1_TEL := fRemoveCarc(substr(oBody:Cliente:TEL,3))
 				ENDIF
 
 				If oBody:CLIENTE:GetJsonObject("OBSERVACAO_ENTREGA") <> Nil
@@ -390,7 +390,7 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
 					EndIf 
 
 					If Alltrim(SA1->A1_CEPE) <> oBody:CLIENTE:GetJsonObject("CEP_ENTREGA")
-						SA1->A1_CEPE := oBody:CLIENTE:GetJsonObject("CEP_ENTREGA")
+						SA1->A1_CEPE := fRemoveCarc(oBody:CLIENTE:GetJsonObject("CEP_ENTREGA"))
 					EndIf
 				ENDIF
 
@@ -413,26 +413,26 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
 				Aadd(aDadCl,{"A1_NOME"  ,   upper(oBody:Cliente[1]:RAZAO_SOCIAL)  			, NIL})
 				Aadd(aDadCl,{"A1_NREDUZ",   upper(oBody:Cliente[1]:NOME_FANTASIA)  			, NIL})
 				Aadd(aDadCl,{"A1_END"   ,   Alltrim(upper(oBody:Cliente[1]:ENDERECO))  		, NIL})
-				Aadd(aDadCl,{"A1_CEP"   ,   oBody:Cliente[1]:CEP                    		, NIL})
+				Aadd(aDadCl,{"A1_CEP"   ,   fRemoveCarc(oBody:Cliente[1]:CEP)				, NIL})
 				Aadd(aDadCl,{"A1_BAIRRO",   substr(upper(oBody:Cliente[1]:BAIRRO),1,30)    	, NIL})
 				Aadd(aDadCl,{"A1_EST"   ,   upper(oBody:Cliente[1]:UF)               		, NIL})
 				Aadd(aDadCl,{"A1_MUN"   ,   substr(UPPER(oBody:Cliente[1]:CIDADE),1,60)    	, NIL})
 				Aadd(aDadCl,{"A1_EMAIL" ,   upper(oBody:Cliente[1]:EMAIL)                  	, NIL})
-				Aadd(aDadCl,{"A1_DDD"   ,   oBody:Cliente[1]:DDD         					, NIL})
-				Aadd(aDadCl,{"A1_TEL"   ,   oBody:Cliente[1]:TEL              				, NIL})
+				Aadd(aDadCl,{"A1_DDD"   ,   fRemoveCarc(Substr(oBody:Cliente[1]:TEL,1,2))	, NIL})
+				Aadd(aDadCl,{"A1_TEL"   ,   fRemoveCarc(substr(oBody:Cliente[1]:TEL,3))		, NIL})
 				Aadd(aDadCl,{"A1_CONTATO",  oBody:Cliente[1]:CONTATO			          	, NIL})
 				
 			else
 				Aadd(aDadCl,{"A1_NOME"  ,   upper(oBody:Cliente:RAZAO_SOCIAL)  				, NIL})
 				Aadd(aDadCl,{"A1_NREDUZ",   upper(oBody:Cliente:NOME_FANTASIA)  			, NIL})
 				Aadd(aDadCl,{"A1_END"   ,   Alltrim(upper(oBody:Cliente:ENDERECO))  		, NIL})
-				Aadd(aDadCl,{"A1_CEP"   ,   oBody:Cliente:CEP                    			, NIL})
+				Aadd(aDadCl,{"A1_CEP"   ,   fRemoveCarc(oBody:Cliente:CEP)					, NIL})
 				Aadd(aDadCl,{"A1_BAIRRO",   substr(upper(oBody:Cliente:BAIRRO),1,30)    	, NIL})
 				Aadd(aDadCl,{"A1_EST"   ,   upper(oBody:Cliente:UF)               			, NIL})
 				Aadd(aDadCl,{"A1_MUN"   ,   substr(UPPER(oBody:Cliente:CIDADE),1,60)    	, NIL})
 				Aadd(aDadCl,{"A1_EMAIL" ,   upper(oBody:Cliente:EMAIL)                  	, NIL})
-				Aadd(aDadCl,{"A1_DDD"   ,   oBody:Cliente:DDD              					, NIL})
-				Aadd(aDadCl,{"A1_TEL"   ,   oBody:Cliente:TEL                 				, NIL})	
+				Aadd(aDadCl,{"A1_DDD"   ,   fRemoveCarc(Substr(oBody:Cliente:TEL,1,2))		, NIL})
+				Aadd(aDadCl,{"A1_TEL"   ,   fRemoveCarc(substr(oBody:Cliente:TEL,3))		, NIL})	
 				Aadd(aDadCl,{"A1_CONTATO",  oBody:Cliente:CONTATO			                , NIL})
 				
 			EndIf
@@ -444,9 +444,9 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
 			Aadd(aDadCl,{"A1_VEND"	,   cCodVnd                 , NIL})
 			
 			If oBody:CLIENTE:GetJsonObject("ENDERECO_ENTREGA") <> Nil
-				Aadd(aDadCl,{"A1_ENDENT"	,   oBody:CLIENTE:GetJsonObject("ENDERECO_ENTREGA")       , NIL})
-				Aadd(aDadCl,{"A1_BAIRROE"	,   oBody:CLIENTE:GetJsonObject("BAIRRO_ENTREGA")         , NIL})
-				Aadd(aDadCl,{"A1_CEPE"		,   oBody:CLIENTE:GetJsonObject("CEP_ENTREGA")            , NIL})
+				Aadd(aDadCl,{"A1_ENDENT"	,   oBody:CLIENTE:GetJsonObject("ENDERECO_ENTREGA")         , NIL})
+				Aadd(aDadCl,{"A1_BAIRROE"	,   oBody:CLIENTE:GetJsonObject("BAIRRO_ENTREGA")           , NIL})
+				Aadd(aDadCl,{"A1_CEPE"		,   ofRemoveCarc(Body:CLIENTE:GetJsonObject("CEP_ENTREGA")) , NIL})
 			ENDIF
 
 			aAdd(aAI0Auto,{"AI0_SALDO" ,0 ,Nil})
@@ -551,7 +551,7 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
 
 					aadd(aLinha,{"C6_TES"		, '501'			 				, Nil})
 					aadd(aLinha,{"C6_LOCAL"		, SB1->B1_LOCPAD	 			, Nil})
-					aadd(aLinha,{"C6_DESCONT"	, VAL(nDescon)			  	 	, Nil})
+					aadd(aLinha,{"C6_DESCONT"	, nDescon		  	 	, Nil})
 					
 					aadd(aItens, aLinha)
 
@@ -627,7 +627,7 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
 					
                     aadd(aLinha,{"CK_TES"		, '501'			 				, Nil})
 					aadd(aLinha,{"CK_LOCAL"		, SB1->B1_LOCPAD	 			, Nil})
-					aadd(aLinha,{"CK_DESCONT"	, VAL(nDescon)			  	 	, Nil})
+					aadd(aLinha,{"CK_DESCONT"	, nDescon			  	 		, Nil})
 					
 					aadd(aItens, aLinha)
 
@@ -821,7 +821,6 @@ Return(aRet)
    @author: Felipe Mayer
    @since: 19/06/2023
 /*/
-
 Static Function fVendToken(cToken)
 
 Local cRet := ''
@@ -840,3 +839,51 @@ Local cRet := ''
 	(cAliasTMP)->(DbCloseArea())
 
 Return cRet
+
+
+/*/{Protheus.doc} fRemoveCarc
+   @description: Remove caracter
+   @type: Static Function
+   @author: Felipe Mayer
+   @since: 19/06/2023
+/*/
+Static Function fRemoveCarc(cWord)
+    cWord := FwNoAccent(cWord)
+    cWord := FwCutOff(cWord)
+    cWord := strtran(cWord,"ã","a")
+    cWord := strtran(cWord,"º"," ")
+    cWord := strtran(cWord,"%"," ")
+    cWord := strtran(cWord,"*"," ")     
+    cWord := strtran(cWord,"&"," ")
+    cWord := strtran(cWord,"$"," ")
+    cWord := strtran(cWord,"#"," ")
+    cWord := strtran(cWord,"§"," ") 
+    cWord := strtran(cWord,"ä","a")
+    cWord := strtran(cWord,","," ")
+    cWord := strtran(cWord,"."," ")
+    cWord := StrTran(cWord, "'", " ")
+    cWord := StrTran(cWord, "#", " ")
+    cWord := StrTran(cWord, "%", " ")
+    cWord := StrTran(cWord, "*", " ")
+    cWord := StrTran(cWord, "&", "E")
+    cWord := StrTran(cWord, "!", " ")
+    cWord := StrTran(cWord, "@", " ")
+    cWord := StrTran(cWord, "$", " ")
+    cWord := StrTran(cWord, "(", " ")
+    cWord := StrTran(cWord, ")", " ")
+    cWord := StrTran(cWord, "_", " ")
+	cWord := StrTran(cWord, "-", " ")
+    cWord := StrTran(cWord, "+", " ")
+    cWord := StrTran(cWord, "{", " ")
+    cWord := StrTran(cWord, "}", " ")
+    cWord := StrTran(cWord, "[", " ")
+    cWord := StrTran(cWord, "]", " ")
+    cWord := StrTran(cWord, ".", " ")
+    cWord := StrTran(cWord, "|", " ")
+    cWord := StrTran(cWord, ";", " ")
+    cWord := StrTran(cWord, '"', '')
+    cWord := StrTran(cWord, '°', '')
+    cWord := StrTran(cWord, 'ª', '')
+    cWord := strtran(cWord,""+'"'+""," ")
+    cWord := RTrim(cWord)
+Return cWord

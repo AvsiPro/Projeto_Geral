@@ -294,6 +294,9 @@ Static Function fGeraResult(aListCli, nAux, aListAux)
 	aListCli[nAux]['biggest_delays']    := aListAux[25]
 	aListCli[nAux]['late_payments']     := aListAux[26]
 	aListCli[nAux]['financial']			:= fTitulos(aListAux[2],aListAux[3])
+	aListCli[nAux]['another_address']   := ''
+	aListCli[nAux]['another_cep']   	:= ''
+	aListCli[nAux]['another_district']  := ''
 
 Return
 
