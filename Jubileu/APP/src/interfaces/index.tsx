@@ -27,6 +27,7 @@ export interface PropsModalObs{
     textObs: any;
     handleGeraPedido: () => void;
     handleGeraOrcamento: () => void;
+    load: boolean;
 }
 
 export interface PropsCostumersModal{
@@ -142,4 +143,7 @@ export interface FormDataCustomer {
     uf: string;
     contact: string;
     phone: string;
+    another_address: string;
+    another_cep: string;
+    another_district: string;
 }

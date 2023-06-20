@@ -88,7 +88,8 @@ Default oself:token  	:=''
 	cQuery += "        AND SA1.D_E_L_E_T_ = ' '   " 
 	cQuery += " WHERE SC5.D_E_L_E_T_ = ' '   " 
 	cQuery += " 	   AND UPPER(A3_TOKEN) = '"+Upper(oself:token)+"' "+cWhere
-	cQuery += " ORDER BY " + SqlOrder(SC5->(IndexKey(1)))
+	cQuery += " ORDER BY C5_EMISSAO DESC, C5_NUM DESC"
+	//cQuery += " ORDER BY " + SqlOrder(SC5->(IndexKey(1)))
 	cQuery += " OFFSET (("+cValToChar(oself:page)+" - 1) * "+cValToChar(oself:pageSize)+") ROWS "
 	cQuery += " FETCH NEXT "+cValToChar(oself:pageSize)+" ROWS ONLY "
 	

@@ -80,7 +80,7 @@ export const searchOrders = async (searchQuery: string, isOnline: boolean) => {
     let returnObject: any
 
     if(isOnline){
-        const response = await api.get(`/WSAPP07?pagesize=10&page=1&searchKey=${searchQuery}`);
+        const response = await api.get(`/WSAPP07?pagesize=100&page=1&searchKey=${searchQuery}`);
         const json: ApiResponse = response.data;
 
         returnResult = json.result

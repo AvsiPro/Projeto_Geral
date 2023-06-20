@@ -1,8 +1,11 @@
-import React, { useState, useEffect, useContext, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useContext, useRef } from 'react';
 import { ActivityIndicator, FlatList, Keyboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AntDesign, MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import * as Style from './styles';
+
+import { useFocusEffect } from '@react-navigation/native';
+
 
 import Footer from '../../components/footer';
 
@@ -68,14 +71,21 @@ export default function Orders(){
 
 
     /** verifica se esta online. Se tiver, chama a API com orders, se nao, chama os orders que estao salvos no storage **/
-    useEffect(() => {
-        if(isOnline){
-            loadItems();
-
-        }else {
-            fetchAsyncStorage();
-        }
-    }, []);
+    useFocusEffect(
+        useCallback(() => {
+            if(isOnline){
+                loadItems();
+    
+            }else {
+                fetchAsyncStorage();
+            }
+          
+          return () => {
+            // Função de limpeza, se necessário
+          };
+        }, [])
+    );
+    
 
 
     const loadItems = async() => {

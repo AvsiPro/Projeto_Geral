@@ -137,35 +137,39 @@ WsMethod POST WsReceive RECEIVE WsService WSAPP12
         cCodUsu		:= aRetExec[2]
         cProdsld	:= aRetExec[3]
         
-        conout("retornou "+ccode)
-        conout(ccodusu)
-        conout(cProdsld)
 
         If len(aSld) > 0
-            cJsonRet := '{"codigo": "410",
-            cJsonRet += '"mensagem": "Itens sem saldo",'
-            cJsonRet += '"produtos": ['
-            //aSld := separa(cProdsld,",")
-            
+            cJsonError := ' ['            
             cBarra := ''
+
+			cCode 	 := '#410'
+			cMessage := 'Produtos sem saldo'
             
             For nX := 1 to len(aSld)
                 If !Empty(aSld[nX,01])
-                    cJsonRet += cBarra+'{'
-                    cJsonRet += '"codigo":"'+cvaltochar(aSld[nX,01])+' / Saldo '+cvaltochar(aSld[nX,02])+'",
-                    cJsonRet += '"saldo": "'+cvaltochar(aSld[nX,02])+'" }'
+                    cJsonError += cBarra+'{'
+                    cJsonError += '"codigo":"'+cvaltochar(aSld[nX,01])+' / Saldo '+cvaltochar(aSld[nX,02])+'",
+                    cJsonError += '"saldo": "'+cvaltochar(aSld[nX,02])+'" }'
                     cBarra := ','
                 EndIf
             Next nX
 
-            cJsonRet += ']'
-            cJsonRet += '}'
-        else
-            cJsonRet := '{"code" : "200",
-            cJsonRet += '"pedido": "'+cCode+'",'
-            cJsonRet += '"mensagem": "'+cCodUsu+'"}'				
+            cJsonError += ']'
+        Else
+            cCode 	   := '#200'
+			cMessage   := 'Pedido gerado com sucesso '+aRetExec[1]		
+			cJsonError := '[]'	
         EndIf
-        conout(cJsonret)
+
+		cResult := '{'
+		cResult += '"status" : {'
+		cResult += '"code" : "'+cCode+'",'
+		cResult += '"message" : "'+cMessage+'"'
+		cResult += '},'
+		cResult += '"errors" : '+cJsonError
+		cResult += '}'
+		
+        conout(cResult)
     EndIf 
 
 	
@@ -173,7 +177,7 @@ WsMethod POST WsReceive RECEIVE WsService WSAPP12
 	//-> Mensagem de Retorno da Requisição
 	self:setContentType("application/json")
 	
-    self:setResponse(cJsonRet)
+    self:setResponse(cResult)
 	
     // Realiza o fechamento do Ambiente
 	RpcClearEnv()

@@ -15,6 +15,7 @@ import ModalCustomers from '../../modals/modalCustomers';
 import ModalProducts from '../../modals/modalProducts';
 import ModalPayment from '../../modals/modalPayment';
 import Popups from '../../modals/popups';
+import api from '../../services/api';
 
 export default function Neworder(){
     const navigation: any = useNavigation();
@@ -37,9 +38,10 @@ export default function Neworder(){
     const [keyboardActived, setKeyboardActived] = useState(false);
     const [isOnline, setIsOnline] = useState(true);
     const [visiblePopup, setVisiblePopup] = useState<boolean>(false);
-    const [messageError, setMessageError] = useState<string>('');
-
+    const [message, setMessage] = useState<string>('');
+    const [typeMessage, setTypeMessage] = useState<string>('');
     const [textObs, setTextObs] = useState<string>('');
+    const [load, setLoad] = useState<boolean>(false);
 
 
     /** verifica se esta online ou offline **/
@@ -253,29 +255,38 @@ export default function Neworder(){
     const finishOrder = () => {
 
         if(!customerSelected) {
-            setMessageError('Necessário selecionar um cliente')
+            setTypeMessage('warning')
+            setMessage('Necessário selecionar um cliente')
             setVisiblePopup(true)
             return
         }
 
         if(!paymentSelected) {
-            setMessageError('Necessário selecionar uma condição de pagamento')
+            setTypeMessage('warning')
+            setMessage('Necessário selecionar uma condição de pagamento')
             setVisiblePopup(true)
             return
         }
 
         if(itemCart.length <= 0) {
-            setMessageError('Necessário selecionar ao menos um produto')
+            setTypeMessage('warning')
+            setMessage('Necessário selecionar ao menos um produto')
             setVisiblePopup(true)
             return
         }
 
+        setVisibleModalObs(true)
+    }
+
+
+    const handleGeraPedido = async() => {
+        setLoad(true)
 
         const items = itemCart.map((item: any) => {
             return {
                 produto: item.code,
                 quantidade: item.selected_quantity,
-                valor: item.price,
+                valor: item.price
             };
         });
 
@@ -287,7 +298,7 @@ export default function Neworder(){
             desconto: discountPercent,
             numorc: "",
             orcamento: "N",
-            observation: "",
+            observation: textObs,
             token: authDetail.token,
             cliente: {
                 filial: customerSelected.branch,
@@ -307,17 +318,46 @@ export default function Neworder(){
             items: items
         }
 
-        console.log(pedido)
-        setVisibleModalObs(true)
-    
-    }
+        try{
+            const response = await api.post("/WSAPP12", pedido);
+            const receive = response.data;
 
-    const handleGeraPedido = () => {
-        console.log(textObs)
+            if (receive.status.code === '#200') {
+                setItemCart([])
+                setCustomerSelected(null)
+                setPaymentSelected(null)
+                setTypeMessage('success')
+                setMessage(receive.status.message)
+                setVisibleModalObs(false)
+                setVisiblePopup(true)
+
+            } else {
+                setTypeMessage('error')
+                setMessage(receive.status.message)
+                setVisiblePopup(true)
+            }
+        } catch(error){
+            setTypeMessage('error')
+            setMessage('Erro ao gerar pedido, contate um administrador')
+            setVisiblePopup(true)
+        }
+
+        setLoad(false)
+
     }
 
     const handleGeraOrcamento = () => {
 
+    }
+
+    const handlePopUp = () => {
+
+        setVisiblePopup(!visiblePopup)
+
+        if(typeMessage === 'success'){
+            navigation.navigate('Orders')
+        }
+        
     }
 
 
@@ -505,14 +545,16 @@ export default function Neworder(){
             textObs={textObs}
             handleGeraPedido={handleGeraPedido}
             handleGeraOrcamento={handleGeraOrcamento}
+            load={load}
         />
 
         <Popups 
             getVisible={visiblePopup}
-            handlePopup={() => setVisiblePopup(!visiblePopup)}
-            type={'warning'}
+            handlePopup={handlePopUp}
+            type={typeMessage}
             filter={null}
-            message={messageError}
+            message={message}
         />
+
     </>)
 }

@@ -172,6 +172,10 @@ export default function Customers(){
         setValue('uf', item.uf)
         setValue('contact', item.contact)
         setValue('phone', item.phone)
+        setValue('another_address', item.another_address)
+        setValue('another_cep', item.another_cep)
+        setValue('another_district', item.another_district)
+        
         setShowModal(true)
     }
 

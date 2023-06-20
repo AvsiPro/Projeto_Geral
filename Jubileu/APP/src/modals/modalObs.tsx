@@ -1,11 +1,11 @@
 import React from 'react';
 import * as Style from './styles';
-import { Keyboard, Modal, Platform, TouchableWithoutFeedback } from 'react-native';
+import { ActivityIndicator, Keyboard, Modal, Platform, TouchableWithoutFeedback } from 'react-native';
 
 import { FontAwesome } from '@expo/vector-icons';
 import { PropsModalObs } from '../interfaces';
 
-export default function modalObs({getVisible, handleModalObs, changeTextObs, textObs, handleGeraPedido, handleGeraOrcamento} : PropsModalObs){
+export default function modalObs({getVisible, handleModalObs, changeTextObs, textObs, handleGeraPedido, handleGeraOrcamento, load} : PropsModalObs){
 
     return(
         <Modal 
@@ -49,21 +49,19 @@ export default function modalObs({getVisible, handleModalObs, changeTextObs, tex
 
                                 <Style.ContainerButtonSubmit>
                                     <Style.ButtomSubmitLeft2
-                                        onPress={() => handleGeraOrcamento()}
+                                        onPress={() => !load && handleGeraOrcamento()}
                                     >
-                                        <Style.ButtomSubmitTitle color='white'>
-                                            Gerar Orçamento
-                                        </Style.ButtomSubmitTitle>
+                                        <Style.ButtomSubmitTitle color='white'> Gerar Orçamento </Style.ButtomSubmitTitle>
                                     </Style.ButtomSubmitLeft2>
                                                                             
                                     <Style.ButtomSubmitRight
-                                        onPress={() => handleGeraPedido()}
+                                        onPress={() => !load && handleGeraPedido()}
                                     >
-                                        <Style.ButtomSubmitTitle color='white'>
-                                            Gerar Pedido
-                                        </Style.ButtomSubmitTitle>
+                                        <Style.ButtomSubmitTitle color='white'> Gerar Pedido </Style.ButtomSubmitTitle>
                                     </Style.ButtomSubmitRight>
                                 </Style.ContainerButtonSubmit>
+
+                                { load && <ActivityIndicator style={{marginTop:20}} animating size="large" color={'#000'} /> }
                             
                             </Style.containerFormModal>
                         </Style.ModalOrderContainer>

@@ -30,8 +30,8 @@ export default function modalOrder({getVisible, handleModal, itemModal} : Props)
         
         if(!!objetos){
             objetos.map((objeto: any) => {
-              somaQuantidade += objeto.invoiced_quantity;
-              somaValorTotal += objeto.billed_amount;
+              somaQuantidade += objeto.sold_amount;
+              somaValorTotal += objeto.value_sold;
             });
           
         }
@@ -96,7 +96,7 @@ export default function modalOrder({getVisible, handleModal, itemModal} : Props)
                                                         Quant.
                                                     </Style.DropDownHeaderSection>
                                                     <Style.DropDownItemSection>
-                                                        {item.invoiced_quantity}
+                                                        {item.sold_amount}
                                                     </Style.DropDownItemSection>
                                                 </Style.DropDownSection>
 
@@ -114,7 +114,7 @@ export default function modalOrder({getVisible, handleModal, itemModal} : Props)
                                                         Valor Total
                                                     </Style.DropDownHeaderSection>
                                                     <Style.DropDownItemSection>
-                                                        {CurrencyFormat(item.billed_amount)}
+                                                        {CurrencyFormat(item.value_sold)}
                                                     </Style.DropDownItemSection>
                                                 </Style.DropDownSection>
                                             </Style.DropDownListContainer>
