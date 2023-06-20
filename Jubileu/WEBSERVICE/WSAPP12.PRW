@@ -100,7 +100,7 @@ WsMethod POST WsReceive RECEIVE WsService WSAPP12
 		// recupera o body da requisicao
 		oBody  := JsonObject():New()
 		oBody:fromJson(oJsonIM:Body)
-		cUser 		:= oBody:getJsonText("VENDEDOR")
+		cUser 		:= fVendToken(oBody:getJsonText("TOKEN"))
 		cCondPg		:= oBody:getJsonText("CONDPAGTO")
 		aItens		:= oBody:getJsonText("ITEMS")
 		aCliente	:= oBody:getJsonText("CLIENTE")
@@ -273,7 +273,7 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
     Default aRetExec    :=  {}
     Default aErro       :=  {}
 
-	cCodVnd := oBody:VENDEDOR
+	cCodVnd := fVendToken(oBody:TOKEN)
 	cCondPg := STRZERO(VAL(oBody:CONDPAGTO),3)
 	lForce  := If(UPPER(oBody:FORCE)=='TRUE',.T.,.F.)
 	cObsApp := oBody:OBSERVATION
@@ -418,8 +418,8 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
 				Aadd(aDadCl,{"A1_EST"   ,   upper(oBody:Cliente[1]:UF)               		, NIL})
 				Aadd(aDadCl,{"A1_MUN"   ,   substr(UPPER(oBody:Cliente[1]:CIDADE),1,60)    	, NIL})
 				Aadd(aDadCl,{"A1_EMAIL" ,   upper(oBody:Cliente[1]:EMAIL)                  	, NIL})
-				Aadd(aDadCl,{"A1_DDD"   ,   Substr(oBody:Cliente[1]:CELULAR,1,2)            , NIL})
-				Aadd(aDadCl,{"A1_TEL"   ,   substr(oBody:Cliente[1]:CELULAR,3)              , NIL})
+				Aadd(aDadCl,{"A1_DDD"   ,   oBody:Cliente[1]:DDD         					, NIL})
+				Aadd(aDadCl,{"A1_TEL"   ,   oBody:Cliente[1]:TEL              				, NIL})
 				Aadd(aDadCl,{"A1_CONTATO",  oBody:Cliente[1]:CONTATO			          	, NIL})
 				
 			else
@@ -431,8 +431,8 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
 				Aadd(aDadCl,{"A1_EST"   ,   upper(oBody:Cliente:UF)               			, NIL})
 				Aadd(aDadCl,{"A1_MUN"   ,   substr(UPPER(oBody:Cliente:CIDADE),1,60)    	, NIL})
 				Aadd(aDadCl,{"A1_EMAIL" ,   upper(oBody:Cliente:EMAIL)                  	, NIL})
-				Aadd(aDadCl,{"A1_DDD"   ,   Substr(oBody:Cliente:CELULAR,1,2)               , NIL})
-				Aadd(aDadCl,{"A1_TEL"   ,   substr(oBody:Cliente:CELULAR,3)                 , NIL})	
+				Aadd(aDadCl,{"A1_DDD"   ,   oBody:Cliente:DDD              					, NIL})
+				Aadd(aDadCl,{"A1_TEL"   ,   oBody:Cliente:TEL                 				, NIL})	
 				Aadd(aDadCl,{"A1_CONTATO",  oBody:Cliente:CONTATO			                , NIL})
 				
 			EndIf
@@ -521,9 +521,9 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
 					aadd(aLinha,{"C6_ITEM"		, cItem				, Nil}) //STRZERO(nX,2)	
 					aadd(aLinha,{"C6_PRODUTO"	, aItensCad[nX]:PRODUTO			, Nil})
 					aadd(aLinha,{"C6_QTDVEN"	, nQtd							, Nil})
-					aadd(aLinha,{"C6_PRCVEN"	, val(STRTRAN(aItensCad[nX]:VALOR,",","."))	, Nil})
-					aadd(aLinha,{"C6_PRUNIT"	, val(STRTRAN(aItensCad[nX]:VALOR,",","."))	, Nil})
-					aadd(aLinha,{"C6_VALOR"		, val(STRTRAN(aItensCad[nX]:VALOR,",",".")) * nQtd	, Nil})
+					aadd(aLinha,{"C6_PRCVEN"	, aItensCad[nX]:VALOR			, Nil})
+					aadd(aLinha,{"C6_PRUNIT"	, aItensCad[nX]:VALOR			, Nil})
+					aadd(aLinha,{"C6_VALOR"		, aItensCad[nX]:VALOR * nQtd	, Nil})
 					
 					cItem := Soma1(cItem)
 					/*
@@ -611,9 +611,9 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
 					aadd(aLinha,{"CK_ITEM"		,StrZero(nX,2)					,Nil})
 					aadd(aLinha,{"CK_PRODUTO"	,aItensCad[nX]:PRODUTO			,Nil})
 					aadd(aLinha,{"CK_QTDVEN"	,nQtd							,Nil})
-					aadd(aLinha,{"CK_PRCVEN"	,val(STRTRAN(aItensCad[nX]:VALOR,",",".")),Nil})
-					aadd(aLinha,{"CK_PRUNIT"	,val(STRTRAN(aItensCad[nX]:VALOR,",",".")),Nil})           
-					aadd(aLinha,{"CK_VALOR"		,val(STRTRAN(aItensCad[nX]:VALOR,",",".")) * nQtd,Nil})
+					aadd(aLinha,{"CK_PRCVEN"	,aItensCad[nX]:VALOR			,Nil})
+					aadd(aLinha,{"CK_PRUNIT"	,aItensCad[nX]:VALOR			,Nil})           
+					aadd(aLinha,{"CK_VALOR"		,aItensCad[nX]:VALOR * nQtd		,Nil})
 					
 					/*If aItensCad[nX]:GetJsonObject("BENEF") <> Nil
 						If aItensCad[nX]:BENEF == "B"
@@ -686,7 +686,7 @@ IF FWJsonDeserialize(cBody,@oJsonIM)
 	//IF VALTYPE(oJsonIM:VENDEDOR) == "C"
 		oBody  := JsonObject():New()
 		oBody:fromJson(oJsonIM:Body)
-		cUser 		:= oBody:getJsonText("VENDEDOR")
+		cUser 		:= fVendToken(oBody:getJsonText("TOKEN"))
 		cCondPg		:= oBody:getJsonText("CONDPAGTO")
 		aItens		:=	oBody:getJsonText("ITEMS")
 		aCliente	:=	oBody:getJsonText("CLIENTE")
@@ -813,3 +813,30 @@ Next nX
 RestArea(aArea)
 	
 Return(aRet)
+
+
+/*/{Protheus.doc} fVendToken
+   @description: Token Vendedor
+   @type: Static Function
+   @author: Felipe Mayer
+   @since: 19/06/2023
+/*/
+
+Static Function fVendToken(cToken)
+
+Local cRet := ''
+	
+	cQuery := " SELECT * FROM "+RetSqlName('SA3')+" " + CRLF
+	cQuery += " WHERE D_E_L_E_T_ = ' ' " + CRLF
+	cQuery += " AND UPPER(A3_TOKEN) = '"+Upper(cToken)+"' " + CRLF
+	
+	cAliasTMP := GetNextAlias()
+	MPSysOpenQuery(cQuery, cAliasTMP)
+	
+	If (cAliasTMP)->(!EoF())
+		cRet := (cAliasTMP)->A3_COD
+	EndIf
+	
+	(cAliasTMP)->(DbCloseArea())
+
+Return cRet
