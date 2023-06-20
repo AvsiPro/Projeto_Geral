@@ -1566,7 +1566,12 @@ If nOpcG == 0
 		aLocac  :=  {}
 		nPos2B  :=	Ascan(aList2B,{|x| x[4] == aList[nCntG,01]})
 
+		aItens := {}
+		aItSFt := {}
+
 		For nCont := nPos2B to len(aList2B)
+			
+			
 			//Locações
 			If aList2B[nCont,04] == aList[nCntG,01]
 				cAtLoc += cBarra + Alltrim(aList2b[nCont,01])
@@ -1576,6 +1581,8 @@ If nOpcG == 0
 								aList2B[nCont,03],;
 								aList2B[nCont,12]})
 				EndIf 
+			else
+				exit
 			EndIf 
 
 			//Doses
@@ -1586,8 +1593,7 @@ If nOpcG == 0
 				nPosL5 := Ascan(aList5B,{|x| x[1]+x[2] == aList2B[nCont,04]+aList2B[nCont,01]})
 
 				For nCont := nPosL5 to len(aList5B)
-					aItens := {}
-					aItSFt := {}
+					
 					
 					If aList5B[nCont,01] == aList[nCntG,01] .And. len(aList5b[nCont]) > 4
 						cAtFat += cBarra + Alltrim(aList5b[nCont,02])
@@ -1654,14 +1660,14 @@ If nOpcG == 0
 										Posicione("DA1",1,xFilial("DA1")+AAM->AAM_XCODTA+aList[nCntG,22],"DA1_PRCVEN")})
 					EndIf 
 					cAtFat := Alltrim(aList2B[nCont,01])
-					If len(aItens) > 0 
+					//If len(aItens) > 0 
 						//If resumfat(aItens,aItSFt,.F.)
-							Processa({|| Pedido(cAtFat,aItens,cFilFat,MV_PAR02)},"Aguarde")
+							//Processa({|| Pedido(cAtFat,aItens,cFilFat,MV_PAR02)},"Aguarde")
 						//else
 						//	Return 
 						//EndIf 
-						aItens := {}
-					EndIF		
+					//	aItens := {}
+					//EndIF		
 				//Next nX
 			EndIf 
 		Next nCont
@@ -1720,7 +1726,7 @@ If nOpcG == 0
 				ELSE
 					aDadNF := GeraNF(SC5->C5_NUM,SC5->C5_CONDPAG,'1')
 					nVlrFt := 0
-					Msgalert("Pedido gerado de faturamento de doses "+SC5->C5_NUM)
+					//Msgalert("Pedido gerado de faturamento de doses "+SC5->C5_NUM)
 					DbSelectArea("Z08")
 					DbSetOrder(3)
 					For nCont := 1 to len(aList5B)
@@ -1935,14 +1941,14 @@ ElseIf nOpcG == 1
 								Posicione("DA1",1,xFilial("DA1")+AAM->AAM_XCODTA+aList[oList:nAt,22],"DA1_PRCVEN")})
 			EndIf 
 			cAtFat := Alltrim(aList2[nX,01])
-			If len(aItens) > 0 
-				If resumfat(aItens,aItSFt,.F.)
-					Processa({|| Pedido(cAtFat,aItens,cFilFat,MV_PAR02)},"Aguarde")
-				else
-					Return 
-				EndIf 
-				aItens := {}
-			EndIF		
+			//If len(aItens) > 0 
+			//	If resumfat(aItens,aItSFt,.F.)
+			//		Processa({|| Pedido(cAtFat,aItens,cFilFat,MV_PAR02)},"Aguarde")
+			//	else
+			//		Return 
+			//	EndIf 
+			//	aItens := {}
+			//EndIF		
 		Next nX
 	EndIf 
 
