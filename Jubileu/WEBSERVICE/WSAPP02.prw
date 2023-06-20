@@ -97,7 +97,7 @@ Default oself:token		:=	''
 		EndIf
 
 	ElseIf !Empty(oself:token) //se tiver chave de busca no request
-		cVend   := Alltrim( oself:token )
+		cVend := fVendToken( oself:token )
 
 		If !Empty(cVend)
 			aRegiao := BuscaRegiao(cVend)
@@ -417,7 +417,8 @@ Return(aArray)
 
 Static Function fVendToken(cToken)
 
-Local cRet := ''
+Local cRet  := ''
+Local aArea := GetArea()
 	
 	cQuery := " SELECT * FROM "+RetSqlName('SA3')+" " + CRLF
 	cQuery += " WHERE D_E_L_E_T_ = ' ' " + CRLF
@@ -431,5 +432,7 @@ Local cRet := ''
 	EndIf
 	
 	(cAliasTMP)->(DbCloseArea())
+
+RestArea(aArea)
 
 Return cRet
