@@ -100,12 +100,12 @@ WsMethod POST WsReceive RECEIVE WsService WSAPP12
 	IF FWJsonDeserialize(cBody,@oJsonIM)
 		// recupera o body da requisicao
 		oBody  := JsonObject():New()
-		oBody:fromJson(oJsonIM:Body)
-		cUser 		:= fVendToken(oBody:getJsonText("TOKEN"))
-		cCondPg		:= oBody:getJsonText("CONDPAGTO")
-		aItens		:= oBody:getJsonText("ITEMS")
-		aCliente	:= oBody:getJsonText("CLIENTE")
-		cUserCod	:= oBody:getJsonText("USUARIO")
+		oBody:fromJson(cBody) //oJsonIM:Body
+		cUser 		:= fVendToken(oBody:BODY:getJsonText("TOKEN"))
+		cCondPg		:= oBody:BODY:getJsonText("CONDPAGTO")
+		aItens		:= oBody:BODY:getJsonText("ITEMS")
+		aCliente	:= oBody:BODY:getJsonText("CLIENTE")
+		cUserCod	:= oBody:BODY:getJsonText("USUARIO")
 	ENDIF
 	
 	
@@ -274,15 +274,12 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
     Default aRetExec    :=  {}
     Default aErro       :=  {}
 
-	cCodVnd := fVendToken(oBody:TOKEN)
-	cCondPg := STRZERO(VAL(oBody:CONDPAGTO),3)
-	lForce  := If(UPPER(oBody:FORCE)=='TRUE',.T.,.F.)
-	cObsApp := oBody:OBSERVATION
-	nDescon := oBody:DESCONTO
+	cCodVnd := fVendToken(oBody:BODY:VENDEDOR)
+	cCondPg := STRZERO(VAL(oBody:BODY:CONDPAGTO),3)
+	cObsApp := oBody:BODY:OBSERVATION
+	nDescon := oBody:BODY:DESCONTO
 
-	/*If !lForce .And. oBody:BODY:ORCAMENTO <> 'S'
-		aSaldos := ValSald(oBody:BODY:ITEMS)
-	ENDIF
+	/*
 	
 	If len(aSaldos) > 0
 		cPedido := '410'
@@ -353,8 +350,8 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
 					SA1->A1_END := Alltrim(oBody:BODY:Cliente[1]:ENDERECO)
 				ENDIF
 
-				If Alltrim(SA1->A1_TEL) <> fRemoveCarc(substr(oBody:Cliente[1]:TEL,3) )
-					SA1->A1_TEL := fRemoveCarc(substr(oBody:Cliente[1]:TEL,3))
+				If Alltrim(SA1->A1_TEL) <> fRemoveCarc(substr(oBody:BODY:Cliente[1]:TEL,3) )
+					SA1->A1_TEL := fRemoveCarc(substr(oBody:BODY:Cliente[1]:TEL,3))
 				ENDIF
 
 				//If Alltrim(SA1->A1_XTELEFO) <> substr(oBody:BODY:Cliente[1]:FONE2,3)
@@ -377,8 +374,8 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
 					SA1->A1_END := Alltrim(oBody:BODY:Cliente:ENDERECO)
 				ENDIF
 
-				If Alltrim(SA1->A1_TEL) <> fRemoveCarc(substr(oBody:Cliente:TEL,3)) 
-					SA1->A1_TEL := fRemoveCarc(substr(oBody:Cliente:TEL,3))
+				If Alltrim(SA1->A1_TEL) <> fRemoveCarc(substr(oBody:BODY:Cliente:TEL,3)) 
+					SA1->A1_TEL := fRemoveCarc(substr(oBody:BODY:Cliente:TEL,3))
 				ENDIF
 
 				If oBody:BODY:CLIENTE:GetJsonObject("OBSERVACAO_ENTREGA") <> Nil
@@ -390,8 +387,8 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
 						SA1->A1_BAIRROE := oBody:BODY:CLIENTE:GetJsonObject("BAIRRO_ENTREGA")
 					EndIf 
 
-					If Alltrim(SA1->A1_CEPE) <> oBody:CLIENTE:GetJsonObject("CEP_ENTREGA")
-						SA1->A1_CEPE := fRemoveCarc(oBody:CLIENTE:GetJsonObject("CEP_ENTREGA"))
+					If Alltrim(SA1->A1_CEPE) <> oBody:BODY:CLIENTE:GetJsonObject("CEP_ENTREGA")
+						SA1->A1_CEPE := fRemoveCarc(oBody:BODY:CLIENTE:GetJsonObject("CEP_ENTREGA"))
 					EndIf
 				ENDIF
 
@@ -409,32 +406,32 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
 			Aadd(aDadCl,{"A1_TIPO"  ,   'R'                     				, NIL})
 			Aadd(aDadCl,{"A1_COD_MUN",  codmun                 , NIL})
 					
-			If Valtype(oBody:Cliente) == "A"
+			If Valtype(oBody:BODY:Cliente) == "A"
 
-				Aadd(aDadCl,{"A1_NOME"  ,   upper(oBody:Cliente[1]:RAZAO_SOCIAL)  			, NIL})
-				Aadd(aDadCl,{"A1_NREDUZ",   upper(oBody:Cliente[1]:NOME_FANTASIA)  			, NIL})
-				Aadd(aDadCl,{"A1_END"   ,   Alltrim(upper(oBody:Cliente[1]:ENDERECO))  		, NIL})
-				Aadd(aDadCl,{"A1_CEP"   ,   fRemoveCarc(oBody:Cliente[1]:CEP)				, NIL})
-				Aadd(aDadCl,{"A1_BAIRRO",   substr(upper(oBody:Cliente[1]:BAIRRO),1,30)    	, NIL})
-				Aadd(aDadCl,{"A1_EST"   ,   upper(oBody:Cliente[1]:UF)               		, NIL})
-				Aadd(aDadCl,{"A1_MUN"   ,   substr(UPPER(oBody:Cliente[1]:CIDADE),1,60)    	, NIL})
-				Aadd(aDadCl,{"A1_EMAIL" ,   upper(oBody:Cliente[1]:EMAIL)                  	, NIL})
-				Aadd(aDadCl,{"A1_DDD"   ,   fRemoveCarc(Substr(oBody:Cliente[1]:TEL,1,2))	, NIL})
-				Aadd(aDadCl,{"A1_TEL"   ,   fRemoveCarc(substr(oBody:Cliente[1]:TEL,3))		, NIL})
-				Aadd(aDadCl,{"A1_CONTATO",  oBody:Cliente[1]:CONTATO			          	, NIL})
+				Aadd(aDadCl,{"A1_NOME"  ,   upper(oBody:BODY:Cliente[1]:RAZAO_SOCIAL)  			, NIL})
+				Aadd(aDadCl,{"A1_NREDUZ",   upper(oBody:BODY:Cliente[1]:NOME_FANTASIA)  			, NIL})
+				Aadd(aDadCl,{"A1_END"   ,   Alltrim(upper(oBody:BODY:Cliente[1]:ENDERECO))  		, NIL})
+				Aadd(aDadCl,{"A1_CEP"   ,   fRemoveCarc(oBody:BODY:Cliente[1]:CEP)				, NIL})
+				Aadd(aDadCl,{"A1_BAIRRO",   substr(upper(oBody:BODY:Cliente[1]:BAIRRO),1,30)    	, NIL})
+				Aadd(aDadCl,{"A1_EST"   ,   upper(oBody:BODY:Cliente[1]:UF)               		, NIL})
+				Aadd(aDadCl,{"A1_MUN"   ,   substr(UPPER(oBody:BODY:Cliente[1]:CIDADE),1,60)    	, NIL})
+				Aadd(aDadCl,{"A1_EMAIL" ,   upper(oBody:BODY:Cliente[1]:EMAIL)                  	, NIL})
+				Aadd(aDadCl,{"A1_DDD"   ,   fRemoveCarc(Substr(oBody:BODY:Cliente[1]:TEL,1,2))	, NIL})
+				Aadd(aDadCl,{"A1_TEL"   ,   fRemoveCarc(substr(oBody:BODY:Cliente[1]:TEL,3))		, NIL})
+				Aadd(aDadCl,{"A1_CONTATO",  oBody:BODY:Cliente[1]:CONTATO			          	, NIL})
 				
 			else
-				Aadd(aDadCl,{"A1_NOME"  ,   upper(oBody:Cliente:RAZAO_SOCIAL)  				, NIL})
-				Aadd(aDadCl,{"A1_NREDUZ",   upper(oBody:Cliente:NOME_FANTASIA)  			, NIL})
-				Aadd(aDadCl,{"A1_END"   ,   Alltrim(upper(oBody:Cliente:ENDERECO))  		, NIL})
-				Aadd(aDadCl,{"A1_CEP"   ,   fRemoveCarc(oBody:Cliente:CEP)					, NIL})
-				Aadd(aDadCl,{"A1_BAIRRO",   substr(upper(oBody:Cliente:BAIRRO),1,30)    	, NIL})
-				Aadd(aDadCl,{"A1_EST"   ,   upper(oBody:Cliente:UF)               			, NIL})
-				Aadd(aDadCl,{"A1_MUN"   ,   substr(UPPER(oBody:Cliente:CIDADE),1,60)    	, NIL})
-				Aadd(aDadCl,{"A1_EMAIL" ,   upper(oBody:Cliente:EMAIL)                  	, NIL})
-				Aadd(aDadCl,{"A1_DDD"   ,   fRemoveCarc(Substr(oBody:Cliente:TEL,1,2))		, NIL})
-				Aadd(aDadCl,{"A1_TEL"   ,   fRemoveCarc(substr(oBody:Cliente:TEL,3))		, NIL})	
-				Aadd(aDadCl,{"A1_CONTATO",  oBody:Cliente:CONTATO			                , NIL})
+				Aadd(aDadCl,{"A1_NOME"  ,   upper(oBody:BODY:Cliente:RAZAO_SOCIAL)  				, NIL})
+				Aadd(aDadCl,{"A1_NREDUZ",   upper(oBody:BODY:Cliente:NOME_FANTASIA)  			, NIL})
+				Aadd(aDadCl,{"A1_END"   ,   Alltrim(upper(oBody:BODY:Cliente:ENDERECO))  		, NIL})
+				Aadd(aDadCl,{"A1_CEP"   ,   fRemoveCarc(oBody:BODY:Cliente:CEP)					, NIL})
+				Aadd(aDadCl,{"A1_BAIRRO",   substr(upper(oBody:BODY:Cliente:BAIRRO),1,30)    	, NIL})
+				Aadd(aDadCl,{"A1_EST"   ,   upper(oBody:BODY:Cliente:UF)               			, NIL})
+				Aadd(aDadCl,{"A1_MUN"   ,   substr(UPPER(oBody:BODY:Cliente:CIDADE),1,60)    	, NIL})
+				Aadd(aDadCl,{"A1_EMAIL" ,   upper(oBody:BODY:Cliente:EMAIL)                  	, NIL})
+				Aadd(aDadCl,{"A1_DDD"   ,   fRemoveCarc(Substr(oBody:BODY:Cliente:TEL,1,2))		, NIL})
+				Aadd(aDadCl,{"A1_TEL"   ,   fRemoveCarc(substr(oBody:BODY:Cliente:TEL,3))		, NIL})	
+				Aadd(aDadCl,{"A1_CONTATO",  oBody:BODY:Cliente:CONTATO			                , NIL})
 				
 			EndIf
 
@@ -444,10 +441,10 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
 
 			Aadd(aDadCl,{"A1_VEND"	,   cCodVnd                 , NIL})
 			
-			If oBody:CLIENTE:GetJsonObject("ENDERECO_ENTREGA") <> Nil
-				Aadd(aDadCl,{"A1_ENDENT"	,   oBody:CLIENTE:GetJsonObject("ENDERECO_ENTREGA")         , NIL})
-				Aadd(aDadCl,{"A1_BAIRROE"	,   oBody:CLIENTE:GetJsonObject("BAIRRO_ENTREGA")           , NIL})
-				Aadd(aDadCl,{"A1_CEPE"		,   ofRemoveCarc(Body:CLIENTE:GetJsonObject("CEP_ENTREGA")) , NIL})
+			If oBody:BODY:CLIENTE:GetJsonObject("ENDERECO_ENTREGA") <> Nil
+				Aadd(aDadCl,{"A1_ENDENT"	,   oBody:BODY:CLIENTE:GetJsonObject("ENDERECO_ENTREGA")         , NIL})
+				Aadd(aDadCl,{"A1_BAIRROE"	,   oBody:BODY:CLIENTE:GetJsonObject("BAIRRO_ENTREGA")           , NIL})
+				Aadd(aDadCl,{"A1_CEPE"		,   ofRemoveCarc(oBody:BODY:CLIENTE:GetJsonObject("CEP_ENTREGA")) , NIL})
 			ENDIF
 
 			aAdd(aAI0Auto,{"AI0_SALDO" ,0 ,Nil})
@@ -688,12 +685,11 @@ EndIf
 
 IF FWJsonDeserialize(cBody,@oJsonIM)
 	//IF VALTYPE(oJsonIM:VENDEDOR) == "C"
-		oBody  := JsonObject():New()
-		oBody:fromJson(oJsonIM:Body)
+		oBody:fromJson(cBody) //oJsonIM:BODY
 		cUser 		:= fVendToken(oBody:getJsonText("TOKEN"))
-		cCondPg		:= oBody:getJsonText("CONDPAGTO")
-		aItens		:=	oBody:getJsonText("ITEMS")
-		aCliente	:=	oBody:getJsonText("CLIENTE")
+		cCondPg		:= oBody:BODY:getJsonText("CONDPAGTO")
+		aItens		:= oBody:BODY:getJsonText("ITEMS")
+		aCliente	:= oBody:BODY:getJsonText("CLIENTE")
 		//AttIsMemberOf(AARRAY[nCont]:PEDIDO,"NOTA")
 
 		StatPed(oBody,@aRetExec, @aErro,@aCliente,@aItens,@cUser,@cCondPg)
