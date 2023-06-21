@@ -5,7 +5,7 @@ import { ActivityIndicator, Keyboard, Modal, Platform, TouchableWithoutFeedback 
 import { FontAwesome } from '@expo/vector-icons';
 import { PropsModalObs } from '../interfaces';
 
-export default function modalObs({getVisible, handleModalObs, changeTextObs, textObs, handleGeraPedido, handleGeraOrcamento, load} : PropsModalObs){
+export default function modalObs({getVisible, handleModalObs, changeTextObs, textObs, handleGeraPedido, load} : PropsModalObs){
 
     return(
         <Modal 
@@ -49,13 +49,13 @@ export default function modalObs({getVisible, handleModalObs, changeTextObs, tex
 
                                 <Style.ContainerButtonSubmit>
                                     <Style.ButtomSubmitLeft2
-                                        onPress={() => !load && handleGeraOrcamento()}
+                                        onPress={() => !load && handleGeraPedido('S')}
                                     >
                                         <Style.ButtomSubmitTitle color='white'> Gerar Orçamento </Style.ButtomSubmitTitle>
                                     </Style.ButtomSubmitLeft2>
                                                                             
                                     <Style.ButtomSubmitRight
-                                        onPress={() => !load && handleGeraPedido()}
+                                        onPress={() => !load && handleGeraPedido('N')}
                                     >
                                         <Style.ButtomSubmitTitle color='white'> Gerar Pedido </Style.ButtomSubmitTitle>
                                     </Style.ButtomSubmitRight>

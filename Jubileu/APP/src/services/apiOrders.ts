@@ -23,11 +23,25 @@ export const apiOrders = async (page: number, orders: any, filter: number, token
 
         returnResult = sortOrderList(filter, returnResult)
 
+        returnResult.map((item: any) =>{
+            item.orcamento = 'N'
+        })
+
         await AsyncStorage.removeItem("orders")
         await AsyncStorage.setItem("orders", JSON.stringify([...orders, ...returnResult]));
 
         pageResult++
     }
+
+    const orcOld = await AsyncStorage.getItem('@orcamento')
+    let orcNew: any = []
+
+    if (!!orcOld){
+        orcNew = JSON.parse(orcOld)
+        orcNew.sort((a: any, b: any) => b.numorc.localeCompare(a.numorc));
+        returnResult = orcNew.concat(returnResult);
+    }
+
 
     returnObject = {
         returnResult: returnResult,
@@ -56,10 +70,23 @@ export const storageOrders = async (filter: number) => {
             }, []);
     
             returnResult = sortOrderList(filter, returnResult)
+
+            returnResult.map((item: any) =>{
+                item.orcamento = 'N'
+            })
         }
 
     } catch (error) {
         console.error(error);
+    }
+
+    const orcOld = await AsyncStorage.getItem('@orcamento')
+    let orcNew: any = []
+
+    if (!!orcOld){
+        orcNew = JSON.parse(orcOld)
+        orcNew.sort((a: any, b: any) => b.numorc.localeCompare(a.numorc));
+        returnResult = orcNew.concat(returnResult);
     }
 
     returnObject = {
@@ -94,6 +121,19 @@ export const searchOrders = async (searchQuery: string, isOnline: boolean) => {
             const filtered = ordersStorage.filter((client: any) => client.description.includes(searchQuery));
             returnResult = filtered
         }
+    }
+
+    returnResult.map((item: any) =>{
+        item.orcamento = 'N'
+    })
+
+    const orcOld = await AsyncStorage.getItem('@orcamento')
+    let orcNew: any = []
+
+    if (!!orcOld){
+        orcNew = JSON.parse(orcOld)
+        orcNew.sort((a: any, b: any) => b.numorc.localeCompare(a.numorc));
+        returnResult = orcNew.concat(returnResult);
     }
 
     returnObject = {

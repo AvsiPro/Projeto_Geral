@@ -25,8 +25,7 @@ export interface PropsModalObs{
     handleModalObs: () => void;
     changeTextObs: (change: string) => void;
     textObs: any;
-    handleGeraPedido: () => void;
-    handleGeraOrcamento: () => void;
+    handleGeraPedido: (orcamento: string) => void;
     load: boolean;
 }
 
@@ -53,6 +52,7 @@ export interface PropsProducts{
     products: any;
     handleLoadMore: () => void;
     handleItem: (index: number) => void;
+    handleLongItem: (index: number) => void;
     isLoadBottom: boolean;
     isOnline: boolean;
     isOrder: boolean;
@@ -95,6 +95,7 @@ export interface PropsPopup{
 export interface PropsPopupCopyOrder{
     getVisible: boolean;
     handlePopup: (index: any) => void;
+    load: boolean;
 }
 
 export interface PropsFooter{

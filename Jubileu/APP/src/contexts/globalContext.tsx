@@ -32,12 +32,14 @@ type AppContextType = {
   customerSelected: any;
   paymentSelected: any;
   imageProfile: any;
+  orcamentoSelected: string;
 
   setAuthDetail: React.Dispatch<React.SetStateAction<PropAuthContext>>;
   setItemCart: React.Dispatch<React.SetStateAction<any>>;
   setCustomerSelected: React.Dispatch<React.SetStateAction<any>>;
   setPaymentSelected: React.Dispatch<React.SetStateAction<any>>;
   setImageProfile: React.Dispatch<React.SetStateAction<any>>;
+  setOrcamentoSelected: React.Dispatch<React.SetStateAction<any>>;
 };
 
 const defaultAuthDetail = { token: '', name: '', address: '', phone: '', email: '', user: '', password: ''};
@@ -48,12 +50,14 @@ const AppContext = createContext<AppContextType>({
   customerSelected: null,
   paymentSelected: null,
   imageProfile: null,
+  orcamentoSelected: '',
 
   setAuthDetail: () => {},
   setItemCart: () => {},
   setCustomerSelected: () => {},
   setPaymentSelected: () => {},
   setImageProfile: () => {},
+  setOrcamentoSelected: () => {},
 });
 
 type Props = {
@@ -66,6 +70,7 @@ const AppProvider = ({ children }: Props) => {
   const [customerSelected, setCustomerSelected] = useState<any>(null);
   const [paymentSelected, setPaymentSelected] = useState<any>(null);
   const [imageProfile, setImageProfile] = useState<any>(null);
+  const [orcamentoSelected, setOrcamentoSelected] = useState<string>('');
   const [theme, setTheme] = useState(initialTheme);
 
   const handleColorChange = (color: string) => {
@@ -88,11 +93,13 @@ const AppProvider = ({ children }: Props) => {
             customerSelected,
             paymentSelected,
             imageProfile,
+            orcamentoSelected,
             setAuthDetail,
             setItemCart,
             setCustomerSelected,
             setPaymentSelected,
             setImageProfile,
+            setOrcamentoSelected,
           }}
         >
           {children}
