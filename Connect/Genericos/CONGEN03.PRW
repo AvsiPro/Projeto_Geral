@@ -12,7 +12,7 @@
 #DEFINE IMP_SPOOL 2
 #DEFINE IMP_PDF	   6
 
-User Function CONGEN03()
+User Function CONGEN03(cNumNF,cSerNF,cPathNF,cCNPJNF)
 
 	Local lAdjustToLegacy  := .F.
 	Local lDisableSetup    := .T.
@@ -34,6 +34,8 @@ User Function CONGEN03()
 	Local nValor           := 0
 	Local nX               := 0
 	Local nLinha           := 0
+	Local cSerie 	       := "'LOC','LJR','LPR'"
+	Local cCaminho		   := "C:\TEMP\"
 
 	//Fontes
 	Local oF10FFF          := TFont():New('Arial' /*Fonte*/,,10 /*Tamanho*/,,.F. /*Negrito*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
@@ -45,11 +47,35 @@ User Function CONGEN03()
 	Local aPergs := {}
 
 	Private oPrinter
+
+	Default cNumNF			:=	""
+	Default cSerNF			:=	""
+	Default	cPathNF			:=	""
+	Default cCNPJNF			:=	""
 	
 	If Select("SM0") == 0
 		RpcSetType(3)
 		RPCSetEnv("01","0101")
 	EndIf
+
+	If !Empty(cNumNF)
+
+		cNotA := cNumNF
+		cNotD := cNumNF
+
+	EndIf
+
+	If !Empty(cSerNF)
+
+		cSerie := "'"+Alltrim(cSerNF)+"'" 
+	
+	EndIf
+
+	If !Empty(cPathNF)
+
+		cCaminho := cPathNF 
+
+	ENDIF
 
 	cLogoD := "\SYSTEM\lgrl01.bmp"
 
@@ -59,12 +85,21 @@ User Function CONGEN03()
 	aAdd( aPergs ,{01,"Filial de"   ,cFilD   ,"@!"       ,".T.",""    ,".T.", 80,.F.})  
 	aAdd( aPergs ,{01,"Filial Ate"  ,cFilA   ,"@!"       ,".T.",""    ,".T.", 80,.F.})  
 
-	If !ParamBox(aPergs ,"Parametros ")
-		Return
-	EndIf
+	If Empty(cPathNF)
+		If !ParamBox(aPergs ,"Parametros ")
+			Return
+		EndIf
 
-	cFilD := MV_PAR03
-	cFilA := MV_PAR04
+		cNotD := MV_PAR01
+		cNotA := MV_PAR02
+		cFilD := MV_PAR03
+		cFilA := MV_PAR04
+	Else
+		cFilD := ' ' 
+		cFilA := 'ZZZ' 
+	EndIf 
+
+	
 
     cQuery := "SELECT DISTINCT D2_PEDIDO,D2_PRCVEN,D2_TOTAL,F2_EMISSAO,F2_DOC,F2_EMISSAO,"
 	cQuery += " C5_XTPPED,C6_PEDCLI,A1_NOME,A1_CGC,A1_END,A1_NREDUZ,B1_DESC"
@@ -74,10 +109,10 @@ User Function CONGEN03()
 	cQuery += " INNER JOIN "+RetSQLName("SC6")+" C6 ON C6_FILIAL=D2_FILIAL AND C6_NUM=D2_PEDIDO AND C6_ITEM=D2_ITEMPV AND C6.D_E_L_E_T_=' '"
 	cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_COD=F2_CLIENTE AND A1_LOJA=F2_LOJA AND A1.D_E_L_E_T_=' '"
 	cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD=D2_COD AND B1.D_E_L_E_T_=' '"
-	cQuery += " WHERE F2_FILIAL BETWEEN '"+MV_PAR03+"' AND '"+MV_PAR04+"'"
-	cQuery += " AND F2_SERIE IN('LOC','LRJ')"
+	cQuery += " WHERE F2_FILIAL BETWEEN '"+cFilD+"' AND '"+cFilA+"'"
+	cQuery += " AND F2_SERIE IN("+cSerie+")"
 	cQuery += " AND F2.D_E_L_E_T_=' '"
-	cQuery += " AND F2_DOC BETWEEN '"+MV_PAR01+"' AND '"+MV_PAR02+"'"
+	cQuery += " AND F2_DOC BETWEEN '"+cNotD+"' AND '"+cNotA+"'"
 
 	If Select("TRB") > 0
 		dbSelectArea("TRB")
@@ -108,10 +143,10 @@ User Function CONGEN03()
 		DBSKIP()
 	end
 
-	if !lOK
+	/*if !lOK
 		MsgAlert("Maquina sem Pedido de Venda, nao foi possivel gerar o recibo!", "Erro!")
 		RETURN
-	endif
+	endif*/
 
 
 	For nCont := 1 to len(aAux)
@@ -157,17 +192,19 @@ User Function CONGEN03()
 		aAdd( aPergs ,{9,"Nota: " + StrZero(val(cNum), 9),150,7,.T.})
 		aAdd( aPergs ,{11,"Informe sessao referentes:"   ,"",".T.",".T.",.T.})  
 
-		If !ParamBox(aPergs ,"Observacoes ")
-			Return
-		EndIf
+		If Empty(cPathNF)
+			If !ParamBox(aPergs ,"Observacoes ")
+				Return
+			EndIf
+		ENDIF
 
 		cReferentes := MV_PAR04
 
-		oPrinter := FWMSPrinter():New( "recibo_loc_"+cNum+".rel",IMP_PDF,lAdjustToLegacy,"C:\temp\",lDisableSetup,,,,.F.,,,.T.)
+		oPrinter := FWMSPrinter():New( "recibo_loc_"+strzero(val(cNum),9)+".rel",IMP_PDF,lAdjustToLegacy,cCaminho+(If(!Empty(cCNPJNF),cCNPJNF+"\","")),lDisableSetup,,,,.F.,,,.F.)
 		
 		oPrinter:StartPage()
 		oPrinter:SetMargin( 000, 000, 000, 000 )
-		oPrinter:cPathPDF := "c:\temp\"
+		oPrinter:cPathPDF := cCaminho+(If(!Empty(cCNPJNF),cCNPJNF+"\",""))
 
 		oBrush1 := TBrush():New( , rgb(237, 237, 237) )
 		oPrinter:Fillrect( { 26, 500, 74, 590 }, oBrush1, "-2")
@@ -275,7 +312,9 @@ User Function CONGEN03()
 		oPrinter:Say( 795, 425,"DATA", oF10TFF,, rgb(102, 102, 102)/*Cor*/ )
 
 		oPrinter:EndPage()
-		oPrinter:Print()
+		//If Empty(cPathNF)
+			oPrinter:Print()
+		//EndIf
 	Next nCont 
 
 Return

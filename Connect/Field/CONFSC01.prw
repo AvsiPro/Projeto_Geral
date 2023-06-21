@@ -81,6 +81,8 @@ Private cLocacS	:=	""
 
 Private aAbater	:=	{}
 
+Private lLiberaF:=	.F.
+
 IF Select("SM0") == 0
     RpcSetType(3)
     RPCSetEnv("01","0101")
@@ -283,6 +285,7 @@ If len(aList) > 0
 		MENU oMenuP POPUP 
 		MENUITEM "Faturar" ACTION (Processa({|| GeraPv(1)},"Aguarde"))
 		MENUITEM "Localizar" ACTION (Processa({|| Localiza()},"Aguarde"))
+		MENUITEM "Liberados p/ Faturar" ACTION (Processa({|| ValFat()},"Aguarde"))
 		ENDMENU                                                                           
 
 		oList:bRClicked := { |oObject,nX,nY| oMenuP:Activate( nX, (nY-10), oObject ) }
@@ -1525,8 +1528,13 @@ Local lDose     := .F.
 Local lLoc      := .F.
 Local cFilFat	:=	If(aList[oList:nAt,23]=="RJ","0102","0101")
 Local cBkpcFil  :=	cFilant 
-Local aFilFat	:=	{'0101=SP','0102=RJ'}
+Local aFilFat	:=	{'0101=SP','0102=RJ'} //,'0103=PR'}
 Local nLst5
+
+If nOpcG == 0 .And. !lLiberaF .And. cLocacS <> "S"
+	MsgAlert("Primeiro rode a opção de Liberação para faturamento")
+	Return
+EndIf
 
 cFilant := cFilFat 
 
@@ -1559,128 +1567,240 @@ If nOpcG == 0
 	//Faturar todos os itens liberados do array alist
 	Asort(aList2B,,,{|x,y| x[4] < y[4]})
 	Asort(aList5B,,,{|x,y| x[1]+x[2] < y[1]+y[2]})
+	//cLocacS
 
 	For nCntG := 1 to len(aList)
-		cForFat :=	aList[nCntG,14]
-		cTipFat	:=	aList[nCntG,15]
-		aLocac  :=  {}
-		nPos2B  :=	Ascan(aList2B,{|x| x[4] == aList[nCntG,01]})
+		If aList[nCntG,len(aQtdH)+1] == 1
+			cForFat :=	aList[nCntG,14]
+			cTipFat	:=	aList[nCntG,15]
+			aLocac  :=  {}
+			nPos2B  :=	Ascan(aList2B,{|x| x[4] == aList[nCntG,01]})
 
-		aItens := {}
-		aItSFt := {}
+			aItens := {}
+			aItSFt := {}
 
-		For nCont := nPos2B to len(aList2B)
-			
-			
-			//Locações
-			If aList2B[nCont,04] == aList[nCntG,01]
-				cAtLoc += cBarra + Alltrim(aList2b[nCont,01])
-				cBarra := "/"
-				If aList2B[nCont,03] > 1
-					Aadd(aLocac,{aList2B[nCont,01],;
-								aList2B[nCont,03],;
-								aList2B[nCont,12]})
+			For nCont := nPos2B to len(aList2B)
+				
+				
+				//Locações
+				If aList2B[nCont,04] == aList[nCntG,01]
+					cAtLoc += cBarra + Alltrim(aList2b[nCont,01])
+					cBarra := "/"
+					If aList2B[nCont,03] > 1
+						Aadd(aLocac,{aList2B[nCont,01],;
+									aList2B[nCont,03],;
+									aList2B[nCont,12]})
+					EndIf 
+				else
+					exit
 				EndIf 
-			else
-				exit
-			EndIf 
 
-			//Doses
-			cBarra := ""
+				//Doses
+				cBarra := ""
 
-			If cTipFat $ "1/2/3"
+				If cTipFat $ "1/2/3"
 
-				nPosL5 := Ascan(aList5B,{|x| x[1]+x[2] == aList2B[nCont,04]+aList2B[nCont,01]})
-
-				For nCont := nPosL5 to len(aList5B)
-					
-					
-					If aList5B[nCont,01] == aList[nCntG,01] .And. len(aList5b[nCont]) > 4
-						cAtFat += cBarra + Alltrim(aList5b[nCont,02])
-						cBarra := "/"
-						For nJ := 5 to len(aList5b[nCont])
-							If aList5B[nCont,nJ,08] > 0 .And. aList5B[nCont,nJ,09] > 0
-								nPos := Ascan(aItens,{|x| x[1] == aList5B[nCont,nJ,02]})
-								If nPos == 0
-									Aadd(aItens,{	aList5B[nCont,nJ,02],;
-													aList5B[nCont,nJ,08],;
-													aList5B[nCont,nJ,09]})
-								Else 
-									aItens[nPos,02] += aList5B[nCont,nJ,08]
-								EndIf
-							Else 
-								Aadd(aItSFt,{	aList5B[nCont,nJ,02],;
-												aList5B[nCont,nJ,08],;
-												aList5B[nCont,nJ,09]}) 
-							EndIf
-						Next nJ
-					Else 
-						exit 
-					EndIf
-				Next nCont
-			
-				If aList[nCntG,20] > 0 .And. len(aItens) > 0
-					Aadd(aItens,{aList[nCntG,22],;
-								aList[nCntG,20],;
-								aList[nCntG,21]})
-				EndIf 
-			
-			ElseIf cTipFat == "22"
-				//For nX := 1 to len(aList2B)
-					aItens := {}
-					aItSFt := {}
 					nPosL5 := Ascan(aList5B,{|x| x[1]+x[2] == aList2B[nCont,04]+aList2B[nCont,01]})
 
-					For nLst5 := nPosL5 to len(aList5B)
-						If aList5B[nLst5,01] == aList2B[nCont,04] .And. len(aList5b[nLst5]) > 4 .And. aList5B[nLst5,02] == aList2B[nCont,01]
-							For nJ := 5 to len(aList5b[nLst5])
-								If aList5B[nLst5,nJ,08] > 0 .And. aList5B[nLst5,nJ,09] > 0
-									nPosloc := Ascan(aItens,{|x| x[1] == aList5B[nLst5,nJ,02]})
-									
-									If nPosloc == 0
-										
-										Aadd(aItens,{	aList5B[nLst5,nJ,02],;
-														aList5B[nLst5,nJ,08],;
-														aList5B[nLst5,nJ,09]})
+					For nCont := nPosL5 to len(aList5B)
+						
+						
+						If aList5B[nCont,01] == aList[nCntG,01] .And. len(aList5b[nCont]) > 4
+							cAtFat += cBarra + Alltrim(aList5b[nCont,02])
+							cBarra := "/"
+							For nJ := 5 to len(aList5b[nCont])
+								If aList5B[nCont,nJ,08] > 0 .And. aList5B[nCont,nJ,09] > 0
+									nPos := Ascan(aItens,{|x| x[1] == aList5B[nCont,nJ,02]})
+									If nPos == 0
+										Aadd(aItens,{	aList5B[nCont,nJ,02],;
+														aList5B[nCont,nJ,08],;
+														aList5B[nCont,nJ,09]})
 									Else 
-										aItens[nPosloc,02] += aList5B[nLst5,nJ,08]
+										aItens[nPos,02] += aList5B[nCont,nJ,08]
 									EndIf
 								Else 
-									Aadd(aItSFt,{	aList5B[nLst5,nJ,02],;
-													aList5B[nLst5,nJ,08],;
-													aList5B[nLst5,nJ,09]}) 
+									Aadd(aItSFt,{	aList5B[nCont,nJ,02],;
+													aList5B[nCont,nJ,08],;
+													aList5B[nCont,nJ,09]}) 
 								EndIf
-							Next nJ 
+							Next nJ
+						Else 
+							exit 
 						EndIf
-					Next nLst5
-
-					If (aList2B[nCont,11] > 0 .And. cQuinze == "2") .OR.(cForFat=="1" .AND. cTipFat=="2" .and. aList2B[nCont,11] > 0) //cCond == "2"
-						Aadd(aItens,{	aList[nCntG,22],;
-										aList2B[nCont,11],;
-										Posicione("DA1",1,xFilial("DA1")+AAM->AAM_XCODTA+aList[nCntG,22],"DA1_PRCVEN")})
-					EndIf 
-					cAtFat := Alltrim(aList2B[nCont,01])
-					//If len(aItens) > 0 
-						//If resumfat(aItens,aItSFt,.F.)
-							//Processa({|| Pedido(cAtFat,aItens,cFilFat,MV_PAR02)},"Aguarde")
-						//else
-						//	Return 
-						//EndIf 
-					//	aItens := {}
-					//EndIF		
-				//Next nX
-			EndIf 
-		Next nCont
-
-		//Faturamento Doses
-		If len(aItens) > 0
-			If len(aItens) > 0 .AND. lDose
-			//PEDIDOS DE DOSES
+					Next nCont
 				
-				If Empty(cAtFat)
-					cAtFat := Alltrim(aList2[nCntG,01])
-				EndIF 
+					If aList[nCntG,20] > 0 .And. len(aItens) > 0
+						Aadd(aItens,{aList[nCntG,22],;
+									aList[nCntG,20],;
+									aList[nCntG,21]})
+					EndIf 
+				
+				ElseIf cTipFat == "22"
+					//For nX := 1 to len(aList2B)
+						aItens := {}
+						aItSFt := {}
+						nPosL5 := Ascan(aList5B,{|x| x[1]+x[2] == aList2B[nCont,04]+aList2B[nCont,01]})
 
+						For nLst5 := nPosL5 to len(aList5B)
+							If aList5B[nLst5,01] == aList2B[nCont,04] .And. len(aList5b[nLst5]) > 4 .And. aList5B[nLst5,02] == aList2B[nCont,01]
+								For nJ := 5 to len(aList5b[nLst5])
+									If aList5B[nLst5,nJ,08] > 0 .And. aList5B[nLst5,nJ,09] > 0
+										nPosloc := Ascan(aItens,{|x| x[1] == aList5B[nLst5,nJ,02]})
+										
+										If nPosloc == 0
+											
+											Aadd(aItens,{	aList5B[nLst5,nJ,02],;
+															aList5B[nLst5,nJ,08],;
+															aList5B[nLst5,nJ,09]})
+										Else 
+											aItens[nPosloc,02] += aList5B[nLst5,nJ,08]
+										EndIf
+									Else 
+										Aadd(aItSFt,{	aList5B[nLst5,nJ,02],;
+														aList5B[nLst5,nJ,08],;
+														aList5B[nLst5,nJ,09]}) 
+									EndIf
+								Next nJ 
+							EndIf
+						Next nLst5
+
+						If (aList2B[nCont,11] > 0 .And. cQuinze == "2") .OR.(cForFat=="1" .AND. cTipFat=="2" .and. aList2B[nCont,11] > 0) //cCond == "2"
+							Aadd(aItens,{	aList[nCntG,22],;
+											aList2B[nCont,11],;
+											Posicione("DA1",1,xFilial("DA1")+AAM->AAM_XCODTA+aList[nCntG,22],"DA1_PRCVEN")})
+						EndIf 
+						cAtFat := Alltrim(aList2B[nCont,01])
+						//If len(aItens) > 0 
+							//If resumfat(aItens,aItSFt,.F.)
+								//Processa({|| Pedido(cAtFat,aItens,cFilFat,MV_PAR02)},"Aguarde")
+							//else
+							//	Return 
+							//EndIf 
+						//	aItens := {}
+						//EndIF		
+					//Next nX
+				EndIf 
+			Next nCont
+
+			//Faturamento Doses
+			If len(aItens) > 0
+				If len(aItens) > 0 .AND. lDose
+				//PEDIDOS DE DOSES
+					
+					If Empty(cAtFat)
+						cAtFat := Alltrim(aList2[nCntG,01])
+					EndIF 
+
+					DbSelectArea("AAM")
+					DbSetOrder(1)
+					DbSeek(xFilial("AAM")+aList[nCntG,01])
+					aCabec := {}
+					aItC6  := {}
+					cItem  := '01'
+
+					aAdd( aCabec , { "C5_FILIAL"    , cFilFat		      , Nil } ) 
+					aAdd( aCabec , { "C5_XTPPED"    , 'F'                 , Nil } )
+					aAdd( aCabec , { "C5_TIPO"      , 'N'                 , Nil } )
+					aAdd( aCabec , { "C5_CLIENTE"   , aList[nCntG,03]    , Nil } )
+					aAdd( aCabec , { "C5_LOJACLI"   , aList[nCntG,04]    , Nil } )
+					Aadd( aCabec , { "C5_MENNOTA"   , 'Faturamento de Doses - Ref. Patrimonio(s) '+cAtFat   , Nil } )
+					aAdd( aCabec , { "C5_CONDPAG"   , AAM->AAM_CPAGPV     , Nil } )    
+					aAdd( aCabec , { "C5_NATUREZ"   , "31101001  "     , Nil } )    
+					aAdd( aCabec , { "C5_XCONTRT"	, aList[nCntG,01]	, Nil })
+						
+					For nCont := 1 to len(aItens)
+						aLinha := {}
+						aAdd( aLinha , { "C6_FILIAL"     , cFilFat		                          , Nil })
+						aAdd( aLinha , { "C6_ITEM"       , cItem 							      , Nil })
+						aAdd( aLinha , { "C6_PRODUTO"    , aItens[nCont,01]                       , Nil })
+						aAdd( aLinha , { "C6_QTDVEN"     , aItens[nCont,02]                       , Nil })
+						aAdd( aLinha , { "C6_PRCVEN"     , aItens[nCont,03]                       , Nil })
+						aAdd( aLinha , { "C6_OPER"       , "08"                                   , Nil })
+						// aAdd( aLinha , { "C6_TES"        , '523'                                  , Nil })  
+						aAdd( aLinha , { "C6_QTDLIB"     , aItens[nCont,02]    	                  , Nil })
+						aAdd( aLinha , { "C6_CONTRT" 	 , AAM->AAM_CONTRT						  , Nil })
+
+						If !Empty(MV_PAR02)
+							aAdd( aLinha , { "C6_PEDCLI"	,	MV_PAR02 	, Nil })
+						EndIf 
+
+						aAdd( aItC6 , aLinha ) 
+						cItem := Soma1(cItem)
+					Next nCont
+
+					lMsErroAuto := .F.
+					MSExecAuto({|x,y,z| Mata410(x,y,z)},aCabec,aItC6,3)
+						
+					IF lMsErroAuto  
+						MostraErro()
+					ELSE
+						aDadNF := GeraNF(SC5->C5_NUM,SC5->C5_CONDPAG,'1')
+						nVlrFt := 0
+						//Msgalert("Pedido gerado de faturamento de doses "+SC5->C5_NUM)
+						DbSelectArea("Z08")
+						DbSetOrder(3)
+						For nCont := 1 to len(aList5B)
+							If aList5B[nCont,01] == aList[nCntG,01] .And. len(aList5b[nCont]) > 4
+								For nJ := 5 to len(aList5b[nCont])
+									If Dbseek(xFilial("Z08")+aList5b[nCont,nJ,11]+aList5b[nCont,nJ,01]+aList5B[nCont,02])
+										RecLock("Z08", .F.)
+										Z08->Z08_FATURA := 'S'
+										Z08->Z08_PEDIDO := SC5->C5_NUM
+										Z08->Z08_CONSUM := aList5b[nCont,nJ,08]
+										Z08->Z08_VLRFAT := aList5b[nCont,nJ,10]
+										Z08->Z08_NOTA	:= aDadNF[1]
+										Z08->Z08_SERIE	:= aDadNF[2]
+										nVlrFt += aList5b[nCont,nJ,10]
+										Z08->(MsUnlock())
+										aList5b[nCont,nJ,12] := 'S'
+										Dbskip() 
+									EndIf 
+								Next nJ
+							EndIf 
+						Next nCont
+
+						Aadd(aList3b,{	SC5->C5_NUM,;
+										SC5->C5_EMISSAO,;
+										nVlrFt,;
+										aDadNF[1],;
+										aList[nCntG,01],;
+										aList[nCntG,03],;
+										aList[nCntG,04],;
+										SC5->C5_FILIAL})
+
+						Aadd(aList3,{	SC5->C5_NUM,;
+										SC5->C5_EMISSAO,;
+										nVlrFt,;
+										aDadNF[1],;
+										aList[nCntG,01],;
+										aList[nCntG,03],;
+										aList[nCntG,04],;
+										SC5->C5_FILIAL})
+
+						For nCont := 1 to len(aList5B)
+							If aList5B[nCont,01] == aList[nCntG,01] .And. len(aList5b[nCont]) > 4
+								For nJ := 5 to len(aList5b[nCont])
+									aList5B[nCont,nJ,04] := aList5B[nCont,nJ,06]
+									aList5B[nCont,nJ,05] := aList5B[nCont,nJ,07]
+									aList5B[nCont,nJ,06] := ""
+									aList5B[nCont,nJ,07] := 0
+									aList5B[nCont,nJ,08] := 0
+									aList5B[nCont,nJ,10] := 0
+									aList5B[nCont,nJ,12] := "S"
+									aList5B[nCont,nJ,17] := SC5->C5_NUM
+								Next nJ
+							EndIF 
+						Next nCont
+					ENDIF
+
+				EndIF 
+			
+			EndIf
+			//Faturamento locacao
+			If len(aLocac) > 0 .AND. lLoc
+				cProdLoc := SuperGetMV("TI_PRODLOC",.F.,"SLOC000001")
+				cNaturez := SuperGetMV("TI_NATRLOC",.F.,"31101003  ")
+				cTesLoc  := Posicione("SB1",1,xFilial("SB1")+cProdLoc,"B1_TS")
 				DbSelectArea("AAM")
 				DbSetOrder(1)
 				DbSeek(xFilial("AAM")+aList[nCntG,01])
@@ -1688,32 +1808,33 @@ If nOpcG == 0
 				aItC6  := {}
 				cItem  := '01'
 
-				aAdd( aCabec , { "C5_FILIAL"    , cFilFat		      , Nil } ) 
-				aAdd( aCabec , { "C5_XTPPED"    , 'F'                 , Nil } )
-				aAdd( aCabec , { "C5_TIPO"      , 'N'                 , Nil } )
-				aAdd( aCabec , { "C5_CLIENTE"   , aList[nCntG,03]    , Nil } )
-				aAdd( aCabec , { "C5_LOJACLI"   , aList[nCntG,04]    , Nil } )
-				Aadd( aCabec , { "C5_MENNOTA"   , 'Faturamento de Doses - Ref. Patrimonio(s) '+cAtFat   , Nil } )
-				aAdd( aCabec , { "C5_CONDPAG"   , AAM->AAM_CPAGPV     , Nil } )    
-				aAdd( aCabec , { "C5_NATUREZ"   , "31101001  "     , Nil } )    
+				aAdd( aCabec , { "C5_FILIAL"    , cFilFat		      	, Nil } ) 
+				aAdd( aCabec , { "C5_XTPPED"    , 'L'                 	, Nil } )
+				aAdd( aCabec , { "C5_TIPO"      , 'N'                 	, Nil } )
+				aAdd( aCabec , { "C5_CLIENTE"   , aList[nCntG,03]   , Nil } )
+				aAdd( aCabec , { "C5_LOJACLI"   , aList[nCntG,04]   , Nil } )
+				Aadd( aCabec , { "C5_MENNOTA"   , 'Locacao de Maquinas Ref. Patrimonio(s) '+cAtLoc    , Nil } )
+				aAdd( aCabec , { "C5_CONDPAG"   , aLocac[1,3]     		, Nil } )    //AAM->AAM_CPAGPV
+				aAdd( aCabec , { "C5_NATUREZ"   , cNaturez     			, Nil } )
 				aAdd( aCabec , { "C5_XCONTRT"	, aList[nCntG,01]	, Nil })
-					
-				For nCont := 1 to len(aItens)
+				
+				nVlrFt := 0
+				For nCont := 1 to len(aLocac)
 					aLinha := {}
 					aAdd( aLinha , { "C6_FILIAL"     , cFilFat		                          , Nil })
 					aAdd( aLinha , { "C6_ITEM"       , cItem 							      , Nil })
-					aAdd( aLinha , { "C6_PRODUTO"    , aItens[nCont,01]                       , Nil })
-					aAdd( aLinha , { "C6_QTDVEN"     , aItens[nCont,02]                       , Nil })
-					aAdd( aLinha , { "C6_PRCVEN"     , aItens[nCont,03]                       , Nil })
-					aAdd( aLinha , { "C6_OPER"       , "08"                                   , Nil })
-					// aAdd( aLinha , { "C6_TES"        , '523'                                  , Nil })  
-					aAdd( aLinha , { "C6_QTDLIB"     , aItens[nCont,02]    	                  , Nil })
+					aAdd( aLinha , { "C6_PRODUTO"    , cProdLoc		                          , Nil })
+					aAdd( aLinha , { "C6_QTDVEN"     , 1				                      , Nil })
+					aAdd( aLinha , { "C6_PRCVEN"     , aLocac[nCont,02]                       , Nil })
+					aAdd( aLinha , { "C6_TES"        , cTesLoc                                , Nil })  
+					aAdd( aLinha , { "C6_QTDLIB"     , 1			    	                  , Nil })
 					aAdd( aLinha , { "C6_CONTRT" 	 , AAM->AAM_CONTRT						  , Nil })
 
 					If !Empty(MV_PAR02)
 						aAdd( aLinha , { "C6_PEDCLI"	,	MV_PAR02 	, Nil })
-					EndIf 
+					EndIF 
 
+					nVlrFt += aLocac[nCont,02]
 					aAdd( aItC6 , aLinha ) 
 					cItem := Soma1(cItem)
 				Next nCont
@@ -1724,139 +1845,29 @@ If nOpcG == 0
 				IF lMsErroAuto  
 					MostraErro()
 				ELSE
-					aDadNF := GeraNF(SC5->C5_NUM,SC5->C5_CONDPAG,'1')
-					nVlrFt := 0
-					//Msgalert("Pedido gerado de faturamento de doses "+SC5->C5_NUM)
-					DbSelectArea("Z08")
-					DbSetOrder(3)
-					For nCont := 1 to len(aList5B)
-						If aList5B[nCont,01] == aList[nCntG,01] .And. len(aList5b[nCont]) > 4
-							For nJ := 5 to len(aList5b[nCont])
-								If Dbseek(xFilial("Z08")+aList5b[nCont,nJ,11]+aList5b[nCont,nJ,01]+aList5B[nCont,02])
-									RecLock("Z08", .F.)
-									Z08->Z08_FATURA := 'S'
-									Z08->Z08_PEDIDO := SC5->C5_NUM
-									Z08->Z08_CONSUM := aList5b[nCont,nJ,08]
-									Z08->Z08_VLRFAT := aList5b[nCont,nJ,10]
-									Z08->Z08_NOTA	:= aDadNF[1]
-									Z08->Z08_SERIE	:= aDadNF[2]
-									nVlrFt += aList5b[nCont,nJ,10]
-									Z08->(MsUnlock())
-									aList5b[nCont,nJ,12] := 'S'
-									Dbskip() 
-								EndIf 
-							Next nJ
-						EndIf 
-					Next nCont
+					aDadNF := GeraNF(SC5->C5_NUM,SC5->C5_CONDPAG,If(cFilfat=='0101','LOC','LRJ'))
 
 					Aadd(aList3b,{	SC5->C5_NUM,;
-									SC5->C5_EMISSAO,;
-									nVlrFt,;
-									aDadNF[1],;
-									aList[nCntG,01],;
-									aList[nCntG,03],;
-									aList[nCntG,04],;
-									SC5->C5_FILIAL})
-
-					Aadd(aList3,{	SC5->C5_NUM,;
-									SC5->C5_EMISSAO,;
-									nVlrFt,;
-									aDadNF[1],;
-									aList[nCntG,01],;
-									aList[nCntG,03],;
-									aList[nCntG,04],;
-									SC5->C5_FILIAL})
-
-					For nCont := 1 to len(aList5B)
-						If aList5B[nCont,01] == aList[nCntG,01] .And. len(aList5b[nCont]) > 4
-							For nJ := 5 to len(aList5b[nCont])
-								aList5B[nCont,nJ,04] := aList5B[nCont,nJ,06]
-								aList5B[nCont,nJ,05] := aList5B[nCont,nJ,07]
-								aList5B[nCont,nJ,06] := ""
-								aList5B[nCont,nJ,07] := 0
-								aList5B[nCont,nJ,08] := 0
-								aList5B[nCont,nJ,10] := 0
-								aList5B[nCont,nJ,12] := "S"
-								aList5B[nCont,nJ,17] := SC5->C5_NUM
-							Next nJ
-						EndIF 
-					Next nCont
-				ENDIF
-
-			EndIF 
-		
-		EndIf
-		//Faturamento locacao
-		If len(aLocac) > 0 .AND. lLoc
-			cProdLoc := SuperGetMV("TI_PRODLOC",.F.,"SLOC000001")
-			cNaturez := SuperGetMV("TI_NATRLOC",.F.,"31101003  ")
-			cTesLoc  := Posicione("SB1",1,xFilial("SB1")+cProdLoc,"B1_TS")
-			DbSelectArea("AAM")
-			DbSetOrder(1)
-			DbSeek(xFilial("AAM")+aList[nCntG,01])
-			aCabec := {}
-			aItC6  := {}
-			cItem  := '01'
-
-			aAdd( aCabec , { "C5_FILIAL"    , cFilFat		      	, Nil } ) 
-			aAdd( aCabec , { "C5_XTPPED"    , 'L'                 	, Nil } )
-			aAdd( aCabec , { "C5_TIPO"      , 'N'                 	, Nil } )
-			aAdd( aCabec , { "C5_CLIENTE"   , aList[nCntG,03]   , Nil } )
-			aAdd( aCabec , { "C5_LOJACLI"   , aList[nCntG,04]   , Nil } )
-			Aadd( aCabec , { "C5_MENNOTA"   , 'Locacao de Maquinas Ref. Patrimonio(s) '+cAtLoc    , Nil } )
-			aAdd( aCabec , { "C5_CONDPAG"   , aLocac[1,3]     		, Nil } )    //AAM->AAM_CPAGPV
-			aAdd( aCabec , { "C5_NATUREZ"   , cNaturez     			, Nil } )
-			aAdd( aCabec , { "C5_XCONTRT"	, aList[nCntG,01]	, Nil })
-			
-			nVlrFt := 0
-			For nCont := 1 to len(aLocac)
-				aLinha := {}
-				aAdd( aLinha , { "C6_FILIAL"     , cFilFat		                          , Nil })
-				aAdd( aLinha , { "C6_ITEM"       , cItem 							      , Nil })
-				aAdd( aLinha , { "C6_PRODUTO"    , cProdLoc		                          , Nil })
-				aAdd( aLinha , { "C6_QTDVEN"     , 1				                      , Nil })
-				aAdd( aLinha , { "C6_PRCVEN"     , aLocac[nCont,02]                       , Nil })
-				aAdd( aLinha , { "C6_TES"        , cTesLoc                                , Nil })  
-				aAdd( aLinha , { "C6_QTDLIB"     , 1			    	                  , Nil })
-				aAdd( aLinha , { "C6_CONTRT" 	 , AAM->AAM_CONTRT						  , Nil })
-
-				If !Empty(MV_PAR02)
-					aAdd( aLinha , { "C6_PEDCLI"	,	MV_PAR02 	, Nil })
-				EndIF 
-
-				nVlrFt += aLocac[nCont,02]
-				aAdd( aItC6 , aLinha ) 
-				cItem := Soma1(cItem)
-			Next nCont
-
-			lMsErroAuto := .F.
-			MSExecAuto({|x,y,z| Mata410(x,y,z)},aCabec,aItC6,3)
-				
-			IF lMsErroAuto  
-				MostraErro()
-			ELSE
-				aDadNF := GeraNF(SC5->C5_NUM,SC5->C5_CONDPAG,If(cFilfat=='0101','LOC','LRJ'))
-
-				Aadd(aList3b,{	SC5->C5_NUM,;
-									SC5->C5_EMISSAO,;
-									nVlrFt,;
-									aDadNF[1],;
-									aList[nCntG,01],;
-									aList[nCntG,03],;
-									aList[nCntG,04],;
-									SC5->C5_FILIAL})
-									
-					Aadd(aList3,{	SC5->C5_NUM,;
-									SC5->C5_EMISSAO,;
-									nVlrFt,;
-									aDadNF[1],;
-									aList[nCntG,01],;
-									aList[nCntG,03],;
-									aList[nCntG,04],;
-									SC5->C5_FILIAL})
-				aLocac := {}
-				
-			ENDIF    
+										SC5->C5_EMISSAO,;
+										nVlrFt,;
+										aDadNF[1],;
+										aList[nCntG,01],;
+										aList[nCntG,03],;
+										aList[nCntG,04],;
+										SC5->C5_FILIAL})
+										
+						Aadd(aList3,{	SC5->C5_NUM,;
+										SC5->C5_EMISSAO,;
+										nVlrFt,;
+										aDadNF[1],;
+										aList[nCntG,01],;
+										aList[nCntG,03],;
+										aList[nCntG,04],;
+										SC5->C5_FILIAL})
+					aLocac := {}
+					
+				ENDIF    
+			EndIf
 		EndIf 
 	Next nCntG
 
@@ -2486,34 +2497,67 @@ For nCont := 1 to len(aEmail)
 	If aEmail[nCont,01]
 		MV_PAR01 := Substr(aEmail[nCont,11],5)
 		MV_PAR02 := aEmail[nCont,02]
-
+		
+		
 		DbSelectArea("SA1")
 		DBSetOrder(1)
 		DbSeek(xFilial("SA1")+aEmail[nCont,09]+aEmail[nCont,10])
 		cCnpjj := SA1->A1_CGC
-		U_CONBOL(.T.,'C:\BOLETOS\'+cCnpjj+'\',substr(aEmail[nCont,11],1,4),'')
-		//(cNota, cSerie, cPasta, ccnpj)
-		U_CONDANFE(MV_PAR02,MV_PAR01,'C:\BOLETOS\',cCnpjj)
 		
+		If !ExistDir('C:\BOLETOS\'+cCnpjj+'\')
+			Makedir('C:\BOLETOS\'+cCnpjj+'\')
+		EndIf
+
+
+		//Gera boleto?
+		If SA1->A1_XBOL == "S" .OR. EMPTY(SA1->A1_XBOL)
+			
+			U_CONBOL(.T.,'C:\BOLETOS\'+cCnpjj+'\',substr(aEmail[nCont,11],1,4),'')
+		
+		ENDIF
+		
+		//Danfe ou Recibo de locação
+		If SUBSTR(MV_PAR01,1,1) <> "L"
+		
+			//(cNota, cSerie, cPasta, ccnpj)
+			U_CONDANFE(MV_PAR02,MV_PAR01,'C:\BOLETOS\',cCnpjj)
+
+		else 
+
+			U_CONGEN03(MV_PAR02,MV_PAR01,'C:\BOLETOS\',cCnpjj)
+		
+		ENDIF
+
 		cRemete := 'nf.erp@connectvending.com.br'
 		cDestino := Alltrim(aEmail[nCont,05])
 		cDestino += ';'+Alltrim(SUPERGETMV( "MV_XMAILFT", .F., 'faturas@connectvending.com.br' ))
 		
 		cSubject := 'Faturamento'
-		CPYT2S('C:\BOLETOS\'+cCnpjj+'\'+MV_PAR02+'.pdf','\SPOOL\')
-		CPYT2S('C:\BOLETOS\'+cCnpjj+'\'+MV_PAR02+'.xml','\SPOOL\')
+
+		If SUBSTR(MV_PAR01,1,1) <> "L"
+			CPYT2S('C:\BOLETOS\'+cCnpjj+'\'+MV_PAR02+'.pdf','\SPOOL\')
+			CPYT2S('C:\BOLETOS\'+cCnpjj+'\'+MV_PAR02+'.xml','\SPOOL\')
+		
+		Else
+		
+			CPYT2S('C:\BOLETOS\'+cCnpjj+'\'+"recibo_loc_"+MV_PAR02+'.pdf','\SPOOL\')
+
+		EnDIf 
+		
 		CPYT2S('C:\BOLETOS\'+cCnpjj+'\boleto_'+MV_PAR02+'.pdf','\SPOOL\')
 		
 		cFile1 := '\SPOOL\'+MV_PAR02+'.pdf'
 		cFile2 := '\SPOOL\'+MV_PAR02+'.xml'
 		cFile3 := '\SPOOL\boleto_'+MV_PAR02+'.pdf'
+		cFile4 := '\SPOOL\recibo_loc_'+MV_PAR02+'.pdf'
 
 		Aadd(aArquivos,{cFile1,''})
 		Aadd(aArquivos,{cFile2,''})
 		Aadd(aArquivos,{cFile3,''})
+		Aadd(aArquivos,{cFile4,''})
 
 		//U_CONMAIL(cRemete,cDestino,cSubject,cBody,aArquivos,.T.) 
-		U_EnviarEmail(cDestino,cSubject,cBody,cFile1+','+cFile2+','+cFile3,.f.)  
+		U_EnviarEmail(cDestino,cSubject,cBody,cFile1+','+cFile2+','+cFile3+','+cFile4,.f.)  
 	EndIf 
 Next nCont
 
@@ -2844,5 +2888,83 @@ Else
 EndIf
 
 cFilant := cBkpcFil
+
+Return
+
+/*/{Protheus.doc} ValFat
+	(long_description)
+	@type  Static Function
+	@author user
+	@since 21/06/2023
+	@version version
+	@param param_name, param_type, param_descr
+	@return return_var, return_type, return_description
+	@example
+	(examples)
+	@see (links_or_references)
+/*/
+Static Function ValFat()
+	
+//
+Local aArea :=	GetArea()
+Local nConP
+Local nCont
+Local nCon5
+Local lOk 	:=	.F.
+
+
+If cLocacS == "S"
+	MsgAlert("Locações podem ser faturadas sem liberação")
+	return
+EndIf 
+
+Asort(aList2B,,,{|x,y| x[4] < y[4]})
+Asort(aList5B,,,{|x,y| x[1]+x[2] < y[1]+y[2]})
+
+For nConP := 1 to len(aList)
+	lOk 	:=	.F.
+	cForFat :=	aList[nConP,14]
+	cTipFat	:=	aList[nConP,15]
+	nPos2B  :=	Ascan(aList2B,{|x| x[4] == aList[nConP,01]})
+	//If cTipFat $ "1/2/3"
+	For nCont := nPos2B to len(aList2B)
+		If aList2B[nCont,04] == aList[nConP,01]
+			
+			nPosL5 := Ascan(aList5B,{|x| x[1]+x[2] == aList2B[nCont,04]+aList2B[nCont,01]})
+
+			For nCon5 := nPosL5 to len(aList5B)
+				If aList5B[nCon5,01] == aList[nConP,01]
+
+					If len(aList5b[nCon5]) > 4
+						If !Empty(aList5b[nCon5,5,6])
+							lOk 	:=	.T.
+						ELSE
+							lOk 	:=	.F.
+							EXIT
+						endif
+					else
+						lOk 	:=	.F.
+						EXIT
+					EndIf
+				else
+					
+					exit	
+				EndIf 
+			Next nCon5
+		Else 
+			EXIT		
+		EndIf 
+	Next nCont
+
+	If lOk
+		aList[nConP,len(aQtdH)+1] := 1
+		lLiberaF := .T.
+	EndIf 
+
+Next nConP
+
+Fhelp(oList:nAt)
+
+RestArea(aArea)
 
 Return
