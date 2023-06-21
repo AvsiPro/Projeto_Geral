@@ -147,4 +147,5 @@ export interface FormDataCustomer {
     another_address: string;
     another_cep: string;
     another_district: string;
+    token: string;
 }

@@ -12,7 +12,7 @@ import { apiCustomers, searchCustomers, storageCustomers, sortCustomerList } fro
 
 import NetInfo from "@react-native-community/netinfo";
 import debounce from 'lodash/debounce';
-import { ThemeContext } from '../../contexts/globalContext';
+import { AppContext, ThemeContext } from '../../contexts/globalContext';
 
 import * as yup from "yup";
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -21,6 +21,7 @@ import { FormDataCustomer } from '../../interfaces';
 
 import UpdateCustomer from '../../components/updateCustomer';
 import Financial from '../../components/financial';
+import api from '../../services/api';
 
 
 const schema = yup.object({
@@ -38,6 +39,7 @@ const schema = yup.object({
 export default function Customers(){
 
     const { colors } = useContext(ThemeContext);
+    const { authDetail } = useContext(AppContext);
 
     const [showModal, setShowModal] = useState(false)
     const [visiblePopup, setVisiblePopup] = useState(false)
@@ -50,6 +52,9 @@ export default function Customers(){
     const [page, setPage] = useState(1);
     const [financialCustomer, setFinancialCustomer] = useState('')
     const [financial, setFinancial] = useState(false);
+    const [visiblePopupCust, setVisiblePopupCust] = useState<boolean>(false);
+    const [message, setMessage] = useState<string>('');
+    const [typeMessage, setTypeMessage] = useState<string>('');
 
     const { control, handleSubmit, formState: { errors }, reset, setValue } = useForm<FormDataCustomer>({
         resolver: yupResolver(schema)
@@ -192,9 +197,39 @@ export default function Customers(){
     }
 
     /** Botao de atualizar cadastro, faz a comparacao com o cliente da context e atualiza com o preenchimento do formulario **/
-    const handleUserRegister = (data: FormDataCustomer) => {
-        console.log(data)
+    const handleUserRegister = async(data: FormDataCustomer) => {
+        data.token = authDetail.token
+        await apiUpdateCustomer(data)
         setShowModal(false)
+    }
+
+    
+    /** api para atualizacao de cadastro **/
+    const apiUpdateCustomer = async(data: any) => {
+        try{
+            const response = await api.post("/WSAPP13", data);
+            const receive = response.data;
+
+            if (receive.status.code === '#200') {
+                setCustomers([])
+                setSearchQuery('')
+                setPage(1)
+                
+                setTypeMessage('success')
+                setMessage(receive.status.message)
+                setVisiblePopupCust(true)
+
+            } else {
+                setTypeMessage('danger')
+                setMessage(receive.status.message)
+                setVisiblePopupCust(true)
+            }
+        
+        } catch(error){
+            setTypeMessage('danger')
+            setMessage('Erro na comunicação com o servidor, contate um administrador')
+            setVisiblePopupCust(true)
+        }
     }
 
 
@@ -318,6 +353,14 @@ export default function Customers(){
             type={'filterCustomers'}
             filter={filter}
             message=''
+        />
+
+        <Popups 
+            getVisible={visiblePopupCust}
+            handlePopup={() => setVisiblePopupCust(false)}
+            type={typeMessage}
+            filter={null}
+            message={message}
         />
     </>)
 }
