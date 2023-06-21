@@ -20,8 +20,8 @@ export default function Routes(){
             <Stack.Screen name="Home" component={Home}/>
             <Stack.Screen name="Products" component={Products}/>
             <Stack.Screen name="Customers" component={Customers}/>
-            <Stack.Screen name="Orders" component={Orders}/>
             <Stack.Screen name="Neworder" component={Neworder}/>
+            <Stack.Screen name="Orders" component={Orders}/>
             <Stack.Screen name="Profile" component={Profile}/>
         </Stack.Navigator>
     )

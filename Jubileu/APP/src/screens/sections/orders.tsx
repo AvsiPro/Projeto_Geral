@@ -1,8 +1,10 @@
-import React, { useState, useEffect, useContext, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useContext, useRef } from 'react';
 import { ActivityIndicator, FlatList, Keyboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AntDesign, MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import * as Style from './styles';
+
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 
 import Footer from '../../components/footer';
 
@@ -24,10 +26,16 @@ import { AppContext } from '../../contexts/globalContext';
 
 import LottieView from 'lottie-react-native'
 
+import { encode } from 'base-64';
+import { ApiResponse } from '../../interfaces';
+import api from '../../services/api';
+
+
 export default function Orders(){
 
     const { colors } = useContext(ThemeContext);
-    const { authDetail } = useContext(AppContext);
+    const { authDetail, setItemCart, setCustomerSelected, setPaymentSelected, setOrcamentoSelected } = useContext(AppContext);
+    const navigation: any = useNavigation();
 
     const [visibleModal, setVisibleModal] = useState(false)
     const [visiblePopup, setVisiblePopup] = useState(false)
@@ -39,6 +47,7 @@ export default function Orders(){
     const [isOnline, setIsOnline] = useState(true);
 
     const [isLoadBottom, setLoadBottom] = useState<boolean>(false);
+    const [isLoadCopy, setLoadCopy] = useState<boolean>(false);
     const [orders, setOrders] = useState<any[]>([]);
     const [page, setPage] = useState(1);
     const [searchQuery, setSearchQuery] = useState<string>('');
@@ -68,14 +77,21 @@ export default function Orders(){
 
 
     /** verifica se esta online. Se tiver, chama a API com orders, se nao, chama os orders que estao salvos no storage **/
-    useEffect(() => {
-        if(isOnline){
-            loadItems();
-
-        }else {
-            fetchAsyncStorage();
-        }
-    }, []);
+    useFocusEffect(
+        useCallback(() => {
+            if(isOnline){
+                loadItems();
+    
+            }else {
+                fetchAsyncStorage();
+            }
+          
+          return () => {
+            // Função de limpeza, se necessário
+          };
+        }, [])
+    );
+    
 
 
     const loadItems = async() => {
@@ -156,22 +172,61 @@ export default function Orders(){
         }
     }
 
-    const handlePopupCopy = (option: any) =>{
+    const handlePopupCopy = async(option: any) =>{
+        setLoadCopy(true)
 
         if(option === 'sim'){
+            let itemCartAux: any = []
 
-        }else if(option === 'nao'){
-        
+            itemCopy.items.map((itemCart: any) => {
+                itemCartAux.push({
+                    id: encode(`{"SB1","copy","${itemCart.product}","${itemCart.description}"}`),
+                    code: itemCart.product,
+                    description: itemCart.description,
+                    price: itemCart.value_sold,
+                    selected_quantity: itemCart.sold_amount,
+                    marked: true
+                })
+            })
+
+            const customerAux = await apiCustomerCopy(itemCopy.customer)
+
+            setItemCart(itemCartAux)
+            setCustomerSelected(customerAux[0])
+            setPaymentSelected(null)
+
+            navigation.navigate('Neworder')
         }
 
+        setLoadCopy(false)
+        setItemCopy(null)
         setVisiblePopupCopy(!visiblePopupCopy)
+    }
+
+    const handleCopyButton = (item: any) => {
+        setItemCopy(item)
+        setVisiblePopupCopy(true)
+    }
+
+
+    const apiCustomerCopy = async(customer: string) => {
+        
+        let returnObject: any = []
+
+        const response = await api.get(`/WSAPP02?pagesize=100&page=1&byId=true&SearchKey=${customer}`);
+        const json: ApiResponse = response.data;
     
+        if(json.status.code === '#200'){    
+            returnObject = [...json.result];
+        }
+
+        return returnObject;  
     }
 
     const RightActions = (item: any) => {
         return(
             <Style.SwipeableOrderContainer
-                onPress={() => {setItemCopy(item), handlePopupCopy(null)}}
+                onPress={() => {handleCopyButton(item)}}
             >
                 <Ionicons
                     name="md-copy"
@@ -196,6 +251,116 @@ export default function Orders(){
             </Style.LoadingContent>
         );
     };
+
+
+    const handleOrcamento = (item: any) => {
+        setItemCart(item.items)
+        setCustomerSelected(item.customer)
+        setPaymentSelected(item.payment)
+        setOrcamentoSelected(item.numorc)
+        
+        navigation.navigate('Neworder')
+    }
+
+
+    const Order = ({item}: any) => {
+        return(
+            <Swipeable
+                renderRightActions={() => RightActions(item)}
+            >
+                <Style.ContainerItemOrder 
+                    style={Style.styleSheet.shadow}
+                    onPress={() => handleModal(item)}
+                    activeOpacity={0.4}
+                >
+                    <Style.HeaderItemOrder>
+                        <Style.CodigoOrder>{item.document}</Style.CodigoOrder>
+                        <Style.DateOrderContainer>
+                            <Style.TextDateOrder color={colors.primary}>
+                                {'Emissão: '}
+                            </Style.TextDateOrder>
+
+                            <Style.TextDateOrder color={'#000'}>
+                                {SToD(item.issue_date)}
+                            </Style.TextDateOrder>
+                        </Style.DateOrderContainer>
+                    </Style.HeaderItemOrder>
+                    
+                    <Style.MiddleTextOrder>
+                        <Style.TextClienteMiddle>
+                            {item.customer_name}
+                        </Style.TextClienteMiddle>
+                        
+                        <Style.TextStatusMiddle>
+                            {item.status}
+                        </Style.TextStatusMiddle>
+                    </Style.MiddleTextOrder>
+
+                    <Style.DownTextOrder>
+                        <Style.DownOrderContainer>
+                            <Style.TextCgcOrder color={colors.primary}>
+                                {'CNPJ: '}
+                            </Style.TextCgcOrder>
+
+                            <Style.TextCgcOrder color={'#000'}>
+                                {CgcFormat(item.customer_cnpj)}
+                            </Style.TextCgcOrder>
+                        </Style.DownOrderContainer>
+
+                        <Style.DownOrderContainer>
+                            { !!item.invoice && <>
+                                <Style.TextCgcOrder color={colors.primary}>
+                                    {'Nota: '}
+                                </Style.TextCgcOrder>
+
+                                <Style.TextCgcOrder color={'#000'}>
+                                    {item.invoice + (item.invoice_series && '-' + item.invoice_series)}
+                                </Style.TextCgcOrder>
+                            </> }
+                        </Style.DownOrderContainer>
+                    </Style.DownTextOrder>
+                </Style.ContainerItemOrder>
+            </Swipeable>
+        )
+    }
+
+
+    const Orcamento = ({item}: any) => {
+        return (
+            <Style.ContainerItemOrder 
+                style={[Style.styleSheet.shadow, {backgroundColor: 'rgba(66, 106, 208, 0.2)'}]}
+                onPress={() => handleOrcamento(item)}
+                activeOpacity={0.4}
+            >
+                <Style.HeaderItemOrder>
+                    <Style.CodigoOrder>{item.numorc}</Style.CodigoOrder>
+
+                    <Style.DateOrderContainer>
+                        <Style.TextDateOrder color={colors.primary}>
+                            {'Emissão: '}
+                        </Style.TextDateOrder>
+
+                        <Style.TextDateOrder color={'#000'}>
+                            {SToD(item.emission)}
+                        </Style.TextDateOrder>
+                    </Style.DateOrderContainer>
+                </Style.HeaderItemOrder>
+
+                <Style.MiddleTextOrder>
+                    <Style.TextClienteMiddle>
+                        {item.customer.name}
+                    </Style.TextClienteMiddle>
+                </Style.MiddleTextOrder>
+
+                <Style.DownTextOrder>
+                    <Style.TextStatusMiddle style={{fontSize:20, color:'#000', fontWeight:'bold'}}>
+                        Orçamento em digitação
+                    </Style.TextStatusMiddle>
+                </Style.DownTextOrder>
+                
+            </Style.ContainerItemOrder>
+        )
+    }
 
     return(<>
         <SafeAreaView 
@@ -236,62 +401,12 @@ export default function Orders(){
                     showsVerticalScrollIndicator={false}
                     keyExtractor={item => item.id}
                     renderItem={({item}) => (
-                        <Swipeable
-                            renderRightActions={() => RightActions(item)}
-                        >
-                            <Style.ContainerItemOrder 
-                                style={Style.styleSheet.shadow}
-                                onPress={() => handleModal(item)}
-                                activeOpacity={0.4}
-                            >
-                                <Style.HeaderItemOrder>
-                                    <Style.CodigoOrder>{item.document}</Style.CodigoOrder>
-                                    <Style.DateOrderContainer>
-                                        <Style.TextDateOrder color={colors.primary}>
-                                            {'Emissão: '}
-                                        </Style.TextDateOrder>
-
-                                        <Style.TextDateOrder color={'#000'}>
-                                            {SToD(item.issue_date)}
-                                        </Style.TextDateOrder>
-                                    </Style.DateOrderContainer>
-                                </Style.HeaderItemOrder>
-                                
-                                <Style.MiddleTextOrder>
-                                    <Style.TextClienteMiddle>
-                                        {item.customer_name}
-                                    </Style.TextClienteMiddle>
-                                    
-                                    <Style.TextStatusMiddle>
-                                        {item.status}
-                                    </Style.TextStatusMiddle>
-                                </Style.MiddleTextOrder>
-
-                                <Style.DownTextOrder>
-                                    <Style.DownOrderContainer>
-                                        <Style.TextCgcOrder color={colors.primary}>
-                                            {'CNPJ: '}
-                                        </Style.TextCgcOrder>
-
-                                        <Style.TextCgcOrder color={'#000'}>
-                                            {CgcFormat(item.customer_cnpj)}
-                                        </Style.TextCgcOrder>
-                                    </Style.DownOrderContainer>
-
-                                    <Style.DownOrderContainer>
-                                        { !!item.invoice && <>
-                                            <Style.TextCgcOrder color={colors.primary}>
-                                                {'Nota: '}
-                                            </Style.TextCgcOrder>
-
-                                            <Style.TextCgcOrder color={'#000'}>
-                                                {item.invoice + (item.invoice_series && '-' + item.invoice_series)}
-                                            </Style.TextCgcOrder>
-                                        </> }
-                                    </Style.DownOrderContainer>
-                                </Style.DownTextOrder>
-                            </Style.ContainerItemOrder>
-                        </Swipeable>
+                        <>
+                            {item.orcamento === 'N'
+                                ? <Order item={item} />
+                                : <Orcamento item={item} />
+                            }
+                        </>
                     )}
                     ListFooterComponent={renderFooter}
                     onEndReached={handleLoadMore}
@@ -346,6 +461,7 @@ export default function Orders(){
         <PopupsCopyOrder 
             getVisible={visiblePopupCopy}
             handlePopup={handlePopupCopy}
+            load={isLoadCopy}
         />
     </>)
 }

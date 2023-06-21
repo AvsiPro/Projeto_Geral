@@ -181,6 +181,7 @@ export default function Products(){
                     products={products}
                     handleLoadMore={handleLoadMore}
                     handleItem={handleItem}
+                    handleLongItem={() => {}}
                     isLoadBottom={isLoadBottom}
                     isOnline={isOnline}
                     isOrder={false}

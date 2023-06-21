@@ -27,7 +27,7 @@ export default function Popups({getVisible, handlePopup, type, filter, message} 
 
     const { colors } = useContext(ThemeContext);
 
-    const popupCenter = type === 'error' || type === 'warning'
+    const popupCenter = type === 'error' || type === 'warning' || type === 'success'
 
     const handleOptionAction = (action: string) => {
         if(action === 'exit'){
@@ -206,6 +206,26 @@ export default function Popups({getVisible, handlePopup, type, filter, message} 
                         
                     </Style.PopupError>
                 }
+
+                { type === 'success' &&
+                    <Style.PopupError style={Style.styleSheet.shadow}>
+                        <LottieView
+                            autoPlay
+                            speed={2}
+                            loop={false}
+                            ref={animation}
+                            style={{width: 150, height: 150}}
+                            source={require('../assets/popupsuccess.json')}
+                        />
+                        <Style.PopupErrorMessage>
+                            {message}
+                        </Style.PopupErrorMessage>
+                        
+                    </Style.PopupError>
+                }
+                
+
+                
             </Style.SafeAreaPopups>
         </Modal>
         

@@ -15,13 +15,27 @@ import ModalCustomers from '../../modals/modalCustomers';
 import ModalProducts from '../../modals/modalProducts';
 import ModalPayment from '../../modals/modalPayment';
 import Popups from '../../modals/popups';
+import api from '../../services/api';
+
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Neworder(){
     const navigation: any = useNavigation();
     const animation = useRef(null);
-    const { itemCart, setItemCart, customerSelected, setCustomerSelected, paymentSelected, setPaymentSelected, authDetail } = useContext(AppContext);
-    const { colors } = useContext(ThemeContext);
     
+    const { colors } = useContext(ThemeContext);
+    const {
+        itemCart,
+        customerSelected,
+        paymentSelected,
+        authDetail,
+        orcamentoSelected,
+        setItemCart,
+        setCustomerSelected,
+        setPaymentSelected,
+        setOrcamentoSelected
+    } = useContext(AppContext);
+
     const [visibleModalProducts, setVisibleModalProducts] = useState(false);
     const [visibleModalCustomers, setVisibleModalCustomers] = useState(false);
     const [visibleModalPayment, setVisibleModalPayment] = useState(false);
@@ -37,9 +51,10 @@ export default function Neworder(){
     const [keyboardActived, setKeyboardActived] = useState(false);
     const [isOnline, setIsOnline] = useState(true);
     const [visiblePopup, setVisiblePopup] = useState<boolean>(false);
-    const [messageError, setMessageError] = useState<string>('');
-
+    const [message, setMessage] = useState<string>('');
+    const [typeMessage, setTypeMessage] = useState<string>('');
     const [textObs, setTextObs] = useState<string>('');
+    const [load, setLoad] = useState<boolean>(false);
 
 
     /** verifica se esta online ou offline **/
@@ -253,41 +268,50 @@ export default function Neworder(){
     const finishOrder = () => {
 
         if(!customerSelected) {
-            setMessageError('Necessário selecionar um cliente')
+            setTypeMessage('warning')
+            setMessage('Necessário selecionar um cliente')
             setVisiblePopup(true)
             return
         }
 
         if(!paymentSelected) {
-            setMessageError('Necessário selecionar uma condição de pagamento')
+            setTypeMessage('warning')
+            setMessage('Necessário selecionar uma condição de pagamento')
             setVisiblePopup(true)
             return
         }
 
         if(itemCart.length <= 0) {
-            setMessageError('Necessário selecionar ao menos um produto')
+            setTypeMessage('warning')
+            setMessage('Necessário selecionar ao menos um produto')
             setVisiblePopup(true)
             return
         }
 
+        setVisibleModalObs(true)
+    }
+
+
+    const handleGeraPedido = async(orcamento: string) => {
+        setLoad(true)
 
         const items = itemCart.map((item: any) => {
             return {
                 produto: item.code,
                 quantidade: item.selected_quantity,
-                valor: item.price,
+                valor: item.price
             };
         });
 
-        const pedido = {
+        const sendJson = {
             endereco_entrega: customerSelected.another_address,
             cep_entrega: customerSelected.another_cep,
             bairro_entrega: customerSelected.another_district,
             condpagto: paymentSelected.code,
             desconto: discountPercent,
-            numorc: "",
-            orcamento: "N",
-            observation: "",
+            numorc: orcamentoSelected,
+            orcamento: orcamento,
+            observation: textObs,
             token: authDetail.token,
             cliente: {
                 filial: customerSelected.branch,
@@ -307,19 +331,113 @@ export default function Neworder(){
             items: items
         }
 
-        console.log(pedido)
-        setVisibleModalObs(true)
-    
+        try{
+            const response = await api.post("/WSAPP12", sendJson);
+            const receive = response.data;
+
+            let messageSuccess = ''
+            let messageError = ''
+
+            if(orcamento === 'N'){
+                messageSuccess = 'Pedido gerado com sucesso '+receive.status.message
+                messageError = receive.status.message
+
+            }else {
+                messageSuccess = 'Orçamento gerado com sucesso, pedido salvo para edição'
+                messageError = 'Erro ao gerar orçamento'
+
+                setOrcamentoSelected('')
+            }
+
+            if (receive.status.code === '#200') {
+                setItemCart([])
+                setCustomerSelected(null)
+                setPaymentSelected(null)
+                setTypeMessage('success')
+                setMessage(messageSuccess)
+                
+                if(orcamento === 'S'){
+                    const currentDate = new Date();
+                    const year = currentDate.getFullYear().toString();
+                    const month = (currentDate.getMonth() + 1).toString().padStart(2, '0'); // Os meses são indexados em zero
+                    const day = currentDate.getDate().toString().padStart(2, '0');
+
+                    const formattedDate = `${year}${month}${day}`;            
+
+                    const orcOld = await AsyncStorage.getItem('@orcamento')
+                    let orcNew: any = []
+        
+                    if (!!orcOld){
+                        orcNew = [...JSON.parse(orcOld)]
+                    }
+
+                    const sendOrc = {
+                        id: receive.status.message,
+                        customer: customerSelected,
+                        payment: paymentSelected,
+                        items: itemCart,
+                        orcamento: orcamento,
+                        numorc: receive.status.message,
+                        emission: formattedDate
+                    }
+
+                    const orcamentoIndex = orcNew.findIndex((orcamento: any) => orcamento.numorc === orcamentoSelected);
+
+                    if (orcamentoIndex !== -1) {
+                        orcNew[orcamentoIndex] = sendOrc;
+                    } else {
+                        orcNew.push(sendOrc);
+                    }
+                      
+                    await AsyncStorage.setItem('@orcamento', JSON.stringify(orcNew))
+
+                } else {
+
+                    const orcamentosString = await AsyncStorage.getItem('@orcamento');
+                    const orcamentos = orcamentosString ? JSON.parse(orcamentosString) : [];
+                    const orcamentosAtualizados = orcamentos.filter((orcamento: any) => orcamento.numorc !== orcamentoSelected);
+
+                    await AsyncStorage.setItem('@orcamento', JSON.stringify(orcamentosAtualizados));
+                }
+
+                setVisibleModalObs(false)
+                setVisiblePopup(true)
+
+            } else {
+                setTypeMessage('error')
+                setMessage(messageError)
+                setVisiblePopup(true)
+            }
+            
+        } catch(error){
+            setTypeMessage('error')
+            setMessage('Erro na comunicação com o servidor, contate um administrador')
+            setVisiblePopup(true)
+        }
+
+        setLoad(false)
+
     }
 
-    const handleGeraPedido = () => {
-        console.log(textObs)
+
+    const handlePopUp = () => {
+
+        setVisiblePopup(!visiblePopup)
+
+        if(typeMessage === 'success'){
+            navigation.navigate('Orders')
+        }
+        
     }
 
-    const handleGeraOrcamento = () => {
+    const goBack = () => {
+        if(!!orcamentoSelected) {
+            handleClearCart()
+            setOrcamentoSelected('')
+        }
 
+        navigation.goBack()
     }
-
 
     return(<>
         <SafeAreaView 
@@ -328,7 +446,7 @@ export default function Neworder(){
         />
         <Style.SafeContainer style={{backgroundColor: colors.primary}}>
             <Style.NewOrderHeader>
-                <Style.ArrowContainer onPress={()=> navigation.goBack()}>
+                <Style.ArrowContainer onPress={goBack}>
                     <Entypo name="chevron-left" size={30} color="white" />
                 </Style.ArrowContainer>
 
@@ -504,15 +622,16 @@ export default function Neworder(){
             changeTextObs={(change) => setTextObs(change)}
             textObs={textObs}
             handleGeraPedido={handleGeraPedido}
-            handleGeraOrcamento={handleGeraOrcamento}
+            load={load}
         />
 
         <Popups 
             getVisible={visiblePopup}
-            handlePopup={() => setVisiblePopup(!visiblePopup)}
-            type={'warning'}
+            handlePopup={handlePopUp}
+            type={typeMessage}
             filter={null}
-            message={messageError}
+            message={message}
         />
+
     </>)
 }

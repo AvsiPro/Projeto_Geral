@@ -17,6 +17,7 @@ import { PropItemCartContext, ApiResponse, PropsProductsModal } from '../interfa
 import { AppContext, ThemeContext } from '../contexts/globalContext';
 
 import { CameraType } from 'expo-camera';
+import ModalProdDetail from './modalProdDetail';
 
 
 export default function modalProducts({getVisible, handleModalProducts, products, atualizaProdutos} : PropsProductsModal){
@@ -30,6 +31,8 @@ export default function modalProducts({getVisible, handleModalProducts, products
     const [isLoadBottom, setLoadBottom] = useState<boolean>(false);
     const [page, setPage] = useState(1);
     const [isOnline, setIsOnline] = useState(true);
+    const [productDetails, setProductDetails] = useState<any>(null);
+    const [showModal, setShowModal] = useState<boolean>(false);
 
     const [scanned, setScanned] = useState(false);
     const [hasCamera, setHasCamera] = useState(false);
@@ -231,6 +234,14 @@ export default function modalProducts({getVisible, handleModalProducts, products
         const foundProductIndex = prod.findIndex((product: any) => product.code === codeToFind);
         return foundProductIndex !== -1 ? foundProductIndex : null;
     }
+
+
+    const handleLongItem = (index: number) => {
+        const newData = [...products];
+
+        setShowModal(true);
+        setProductDetails(newData[index])
+    }
       
     return(
         <Modal 
@@ -303,6 +314,7 @@ export default function modalProducts({getVisible, handleModalProducts, products
                                 products={products}
                                 handleLoadMore={handleLoadMore}
                                 handleItem={handleItem}
+                                handleLongItem={handleLongItem}
                                 isLoadBottom={isLoadBottom}
                                 isOnline={isOnline}
                                 isOrder={true}
@@ -332,6 +344,12 @@ export default function modalProducts({getVisible, handleModalProducts, products
                     
                 </Style.ModalOrderContainer>
             </Style.SafeAreaModals>
+
+            <ModalProdDetail
+                getVisible={showModal}
+                handleModalProducts={() => setShowModal(!showModal)}
+                products={productDetails}
+            />
         </Modal>
     )
 }

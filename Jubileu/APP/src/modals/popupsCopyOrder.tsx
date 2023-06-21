@@ -1,6 +1,6 @@
 import React, { useContext, useRef, useState } from 'react';
 import * as Style from './styles';
-import { Modal } from 'react-native';
+import { ActivityIndicator, Modal } from 'react-native';
 import LottieView from 'lottie-react-native'
 
 import { PropsPopupCopyOrder } from '../interfaces';
@@ -8,7 +8,7 @@ import { PropsPopupCopyOrder } from '../interfaces';
 import { ThemeContext } from '../contexts/globalContext';
 
 
-export default function PopupsCopyOrder({getVisible, handlePopup} : PropsPopupCopyOrder){
+export default function PopupsCopyOrder({getVisible, handlePopup, load} : PropsPopupCopyOrder){
 
     const animation = useRef(null);
     const { colors } = useContext(ThemeContext);
@@ -36,16 +36,21 @@ export default function PopupsCopyOrder({getVisible, handlePopup} : PropsPopupCo
                     <Style.ButtonsPopUpCopy>
                         <Style.ButtonCopyOrderPopup
                             background={'#fff'}
-                            onPress={() => handlePopup('nao')}
+                            onPress={() => !load && handlePopup('nao')}
                         >
                             <Style.PopupCopyMessage color='#000'>Não</Style.PopupCopyMessage>
                         </Style.ButtonCopyOrderPopup>
 
                         <Style.ButtonCopyOrderPopup
                             background={colors.primary}
-                            onPress={() => handlePopup('sim')}
-                        >
-                            <Style.PopupCopyMessage color='#fff'>Sim</Style.PopupCopyMessage>
+                            onPress={() => !load && handlePopup('sim')}
+                        >   
+                            { load
+                                ? <ActivityIndicator animating size="small" color={'#fff'} />
+                                : <Style.PopupCopyMessage color='#fff'>Sim</Style.PopupCopyMessage>
+
+                            }
+                            
                         </Style.ButtonCopyOrderPopup>
                     </Style.ButtonsPopUpCopy>
                     

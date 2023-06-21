@@ -11,7 +11,7 @@ import LottieView from 'lottie-react-native'
 import { ThemeContext } from 'styled-components';
 import ImageComponent from './ImageComponent';
 
-export default function products({products, handleLoadMore, handleItem, isLoadBottom, isOnline, isOrder} : PropsProducts){
+export default function products({products, handleLoadMore, handleItem, isLoadBottom, isOnline, isOrder, handleLongItem} : PropsProducts){
 
     const animation = useRef(null);
     const { colors } = useContext(ThemeContext);
@@ -41,6 +41,7 @@ export default function products({products, handleLoadMore, handleItem, isLoadBo
                     <Style.ContainerProdModal
                         style={Style.styleSheet.shadow}
                         onPress={() => handleItem(index)}
+                        onLongPress={() => handleLongItem(index)}
                         activeOpacity={0.4}
                     >
                         <Style.TopCardContainer>
