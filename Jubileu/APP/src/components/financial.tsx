@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import * as Style from './styles';
 
-import { ActivityIndicator, FlatList, TouchableOpacity, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, TouchableOpacity, Text, View, Linking } from 'react-native';
 
 import LottieView from 'lottie-react-native'
 import { FontAwesome } from '@expo/vector-icons';
@@ -9,7 +9,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import NetInfo from "@react-native-community/netinfo";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ApiResponse } from '../interfaces';
-import api from '../services/api';
+import api, { apiLink } from '../services/api';
 
 import { SToD } from '../utils/dateFormat';
 import { CurrencyFormat } from '../utils/currencyFormat';
@@ -145,6 +145,17 @@ export default function financial({customer, handleFinancial} : PropsFinancial){
         }
     }
 
+    const abrirLink = async (type: string, item: any) => {
+        const url = `${apiLink}/WSAPP14?cTipo=${type}&cDoc=${item.document}&cSerie=${item.prefix}&cFilNF=${item.branch_invoice}&cParce=${item.installments}`;
+        const suportaAbrir = await Linking.canOpenURL(url);
+    
+        if (suportaAbrir) {
+          await Linking.openURL(url);
+        } else {
+          console.log(`Não é possível abrir o URL: ${url}`);
+        }
+      };
+
     return(
         <Style.ContainerFinancial>
             <Style.HeaderFinancial>
@@ -206,12 +217,16 @@ export default function financial({customer, handleFinancial} : PropsFinancial){
                         </Style.ContainerItensFinancial>
 
                         <Style.ButtonContainerFinancial>
-                            <Style.ButtonFinancial>
+                            <Style.ButtonFinancial onPress={() => abrirLink('Boleto', item)}>
                                 <Style.TextButtonFinancial>Boleto</Style.TextButtonFinancial>
                             </Style.ButtonFinancial>
 
-                            <Style.ButtonFinancial>
+                            <Style.ButtonFinancial onPress={() => abrirLink('Danfe', item)}>
                                 <Style.TextButtonFinancial>Danfe</Style.TextButtonFinancial>
+                            </Style.ButtonFinancial>
+
+                            <Style.ButtonFinancial onPress={() => abrirLink('Xml', item)}>
+                                <Style.TextButtonFinancial>Xml</Style.TextButtonFinancial>
                             </Style.ButtonFinancial>
                         </Style.ButtonContainerFinancial>
                         

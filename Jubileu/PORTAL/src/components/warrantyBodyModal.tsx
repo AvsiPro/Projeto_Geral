@@ -19,9 +19,11 @@ import { fetchData } from "../services/apiWarrantyxInvoices";
 
 interface Props {
   handleSendWarranty: (warranty: any) => void;
+  uploadedImages: any;
+  setUploadedImages: (image: any) => void;
 }
 
-const WarrantyBodyModal: React.FC <Props> = ({handleSendWarranty})  => {
+const WarrantyBodyModal: React.FC <Props> = ({handleSendWarranty, uploadedImages, setUploadedImages})  => {
 
     const isMobile = useMediaQuery({ query: '(max-width: 767px)' });
     
@@ -29,8 +31,6 @@ const WarrantyBodyModal: React.FC <Props> = ({handleSendWarranty})  => {
     const [step2, setStep2] = useState(false)
     const [step3, setStep3] = useState(false)
     const [step4, setStep4] = useState(false)
-
-    const [uploadedImages, setUploadedImages] = useState<{ file: File; base64: string }[]>([]);
 
     const [selectedOption, setSelectedOption] = useState('')
     const [selectedOption1, setSelectedOption1] = useState('');

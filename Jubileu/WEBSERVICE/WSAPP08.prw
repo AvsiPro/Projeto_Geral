@@ -51,8 +51,7 @@ Default oself:type  	:= ''
     oJsonAux  := JsonObject():New()
     cAliasTMP := GetNextAlias()
 
-	cQuery := " SELECT * "
-	cQuery += " FROM " + RetSQLName("SF2") + " SF2 "
+	cQuery := " SELECT * FROM " + RetSQLName("SF2") + " SF2 "
 	cQuery += " INNER JOIN "+RetSqlName("SA1")+" SA1 "
 	cQuery += " 	ON SA1.A1_FILIAL='"+FwxFilial("SA1")+"' "
 	cQuery += " 	AND SA1.A1_COD = F2_CLIENTE "
@@ -123,6 +122,7 @@ Default oself:type  	:= ''
 		EndIf
 
 		aListAux[nAux]['id']	                := Encode64(cIdAux)
+		aListAux[nAux]['branch_invoice']	    := Alltrim(EncodeUTF8((cAliasTMP)->F2_FILIAL))
 		aListAux[nAux]['invoice']	            := Alltrim(EncodeUTF8((cAliasTMP)->F2_DOC))
 		aListAux[nAux]['invoice_series']     	:= Alltrim(EncodeUTF8((cAliasTMP)->F2_SERIE))
 		aListAux[nAux]['customer']			    := Alltrim(EncodeUTF8((cAliasTMP)->A1_COD))

@@ -17,11 +17,12 @@ interface Props {
     changeTextArea: (change: any) => void;
     handleCloseDetail: () => void;
     handleInterageDetail: (warranty: any) => void;
+    uploadedImages: any;
+    setUploadedImages: (image: any) => void;
 }
 
-const WarrantyDetail: React.FC <Props> = ({ data, textArea, changeTextArea, handleCloseDetail, handleInterageDetail})  => {
+const WarrantyDetail: React.FC <Props> = ({ data, textArea, changeTextArea, handleCloseDetail, handleInterageDetail, uploadedImages, setUploadedImages})  => {
     
-    const [uploadedImages, setUploadedImages] = useState<{ file: File; base64: string }[]>([]);
     const [load, setLoad] = useState(false)
     
     const { userContext } = useContext(UserContext)

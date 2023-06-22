@@ -16,6 +16,7 @@ import { CurrencyFormat } from "../utils/currencyFormat";
 
 import { Accordion, Table } from 'react-bootstrap';
 import { WindowDimensionsContext } from "../contexts/WindowDimensionsContext";
+import { apiLink } from "../services/api";
 
 interface Props{
     invoices: any
@@ -56,6 +57,10 @@ const InvoicingCustomer: React.FC <Props> = ({ invoices, load})  => {
           quantity_total: quantityTotal
         };
     };
+    
+    const handleOpenLink = (type: string, item: any) => {
+        window.open(`${apiLink}/WSAPP14?cTipo=${type}&cDoc=${item.invoice}&cSerie=${item.invoice_series}&cFilNF=${item.branch_invoice}`, '_blank')
+    }
     
     return(
         <Style.CustomersComponent
@@ -128,8 +133,8 @@ const InvoicingCustomer: React.FC <Props> = ({ invoices, load})  => {
                     </Accordion>
 
                     <Style.InvCustTools>
-                        <Style.InvCustButTool onClick={() => {}}>Danfe</Style.InvCustButTool>
-                        <Style.InvCustButTool onClick={() => {}}>Xml</Style.InvCustButTool>
+                        <Style.InvCustButTool onClick={() => handleOpenLink('Danfe', item)}>Danfe</Style.InvCustButTool>
+                        <Style.InvCustButTool onClick={() => handleOpenLink('Xml', item)}>Xml</Style.InvCustButTool>
                     </Style.InvCustTools>
 
                     

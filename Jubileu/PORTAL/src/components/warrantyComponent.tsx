@@ -42,6 +42,7 @@ const WarrantyComponent: React.FC <Props> = ({ warranty, load, handleLoadItems }
     const { theme } = useContext(ThemeContext);
     const { windowDimensions } = useContext(WindowDimensionsContext);
     const isMobile = useMediaQuery({ query: '(max-width: 700px)' });
+    const [uploadedImages, setUploadedImages] = useState<{ file: File; base64: string }[]>([]);
 
     const [warrantyDetail, setWarrantyDetail] = useState<any>([])
 
@@ -81,12 +82,12 @@ const WarrantyComponent: React.FC <Props> = ({ warranty, load, handleLoadItems }
     }
 
     const sendWarranty = async(warrantyJson: any) => {
+                
         try{
             const response = await api.post("/WSAPP10", warrantyJson);
             const receive = response.data;
             
             const statusCode = receive.status.code
-            
             
             if(statusCode === '#200') {
                 setShowModal(false)
@@ -94,6 +95,24 @@ const WarrantyComponent: React.FC <Props> = ({ warranty, load, handleLoadItems }
                 setTimeout(() => {
                     handleLoadItems()
                 }, 2000);
+            }
+            
+            if(statusCode === '#200') {
+                if(uploadedImages.length > 0) {
+        
+                    const separado = receive.status.message.split(':');
+                    const codigo = separado[1].trim();
+            
+                    uploadedImages.forEach(async (image: any, index: number) => {
+                        const params = {
+                          warranty: codigo,
+                          image: image.base64,
+                          image_name: `${codigo}_image_${index.toString()}.${image.extension}`
+                        };
+                      
+                        await sendImage(params);
+                    });
+                }
             }
             
             const alertAux = [
@@ -110,10 +129,31 @@ const WarrantyComponent: React.FC <Props> = ({ warranty, load, handleLoadItems }
             setAlertMessage(['Erro', 'Erro ao criar chamado', 'danger'])
             setShowAlert(true)
         }
+        
+    }
+
+
+    const sendImage = async(params: any) => {
+        try{
+            const response = await api.post("/WSAPP15", params);
+            const receive = response.data;
+            
+            const statusCode = receive.status.code
+            
+            if(statusCode === '#200') {
+                console.log(`${receive.status.message} ${params.image_name}`)
+            }
+        } catch(error){
+            console.log(error)
+        }
     }
 
     const BodyModal = (
-        <WarrantyBodyModal handleSendWarranty={(warranty)=> sendWarranty(warranty)} />
+        <WarrantyBodyModal
+            handleSendWarranty={(warranty)=> sendWarranty(warranty)}
+            uploadedImages={uploadedImages}
+            setUploadedImages={(image) => setUploadedImages(image)}
+        />
     )
 
     const handleCloseDetail = () => {
@@ -126,7 +166,6 @@ const WarrantyComponent: React.FC <Props> = ({ warranty, load, handleLoadItems }
     const handleInterageDetail = async(warranty: any) => {
         await sendWarranty(warranty)
         handleCloseDetail()
-        window.location.reload()
     }
     
     const BodyModalDetail = (
@@ -136,6 +175,9 @@ const WarrantyComponent: React.FC <Props> = ({ warranty, load, handleLoadItems }
             changeTextArea={(change) => setTextArea(change)}
             handleCloseDetail={handleCloseDetail}
             handleInterageDetail={(warranty)=> handleInterageDetail(warranty)}
+            uploadedImages={uploadedImages}
+            setUploadedImages={(image) => setUploadedImages(image)}
+
         />
     )
 
