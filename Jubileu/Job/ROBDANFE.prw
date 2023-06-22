@@ -43,7 +43,7 @@ User Function ROBDANFE(cNota, cSerie, cPasta, ccnpj)
     //Se existir nota
     If ! Empty(cNota)
         //Pega o IDENT da empresa
-        cIdent := If(cfilant=='0101','000001','000002') //RetIdEnti()
+        cIdent := RetIdEnti() //If(cfilant=='0101','000001','000002') //RetIdEnti()
          
         //Se o último caracter da pasta não for barra, será barra para integridade
         If SubStr(cPasta, Len(cPasta), 1) != "\"
