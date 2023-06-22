@@ -68,16 +68,27 @@ export const CartProvider: React.FC <Props> = ({ children }) => {
         let customerData: any;
       
         if (userContext.type === 'C') {
-          customerData = await apiCustomer();
+            customerData = await apiCustomer();
+
+            const custAux = JSON.parse(customerData)
+            
+            const payment = {
+                code: custAux.payment,
+                form: custAux.payment_description,
+                id: custAux.payment,
+                description: custAux.payment_description,
+                mark: true
+            }
+            setPaymentContext(payment);
           
         } else {
-          customerData = localStorage.getItem('customer');
+            customerData = localStorage.getItem('customer');
         }
-      
+
         if (customerData) {
-          setCustomerContext(JSON.parse(customerData));
+            setCustomerContext(JSON.parse(customerData));
         } else {
-          setCustomerContext(null);
+            setCustomerContext(null);
         }
     };
 
