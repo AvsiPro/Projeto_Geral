@@ -371,7 +371,7 @@ export const TableComponent = styled.div<{windowDimensions: any, modal: boolean,
             padding:0px;
         `
     };
-  `;
+`;
   
   
 export const TableWrapper = styled.div<{windowDimensions: any}>`
@@ -642,6 +642,13 @@ export const BodyOrderButtonQty = styled.button<{delete: boolean, theme: any}>`
     }
 `
 
+export const BodyOrderButtonAddComp = styled.div`
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin-top:20px;
+`
+
 export const BodyOrderButtonAddMore = styled.button`
     background-color:transparent;
     border: none;
@@ -652,12 +659,59 @@ export const BodyOrderButtonAddMore = styled.button`
     justify-content:center;
     font-weight:bold;
     font-size:18px;
-    margin-top:20px;
-
     &:hover {
         color:${(props) => props.theme.primary};
     }
 `
+
+export const BodyOrderTotalsComponent = styled.div`
+    display:flex;
+    flex-direction:row;
+    align-items:center;
+    justify-content: space-between;
+    width:100%;
+    margin-top:30px;
+`
+
+export const BodyOrderTotalsLeft = styled.div`
+    display:flex;
+    flex-direction:row;
+    flex:2;
+`
+
+export const BodyOrderTotalsRight = styled.div`
+    display:flex;
+    flex-direction:row;
+    justify-content: space-around;
+    flex:1;
+`
+
+export const BodyOrderInputDiscount = styled.input`
+    font-size:16px;
+    border: none;
+    border-bottom :2px solid #FF932F;
+    width:10%;
+    bottom:5px;
+    color: #FF932F;
+    text-align:center;
+    font-weight:bold;
+`;
+
+export const OrderBodyInput = styled.input`
+    width: 100%;
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    font-size: 1rem;
+    border: none;
+    border-bottom: 1px solid #ccc;
+    font-family: 'Roboto', sans-serif;
+    background-color: #fff;
+
+    &:focus {
+    outline: none;
+    border-bottom: 2px solid #ffaf0f;
+    }
+`;
 
 /** FinancialBodyModal **/
 export const BodyFinTable = styled.div<{backGround: boolean}>`
@@ -998,6 +1052,11 @@ export const TextInput = styled.textarea<{height: number}>`
     border-radius: 10px;
     width: 100%;
     padding:10px;
+
+      &:focus {
+        outline: none;
+        border: 2px solid #ffaf0f;
+    }
 `;
 
 /** dropzone **/
@@ -1093,3 +1152,22 @@ export const WDDetailsColumn = styled.div`
     align-items:flex-start;
     flex-direction:column;
 `
+
+export const financialBodyComponent = styled.div<{windowDimensions: any, modal: boolean,isMobile?: boolean}>`
+    background-color: #fff;
+    overflow: auto;
+    width: ${({ modal }) => (modal ? '100%' : 'auto')};
+    max-height: ${({ windowDimensions }) => (windowDimensions.height * 75) / 100}px;
+  
+    ${({ isMobile, windowDimensions, modal }) => !modal &&
+        css`
+            max-width: ${isMobile ? windowDimensions.width : (windowDimensions.width * 80) / 100}px;
+        `
+    };
+
+    ${({ isMobile, modal }) => (modal && isMobile ) &&
+        css`
+            padding:0px;
+        `
+    };
+`;

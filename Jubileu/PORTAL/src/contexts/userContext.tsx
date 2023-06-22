@@ -17,9 +17,10 @@ interface PropAuthContext{
     email: string;
     user: string;
     password: string;
+    code: string;
 }
 
-const defaultAuthDetail = { token: '', name: '', address: '', phone: '', email: '', user: '', password: ''};
+const defaultAuthDetail = { token: '', name: '', address: '', phone: '', email: '', user: '', password: '', code: ''};
 
 export const UserContext = createContext<UserContextProps>({
     userContext: defaultAuthDetail,

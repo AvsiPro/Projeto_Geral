@@ -110,6 +110,7 @@ export interface PropAuthContext{
     email: string;
     user: string;
     password: string;
+    code: string;
 }
 
 export interface PropItemCartContext{
@@ -148,4 +149,6 @@ export interface FormDataCustomer {
     another_cep: string;
     another_district: string;
     token: string;
+    payment: string;
+    payment_description: string;
 }

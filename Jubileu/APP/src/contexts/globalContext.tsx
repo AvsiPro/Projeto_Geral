@@ -42,7 +42,7 @@ type AppContextType = {
   setOrcamentoSelected: React.Dispatch<React.SetStateAction<any>>;
 };
 
-const defaultAuthDetail = { token: '', name: '', address: '', phone: '', email: '', user: '', password: ''};
+const defaultAuthDetail = { token: '', name: '', address: '', phone: '', email: '', user: '', password: '', code: ''};
 
 const AppContext = createContext<AppContextType>({
   authDetail: defaultAuthDetail,

@@ -52,10 +52,10 @@ WsMethod POST WsReceive RECEIVE WsService WSAPP01
             If Z01->(DbSeek(xFilial('Z01')+AvKey(Alltrim(Upper(cUser)),'Z01_USER')))
                 If Alltrim(cPass) == Alltrim(Z01->Z01_PASS)
                     If Z01->Z01_TYPE == 'V'
-                        cQuery := " SELECT A3_NREDUZ NOME, A3_EMAIL EMAIL, A3_END ENDER, A3_BAIRRO BAIRRO, A3_MUN MUN, A3_DDDTEL DDD, A3_TEL TEL FROM "+RetSqlName('SA3')+" "
+                        cQuery := " SELECT A3_COD CODE, A3_NREDUZ NOME, A3_EMAIL EMAIL, A3_END ENDER, A3_BAIRRO BAIRRO, A3_MUN MUN, A3_DDDTEL DDD, A3_TEL TEL FROM "+RetSqlName('SA3')+" "
                         cQuery += " WHERE A3_TOKEN = '"+Z01->Z01_TOKEN+"'
                     Else
-                        cQuery := " SELECT A1_NREDUZ NOME, A1_EMAIL EMAIL, A1_END ENDER, A1_BAIRRO BAIRRO, A1_MUN MUN, A1_DDD DDD, A1_TEL TEL FROM "+RetSqlName('SA1')+" "
+                        cQuery := " SELECT A1_COD CODE, A1_NREDUZ NOME, A1_EMAIL EMAIL, A1_END ENDER, A1_BAIRRO BAIRRO, A1_MUN MUN, A1_DDD DDD, A1_TEL TEL FROM "+RetSqlName('SA1')+" "
                         cQuery += " WHERE A1_TOKEN = '"+Z01->Z01_TOKEN+"'
                     EndIf
 
@@ -65,6 +65,7 @@ WsMethod POST WsReceive RECEIVE WsService WSAPP01
                     If (cAliasTMP)->(!Eof())
                         cResultAux := '"user" : "'+Alltrim(cUser)+'",'
                         cResultAux += '"password" : "'+Alltrim(cPass)+'",'
+                        cResultAux += '"code" : "'+Alltrim((cAliasTMP)->CODE)+'",'
                         cResultAux += '"token" : "'+Z01->Z01_TOKEN+'",'
                         cResultAux += '"name" : "'+fRemoveCarc((cAliasTMP)->NOME)+'",'
                         cResultAux += '"email" : "'+Alltrim(Lower((cAliasTMP)->EMAIL))+'",'

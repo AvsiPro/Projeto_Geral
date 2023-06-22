@@ -18,6 +18,8 @@ import { useMediaQuery } from 'react-responsive';
 
 import DeleteOrderPopover from "../popovers/deleteOrderPopover";
 import { UserContext } from "../contexts/userContext";
+import api from "../services/api";
+import { ClipLoader } from "react-spinners";
 
 const Orders: React.FC = () => {
 
@@ -28,11 +30,24 @@ const Orders: React.FC = () => {
 
   const [data, setData] = useState<any>([])
   const [load, setLoad] = useState<boolean>(false)
+  const [loadOrder, setLoadOrder] = useState<boolean>(false)
   const [page, setPage] = useState<number>(1)
+
+  const [headerAlert, setHeaderAlert] = useState <string>('')
+  const [bodyAlert, setBodyAlert] = useState <string>('')
+  const [typeAlert, setTypeAlert] = useState <string>('')
 
   const [selected, setSelected] = useState(null)
   const [showAlert, setShowAlert] = useState <boolean>(false)
   const [showModal, setShowModal] = useState <boolean>(false)
+  const [financial, setFinancial] = useState <any>(null)
+
+  const [step2, setStep2] = useState <boolean>(false)
+  const [inputObsValue, setInputObsValue] = useState('');
+  const [inputEndValue, setInputEndValue] = useState('');
+  
+  const [discountPercent, setDiscountPercent] = useState<number>(0);
+
   const [fieldsOrders, setFieldsOrders] = useState <any>([
     { 
       id: 'code',
@@ -96,7 +111,7 @@ const Orders: React.FC = () => {
     }
       
     const apiData = async() => {
-      const returnResult: any = await fetchData(page, userContext.token)
+      const returnResult: any = await fetchData(page, userContext.token, userContext.type)
       
       if(returnResult.length > 0){
         setData((prevData: any) => [...prevData, ...returnResult]);
@@ -132,7 +147,7 @@ const Orders: React.FC = () => {
   };
 
   const handleSearch = async (searchText: string) => {
-    let returnResult: any = await fetchSearch(searchText, userContext.token)
+    let returnResult: any = await fetchSearch(searchText, userContext.token, userContext.type);
 
     if(returnResult.length > 0) {
       setData(returnResult);
@@ -176,16 +191,22 @@ const Orders: React.FC = () => {
       return(
         <div style={{marginTop: isMobile ? 15 : 0}}>
           <Button onClick={() => setShowModal(true)} variant="outline-primary">Novo Pedido</Button>{' '}
-          <Button onClick={() => {}} variant="outline-primary">Alterar</Button>{' '}
           <Button onClick={() => {}} variant="outline-primary">Visualizar</Button>{' '}
-          <Button onClick={() => {}} variant="outline-danger">Excluir</Button>
         </div>
       )
     }
   }
 
-  const handleShowAlert = () => {
-    setShowAlert(!showAlert)
+  const handleCloseAlert = () => {
+    
+    if(step2 && typeAlert === 'success') {
+      window.location.reload()
+    }
+
+    setBodyAlert('')
+    setHeaderAlert('')
+    setTypeAlert('')
+    setShowAlert(false)
   }
 
   useEffect(() => {
@@ -199,6 +220,12 @@ const Orders: React.FC = () => {
 
     if(!!customerContext){
       auxField.map((_, index) => {
+
+        if(userContext.type === 'C'){
+            auxField[index].enabled = false
+            auxField[index].search = false
+        }
+
         if(auxField[index].id === 'code'){
           auxField[index].value = customerContext.code
 
@@ -226,6 +253,7 @@ const Orders: React.FC = () => {
 
 
   const handleConfirmSelect = (selected: any) => {
+    
     if(selected.id === 'code'){
       setCustomerContext(selected.selected)
       localStorage.setItem('customer', JSON.stringify(selected.selected));
@@ -272,6 +300,14 @@ const Orders: React.FC = () => {
       setPaymentContext(null);
       setCartContext([])
 
+      const auxField = [...fieldsOrders]
+
+      auxField.map((_, index) => {
+        auxField[index].value = ''
+      });
+
+      setFieldsOrders(auxField)
+
       localStorage.setItem('customer', JSON.stringify(null));
       localStorage.setItem('payment', JSON.stringify(null));
       localStorage.setItem('cartdata', JSON.stringify([]));
@@ -279,26 +315,159 @@ const Orders: React.FC = () => {
   }
 
 
-  const fGeraPedido = () => {
-    console.log(cartContext)
-    console.log(customerContext)
-    console.log(paymentContext)
+  const handleStep2 = () => {
+    setHeaderAlert('')
+
+    if(!customerContext) {
+      setTypeAlert('warning')
+      setBodyAlert('Necessário selecionar um cliente')
+      setShowAlert(true)
+      return
+    }
+
+    if(!paymentContext) {
+      setTypeAlert('warning')
+      setBodyAlert('Necessário selecionar uma condição de pagamento')
+      setShowAlert(true)
+      return
+    }
+
+    if(cartContext.length <= 0) {
+      setTypeAlert('warning')
+      setBodyAlert('Necessário selecionar ao menos um produto')
+      setShowAlert(true)
+      return
+    }
+
+    setStep2(true)
+
+    /*
+    setBodyAlert('Pedido criado com sucesso!')
+    setHeaderAlert('Sucesso')
+    setTypeAlert('success')
     setShowAlert(!showAlert)
+    */
   }
 
 
+  const fGeraPedido = async() => {
+    setLoadOrder(true)
+    const items = cartContext.map((item: any) => {
+      return {
+          produto: item.code,
+          quantidade: item.selected_quantity,
+          valor: item.price
+      };
+    });
+
+    const sendJson = {
+        endereco_entrega: inputEndValue,
+        cep_entrega: customerContext.another_cep,
+        bairro_entrega: customerContext.another_district,
+        condpagto: paymentContext.code,
+        desconto: discountPercent,
+        numorc: '',
+        orcamento: 'N',
+        observation: inputObsValue,
+        token: userContext.token,
+        cliente: {
+            filial: customerContext.branch,
+            endereco: customerContext.address,
+            bairro: customerContext.district,
+            cep: customerContext.cep,
+            uf: customerContext.uf,
+            cidade: customerContext.city,
+            tel: customerContext.phone,
+            cnpj: customerContext.cnpj,
+            codigo: customerContext.code,
+            contato: customerContext.contact,
+            email: customerContext.email,
+            nome_fantasia: customerContext.short_name,
+            razao_social: customerContext.name
+        },
+        items: items
+    }
+
+    try{
+      const response = await api.post("/WSAPP12", sendJson);
+      const receive = response.data;
+
+      if (receive.status.code === '#200') {
+        handleClearCart('yes')
+        setBodyAlert('Pedido gerado com sucesso '+receive.status.message)
+        setHeaderAlert('Sucesso')
+        setTypeAlert('success')
+        setShowAlert(!showAlert)
+
+      } else {
+        setBodyAlert(receive.status.message)
+        setHeaderAlert('Erro')
+        setTypeAlert('danger')
+        setShowAlert(!showAlert)
+      }
+      
+    } catch(error){
+        setBodyAlert('Erro na comunicação com o servidor, contate um administrador')
+        setHeaderAlert('Erro')
+        setTypeAlert('danger')
+        setShowAlert(!showAlert)
+    }
+    
+    setLoadOrder(false)
+  }
+
   const ToolsModal = (
     <>
-      <Button variant="" onClick={() => setShowModal(false)}>cancelar</Button>{' '}
-      <DeleteOrderPopover handleClick={handleClearCart}/>{' '}
-      <Button variant="outline-primary" onClick={fGeraPedido}>Confirmar</Button>{' '}
+      { financial ?
+        <Button variant="outline-danger" onClick={() => setFinancial(null)}>Voltar</Button>
+      
+      : !step2 ?
+        <>
+          <Button variant="" onClick={() => setShowModal(false)}>Cancelar</Button>{' '}
+          <DeleteOrderPopover handleClick={handleClearCart}/>{' '}
+          <Button variant="outline-primary" onClick={handleStep2}>Confirmar</Button>{' '}
+        </>
+      :
+        <>
+          <Button variant="" onClick={() => setStep2(false)}>Voltar</Button>{' '}
+          <Button variant="outline-primary" onClick={fGeraPedido}>
+             { loadOrder ?
+                  <ClipLoader
+                    color={'#0d6efd'}
+                    loading={loadOrder}
+                    size={22}
+                  />
+                : 'Gerar Pedido'
+              }
+          
+          </Button>{' '}
+        </>
+      }
     </>
   )
+
+  const handleSetFinancial = (item: any) => {
+    setBodyAlert('Cliente possui títulos em aberto')
+    setHeaderAlert('Erro')
+    setTypeAlert('danger')
+    setShowAlert(!showAlert)
+    setFinancial(item)
+  }
+
 
   const BodyModal = (
     <OrdersBodyModal
       fieldsOrders={fieldsOrders}
       handleConfirmSelect={handleConfirmSelect}
+      financial={financial}
+      setFinancial={(item: any) => handleSetFinancial(item)}
+      step2={step2}
+      inputObsValue={inputObsValue}
+      setInputObsValue={(change) => setInputObsValue(change)}
+      inputEndValue={inputEndValue}
+      setInputEndValue={(change) => setInputEndValue(change)}
+      discountPercent={discountPercent}
+      setDiscountPercent={(change) => setDiscountPercent(change)}
     />
   )
 
@@ -317,12 +486,12 @@ const Orders: React.FC = () => {
         <Header/>
 
         <AlertComponent
-          header='Sucesso'
-          body='Pedido criado com sucesso!'
+          header={headerAlert}
+          body={bodyAlert}
           textButton='Fechar'
-          type='success'
+          type={typeAlert}
           showAlert={showAlert}
-          handleShowAlert={handleShowAlert}
+          handleShowAlert={handleCloseAlert}
         />
         
         {/* Tablea */}
@@ -342,12 +511,12 @@ const Orders: React.FC = () => {
     </Style.OrderComponent>
 
     <ModalComponent
-        show={showModal}
-        onHide={() => setShowModal(false)}
-        title='Novo pedido'
-        Body={BodyModal}
-        Tools={ToolsModal}
-      />
+      show={showModal}
+      onHide={() => setShowModal(false)}
+      title={financial ? 'Títulos em aberto' : 'Novo pedido'}
+      Body={BodyModal}
+      Tools={ToolsModal}
+    />
     </>
   );
 };

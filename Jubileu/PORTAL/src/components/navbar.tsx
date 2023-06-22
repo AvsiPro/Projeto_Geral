@@ -123,6 +123,11 @@ const Navbar: React.FC = () => {
           title: 'Faturamento',
           link: '/invoicescustomer',
           icon: <TbFileInvoice size={25} color={colorIcon('/invoicescustomer')}/>
+        },
+        {
+          title: 'Pedidos',
+          link: '/orders',
+          icon: <AiOutlineShoppingCart size={22} color={colorIcon('/orders')}/>
         }
       ]
     },
