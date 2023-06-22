@@ -46,7 +46,6 @@ const FinancialCustomer: React.FC = () => {
             >
               <FinancialBodyModal
                 financialCustomer={financialCustomer}
-                type={'C'}
               />
             </Style.CustomersComponent>
           </div>

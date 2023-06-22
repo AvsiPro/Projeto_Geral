@@ -43,18 +43,17 @@ const Header: React.FC = () => {
             
             <Style.HeaderRightIcons>
                 
-                { userContext.type === 'V' &&
-                    <Style.HeaderButtonCart onClick={() => cartContext.length > 0 && setNavigate('/orders')}>
-                        { cartContext.length > 0 &&
-                            <Style.HeaderElipseNotify />
-                        }
+                <Style.HeaderButtonCart onClick={() => cartContext.length > 0 && setNavigate('/orders')}>
+                    { cartContext.length > 0 &&
+                        <Style.HeaderElipseNotify />
+                    }
 
-                        <AiOutlineShoppingCart
-                            size={22}
-                            color={themeAux.text} 
-                        />
-                    </Style.HeaderButtonCart>
-                }
+                    <AiOutlineShoppingCart
+                        size={22}
+                        color={themeAux.text} 
+                    />
+                </Style.HeaderButtonCart>
+                
 
                 <Style.HeaderProfileImg>
                     <Style.HeaderProfileText>

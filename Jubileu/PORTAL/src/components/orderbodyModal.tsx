@@ -15,17 +15,39 @@ import SearchPopover from "../popovers/searchPopover";
 import { WindowDimensionsContext } from "../contexts/WindowDimensionsContext";
 import { CartContext } from "../contexts/CartContext";
 import { useMediaQuery } from "react-responsive";
+import FinancialBodyModal from "./financialBodyModal";
+import InputText from "./inputComponent";
+import { UserContext } from "../contexts/userContext";
 
 interface Props {
   fieldsOrders: any;
   handleConfirmSelect: (selected: any) => void;
+  financial: any;
+  setFinancial: (item: any) => void;
+  step2: boolean;
+  inputObsValue: string;
+  setInputObsValue: (value: any) => void;
+  inputEndValue: string;
+  setInputEndValue: (value: any) => void;
+  discountPercent: number;
+  setDiscountPercent: (value: any) => void;
 }
 
 const OrdersBodyModal: React.FC<Props> = ({
   fieldsOrders,
   handleConfirmSelect,
+  financial,
+  setFinancial,
+  step2,
+  inputObsValue,
+  setInputObsValue,
+  inputEndValue,
+  setInputEndValue,
+  discountPercent,
+  setDiscountPercent
 }) => {
   const { windowDimensions } = useContext(WindowDimensionsContext);
+  const { userContext } = useContext(UserContext)
   const { setCartContext, cartContext } = useContext(CartContext);
   const isMobile = useMediaQuery({ query: '(max-width: 767px)' });
 
@@ -35,7 +57,7 @@ const OrdersBodyModal: React.FC<Props> = ({
   const [itensCart, setItensCart] = useState<any>([]);
   const [showItens, setShowItens] = useState<boolean>(false);
   const [showHeader, setShowHeader] = useState<boolean>(false);
-
+  const [discountInput, setDiscountInput] = useState<string>('');
 
   useEffect(() => {
     if (!load) {
@@ -119,7 +141,7 @@ const OrdersBodyModal: React.FC<Props> = ({
     return (
       <div style={{marginTop: isMobile ? 15 : 0}}>
         <Button onClick={handleConfirm} variant={selecionado ? "outline-primary" : "outline-danger"}>
-          {selecionado ? 'Adicionar' : 'Cancelar'}
+          {selecionado ? 'Adicionar produto' : 'Cancelar'}
         </Button>{" "}
       </div>
     );
@@ -195,6 +217,17 @@ const OrdersBodyModal: React.FC<Props> = ({
     localStorage.setItem('cartdata', JSON.stringify(updatedItems));
   }
 
+
+  /** responsavel pela quantidade total **/
+  const sumQuantityTotal = (): number => {
+    return itensCart.reduce((total: number, item: any) => total + item.selected_quantity, 0);
+  }
+
+  /** responsavel pelo vlr total **/
+  const sumValueTotal = (): number => {
+    return itensCart.reduce((total: number, item: any) => total + item.price * item.selected_quantity, 0);
+  }
+
   const Header = () => {
     return(
       <Style.BodyOrderContainer isMobile={isMobile}>
@@ -219,7 +252,7 @@ const OrdersBodyModal: React.FC<Props> = ({
                     <SearchPopover
                       title={field.label}
                       field={field}
-                      handleConfirmSelect={handleConfirmSelect}
+                      handleConfirmSelect={handleConfirmSel}
                     />
                   )}
                 </Style.BodyOrderInputWrapper>
@@ -231,106 +264,209 @@ const OrdersBodyModal: React.FC<Props> = ({
     )
   }
 
+
+  const handleConfirmSel = (item: any) => {
+    if(item.id === 'payment'){
+      handleConfirmSelect(item)
+
+    }else {
+      if(item.selected.financial.length > 0) {
+        setFinancial(item.selected)
+      
+      }else{
+        handleConfirmSelect(item)
+      }
+    }
+  }
+
+
+  /** seta o disconto **/
+  const handleDiscount = (text: string) => {
+    let discountValue: number = 0
+    setDiscountInput(text);
+
+    const discountAux: number = parseFloat(text.replace(",", "."))
+
+    if(discountAux > 0){
+        discountValue = discountAux
+    }
+
+    setDiscountPercent(discountValue)
+  };
+
+
+  /** calcula e seta o disconto de acordo com a porcentagem **/
+  const sumDiscount = () => {
+    let discountValue: number = 0
+    const discountAux: number = parseFloat(discountInput.replace(",", "."))
+
+    if(discountAux > 0){
+        const vlrTotal = sumValueTotal()
+        discountValue = Math.min(((vlrTotal * discountAux) / 100), vlrTotal)
+    }
+
+    return discountValue
+  }
+
   return (
     <>
-    
-      { 
-        isMobile &&(
-          <div style={{marginBottom:10, paddingLeft:5, paddingRight:5}}>
-            { showHeader
-              ? <Button onClick={() => setShowHeader(false)} variant="outline-primary">Ocultar Cabeçalho</Button>
-              : <Button onClick={() => setShowHeader(true)} variant="outline-primary">Exibir Cabeçalho</Button>
-            }
-          </div>
-        )
-      }
+    { !!financial ? 
+        <FinancialBodyModal
+          financialCustomer={financial}
+        />
+      : !step2 ?
+        <>
+        
+          { 
+            isMobile &&(
+              <div style={{marginBottom:10, paddingLeft:5, paddingRight:5}}>
+                { showHeader
+                  ? <Button onClick={() => setShowHeader(false)} variant="outline-primary">Ocultar Cabeçalho</Button>
+                  : <Button onClick={() => setShowHeader(true)} variant="outline-primary">Exibir Cabeçalho</Button>
+                }
+              </div>
+            )
+          }
 
-      {isMobile && showHeader || !isMobile ? <Header /> : <></>}
+          {isMobile && showHeader || !isMobile ? <Header /> : <></>}
 
-      <Style.BodyOrderItensModal
-        windowDimensions={windowDimensions} 
-        isMobile={isMobile}
-      >
-        {!showItens ? (
-          <Table
-            data={data}
-            fields={fields}
-            title={"Produtos"}
-            load={load}
-            handleSearch={handleSearch}
-            handleMark={handleMark}
-            ToolsTable={ToolsTable}
-            modal={true}
+          <Style.BodyOrderItensModal
+            windowDimensions={windowDimensions} 
+            isMobile={isMobile}
+          >
+            {!showItens ? (
+              <Table
+                data={data}
+                fields={fields}
+                title={"Produtos"}
+                load={load}
+                handleSearch={handleSearch}
+                handleMark={handleMark}
+                ToolsTable={ToolsTable}
+                modal={true}
+              />
+            ) : (
+
+              <Style.BodyOrderContainerItens isMobile={isMobile}>
+              {itensCart.map((item: any, index: number) => {
+                if (!item){
+                  setShowItens(false)
+                } else{
+
+                  return(
+                    <Style.BodyOrderProducts key={index}>
+                      <Style.BodyOrderProductContainer>
+                        <Style.BodyOrderProductCode>
+                          {item.code}
+                        </Style.BodyOrderProductCode>
+
+                        <Style.BodyOrderProductDesc>
+                          {item.description}
+                        </Style.BodyOrderProductDesc>
+                      </Style.BodyOrderProductContainer>
+
+                      <Style.BodyOrderQtyTools>
+                        <Style.BodyOrderQtyPriceTools>
+                          <Style.BodyOrderProductPrice>
+                            {CurrencyFormat(item.price * item.selected_quantity)}
+                          </Style.BodyOrderProductPrice>
+                          <Style.BodyOrderButonsQty>
+                            <Style.BodyOrderButtonQty
+                              onClick={() => handleMinus(index)}
+                              delete={!item.selected_quantity || item.selected_quantity === 1}
+                            >
+                              { !item.selected_quantity || item.selected_quantity === 1 
+                                ? <BsTrash color="white" style={{ width: 15, height: 15 }}/>
+                                : <TiMinus color="white" style={{ width: 15, height: 15 }}/>
+                              }
+                              
+                            </Style.BodyOrderButtonQty>
+
+                            <Style.BodyOrderInputQty
+                                id={item.id}
+                                type="number"
+                                value={item.selected_quantity}
+                                onChange={(event) => handleQuantityChange(item.id, event.target.value)}
+                                disabled={isMobile}
+                                isMobile={isMobile}
+                            />
+
+                            <Style.BodyOrderButtonQty 
+                              onClick={() => handleMore(index)}
+                              delete={false}
+                            >
+                              <TiPlus
+                                color="white"
+                                style={{ width: 15, height: 15 }}
+                              />
+                            </Style.BodyOrderButtonQty>
+                          </Style.BodyOrderButonsQty>
+                        </Style.BodyOrderQtyPriceTools>
+                      </Style.BodyOrderQtyTools>
+                    </Style.BodyOrderProducts>
+                  )
+                }
+              })}
+              <Style.BodyOrderTotalsComponent>
+                <Style.BodyOrderTotalsLeft>
+                  { userContext.type === 'V' &&
+                    <>                    
+                      <Style.BodyOrderProductDesc>
+                        Desconto %
+                      </Style.BodyOrderProductDesc>
+
+
+                      <Style.BodyOrderInputDiscount
+                          type="number"
+                          value={discountInput}
+                          onChange={(event) => handleDiscount(event.target.value)}
+                      />
+                    </>
+
+                  }
+                </Style.BodyOrderTotalsLeft>
+
+                <Style.BodyOrderTotalsRight>
+                  <Style.BodyOrderProductDesc>
+                    {`Quantidade Total: ${sumQuantityTotal()}`}
+                  </Style.BodyOrderProductDesc>
+
+                  <Style.BodyOrderProductDesc>
+                    {`Valor Total: ${CurrencyFormat(sumValueTotal() - sumDiscount() )}`}
+                  </Style.BodyOrderProductDesc>
+                </Style.BodyOrderTotalsRight>
+
+              </Style.BodyOrderTotalsComponent>
+
+              <Style.BodyOrderButtonAddComp>
+                <Style.BodyOrderButtonAddMore onClick={() => {setShowItens(false)}}>
+                  Adicionar mais produtos
+                </Style.BodyOrderButtonAddMore>
+              </Style.BodyOrderButtonAddComp>      
+            </Style.BodyOrderContainerItens>
+              
+            )}
+          </Style.BodyOrderItensModal>
+        </>
+      :
+        <>
+          <InputText
+            label="Digite suas observações..."
+            placeholder=""
+            value={inputObsValue}
+            onChange={(change) => setInputObsValue(change)}
+            height={150}
+            mb={30}
           />
-        ) : (
 
-          <Style.BodyOrderContainerItens isMobile={isMobile}>
-          {itensCart.map((item: any, index: number) => {
-            if (!item){
-              setShowItens(false)
-            } else{
-              return(
-                <Style.BodyOrderProducts key={index}>
-                  <Style.BodyOrderProductContainer>
-                    <Style.BodyOrderProductCode>
-                      {item.code}
-                    </Style.BodyOrderProductCode>
-
-                    <Style.BodyOrderProductDesc>
-                      {item.description}
-                    </Style.BodyOrderProductDesc>
-                  </Style.BodyOrderProductContainer>
-
-                  <Style.BodyOrderQtyTools>
-                    <Style.BodyOrderQtyPriceTools>
-                      <Style.BodyOrderProductPrice>
-                        {CurrencyFormat(item.price * item.selected_quantity)}
-                      </Style.BodyOrderProductPrice>
-                      <Style.BodyOrderButonsQty>
-                        <Style.BodyOrderButtonQty
-                          onClick={() => handleMinus(index)}
-                          delete={!item.selected_quantity || item.selected_quantity === 1}
-                        >
-                          { !item.selected_quantity || item.selected_quantity === 1 
-                            ? <BsTrash color="white" style={{ width: 15, height: 15 }}/>
-                            : <TiMinus color="white" style={{ width: 15, height: 15 }}/>
-                          }
-                          
-                        </Style.BodyOrderButtonQty>
-
-                        <Style.BodyOrderInputQty
-                            id={item.id}
-                            type="number"
-  //                          onChange={handleInputChange}
-                            value={item.selected_quantity}
-                            onChange={(event) => handleQuantityChange(item.id, event.target.value)}
-                            disabled={isMobile}
-                            isMobile={isMobile}
-                        />
-
-                        <Style.BodyOrderButtonQty 
-                          onClick={() => handleMore(index)}
-                          delete={false}
-                        >
-                          <TiPlus
-                            color="white"
-                            style={{ width: 15, height: 15 }}
-                          />
-                        </Style.BodyOrderButtonQty>
-                      </Style.BodyOrderButonsQty>
-                    </Style.BodyOrderQtyPriceTools>
-                  </Style.BodyOrderQtyTools>
-                </Style.BodyOrderProducts>
-              )
-            }
-          })}
-          <Style.BodyOrderButtonAddMore onClick={() => {setShowItens(false)}}>
-            Adicionar mais produtos
-          </Style.BodyOrderButtonAddMore>
-        </Style.BodyOrderContainerItens>
-          
-        )}
-      </Style.BodyOrderItensModal>
+        <Style.OrderBodyInput
+              onChange={(change) => setInputEndValue(change.target.value)}
+              value={inputEndValue} 
+              type="text"
+              placeholder="Outro endereço de entrega (Opcional)"
+            />
+        </>
+      }
     </>
   );
 };

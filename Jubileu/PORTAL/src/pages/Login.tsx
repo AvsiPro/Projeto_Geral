@@ -85,8 +85,22 @@ const Login: React.FC = () => {
           </Style.LoginTitle>
 
           <Style.LoginForm>
-            <Style.LoginInput onChange={(change)=> setUser(change.target.value)} value={user} type="text" placeholder="Username" autoComplete="username"/>
-            <Style.LoginInput onChange={handlePasswordChange} value={pass} type="password" placeholder="Password" autoComplete="current-password"/>
+            <Style.LoginInput
+              onChange={(change)=> setUser(change.target.value)}
+              value={user}
+              type="text"
+              placeholder="Username"
+              autoComplete="username"
+            />
+
+            <Style.LoginInput
+              onChange={handlePasswordChange}
+              value={pass} 
+              type="password"
+              placeholder="Password"
+              autoComplete="current-password"
+            />
+
             <Style.LoginButton onClick={handleAuth}>
               { load ?
                   <ClipLoader

@@ -120,7 +120,7 @@ Default oself:token		:=	''
 	cQuery := " SELECT A1_COD, A1_LOJA, A1_END, A1_BAIRRO, A1_COMPLEM, A1_CGC, A1_INSCR, "
 	cQuery += " A1_NOME, A1_NREDUZ, A1_MUN, A1_EST, A1_CEP, A1_CONTATO, A1_EMAIL, A1_DDD, "
 	cQuery += " A1_TEL, A1_ULTCOM, A1_PRICOM, A1_RISCO, A1_LC, A1_SALDUP, A1_MCOMPRA, "
-	cQuery += " A1_NROCOM, A1_ATR, A1_MATR, A1_PAGATR "
+	cQuery += " A1_NROCOM, A1_ATR, A1_MATR, A1_PAGATR, A1_COND "
 	cQuery += " FROM "+RetSqlName('SA1')+" SA1 "
 	cQuery += " WHERE SA1.D_E_L_E_T_ = ' ' "
 	cQuery += " AND SA1.A1_MSBLQL <> '1' "+cWhere
@@ -139,6 +139,8 @@ Default oself:token		:=	''
 			'"'+Alltrim(EncodeUTF8((cAliasTMP)->A1_COD))+'",'+;
 			'"'+Alltrim(EncodeUTF8((cAliasTMP)->A1_CGC))+'"'+;
 		'}'
+
+		cCond := Iif(Empty((cAliasTMP)->A1_COND),'000',(cAliasTMP)->A1_COND)
 		
 		fGeraResult(;
 			@aListCli,;
@@ -169,7 +171,9 @@ Default oself:token		:=	''
 				(cAliasTMP)->A1_NROCOM,;
 				(cAliasTMP)->A1_ATR,;
 				(cAliasTMP)->A1_MATR,;
-				(cAliasTMP)->A1_PAGATR;
+				(cAliasTMP)->A1_PAGATR,;
+				cCond,;
+				Posicione('SE4',1,FwxFilial('SE4')+cCond, 'Alltrim(E4_COND)');
 			};
 		)
 
@@ -257,7 +261,9 @@ Static Function fConsulBraApi(cSearch, aListCli)
 				0,;
 				0,;
 				0,;
-				0;
+				0,;
+				'',;
+				'';
 			};
 		)
 	EndIf
@@ -267,36 +273,38 @@ Return
 
 Static Function fGeraResult(aListCli, nAux, aListAux)
 
-	aListCli[nAux]['id']	            := aListAux[1]
-	aListCli[nAux]['code']	            := aListAux[2]
-	aListCli[nAux]['branch']            := aListAux[3]
-	aListCli[nAux]['address']           := aListAux[4]
-	aListCli[nAux]['district']          := aListAux[5]
-	aListCli[nAux]['complement']        := aListAux[6]
-	aListCli[nAux]['cnpj']              := aListAux[7]
-	aListCli[nAux]['state_regist']      := aListAux[8]
-	aListCli[nAux]['name']              := aListAux[9]
-	aListCli[nAux]['short_name']        := aListAux[10]
-	aListCli[nAux]['city']              := aListAux[11]
-	aListCli[nAux]['uf']                := aListAux[12]
-	aListCli[nAux]['cep']               := aListAux[13]
-	aListCli[nAux]['contact']           := aListAux[14]
-	aListCli[nAux]['email']             := aListAux[15]
-	aListCli[nAux]['phone']             := aListAux[16]
-	aListCli[nAux]['last_purchase']     := aListAux[17]
-	aListCli[nAux]['first_purchase']    := aListAux[18]
-	aListCli[nAux]['risk']              := aListAux[19]
-	aListCli[nAux]['credit_limit']      := aListAux[20]
-	aListCli[nAux]['balance']           := aListAux[21]
-	aListCli[nAux]['biggest_purchase']  := aListAux[22]
-	aListCli[nAux]['amount_purchases']  := aListAux[23]
-	aListCli[nAux]['amount_delays']     := aListAux[24]
-	aListCli[nAux]['biggest_delays']    := aListAux[25]
-	aListCli[nAux]['late_payments']     := aListAux[26]
-	aListCli[nAux]['financial']			:= fTitulos(aListAux[2],aListAux[3])
-	aListCli[nAux]['another_address']   := ''
-	aListCli[nAux]['another_cep']   	:= ''
-	aListCli[nAux]['another_district']  := ''
+	aListCli[nAux]['id']	            	:= aListAux[1]
+	aListCli[nAux]['code']	            	:= aListAux[2]
+	aListCli[nAux]['branch']            	:= aListAux[3]
+	aListCli[nAux]['address']           	:= aListAux[4]
+	aListCli[nAux]['district']          	:= aListAux[5]
+	aListCli[nAux]['complement']        	:= aListAux[6]
+	aListCli[nAux]['cnpj']              	:= aListAux[7]
+	aListCli[nAux]['state_regist']      	:= aListAux[8]
+	aListCli[nAux]['name']              	:= aListAux[9]
+	aListCli[nAux]['short_name']        	:= aListAux[10]
+	aListCli[nAux]['city']              	:= aListAux[11]
+	aListCli[nAux]['uf']                	:= aListAux[12]
+	aListCli[nAux]['cep']               	:= aListAux[13]
+	aListCli[nAux]['contact']           	:= aListAux[14]
+	aListCli[nAux]['email']             	:= aListAux[15]
+	aListCli[nAux]['phone']             	:= aListAux[16]
+	aListCli[nAux]['last_purchase']     	:= aListAux[17]
+	aListCli[nAux]['first_purchase']    	:= aListAux[18]
+	aListCli[nAux]['risk']              	:= aListAux[19]
+	aListCli[nAux]['credit_limit']      	:= aListAux[20]
+	aListCli[nAux]['balance']           	:= aListAux[21]
+	aListCli[nAux]['biggest_purchase']  	:= aListAux[22]
+	aListCli[nAux]['amount_purchases']  	:= aListAux[23]
+	aListCli[nAux]['amount_delays']     	:= aListAux[24]
+	aListCli[nAux]['biggest_delays']    	:= aListAux[25]
+	aListCli[nAux]['late_payments']     	:= aListAux[26]
+	aListCli[nAux]['financial']				:= fTitulos(aListAux[2],aListAux[3])
+	aListCli[nAux]['another_address']   	:= ''
+	aListCli[nAux]['another_cep']   		:= ''
+	aListCli[nAux]['another_district']  	:= ''
+	aListCli[nAux]['payment']  				:= aListAux[27]
+	aListCli[nAux]['payment_description']  	:= aListAux[28]
 
 Return
 

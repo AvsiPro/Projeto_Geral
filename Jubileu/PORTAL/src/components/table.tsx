@@ -95,7 +95,6 @@ const Table: React.FC <PropsTable> = ({
   const BodyModalFinancial = (
     <FinancialBodyModal
       financialCustomer={financialCustomer}
-      type={'V'}
     />
   )
   

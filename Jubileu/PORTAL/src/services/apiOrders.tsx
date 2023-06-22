@@ -9,12 +9,12 @@ interface ApiResponse {
     result: any;
   }
 
-export const fetchData = async (page: number, token: string) => {
+export const fetchData = async (page: number, token: string, type: string) => {
 
     let auxResult: any = []
     let returnResult: any = []
 
-    const response = await api.get(`/WSAPP07?pagesize=20&page=${page}&token=${token}`);
+    const response = await api.get(`/WSAPP07?pagesize=20&page=${page}&token=${token}&type=${type}`);
     const json: ApiResponse = response.data;
 
     if(json.status.code === '#200'){    
@@ -24,34 +24,23 @@ export const fetchData = async (page: number, token: string) => {
           return !x ? acc.concat([current]) : acc;
       }, []);
 
-      const sorted = [...auxResult].sort((a, b) => {
-        const expirationComparison = b.issue_date.localeCompare(a.issue_date);
-        if (expirationComparison !== 0) {
-          return expirationComparison;
-        }
-        const documentComparison = a.document.localeCompare(b.document);
-        if (documentComparison !== 0) {
-          return documentComparison;
-        }
-        return b.customer.localeCompare(a.customer);
-      });
 
-      sorted.map((_, index: number) =>{
-        sorted[index].mark = false
+      auxResult.map((_: any, index: number) =>{
+        auxResult[index].mark = false
       })
 
-      returnResult = [...sorted]
+      returnResult = [...auxResult]
     }
 
     return returnResult
 };
 
 
-export const fetchSearch = async(searchText: string, token: string) => {
+export const fetchSearch = async(searchText: string, token: string, type: string) => {
     let auxResult: any = []
     let returnResult: any = []
 
-    const response = await api.get(`/WSAPP07?pagesize=50&page=1&searchKey=${searchText}&token=${token}`);
+    const response = await api.get(`/WSAPP07?pagesize=50&page=1&searchKey=${searchText}&token=${token}&type=${type}`);
     const json: ApiResponse = response.data;
 
     if(json.status.code === '#200'){    
@@ -62,23 +51,12 @@ export const fetchSearch = async(searchText: string, token: string) => {
           return !x ? acc.concat([current]) : acc;
       }, []);
             
-      const sorted = [...auxResult].sort((a, b) => {
-        const expirationComparison = b.issue_date.localeCompare(a.issue_date);
-        if (expirationComparison !== 0) {
-          return expirationComparison;
-        }
-        const documentComparison = a.document.localeCompare(b.document);
-        if (documentComparison !== 0) {
-          return documentComparison;
-        }
-        return b.customer.localeCompare(a.customer);
-      });
 
-      sorted.map((_, index: number) =>{
-        sorted[index].mark = false
+      auxResult.map((_: any, index: number) =>{
+        auxResult[index].mark = false
       })
 
-      returnResult = [...sorted]
+      returnResult = [...auxResult]
     }
 
   return returnResult

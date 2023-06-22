@@ -34,8 +34,7 @@ const RoutesApp: React.FC = () => {
   
     if ((
         route === '/dashboard' || 
-        route === '/customers' || 
-        route === '/orders'
+        route === '/customers'  
       ) && userProfile !== 'V') {
       return false;
     }
