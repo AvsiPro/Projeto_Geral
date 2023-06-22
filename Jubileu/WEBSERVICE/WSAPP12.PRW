@@ -119,14 +119,6 @@ WsMethod POST WsReceive RECEIVE WsService WSAPP12
     conout(cCondPg)
     
 
-    // Verifica se os campos Obrigatorios para abertura da Empresa/Filial foram preenchidos.
-    If (Empty(cUser) .Or. AllTrim(cUser)=='null')
-        cCode 	:= "#500"
-        cMessage	:= "Campos Obrigatorios de Preenchimento nao informados: VENDEDOR"
-        lRet		:= .T.
-        conout(cCode+CHR(13)+CHR(10)+cMessage)
-    EndIf
-
     CFILANT := cFil
     // Chama Rotina que irá analisar os dados recebidos.
     If lRet .And. Empty(cCode) .And. Empty(cMessage)

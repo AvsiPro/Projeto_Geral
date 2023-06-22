@@ -170,7 +170,7 @@ const Orders: React.FC = () => {
   }
 
   const fields = [
-    {field: 'mark', headerText: '', textAlign: 'Center'  },
+    //{field: 'mark', headerText: '', textAlign: 'Center'  },
     {field: 'document', headerText: 'Pedido', textAlign: 'Center'  },
     {field: 'status', headerText: 'Status', textAlign: 'Center'},
     {field: 'customer_name', headerText: 'Cliente', textAlign: 'Left' },
@@ -190,11 +190,19 @@ const Orders: React.FC = () => {
     }else{
       return(
         <div style={{marginTop: isMobile ? 15 : 0}}>
-          <Button onClick={() => setShowModal(true)} variant="outline-primary">Novo Pedido</Button>{' '}
-          <Button onClick={() => {}} variant="outline-primary">Visualizar</Button>{' '}
+          <Button onClick={handleNovoPedido} variant="outline-primary">Novo Pedido</Button>{' '}
         </div>
       )
     }
+  }
+
+
+  const handleNovoPedido = () => {
+    if(userContext.type === 'C' && !!customerContext.financial){
+      handleSetFinancial(customerContext)
+    }
+
+    setShowModal(true)
   }
 
   const handleCloseAlert = () => {
@@ -222,8 +230,8 @@ const Orders: React.FC = () => {
       auxField.map((_, index) => {
 
         if(userContext.type === 'C'){
-            auxField[index].enabled = false
-            auxField[index].search = false
+          auxField[index].enabled = false
+          auxField[index].search = false
         }
 
         if(auxField[index].id === 'code'){
@@ -252,8 +260,7 @@ const Orders: React.FC = () => {
   },[customerContext])
 
 
-  const handleConfirmSelect = (selected: any) => {
-    
+  const handleConfirmSelect = (selected: any) => {    
     if(selected.id === 'code'){
       setCustomerContext(selected.selected)
       localStorage.setItem('customer', JSON.stringify(selected.selected));
@@ -416,10 +423,17 @@ const Orders: React.FC = () => {
     setLoadOrder(false)
   }
 
+  const handleVoltarFinancial = () => {
+    if(userContext.type === 'C') {
+      setShowModal(false)
+    }
+    setFinancial(null)
+  }
+
   const ToolsModal = (
     <>
       { financial ?
-        <Button variant="outline-danger" onClick={() => setFinancial(null)}>Voltar</Button>
+        <Button variant="outline-danger" onClick={handleVoltarFinancial}>Voltar</Button>
       
       : !step2 ?
         <>
