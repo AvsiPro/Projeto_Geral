@@ -67,20 +67,26 @@ Default oself:customer  := ''
 	EndIf
 
 	If !Empty(oself:customer)
-		cQuery := " SELECT E1_PREFIXO,E1_NUM,E1_PARCELA,E1_CLIENTE,E1_LOJA,"
-		cQuery += " E1_EMISSAO,E1_VENCREA,E1_VALOR,E1_BAIXA,A1_NOME,A1_CGC "
-		cQuery += " FROM "+RetSqlName('SE1')+" SE1 "
-		cQuery += " INNER JOIN "+RetSqlName("SA1")+" SA1 "
-		cQuery += " ON SA1.A1_FILIAL='"+FwxFilial("SA1")+"' "
-		cQuery += " AND SA1.A1_COD=E1_CLIENTE "
-		cQuery += " AND SA1.A1_LOJA=E1_LOJA "
-		cQuery += " AND SA1.D_E_L_E_T_=' ' "
-		cQuery += " WHERE SE1.D_E_L_E_T_=' ' "
-		cQuery += " AND SA1.A1_CGC = '"+oself:customer+"' "+cWhere
+		cQuery := " SELECT ISNULL(F2_FILIAL,'') AS F2_FILIAL,E1_PREFIXO,E1_NUM,E1_PARCELA,E1_CLIENTE, "
+		cQuery += " E1_LOJA,E1_EMISSAO,E1_VENCREA,E1_VALOR,E1_BAIXA,A1_NOME,A1_CGC "
+		cQuery += " FROM " + RetSQLName("SE1") + " SE1 " 
+		cQuery += " INNER JOIN " + RetSQLName("SA1") + " SA1 "
+		cQuery += "        ON SA1.A1_FILIAL='"+FwxFilial("SA1")+"' "
+		cQuery += "        AND SA1.A1_COD=E1_CLIENTE " 
+		cQuery += "        AND SA1.A1_LOJA=E1_LOJA " 
+		cQuery += "        AND SA1.D_E_L_E_T_=' ' " 
+		cQuery += " LEFT JOIN " + RetSQLName("SF2") + " SF2 "
+		cQuery += "        ON SF2.F2_DOC = E1_NUM " 
+		cQuery += "        AND SF2.F2_SERIE = E1_PREFIXO " 
+		cQuery += "        AND SF2.F2_CLIENTE = E1_CLIENTE " 
+		cQuery += "        AND SF2.F2_LOJA = E1_LOJA " 
+		cQuery += "        AND SF2.D_E_L_E_T_=' ' " 
+		cQuery += " WHERE  SE1.D_E_L_E_T_=' ' " 
+		cQuery += "        AND SA1.A1_CGC = '"+oself:customer+"' "+cWhere
 		cQuery += " ORDER BY " + SqlOrder(SE1->(IndexKey(1)))
 		cQuery += " OFFSET (("+cValToChar(oself:page)+" - 1) * "+cValToChar(oself:pageSize)+") ROWS "
 		cQuery += " FETCH NEXT "+cValToChar(oself:pageSize)+" ROWS ONLY "
-		
+
 		MPSysOpenQuery(cQuery, cAliasTMP)
 
 		While (cAliasTMP)->(!Eof())
@@ -99,6 +105,7 @@ Default oself:customer  := ''
 			cStatus := If(!Empty((cAliasTMP)->E1_BAIXA),'Pago', If(SToD((cAliasTMP)->E1_VENCREA) >= Date(),"Em Aberto","Atrasado"))
 
 			aListAux[nAux]['id']	            := Encode64(cIdAux)
+			aListAux[nAux]['branch_invoice']    := Alltrim(EncodeUTF8((cAliasTMP)->F2_FILIAL))
 			aListAux[nAux]['document']	        := Alltrim(EncodeUTF8((cAliasTMP)->E1_NUM))
 			aListAux[nAux]['prefix']     		:= Alltrim(EncodeUTF8((cAliasTMP)->E1_PREFIXO))
 			aListAux[nAux]['installments']		:= Alltrim(EncodeUTF8((cAliasTMP)->E1_PARCELA))

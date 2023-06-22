@@ -12,6 +12,8 @@ import { darkTheme, lightTheme } from "../themes";
 
 import { fetchData } from "../services/apiFinancial";
 
+import { apiLink } from "../services/api";
+
 import { SToD } from "../utils/dateFormat";
 import { CurrencyFormat } from "../utils/currencyFormat";
 import { WindowDimensionsContext } from "../contexts/WindowDimensionsContext";
@@ -65,6 +67,10 @@ const FinancialBodyModal: React.FC <Props> = ({financialCustomer})  => {
         }else{
             return'grey'
         }
+    }
+
+    const handleOpenLink = (type: string, item: any) => {
+        window.open(`${apiLink}/WSAPP14?cTipo=${type}&cDoc=${item.document}&cSerie=${item.prefix}&cFilNF=${item.branch_invoice}&cParce=${item.installments}`, '_blank')
     }
 
     return(
@@ -130,9 +136,9 @@ const FinancialBodyModal: React.FC <Props> = ({financialCustomer})  => {
 
 
                     <Style.BodyFinTools>
-                        <Style.BodyFinButTool onClick={() => {}}>Boleto</Style.BodyFinButTool>
-                        <Style.BodyFinButTool onClick={() => window.open('http://200.98.81.201:40194/REST/WSAPP14?cTipo=boleto&cDoc=000008798', '_blank')}>Danfe</Style.BodyFinButTool>
-                        <Style.BodyFinButTool onClick={() => {}}>Xml</Style.BodyFinButTool>
+                        <Style.BodyFinButTool onClick={() => handleOpenLink('Boleto', item)}>Boleto</Style.BodyFinButTool>
+                        <Style.BodyFinButTool onClick={() => handleOpenLink('Danfe', item)}>Danfe</Style.BodyFinButTool>
+                        <Style.BodyFinButTool onClick={() => handleOpenLink('Xml', item)}>Xml</Style.BodyFinButTool>
                     </Style.BodyFinTools>
 
                     

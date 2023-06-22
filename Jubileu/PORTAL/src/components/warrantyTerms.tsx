@@ -7,13 +7,13 @@ const WarrantyTerms: React.FC = () => {
     return (
         <div>
             <div>             
-              <p>ROBSOL - Pol&iacute;ticas e procedimentos para trocas</p>
+              <p>Jubileu - Pol&iacute;ticas e procedimentos para trocas</p>
               
               <p>Solicita&ccedil;&atilde;o de troca | Assist&ecirc;ncia t&eacute;cnica</p>
               
-              <p>A Robsol empenha-se em fabricar produtos com qualidade e oferece garantia para seus &oacute;culos pelos per&iacute;odos abaixo contra defeito de fabrica&ccedil;&atilde;o:</p>
+              <p>A Jubileu empenha-se em fabricar produtos com qualidade e oferece garantia para seus &oacute;culos pelos per&iacute;odos abaixo contra defeito de fabrica&ccedil;&atilde;o:</p>
               
-              <p>- 3 (tr&ecirc;s ) meses de garantia de acordo com c&oacute;digo de defesa do consumidor, mais 9 ( nove ) meses concedidos pela ROBSOL, totalizando 1 ( um ) ano de garantia.</p>
+              <p>- 3 (tr&ecirc;s ) meses de garantia de acordo com c&oacute;digo de defesa do consumidor, mais 9 ( nove ) meses concedidos pela Jubileu, totalizando 1 ( um ) ano de garantia.</p>
               
               <p>- Mediante apresenta&ccedil;&atilde;o do cupom fiscal de venda ao consumidor final.</p>
               
@@ -25,9 +25,9 @@ const WarrantyTerms: React.FC = () => {
               
               <p>&nbsp;</p>
               
-              <p>Constatado que o produto apresenta defeito de fabrica&ccedil;&atilde;o, a Robsol se compromete a realizar a troca do produto sem nenhum &ocirc;nus aos nossos clientes ou consumidor final.</p>
+              <p>Constatado que o produto apresenta defeito de fabrica&ccedil;&atilde;o, a Jubileu se compromete a realizar a troca do produto sem nenhum &ocirc;nus aos nossos clientes ou consumidor final.</p>
               
-              <p>A Robsol descreve em detalhes abaixo os defeitos aceitos para atendimento de garantia.</p>
+              <p>A Jubileu descreve em detalhes abaixo os defeitos aceitos para atendimento de garantia.</p>
               
               <p>Em casos em que n&atilde;o tivermos o mesmo modelo para atendimento &agrave; substitui&ccedil;&atilde;o da mesma ser&aacute; feita por um modelo similar de mesmo valor.</p>
               
@@ -49,7 +49,7 @@ const WarrantyTerms: React.FC = () => {
               
               <p><strong>Pe&ccedil;a:</strong></p>
               
-              <p>Depois da documenta&ccedil;&atilde;o aprovada e garantia recebida, a loja deve devolver a pe&ccedil;a com defeito atrav&eacute;s de c&oacute;digo para postagem oferecido pela Robsol.</p>
+              <p>Depois da documenta&ccedil;&atilde;o aprovada e garantia recebida, a loja deve devolver a pe&ccedil;a com defeito atrav&eacute;s de c&oacute;digo para postagem oferecido pela Jubileu.</p>
               
               <p>- C&Oacute;PIA DA NF DE COMPRA (ou cupom fiscal de venda ao consumidor final)</p>
               
@@ -57,7 +57,7 @@ const WarrantyTerms: React.FC = () => {
               
               <p>&nbsp;</p>
               
-              <p><strong>Marcas Robsol&reg; atendidas pela garantia</strong>:</p>
+              <p><strong>Marcas Jubileu&reg; atendidas pela garantia</strong>:</p>
               
               <p>Carmen Vitti, Fox, Romano, Sabrina Sato, Trunks, Disney, Ecko, Femme Paris e marca pr&oacute;pria.</p>
               
