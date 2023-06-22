@@ -1,7 +1,7 @@
 #Include "protheus.ch"
 #Include "rwmake.ch"
 #Include "tbiconn.ch"
-
+#include "fileio.ch"
 /*
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
@@ -20,31 +20,51 @@
 
 User Function ROBTARM()
 
-    Local cLinha  := ""
-    Local cArqAux := ""
-    Local aAuto := {}
-    Local nOpcAuto := 3
-    lOCAL nX := 0
-    Local lPrim   := .T.
-    Local aCampos := {}
-    Local aDados  := {}
+    Private cLinha  := ""
+    Private cArqAux := ""
+    Private aAuto := {}
+    Private nOpcAuto := 3
+    Private lPrim   := .T.
+    Private aCampos := {}
+    Private aDados  := {}
     Private lMsErroAuto := .F.
-
+    Private cFileLog :=	'transf_armz_'+dtos(ddatabase)+strtran(cvaltochar(time()),":")+'.txt'
+	Private nHandle	:=	fcreate('c:\Temp\'+cFileLog , FO_READWRITE + FO_SHARED ) 
 
     //Chamando o cGetFile para pegar um arquivo txt ou xml, mostrando o servidor
     cArqAux := cGetFile( 'Arquivo *.csv|*.csv ',; //[ cMascara],
-        'Selecao de Arquivos',;                  //[ cTitulo],
-        0,;                                      //[ nMascpadrao],
-        'C:\',;  	                              //[ cDirinicial],
-        .F.,;                                    //[ lSalvar],
-        GETF_LOCALHARD  + GETF_NETWORKDRIVE,;    //[ nOpcoes],
-        .T.)                                     //[ lArvore]
+                        'Selecao de Arquivos',;                  //[ cTitulo],
+                        0,;                                      //[ nMascpadrao],
+                        'C:\',;  	                              //[ cDirinicial],
+                        .F.,;                                    //[ lSalvar],
+                        GETF_LOCALHARD  + GETF_NETWORKDRIVE,;    //[ nOpcoes],
+                        .T.)                                     //[ lArvore]
 
     If !File(cArqAux)
         MsgStop("O arquivo " +cArqAux + " não foi encontrado. A importação será abortada!","[AVSIB9] - ATENCAO")
         Return
     EndIf
 
+    Processa({||execlog()}, "Processando...")
+
+Return 
+
+/*/{Protheus.doc} execlog
+    (long_description)
+    @type  Static Function
+    @author user
+    @since 22/06/2023
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function execlog()
+    
+Local nX := 0
+    
     FT_FUSE(cArqAux)
     ProcRegua(FT_FLASTREC())
     FT_FGOTOP()
@@ -66,70 +86,72 @@ User Function ROBTARM()
         FT_FSKIP()
     EndDo
 
-    //User Function MyMata261()
-    //   Local aAuto := {}
-    //  Local aItem := {}
-    // Local aLinha := {}
-    // Local alista := {'PA001','PA001'} //Produto Utilizado
-    // Local nX
-
-    //Local nOpcAuto := 3
-
-    // PREPARE ENVIRONMENT EMPRESA "99" FILIAL "01" MODULO "EST" TABLES "SB1", "SD3"
-
     //Cabecalho a Incluir
     aadd(aAuto,{GetSxeNum("SD3","D3_DOC"),dDataBase}) //Cabecalho
 
     for nX := 1 to len(aDados)
         aLinha := {}
         //Origem
+        
         If   SB1->(DbSeek(xFilial("SB1")+PadR(aDados[nX,01], tamsx3('D3_COD') [1])))
-            aadd(aLinha,{"ITEM",padl(cvaltochar(nX),3,"0"),Nil})
-            aadd(aLinha,{"D3_COD", SB1->B1_COD, Nil}) //Cod Produto origem
-            aadd(aLinha,{"D3_DESCRI", SB1->B1_DESC, Nil}) //descr produto origem
-            aadd(aLinha,{"D3_UM", SB1->B1_UM, Nil}) //unidade medida origem
-            aadd(aLinha,{"D3_LOCAL", padl(aDados[nX,02],3,"0"), Nil}) //armazem origem
-            aadd(aLinha,{"D3_LOCALIZ", "",Nil}) //Informar endereço origem
 
-            //Destino
-            SB1->(DbSeek(xFilial("SB1")+PadR(aDados[nX,01], tamsx3('D3_COD') [1])))
-            aadd(aLinha,{"D3_COD", SB1->B1_COD, Nil}) //cod produto destino
-            aadd(aLinha,{"D3_DESCRI", SB1->B1_DESC, Nil}) //descr produto destino
-            aadd(aLinha,{"D3_UM", SB1->B1_UM, Nil}) //unidade medida destino
-            aadd(aLinha,{"D3_LOCAL", padl(aDados[nX,03],3,"0"), Nil}) //armazem destino
-            aadd(aLinha,{"D3_LOCALIZ","",Nil}) //Informar endereço destino
+            If SB9->(Dbseek(xFilial("SB9")+SB1->B1_COD+padl(aDados[nX,03],3,"0")))
+                aadd(aLinha,{"ITEM",padl(cvaltochar(nX),3,"0"),Nil})
+                aadd(aLinha,{"D3_COD", SB1->B1_COD, Nil}) //Cod Produto origem
+                aadd(aLinha,{"D3_DESCRI", SB1->B1_DESC, Nil}) //descr produto origem
+                aadd(aLinha,{"D3_UM", SB1->B1_UM, Nil}) //unidade medida origem
+                aadd(aLinha,{"D3_LOCAL", padl(aDados[nX,02],3,"0"), Nil}) //armazem origem
+                aadd(aLinha,{"D3_LOCALIZ", "",Nil}) //Informar endereço origem
 
-            aadd(aLinha,{"D3_NUMSERI", "", Nil}) //Numero serie
-            aadd(aLinha,{"D3_LOTECTL", "", Nil}) //Lote Origem
-            aadd(aLinha,{"D3_NUMLOTE", "", Nil}) //sublote origem
-            aadd(aLinha,{"D3_DTVALID", STOD(""), Nil}) //data validade
-            aadd(aLinha,{"D3_POTENCI", 0, Nil}) // Potencia
-            aadd(aLinha,{"D3_QUANT", val(aDados[nX,04]), Nil}) //Quantidade
-            aadd(aLinha,{"D3_QTSEGUM", 0, Nil}) //Seg unidade medida
-            aadd(aLinha,{"D3_ESTORNO", "", Nil}) //Estorno
-            aadd(aLinha,{"D3_NUMSEQ", "", Nil}) // Numero sequencia D3_NUMSEQ
+                //Destino
+                SB1->(DbSeek(xFilial("SB1")+PadR(aDados[nX,01], tamsx3('D3_COD') [1])))
+                aadd(aLinha,{"D3_COD", SB1->B1_COD, Nil}) //cod produto destino
+                aadd(aLinha,{"D3_DESCRI", SB1->B1_DESC, Nil}) //descr produto destino
+                aadd(aLinha,{"D3_UM", SB1->B1_UM, Nil}) //unidade medida destino
+                aadd(aLinha,{"D3_LOCAL", padl(aDados[nX,03],3,"0"), Nil}) //armazem destino
+                aadd(aLinha,{"D3_LOCALIZ","",Nil}) //Informar endereço destino
 
-            aadd(aLinha,{"D3_LOTECTL", "", Nil}) //Lote destino
-            aadd(aLinha,{"D3_NUMLOTE", "", Nil}) //sublote destino
-            aadd(aLinha,{"D3_DTVALID", STOD(""), Nil}) //validade lote destino
-            aadd(aLinha,{"D3_ITEMGRD", "", Nil}) //Item Grade
+                aadd(aLinha,{"D3_NUMSERI", "", Nil}) //Numero serie
+                aadd(aLinha,{"D3_LOTECTL", "", Nil}) //Lote Origem
+                aadd(aLinha,{"D3_NUMLOTE", "", Nil}) //sublote origem
+                aadd(aLinha,{"D3_DTVALID", STOD(""), Nil}) //data validade
+                aadd(aLinha,{"D3_POTENCI", 0, Nil}) // Potencia
+                aadd(aLinha,{"D3_QUANT", val(aDados[nX,04]), Nil}) //Quantidade
+                aadd(aLinha,{"D3_QTSEGUM", 0, Nil}) //Seg unidade medida
+                aadd(aLinha,{"D3_ESTORNO", "", Nil}) //Estorno
+                aadd(aLinha,{"D3_NUMSEQ", "", Nil}) // Numero sequencia D3_NUMSEQ
 
-            aadd(aLinha,{"D3_CODLAN", "", Nil}) //cat83 prod origem
-            aadd(aLinha,{"D3_CODLAN", "", Nil}) //cat83 prod destino
+                aadd(aLinha,{"D3_LOTECTL", "", Nil}) //Lote destino
+                aadd(aLinha,{"D3_NUMLOTE", "", Nil}) //sublote destino
+                aadd(aLinha,{"D3_DTVALID", STOD(""), Nil}) //validade lote destino
+                aadd(aLinha,{"D3_ITEMGRD", "", Nil}) //Item Grade
 
-            aAdd(aAuto,aLinha)
+                aadd(aLinha,{"D3_CODLAN", "", Nil}) //cat83 prod origem
+                aadd(aLinha,{"D3_CODLAN", "", Nil}) //cat83 prod destino
+
+                aAdd(aAuto,aLinha)
+                FWrite(nHandle,'Linha '+cvaltochar(nX+1)+" # "+SB1->B1_COD+"# OK"+Chr(13)+Chr(10),1000)
+            else
+                FWrite(nHandle,'Linha '+cvaltochar(nX+1)+" # "+aDados[nX,01]+"# ERRO - Não há saldo inicial no destino "+padl(aDados[nX,03],3,"0")+Chr(13)+Chr(10),1000)
+            EndIf
         Else
-            alert("Produto informado na linha "+STR(nX-1)+",não foi localizado, verifique se o produto está correto e informe o administrador do sistema.")
-            Return
+            //alert("Produto informado na linha "+STR(nX-1)+",não foi localizado, verifique se o produto está correto e informe o administrador do sistema.")
+            //Return
+            FWrite(nHandle,'Linha '+cvaltochar(nX+1)+" # "+aDados[nX,01]+"# ERRO - Produto não encontrado"+Chr(13)+Chr(10),1000)
         EndIf
     Next nX
 
     MSExecAuto({|x,y| mata261(x,y)},aAuto,nOpcAuto)
 
     if lMsErroAuto
-        MostraErro()
+        MostraErro('C:\TEMP\','transf_armz_'+dtos(ddatabase)+strtran(cvaltochar(time()),":")+'.txt')
     else
-        alert("Importação concluída!")
+        //alert("Importação concluída!")
+        FWrite(nHandle,'Finalizado com sucesso'+Chr(13)+Chr(10),1000)
     EndIf
 
+    FT_FUse()
+	FCLOSE( nHandle )
+	MsgAlert("Importação concluída!")
+	WinExec('NOTEPAD '+ 'c:\Temp\'+cFileLog,1)
 Return
