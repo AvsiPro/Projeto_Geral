@@ -17,10 +17,12 @@ import { darkTheme, lightTheme } from "../themes";
 
 import * as Style from './styles'; 
 import { UserContext } from "../contexts/userContext";
+import { CartContext } from "../contexts/CartContext";
 
 const Navbar: React.FC = () => {
 
   const { userContext } = useContext(UserContext)
+  const { setCustomerContext, setPaymentContext, setCartContext } = useContext(CartContext);
   
   const [navigate, setNavigate] = useState('')
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -168,8 +170,9 @@ const Navbar: React.FC = () => {
       
       if(cart.length > 0){
         setShowModal(true)
+
       }else{
-        setNavigate(item.link)
+        fSair()
       }
 
     }else{
@@ -179,7 +182,13 @@ const Navbar: React.FC = () => {
 
   const fSair = () => {
       setShowModal(false)
+
+      setCustomerContext(null);
+      setPaymentContext(null);
+      setCartContext([])
+
       localStorage.clear();
+
       setNavigate('/')
   }
 

@@ -21,6 +21,15 @@ import { UserContext } from "../contexts/userContext";
 import api from "../services/api";
 import { ClipLoader } from "react-spinners";
 
+interface ApiResponse {
+  status: {
+    code: string;
+    message: string;
+  };
+  hasNext: boolean;
+  result: any;
+}
+
 const Orders: React.FC = () => {
 
   const { setCustomerContext, setPaymentContext, setCartContext, customerContext, paymentContext, cartContext } = useContext(CartContext);
@@ -197,12 +206,65 @@ const Orders: React.FC = () => {
   }
 
 
-  const handleNovoPedido = () => {
-    if(userContext.type === 'C' && !!customerContext.financial){
-      handleSetFinancial(customerContext)
+  const apiCustomer = async() => {
+    let auxResult: any = []
+    let returnResult: any = []
+
+    const response = await api.get(`/WSAPP02?pagesize=1&page=1&byId=true&SearchKey=${userContext.code}`);
+    const json: ApiResponse = response.data;
+
+    if(json.status.code === '#200'){    
+
+      auxResult = json.result.reduce((acc: any, current: any) => {
+          const x = acc.find((item: { id: any; }) => item.id === current.id);
+          return !x ? acc.concat([current]) : acc;
+      }, []);
+
+      auxResult.map((_: any, index: number) =>{
+        auxResult[index].mark = false
+      })
+
+      returnResult = [...auxResult][0]
+
     }
 
-    setShowModal(true)
+    return returnResult
+}
+
+
+  const handleNovoPedido = async() => {
+
+    if (userContext.type === 'C') {
+      const custAux = await apiCustomer();
+
+      if (!!custAux) {
+        const payment = {
+            code: custAux.payment,
+            form: custAux.payment_description,
+            id: custAux.payment,
+            description: custAux.payment_description,
+            mark: true
+        }
+
+        setPaymentContext(payment)
+        setCustomerContext(custAux);
+
+        const auxField = [...fieldsOrders]
+
+        auxField.map((_, index) => {
+          auxField[index].enabled = false
+          auxField[index].search = false
+        })
+      }
+
+      if(custAux.financial.length > 0) {
+        handleSetFinancial(custAux)
+      }
+
+    }else{
+      setShowModal(true)
+    }
+  
   }
 
   const handleCloseAlert = () => {
@@ -223,17 +285,12 @@ const Orders: React.FC = () => {
     }
   },[cartContext])
 
+
   useEffect(() =>{
     const auxField = [...fieldsOrders]
 
     if(!!customerContext){
       auxField.map((_, index) => {
-
-        if(userContext.type === 'C'){
-          auxField[index].enabled = false
-          auxField[index].search = false
-        }
-
         if(auxField[index].id === 'code'){
           auxField[index].value = customerContext.code
 
@@ -432,8 +489,8 @@ const Orders: React.FC = () => {
 
   const ToolsModal = (
     <>
-      { financial ?
-        <Button variant="outline-danger" onClick={handleVoltarFinancial}>Voltar</Button>
+      { !!financial ?
+        <Button variant="outline-danger" onClick={handleVoltarFinancial}>Fechar</Button>
       
       : !step2 ?
         <>
@@ -466,24 +523,10 @@ const Orders: React.FC = () => {
     setTypeAlert('danger')
     setShowAlert(!showAlert)
     setFinancial(item)
+    setShowModal(true)
   }
 
 
-  const BodyModal = (
-    <OrdersBodyModal
-      fieldsOrders={fieldsOrders}
-      handleConfirmSelect={handleConfirmSelect}
-      financial={financial}
-      setFinancial={(item: any) => handleSetFinancial(item)}
-      step2={step2}
-      inputObsValue={inputObsValue}
-      setInputObsValue={(change) => setInputObsValue(change)}
-      inputEndValue={inputEndValue}
-      setInputEndValue={(change) => setInputEndValue(change)}
-      discountPercent={discountPercent}
-      setDiscountPercent={(change) => setDiscountPercent(change)}
-    />
-  )
 
   return (
     <>
@@ -527,8 +570,22 @@ const Orders: React.FC = () => {
     <ModalComponent
       show={showModal}
       onHide={() => setShowModal(false)}
-      title={financial ? 'Títulos em aberto' : 'Novo pedido'}
-      Body={BodyModal}
+      title={!!financial ? 'Títulos em aberto' : 'Novo pedido'}
+      Body={
+        <OrdersBodyModal
+          fieldsOrders={fieldsOrders}
+          handleConfirmSelect={handleConfirmSelect}
+          financial={financial}
+          setFinancial={(item: any) => handleSetFinancial(item)}
+          step2={step2}
+          inputObsValue={inputObsValue}
+          setInputObsValue={(change) => setInputObsValue(change)}
+          inputEndValue={inputEndValue}
+          setInputEndValue={(change) => setInputEndValue(change)}
+          discountPercent={discountPercent}
+          setDiscountPercent={(change) => setDiscountPercent(change)}
+        />
+      }
       Tools={ToolsModal}
     />
     </>
