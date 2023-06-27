@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { Keyboard } from 'react-native';
+import React, { useState, useEffect, useContext, useRef } from 'react';
+import { ActivityIndicator, Keyboard, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AntDesign, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Style from './styles';
@@ -13,23 +13,25 @@ import NetInfo from "@react-native-community/netinfo";
 import { PropItemCartContext } from '../../interfaces';
 import ProductsComponent from '../../components/products';
 import { apiProducts, storageProducts, searchProducts, sortProductsList } from '../../services/apiProducts'
-import debounce from 'lodash/debounce';
 import { ThemeContext } from 'styled-components';
 
 export default function Products(){
 
     const { colors } = useContext(ThemeContext);
+    const searchInputRef = useRef<TextInput>(null);
     
     const [visiblePopup, setVisiblePopup] = useState(false)
     const [filter, setFilter] = useState(1)
     const [disableFooter, setDisableFooter] = useState(false)
     const [isOnline, setIsOnline] = useState(true);
     const [isLoadBottom, setLoadBottom] = useState<boolean>(false);
+    const [isLoadSearch, setLoadSearch] = useState<boolean>(false);
     const [products, setProducts] = useState<PropItemCartContext[]>([]);
     const [page, setPage] = useState(1);
     const [searchQuery, setSearchQuery] = useState<string>('');
     const [showModal, setShowModal] = useState<boolean>(false);
     const [productDetails, setProductDetails] = useState<any>(null);
+    const [search, setSearch] = useState<boolean>(false);
 
     useEffect(()=>{
         Keyboard.addListener('keyboardDidShow', keyboardDidShow);
@@ -55,6 +57,9 @@ export default function Products(){
 
     /** verifica se esta online. Se tiver, chama a API com produtos, se nao, chama os produtos que estao salvos no storage **/
     useEffect(() => {
+        setSearch(false)
+        setSearchQuery('')
+
         if(isOnline){
             loadItems();
 
@@ -119,28 +124,41 @@ export default function Products(){
     };
 
 
-    /** grava o state conforme digitacao da pesquisa e faz a chamada do devounced para busca da api **/
-    const handleSearch = (text: string) => {
-        setSearchQuery(text);
-        handleSearchDebounced(text);
-    };
 
+    const handleSearchButton = async() => {
+        setLoadSearch(true);
+        Keyboard.dismiss();
 
-    /** faz a chamada da api conforme o usuario vai digitando na pesquisa.
-        Tem um atraso de 500 milisegundo para aguardar o fim da digitacao e nao encavalar a chamada de api
-    **/
-    const handleSearchDebounced = debounce(async (searchQuery: string) => {
-        setLoadBottom(true);
+        if(!searchQuery){
+            setLoadSearch(false)
+            handleClearSearch();
+            return
+        }
 
         const resultApi = await searchProducts(searchQuery, isOnline)
-        
+
         if(!!resultApi){
             setProducts(resultApi.returnResult)
             setPage(resultApi.pageResult)
+            setSearch(true)
         }
         
-        setLoadBottom(false);
-    }, 500);
+        setLoadSearch(false);
+    }
+    
+
+    const handleClearSearch = () => {
+        setSearch(false)
+        setSearchQuery('')
+        setPage(1)
+
+        if(isOnline){
+            loadItems();
+
+        }else {
+            fetchAsyncStorage();
+        }  
+    }
 
 
     return(<>
@@ -150,24 +168,35 @@ export default function Products(){
         />
         <Style.SafeContainer>
             <Style.HeaderComponent>
-                <Style.HeaderContainer>
-                    <Style.SearchComponent>
-                        <Style.InputField
+                <Style.HeaderContainer1>
+                    <Style.SearchComponent1>
+                        <Style.InputField1
+                            ref={searchInputRef}
                             autoCorrect={false}
                             placeholder='Pesquisar'
                             value={searchQuery}
-                            onChangeText={handleSearch}
+                            autoCapitalize='none'
+                            returnKeyType="done"
+                            onChangeText={setSearchQuery}
+                            onSubmitEditing={handleSearchButton}
                         />
-                        <AntDesign name="search1" size={20} color="#A0A0A0" />
-                    </Style.SearchComponent>
+
+                        <Style.ButtonSearch onPress={() => handleSearchButton()}>
+                            { isLoadSearch
+                                ? <ActivityIndicator color={'#A0A0A0'} />
+                                : <AntDesign name="search1" size={23} color="#A0A0A0" />
+                            }
+                            
+                        </Style.ButtonSearch>
+                    </Style.SearchComponent1>
                     
-                    <Style.ButtonFilter 
+                    <Style.ButtonFilter
                         onPress={() => handlePopup(null)}
                         activeOpacity={0.4}
                     >
                         <MaterialCommunityIcons name="order-alphabetical-ascending" size={30} color="white" />
                     </Style.ButtonFilter>
-                </Style.HeaderContainer>
+                </Style.HeaderContainer1>
             </Style.HeaderComponent>
             
             { !isOnline &&
@@ -177,6 +206,16 @@ export default function Products(){
             }
 
             <Style.ContainerListProducts>
+
+                { search &&
+                    <Style.ContainerBadgeSearch>
+                        <Style.BadgeSearch onPress={handleClearSearch}>
+                            <Style.IconBadgeSearch name="close" />
+                            <Style.TextBadgeSearch color='#fff'>{searchQuery}</Style.TextBadgeSearch>
+                        </Style.BadgeSearch>
+                    </Style.ContainerBadgeSearch>
+                }
+
                 <ProductsComponent
                     products={products}
                     handleLoadMore={handleLoadMore}

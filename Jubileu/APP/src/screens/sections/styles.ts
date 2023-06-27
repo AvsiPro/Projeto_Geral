@@ -1,5 +1,6 @@
 import styled from 'styled-components/native'
 import { StyleSheet } from 'react-native';
+import { FontAwesome } from '@expo/vector-icons';
 
 import * as Animatable from 'react-native-animatable'
 
@@ -33,25 +34,6 @@ export const HeaderContainer = styled.View`
     flex-direction:row;
 `
 
-export const SearchComponent = styled.View`
-    background-color:#fff;
-    border-radius:30px;
-    width:85%;
-    align-items:center;
-    flex-direction:row;
-    justify-content:space-between;
-    padding-right:35px;
-`
-
-export const InputField = styled.TextInput`
-    padding:10px;
-    padding-left:20px;
-    padding-right:20px;
-    height:45px;
-    width:100%;
-    font-size:16px;
-`
-
 export const ButtonFilter = styled.TouchableOpacity`
 `
 
@@ -66,7 +48,7 @@ export const ContainerListProducts = styled.View`
     flex:1;
     width:100%;
     max-height:70%;
-    margin-top:20px;
+    margin-top:15px;
 `
 
 export const ContainerListCustomers = styled.View`
@@ -392,4 +374,85 @@ export const KeyBoardFormCustomer = styled.KeyboardAvoidingView`
     background-color:#F4F4F4;
     border-top-right-radius:25px;
     border-top-left-radius:25px;
+`
+
+
+export const SearchComponent = styled.View`
+    background-color:#fff;
+    border-radius:30px;
+    width:85%;
+    align-items:center;
+    flex-direction:row;
+    justify-content:space-between;
+    padding-right:35px;
+`
+
+export const InputField = styled.TextInput`
+    padding:10px;
+    padding-left:20px;
+    padding-right:20px;
+    height:45px;
+    width:100%;
+    font-size:16px;
+`
+
+export const HeaderContainer1 = styled.View`
+    justify-content:space-between;
+    align-items:center;
+    flex-direction:row;
+`
+
+export const ButtonSearch = styled.TouchableOpacity`
+    height:45px;
+    align-items:center;
+    justify-content:center;
+    flex:1;
+`
+
+export const SearchComponent1 = styled.View`
+    background-color:#fff;
+    border-radius: 30px;
+    align-items:center;
+    flex-direction:row;
+    justify-content:space-evenly;
+    height:45px;
+    width:85%;
+`
+
+export const InputField1 = styled.TextInput`
+    height:45px;
+    width:80%;
+    font-size:16px;
+    padding-left:20px;
+`
+
+export const ContainerBadgeSearch = styled.View`
+    flex-direction:row;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:15px;
+    margin-left:25px;
+    max-width:85%;
+`
+
+export const BadgeSearch = styled.TouchableOpacity`
+    height:30px;
+    background-color: ${(props) => props.theme.colors.primary};
+    padding:5px;
+    border-radius:15px;
+    align-items:center;
+    justify-content:space-evenly;
+    flex-direction:row;
+`
+
+export const TextBadgeSearch = styled.Text<{color: string}>`
+    color: ${(props) => props.color};
+    margin-right:6px;
+`
+
+export const IconBadgeSearch = styled(FontAwesome)`
+    margin-right:6px;
+    margin-left:6px;
+    color: #fff;
+    font-size: 18px;
 `

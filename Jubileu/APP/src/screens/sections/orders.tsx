@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback, useContext, useRef } from 'react';
-import { ActivityIndicator, FlatList, Keyboard } from 'react-native';
+import React, { useState, useEffect, useContext, useRef } from 'react';
+import { ActivityIndicator, FlatList, Keyboard, TextInput, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AntDesign, MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import * as Style from './styles';
@@ -20,7 +20,6 @@ import { ThemeContext } from 'styled-components';
 
 import { Swipeable } from 'react-native-gesture-handler';
 
-import debounce from 'lodash/debounce';
 import { apiOrders, storageOrders, searchOrders, sortOrderList } from '../../services/apiOrders'
 import { AppContext } from '../../contexts/globalContext';
 
@@ -34,9 +33,11 @@ import api from '../../services/api';
 export default function Orders(){
 
     const { colors } = useContext(ThemeContext);
+    
     const { authDetail, setItemCart, setCustomerSelected, setPaymentSelected, setOrcamentoSelected } = useContext(AppContext);
     const navigation: any = useNavigation();
-
+    
+    const [refreshing, setRefreshing] = useState(false); 
     const [visibleModal, setVisibleModal] = useState(false)
     const [visiblePopup, setVisiblePopup] = useState(false)
     const [visiblePopupCopy, setVisiblePopupCopy] = useState(false)
@@ -51,8 +52,12 @@ export default function Orders(){
     const [orders, setOrders] = useState<any[]>([]);
     const [page, setPage] = useState(1);
     const [searchQuery, setSearchQuery] = useState<string>('');
+    const [isLoadSearch, setLoadSearch] = useState<boolean>(false);
+    const [search, setSearch] = useState<boolean>(false);
 
     const animation = useRef(null);
+    const searchInputRef = useRef<TextInput>(null);
+    
 
     useEffect(()=>{
         Keyboard.addListener('keyboardDidShow', keyboardDidShow);
@@ -77,21 +82,24 @@ export default function Orders(){
 
 
     /** verifica se esta online. Se tiver, chama a API com orders, se nao, chama os orders que estao salvos no storage **/
+
     useFocusEffect(
-        useCallback(() => {
+        React.useCallback(() => {
+            setSearch(false)
+            setSearchQuery('')
+    
             if(isOnline){
                 loadItems();
     
             }else {
                 fetchAsyncStorage();
             }
-          
+    
           return () => {
-            // Função de limpeza, se necessário
+            // Lógica de limpeza, se necessário
           };
         }, [])
-    );
-    
+      );
 
 
     const loadItems = async() => {
@@ -100,12 +108,24 @@ export default function Orders(){
         const resultApi = await apiOrders(page, orders, filter, authDetail.token)
         
         if(!!resultApi){
-            setOrders(resultApi.returnResult)
+
+            const returnResult = resultApi.returnResult.reduce((acc: any, current: any) => {
+                const x = acc.find((item: { id: any; }) => item.id === current.id);
+                return !x ? acc.concat([current]) : acc;
+            }, []);
+
+            setOrders(returnResult)
             setPage(resultApi.pageResult)
+            setRefreshing(false)
         }
         setLoadBottom(false);
     }
 
+
+    const onRefresh = () => {
+        setRefreshing(true);
+        handleClearSearch();
+    };
 
     /** faz a chamada no storage e grava no estado de orders (offline) **/
     const fetchAsyncStorage = async () => {
@@ -127,30 +147,6 @@ export default function Orders(){
             loadItems();
         }
     };
-
-
-    /** grava o state conforme digitacao da pesquisa e faz a chamada do devounced para busca da api **/
-    const handleSearch = (text: string) => {
-        setSearchQuery(text);
-        handleSearchDebounced(text);
-    };
-
-
-    /** faz a chamada da api conforme o usuario vai digitando na pesquisa.
-        Tem um atraso de 500 milisegundo para aguardar o fim da digitacao e nao encavalar a chamada de api
-    **/
-    const handleSearchDebounced = debounce(async (searchQuery: string) => {
-        setLoadBottom(true);
-
-        const resultApi = await searchOrders(searchQuery, isOnline)
-        
-        if(!!resultApi){
-            setOrders(resultApi.returnResult)
-            setPage(resultApi.pageResult)
-        }
-        
-        setLoadBottom(false);
-    }, 500);
 
 
     const handleModal = (item: any) =>{
@@ -221,6 +217,47 @@ export default function Orders(){
         }
 
         return returnObject;  
+    }
+
+    const handleSearchButton = async() => {
+        setLoadSearch(true);
+        Keyboard.dismiss();
+
+        if(!searchQuery){
+            setLoadSearch(false)
+            handleClearSearch();
+            return
+        }
+
+        const resultApi = await searchOrders(searchQuery, isOnline)
+
+        if(!!resultApi){
+
+            const returnResult = resultApi.returnResult.reduce((acc: any, current: any) => {
+                const x = acc.find((item: { id: any; }) => item.id === current.id);
+                return !x ? acc.concat([current]) : acc;
+            }, []);
+
+            setOrders(returnResult)
+            setPage(resultApi.pageResult)
+            setSearch(true)
+        }
+        
+        setLoadSearch(false);
+    }
+    
+
+    const handleClearSearch = () => {
+        setSearch(false)
+        setSearchQuery('')
+        setPage(1)
+
+        if(isOnline){
+            loadItems();
+
+        }else {
+            fetchAsyncStorage();
+        }  
     }
 
     const RightActions = (item: any) => {
@@ -369,24 +406,35 @@ export default function Orders(){
         />
         <Style.SafeContainer>
             <Style.HeaderComponent>
-                <Style.HeaderContainer>
-                    <Style.SearchComponent>
-                        <Style.InputField
-                            autoCorrect={false}
-                            placeholder='Pesquisar'
-                            value={searchQuery}
-                            onChangeText={handleSearch}
-                        />
-                        <AntDesign name="search1" size={20} color="#A0A0A0" />
-                    </Style.SearchComponent>
-                    
-                    <Style.ButtonFilter 
-                        onPress={() => handlePopup(null)}
-                        activeOpacity={0.4}
-                    >
-                        <MaterialCommunityIcons name="order-alphabetical-ascending" size={30} color="white" />
-                    </Style.ButtonFilter>
-                </Style.HeaderContainer>
+                <Style.HeaderContainer1>
+                        <Style.SearchComponent1>
+                            <Style.InputField1
+                                ref={searchInputRef}
+                                autoCorrect={false}
+                                placeholder='Pesquisar'
+                                value={searchQuery}
+                                autoCapitalize='none'
+                                returnKeyType="done"
+                                onChangeText={setSearchQuery}
+                                onSubmitEditing={handleSearchButton}
+                            />
+
+                            <Style.ButtonSearch onPress={() => handleSearchButton()}>
+                                { isLoadSearch
+                                    ? <ActivityIndicator color={'#A0A0A0'} />
+                                    : <AntDesign name="search1" size={23} color="#A0A0A0" />
+                                }
+                                
+                            </Style.ButtonSearch>
+                        </Style.SearchComponent1>
+                        
+                        <Style.ButtonFilter
+                            onPress={() => handlePopup(null)}
+                            activeOpacity={0.4}
+                        >
+                            <MaterialCommunityIcons name="order-alphabetical-ascending" size={30} color="white" />
+                        </Style.ButtonFilter>
+                    </Style.HeaderContainer1>
             </Style.HeaderComponent>
             
             { !isOnline &&
@@ -396,6 +444,16 @@ export default function Orders(){
             }
 
             <Style.ContainerList>
+
+                { search &&
+                    <Style.ContainerBadgeSearch>
+                        <Style.BadgeSearch onPress={handleClearSearch}>
+                            <Style.IconBadgeSearch name="close" />
+                            <Style.TextBadgeSearch color='#fff'>{searchQuery}</Style.TextBadgeSearch>
+                        </Style.BadgeSearch>
+                    </Style.ContainerBadgeSearch>
+                }
+                
                 <FlatList
                     data={orders}
                     showsVerticalScrollIndicator={false}
@@ -411,6 +469,12 @@ export default function Orders(){
                     ListFooterComponent={renderFooter}
                     onEndReached={handleLoadMore}
                     onEndReachedThreshold={0.5}
+                    refreshControl={
+                        <RefreshControl
+                          refreshing={refreshing}
+                          onRefresh={onRefresh}
+                        />
+                    }
                     ListEmptyComponent={
                         <Style.EmptyListContProd>
                             { isLoadBottom ?
