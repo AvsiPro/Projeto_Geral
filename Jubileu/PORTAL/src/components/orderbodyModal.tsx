@@ -409,7 +409,7 @@ const OrdersBodyModal: React.FC<Props> = ({
               })}
               <Style.BodyOrderTotalsComponent>
                 <Style.BodyOrderTotalsLeft>
-                  { userContext.type === 'V' &&
+                  { /*userContext.type === 'V' &&
                     <>                    
                       <Style.BodyOrderProductDesc>
                         Desconto %
@@ -422,8 +422,7 @@ const OrdersBodyModal: React.FC<Props> = ({
                           onChange={(event) => handleDiscount(event.target.value)}
                       />
                     </>
-
-                  }
+                */}
                 </Style.BodyOrderTotalsLeft>
 
                 <Style.BodyOrderTotalsRight>

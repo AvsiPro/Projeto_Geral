@@ -404,13 +404,6 @@ const Orders: React.FC = () => {
     }
 
     setStep2(true)
-
-    /*
-    setBodyAlert('Pedido criado com sucesso!')
-    setHeaderAlert('Sucesso')
-    setTypeAlert('success')
-    setShowAlert(!showAlert)
-    */
   }
 
 

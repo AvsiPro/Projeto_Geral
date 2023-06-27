@@ -1171,3 +1171,10 @@ export const financialBodyComponent = styled.div<{windowDimensions: any, modal: 
         `
     };
 `;
+
+
+export const SearchButton = styled.button`
+    background-color:transparent;
+    border: none;
+    cursor: pointer;
+`
