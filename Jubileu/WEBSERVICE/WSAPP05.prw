@@ -103,17 +103,6 @@ Default oself:seller	:= ''
 	MPSysOpenQuery(cQuery, cAliasTMP)
 
 	While (cAliasTMP)->(!Eof())
-		nAux++
-		aAdd(aListAux , JsonObject():New() )
-
-		cIdAux := '{"SE1",'+;
-			'"'+Alltrim(EncodeUTF8((cAliasTMP)->E1_NUM))+'",'+;
-			'"'+Alltrim(EncodeUTF8((cAliasTMP)->E1_PARCELA))+'",'+;
-			'"'+Alltrim(EncodeUTF8((cAliasTMP)->E1_PREFIXO))+'",'+;
-			'"'+Alltrim(EncodeUTF8((cAliasTMP)->E1_CLIENTE))+'",'+;
-			'"'+Alltrim(EncodeUTF8((cAliasTMP)->E1_LOJA))+'",'+;
-			'"'+Alltrim(EncodeUTF8((cAliasTMP)->E1_VENCREA))+'"'+;
-		'}
 
 		cStatus := If(!Empty((cAliasTMP)->E1_BAIXA),'Pago', If(SToD((cAliasTMP)->E1_VENCREA) >= Date(),"Em Aberto","Atrasado"))
 		lGrava  := .T.
@@ -121,8 +110,20 @@ Default oself:seller	:= ''
 		If (oself:type == 'v' .And. cStatus != 'Atrasado')
 			lGrava := .F.
 		EndIf
-		
+
 		If lGrava
+			nAux++
+			aAdd(aListAux , JsonObject():New() )
+
+			cIdAux := '{"SE1",'+;
+				'"'+Alltrim(EncodeUTF8((cAliasTMP)->E1_NUM))+'",'+;
+				'"'+Alltrim(EncodeUTF8((cAliasTMP)->E1_PARCELA))+'",'+;
+				'"'+Alltrim(EncodeUTF8((cAliasTMP)->E1_PREFIXO))+'",'+;
+				'"'+Alltrim(EncodeUTF8((cAliasTMP)->E1_CLIENTE))+'",'+;
+				'"'+Alltrim(EncodeUTF8((cAliasTMP)->E1_LOJA))+'",'+;
+				'"'+Alltrim(EncodeUTF8((cAliasTMP)->E1_VENCREA))+'"'+;
+			'}
+			
 			aListAux[nAux]['id']	            := Encode64(cIdAux)
 			aListAux[nAux]['branch_invoice']    := Alltrim(EncodeUTF8((cAliasTMP)->F2_FILIAL))
 			aListAux[nAux]['document']	        := Alltrim(EncodeUTF8((cAliasTMP)->E1_NUM))
