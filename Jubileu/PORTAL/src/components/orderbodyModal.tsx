@@ -31,6 +31,7 @@ interface Props {
   setInputEndValue: (value: any) => void;
   discountPercent: number;
   setDiscountPercent: (value: any) => void;
+  itemsCartView?: any;
 }
 
 const OrdersBodyModal: React.FC<Props> = ({
@@ -44,7 +45,8 @@ const OrdersBodyModal: React.FC<Props> = ({
   inputEndValue,
   setInputEndValue,
   discountPercent,
-  setDiscountPercent
+  setDiscountPercent,
+  itemsCartView = []
 }) => {
   const { windowDimensions } = useContext(WindowDimensionsContext);
   const { userContext } = useContext(UserContext)
@@ -58,6 +60,7 @@ const OrdersBodyModal: React.FC<Props> = ({
   const [showItens, setShowItens] = useState<boolean>(false);
   const [showHeader, setShowHeader] = useState<boolean>(false);
   const [discountInput, setDiscountInput] = useState<string>('');
+  const [view, setView] = useState<boolean>(false);
 
   useEffect(() => {
     if (!load) {
@@ -76,9 +79,17 @@ const OrdersBodyModal: React.FC<Props> = ({
       setLoad(false);
     };
 
-    if (cartContext.length > 0) {
-      setItensCart(cartContext);
-      setShowItens(true)
+    if(itemsCartView.length == 0) {
+      if (cartContext.length > 0) {
+        setItensCart(cartContext);
+        setShowItens(true);
+        setView(false)
+      }
+
+    }else {
+      setItensCart(itemsCartView);
+      setShowItens(true);
+      setView(true)
     }
 
     apiData();
@@ -374,6 +385,7 @@ const OrdersBodyModal: React.FC<Props> = ({
                             <Style.BodyOrderButtonQty
                               onClick={() => handleMinus(index)}
                               delete={!item.selected_quantity || item.selected_quantity === 1}
+                              disabled={view}
                             >
                               { !item.selected_quantity || item.selected_quantity === 1 
                                 ? <BsTrash color="white" style={{ width: 15, height: 15 }}/>
@@ -387,13 +399,14 @@ const OrdersBodyModal: React.FC<Props> = ({
                                 type="number"
                                 value={item.selected_quantity}
                                 onChange={(event) => handleQuantityChange(item.id, event.target.value)}
-                                disabled={isMobile}
+                                disabled={isMobile || view}
                                 isMobile={isMobile}
                             />
 
                             <Style.BodyOrderButtonQty 
                               onClick={() => handleMore(index)}
                               delete={false}
+                              disabled={view}
                             >
                               <TiPlus
                                 color="white"
@@ -436,12 +449,14 @@ const OrdersBodyModal: React.FC<Props> = ({
                 </Style.BodyOrderTotalsRight>
 
               </Style.BodyOrderTotalsComponent>
-
-              <Style.BodyOrderButtonAddComp>
-                <Style.BodyOrderButtonAddMore onClick={() => {setShowItens(false)}}>
-                  Adicionar mais produtos
-                </Style.BodyOrderButtonAddMore>
-              </Style.BodyOrderButtonAddComp>      
+              
+              { !view &&
+                <Style.BodyOrderButtonAddComp>
+                  <Style.BodyOrderButtonAddMore onClick={() => {setShowItens(false)}}>
+                    Adicionar mais produtos
+                  </Style.BodyOrderButtonAddMore>
+                </Style.BodyOrderButtonAddComp>      
+              }
             </Style.BodyOrderContainerItens>
               
             )}

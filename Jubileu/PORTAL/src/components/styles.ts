@@ -398,6 +398,7 @@ export const TableData = styled.td<{ textAlign?: string, width?: string }>`
 `;
 
 export const TableRow = styled.tr`
+    cursor: pointer;
 `;
 
 export const TableGenderRow = styled.div`
