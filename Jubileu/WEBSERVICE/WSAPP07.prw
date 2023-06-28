@@ -172,6 +172,7 @@ Default oself:type  	:='V'
 		aListAux[nAux]['document']	            := Alltrim(EncodeUTF8((cAliasTMP)->C5_NUM))
 		aListAux[nAux]['status']     		    := Iif(!Empty(cNota),'Faturado em '+cValToChar(cDtFat),(Iif((cAliasTMP)->C5_OK == "3","Pendencias","Em Aberto")))
 		aListAux[nAux]['customer']			    := Alltrim(EncodeUTF8((cAliasTMP)->A1_COD))
+		aListAux[nAux]['customer_branch']		:= Alltrim(EncodeUTF8((cAliasTMP)->A1_LOJA))
 		aListAux[nAux]['customer_name']	        := Alltrim(EncodeUTF8((cAliasTMP)->A1_NOME))
 		aListAux[nAux]['customer_cnpj']	        := Alltrim(EncodeUTF8((cAliasTMP)->A1_CGC))
 		aListAux[nAux]['issue_date']	        := Alltrim(EncodeUTF8((cAliasTMP)->C5_EMISSAO))
