@@ -123,8 +123,6 @@ const Products: React.FC = () => {
     {field: 'gender', headerText: 'Gênero', textAlign: 'Center' },
     {field: 'price', headerText: 'Preço', textAlign: 'Center' },
     {field: 'balance', headerText: 'Saldo', textAlign: 'Center' },
-    {field: 'ncm', headerText: 'NCM', textAlign: 'Center' },
-    {field: 'ean', headerText: 'EAN', textAlign: 'Center' },
     {field: 'photo', headerText: 'Foto', textAlign: 'Center' }
   ]
 
