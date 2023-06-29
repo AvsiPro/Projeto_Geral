@@ -119,7 +119,7 @@ export default function Login({navigation}: Props){
                             >
                             </Style.InputField>
                         </Style.InputContainer>
-
+                        
                         <Style.ButtonSubmit
                             onPress={() => handleAuth()}
                             style={Style.styleSheet.shadow}
@@ -132,8 +132,14 @@ export default function Login({navigation}: Props){
                             }
 
                         </Style.ButtonSubmit>
+
                     </Style.InputArea>
                 </KeyboardAwareScrollView>
+                
+                <Style.ContainerVresion>
+                    <Style.LabelVersion>v120230629</Style.LabelVersion>
+                </Style.ContainerVresion>
+                
             </Style.FormContainer>
         </Style.SafeContainer>
 

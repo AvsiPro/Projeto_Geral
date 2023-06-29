@@ -81,3 +81,15 @@ export const TextSubmit = styled.Text`
     font-weight:bold;
     font-size:20px;
 `
+
+export const ContainerVresion = styled.View`
+    width:100%;
+    align-items:center;
+    justify-content:center;
+    margin-bottom:30px;
+`
+
+export const LabelVersion = styled.Text`
+    font-weight:600;
+    font-size:12px;
+`
