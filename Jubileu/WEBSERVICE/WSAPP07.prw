@@ -8,6 +8,7 @@ WsRestFul WSAPP07 Description "pedidos API" FORMAT APPLICATION_JSON
 	WsData pageSize  AS Integer	Optional
 	WsData searchKey AS String	Optional
 	WsData byId		 AS Boolean	Optional
+	WsData type		 As String	Optional
 	WsData token     AS String
 
 WsMethod GET orders;
@@ -24,13 +25,14 @@ Retorna a lista de pedidos.
 		Page	   , numerico, numero da pagina
 		PageSize   , numerico, quantidade de registros por pagina
 		byId	   , logico  , indica se deve filtrar apenas pelo codigo
+		type 	   , C=Cliente / V=Vendedor
 		token      , caracter, token vendedor que usara como filtro
 
 @return cResponse  , caracter, JSON contendo a lista de pedidos
 
 /*/
 
-WsMethod GET orders WsReceive searchKey, page, pageSize, token WsRest WSAPP07
+WsMethod GET orders WsReceive searchKey, page, pageSize, token, type WsRest WSAPP07
 	Local lRet:= .T.
 	lRet := orders( self )
 Return( lRet )
@@ -51,6 +53,7 @@ Default oself:page		:= 1
 Default oself:pageSize	:= 20
 Default oself:byId		:=.F.
 Default oself:token  	:=''
+Default oself:type  	:='V'
 	
     RpcSetType(3)
     RPCSetEnv('01','0101')
@@ -77,18 +80,22 @@ Default oself:token  	:=''
 
 	cQuery := " SELECT SC5.*, SA1.* " 
 	cQuery += " FROM   " + RetSQLName("SC5") + " SC5   " 
-	cQuery += " INNER JOIN " + RetSQLName("SA3") + " SA3 "
-	cQuery += " 	   ON A3_FILIAL = '"+FwxFilial("SA3")+"' " 
-	cQuery += "        AND A3_COD = C5_VEND1   " 
-	cQuery += "        AND SA3.D_E_L_E_T_ = ' '   "
+
+	If oself:type == 'V'
+		cQuery += " INNER JOIN " + RetSQLName("SA3") + " SA3 "
+		cQuery += " 	   ON A3_FILIAL = '"+FwxFilial("SA3")+"' " 
+		cQuery += "        AND A3_COD = C5_VEND1   " 
+		cQuery += "        AND SA3.D_E_L_E_T_ = ' '   "
+	EndIf
+	
 	cQuery += " INNER JOIN " + RetSQLName("SA1") + " SA1 "
 	cQuery += " 	   ON A1_FILIAL = '"+FwxFilial("SA1")+"' " 
 	cQuery += "        AND A1_COD = C5_CLIENTE   " 
 	cQuery += "        AND A1_LOJA = C5_LOJACLI   " 
 	cQuery += "        AND SA1.D_E_L_E_T_ = ' '   " 
-	cQuery += " WHERE SC5.D_E_L_E_T_ = ' '   " 
-	cQuery += " 	   AND UPPER(A3_TOKEN) = '"+Upper(oself:token)+"' "+cWhere
-	cQuery += " ORDER BY " + SqlOrder(SC5->(IndexKey(1)))
+	cQuery += " WHERE SC5.D_E_L_E_T_ = ' '   " +cWhere
+	cQuery += " 	   AND UPPER("+If(oself:type == 'V', 'A3_TOKEN', 'A1_TOKEN' )+") = '"+Upper(oself:token)+"' "
+	cQuery += " ORDER BY C5_EMISSAO DESC, C5_NUM DESC"
 	cQuery += " OFFSET (("+cValToChar(oself:page)+" - 1) * "+cValToChar(oself:pageSize)+") ROWS "
 	cQuery += " FETCH NEXT "+cValToChar(oself:pageSize)+" ROWS ONLY "
 	

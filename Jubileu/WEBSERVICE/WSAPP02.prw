@@ -8,6 +8,7 @@ WsRestFul WSAPP02 Description "Clientes API" FORMAT APPLICATION_JSON
 	WsData pageSize  AS Integer	Optional
 	WsData searchKey AS String	Optional
 	WsData byId		 AS Boolean	Optional
+	WsData token	 AS String  Optional
 
 WsMethod GET customers;
     Description 'Lista de Clientes';
@@ -23,14 +24,17 @@ Retorna a lista de clientes.
 		Page	   , numerico, numero da pagina
 		PageSize   , numerico, quantidade de registros por pagina
 		byId	   , logico, indica se deve filtrar apenas pelo codigo
+		token      , token vendedor
 
 @return cResponse  , caracter, JSON contendo a lista de clientes
 
 /*/
 
-WsMethod GET customers WsReceive searchKey, page, pageSize WsRest WSAPP02
+WsMethod GET customers WsReceive searchKey, page, pageSize, token WsRest WSAPP02
+	
 	Local lRet:= .T.
 	lRet := Customers( self )
+
 Return( lRet )
 
 Static Function Customers( oSelf )
@@ -39,13 +43,17 @@ Local aListCli	    := {}
 Local oJsonAux	    := Nil
 Local cJsonCli		:= ''
 Local cSearch		:= ''
+Local cVend 		:= ''
 Local cWhere		:= ''
 Local nAux			:= 0
+Local aRegiao 		:=	{}
+Local nCont 
 
-Default oself:searchKey := ''
-Default oself:page		:= 1
-Default oself:pageSize	:= 20
-Default oself:byId		:=.F.
+Default oself:searchKey :=	''
+Default oself:page		:=	1
+Default oself:pageSize	:= 	20
+Default oself:byId		:=	.F.
+Default oself:token		:=	''
 	
     RpcSetType(3)
     RPCSetEnv('01','0101')
@@ -57,6 +65,7 @@ Default oself:byId		:=.F.
 	// Tratativas para realizar os filtros
 	If !Empty(oself:searchKey) //se tiver chave de busca no request
 		cSearch := Upper( oself:SearchKey )
+		cVend   := fVendToken( oself:token )
 
 		If oself:byId //se filtra somente por ID
 			cWhere += " AND SA1.A1_COD = '"	+ cSearch + "'"
@@ -68,13 +77,50 @@ Default oself:byId		:=.F.
 			cWhere	+= " SA1.A1_NREDUZ LIKE 	'%" + cSearch  + "%' OR "
 			cWhere	+= " SA1.A1_CGC LIKE	 	'%" + StrTran(StrTran(StrTran(StrTran(cSearch, " ", ""), "-", ""), ".", ""), "/", "")  + "%' OR "
 			cWhere	+= " SA1.A1_NOME LIKE 		'%" + cSearch + "%' ) "
+
+			If !Empty(cVend)
+				aRegiao := BuscaRegiao(cVend)
+
+				IF len(aRegiao) > 0
+					cRegiao := ""
+					nCont   := 0
+					cVirgula:= ""
+					For nCont := 1 to len(aRegiao)
+						cRegiao += cVirgula + aRegiao[nCont]
+						cVirgula := "','"
+						
+					Next nCont
+					cWhere += " AND SA1.A1_EST IN('"+upper(cRegiao)+"')"
+				EndIf
+				
+			EndIf
+		EndIf
+
+	ElseIf !Empty(oself:token) //se tiver chave de busca no request
+		cVend := fVendToken( oself:token )
+
+		If !Empty(cVend)
+			aRegiao := BuscaRegiao(cVend)
+			
+			IF len(aRegiao) > 0
+				cRegiao := ""
+				nCont   := 0
+				cVirgula:= ""
+				For nCont := 1 to len(aRegiao)
+					cRegiao += cVirgula + aRegiao[nCont]
+					cVirgula := "','"
+					
+				Next nCont
+				cWhere += " AND SA1.A1_EST IN('"+upper(cRegiao)+"')"
+			EndIf
+			
 		EndIf
 	EndIf
 
 	cQuery := " SELECT A1_COD, A1_LOJA, A1_END, A1_BAIRRO, A1_COMPLEM, A1_CGC, A1_INSCR, "
 	cQuery += " A1_NOME, A1_NREDUZ, A1_MUN, A1_EST, A1_CEP, A1_CONTATO, A1_EMAIL, A1_DDD, "
 	cQuery += " A1_TEL, A1_ULTCOM, A1_PRICOM, A1_RISCO, A1_LC, A1_SALDUP, A1_MCOMPRA, "
-	cQuery += " A1_NROCOM, A1_ATR, A1_MATR, A1_PAGATR "
+	cQuery += " A1_NROCOM, A1_ATR, A1_MATR, A1_PAGATR, A1_COND "
 	cQuery += " FROM "+RetSqlName('SA1')+" SA1 "
 	cQuery += " WHERE SA1.D_E_L_E_T_ = ' ' "
 	cQuery += " AND SA1.A1_MSBLQL <> '1' "+cWhere
@@ -93,6 +139,8 @@ Default oself:byId		:=.F.
 			'"'+Alltrim(EncodeUTF8((cAliasTMP)->A1_COD))+'",'+;
 			'"'+Alltrim(EncodeUTF8((cAliasTMP)->A1_CGC))+'"'+;
 		'}'
+
+		cCond := Iif(Empty((cAliasTMP)->A1_COND),'000',(cAliasTMP)->A1_COND)
 		
 		fGeraResult(;
 			@aListCli,;
@@ -123,7 +171,9 @@ Default oself:byId		:=.F.
 				(cAliasTMP)->A1_NROCOM,;
 				(cAliasTMP)->A1_ATR,;
 				(cAliasTMP)->A1_MATR,;
-				(cAliasTMP)->A1_PAGATR;
+				(cAliasTMP)->A1_PAGATR,;
+				cCond,;
+				Posicione('SE4',1,FwxFilial('SE4')+cCond, 'Alltrim(E4_COND)');
 			};
 		)
 
@@ -211,7 +261,9 @@ Static Function fConsulBraApi(cSearch, aListCli)
 				0,;
 				0,;
 				0,;
-				0;
+				0,;
+				'',;
+				'';
 			};
 		)
 	EndIf
@@ -221,33 +273,38 @@ Return
 
 Static Function fGeraResult(aListCli, nAux, aListAux)
 
-	aListCli[nAux]['id']	            := aListAux[1]
-	aListCli[nAux]['code']	            := aListAux[2]
-	aListCli[nAux]['branch']            := aListAux[3]
-	aListCli[nAux]['address']           := aListAux[4]
-	aListCli[nAux]['district']          := aListAux[5]
-	aListCli[nAux]['complement']        := aListAux[6]
-	aListCli[nAux]['cnpj']              := aListAux[7]
-	aListCli[nAux]['state_regist']      := aListAux[8]
-	aListCli[nAux]['name']              := aListAux[9]
-	aListCli[nAux]['short_name']        := aListAux[10]
-	aListCli[nAux]['city']              := aListAux[11]
-	aListCli[nAux]['uf']                := aListAux[12]
-	aListCli[nAux]['cep']               := aListAux[13]
-	aListCli[nAux]['contact']           := aListAux[14]
-	aListCli[nAux]['email']             := aListAux[15]
-	aListCli[nAux]['phone']             := aListAux[16]
-	aListCli[nAux]['last_purchase']     := aListAux[17]
-	aListCli[nAux]['first_purchase']    := aListAux[18]
-	aListCli[nAux]['risk']              := aListAux[19]
-	aListCli[nAux]['credit_limit']      := aListAux[20]
-	aListCli[nAux]['balance']           := aListAux[21]
-	aListCli[nAux]['biggest_purchase']  := aListAux[22]
-	aListCli[nAux]['amount_purchases']  := aListAux[23]
-	aListCli[nAux]['amount_delays']     := aListAux[24]
-	aListCli[nAux]['biggest_delays']    := aListAux[25]
-	aListCli[nAux]['late_payments']     := aListAux[26]
-	aListCli[nAux]['financial']			:= fTitulos(aListAux[2],aListAux[3])
+	aListCli[nAux]['id']	            	:= aListAux[1]
+	aListCli[nAux]['code']	            	:= aListAux[2]
+	aListCli[nAux]['branch']            	:= aListAux[3]
+	aListCli[nAux]['address']           	:= aListAux[4]
+	aListCli[nAux]['district']          	:= aListAux[5]
+	aListCli[nAux]['complement']        	:= aListAux[6]
+	aListCli[nAux]['cnpj']              	:= aListAux[7]
+	aListCli[nAux]['state_regist']      	:= aListAux[8]
+	aListCli[nAux]['name']              	:= aListAux[9]
+	aListCli[nAux]['short_name']        	:= aListAux[10]
+	aListCli[nAux]['city']              	:= aListAux[11]
+	aListCli[nAux]['uf']                	:= aListAux[12]
+	aListCli[nAux]['cep']               	:= aListAux[13]
+	aListCli[nAux]['contact']           	:= aListAux[14]
+	aListCli[nAux]['email']             	:= aListAux[15]
+	aListCli[nAux]['phone']             	:= aListAux[16]
+	aListCli[nAux]['last_purchase']     	:= aListAux[17]
+	aListCli[nAux]['first_purchase']    	:= aListAux[18]
+	aListCli[nAux]['risk']              	:= aListAux[19]
+	aListCli[nAux]['credit_limit']      	:= aListAux[20]
+	aListCli[nAux]['balance']           	:= aListAux[21]
+	aListCli[nAux]['biggest_purchase']  	:= aListAux[22]
+	aListCli[nAux]['amount_purchases']  	:= aListAux[23]
+	aListCli[nAux]['amount_delays']     	:= aListAux[24]
+	aListCli[nAux]['biggest_delays']    	:= aListAux[25]
+	aListCli[nAux]['late_payments']     	:= aListAux[26]
+	aListCli[nAux]['financial']				:= fTitulos(aListAux[2],aListAux[3])
+	aListCli[nAux]['another_address']   	:= ''
+	aListCli[nAux]['another_cep']   		:= ''
+	aListCli[nAux]['another_district']  	:= ''
+	aListCli[nAux]['payment']  				:= aListAux[27]
+	aListCli[nAux]['payment_description']  	:= aListAux[28]
 
 Return
 
@@ -315,3 +372,75 @@ Local aArea    := GetArea()
 	RestArea(aArea)
 
 Return aListAux
+
+/*/{Protheus.doc} BuscaRegiao
+	(long_description)
+	@type  Static Function
+	@author user
+	@since 19/06/2023
+	@version version
+	@param param_name, param_type, param_descr
+	@return return_var, return_type, return_description
+	@example
+	(examples)
+	@see (links_or_references)
+/*/
+STATIC Function BuscaRegiao(cVendedor)
+
+Local aArray := {}
+Local aAux   := {}
+Local cQuery
+Local nCont  := 0
+
+cQuery := "SELECT Z30_REGIAO FROM "+RetSQLName("Z30")
+cQuery += " WHERE Z30_CODVEN='"+cVendedor+"'"
+
+If Select('TRB') > 0
+	dbSelectArea('TRB')
+	dbCloseArea()
+EndIf
+
+DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
+
+DbSelectArea("TRB")
+
+While !EOF()
+	aAux := Strtokarr(Alltrim(TRB->Z30_REGIAO),"/")
+	For nCont := 1 to len(aAux)
+		Aadd(aArray,aAux[nCont])
+	Next nCont
+	Dbskip()
+EndDo
+	
+conout(cvaltochar(aArray))
+Return(aArray)
+
+
+/*/{Protheus.doc} fVendToken
+   @description: Token Vendedor
+   @type: Static Function
+   @author: Felipe Mayer
+   @since: 19/06/2023
+/*/
+
+Static Function fVendToken(cToken)
+
+Local cRet  := ''
+Local aArea := GetArea()
+	
+	cQuery := " SELECT * FROM "+RetSqlName('SA3')+" " + CRLF
+	cQuery += " WHERE D_E_L_E_T_ = ' ' " + CRLF
+	cQuery += " AND UPPER(A3_TOKEN) = '"+Upper(cToken)+"' " + CRLF
+	
+	cAliasTMP := GetNextAlias()
+	MPSysOpenQuery(cQuery, cAliasTMP)
+	
+	If (cAliasTMP)->(!EoF())
+		cRet := (cAliasTMP)->A3_COD
+	EndIf
+	
+	(cAliasTMP)->(DbCloseArea())
+
+RestArea(aArea)
+
+Return cRet

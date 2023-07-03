@@ -65,7 +65,7 @@ WsMethod POST WsReceive RECEIVE WsService WSAPP10
 			Z50->(MsUnlock())
 			ConfirmSx8()
 
-            cMessage := 'Chamado criado com sucesso: '+cWarranty
+            cMessage := EncodeUTF8('Chamado criado com sucesso: '+cWarranty)
         Else
             cWarranty := Z50->Z50_CODIGO
             
@@ -79,7 +79,7 @@ WsMethod POST WsReceive RECEIVE WsService WSAPP10
                 Z50->Z50_OBSATD := cObsOld + CRLF + Alltrim(cMsgGrv)
             Z50->(MsUnlock())
 
-			cMessage := EncodeUTF8("Interação realizada com sucesso!")
+			cMessage := EncodeUTF8("Interação realizada com sucesso: "+cWarranty)
 		EndIf
 
         cPatch := '\updchamados\chamado_'+Alltrim(cWarranty)
