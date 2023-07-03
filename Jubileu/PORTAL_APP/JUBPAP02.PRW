@@ -48,10 +48,10 @@ Private nCBLargura	:= GETMV("PV_BOL_LAR",,0.0280)
 Private nCBAltura	:= GETMV("PV_BOL_ALT",,1.4)
 
 //AQUIPrivate aDaBnk	:= 	DadBnk()
-Private _Bco 	:=	'001' //Avkey(aDaBnk[ascan(aDaBnk,{|x| x[1] == "PI_BCOBOL"}),2],"A6_COD") //GetMV("PI_BCOBOL",,"341  ")
-Private _Age 	:=	'1511 ' //Avkey(aDaBnk[ascan(aDaBnk,{|x| x[1] == "PI_AGEBOL"}),2],"A6_AGENCIA") //GetMV("PI_AGEBOL",,"2938 ")
-Private _Cta 	:=	If(cfilorig=="0101",'11        ','101       ') //Avkey(aDaBnk[ascan(aDaBnk,{|x| x[1] == "PI_CTABOL"}),2],"A6_NUMCON") //GetMV("PI_CTABOL",,"21899     ")
-Private _DiV 	:=	If(cfilorig=="0101",'6','5') //Avkey(aDaBnk[ascan(aDaBnk,{|x| x[1] == "PI_DIGBOL"}),2],"A6_DVCTA") //GetMV("PI_DIGBOL",,"3")
+Private _Bco 	:=	SA6->A6_COD //Avkey(aDaBnk[ascan(aDaBnk,{|x| x[1] == "PI_BCOBOL"}),2],"A6_COD") //GetMV("PI_BCOBOL",,"341  ")
+Private _Age 	:=	SA6->A6_AGENCIA //Avkey(aDaBnk[ascan(aDaBnk,{|x| x[1] == "PI_AGEBOL"}),2],"A6_AGENCIA") //GetMV("PI_AGEBOL",,"2938 ")
+Private _Cta 	:=	SA6->A6_NUMCON //Avkey(aDaBnk[ascan(aDaBnk,{|x| x[1] == "PI_CTABOL"}),2],"A6_NUMCON") //GetMV("PI_CTABOL",,"21899     ")
+Private _DiV 	:=	SA6->A6_DVCTA //Avkey(aDaBnk[ascan(aDaBnk,{|x| x[1] == "PI_DIGBOL"}),2],"A6_DVCTA") //GetMV("PI_DIGBOL",,"3")
 Private _Car	:=	'17' //Avkey(aDaBnk[ascan(aDaBnk,{|x| x[1] == "PI_CARBOL"}),2],"EE_CODCART") //GetMV("PI_CARBOL",,"109")
 Private _SubCta	:=	'001' //Avkey(aDaBnk[ascan(aDaBnk,{|x| x[1] == "PI_SUBCTA"}),2],"EE_SUBCTA") 
 Private _cNossoNum
@@ -214,9 +214,12 @@ If DBSEEK(xFilial("SE1")+Avkey(MV_PAR01,"E1_PREFIXO")+Avkey(MV_PAR02,"E1_NUM")+A
 	_nVlrAbat   :=  SomaAbat(SE1->E1_PREFIXO,SE1->E1_NUM,SE1->E1_PARCELA,"R",1,,SE1->E1_CLIENTE,SE1->E1_LOJA)
 	
 	//CB_RN_NN    := Ret_cBarra(Subs(aDadosBanco[1],1,3)+"9",aDadosBanco[3],aDadosBanco[4],aDadosBanco[5],AllTrim(_cNossoNum),(E1_VALOR-_nVlrAbat),Datavalida(E1_VENCTO,.T.))
-    CB_RN_NN    := Ret_cBarra(Subs(aDadosBanco[1],1,3)+"9",Subs(aDadosBanco[3],1,4),aDadosBanco[4],aDadosBanco[5],;
-					aDadosBanco[6],AllTrim(E1_NUM)+AllTrim(E1_PARCELA),(E1_SALDO-_nVlrAbat),SE1->E1_VENCREA,SEE->EE_CODEMP,SEE->EE_FAXATU,Iif(SE1->E1_DECRESC > 0,.t.,.f.),SE1->E1_PARCELA,aDadosBanco[3])
-
+    If !Empty(SE1->E1_CODBAR)
+		CB_RN_NN := {SE1->E1_CODBAR,SE1->E1_CODDIG,SE1->E1_NUMBCO}
+	Else
+		CB_RN_NN    := Ret_cBarra(Subs(aDadosBanco[1],1,3)+"9",Subs(aDadosBanco[3],1,4),aDadosBanco[4],aDadosBanco[5],;
+						aDadosBanco[6],AllTrim(E1_NUM)+AllTrim(E1_PARCELA),(E1_SALDO-_nVlrAbat),SE1->E1_VENCREA,SEE->EE_CODEMP,SEE->EE_FAXATU,Iif(SE1->E1_DECRESC > 0,.t.,.f.),SE1->E1_PARCELA,aDadosBanco[3])
+	EndIf
 	
 	aDadosTit    :=  {AllTrim(E1_NUM)+AllTrim(E1_PARCELA)	    ,;  //1-Número do título
 					E1_EMISSAO								,;  //2-Data da emissão do título
@@ -1824,3 +1827,30 @@ Else
 Endif
 
 Return(_cRet) 
+
+
+User function xtestbol
+
+cPasta   := '\cliente\'
+cFilNota := '0801'
+
+If Select("SM0") == 0
+	RpcSetType(3)
+	RPCSetEnv("01",cFilNota)
+EndIf
+
+MV_PAR01 := '8'
+MV_PAR02 := '000200423'
+cParBol  := '01'
+
+DbSelectArea("SE1")
+DbSetOrder(1)
+If Dbseek(xFilial("SE1")+Avkey(MV_PAR01,"E1_PREFIXO")+MV_PAR02+avkey(cParBol,"E1_PARCELA"))
+	DbSelectArea("SA6")
+	DbSetOrder(1)
+	If Dbseek(xFilial("SA6")+SE1->E1_PORTADO+SE1->E1_AGEDEP+SE1->E1_CONTA)
+		U_ROBBOL(.T.,cPasta+'Boleto\',cFilNota,cParBol)
+	EndIf
+EndIf
+
+Return

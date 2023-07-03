@@ -9,5 +9,7 @@
  
 User Function FA750BRW()
     Local aRotina:={}
+
     aAdd(aRotina, { "CNAB Folha"    , "u_GeraTxt()" , 0 , 4,15,NIL})
+    aAdd(aRotina, { "Retorno CNAB Folha"    , "u_ProcTxt()" , 0 , 4,15,NIL})
 Return aRotina
