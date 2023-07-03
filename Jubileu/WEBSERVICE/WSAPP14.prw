@@ -64,11 +64,33 @@ Static Function GeraPDFs( oSelf )
     If Alltrim(upper(cTipFile)) == 'BOLETO'
         MV_PAR01 := cSerNF
         MV_PAR02 := cNumero
-        U_ROBBOL(.T.,cPasta+'Boleto\',cFilNota,cParBol)
+
+        If File(cPasta+"Boleto\boleto_"+cNumero+"_"+Alltrim(cParBol)+".pdf")
+            Ferase(cPasta+"Boleto\boleto_"+cNumero+"_"+Alltrim(cParBol)+".pdf")
+        EndIf
+
+        DbSelectArea("SE1")
+        DbSetOrder(1)
+        If Dbseek(xFilial("SE1")+Avkey(MV_PAR01,"E1_PREFIXO")+MV_PAR02+avkey(cParBol,"E1_PARCELA"))
+            DbSelectArea("SA6")
+            DbSetOrder(1)
+            If Dbseek(xFilial("SA6")+SE1->E1_PORTADO+SE1->E1_AGEDEP+SE1->E1_CONTA)
+                U_ROBBOL(.T.,cPasta+'Boleto\',cFilNota,cParBol)
+            EndIf
+        EndIf
+        //U_ROBBOL(.T.,cPasta+'Boleto\',cFilNota,cParBol)
         oFile  := FwFileReader():New(cPasta+"Boleto\boleto_"+cNumero+"_"+Alltrim(cParBol)+".pdf")
         cFilName := "boleto_"+cNumero+"_"+Alltrim(cParBol)+".pdf"
     ElseIf Alltrim(upper(cTipFile)) == 'DANFE' 
-        U_ROBDANFE(cNumero,cSerNF,cPasta,'Danfe')
+        DbSelectArea("SF2")
+        DbSetOrder(1)
+        Dbseek(cFilNota+cNumero+cSerNF)
+
+        DbSelectArea("SF3")
+        DbSetOrder(5)
+        DbSeek(cFilNota+cSerNF+cNumero)
+
+        U_JUBDANFE(cNumero,cSerNF,cPasta,'Danfe')
         oFile  := FwFileReader():New(cPasta+"Danfe\"+cNumero+".pdf")
         cFilName := cNumero+".pdf"
     ElseIf Alltrim(upper(cTipFile)) == 'XML'

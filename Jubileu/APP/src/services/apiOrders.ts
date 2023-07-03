@@ -145,22 +145,62 @@ export const searchOrders = async (searchQuery: string, isOnline: boolean) => {
 }
 
 
-export const sortOrderList = (filter: number, orders: any) => {
+export const sortOrderList = (filter: number, orders: any[]) => {
+  const sortedOrders = [...orders].sort((a, b) => {
+    const aValue = getAttributeValue(a, filter);
+    const bValue = getAttributeValue(b, filter);
 
-    const sortedpedidos = [...orders].sort((a, b) => {
-        if (filter === 1) {
-            return a.document.localeCompare(b.document);
+    if (filter === 4) {
+      return bValue.localeCompare(aValue); // Ordenação contrária para issue_date/emission
+    } else {
+      return aValue.localeCompare(bValue);
+    }
+  });
 
-        }else if (filter === 2) {
-            return a.customer_name.localeCompare(b.customer_name);
+  return sortedOrders;
+};
+  
+const getAttributeValue = (obj: any, filter: number) => {
+  const attributePaths = getAttributePaths(filter);
 
-        } else if (filter === 3) {
-            return a.customer_cnpj.localeCompare(b.customer_cnpj);
+  for (const attributePath of attributePaths) {
+    const value = getValueByAttributePath(obj, attributePath);
 
-        } else{
-            return b.issue_date.localeCompare(a.issue_date);
-        }
-    });
+    if (value !== undefined) {
+      return value;
+    }
+  }
 
-    return sortedpedidos;
-}
+  return '';
+};
+
+const getAttributePaths = (filter: number) => {
+  switch (filter) {
+    case 1: // Sort by document/numorc
+      return ['document', 'numorc'];
+
+    case 2: // Sort by customer_name/customer.name
+      return ['customer_name', 'customer.name'];
+
+    case 3: // Sort by customer_cnpj/customer.cnpj
+      return ['customer_cnpj', 'customer.cnpj'];
+
+    default: // Sort by issue_date/emission
+      return ['issue_date', 'emission'];
+  }
+};
+
+const getValueByAttributePath = (obj: any, attributePath: string) => {
+  const attributes = attributePath.split('.');
+
+  for (const attribute of attributes) {
+    obj = obj[attribute];
+
+    if (obj === undefined) {
+      return undefined;
+    }
+  }
+
+  return obj;
+};
+  

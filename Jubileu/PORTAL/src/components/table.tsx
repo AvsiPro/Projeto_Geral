@@ -35,6 +35,7 @@ interface PropsTable{
   handleMark: (row: any) => void;
   modal?: boolean ;
   search?: boolean;
+  handleRowClick?: (row: any) => void
 }
 
 const Table: React.FC <PropsTable> = ({
@@ -46,7 +47,8 @@ const Table: React.FC <PropsTable> = ({
   handleSearch,
   handleMark,
   modal = false,
-  search = true
+  search = true,
+  handleRowClick = () => {}
 }) => {
 
   const { theme } = useContext(ThemeContext);
@@ -95,6 +97,7 @@ const Table: React.FC <PropsTable> = ({
   const BodyModalFinancial = (
     <FinancialBodyModal
       financialCustomer={financialCustomer}
+      type='v'
     />
   )
   
@@ -182,7 +185,7 @@ const Table: React.FC <PropsTable> = ({
               
               <tbody>
                 {sortedData.map((item: any, index: number) => (
-                  <Style.TableRow key={index}>
+                  <Style.TableRow key={index} onClick={() => handleRowClick(item)}>
                     {fields.map((subItem: any) =>
                       <Style.TableData key={subItem.field} textAlign={subItem.textAlign} width={subItem.width}>
                         { subItem.field === 'action'

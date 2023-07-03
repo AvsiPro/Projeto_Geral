@@ -1,11 +1,10 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import * as Style from './styles';
-import { Modal, TouchableWithoutFeedback, Keyboard, Platform } from 'react-native';
+import { Modal, TouchableWithoutFeedback, Keyboard, Platform, TextInput, ActivityIndicator } from 'react-native';
 
 import { FontAwesome, AntDesign } from '@expo/vector-icons';
 
 import NetInfo from "@react-native-community/netinfo";
-import debounce from 'lodash/debounce';
 
 import Customers from '../components/customers';
 import UpdateCustomer  from '../components/updateCustomer';
@@ -36,6 +35,7 @@ export default function modalCustomers({getVisible, handleModalCustomers, custom
     
     const { customerSelected ,setCustomerSelected } = useContext(AppContext);
     const { colors } = useContext(ThemeContext);
+    const searchInputRef = useRef<TextInput>(null);
     
     const [searchQuery, setSearchQuery] = useState<string>('');
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -46,6 +46,8 @@ export default function modalCustomers({getVisible, handleModalCustomers, custom
     const [financialCustomer, setFinancialCustomer] = useState('')
     const [visiblePopup, setVisiblePopup] = useState(false)
 
+    const [search, setSearch] = useState<boolean>(false);
+    const [isLoadSearch, setLoadSearch] = useState<boolean>(false);
 
     const { control, handleSubmit, formState: { errors }, reset, setValue } = useForm<FormDataCustomer>({
         resolver: yupResolver(schema)
@@ -66,6 +68,9 @@ export default function modalCustomers({getVisible, handleModalCustomers, custom
 
     /** verifica se esta online. Se tiver, chama a API com clientes, se nao, chama os clientes que estao salvos no storage **/
     useEffect(() => {
+        setSearch(false)
+        setSearchQuery('')
+
         if(isOnline){
             loadItems();
         }else {
@@ -110,30 +115,6 @@ export default function modalCustomers({getVisible, handleModalCustomers, custom
           loadItems();
         }
     };
-
-
-    /** grava o state conforme digitacao da pesquisa e faz a chamada do devounced para busca da api **/
-    const handleSearch = (text: string) => {
-        setSearchQuery(text);
-        handleSearchDebounced(text);
-    };
-    
-
-    /** faz a chamada da api conforme o usuario vai digitando na pesquisa.
-        Tem um atraso de 500 milisegundo para aguardar o fim da digitacao e nao encavalar a chamada de api
-    **/
-    const handleSearchDebounced = debounce(async (searchQuery: string) => {
-        setIsLoading(true);
-
-        const resultApi = await searchCustomers(searchQuery, isOnline)
-        
-        if(!!resultApi){
-            atualizaClientes(resultApi.returnResult)
-            setPage(resultApi.pageResult)
-        }
-
-        setIsLoading(false);
-    }, 500);
 
 
     /** Seta o cliente selecionado **/
@@ -196,6 +177,42 @@ export default function modalCustomers({getVisible, handleModalCustomers, custom
         handleFinancial()
     }
 
+
+    const handleSearchButton = async() => {
+        setLoadSearch(true);
+        Keyboard.dismiss();
+
+        if(!searchQuery){
+            setLoadSearch(false)
+            handleClearSearch();
+            return
+        }
+
+        const resultApi = await searchCustomers(searchQuery, isOnline)
+
+        if(!!resultApi){
+            atualizaClientes(resultApi.returnResult)
+            setPage(resultApi.pageResult)
+            setSearch(true)
+        }
+        
+        setLoadSearch(false);
+    }
+
+
+    const handleClearSearch = () => {
+        setSearch(false)
+        setSearchQuery('')
+        setPage(1)
+
+        if(isOnline){
+            loadItems();
+
+        }else {
+            fetchAsyncStorage();
+        }  
+    }
+
     return(
     
         <Modal 
@@ -215,15 +232,24 @@ export default function modalCustomers({getVisible, handleModalCustomers, custom
                                 <Style.TopModalNewOrder>
                                     <Style.ContainerSearchModal>
                                         <Style.SearchNewOrderModal
+                                            ref={searchInputRef}
                                             keyboardType='email-address'
                                             autoCapitalize='none'
-                                            autoCorrect={false}
                                             placeholder='Pesquisar'
-                                            onChangeText={handleSearch}
+                                            returnKeyType="done"
+                                            autoCorrect={false}
+                                            onChangeText={setSearchQuery}
+                                            onSubmitEditing={handleSearchButton}
                                             value={searchQuery}
                                         />
 
-                                        <AntDesign name="search1" size={20} color={colors.primary} />
+                                        <Style.ButtonSearch onPress={() => handleSearchButton()}>
+                                            { isLoadSearch
+                                                ? <ActivityIndicator color={colors.primary} />
+                                                : <AntDesign name="search1" size={20} color={colors.primary} />
+                                            }
+                                            
+                                        </Style.ButtonSearch>
                                     </Style.ContainerSearchModal>
                                     
                                     <Style.ButtonCloseModal
@@ -273,15 +299,25 @@ export default function modalCustomers({getVisible, handleModalCustomers, custom
                                 :
                                     
                                     !financial ?
-
-                                        <Customers
-                                            customers={customers}
-                                            handleLoadMore={handleLoadMore}
-                                            handleItem={handleItem}
-                                            handleCustomerFinancial={handleCustomerFinancial}
-                                            isLoading={isLoading}
-                                            isOnline={isOnline}
-                                        />
+                                        <>
+                                            { search &&
+                                                <Style.ContainerBadgeSearch>
+                                                    <Style.BadgeSearch onPress={handleClearSearch}>
+                                                        <Style.IconBadgeSearch name="close" />
+                                                        <Style.TextBadgeSearch color='#fff'>{searchQuery}</Style.TextBadgeSearch>
+                                                    </Style.BadgeSearch>
+                                                </Style.ContainerBadgeSearch>
+                                            }
+                                        
+                                            <Customers
+                                                customers={customers}
+                                                handleLoadMore={handleLoadMore}
+                                                handleItem={handleItem}
+                                                handleCustomerFinancial={handleCustomerFinancial}
+                                                isLoading={isLoading}
+                                                isOnline={isOnline}
+                                            />
+                                        </>
                                     :
                                     
                                         <Financial

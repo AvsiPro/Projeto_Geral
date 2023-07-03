@@ -1,12 +1,11 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import * as Style from './styles';
-import { ActivityIndicator, Modal } from 'react-native';
+import { ActivityIndicator, Keyboard, Modal, TextInput } from 'react-native';
 
 import { FontAwesome, AntDesign, Ionicons } from '@expo/vector-icons';
 
 import NetInfo from "@react-native-community/netinfo";
 
-import debounce from 'lodash/debounce';
 import Products from '../components/products';
 
 import api from '../services/api';
@@ -24,6 +23,7 @@ export default function modalProducts({getVisible, handleModalProducts, products
     
     const { itemCart, setItemCart } = useContext(AppContext);
     const { colors } = useContext(ThemeContext);
+    const searchInputRef = useRef<TextInput>(null);
     
     const [searchQuery, setSearchQuery] = useState<string>('');
     const [markedCount, setMarkedCount] = useState<number>(0);
@@ -37,6 +37,8 @@ export default function modalProducts({getVisible, handleModalProducts, products
     const [scanned, setScanned] = useState(false);
     const [hasCamera, setHasCamera] = useState(false);
 
+    const [isLoadSearch, setLoadSearch] = useState<boolean>(false);
+    const [search, setSearch] = useState<boolean>(false);
 
     /** verifica se esta online ou offline **/
     useEffect(() => {
@@ -52,8 +54,12 @@ export default function modalProducts({getVisible, handleModalProducts, products
 
     /** verifica se esta online. Se tiver, chama a API com produtos, se nao, chama os produtos que estao salvos no storage **/
     useEffect(() => {
+        setSearch(false)
+        setSearchQuery('')
+
         if(isOnline){
             loadItems();
+
         }else {
             fetchAsyncStorage();
         }
@@ -95,31 +101,6 @@ export default function modalProducts({getVisible, handleModalProducts, products
           loadItems();
         }
     };
-
-
-    /** grava o state conforme digitacao da pesquisa e faz a chamada do devounced para busca da api **/
-    const handleSearch = (text: string) => {
-        setSearchQuery(text);
-        handleSearchDebounced(text);
-    };
-
-
-    /** faz a chamada da api conforme o usuario vai digitando na pesquisa.
-        Tem um atraso de 500 milisegundo para aguardar o fim da digitacao e nao encavalar a chamada de api
-    **/
-    const handleSearchDebounced = debounce(async (searchQuery: string) => {
-        setLoadBottom(true);
-
-        const resultApi = await searchProducts(searchQuery, isOnline)
-        
-        if(!!resultApi){
-            atualizaProdutos(resultApi.returnResult)
-            setPage(resultApi.pageResult)
-        }
-        
-        setLoadBottom(false);
-    }, 500);
-
 
     /** conforme for selecionando os produtos, vai atualizando o item marked de cada objeto do json, para controle de marcacao.
         atualiza tambem a state de count para marcar quantos selecionados
@@ -242,6 +223,43 @@ export default function modalProducts({getVisible, handleModalProducts, products
         setShowModal(true);
         setProductDetails(newData[index])
     }
+
+
+    const handleSearchButton = async() => {
+        setLoadSearch(true);
+        Keyboard.dismiss();
+
+        if(!searchQuery){
+            setLoadSearch(false)
+            handleClearSearch();
+            return
+        }
+
+        const resultApi = await searchProducts(searchQuery, isOnline)
+
+        if(!!resultApi){
+            atualizaProdutos(resultApi.returnResult)
+            setPage(resultApi.pageResult)
+            setSearch(true)
+        }
+        
+        setLoadSearch(false);
+    }
+    
+
+    const handleClearSearch = () => {
+        setSearch(false)
+        setSearchQuery('')
+        setPage(1)
+
+        if(isOnline){
+            loadItems();
+
+        }else {
+            fetchAsyncStorage();
+        }  
+    }
+
       
     return(
         <Modal 
@@ -256,14 +274,22 @@ export default function modalProducts({getVisible, handleModalProducts, products
                         <Style.ContainerSearchModal>
                             <Style.SearchNewOrderModal
                                 keyboardType='email-address'
-                                autoCapitalize='none'
+                                ref={searchInputRef}
                                 autoCorrect={false}
                                 placeholder='Pesquisar'
-                                onChangeText={handleSearch}
                                 value={searchQuery}
+                                autoCapitalize='none'
+                                returnKeyType="done"
+                                onChangeText={setSearchQuery}
+                                onSubmitEditing={handleSearchButton}
                             />
 
-                            <AntDesign name="search1" size={20} color={colors.primary} />
+                            <Style.ButtonSearch onPress={() => handleSearchButton()}>
+                                { isLoadSearch
+                                    ? <ActivityIndicator color={colors.primary} />
+                                    : <AntDesign name="search1" size={23} color={colors.primary} />
+                                }
+                            </Style.ButtonSearch>
                         </Style.ContainerSearchModal>
                         
                         { markedCount > 0 ? 
@@ -310,6 +336,15 @@ export default function modalProducts({getVisible, handleModalProducts, products
                         }
                         
                         <Style.ComponentProductModal>
+                            { search &&
+                                <Style.ContainerBadgeSearch>
+                                    <Style.BadgeSearch onPress={handleClearSearch}>
+                                        <Style.IconBadgeSearch name="close" />
+                                        <Style.TextBadgeSearch color='#fff'>{searchQuery}</Style.TextBadgeSearch>
+                                    </Style.BadgeSearch>
+                                </Style.ContainerBadgeSearch>
+                            }
+                            
                             <Products
                                 products={products}
                                 handleLoadMore={handleLoadMore}

@@ -1512,6 +1512,7 @@ Static Function GeraPv(nOpcG)
 Local aArea 	:=	GetArea()
 Local nCont 
 Local nCntG
+Local nCnt5
 Local aItens	:=	{}
 Local aItSFt	:=	{}
 Local aLocac 	:=	{}
@@ -1531,7 +1532,7 @@ Local cBkpcFil  :=	cFilant
 Local aFilFat	:=	{'0101=SP','0102=RJ'} //,'0103=PR'}
 Local nLst5
 
-If nOpcG == 0 .And. !lLiberaF .And. cLocacS <> "S"
+If nOpcG == 0 .And. !lLiberaF .And. cLocacS <> "2"
 	MsgAlert("Primeiro rode a opção de Liberação para faturamento")
 	Return
 EndIf
@@ -1570,7 +1571,7 @@ If nOpcG == 0
 	//cLocacS
 
 	For nCntG := 1 to len(aList)
-		If aList[nCntG,len(aQtdH)+1] == 1
+		If aList[nCntG,len(aQtdH)+1] == 1 .OR. lLoc
 			cForFat :=	aList[nCntG,14]
 			cTipFat	:=	aList[nCntG,15]
 			aLocac  :=  {}
@@ -1578,7 +1579,7 @@ If nOpcG == 0
 
 			aItens := {}
 			aItSFt := {}
-
+			cAtLoc := ''
 			For nCont := nPos2B to len(aList2B)
 				
 				
@@ -1602,32 +1603,32 @@ If nOpcG == 0
 
 					nPosL5 := Ascan(aList5B,{|x| x[1]+x[2] == aList2B[nCont,04]+aList2B[nCont,01]})
 
-					For nCont := nPosL5 to len(aList5B)
+					For nCnt5 := nPosL5 to len(aList5B)
 						
 						
-						If aList5B[nCont,01] == aList[nCntG,01] .And. len(aList5b[nCont]) > 4
-							cAtFat += cBarra + Alltrim(aList5b[nCont,02])
+						If aList5B[nCnt5,01] == aList[nCntG,01] .And. len(aList5b[nCnt5]) > 4
+							cAtFat += cBarra + Alltrim(aList5b[nCnt5,02])
 							cBarra := "/"
-							For nJ := 5 to len(aList5b[nCont])
-								If aList5B[nCont,nJ,08] > 0 .And. aList5B[nCont,nJ,09] > 0
-									nPos := Ascan(aItens,{|x| x[1] == aList5B[nCont,nJ,02]})
+							For nJ := 5 to len(aList5b[nCnt5])
+								If aList5B[nCnt5,nJ,08] > 0 .And. aList5B[nCnt5,nJ,09] > 0
+									nPos := Ascan(aItens,{|x| x[1] == aList5B[nCnt5,nJ,02]})
 									If nPos == 0
-										Aadd(aItens,{	aList5B[nCont,nJ,02],;
-														aList5B[nCont,nJ,08],;
-														aList5B[nCont,nJ,09]})
+										Aadd(aItens,{	aList5B[nCnt5,nJ,02],;
+														aList5B[nCnt5,nJ,08],;
+														aList5B[nCnt5,nJ,09]})
 									Else 
-										aItens[nPos,02] += aList5B[nCont,nJ,08]
+										aItens[nPos,02] += aList5B[nCnt5,nJ,08]
 									EndIf
 								Else 
-									Aadd(aItSFt,{	aList5B[nCont,nJ,02],;
-													aList5B[nCont,nJ,08],;
-													aList5B[nCont,nJ,09]}) 
+									Aadd(aItSFt,{	aList5B[nCnt5,nJ,02],;
+													aList5B[nCnt5,nJ,08],;
+													aList5B[nCnt5,nJ,09]}) 
 								EndIf
 							Next nJ
 						Else 
 							exit 
 						EndIf
-					Next nCont
+					Next nCnt5
 				
 					If aList[nCntG,20] > 0 .And. len(aItens) > 0
 						Aadd(aItens,{aList[nCntG,22],;
@@ -1807,6 +1808,14 @@ If nOpcG == 0
 				aCabec := {}
 				aItC6  := {}
 				cItem  := '01'
+
+				If aList[nCntG,23] == "RJ"
+					cFilFat := '0102'
+				else
+					cFilFat := '0101' 
+				EndIF 
+
+				cfilant := cFilfat
 
 				aAdd( aCabec , { "C5_FILIAL"    , cFilFat		      	, Nil } ) 
 				aAdd( aCabec , { "C5_XTPPED"    , 'L'                 	, Nil } )

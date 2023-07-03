@@ -172,9 +172,12 @@ Default oself:type  	:='V'
 		aListAux[nAux]['document']	            := Alltrim(EncodeUTF8((cAliasTMP)->C5_NUM))
 		aListAux[nAux]['status']     		    := Iif(!Empty(cNota),'Faturado em '+cValToChar(cDtFat),(Iif((cAliasTMP)->C5_OK == "3","Pendencias","Em Aberto")))
 		aListAux[nAux]['customer']			    := Alltrim(EncodeUTF8((cAliasTMP)->A1_COD))
+		aListAux[nAux]['customer_branch']		:= Alltrim(EncodeUTF8((cAliasTMP)->A1_LOJA))
 		aListAux[nAux]['customer_name']	        := Alltrim(EncodeUTF8((cAliasTMP)->A1_NOME))
 		aListAux[nAux]['customer_cnpj']	        := Alltrim(EncodeUTF8((cAliasTMP)->A1_CGC))
 		aListAux[nAux]['issue_date']	        := Alltrim(EncodeUTF8((cAliasTMP)->C5_EMISSAO))
+		aListAux[nAux]['payment']	        	:= Alltrim(EncodeUTF8((cAliasTMP)->C5_CONDPAG))
+		aListAux[nAux]['payment_name']	        := EncodeUTF8(Posicione('SE4',1,FwxFilial('SE4')+(cAliasTMP)->C5_CONDPAG, 'Alltrim(E4_DESCRI)'))
 		aListAux[nAux]['invoice']	    	    := Alltrim(EncodeUTF8(cNota))
 		aListAux[nAux]['invoice_series']	    := Alltrim(EncodeUTF8(cSerie))
 		aListAux[nAux]['total_quantity_sold']   := nQtdVen

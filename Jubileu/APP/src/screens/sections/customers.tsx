@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { Keyboard, TouchableOpacity, Text, ScrollView, Modal, Platform } from 'react-native';
+import React, { useState, useEffect, useContext, useRef } from 'react';
+import { Keyboard, ScrollView, Modal, Platform, TextInput, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AntDesign, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Style from './styles';
@@ -11,7 +11,6 @@ import CustomersComponent from '../../components/customers';
 import { apiCustomers, searchCustomers, storageCustomers, sortCustomerList } from '../../services/apiCustomers';
 
 import NetInfo from "@react-native-community/netinfo";
-import debounce from 'lodash/debounce';
 import { AppContext, ThemeContext } from '../../contexts/globalContext';
 
 import * as yup from "yup";
@@ -39,6 +38,7 @@ const schema = yup.object({
 export default function Customers(){
 
     const { colors } = useContext(ThemeContext);
+    const searchInputRef = useRef<TextInput>(null);
     const { authDetail } = useContext(AppContext);
 
     const [showModal, setShowModal] = useState(false)
@@ -48,7 +48,9 @@ export default function Customers(){
     const [isOnline, setIsOnline] = useState(true);
     const [customers, setCustomers] = useState<any>([]);
     const [searchQuery, setSearchQuery] = useState<string>('');
+    const [search, setSearch] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [isLoadSearch, setLoadSearch] = useState<boolean>(false);
     const [page, setPage] = useState(1);
     const [financialCustomer, setFinancialCustomer] = useState('')
     const [financial, setFinancial] = useState(false);
@@ -94,6 +96,9 @@ export default function Customers(){
 
     /** verifica se esta online. Se tiver, chama a API com clientes, se nao, chama os clientes que estao salvos no storage **/
     useEffect(() => {
+        setSearch(false)
+        setSearchQuery('')
+
         if(isOnline){
             loadItems();
         }else {
@@ -128,30 +133,6 @@ export default function Customers(){
 
         setIsLoading(false);
     };
-
-
-    /** grava o state conforme digitacao da pesquisa e faz a chamada do devounced para busca da api **/
-    const handleSearch = (text: string) => {
-        setSearchQuery(text);
-        handleSearchDebounced(text);
-    };
-    
-
-    /** faz a chamada da api conforme o usuario vai digitando na pesquisa.
-        Tem um atraso de 500 milisegundo para aguardar o fim da digitacao e nao encavalar a chamada de api
-    **/
-    const handleSearchDebounced = debounce(async (searchQuery: string) => {
-        setIsLoading(true);
-
-        const resultApi = await searchCustomers(searchQuery, isOnline)
-        
-        if(!!resultApi){
-            setCustomers(resultApi.returnResult)
-            setPage(resultApi.pageResult)
-        }
-        
-        setIsLoading(false);
-    }, 500);
 
 
     /** ao chegar no final da lista, verifica se esta online para chamada da proxima pagina da API **/
@@ -239,6 +220,41 @@ export default function Customers(){
     }
 
 
+    const handleSearchButton = async() => {
+        setLoadSearch(true);
+        Keyboard.dismiss();
+
+        if(!searchQuery){
+            setLoadSearch(false)
+            handleClearSearch();
+            return
+        }
+
+        const resultApi = await searchCustomers(searchQuery, isOnline)
+
+        if(!!resultApi){
+            setCustomers(resultApi.returnResult)
+            setPage(resultApi.pageResult)
+            setSearch(true)
+        }
+        
+        setLoadSearch(false);
+    }
+
+
+    const handleClearSearch = () => {
+        setSearch(false)
+        setSearchQuery('')
+        setPage(1)
+
+        if(isOnline){
+            loadItems();
+
+        }else {
+            fetchAsyncStorage();
+        }  
+    }
+
 
     return(<>
         <SafeAreaView 
@@ -247,24 +263,35 @@ export default function Customers(){
         />
         <Style.SafeContainer>
             <Style.HeaderComponent>
-                <Style.HeaderContainer>
-                    <Style.SearchComponent>
-                        <Style.InputField
-                            autoCorrect={false}
-                            placeholder='Pesquisar'
-                            onChangeText={handleSearch}
-                            value={searchQuery}
-                        />
-                        <AntDesign name="search1" size={20} color="#A0A0A0" />
-                    </Style.SearchComponent>
-                    
-                    <Style.ButtonFilter 
-                        onPress={() => handlePopup(null)}
-                        activeOpacity={0.4}
-                    >
-                        <MaterialCommunityIcons name="order-alphabetical-ascending" size={30} color="white" />
-                    </Style.ButtonFilter>
-                </Style.HeaderContainer>
+                <Style.HeaderContainer1>
+                        <Style.SearchComponent1>
+                            <Style.InputField1
+                                ref={searchInputRef}
+                                autoCorrect={false}
+                                placeholder='Pesquisar'
+                                value={searchQuery}
+                                autoCapitalize='none'
+                                returnKeyType="done"
+                                onChangeText={setSearchQuery}
+                                onSubmitEditing={handleSearchButton}
+                            />
+
+                            <Style.ButtonSearch onPress={() => handleSearchButton()}>
+                                { isLoadSearch
+                                    ? <ActivityIndicator color={'#A0A0A0'} />
+                                    : <AntDesign name="search1" size={23} color="#A0A0A0" />
+                                }
+                                
+                            </Style.ButtonSearch>
+                        </Style.SearchComponent1>
+                        
+                        <Style.ButtonFilter
+                            onPress={() => handlePopup(null)}
+                            activeOpacity={0.4}
+                        >
+                            <MaterialCommunityIcons name="order-alphabetical-ascending" size={30} color="white" />
+                        </Style.ButtonFilter>
+                    </Style.HeaderContainer1>
             </Style.HeaderComponent>
             
             { !isOnline &&
@@ -274,6 +301,16 @@ export default function Customers(){
             }
 
             <Style.ContainerListCustomers>
+
+                { search &&
+                    <Style.ContainerBadgeSearch>
+                        <Style.BadgeSearch onPress={handleClearSearch}>
+                            <Style.IconBadgeSearch name="close" />
+                            <Style.TextBadgeSearch color='#fff'>{searchQuery}</Style.TextBadgeSearch>
+                        </Style.BadgeSearch>
+                    </Style.ContainerBadgeSearch>
+                }
+
                 <CustomersComponent
                     customers={customers}
                     handleLoadMore={handleLoadMore}

@@ -21,7 +21,7 @@ const FinancialCustomer: React.FC = () => {
   const user = userData ? JSON.parse(userData) : null;
 
   const financialCustomer = {
-    cnpj: user.user,
+    cnpj: user.type === 'V' ? '' : user.user,
     name: 'Títulos'
   }
 
@@ -46,6 +46,7 @@ const FinancialCustomer: React.FC = () => {
             >
               <FinancialBodyModal
                 financialCustomer={financialCustomer}
+                type={user.type !== 'V' ? '' : 'v'}
               />
             </Style.CustomersComponent>
           </div>

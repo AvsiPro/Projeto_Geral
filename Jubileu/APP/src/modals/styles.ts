@@ -1,5 +1,6 @@
 import styled from 'styled-components/native';
 import { StyleSheet } from 'react-native';
+import { FontAwesome } from '@expo/vector-icons';
 
 import { Camera } from 'expo-camera';
 
@@ -255,6 +256,40 @@ export const ContainerSearchModal = styled.View`
     align-items:center;
     border-bottom-width:2px;
     border-color:${(props) => props.theme.colors.primary};
+`
+
+export const ButtonSearch = styled.TouchableOpacity`
+`
+
+export const ContainerBadgeSearch = styled.View`
+    flex-direction:row;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:15px;
+    margin-left:25px;
+    max-width:85%;
+`
+
+export const BadgeSearch = styled.TouchableOpacity`
+    height:30px;
+    background-color: ${(props) => props.theme.colors.primary};
+    padding:5px;
+    border-radius:15px;
+    align-items:center;
+    justify-content:space-evenly;
+    flex-direction:row;
+`
+
+export const IconBadgeSearch = styled(FontAwesome)`
+    margin-right:6px;
+    margin-left:6px;
+    color: #fff;
+    font-size: 18px;
+`
+
+export const TextBadgeSearch = styled.Text<{color: string}>`
+    color: ${(props) => props.color};
+    margin-right:6px;
 `
 
 export const SearchNewOrderModal = styled.TextInput`

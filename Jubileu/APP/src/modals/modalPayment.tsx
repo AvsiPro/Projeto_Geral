@@ -1,13 +1,11 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import * as Style from './styles';
-import { Modal } from 'react-native';
+import { ActivityIndicator, Keyboard, Modal, TextInput } from 'react-native';
 
 import { FontAwesome, AntDesign } from '@expo/vector-icons';
 
 import NetInfo from "@react-native-community/netinfo";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
-import debounce from 'lodash/debounce';
 
 import Payment from '../components/payment';
 
@@ -21,11 +19,15 @@ export default function modalPayment({getVisible, handleModalPayment, payment, a
     
     const { setPaymentSelected } = useContext(AppContext);
     const { colors } = useContext(ThemeContext);
+    const searchInputRef = useRef<TextInput>(null);
     
     const [searchQuery, setSearchQuery] = useState<string>('');
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [page, setPage] = useState(1);
     const [isOnline, setIsOnline] = useState(true);
+
+    const [isLoadSearch, setLoadSearch] = useState<boolean>(false);
+    const [search, setSearch] = useState<boolean>(false);
 
 
     /** verifica se esta online ou offline **/
@@ -42,8 +44,12 @@ export default function modalPayment({getVisible, handleModalPayment, payment, a
 
     /** verifica se esta online. Se tiver, chama a API com pagamentos, se nao, chama os pagamentos que estao salvos no storage **/
     useEffect(() => {
+        setSearch(false)
+        setSearchQuery('')
+
         if(isOnline){
             loadItems();
+
         }else {
             fetchAsyncStorage();
         }
@@ -101,19 +107,30 @@ export default function modalPayment({getVisible, handleModalPayment, payment, a
         }
     };
 
+    /** Seta o pagamento selecionado **/
+    const handleItem = (item: any) => {
+        setPaymentSelected(item)
+        handleModalPayment()
+    }
 
-    /** faz a chamada da api conforme o usuario vai digitando na pesquisa.
-        Tem um atraso de 500 milisegundo para aguardar o fim da digitacao e nao encavalar a chamada de api
-    **/
-    const handleSearchDebounced = debounce(async (searchQuery: string) => {
-        setIsLoading(true);
+
+    const handleSearchButton = async() => {
+        setLoadSearch(true);
+        Keyboard.dismiss();
+
+        if(!searchQuery){
+            setLoadSearch(false)
+            handleClearSearch();
+            return
+        }
 
         if(isOnline){
             const response = await api.get(`/WSAPP04?pagesize=10&page=1&searchKey=${searchQuery}`);
             const json: ApiResponse = response.data;
 
             atualizaPagamentos(json.result);
-            setPage(2);
+            setPage(1);
+            setSearch(true)
 
         }else{
             const result = await AsyncStorage.getItem('payment');
@@ -125,22 +142,22 @@ export default function modalPayment({getVisible, handleModalPayment, payment, a
                 atualizaPagamentos(filtered);
             }
         }
+        
+        setLoadSearch(false);
+    }
+    
 
-        setIsLoading(false);
-    }, 500);
+    const handleClearSearch = () => {
+        setSearch(false)
+        setSearchQuery('')
+        setPage(1)
 
+        if(isOnline){
+            loadItems();
 
-    /** grava o state conforme digitacao da pesquisa e faz a chamada do devounced para busca da api **/
-    const handleSearch = (text: string) => {
-        setSearchQuery(text);
-        handleSearchDebounced(text);
-    };
-
-
-    /** Seta o pagamento selecionado **/
-    const handleItem = (item: any) => {
-        setPaymentSelected(item)
-        handleModalPayment()
+        }else {
+            fetchAsyncStorage();
+        }  
     }
 
     
@@ -156,14 +173,23 @@ export default function modalPayment({getVisible, handleModalPayment, payment, a
                         <Style.ContainerSearchModal>
                             <Style.SearchNewOrderModal
                                 keyboardType='email-address'
-                                autoCapitalize='none'
+                                ref={searchInputRef}
                                 autoCorrect={false}
                                 placeholder='Pesquisar'
-                                onChangeText={handleSearch}
                                 value={searchQuery}
+                                autoCapitalize='none'
+                                returnKeyType="done"
+                                onChangeText={setSearchQuery}
+                                onSubmitEditing={handleSearchButton}
                             />
 
-                            <AntDesign name="search1" size={20} color={colors.primary} />
+
+                            <Style.ButtonSearch onPress={() => handleSearchButton()}>
+                                { isLoadSearch
+                                    ? <ActivityIndicator color={colors.primary} />
+                                    : <AntDesign name="search1" size={23} color={colors.primary} />
+                                }
+                            </Style.ButtonSearch>
                         </Style.ContainerSearchModal>
                         
                         <Style.ButtonCloseModal
@@ -180,6 +206,16 @@ export default function modalPayment({getVisible, handleModalPayment, payment, a
                     }
 
                     <Style.MiddleModalNewOrder>
+
+                        { search &&
+                            <Style.ContainerBadgeSearch>
+                                <Style.BadgeSearch onPress={handleClearSearch}>
+                                    <Style.IconBadgeSearch name="close" />
+                                    <Style.TextBadgeSearch color='#fff'>{searchQuery}</Style.TextBadgeSearch>
+                                </Style.BadgeSearch>
+                            </Style.ContainerBadgeSearch>
+                        }
+                        
                         <Payment
                             payment={payment}
                             handleLoadMore={handleLoadMore}
