@@ -138,6 +138,9 @@ Static Function fCadastra()
     cUser    := space(80)
     cPass    := space(80)
 
+    oGet1:destroy()
+    oGet1 := TGet():New( 072,012,{|u|if(PCount()>0,xGetPesq:=u,xGetPesq)},oDlg1,060,012,'',{ || fBuscaNome() },CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,cConsP,"",,)
+
     oList0:refresh()
     oCmb1:refresh()
     oSay2:refresh()
