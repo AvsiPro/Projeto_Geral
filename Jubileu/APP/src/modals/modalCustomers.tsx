@@ -31,7 +31,7 @@ const schema = yup.object({
     phone: yup.string().required("Informe o telefone"),
 });
 
-export default function modalCustomers({getVisible, handleModalCustomers, customers, atualizaClientes} : PropsCostumersModal){
+export default function modalCustomers({getVisible, handleModalCustomers, customers, atualizaClientes, handleContinuaOrc} : PropsCostumersModal){
     
     const { customerSelected ,setCustomerSelected } = useContext(AppContext);
     const { colors } = useContext(ThemeContext);
@@ -117,7 +117,7 @@ export default function modalCustomers({getVisible, handleModalCustomers, custom
     };
 
 
-    /** Seta o cliente selecionado **/
+    /** verifica se possui titulo **/
     const handleItem = (item: any) => {
 
         if(item.financial.length > 0) {
@@ -126,26 +126,31 @@ export default function modalCustomers({getVisible, handleModalCustomers, custom
             handleFinancial()
 
         } else{
-            reset()
-            setValue('name', item.name)
-            setValue('short_name', item.short_name)
-            setValue('cnpj', item.cnpj)
-            setValue('email', item.email)
-            setValue('address', item.address)
-            setValue('complement', item.complement)
-            setValue('cep', item.cep)
-            setValue('district', item.district)
-            setValue('city', item.city)
-            setValue('uf', item.uf)
-            setValue('contact', item.contact)
-            setValue('phone', item.phone)
-            setValue('another_address', item.another_address)
-            setValue('another_cep', item.another_cep)
-            setValue('another_district', item.another_district)
-    
-            setCustomerSelected(item)
-            setUpdateCustomer(true)
+            setCustomer(item)
         }
+    }
+
+    /** Seta o cliente selecionado **/
+    const setCustomer = (item: any) => {
+        reset()
+        setValue('name', item.name)
+        setValue('short_name', item.short_name)
+        setValue('cnpj', item.cnpj)
+        setValue('email', item.email)
+        setValue('address', item.address)
+        setValue('complement', item.complement)
+        setValue('cep', item.cep)
+        setValue('district', item.district)
+        setValue('city', item.city)
+        setValue('uf', item.uf)
+        setValue('contact', item.contact)
+        setValue('phone', item.phone)
+        setValue('another_address', item.another_address)
+        setValue('another_cep', item.another_cep)
+        setValue('another_district', item.another_district)
+
+        setCustomerSelected(item)
+        setUpdateCustomer(true) 
     }
 
     
@@ -164,6 +169,8 @@ export default function modalCustomers({getVisible, handleModalCustomers, custom
         handleModalCustomers()
         setCustomerSelected(null)
         setUpdateCustomer(false)
+        handleContinuaOrc()
+        setFinancial(false)
     }
 
 
@@ -211,6 +218,11 @@ export default function modalCustomers({getVisible, handleModalCustomers, custom
         }else {
             fetchAsyncStorage();
         }  
+    }
+
+    const handleContinue = () => {
+        handleContinuaOrc()
+        setCustomer(financialCustomer)
     }
 
     return(
@@ -323,6 +335,8 @@ export default function modalCustomers({getVisible, handleModalCustomers, custom
                                         <Financial
                                             customer={financialCustomer}
                                             handleFinancial={handleFinancial}
+                                            order={true}
+                                            handleContinue={handleContinue}
                                         />
 
                                 }
@@ -332,13 +346,14 @@ export default function modalCustomers({getVisible, handleModalCustomers, custom
                     </Style.KeyBoardFormCustomer>
                 </TouchableWithoutFeedback>
             </Style.SafeAreaModals>
-        <Popups 
-            getVisible={visiblePopup}
-            handlePopup={() => setVisiblePopup(!visiblePopup)}
-            type={'error'}
-            filter={null}
-            message={'Cliente possui títulos em aberto'}
-        />
+
+            <Popups 
+                getVisible={visiblePopup}
+                handlePopup={() => setVisiblePopup(!visiblePopup)}
+                type={'error'}
+                filter={null}
+                message={'Cliente possui títulos em aberto'}
+            />
         </Modal>
 
     )

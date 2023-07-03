@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import * as Style from './styles';
 
-import { ActivityIndicator, FlatList, TouchableOpacity, Text, View, Linking } from 'react-native';
+import { ActivityIndicator, FlatList, TouchableOpacity, Linking } from 'react-native';
 
 import LottieView from 'lottie-react-native'
 import { FontAwesome } from '@expo/vector-icons';
@@ -18,10 +18,17 @@ import { AppContext } from '../contexts/globalContext';
 interface PropsFinancial{
     customer: any;
     handleFinancial: () => void;
+    order?: boolean;
+    handleContinue?: () => void;
 }
 
 
-export default function financial({customer, handleFinancial} : PropsFinancial){
+export default function financial({
+    customer,
+    handleFinancial,
+    order = false,
+    handleContinue = () => {}
+} : PropsFinancial){
     
     const animation = useRef(null);
     const { authDetail } = useContext(AppContext);
@@ -264,6 +271,13 @@ export default function financial({customer, handleFinancial} : PropsFinancial){
                     </Style.EmptyListContProd>
                 }
             />
+
+            {order &&
+                <Style.ButtonContinue onPress={() => handleContinue()}>
+                    <Style.TextButtonFinancial>Continuar com orçamento</Style.TextButtonFinancial>
+                </Style.ButtonContinue>
+            }
+            
         </Style.ContainerFinancial>
     )
 }
