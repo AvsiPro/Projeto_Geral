@@ -89,9 +89,12 @@ Static Function fCadastra()
     ElseIf Empty(Alltrim(cPass))
         MsgStop('Necessário digitar a Senha para cadastro')
         Return
+
+    ElseIf !ExistCpo(cConsP, xGetPesq)
+        Return
     EndIf
 
-    cTokGrv := Encode64('{"'+Iif(cCombo1 == 'Cliente','SA1','SA3')+'","'+Alltrim(cNome)+'","'+Alltrim(cCgc)+'"}')
+    cTokGrv := Encode64('{"'+cConsP+'","'+Alltrim(cNome)+'","'+Alltrim(cCgc)+'"}')
 
     RecLock('Z01', .T.)
         Z01->Z01_TYPE := Iif(cCombo1 == 'Cliente','C','V')
@@ -249,8 +252,10 @@ Static Function fComboType()
     cUser    := space(80)
     cPass    := space(80)
 
-    oSay2:refresh()
+    oGet1:destroy()
+    oGet1 := TGet():New( 072,012,{|u|if(PCount()>0,xGetPesq:=u,xGetPesq)},oDlg1,060,012,'',{ || fBuscaNome() },CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,cConsP,"",,)
     oGet1:refresh()
+    oSay2:refresh()
     oGet2:refresh()
     oGet3:refresh()
     oGet4:refresh()
