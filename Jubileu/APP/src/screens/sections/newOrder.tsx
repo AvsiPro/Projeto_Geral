@@ -17,6 +17,8 @@ import ModalPayment from '../../modals/modalPayment';
 import Popups from '../../modals/popups';
 import api from '../../services/api';
 
+import moment from 'moment';
+
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Neworder(){
@@ -384,7 +386,8 @@ export default function Neworder(){
                         items: itemCart,
                         orcamento: orcamento,
                         numorc: receive.status.message,
-                        emission: formattedDate
+                        emission: formattedDate,
+                        timestamp: moment().format('HH:mm:ss')
                     }
 
                     const orcamentoIndex = orcNew.findIndex((orcamento: any) => orcamento.numorc === orcamentoSelected);
