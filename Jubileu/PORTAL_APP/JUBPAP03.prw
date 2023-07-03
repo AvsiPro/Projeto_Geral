@@ -27,6 +27,9 @@ User Function JUBDANFE(cNota, cSerie, cPasta, ccnpj)
     Local lEnd      := .F.
     Local nTamNota  := TamSX3('F2_DOC')[1]
     Local nTamSerie := TamSX3('F2_SERIE')[1]
+    Local lAdjustToLegacy := .F. 
+    Local lDisableSetup  := .T.
+
     Private PixelX
     Private PixelY
     Private nConsNeg
@@ -73,12 +76,13 @@ User Function JUBDANFE(cNota, cSerie, cPasta, ccnpj)
             MV_PAR05 := 1                          //Frente e Verso = Sim
             MV_PAR06 := 2                          //DANFE simplificado = Nao
             
-            oDanfe := FWMSPrinter():New(cArquivo, IMP_PDF, .F., cPasta, .T.)
+            oDanfe := FWMSPrinter():New(cArquivo+".rel", IMP_PDF, lAdjustToLegacy, cPasta, lDisableSetup,,,,.F.,,,.F.)
             
             //Propriedades da DANFE
             oDanfe:SetResolution(78)
             oDanfe:SetPortrait()
             oDanfe:SetPaperSize(DMPAPER_A4)
+            oDanfe:StartPage() 
             oDanfe:SetMargin(60, 60, 60, 60)
             
             //Força a impressão em PDF
@@ -97,6 +101,8 @@ User Function JUBDANFE(cNota, cSerie, cPasta, ccnpj)
             
             //Chamando a impressão da danfe no RDMAKE
             u_DanfeProc(@oDanfe, @lEnd, cIdent, , , .F.) //}, "Imprimindo Danfe...")
+
+            //oDanfe:EndPage()
             oDanfe:Print()
             aArquivos := {}
             //Necessário enviar a copia para o servidor, caso o arquivo seja gerado localmente
@@ -114,4 +120,27 @@ User Function JUBDANFE(cNota, cSerie, cPasta, ccnpj)
     
 Return(cArquivo)
 
+user function xtestdanf
 
+cPasta   := '\cliente\'
+cFilNota := '0801'
+
+If Select("SM0") == 0
+	RpcSetType(3)
+	RPCSetEnv("01",cFilNota)
+EndIf
+
+cSerNF := '8'
+cNumero := '000000580'
+
+DbSelectArea("SF2")
+DbSetOrder(1)
+Dbseek(xFilial("SF2")+cNumero+cSerNF)
+
+DbSelectArea("SF3")
+DbSetOrder(5)
+DbSeek(xFilial("SF3")+cSerNF+cNumero)
+
+U_JUBDANFE(cNumero,cSerNF,cPasta,'Danfe')
+
+return
