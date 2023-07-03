@@ -398,6 +398,7 @@ export const TableData = styled.td<{ textAlign?: string, width?: string }>`
 `;
 
 export const TableRow = styled.tr`
+    cursor: pointer;
 `;
 
 export const TableGenderRow = styled.div`
@@ -1171,3 +1172,10 @@ export const financialBodyComponent = styled.div<{windowDimensions: any, modal: 
         `
     };
 `;
+
+
+export const SearchButton = styled.button`
+    background-color:transparent;
+    border: none;
+    cursor: pointer;
+`

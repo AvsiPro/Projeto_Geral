@@ -21,9 +21,10 @@ import { useMediaQuery } from "react-responsive";
 
 interface Props{
     financialCustomer: any;
+    type?: string;
 }
 
-const FinancialBodyModal: React.FC <Props> = ({financialCustomer})  => {
+const FinancialBodyModal: React.FC <Props> = ({financialCustomer , type = ''})  => {
 
     const { theme } = useContext(ThemeContext);
     const { windowDimensions } = useContext(WindowDimensionsContext);
@@ -41,8 +42,13 @@ const FinancialBodyModal: React.FC <Props> = ({financialCustomer})  => {
             
             const userData = localStorage.getItem('userdata');
             const user = userData ? JSON.parse(userData) : null;
+
+            let seller = ''
+            if(!!type){
+                seller = user.code
+            }
             
-            const returnResult: any = await fetchData(financialCustomer.cnpj, user.token)
+            const returnResult: any = await fetchData(financialCustomer.cnpj, user.token, type, seller)
     
             if(returnResult.length > 0){
                 setFinancial(returnResult);
@@ -105,6 +111,14 @@ const FinancialBodyModal: React.FC <Props> = ({financialCustomer})  => {
                             Vencimento: {SToD(item.expiration)}
                         </Style.BodyFinLabel>
                     </Style.BodyHorizItens>
+                    
+                    { type === 'v' &&
+                        <Style.BodyHorizItens>
+                            <Style.BodyFinLabel color={themeAux.primary} bold size={18}>
+                                {item.customerName}
+                            </Style.BodyFinLabel>
+                        </Style.BodyHorizItens>
+                    }
 
 
                     <Style.BodyFinItens>

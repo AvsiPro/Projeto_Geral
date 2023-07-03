@@ -41,7 +41,6 @@ const RoutesApp: React.FC = () => {
   
     if ((
         route === '/home' ||
-        route === '/financialcustomer' ||
         route === '/invoicescustomer'  ||
         route === '/warrantycustomer' 
       ) && userProfile !== 'C') {

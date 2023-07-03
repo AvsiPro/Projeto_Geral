@@ -20,6 +20,7 @@ import DeleteOrderPopover from "../popovers/deleteOrderPopover";
 import { UserContext } from "../contexts/userContext";
 import api from "../services/api";
 import { ClipLoader } from "react-spinners";
+import { encode } from "base-64";
 
 interface ApiResponse {
   status: {
@@ -46,9 +47,9 @@ const Orders: React.FC = () => {
   const [bodyAlert, setBodyAlert] = useState <string>('')
   const [typeAlert, setTypeAlert] = useState <string>('')
 
-  const [selected, setSelected] = useState(null)
   const [showAlert, setShowAlert] = useState <boolean>(false)
   const [showModal, setShowModal] = useState <boolean>(false)
+  const [showModalView, setShowModalView] = useState <boolean>(false)
   const [financial, setFinancial] = useState <any>(null)
 
   const [step2, setStep2] = useState <boolean>(false)
@@ -57,6 +58,8 @@ const Orders: React.FC = () => {
   
   const [discountPercent, setDiscountPercent] = useState<number>(0);
 
+  const [itemsCartView, setItemsCartView] = useState<any>([])
+  const [fieldView, setFieldView] = useState <any>([]);
   const [fieldsOrders, setFieldsOrders] = useState <any>([
     { 
       id: 'code',
@@ -163,19 +166,6 @@ const Orders: React.FC = () => {
     }
 
     setPage(1)
-  }
-
-  const handleMark = (row: any) => {
-    const updatedItems = data.map((item: any) => {
-        if (item.id === row.id) {
-          return { ...item, mark: true };
-        }
-        return { ...item, mark: false };
-    });
-    
-    row.mark = true
-    setSelected(row)
-    setData(updatedItems)
   }
 
   const fields = [
@@ -404,13 +394,6 @@ const Orders: React.FC = () => {
     }
 
     setStep2(true)
-
-    /*
-    setBodyAlert('Pedido criado com sucesso!')
-    setHeaderAlert('Sucesso')
-    setTypeAlert('success')
-    setShowAlert(!showAlert)
-    */
   }
 
 
@@ -487,11 +470,21 @@ const Orders: React.FC = () => {
     setFinancial(null)
   }
 
+
+  const handleCloseView = () => {
+    setFieldView([])
+    setItemsCartView([])
+    setShowModalView(false)
+  }
+
   const ToolsModal = (
     <>
       { !!financial ?
         <Button variant="outline-danger" onClick={handleVoltarFinancial}>Fechar</Button>
       
+      : itemsCartView.length > 0 ?
+        <Button variant="outline-danger" onClick={handleCloseView}>Fechar</Button>
+
       : !step2 ?
         <>
           <Button variant="" onClick={() => setShowModal(false)}>Cancelar</Button>{' '}
@@ -526,6 +519,44 @@ const Orders: React.FC = () => {
     setShowModal(true)
   }
 
+  const handleRowClick = (rowData: any) => {
+    const auxField = fieldsOrders.map((item: any) => ({ ...item }));
+    
+    auxField.forEach((item: any) => {
+      if (item.id === "code") {
+        item.value = rowData.customer;
+      } else if (item.id === "branch") {
+        item.value = rowData.customer_branch;
+      } else if (item.id === "name") {
+        item.value = rowData.customer_name;
+      } else if (item.id === "payment") {
+        item.value = rowData.payment;
+      } else if (item.id === "paymentname") {
+        item.value = rowData.payment_name;
+      }
+  
+      item.search = false;
+      item.enabled = false;
+    });
+  
+    const itemCartAux: any[] = [];
+  
+    rowData.items.forEach((itemCart: any) => {
+      itemCartAux.push({
+        id: encode(`{"SB1","view","${itemCart.product}","${itemCart.description}"}`),
+        code: itemCart.product,
+        description: itemCart.description,
+        price: itemCart.value_sold,
+        selected_quantity: itemCart.sold_amount,
+        marked: true,
+      });
+    });
+  
+    setFieldView(auxField)
+    setItemsCartView(itemCartAux);
+    setShowModalView(true);
+  };
+
 
 
   return (
@@ -558,9 +589,10 @@ const Orders: React.FC = () => {
             fields={fields}
             title={'Pedidos'}
             handleSearch={handleSearch}
-            handleMark={handleMark}
+            handleMark={() => {}}
             load={load}
             ToolsTable={ToolsTable}
+            handleRowClick={(row: any) => handleRowClick(row)}
           />
         </div>
           
@@ -584,6 +616,29 @@ const Orders: React.FC = () => {
           setInputEndValue={(change) => setInputEndValue(change)}
           discountPercent={discountPercent}
           setDiscountPercent={(change) => setDiscountPercent(change)}
+        />
+      }
+      Tools={ToolsModal}
+    />
+
+    <ModalComponent
+      show={showModalView}
+      onHide={handleCloseView}
+      title={'Visualizar pedido'}
+      Body={
+        <OrdersBodyModal
+          fieldsOrders={fieldView}
+          handleConfirmSelect={() => {}}
+          financial={null}
+          setFinancial={() => {}}
+          step2={false}
+          inputObsValue={''}
+          setInputObsValue={() => {}}
+          inputEndValue={''}
+          setInputEndValue={() => {}}
+          discountPercent={0}
+          setDiscountPercent={() => {}}
+          itemsCartView={itemsCartView}
         />
       }
       Tools={ToolsModal}

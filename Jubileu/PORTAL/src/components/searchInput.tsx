@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
-import debounce from 'lodash/debounce';
-import { InputWrapper, InputField } from './styles';
+import { InputWrapper, InputField, SearchButton } from './styles';
 import { BsSearch } from 'react-icons/bs'
+import { ClipLoader } from 'react-spinners';
 
 interface SearchInputProps {
   placeholder: string;
@@ -10,29 +10,42 @@ interface SearchInputProps {
 
 const SearchInput: React.FC<SearchInputProps> = ({ placeholder, onSearch }) => {
     const [searchQuery, setSearchQuery] = useState('');
+    const [load, setLoad] = useState(false);
 
     const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       const query = event.target.value;
       setSearchQuery(query);
-      debouncedSearch(query);
     };
   
-    const debouncedSearch = debounce((query: string) => {
-      onSearch(query);
-    }, 300); // Tempo de espera em milissegundos
+    const handleButtonSeatch = async() => {
+      setLoad(true);
+      await onSearch(searchQuery);
+      setLoad(false);
+    }
 
-  return (
-    <InputWrapper>
-      <InputField
-        type="text"
-        value={searchQuery}
-        placeholder={placeholder}
-        onChange={handleInputChange}
-      />
+    return (
+      <InputWrapper>
+        <InputField
+          type="text"
+          value={searchQuery}
+          placeholder={placeholder}
+          onChange={handleInputChange}
+        />
+          { load ?
+              <ClipLoader
+                color={'#000'}
+                loading={load}
+                size={18}
+              />
+            :
+              <SearchButton color='#fff' onClick={handleButtonSeatch}>
+                <BsSearch color={'black'} /> 
+              </SearchButton>
+          }
 
-       <BsSearch style={{width:15, height:15, marginLeft:15}} color={'black'} /> 
-    </InputWrapper>
-  );
+
+      </InputWrapper>
+    );
 };
 
 export default SearchInput;

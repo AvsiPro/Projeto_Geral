@@ -77,7 +77,12 @@ const Navbar: React.FC = () => {
           title: 'Pedidos',
           link: '/orders',
           icon: <AiOutlineShoppingCart size={22} color={colorIcon('/orders')}/>
-        }
+        },
+        {
+          title: 'Títulos',
+          link: '/financialcustomer',
+          icon: <TbFileDollar size={25} color={colorIcon('/financialcustomer')}/>
+        },
       ]
     },
     {
