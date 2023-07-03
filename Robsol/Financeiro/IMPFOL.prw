@@ -23,7 +23,7 @@ USER FUNCTION IMPFOL()
 	Local cLinha  := ""
 	Local cArqAux := ""
 	Local cCgc   := ""
-	Local cIdTit, cTipo, cNaturez := ""
+	Local cIdTit, cTipo, cNaturez, cCodFor	 := ""
 	Local aAuxEv := {}
 	Local ARATEZ := {} //rateio da natureza
 	Local aRatEvEz := {}
@@ -84,7 +84,7 @@ USER FUNCTION IMPFOL()
 		aAux    := StrTokArr(cLine,";")
 
 		If nI < 2
-			cFilant := PADL(aDados[nI][8],4,"0")
+			cFilant := PADL(aDados[nI][9],4,"0")
 		EndIf
 		cCgc := aDados[nI][2]
 		cCgc := NewCGCCPF(cCgc)
@@ -95,6 +95,17 @@ USER FUNCTION IMPFOL()
 			cNaturez :=  aDados[nI][7]
 			dDtVenc := CtoD(aDados[nI][5])
 			lPrim := .F.
+
+			If dDtVenc < DATE()
+				Alert("Data de vencimento no arquivo não poderá ser inferior a data base do sistema. Corrija seu arquivo.")
+				Return Nil
+			EndIf
+
+			If cFilant == "0103"
+				cCodFor := "FOLHAMG  "
+			Else
+				cCodFor := "FOLHA    "
+			EndIf
 		EndIf
 
 		DbSelectArea("SA2")
@@ -102,7 +113,7 @@ USER FUNCTION IMPFOL()
 		//aAuxA2 := GetAdvFVal("SA2", { "A2_NOME", "A2_CGC","A2_END", "A2_BAIRRO","A2_CEP", "A2_MUN", "A2_EST", "A2_BANCO", "A2_AGENCIA", "A2_DVAGE", "A2_DVCTA"	, "A2_NUMCON"  },;
 		//							  xFilial("SA2")+cCgc , 3, { "", "", "", "", "", "", "", "", "","","","" })
 		//A2_FILIAL+A2_CGC
-		IF dbSeek(xFilial("SA2")+cCgc)     // Filial: 01 / Código: 000001 / Loja: 02
+		IF dbSeek(xFilial('SA2')+ PADR(cCgc,15))     // Filial: 01 / Código: 000001 / Loja: 02
 			aAuxA2 :={SA2->A2_NOME, SA2->A2_CGC, SA2->A2_END,SA2->A2_BAIRRO,SA2->A2_CEP,SA2->A2_MUN,;
 				SA2->A2_EST, SA2->A2_BANCO, SA2->A2_AGENCIA, SA2->A2_DVAGE, SA2->A2_DVCTA, SA2->A2_NUMCON}
 
@@ -183,7 +194,7 @@ USER FUNCTION IMPFOL()
 	aadd( aArray , { "E2_PARCELA"  , 	"  "		, NIL })
 	aadd( aArray , { "E2_TIPO"     , 	"FOL"    	 	, NIL })
 	aadd( aArray , { "E2_NATUREZ"  ,	cNaturez         , NIL })
-	aadd( aArray , { "E2_FORNECE"  ,	"FOLHA    "	 		, NIL   })
+	aadd( aArray , { "E2_FORNECE"  ,	cCodFor	 		, NIL   })
 	aadd( aArray , { "E2_LOJA"  	,	"0001" 		, NIL })
 	aadd( aArray , { "E2_EMISSAO"  , DATE()	, NIL })
 	aadd( aArray , { "E2_VENCTO"   , dDtVenc	, NIL })
@@ -210,7 +221,7 @@ USER FUNCTION IMPFOL()
 	DbSetOrder(1)
 	//E2_FILIAL+E2_PREFIXO+E2_NUM+E2_PARCELA+E2_TIPO+E2_FORNECE+E2_LOJA
 	//If !DbSeek(xFilial("SE2")+Avkey("PLU","E2_PREFIXO")+Avkey(Strzero(val(aDados[nI][3]),9),"E2_NUM")+Avkey(Strzero(val(aDados[nI][4]),2),"E2_PARCELA")+Avkey(Padr(aDados[nI][5],3),"E2_TIPO")+Avkey(Padr(aDados[nI][7],14),"E2_FORNECE")+Avkey(PadR(strzero(val(aDados[nI][8]),2),4),"E2_LOJA"))
-	If !DbSeek(xFilial("SE2")+"FOL"+cIdTit+"  "+"FOL"+"FOLHA"+"01")
+	If !DbSeek(xFilial("SE2")+"FOL"+cIdTit+"  "+"FOL"+cCodFor+"0001")
 		Begin Transaction
 			MsExecAuto( { |x,y,z| FINA050(x,y,z)}, aArray,, 3)   // 3 - Inclusao, 4 - Alteração, 5 - Exclusão
 
@@ -218,14 +229,16 @@ USER FUNCTION IMPFOL()
 				MostraErro()
 				//Else
 				//	Alert("Título incluído com sucesso!")
+
 			Endif
 		End Transaction
-	End
+	EndIf
 
 	SE2->(DBCloseArea())
 	ZZ1->(DBCloseArea())
 	SA2->(DBCloseArea())
 	RestArea(aArea)
+
 Return
 
 //----------------------------------------------------------
