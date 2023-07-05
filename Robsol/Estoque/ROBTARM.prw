@@ -25,7 +25,7 @@ User Function ROBTARM()
     Private aAuto := {}
     Private nOpcAuto := 3
     Private lPrim   := .T.
-    Private cFilAtu := "" 
+    Private cFilAtu := ""
     Private aCampos := {}
     Private aDados  := {}
     Private lMsErroAuto := .F.
@@ -99,52 +99,58 @@ Static Function execlog()
         If   SB1->(DbSeek(xFilial("SB1")+PadR(aDados[nX,01], tamsx3('D3_COD') [1]))) //varificar saldo irigem e fazer log
             IF SB9->(Dbseek(xFilial("SB9")+SB1->B1_COD+padl(aDados[nX,02],3,"0")))
                 If SB9->(Dbseek(xFilial("SB9")+SB1->B1_COD+padl(aDados[nX,03],3,"0")))
-                    aadd(aLinha,{"ITEM",padl(cvaltochar(nX),3,"0"),Nil})
-                    aadd(aLinha,{"D3_COD", SB1->B1_COD, Nil}) //Cod Produto origem
-                    aadd(aLinha,{"D3_DESCRI", SB1->B1_DESC, Nil}) //descr produto origem
-                    aadd(aLinha,{"D3_UM", SB1->B1_UM, Nil}) //unidade medida origem
-                    aadd(aLinha,{"D3_LOCAL", padl(aDados[nX,02],3,"0"), Nil}) //armazem origem
-                    aadd(aLinha,{"D3_LOCALIZ", "",Nil}) //Informar endereço origem
+                    IF SB2->(Dbseek(xFilial("SB2")+SB1->B1_COD+padl(aDados[nX,02],3,"0")))//B2_FILIAL+B2_COD+B2_LOCAL
+                        IF val(aDados[nX,04]) <= SB2->B2_QATU
+                            aadd(aLinha,{"ITEM",padl(cvaltochar(nX),3,"0"),Nil})
+                            aadd(aLinha,{"D3_COD", SB1->B1_COD, Nil}) //Cod Produto origem
+                            aadd(aLinha,{"D3_DESCRI", substr(ALLTRIM(SB1->B1_DESC),1,30), Nil}) //descr produto origem
+                            aadd(aLinha,{"D3_UM", SB1->B1_UM, Nil}) //unidade medida origem
+                            aadd(aLinha,{"D3_LOCAL", padl(aDados[nX,02],3,"0"), Nil}) //armazem origem
+                            aadd(aLinha,{"D3_LOCALIZ", "",Nil}) //Informar endereço origem
 
-                    //Destino
-                    SB1->(DbSeek(xFilial("SB1")+PadR(aDados[nX,01], tamsx3('D3_COD') [1])))
-                    aadd(aLinha,{"D3_COD", SB1->B1_COD, Nil}) //cod produto destino
-                    aadd(aLinha,{"D3_DESCRI", SB1->B1_DESC, Nil}) //descr produto destino
-                    aadd(aLinha,{"D3_UM", SB1->B1_UM, Nil}) //unidade medida destino
-                    aadd(aLinha,{"D3_LOCAL", padl(aDados[nX,03],3,"0"), Nil}) //armazem destino
-                    aadd(aLinha,{"D3_LOCALIZ","",Nil}) //Informar endereço destino
+                            //Destino
+                            SB1->(DbSeek(xFilial("SB1")+PadR(aDados[nX,01], tamsx3('D3_COD') [1])))
+                            aadd(aLinha,{"D3_COD", SB1->B1_COD, Nil}) //cod produto destino
+                            aadd(aLinha,{"D3_DESCRI", substr(ALLTRIM(SB1->B1_DESC),1,30), Nil}) //descr produto destino
+                            aadd(aLinha,{"D3_UM", SB1->B1_UM, Nil}) //unidade medida destino
+                            aadd(aLinha,{"D3_LOCAL", padl(aDados[nX,03],3,"0"), Nil}) //armazem destino
+                            aadd(aLinha,{"D3_LOCALIZ","",Nil}) //Informar endereço destino
 
-                    aadd(aLinha,{"D3_NUMSERI", "", Nil}) //Numero serie
-                    aadd(aLinha,{"D3_LOTECTL", "", Nil}) //Lote Origem
-                    aadd(aLinha,{"D3_NUMLOTE", "", Nil}) //sublote origem
-                    aadd(aLinha,{"D3_DTVALID", STOD(""), Nil}) //data validade
-                    aadd(aLinha,{"D3_POTENCI", 0, Nil}) // Potencia
-                    aadd(aLinha,{"D3_QUANT", val(aDados[nX,04]), Nil}) //Quantidade
-                    aadd(aLinha,{"D3_QTSEGUM", 0, Nil}) //Seg unidade medida
-                    aadd(aLinha,{"D3_ESTORNO", "", Nil}) //Estorno
-                    aadd(aLinha,{"D3_NUMSEQ", "", Nil}) // Numero sequencia D3_NUMSEQ
+                            aadd(aLinha,{"D3_NUMSERI", "", Nil}) //Numero serie
+                            aadd(aLinha,{"D3_LOTECTL", "", Nil}) //Lote Origem
+                            aadd(aLinha,{"D3_NUMLOTE", "", Nil}) //sublote origem
+                            aadd(aLinha,{"D3_DTVALID", STOD(""), Nil}) //data validade
+                            aadd(aLinha,{"D3_POTENCI", 0, Nil}) // Potencia
+                            aadd(aLinha,{"D3_QUANT", val(aDados[nX,04]), Nil}) //Quantidade
+                            aadd(aLinha,{"D3_QTSEGUM", 0, Nil}) //Seg unidade medida
+                            aadd(aLinha,{"D3_ESTORNO", "", Nil}) //Estorno
+                            aadd(aLinha,{"D3_NUMSEQ", "", Nil}) // Numero sequencia D3_NUMSEQ
 
-                    aadd(aLinha,{"D3_LOTECTL", "", Nil}) //Lote destino
-                    aadd(aLinha,{"D3_NUMLOTE", "", Nil}) //sublote destino
-                    aadd(aLinha,{"D3_DTVALID", STOD(""), Nil}) //validade lote destino
-                    aadd(aLinha,{"D3_ITEMGRD", "", Nil}) //Item Grade
+                            aadd(aLinha,{"D3_LOTECTL", "", Nil}) //Lote destino
+                            aadd(aLinha,{"D3_NUMLOTE", "", Nil}) //sublote destino
+                            aadd(aLinha,{"D3_DTVALID", STOD(""), Nil}) //validade lote destino
+                            aadd(aLinha,{"D3_ITEMGRD", "", Nil}) //Item Grade
 
-                    aadd(aLinha,{"D3_CODLAN", "", Nil}) //cat83 prod origem
-                    aadd(aLinha,{"D3_CODLAN", "", Nil}) //cat83 prod destino
+                            aadd(aLinha,{"D3_CODLAN", "", Nil}) //cat83 prod origem
+                            aadd(aLinha,{"D3_CODLAN", "", Nil}) //cat83 prod destino
 
-                    aAdd(aAuto,aLinha)
-                    FWrite(nHandle,'Linha '+cvaltochar(nX+1)+" # "+SB1->B1_COD+"# OK"+Chr(13)+Chr(10),1000)
+                            aAdd(aAuto,aLinha)
+                            FWrite(nHandle,'Linha '+cvaltochar(nX+1)+" # "+SB1->B1_COD+"# OK"+Chr(13)+Chr(10),1000)
+                        ELSE
+                            FWrite(nHandle,'Linha '+cvaltochar(nX+1)+" # "+aDados[nX,01]+"# ERRO - Não há saldo atual na origem  "+padl(aDados[nX,02],3,"0")+Chr(13)+Chr(10),1000)
+                        ENDIF
+                    ENDIF
                 else
                     FWrite(nHandle,'Linha '+cvaltochar(nX+1)+" # "+aDados[nX,01]+"# ERRO - Não há saldo inicial no destino "+padl(aDados[nX,03],3,"0")+Chr(13)+Chr(10),1000)
                 EndIf
             ELSE
-                FWrite(nHandle,'Linha '+cvaltochar(nX+1)+" # "+aDados[nX,01]+"# ERRO - Não há saldo inicial na Origem "+padl(aDados[nX,03],3,"0")+Chr(13)+Chr(10),1000)
+                FWrite(nHandle,'Linha '+cvaltochar(nX+1)+" # "+aDados[nX,01]+"# ERRO - Não há saldo inicial na Origem "+padl(aDados[nX,02],3,"0")+Chr(13)+Chr(10),1000)
             ENDIF
 
         Else
             //alert("Produto informado na linha "+STR(nX-1)+",não foi localizado, verifique se o produto está correto e informe o administrador do sistema.")
             //Return
-            FWrite(nHandle,'Linha '+cvaltochar(nX+1)+" # "+aDados[nX,01]+"# ERRO - Produto não encontrado"+Chr(13)+Chr(10),1000)
+            FWrite(nHandle,'Linha '+cvaltochaDMIr(nX+1)+" # "+aDados[nX,01]+"# ERRO - Produto não encontrado"+Chr(13)+Chr(10),1000)
         EndIf
 
     Next nX
