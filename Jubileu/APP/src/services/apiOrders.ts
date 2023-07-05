@@ -1,6 +1,7 @@
 import { ApiResponse } from "../interfaces";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import api from "./api";
+import moment from "moment";
 
 
 /** faz a chamada da api com paginacao, grava no estado de pedido e no storage (online) **/
@@ -36,10 +37,20 @@ export const apiOrders = async (page: number, orders: any, filter: number, token
     const orcOld = await AsyncStorage.getItem('@orcamento')
     let orcNew: any = []
 
+
     if (!!orcOld){
         orcNew = JSON.parse(orcOld)
         orcNew.sort((a: any, b: any) => b.numorc.localeCompare(a.numorc));
-        returnResult = orcNew.concat(returnResult);
+
+        //expira em 48h
+        const arrayObjetosAtualizado = orcNew.filter((objeto: any) => {
+          const diferencaHoras = moment().diff(moment(objeto.timestamp, 'HH:mm:ss'), 'hours');
+          return diferencaHoras < 48;
+        });
+
+        await AsyncStorage.setItem('@orcamento', JSON.stringify(arrayObjetosAtualizado));
+
+        returnResult = arrayObjetosAtualizado.concat(returnResult);
     }
 
 

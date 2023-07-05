@@ -17,6 +17,8 @@ import ModalPayment from '../../modals/modalPayment';
 import Popups from '../../modals/popups';
 import api from '../../services/api';
 
+import moment from 'moment';
+
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Neworder(){
@@ -55,6 +57,7 @@ export default function Neworder(){
     const [typeMessage, setTypeMessage] = useState<string>('');
     const [textObs, setTextObs] = useState<string>('');
     const [load, setLoad] = useState<boolean>(false);
+    const [continuaOrc, setContinuaOrc] = useState<boolean>(false);
 
 
     /** verifica se esta online ou offline **/
@@ -227,7 +230,8 @@ export default function Neworder(){
         clonedCart.forEach((item: any) => {
           atualizaProdutos((prevItems: any) => [...prevItems, item]);
         });
-      
+        
+        setContinuaOrc(false);
         setItemCart([]);
         setCustomerSelected(null);
         setPaymentSelected(null);
@@ -286,6 +290,10 @@ export default function Neworder(){
             setMessage('Necessário selecionar ao menos um produto')
             setVisiblePopup(true)
             return
+        }
+        
+        if(customerSelected.financial.length > 0) {
+            setContinuaOrc(true)
         }
 
         setVisibleModalObs(true)
@@ -378,7 +386,8 @@ export default function Neworder(){
                         items: itemCart,
                         orcamento: orcamento,
                         numorc: receive.status.message,
-                        emission: formattedDate
+                        emission: formattedDate,
+                        timestamp: moment().format('HH:mm:ss')
                     }
 
                     const orcamentoIndex = orcNew.findIndex((orcamento: any) => orcamento.numorc === orcamentoSelected);
@@ -437,6 +446,11 @@ export default function Neworder(){
         }
 
         navigation.goBack()
+    }
+
+
+    const handleContinuaOrc = () => {
+        setContinuaOrc(!continuaOrc)
     }
 
     return(<>
@@ -510,6 +524,7 @@ export default function Neworder(){
 
                             <Style.CountContainer>
                                 <Style.DescItemNOrder>{CurrencyFormat(item.price * item.selected_quantity)}</Style.DescItemNOrder>
+                                
                                 <Style.CountItemContainer>
                                     <Style.ButtonCount onPress={() => handleMinus(index)}>
                                         <FontAwesome name="minus" size={14} color="white" />
@@ -556,18 +571,19 @@ export default function Neworder(){
             >
                 <Style.FooterOrderContainer>
 
-                    <Style.ContainerDesconto>
-                        <Style.TextFooterOrder color='#000'>Desconto %</Style.TextFooterOrder>
-                        <Style.DescontoInput
-                            autoCorrect={false}
-                            keyboardType='numeric'
-                            onChangeText={handleDiscount}
-                            value={discountInput}
-                        />
-                    </Style.ContainerDesconto>
+                    {/*   
+                        <Style.ContainerDesconto>
+                            <Style.TextFooterOrder color='#000'>Desconto %</Style.TextFooterOrder>
+                            <Style.DescontoInput
+                                autoCorrect={false}
+                                keyboardType='numeric'
+                                onChangeText={handleDiscount}
+                                value={discountInput}
+                            />
+                        </Style.ContainerDesconto>
 
-
-                    <Style.TextFooterOrder color='#FF932F'>{`Vlr. Desconto: ${CurrencyFormat(sumDiscount())}`}</Style.TextFooterOrder>
+                        <Style.TextFooterOrder color='#FF932F'>{`Vlr. Desconto: ${CurrencyFormat(sumDiscount())}`}</Style.TextFooterOrder>
+                    */}
 
                     {!keyboardActived && <>
                         <Style.TotalsFooterOrder mt={10}>
@@ -607,6 +623,7 @@ export default function Neworder(){
             handleModalCustomers={handleModalCustomers}
             customers={customers}
             atualizaClientes={atualizaClientes}
+            handleContinuaOrc={handleContinuaOrc}
         />
 
         <ModalPayment
@@ -623,6 +640,7 @@ export default function Neworder(){
             textObs={textObs}
             handleGeraPedido={handleGeraPedido}
             load={load}
+            continuaOrc={continuaOrc}
         />
 
         <Popups 

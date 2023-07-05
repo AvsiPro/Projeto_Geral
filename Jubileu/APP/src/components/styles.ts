@@ -353,6 +353,17 @@ export const ButtonFinancial = styled.TouchableOpacity`
     margin-left:10px;
 `
 
+export const ButtonContinue = styled.TouchableOpacity`
+    background-color:${(props) => props.theme.colors.primary};
+    align-items:center;
+    justify-content:center;
+    padding:10px;
+    border-radius:6px;
+    margin-left:20%;
+    margin-right:20%;
+    margin-top:20px;
+`
+
 export const ButtonContainerFinancial = styled.View`
     flex-direction:row;
     justify-content:flex-end;

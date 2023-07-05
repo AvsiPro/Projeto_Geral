@@ -27,6 +27,7 @@ export interface PropsModalObs{
     textObs: any;
     handleGeraPedido: (orcamento: string) => void;
     load: boolean;
+    continuaOrc: boolean;
 }
 
 export interface PropsCostumersModal{
@@ -34,6 +35,7 @@ export interface PropsCostumersModal{
     handleModalCustomers: () => void;
     customers: any;
     atualizaClientes: (item: any) => void;
+    handleContinuaOrc: () => void;
 }
 
 export interface PropsPaymentModal{
