@@ -39,18 +39,20 @@ export const apiOrders = async (page: number, orders: any, filter: number, token
 
 
     if (!!orcOld){
-        orcNew = JSON.parse(orcOld)
-        orcNew.sort((a: any, b: any) => b.numorc.localeCompare(a.numorc));
+      orcNew = JSON.parse(orcOld)
+      orcNew.sort((a: any, b: any) => b.numorc.localeCompare(a.numorc));
 
-        //expira em 48h
-        const arrayObjetosAtualizado = orcNew.filter((objeto: any) => {
-          const diferencaHoras = moment().diff(moment(objeto.timestamp, 'HH:mm:ss'), 'hours');
-          return diferencaHoras < 48;
-        });
+      /*
+      //expira em 48h
+      const arrayObjetosAtualizado = orcNew.filter((objeto: any) => {
+        const diferencaHoras = moment().diff(moment(objeto.timestamp, 'HH:mm:ss'), 'hours');
+        return diferencaHoras < 48;
+      });
+      */
 
-        await AsyncStorage.setItem('@orcamento', JSON.stringify(arrayObjetosAtualizado));
+      await AsyncStorage.setItem('@orcamento', JSON.stringify(orcNew));
 
-        returnResult = arrayObjetosAtualizado.concat(returnResult);
+      returnResult = orcNew.concat(returnResult);
     }
 
 
