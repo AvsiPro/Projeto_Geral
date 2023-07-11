@@ -34,7 +34,7 @@ User Function CONGEN03(cNumNF,cSerNF,cPathNF,cCNPJNF)
 	Local nValor           := 0
 	Local nX               := 0
 	Local nLinha           := 0
-	Local cSerie 	       := "'LOC','LJR','LPR'"
+	Local cSerie 	       := "'LOC','LRJ','LPR'"
 	Local cCaminho		   := "C:\TEMP\"
 
 	//Fontes

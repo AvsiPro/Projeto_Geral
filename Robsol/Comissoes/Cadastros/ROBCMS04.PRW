@@ -358,8 +358,8 @@ cQuery += " AND D2_QUANT > D2_QTDEDEV"
 
 //Nao trazer novamente os itens ja calculados no periodo que ja foram pagos ou
 //ja foram gerados titulos no financeiro
-cQuery += " AND D2_PEDIDO+D2_DOC+D2_SERIE+F2_CLIENTE+F2_LOJA NOT IN"
-cQuery += " (SELECT Z40_PEDIDO+Z40_NOTA+Z40_SERIE+Z40_CLIENT+Z40_LOJA" 
+cQuery += " AND D2_PEDIDO+D2_DOC+D2_ITEM+D2_SERIE+F2_CLIENTE+F2_LOJA+"+cMesAn+" NOT IN"
+cQuery += " (SELECT Z40_PEDIDO+Z40_NOTA+Z40_ITEM+Z40_SERIE+Z40_CLIENT+Z40_LOJA+Z40_XCOMPE" 
 cQuery += " FROM "+RetSQLName("Z40")+" WHERE D_E_L_E_T_=' '" 
 cQuery += " AND Z40_FILIAL='"+xFilial("Z40")+"' AND Z40_PAGA IN('S','G'))"
 
