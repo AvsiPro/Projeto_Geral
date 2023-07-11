@@ -201,15 +201,18 @@ export const CountItemContainer = styled.View`
     align-items:center;
 `
 
-export const ButtonCount = styled.TouchableOpacity`
+export const ButtonCount = styled.TouchableOpacity<{clear: boolean}>`
     width:30px;
     height:30px;
     border-radius:60px;
-    background-color:${(props) => props.theme.colors.primary};
     justify-content:center;
     align-items:center;
-`
+    background-color:${(props) => props.theme.colors.primary};
 
+    ${(props) => props.clear 
+        && ` background-color: tomato;`
+    };   
+`
 export const TextCountItem = styled.Text`
     font-size:16px;
     font-weight:bold;
@@ -287,6 +290,7 @@ export const EmptyListContProd = styled.View`
 
 export const ContainerDesconto = styled.View`
     flex-direction:row;
+    align-items:center;
 `
 
 export const DescontoInput = styled.TextInput`

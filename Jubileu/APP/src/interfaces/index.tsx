@@ -58,6 +58,9 @@ export interface PropsProducts{
     isLoadBottom: boolean;
     isOnline: boolean;
     isOrder: boolean;
+    hasBar?: boolean;
+    handleMinus?: (item: any) => void;
+    handleMore?: (item: any) => void;
 }
 
 export interface PropsCustomers{
@@ -129,7 +132,7 @@ export interface PropItemCartContext{
     marked: boolean;
     material: string;
     ncm: string;
-    price: number;
+    price: any;
     type: string;
     selected_quantity : number;
 }

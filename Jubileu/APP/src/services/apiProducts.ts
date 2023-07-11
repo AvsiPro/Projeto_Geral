@@ -17,12 +17,30 @@ export const apiProducts = async (page: number, products: any, filter: number) =
 
         const itemSalva = [...products, ...json.result];
     
-        returnResult = itemSalva.reduce((acc, current) => {
-            const x = acc.find((item: { id: any; }) => item.id === current.id);
-            return !x ? acc.concat([current]) : acc;
-        }, []);
+        const uniqueArray = itemSalva.reduce((acc: any[], current: any) => {
+            const index = acc.findIndex((item: { id: any; marked: boolean }) => item.id === current.id);
+          
+            if (index === -1) {
+              // O objeto não existe no acumulador, então o adicionamos
+              return [...acc, current];
+            } else {
+              // O objeto já existe no acumulador
+              if (acc[index].marked) {
+                // O objeto existente tem marked como true, então o mantemos e não fazemos alterações
+                return acc;
+              } else if (current.marked) {
+                // O objeto atual tem marked como true, então substituímos o objeto existente pelo objeto atual
+                const updatedArray = [...acc];
+                updatedArray[index] = current;
+                return updatedArray;
+              } else {
+                // Ambos os objetos têm marked como false, então não fazemos alterações
+                return acc;
+              }
+            }
+          }, []);
 
-        returnResult = sortProductsList(filter, returnResult)
+        returnResult = sortProductsList(filter, uniqueArray)
 
         await AsyncStorage.removeItem("products")
         await AsyncStorage.setItem("products", JSON.stringify([...products, ...returnResult]));

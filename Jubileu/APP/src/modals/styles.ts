@@ -376,6 +376,45 @@ export const ButtonClearOrder = styled.TouchableOpacity`
     flex-direction:row;
 `
 
+export const ButtonQrCode = styled.TouchableOpacity`
+    flex:1;
+    border-width:2px;
+    border-color:#000;
+    background-color:#000;
+    padding:5px;
+    border-radius:12px;
+    align-items:center;
+    justify-content:center;
+    flex-direction:row;
+`
+
+export const ButtonBarCode = styled.TouchableOpacity`
+    flex:1;
+    border-width:2px;
+    border-color:#000;
+    background-color:#000;
+    padding:5px;
+    border-radius:12px;
+    align-items:center;
+    justify-content:center;
+    flex-direction:row;
+    margin-left:10px;
+`
+
+export const ButtonBarCodeMore = styled.TouchableOpacity`
+    border-width:2px;
+    border-color:#000;
+    background-color:#000;
+    padding:5px;
+    border-radius:12px;
+    align-items:center;
+    justify-content:center;
+    margin-top:20px;
+    margin-bottom:20px;
+    margin-left:30px;
+    margin-right:30px;
+`
+
 export const ButtonFinishOrder = styled.TouchableOpacity`
     flex:2;
     border-width:2px;
@@ -508,3 +547,27 @@ export const ObservationsInput = styled.TextInput`
     border-radius: 10px;
     margin: 10px;
 `;
+
+
+export const BarCodeComponent = styled.View`
+    padding:25px;
+`
+
+export const BarCodetext = styled.Text`
+    font-size:20px;
+    font-weight:bold;
+`
+
+export const BarCodeInput = styled.TextInput`
+    font-weight:500;
+    margin-top:10px;
+    padding-bottom:10px;
+    border-bottom-width:2px;
+    border-color:${(props) => props.theme.colors.primary};
+`
+
+export const TopBarCodeScan = styled.View`
+    flex-direction:row;
+    justify-content:space-between;
+    align-items:center;
+`

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext, useRef } from 'react';
 import * as Style from './styles';
 import { ActivityIndicator, Keyboard, Modal, TextInput } from 'react-native';
 
-import { FontAwesome, AntDesign, Ionicons } from '@expo/vector-icons';
+import { FontAwesome, AntDesign, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 
 import NetInfo from "@react-native-community/netinfo";
 
@@ -24,21 +24,27 @@ export default function modalProducts({getVisible, handleModalProducts, products
     const { itemCart, setItemCart } = useContext(AppContext);
     const { colors } = useContext(ThemeContext);
     const searchInputRef = useRef<TextInput>(null);
+    const inputBarCodeRef = useRef<TextInput>(null);
     
     const [searchQuery, setSearchQuery] = useState<string>('');
+    const [inputBarCode, setInputBarCode] = useState<string>('');
     const [markedCount, setMarkedCount] = useState<number>(0);
     const [isLoadTop, setLoadTop] = useState<boolean>(false);
     const [isLoadBottom, setLoadBottom] = useState<boolean>(false);
-    const [page, setPage] = useState(1);
-    const [isOnline, setIsOnline] = useState(true);
+    const [page, setPage] = useState<number>(1);
+    const [isOnline, setIsOnline] = useState<boolean>(true);
     const [productDetails, setProductDetails] = useState<any>(null);
     const [showModal, setShowModal] = useState<boolean>(false);
 
-    const [scanned, setScanned] = useState(false);
-    const [hasCamera, setHasCamera] = useState(false);
+    const [scanned, setScanned] = useState<boolean>(false);
+    const [hasCamera, setHasCamera] = useState<boolean>(false);
+    const [hasBar, setHasBar] = useState<boolean>(false);
 
     const [isLoadSearch, setLoadSearch] = useState<boolean>(false);
     const [search, setSearch] = useState<boolean>(false);
+
+    const [itemsBarScanned, setItemsBarScanned] = useState<any>([]);
+
 
     /** verifica se esta online ou offline **/
     useEffect(() => {
@@ -56,6 +62,7 @@ export default function modalProducts({getVisible, handleModalProducts, products
     useEffect(() => {
         setSearch(false)
         setSearchQuery('')
+        setInputBarCode('')
 
         if(isOnline){
             loadItems();
@@ -107,14 +114,39 @@ export default function modalProducts({getVisible, handleModalProducts, products
     **/
     const handleItem = (index: number) => {
         atualizaProdutos((prevState: any) => {
-          const newData = [...prevState];
+            const newData = [...prevState];
+            
+            const markAux = !newData[index].marked
 
-          newData[index] = {
-            ...newData[index],
-            marked: !newData[index].marked
-          };
+            newData[index] = {
+                ...newData[index],
+                marked: markAux,
+                selected_quantity: markAux ? 1 : 0
+            };
 
-          return newData;
+            
+            if(hasBar){
+                let auxItem: any[] = [];
+
+                const itemSalva = [...itemsBarScanned, ...newData];
+        
+                const uniqueArray = itemSalva.reduce((acc, current) => {
+                    const x = acc.find((item: { id: any; }) => item.id === current.id);
+                    return !x ? acc.concat([current]) : acc;
+                }, []);
+
+                uniqueArray.forEach((item: PropItemCartContext) => {
+                    if (item.marked) {
+                        item.selected_quantity = 1
+                        auxItem.push(item);
+                    }
+                });
+
+                handleFocusTextInput();
+                setItemsBarScanned(auxItem);
+            }
+
+            return newData;
         });
 
         setMarkedCount(prevCount => {
@@ -126,12 +158,15 @@ export default function modalProducts({getVisible, handleModalProducts, products
 
 
     /** reseta todo o array marcando todos os marked como false e zera o contador **/
-    const resetMarked = () => {
-        const newData = products.map((item: { marked: boolean; }) => {
-          item.marked = false;
-          return item;
+    const resetMarked = (clear?: boolean) => {
+        const newData = products.map((item: { marked: boolean, selected_quantity: number }) => {
+            item.marked = false,
+            item.selected_quantity = clear ? 0 : item.selected_quantity
+            return item;
         });
 
+        setItemsBarScanned([]);
+        setInputBarCode('')
         atualizaProdutos(newData);
         setMarkedCount(0);
     };
@@ -144,7 +179,6 @@ export default function modalProducts({getVisible, handleModalProducts, products
     
         products.forEach((item: PropItemCartContext) => {
             if (item.marked) {
-                item.selected_quantity = 1
                 auxItem.push(item);
                 close = true
             }
@@ -159,7 +193,7 @@ export default function modalProducts({getVisible, handleModalProducts, products
             }, []);
 
             setItemCart(uniqueArray)
-            resetMarked()
+            resetMarked(false)
             handleModalProducts()
         }
     }
@@ -167,13 +201,15 @@ export default function modalProducts({getVisible, handleModalProducts, products
     
     const handleHasCamera = () => {
         setHasCamera(!hasCamera)
+        setHasBar(false)
+        setInputBarCode('')
     }
 
 
-    const handleBarCodeScanned = async({ type, data }: any) => {
+    const handleQRCodeScanned = async({ type, data }: any) => {
 
         setScanned(true);
-        setLoadTop(true)
+        setLoadTop(true);
         
         const find = findProductIndexByCode(products,data)
         
@@ -211,6 +247,89 @@ export default function modalProducts({getVisible, handleModalProducts, products
         setLoadTop(false)
     }
 
+
+    const handleBarCodeScanned = async() => {
+
+        if(!inputBarCode){
+            return;
+        }
+
+        setLoadTop(true);
+        
+        const find = findProductIndexByCode(products,inputBarCode)
+        
+        if (find !== null){
+            if(!products[find].marked){
+                handleItem(find)
+            }
+        }else{
+            const response = await api.get(`/WSAPP03?pagesize=10&page=1&byId=true&searchKey=${inputBarCode}`);
+            const json: ApiResponse = response.data;
+
+            if(json.status.code === '#200'){
+                json.result[0].marked = true
+
+                const itemSalva = [...products, ...json.result];
+        
+                const uniqueArray = itemSalva.reduce((acc, current) => {
+                    const x = acc.find((item: { id: any; }) => item.id === current.id);
+                    return !x ? acc.concat([current]) : acc;
+                }, []);
+
+
+                const itemBarAux = [...itemsBarScanned, ...uniqueArray];
+
+                const uniqueBar = itemBarAux.reduce((acc: any[], current: any) => {
+                    const index = acc.findIndex((item: { id: any; marked: boolean }) => item.id === current.id);
+                  
+                    if (index === -1) {
+                      // O objeto não existe no acumulador, então o adicionamos
+                      return [...acc, current];
+                    } else {
+                      // O objeto já existe no acumulador
+                      if (acc[index].marked) {
+                        // O objeto existente tem marked como true, então o mantemos e não fazemos alterações
+                        return acc;
+                      } else if (current.marked) {
+                        // O objeto atual tem marked como true, então substituímos o objeto existente pelo objeto atual
+                        const updatedArray = [...acc];
+                        updatedArray[index] = current;
+                        return updatedArray;
+                      } else {
+                        // Ambos os objetos têm marked como false, então não fazemos alterações
+                        return acc;
+                      }
+                    }
+                  }, []);
+
+
+                let auxItem: any[] = [];
+
+                uniqueBar.forEach((item: PropItemCartContext) => {
+                    if (item.marked) {
+                        item.selected_quantity = 1
+                        auxItem.push(item);
+                    }
+                });
+
+                handleFocusTextInput();
+                setItemsBarScanned(auxItem);
+
+                atualizaProdutos(uniqueArray);
+                setMarkedCount(markedCount+1);
+            }
+        }
+
+        setLoadTop(false)
+    }
+    
+
+
+    const HandleBarScan = async() => {
+        setHasBar(!hasBar);
+        setHasCamera(false);
+    }
+
     const findProductIndexByCode = (prod: any, codeToFind: string): number | null =>{
         const foundProductIndex = prod.findIndex((product: any) => product.code === codeToFind);
         return foundProductIndex !== -1 ? foundProductIndex : null;
@@ -238,7 +357,39 @@ export default function modalProducts({getVisible, handleModalProducts, products
         const resultApi = await searchProducts(searchQuery, isOnline)
 
         if(!!resultApi){
-            atualizaProdutos(resultApi.returnResult)
+
+            let auxItem: PropItemCartContext[] = [...resultApi.returnResult]
+    
+            products.forEach((item: PropItemCartContext) => {
+                if (item.marked) {
+                    auxItem.push(item);
+                }
+            });
+
+            const uniqueArray = auxItem.reduce((acc: any[], current: any) => {
+                const index = acc.findIndex((item: { id: any; marked: boolean }) => item.id === current.id);
+              
+                if (index === -1) {
+                  // O objeto não existe no acumulador, então o adicionamos
+                  return [...acc, current];
+                } else {
+                  // O objeto já existe no acumulador
+                  if (acc[index].marked) {
+                    // O objeto existente tem marked como true, então o mantemos e não fazemos alterações
+                    return acc;
+                  } else if (current.marked) {
+                    // O objeto atual tem marked como true, então substituímos o objeto existente pelo objeto atual
+                    const updatedArray = [...acc];
+                    updatedArray[index] = current;
+                    return updatedArray;
+                  } else {
+                    // Ambos os objetos têm marked como false, então não fazemos alterações
+                    return acc;
+                  }
+                }
+              }, []);
+
+            atualizaProdutos(uniqueArray)
             setPage(resultApi.pageResult)
             setSearch(true)
         }
@@ -250,7 +401,9 @@ export default function modalProducts({getVisible, handleModalProducts, products
     const handleClearSearch = () => {
         setSearch(false)
         setSearchQuery('')
+        setInputBarCode('')
         setPage(1)
+        setItemsBarScanned([])
 
         if(isOnline){
             loadItems();
@@ -259,6 +412,63 @@ export default function modalProducts({getVisible, handleModalProducts, products
             fetchAsyncStorage();
         }  
     }
+
+    const handleFocusTextInput = () => {
+        setInputBarCode('');
+        inputBarCodeRef.current?.focus();
+    };
+
+
+    const handleMinus = (item: any) => {
+        const index = products.findIndex((product: any) => product.id === item.id);
+      
+        if (index !== -1) {
+          const updatedProducts = [...products]; // Cria uma cópia do array products
+          const updatedItem = { ...updatedProducts[index] }; // Cria uma cópia do objeto item dentro do array
+
+          if(updatedItem.selected_quantity === 1){
+            setMarkedCount(markedCount - 1);
+          }
+      
+          // Verifica se selected_quantity é maior que 0 antes de subtrair 1
+          if (updatedItem.selected_quantity > 0) {
+            updatedItem.selected_quantity -= 1;
+          }
+      
+          // Verifica se selected_quantity chegou a 0
+          if (updatedItem.selected_quantity === 0) {
+            updatedItem.marked = false; // Define marked como false
+          }
+      
+          updatedProducts[index] = updatedItem; // Substitui o objeto atualizado no array
+
+          atualizaProdutos(updatedProducts); // Atualiza o estado com o novo array de produtos
+        }
+    };
+      
+
+
+    const handleMore = (item: any) => {
+        const index = products.findIndex((product: any) => product.id === item.id);
+      
+        if (index !== -1) {
+          const updatedProducts = [...products]; // Cria uma cópia do array products
+          const updatedItem = { ...updatedProducts[index] }; // Cria uma cópia do objeto item dentro do array
+
+          if(updatedItem.selected_quantity === 0){
+            setMarkedCount(markedCount + 1);
+          }
+      
+          // Realize as alterações necessárias no updatedItem
+          updatedItem.marked = true;
+          updatedItem.selected_quantity += 1;
+
+          updatedProducts[index] = updatedItem; // Substitui o objeto atualizado no array
+        
+          atualizaProdutos(updatedProducts); // Atualiza o estado com o novo array de produtos
+        }
+    };
+      
 
       
     return(
@@ -270,48 +480,51 @@ export default function modalProducts({getVisible, handleModalProducts, products
             <Style.SafeAreaModals>
                 <Style.ModalOrderContainer style={Style.styleSheet.shadow}>
                     
-                    <Style.TopModalNewOrder>
-                        <Style.ContainerSearchModal>
-                            <Style.SearchNewOrderModal
-                                keyboardType='email-address'
-                                ref={searchInputRef}
-                                autoCorrect={false}
-                                placeholder='Pesquisar'
-                                value={searchQuery}
-                                autoCapitalize='none'
-                                returnKeyType="done"
-                                onChangeText={setSearchQuery}
-                                onSubmitEditing={handleSearchButton}
-                            />
+                    {!hasCamera && !hasBar &&
+                    
+                        <Style.TopModalNewOrder>
+                            <Style.ContainerSearchModal>
+                                <Style.SearchNewOrderModal
+                                    keyboardType='email-address'
+                                    ref={searchInputRef}
+                                    autoCorrect={false}
+                                    placeholder='Pesquisar'
+                                    value={searchQuery}
+                                    autoCapitalize='none'
+                                    returnKeyType="done"
+                                    onChangeText={setSearchQuery}
+                                    onSubmitEditing={handleSearchButton}
+                                />
 
-                            <Style.ButtonSearch onPress={() => handleSearchButton()}>
-                                { isLoadSearch
-                                    ? <ActivityIndicator color={colors.primary} />
-                                    : <AntDesign name="search1" size={23} color={colors.primary} />
-                                }
-                            </Style.ButtonSearch>
-                        </Style.ContainerSearchModal>
-                        
-                        { markedCount > 0 ? 
-                            <Style.ButtomCancelSelect
-                                onPress={resetMarked}
-                                activeOpacity={0.4}
-                            >
-                                <FontAwesome name="close" size={24} color="white" />
-                                <Style.CountSelectProd>{markedCount}</Style.CountSelectProd>
-                            </Style.ButtomCancelSelect>
-                        
-                        :
-                            <Style.ButtonCloseModal
-                                onPress={handleModalProducts}
-                                activeOpacity={0.4}
-                            >
-                                <FontAwesome name="close" size={30} color="black" />
-                            </Style.ButtonCloseModal>
+                                <Style.ButtonSearch onPress={() => handleSearchButton()}>
+                                    { isLoadSearch
+                                        ? <ActivityIndicator color={colors.primary} />
+                                        : <AntDesign name="search1" size={23} color={colors.primary} />
+                                    }
+                                </Style.ButtonSearch>
+                            </Style.ContainerSearchModal>
                             
-                        }
+                            { markedCount > 0 ? 
+                                <Style.ButtomCancelSelect
+                                    onPress={() => resetMarked(true)}
+                                    activeOpacity={0.4}
+                                >
+                                    <FontAwesome name="close" size={24} color="white" />
+                                    <Style.CountSelectProd>{markedCount}</Style.CountSelectProd>
+                                </Style.ButtomCancelSelect>
+                            
+                            :
+                                <Style.ButtonCloseModal
+                                    onPress={handleModalProducts}
+                                    activeOpacity={0.4}
+                                >
+                                    <FontAwesome name="close" size={30} color="black" />
+                                </Style.ButtonCloseModal>
+                                
+                            }
 
-                    </Style.TopModalNewOrder>
+                        </Style.TopModalNewOrder>
+                    }
                     
                     { !isOnline &&
                         <Style.TextDisconnected>offline</Style.TextDisconnected>
@@ -322,7 +535,7 @@ export default function modalProducts({getVisible, handleModalProducts, products
                             <Style.ComponentQRCode>
                                 <Style.QRCodeScan
                                     type={CameraType.back}
-                                    onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
+                                    onBarCodeScanned={scanned ? undefined : handleQRCodeScanned}
                                     style={{flex:1}}
                                 >
                                 </Style.QRCodeScan>
@@ -333,6 +546,61 @@ export default function modalProducts({getVisible, handleModalProducts, products
                                     </Style.LoadingContent>
                                 }
                             </Style.ComponentQRCode>
+                        }
+
+                        { hasBar &&
+                            <Style.BarCodeComponent>
+                                <Style.TopBarCodeScan>
+                                    <Style.BarCodetext>
+                                        BarCode Scan
+                                    </Style.BarCodetext>
+
+                                    { markedCount > 0 ? 
+                                        <Style.ButtomCancelSelect
+                                            onPress={() => resetMarked(true)}
+                                            activeOpacity={0.4}
+                                        >
+                                            <FontAwesome name="close" size={24} color="white" />
+                                            <Style.CountSelectProd>{markedCount}</Style.CountSelectProd>
+                                        </Style.ButtomCancelSelect>
+                                    
+                                    :
+                                        <Style.ButtonCloseModal
+                                            onPress={handleModalProducts}
+                                            activeOpacity={0.4}
+                                        >
+                                            <FontAwesome name="close" size={30} color="black" />
+                                        </Style.ButtonCloseModal>
+                                        
+                                    }
+                                </Style.TopBarCodeScan>
+
+                                <Style.BarCodeInput
+                                    keyboardType='email-address'
+                                    ref={inputBarCodeRef}
+                                    autoCorrect={false}
+                                    value={inputBarCode}
+                                    autoCapitalize='none'   
+                                    onChangeText={setInputBarCode}
+                                    onSubmitEditing={handleBarCodeScanned}
+                                />
+
+                                <Style.ButtonBarCodeMore
+                                    onPress={handleFocusTextInput}
+                                    activeOpacity={0.4}
+                                >
+                                    <Style.TextFooterOrder color='#fff'>
+                                        Ler código de barras
+                                    </Style.TextFooterOrder>
+                                </Style.ButtonBarCodeMore>
+
+                                { isLoadTop && 
+                                    <Style.LoadingContent>
+                                        <ActivityIndicator animating size="large" color={'#000'} />
+                                    </Style.LoadingContent>
+                                }
+
+                            </Style.BarCodeComponent>
                         }
                         
                         <Style.ComponentProductModal>
@@ -346,13 +614,16 @@ export default function modalProducts({getVisible, handleModalProducts, products
                             }
                             
                             <Products
-                                products={products}
+                                products={hasBar ? itemsBarScanned : products}
                                 handleLoadMore={handleLoadMore}
                                 handleItem={handleItem}
                                 handleLongItem={handleLongItem}
                                 isLoadBottom={isLoadBottom}
                                 isOnline={isOnline}
                                 isOrder={true}
+                                hasBar={hasBar}
+                                handleMinus={(item: any) => handleMinus(item)}
+                                handleMore={(item: any) => handleMore(item)}
                             />
                         </Style.ComponentProductModal>
                     </Style.MiddleModalNewOrder>
@@ -360,12 +631,22 @@ export default function modalProducts({getVisible, handleModalProducts, products
                     <Style.BottomModalNewOrder>
 
                         <Style.TotalsFooterOrder mt={20}>
-                            <Style.ButtonClearOrder
+                            <Style.ButtonQrCode
                                 onPress={handleHasCamera}
                                 activeOpacity={0.4}
                             >
                                 <Ionicons name={!hasCamera ? "qr-code" : "close"} size={24} color="#fff" />
-                            </Style.ButtonClearOrder>
+                            </Style.ButtonQrCode>
+
+                            <Style.ButtonBarCode
+                                onPress={HandleBarScan}
+                                activeOpacity={0.4}
+                            >
+                                {!hasBar
+                                    ? <MaterialCommunityIcons name={"barcode-scan"} size={24} color="#fff" />
+                                    : <Ionicons name={"close"} size={24} color="#fff" />
+                                }
+                            </Style.ButtonBarCode>
 
                             <Style.ButtonFinishOrder
                                 onPress={handleAddItens}

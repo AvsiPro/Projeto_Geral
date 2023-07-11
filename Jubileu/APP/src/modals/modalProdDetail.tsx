@@ -64,12 +64,16 @@ export default function modalProdDetail({getVisible, handleModalProducts, produc
 
                                     <Style.MiddleCardContainer mt={10}>
                                         <Style.MiddleCardText>{`Marca: ${products.brand}`}</Style.MiddleCardText>
-                                        <Style.MiddleCardText>{`Valor: ${CurrencyFormat(products.price)}`}</Style.MiddleCardText>
+                                        <Style.MiddleCardText>{`Valor: ${CurrencyFormat(products.price.price)}`}</Style.MiddleCardText>
                                     </Style.MiddleCardContainer>
 
                                     <Style.MiddleCardContainer mt={4}>
                                         <Style.MiddleCardText>{`Linha: ${products.line}`}</Style.MiddleCardText>
                                         <Style.MiddleCardText>{`Material: ${products.material}`}</Style.MiddleCardText>
+                                    </Style.MiddleCardContainer>
+
+                                    <Style.MiddleCardContainer mt={20}>
+                                        <Style.MiddleCardText>{`Saldo: ${products.balance}`}</Style.MiddleCardText>
                                     </Style.MiddleCardContainer>
                                 </Style.ModalItensContainer>
                             </>
