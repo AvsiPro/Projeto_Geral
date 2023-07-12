@@ -59,15 +59,26 @@ Local aRotina := {}
 ADD OPTION aRotina TITLE 'Visualizar'   ACTION "U_Z07Chama(1)"    OPERATION 2                      ACCESS 0
 ADD OPTION aRotina TITLE 'Incluir'      ACTION "U_CONOPC03(,.T.)"    OPERATION 3                      ACCESS 0
 ADD OPTION aRotina TITLE 'Alterar'      ACTION "U_Z07Chama(1)"    OPERATION 4                      ACCESS 0
-ADD OPTION aRotina TITLE 'Excluir'      ACTION 'VIEWDEF.Z07Tela' OPERATION 5                      ACCESS 0
+ADD OPTION aRotina TITLE 'Excluir'      ACTION 'U_Z07Chama(3)' OPERATION 5                      ACCESS 0
 ADD OPTION aRotina TITLE 'Layout Padrão'ACTION 'U_Z07Chama(2)' OPERATION 5                      ACCESS 0
 
 Return(aRotina)
 
 User Function Z07Chama(nOpc)
+
+Local cPatrim := Z07->Z07_CHAPA 
+
     If nOpc == 1
         U_CONOPC03(Z07->Z07_CHAPA,.F.)
-    Else 
+    ElseiF nOpc == 2 
         U_CONOPC03(,.F.)
+    else
+        While !EOF() .AND. Alltrim(Z07->Z07_CHAPA) == Alltrim(cPatrim)
+            Reclock("Z07",.F.)
+            DbDelete()
+            Z07->(Msunlock())        
+            Dbskip()
+        EndDo
+        Msgalert("Processo finalizado!!!")
     EndIf 
 Return 
