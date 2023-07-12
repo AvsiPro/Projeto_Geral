@@ -112,20 +112,47 @@ export const HeaderGraphics = styled.View`
 export const ContainerProdModal = styled.TouchableOpacity`
     background-color:#fff;
     padding:12px;
-    border-radius:20px;
-    margin-bottom:12px;
+    border-top-left-radius:20px;
+    border-top-right-radius:20px;
     margin-left:20px;
     margin-right:20px;
+    flex-direction:row;
 `
 
 export const ContainerProdModal2 = styled.TouchableOpacity`
     background-color:#fff;
     padding:12px;
     border-radius:20px;
-    margin-bottom:12px;
     margin-left:20px;
     margin-right:20px;
+    margin-bottom:15px;
     flex-direction:row;
+`
+
+export const ContainerBotton = styled.View`
+    flex-direction:row;
+`
+
+export const ContainerBottonQtyL = styled.TouchableOpacity`
+    background-color:${(props) => props.theme.colors.primary};
+    padding:8px;
+    border-bottom-left-radius:20px;
+    margin-left:20px;
+    margin-bottom:15px;
+    flex:1;
+    justify-content:center;
+    align-items:center;
+`
+
+export const ContainerBottonQtyR = styled.TouchableOpacity`
+    background-color:${(props) => props.theme.colors.primary};
+    padding:8px;
+    border-bottom-right-radius:20px;
+    margin-right:20px;
+    margin-bottom:15px;
+    flex:1;
+    justify-content:center;
+    align-items:center;
 `
 
 export const LeftContainerProdModal = styled.View`

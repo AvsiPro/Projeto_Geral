@@ -87,6 +87,21 @@ Default oself:byId		:=.F.
 			'"'+Alltrim(EncodeUTF8((cAliasTMP)->B1_CODBAR))+'"'+;
 		'}
 
+		oPrice1 := JsonObject():New()
+		oPrice1['min'] 	 := 0
+		oPrice1['max'] 	 := 30
+		oPrice1['price'] := 100
+
+		oPrice2 := JsonObject():New()
+		oPrice2['min'] 	 := 31
+		oPrice2['max'] 	 := 60
+		oPrice2['price'] := 80
+
+		oPrice3 := JsonObject():New()
+		oPrice3['min'] 	 := 61
+		oPrice3['max'] 	 := 9999
+		oPrice3['price'] := 60
+
 		aListAux[nAux]['id']	            := Encode64(cIdAux)
 		aListAux[nAux]['code']	            := Alltrim(EncodeUTF8((cAliasTMP)->B1_COD))
 		aListAux[nAux]['description']       := Alltrim(EncodeUTF8((cAliasTMP)->B1_DESC))
@@ -98,9 +113,9 @@ Default oself:byId		:=.F.
 		aListAux[nAux]['gender']       		:= "F"
 		aListAux[nAux]['line']       		:= "Oculos Receituario"
 		aListAux[nAux]['material']       	:= "Acetato"
-		aListAux[nAux]['price']       		:= 100
-		aListAux[nAux]['price2']       		:= 100
-		aListAux[nAux]['price3']       		:= 100
+		aListAux[nAux]['price']       		:= oPrice1
+		aListAux[nAux]['price2']       		:= oPrice2
+		aListAux[nAux]['price3']       		:= oPrice3
 		aListAux[nAux]['balance']       	:= 200
 		aListAux[nAux]['selected_quantity']	:= 0
 		aListAux[nAux]['marked']	       	:= .F.

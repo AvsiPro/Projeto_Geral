@@ -1,5 +1,5 @@
 import React, { useContext, useState, useRef, useEffect } from 'react';
-import { FlatList, View, Platform, Keyboard } from 'react-native';
+import { FlatList, View, Platform, Keyboard, Switch } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Entypo, AntDesign, FontAwesome, MaterialIcons } from '@expo/vector-icons';
 import * as Style from './styles';
@@ -58,7 +58,9 @@ export default function Neworder(){
     const [textObs, setTextObs] = useState<string>('');
     const [load, setLoad] = useState<boolean>(false);
     const [continuaOrc, setContinuaOrc] = useState<boolean>(false);
+    const [priceRule, setPriceRule] = useState<boolean>(false);
 
+    const toggleSwitch = () => setPriceRule(previousState => !previousState);
 
     /** verifica se esta online ou offline **/
     useEffect(() => {
@@ -213,7 +215,7 @@ export default function Neworder(){
 
     /** responsavel pelo vlr total **/
     const sumValueTotal = (): number => {
-        return itemCart.reduce((total: number, item: any) => total + item.price * item.selected_quantity, 0);
+        return itemCart.reduce((total: number, item: any) => total + handlePriceRule(item) * item.selected_quantity, 0);
     }
 
 
@@ -228,7 +230,8 @@ export default function Neworder(){
         const clonedCart: any = [...itemCart];
       
         clonedCart.forEach((item: any) => {
-          atualizaProdutos((prevItems: any) => [...prevItems, item]);
+            item.selected_quantity = 0
+            atualizaProdutos((prevItems: any) => [...prevItems, item]);
         });
         
         setContinuaOrc(false);
@@ -307,7 +310,7 @@ export default function Neworder(){
             return {
                 produto: item.code,
                 quantidade: item.selected_quantity,
-                valor: item.price
+                valor: handlePriceRule(item)
             };
         });
 
@@ -453,6 +456,34 @@ export default function Neworder(){
         setContinuaOrc(!continuaOrc)
     }
 
+
+    const handlePriceRule = (item: any) => {
+
+        let value = 0
+        const quantity = item.selected_quantity
+        const price1 = item.price
+        const price2 = item.price2
+        const price3 = item.price3
+
+        if(!priceRule){
+            return price1.price
+        }
+
+        if(quantity >= price1.min && quantity <= price1.max){
+            value = price1.price
+        }
+
+        if(quantity >= price2.min && quantity <= price2.max){
+            value = price2.price
+        }
+
+        if(quantity >= price3.min && quantity <= price3.max){
+            value = price3.price
+        }
+
+        return value
+    }
+
     return(<>
         <SafeAreaView 
             edges={["top"]}
@@ -523,16 +554,26 @@ export default function Neworder(){
                             </View>
 
                             <Style.CountContainer>
-                                <Style.DescItemNOrder>{CurrencyFormat(item.price * item.selected_quantity)}</Style.DescItemNOrder>
+                                <Style.DescItemNOrder>{CurrencyFormat(handlePriceRule(item) * item.selected_quantity)}</Style.DescItemNOrder>
                                 
                                 <Style.CountItemContainer>
-                                    <Style.ButtonCount onPress={() => handleMinus(index)}>
-                                        <FontAwesome name="minus" size={14} color="white" />
+
+                                    <Style.ButtonCount
+                                        onPress={() => handleMinus(index)}
+                                        clear={item.selected_quantity === 1}
+                                    >
+                                        { item.selected_quantity > 1
+                                            ? <FontAwesome name="minus" size={14} color="white" />
+                                            : <FontAwesome name="trash-o" size={16} color="white" />
+                                        }
                                     </Style.ButtonCount>
 
                                     <Style.TextCountItem>{item.selected_quantity}</Style.TextCountItem>
 
-                                    <Style.ButtonCount onPress={() => handleMore(index)}>
+                                    <Style.ButtonCount
+                                        onPress={() => handleMore(index)}
+                                        clear={false}
+                                    >
                                         <FontAwesome name="plus" size={14} color="white" />
                                     </Style.ButtonCount>
                                 </Style.CountItemContainer>
@@ -584,6 +625,21 @@ export default function Neworder(){
 
                         <Style.TextFooterOrder color='#FF932F'>{`Vlr. Desconto: ${CurrencyFormat(sumDiscount())}`}</Style.TextFooterOrder>
                     */}
+
+                    
+                    <Style.ContainerDesconto>
+                        <Style.TextFooterOrder color='#000'>Aplica desconto? </Style.TextFooterOrder>
+
+                        <Switch
+                            trackColor={{false: '#000', true: '#FF932F'}}
+                            thumbColor={priceRule ? '#f4f3f4' : '#f4f3f4'}
+                            ios_backgroundColor='#000'
+                            onValueChange={toggleSwitch}
+                            value={priceRule}
+                            style={{ transform: [{scaleX: 1}, {scaleY: 1}]}}
+                            onChange={() => {}}
+                        />
+                    </Style.ContainerDesconto>
 
                     {!keyboardActived && <>
                         <Style.TotalsFooterOrder mt={10}>

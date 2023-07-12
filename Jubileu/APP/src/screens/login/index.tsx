@@ -137,7 +137,7 @@ export default function Login({navigation}: Props){
                 </KeyboardAwareScrollView>
                 
                 <Style.ContainerVresion>
-                    <Style.LabelVersion>v120230629</Style.LabelVersion>
+                    <Style.LabelVersion>v120230711</Style.LabelVersion>
                 </Style.ContainerVresion>
                 
             </Style.FormContainer>
