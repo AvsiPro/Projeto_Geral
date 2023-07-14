@@ -331,6 +331,7 @@ Local aArea    := GetArea()
 	cQuery += " 	AND SA1.D_E_L_E_T_ = ' ' "
 	cQuery += " WHERE SE1.D_E_L_E_T_ = ' ' "
 	cQuery += "		AND SE1.E1_BAIXA = ' ' "
+	cQuery += "		AND SE1.E1_VENCREA < '"+DToS(Date())+"' "
 	cQuery += " 	AND SA1.A1_COD = '"+cCodeA1+"' "
 	cQuery += " 	AND SA1.A1_LOJA = '"+cLojaA1+"' "
 
@@ -350,8 +351,6 @@ Local aArea    := GetArea()
 			'"'+Alltrim(EncodeUTF8((cAliasE1)->E1_VENCREA))+'"'+;
 		'}
 
-		cStatus := If(SToD((cAliasE1)->E1_VENCREA) >= Date(),"Em Aberto","Atrasado")
-
 		aListAux[nAux]['id']	            := Encode64(cIdAux)
 		aListAux[nAux]['document']	        := Alltrim(EncodeUTF8((cAliasE1)->E1_NUM))
 		aListAux[nAux]['prefix']     		:= Alltrim(EncodeUTF8((cAliasE1)->E1_PREFIXO))
@@ -360,7 +359,7 @@ Local aArea    := GetArea()
 		aListAux[nAux]['emission']			:= Alltrim(EncodeUTF8((cAliasE1)->E1_EMISSAO))
 		aListAux[nAux]['expiration']		:= Alltrim(EncodeUTF8((cAliasE1)->E1_VENCREA))
 		aListAux[nAux]['value']				:= (cAliasE1)->E1_VALOR
-		aListAux[nAux]['status']			:= Alltrim(EncodeUTF8(cStatus))
+		aListAux[nAux]['status']			:= EncodeUTF8('Atrasado')
 		aListAux[nAux]['customerName']		:= Alltrim(EncodeUTF8((cAliasE1)->A1_NOME))
 		aListAux[nAux]['customerCNPJ']		:= Alltrim(EncodeUTF8((cAliasE1)->A1_CGC))
 
