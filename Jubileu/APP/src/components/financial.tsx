@@ -19,6 +19,7 @@ interface PropsFinancial{
     customer: any;
     handleFinancial: () => void;
     order?: boolean;
+    viewTitle?: boolean;
     handleContinue?: () => void;
 }
 
@@ -27,6 +28,7 @@ export default function financial({
     customer,
     handleFinancial,
     order = false,
+    viewTitle = true,
     handleContinue = () => {}
 } : PropsFinancial){
     
@@ -272,7 +274,7 @@ export default function financial({
                 }
             />
 
-            {order &&
+            {order && viewTitle &&
                 <Style.ButtonContinue onPress={() => handleContinue()}>
                     <Style.TextButtonFinancial>Continuar com orçamento</Style.TextButtonFinancial>
                 </Style.ButtonContinue>

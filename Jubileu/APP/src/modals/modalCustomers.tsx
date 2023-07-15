@@ -45,6 +45,7 @@ export default function modalCustomers({getVisible, handleModalCustomers, custom
     const [financial, setFinancial] = useState(false);
     const [financialCustomer, setFinancialCustomer] = useState('')
     const [visiblePopup, setVisiblePopup] = useState(false)
+    const [viewTitle, setViwTitle] = useState(false);
 
     const [search, setSearch] = useState<boolean>(false);
     const [isLoadSearch, setLoadSearch] = useState<boolean>(false);
@@ -180,6 +181,7 @@ export default function modalCustomers({getVisible, handleModalCustomers, custom
 
 
     const handleCustomerFinancial = (item: any) => {
+        setViwTitle(false)
         setFinancialCustomer(item)
         handleFinancial()
     }
@@ -337,6 +339,7 @@ export default function modalCustomers({getVisible, handleModalCustomers, custom
                                             handleFinancial={handleFinancial}
                                             order={true}
                                             handleContinue={handleContinue}
+                                            viewTitle={viewTitle}
                                         />
 
                                 }

@@ -9,6 +9,7 @@ import * as Style from './styles';
 import api from '../../services/api';
 import Popups from '../../modals/popups';
 
+import { version } from '../../../version';
 import { AppContext } from '../../contexts/globalContext';
 
 interface Props{
@@ -137,7 +138,7 @@ export default function Login({navigation}: Props){
                 </KeyboardAwareScrollView>
                 
                 <Style.ContainerVresion>
-                    <Style.LabelVersion>v120230711</Style.LabelVersion>
+                    <Style.LabelVersion>{version}</Style.LabelVersion>
                 </Style.ContainerVresion>
                 
             </Style.FormContainer>
