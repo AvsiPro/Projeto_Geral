@@ -122,7 +122,10 @@ Default oself:token		:=	''
 	cQuery += " A1_TEL, A1_ULTCOM, A1_PRICOM, A1_RISCO, A1_LC, A1_SALDUP, A1_MCOMPRA, "
 	cQuery += " A1_NROCOM, A1_ATR, A1_MATR, A1_PAGATR, A1_COND "
 	cQuery += " FROM "+RetSqlName('SA1')+" SA1 "
-	cQuery += " WHERE SA1.D_E_L_E_T_ = ' ' "
+	cQuery += " WHERE SA1.A1_FILIAL='"+xFilial("SA1")+"' AND SA1.D_E_L_E_T_ = ' ' "
+	
+	cQuery += " AND A1_VEND IN('      ','"+cVend+"')"
+
 	cQuery += " AND SA1.A1_MSBLQL <> '1' "+cWhere
 	cQuery += " ORDER BY " + SqlOrder(SA1->(IndexKey(1)))
 	cQuery += " OFFSET (("+cValToChar(oself:page)+" - 1) * "+cValToChar(oself:pageSize)+") ROWS "
