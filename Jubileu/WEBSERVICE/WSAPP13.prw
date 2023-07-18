@@ -45,7 +45,8 @@ WsMethod POST WsReceive RECEIVE WsService WSAPP13
                 SA1->A1_CONTATO := oParser:contact
                 SA1->A1_EMAIL   := oParser:email
                 SA1->A1_END     := Alltrim(oParser:address)
-                SA1->A1_TEL     := fRemoveCarc(SubStr(oParser:phone,3))
+                SA1->A1_DDD     := SubStr(fRemoveCarc(oParser:phone),1,2)
+                SA1->A1_TEL     := SubStr(fRemoveCarc(oParser:phone),3)
                 
                 If !Empty(oParser:another_address)
                     SA1->A1_ENDENT := oParser:another_address
@@ -88,8 +89,8 @@ WsMethod POST WsReceive RECEIVE WsService WSAPP13
             Aadd(aDadCl,{"A1_EST"   ,   Upper(oParser:uf)                       , Nil})
             Aadd(aDadCl,{"A1_MUN"   ,   SubStr(Upper(oParser:city),1,60)        , Nil})
             Aadd(aDadCl,{"A1_EMAIL" ,   Upper(oParser:email)                    , Nil})
-            Aadd(aDadCl,{"A1_DDD"   ,   fRemoveCarc(SubStr(oParser:phone,1,2))  , Nil})
-            Aadd(aDadCl,{"A1_TEL"   ,   fRemoveCarc(SubStr(oParser:phone,3))    , Nil})
+            Aadd(aDadCl,{"A1_DDD"   ,   SubStr(fRemoveCarc(oParser:phone),1,2)  , Nil})
+            Aadd(aDadCl,{"A1_TEL"   ,   SubStr(fRemoveCarc(oParser:phone),3)    , Nil})
             Aadd(aDadCl,{"A1_CONTATO",  oParser:contact		          	        , Nil})
 			Aadd(aDadCl,{"A1_PAIS"  ,   '105'                                   , Nil})
 			Aadd(aDadCl,{"A1_CODPAIS",  '01058'                                 , Nil})
