@@ -17,6 +17,8 @@ User Function ROBFAT08()
     Local nAlt
     Local nLinha
     Local nOpc      :=  0
+    Local aPergs    :=  {}
+    Local aRet      :=  {}
 
     Private oDlg1,oGrp1,oList1,oList2,oList3,oBtn1,oBtn2,oBtn3,oBtn4,oBtn5,oSay1,oSay2
     Private aList1 := {}
@@ -26,11 +28,19 @@ User Function ROBFAT08()
 	Private oOk    := LoadBitmap(GetResources(),'br_verde')
 	Private oNo    := LoadBitmap(GetResources(),'br_vermelho')
     Private lTroca := .T.
+    Private cSaldo := '15 '
 
 	If Select("SM0") == 0
 		RpcSetType(3)
 		RPCSetEnv("01","0103")
 	EndIf
+
+    aAdd(aPergs ,{1,"Saldo a considerar p/ devol.",cSaldo,"@!",".T.","",".T.",60,.F.})
+	
+		
+	If ParamBox(aPergs ,"Filtrar por",@aRet) 
+        cSaldo := aRet[1]
+    ENDIF
 
     Processa({|| buscaGeren()},"Aguarde")
 
@@ -50,7 +60,7 @@ User Function ROBFAT08()
 							aList1[oList1:nAt,4]}}
 
 	oList2     := TCBrowse():New( 012, 200, 440, 135,, {'','Codigo','Representante','Malas', 'Regioes'},,;
-				 oGrp1,,,, {|| Processa({|| buscaProd(oList2:nAt)},"Aguarde")},;
+				 oGrp1,,,, {|| Processa({|| buscaProd(oList2:nAt,cSaldo)},"Aguarde")},;
 				 			/*{|| editcol(oList2:nAt)}*/,,,,,,,,, .T.,,,, .F., .T. )
 	
 	oList2:SetArray(aList2)
@@ -189,7 +199,7 @@ Static Function buscaRepre(nLinha)
 
 Return
 
-Static Function buscaProd(nLinha)
+Static Function buscaProd(nLinha,cSaldo)
 
     Local cQuery       :=    ""
     Local nX         
@@ -224,7 +234,7 @@ Static Function buscaProd(nLinha)
     cQuery += "        AND B6_PODER3 = 'R' " 
     cQuery += "        AND B6_FILIAL = " + xFilial("SB6") + "   " 
     cQuery += "        AND SB6.D_E_L_E_T_ = ' '   " 
-    cQuery += "        AND B2_QATU <= '15'   " 
+    cQuery += "        AND B2_QATU <= '"+Alltrim(cSaldo)+"'   " 
     cQuery += "        AND B1_GRUPO != ' '   " 
     cQuery += " ORDER BY  B1_COD   " 
 
