@@ -29,9 +29,7 @@
 ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß*/
 
 User Function ROBFAT01
-Local nX        := 0
 Local nOpc      :=  0
-Local aEtiqueta := {}
 Local cGravObs := ''
 
 Private aFrete  :=  {'0=Selecione','1=CIF','2=FOB','3=Terceiros'}
