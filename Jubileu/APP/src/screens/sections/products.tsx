@@ -179,6 +179,7 @@ export default function Products(){
                             returnKeyType="done"
                             onChangeText={setSearchQuery}
                             onSubmitEditing={handleSearchButton}
+                            editable={!isLoadSearch}
                         />
 
                         <Style.ButtonSearch onPress={() => handleSearchButton()}>

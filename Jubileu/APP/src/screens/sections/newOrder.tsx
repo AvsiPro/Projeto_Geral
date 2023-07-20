@@ -200,13 +200,16 @@ export default function Neworder(){
 
     /** botao de aumentar item do carrinho **/
     const handleMore = (index: number) => {
+
         setItemCart((prevState: any) => {
             const newData = [...prevState];
             
-            newData[index] = {
-            ...newData[index],
-            selected_quantity: newData[index].selected_quantity + 1
-            };
+            if(newData[index].balance  >= newData[index].selected_quantity + 1){
+                newData[index] = {
+                ...newData[index],
+                selected_quantity: newData[index].selected_quantity + 1
+                };
+            }
   
             return newData;
         }); 

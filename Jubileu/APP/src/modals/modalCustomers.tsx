@@ -255,6 +255,7 @@ export default function modalCustomers({getVisible, handleModalCustomers, custom
                                             onChangeText={setSearchQuery}
                                             onSubmitEditing={handleSearchButton}
                                             value={searchQuery}
+                                            editable={!isLoadSearch}
                                         />
 
                                         <Style.ButtonSearch onPress={() => handleSearchButton()}>
