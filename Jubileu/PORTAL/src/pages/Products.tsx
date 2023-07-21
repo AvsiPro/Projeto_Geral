@@ -24,6 +24,9 @@ const Products: React.FC = () => {
   const [load, setLoad] = useState<boolean>(false)
   const [page, setPage] = useState<number>(1);
 
+  const userData = localStorage.getItem('userdata');
+  const user = userData ? JSON.parse(userData) : null;
+
   const isMobile = useMediaQuery({ query: '(max-width: 767px)' });
 
   useEffect(() => {
@@ -114,17 +117,30 @@ const Products: React.FC = () => {
     )
   }
 
-  const fields = [
+  const fields = user.type === 'V' ? [
     {field: 'code', headerText: 'Codigo', textAlign: 'Center'  },
     {field: 'description', headerText: 'Descrição', textAlign: 'Left' , width: '300px'},
     {field: 'type', headerText: 'Tipo', textAlign: 'Center' },
     {field: 'line', headerText: 'Linha', textAlign: 'Left' },
     {field: 'brand', headerText: 'Marca', textAlign: 'Left' },
     {field: 'gender', headerText: 'Gênero', textAlign: 'Center' },
-    {field: 'price', headerText: 'Preço', textAlign: 'Center' },
+    {field: 'price', headerText: 'Preço 1', textAlign: 'Center', width: '80px' },
+    {field: 'price2', headerText: 'Preço 2', textAlign: 'Center', width: '80px' },
+    {field: 'price3', headerText: 'Preço 3', textAlign: 'Center', width: '80px' },
     {field: 'balance', headerText: 'Saldo', textAlign: 'Center' },
     {field: 'photo', headerText: 'Foto', textAlign: 'Center' }
+  ] :
+  [
+    {field: 'code', headerText: 'Codigo', textAlign: 'Center'  },
+    {field: 'description', headerText: 'Descrição', textAlign: 'Left' , width: '300px'},
+    {field: 'type', headerText: 'Tipo', textAlign: 'Center' },
+    {field: 'line', headerText: 'Linha', textAlign: 'Left' },
+    {field: 'brand', headerText: 'Marca', textAlign: 'Left' },
+    {field: 'gender', headerText: 'Gênero', textAlign: 'Center' },
+    {field: 'price', headerText: 'Preço', textAlign: 'Center', width: '80px' },
+    {field: 'photo', headerText: 'Foto', textAlign: 'Center' }
   ]
+
 
   return (
     <Style.CustComponent>

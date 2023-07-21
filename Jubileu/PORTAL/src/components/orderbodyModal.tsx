@@ -17,7 +17,6 @@ import { CartContext } from "../contexts/CartContext";
 import { useMediaQuery } from "react-responsive";
 import FinancialBodyModal from "./financialBodyModal";
 import InputText from "./inputComponent";
-import { UserContext } from "../contexts/userContext";
 
 interface Props {
   fieldsOrders: any;
@@ -49,7 +48,6 @@ const OrdersBodyModal: React.FC<Props> = ({
   itemsCartView = []
 }) => {
   const { windowDimensions } = useContext(WindowDimensionsContext);
-  const { userContext } = useContext(UserContext)
   const { setCartContext, cartContext } = useContext(CartContext);
   const isMobile = useMediaQuery({ query: '(max-width: 767px)' });
 
@@ -61,6 +59,10 @@ const OrdersBodyModal: React.FC<Props> = ({
   const [showHeader, setShowHeader] = useState<boolean>(false);
   const [discountInput, setDiscountInput] = useState<string>('');
   const [view, setView] = useState<boolean>(false);
+  const [priceRule, setPriceRule] = useState<boolean>(false);
+
+  const userData = localStorage.getItem('userdata');
+  const user = userData ? JSON.parse(userData) : null;
 
   useEffect(() => {
     if (!load) {
@@ -158,13 +160,24 @@ const OrdersBodyModal: React.FC<Props> = ({
     );
   };
 
-  const fields = [
+  const fields = user.type === 'V' ? [
+    { field: "mark", headerText: "", textAlign: "Center" },
+    { field: "code", headerText: "Codigo", textAlign: "Center" },
+    { field: "description", headerText: "Descrição", textAlign: "Left" },
+    { field: "price", headerText: "Preço 1", textAlign: "Center" },
+    { field: "price2", headerText: "Preço 2", textAlign: "Center" },
+    { field: "price3", headerText: "Preço 3", textAlign: "Center" },
+    { field: "balance", headerText: "Saldo", textAlign: "Center" },
+  ]:
+  [
     { field: "mark", headerText: "", textAlign: "Center" },
     { field: "code", headerText: "Codigo", textAlign: "Center" },
     { field: "description", headerText: "Descrição", textAlign: "Left" },
     { field: "price", headerText: "Preço", textAlign: "Center" },
     { field: "balance", headerText: "Saldo", textAlign: "Center" },
-  ];
+  ]
+
+  
 
 
   /** botao de diminuir item do carrinho, se for zerado sai da lista **/
@@ -231,12 +244,12 @@ const OrdersBodyModal: React.FC<Props> = ({
 
   /** responsavel pela quantidade total **/
   const sumQuantityTotal = (): number => {
-    return itensCart.reduce((total: number, item: any) => total + item.selected_quantity, 0);
+    return itensCart.filter(Boolean).reduce((total: number, item: any) => total + item.selected_quantity, 0);
   }
 
   /** responsavel pelo vlr total **/
   const sumValueTotal = (): number => {
-    return itensCart.reduce((total: number, item: any) => total + item.price * item.selected_quantity, 0);
+    return itensCart.filter(Boolean).reduce((total: number, item: any) => total + handlePriceRule(item) * item.selected_quantity, 0);
   }
 
   const Header = () => {
@@ -319,6 +332,47 @@ const OrdersBodyModal: React.FC<Props> = ({
     return discountValue
   }
 
+
+
+  const handlePriceRule = (item: any) => {
+
+    let value = 0
+    const quantity = item.selected_quantity
+    const price1 = item.price
+    const price2 = item.price2
+    const price3 = item.price3
+
+    if(!priceRule){
+        return price1.price
+    }
+
+    if(price1.max === 0){
+      price1.max = 99999
+    }
+
+    if(price2.max === 0){
+      price2.max = 99999
+    }
+
+    if(price3.max === 0){
+      price3.max = 99999
+    }
+
+    if(quantity >= price1.min && quantity <= price1.max){
+        value = price1.price
+    }
+
+    if(quantity >= price2.min && quantity <= price2.max){
+        value = price2.price
+    }
+
+    if(quantity >= price3.min && quantity <= price3.max){
+        value = price3.price
+    }
+
+    return value
+}
+
   return (
     <>
     { !!financial ? 
@@ -379,7 +433,7 @@ const OrdersBodyModal: React.FC<Props> = ({
                       <Style.BodyOrderQtyTools>
                         <Style.BodyOrderQtyPriceTools>
                           <Style.BodyOrderProductPrice>
-                            {CurrencyFormat(item.price * item.selected_quantity)}
+                            {CurrencyFormat(handlePriceRule(item) * item.selected_quantity)}
                           </Style.BodyOrderProductPrice>
                           <Style.BodyOrderButonsQty>
                             <Style.BodyOrderButtonQty
@@ -436,6 +490,20 @@ const OrdersBodyModal: React.FC<Props> = ({
                       />
                     </>
                 */}
+
+                { user.type === 'V' &&
+                  <Style.DiscountHoriz>
+                    <Style.BodyOrderProductDesc>
+                        Aplica desconto?
+                    </Style.BodyOrderProductDesc>
+                    <Style.ToggleDiscount
+                        onClick={() => setPriceRule(!priceRule)}
+                        rule={priceRule}
+                    >
+                      <Style.ToggleIconDiscount rule={priceRule} />
+                    </Style.ToggleDiscount>
+                  </Style.DiscountHoriz>
+                }
                 </Style.BodyOrderTotalsLeft>
 
                 <Style.BodyOrderTotalsRight>
