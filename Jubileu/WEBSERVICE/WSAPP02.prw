@@ -9,6 +9,7 @@ WsRestFul WSAPP02 Description "Clientes API" FORMAT APPLICATION_JSON
 	WsData searchKey AS String	Optional
 	WsData byId		 AS Boolean	Optional
 	WsData token	 AS String  Optional
+	WsData customer  AS Boolean	Optional
 
 WsMethod GET customers;
     Description 'Lista de Clientes';
@@ -24,13 +25,14 @@ Retorna a lista de clientes.
 		Page	   , numerico, numero da pagina
 		PageSize   , numerico, quantidade de registros por pagina
 		byId	   , logico, indica se deve filtrar apenas pelo codigo
-		token      , token vendedor
+		token      , caracter, token vendedor
+		customer   , logico, indica se a pesquisa e do cliente
 
 @return cResponse  , caracter, JSON contendo a lista de clientes
 
 /*/
 
-WsMethod GET customers WsReceive searchKey, page, pageSize, token WsRest WSAPP02
+WsMethod GET customers WsReceive searchKey, page, pageSize, token, customer WsRest WSAPP02
 	
 	Local lRet:= .T.
 	lRet := Customers( self )
@@ -53,6 +55,7 @@ Default oself:searchKey :=	''
 Default oself:page		:=	1
 Default oself:pageSize	:= 	20
 Default oself:byId		:=	.F.
+Default oself:customer  :=	.F.
 Default oself:token		:=	''
 	
     RpcSetType(3)
@@ -96,7 +99,7 @@ Default oself:token		:=	''
 			EndIf
 		EndIf
 
-	ElseIf !Empty(oself:token) //se tiver chave de busca no request
+	ElseIf !Empty(oself:token) .And. !oself:customer //se tiver chave de busca no request
 		cVend := fVendToken( oself:token )
 
 		If !Empty(cVend)
@@ -124,15 +127,19 @@ Default oself:token		:=	''
 	cQuery += " FROM "+RetSqlName('SA1')+" SA1 "
 	cQuery += " WHERE SA1.A1_FILIAL='"+xFilial("SA1")+"' AND SA1.D_E_L_E_T_ = ' ' "
 	
-	cQuery += " AND A1_VEND IN('      ','"+cVend+"')"
+	If !oself:customer
+		cQuery += " AND A1_VEND IN('      ','"+cVend+"')"
+	EndIf
 
 	cQuery += " AND SA1.A1_MSBLQL <> '1' "+cWhere
-	cQuery += " ORDER BY " + SqlOrder(SA1->(IndexKey(1)))
-	cQuery += " OFFSET (("+cValToChar(oself:page)+" - 1) * "+cValToChar(oself:pageSize)+") ROWS "
-	cQuery += " FETCH NEXT "+cValToChar(oself:pageSize)+" ROWS ONLY "
+
+	If !oself:byId
+		cQuery += " ORDER BY " + SqlOrder(SA1->(IndexKey(1)))
+		cQuery += " OFFSET (("+cValToChar(oself:page)+" - 1) * "+cValToChar(oself:pageSize)+") ROWS "
+		cQuery += " FETCH NEXT "+cValToChar(oself:pageSize)+" ROWS ONLY "
+	EndIf
 	
 	MPSysOpenQuery(cQuery, cAliasTMP)
-
 
 	While (cAliasTMP)->(!Eof())
 		nAux++
