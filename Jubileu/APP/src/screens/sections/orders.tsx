@@ -172,19 +172,28 @@ export default function Orders(){
         setLoadCopy(true)
 
         if(option === 'sim'){
-            let itemCartAux: any = []
+            let productsCopy: string = ''
+            let virgula: string = ''
 
-            itemCopy.items.map((itemCart: any) => {
-                itemCartAux.push({
-                    id: encode(`{"SB1","copy","${itemCart.product}","${itemCart.description}"}`),
-                    code: itemCart.product,
-                    description: itemCart.description,
-                    price: itemCart.value_sold,
-                    selected_quantity: itemCart.sold_amount,
-                    marked: true
-                })
+            itemCopy.items.map(async(itemCart: any) => {
+                productsCopy += virgula+"'"+itemCart.product+"'"
+                virgula = ','
             })
+            
+            
+            const productAux = await apiProductsCopy(productsCopy)
 
+            const itemCartAux: any[] = productAux.map((itemNovo: any) => {
+                const itemOrigem = itemCopy.items.find((item: any) => item.product === itemNovo.code);
+                if (itemOrigem && itemNovo.balance > 0) {
+                    return {
+                        ...itemNovo,
+                        marked: true,
+                        selected_quantity: itemNovo.balance >= itemOrigem.sold_amount ? itemOrigem.sold_amount : itemNovo.balance,
+                    };
+                }                
+            }).filter(Boolean);
+            
             const customerAux = await apiCustomerCopy(itemCopy.customer)
 
             setItemCart(itemCartAux)
@@ -202,6 +211,26 @@ export default function Orders(){
     const handleCopyButton = (item: any) => {
         setItemCopy(item)
         setVisiblePopupCopy(true)
+    }
+
+
+    const apiProductsCopy = async(products: string) => {
+
+        let returnObject: any = []
+
+        try {
+            const response = await api.get(`/WSAPP03?pagesize=100&page=1&copyItems=${products}`);
+            const json: ApiResponse = response.data;
+        
+            if(json.status.code === '#200'){    
+                returnObject = [...json.result];
+            }
+    
+        } catch (error) {
+            console.error(error);
+        }
+
+        return returnObject;  
     }
 
 

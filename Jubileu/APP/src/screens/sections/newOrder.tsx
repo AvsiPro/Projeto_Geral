@@ -467,23 +467,35 @@ export default function Neworder(){
         const price1 = item.price
         const price2 = item.price2
         const price3 = item.price3
-
+    
         if(!priceRule){
             return price1.price
         }
-
+    
+        if(price1.max === 0){
+          price1.max = 9999
+        }
+    
+        if(price2.max === 0){
+          price2.max = 9999
+        }
+    
+        if(price3.max === 0){
+          price3.max = 9999
+        }
+    
         if(quantity >= price1.min && quantity <= price1.max){
             value = price1.price
         }
-
+    
         if(quantity >= price2.min && quantity <= price2.max){
             value = price2.price
         }
-
+    
         if(quantity >= price3.min && quantity <= price3.max){
             value = price3.price
         }
-
+    
         return value
     }
 
@@ -553,7 +565,7 @@ export default function Neworder(){
                         <Style.ItemNOrderContainer>
                             <View>
                                 <Style.CodItemNOrder>{item.code}</Style.CodItemNOrder>
-                                <Style.DescItemNOrder>{item.description}</Style.DescItemNOrder>
+                                <Style.DescItemNOrder>{item.description.substring(0,28)}</Style.DescItemNOrder>
                             </View>
 
                             <Style.CountContainer>
