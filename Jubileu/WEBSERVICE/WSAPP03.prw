@@ -7,6 +7,7 @@ WsRestFul WSAPP03 Description "produtos API" FORMAT APPLICATION_JSON
 	WsData page		 AS Integer	Optional
 	WsData pageSize  AS Integer	Optional
 	WsData searchKey AS String	Optional
+	WsData copyItems AS String	Optional
 	WsData byId		 AS Boolean	Optional
 
 WsMethod GET products;
@@ -20,6 +21,7 @@ End WsRestFul
 Retorna a lista de produtos.
 
 @param	SearchKey  , caracter, chave de pesquisa utilizada em diversos campos
+		copyItems  , caracter, itens para a copia
 		Page	   , numerico, numero da pagina
 		PageSize   , numerico, quantidade de registros por pagina
 		byId	   , logico, indica se deve filtrar apenas pelo codigo
@@ -28,7 +30,7 @@ Retorna a lista de produtos.
 
 /*/
 
-WsMethod GET products WsReceive searchKey, page, pageSize WsRest WSAPP03
+WsMethod GET products WsReceive searchKey, copyItems, page, pageSize WsRest WSAPP03
 	Local lRet:= .T.
 	lRet := products( self )
 Return( lRet )
@@ -46,6 +48,7 @@ Local oPrice2
 Local oPrice3
 
 Default oself:searchKey := ''
+Default oself:copyItems := ''
 Default oself:page		:= 1
 Default oself:pageSize	:= 20
 Default oself:byId		:=.F.
@@ -55,30 +58,38 @@ Default oself:byId		:=.F.
 
     oJsonAux  := JsonObject():New()
     cAliasTMP := GetNextAlias()
-    cWhere    := "AND SB1.B1_FILIAL = '"+FwxFilial('SB1')+"'"
+    cWhere    := " AND SB1.B1_FILIAL = '"+FwxFilial('SB1')+"' "
 
 	// Tratativas para realizar os filtros
-	If !Empty(oself:searchKey) //se tiver chave de busca no request
-		cSearch := Upper( oself:SearchKey )
+	
+	If !Empty(oself:copyItems)
+		cWhere += " AND SB1.B1_COD IN (" + oself:copyItems + " ) "
+	Else
+		If !Empty(oself:searchKey) //se tiver chave de busca no request
+			cSearch := Upper( oself:SearchKey )
 
-		If oself:byId //se filtra somente por ID
-			cWhere += " AND SB1.B1_COD = '"	+ cSearch + "'"
-		Else//busca chave nos campos abaixo
-			cWhere += " AND ( SB1.B1_COD LIKE 	'%"	+ cSearch + "%' OR "
-			cWhere += " SB1.B1_DESC LIKE 		'%" + cSearch + "%' ) "
+			If oself:byId //se filtra somente por ID
+				cWhere += " AND SB1.B1_COD = '"	+ cSearch + "'"
+			Else//busca chave nos campos abaixo
+				cWhere += " AND ( SB1.B1_COD LIKE 	'%"	+ cSearch + "%' OR "
+				cWhere += " SB1.B1_DESC LIKE 		'%" + cSearch + "%' ) "
+			EndIf
 		EndIf
 	EndIf
 
 	cQuery := " SELECT B1_COD, B1_DESC, B1_TIPO, B1_GRUPO, B1_CODBAR, B1_POSIPI, B1_FABRIC, B1_PRV1, "
 	cQuery += " DA1_PRCVEN, DA1_XPRCV2, DA1_XPRCV3, DA1_XQTRG1, DA1_XQTRG2, DA1_XQTRG3,B2_QATU-B2_RESERVA AS SALDO"
 	cQuery += " FROM "+RetSqlName('SB1')+" SB1 "
-	cQuery += " INNER JOIN "+RetSQLName('DA1')+" DA1 ON DA1_FILIAL='"+xFilial("DA1")+"' AND DA1_CODPRO=B1_COD AND DA1.D_E_L_E_T_=' ' "
-	cQuery += " INNER JOIN "+RetSQLName('SB2')+" B2 ON B2_FILIAL='"+xFilial("SB2")+"' AND B2_COD=B1_COD AND B2_LOCAL=B1_LOCPAD AND B2.D_E_L_E_T_=' ' "
-	cQuery += " WHERE SB1.B1_FILIAL='"+xFilial("SB1")+"' AND SB1.D_E_L_E_T_ = ' ' ""
+	cQuery += " INNER JOIN "+RetSQLName('DA1')+" DA1 ON DA1_FILIAL='"+FWxFilial("DA1")+"' AND DA1_CODPRO=B1_COD AND DA1.D_E_L_E_T_=' ' "
+	cQuery += " INNER JOIN "+RetSQLName('SB2')+" B2 ON B2_FILIAL='"+FWxFilial("SB2")+"' AND B2_COD=B1_COD AND B2_LOCAL=B1_LOCPAD AND B2.D_E_L_E_T_=' ' "
+	cQuery += " WHERE SB1.D_E_L_E_T_ = ' ' ""
 	cQuery += " AND SB1.B1_MSBLQL <> '1' "+cWhere
-	cQuery += " ORDER BY " + SqlOrder(SB1->(IndexKey(1)))
-	cQuery += " OFFSET (("+cValToChar(oself:page)+" - 1) * "+cValToChar(oself:pageSize)+") ROWS "
-	cQuery += " FETCH NEXT "+cValToChar(oself:pageSize)+" ROWS ONLY "
+
+	If Empty(oself:copyItems) .And. !oself:byId
+		cQuery += " ORDER BY " + SqlOrder(SB1->(IndexKey(1)))
+		cQuery += " OFFSET (("+cValToChar(oself:page)+" - 1) * "+cValToChar(oself:pageSize)+") ROWS "
+		cQuery += " FETCH NEXT "+cValToChar(oself:pageSize)+" ROWS ONLY "
+	EndIf
 	
 	MPSysOpenQuery(cQuery, cAliasTMP)
 

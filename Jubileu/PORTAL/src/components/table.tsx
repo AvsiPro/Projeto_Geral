@@ -71,18 +71,34 @@ const Table: React.FC <PropsTable> = ({
   };
 
   const sortedData = sortedField
-    ? data.slice().sort((a: any, b: any) => {
-        const fieldA = a[sortedField];
-        const fieldB = b[sortedField];
-        const compareResult = fieldA.localeCompare(fieldB);
-        return sortOrder === "asc" ? compareResult : -compareResult;
+  ? data.slice().sort((a: any, b: any) => {
+      const fieldA = a[sortedField];
+      const fieldB = b[sortedField];
 
-      }).reduce((acc: any, current: any) => {
-          const x = acc.find((item: { id: any; }) => item.id === current.id);
-          return !x ? acc.concat([current]) : acc;
-      }, [])
+      // Verificar se os campos são numéricos
+      const isNumeric = !isNaN(fieldA) && !isNaN(fieldB);
 
-    : data;
+      // Verificar se os campos são objetos com a propriedade "price"
+      const isObjectWithPrice = typeof fieldA === "object" && "price" in fieldA;
+
+      // Tratar campos numéricos
+      if (isNumeric) {
+        return sortOrder === "asc" ? fieldA - fieldB : fieldB - fieldA;
+      }
+
+      // Tratar campos de objeto com a propriedade "price"
+      if (isObjectWithPrice) {
+        return sortOrder === "asc" ? fieldA.price - fieldB.price : fieldB.price - fieldA.price;
+      }
+
+      // Tratar campos de texto
+      const compareResult = fieldA.localeCompare(fieldB);
+      return sortOrder === "asc" ? compareResult : -compareResult;
+    }).reduce((acc: any, current: any) => {
+      const x = acc.find((item: { id: any }) => item.id === current.id);
+      return !x ? acc.concat([current]) : acc;
+    }, [])
+  : data;
 
   const handleOpenFinancial = (item: any) => {
     setFinancialCustomer(item)
@@ -209,8 +225,13 @@ const Table: React.FC <PropsTable> = ({
                             
                               <ImageComponent src={`https://jubileudistribuidora.com.br/photos/${item['code']}.jpg`} size={80} code={item['code']}/>
                           
+                          : subItem.field === 'price' || subItem.field === 'price2' || subItem.field === 'price3' ?
+
+                              formatRow(subItem.field, item[subItem.field].price)
+
                           : formatRow(subItem.field, item[subItem.field])
                         }
+
                       </Style.TableData>
                     )}
                   </Style.TableRow>

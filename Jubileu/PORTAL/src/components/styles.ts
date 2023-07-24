@@ -124,6 +124,39 @@ export const NavToggleIcon = styled.div<{theme: any}>`
 `;
 
 
+export const ToggleDiscount = styled.div<{rule: boolean}>`
+  width: 70px;
+  height: 35px;
+  border-radius: 20px;
+  background-color: ${props => (props.rule ? '#FDB813' : '#000')};
+  position: relative;
+  cursor: pointer;
+  margin: 10px;
+`;
+
+export const ToggleIconDiscount = styled.div<{rule: boolean}>`
+  width: 25px;
+  height: 25px;
+  background-color: #fff;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 18px;
+  color: #fff;
+  position: absolute;
+  top: 50%;
+  left: ${props => (props.rule ? 'calc(100% - 30px)' : '6px')};
+  transform: translateY(-50%);
+  transition: left 0.3s ease-in-out;
+`;
+
+export const DiscountHoriz = styled.div`
+    display: flex;
+    flex-direction:row;
+    align-items:center;
+`
+
 export const NavMenuIconOpen = styled(RxHamburgerMenu)`
   cursor: pointer;
   width: 25px;

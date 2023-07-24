@@ -34,7 +34,7 @@ export const formatRow = (field: string, data: any) => {
       )
     }
 
-  }else if(field === 'price'){
+  }else if(field === 'price' || field === 'price2' || field === 'price3' ){
     return CurrencyFormat(data)
 
   }else if(field === 'cnpj' || field === 'customer_cnpj'){

@@ -93,6 +93,7 @@ Static Function GeraExcel()
 		cQuery += " CONVERT(VARCHAR(10), CAST(E1_VENCTO AS DATE),103) AS VENCT,"
 		cQuery += " CONVERT(VARCHAR(10), CAST(E1_VENCREA AS DATE),103) AS VENCTR,"
 		cQuery += " E1_VALOR AS VALOR, "
+		cQuery += " E5_VALOR AS BVALOR, "
 		//cQuery += " CASE WHEN E1_BAIXA <> '' THEN E1_VALOR ELSE E1_SALDO END AS CSALDO, "
 		cQuery += " CONVERT(VARCHAR(10), CAST(E1_BAIXA AS DATE),103) AS BAIXA "
 		cQuery += " FROM "+ RetSQLName('SE1')+" E1 "
@@ -113,7 +114,7 @@ Static Function GeraExcel()
 			cQuery += " AND E1_SITUACA <> '' AND E1_SALDO > 0 "
 			cQuery += " AND E1.R_E_C_N_O_>0 "
 		elseif cPar7 == "2"
-			cQuery += " AND E1_BAIXA <> '' AND E5_TIPODOC NOT IN ('JR') "
+			cQuery += " AND E1_BAIXA <> '' AND E5_TIPODOC NOT IN ('JR','DC') "
 			cQuery += " AND E1.R_E_C_N_O_>0 "
 		ENDIF
 
@@ -186,7 +187,7 @@ Static Function GeraExcel()
 				TMP->EMISSAO,;
 				TMP->VENCT,;
 				TMP->VENCTR,;
-				TMP->VALOR,;
+				IIf(cPar7 == "1",TMP->VALOR,TMP->BVALOR),;
 				TMP->MULTA,;
 				TMP->ACRESCIMO,;
 				TMP->SALDO,;
@@ -274,6 +275,7 @@ Static Function GeraExcel()
 		cQuer2 += " E1_CLIENTE AS CODCLI,"
 		cQuer2 += " E1_LOJA AS LOJCLI,"
 		cQuer2 += " E1_BAIXA,"
+		cQuer2 += " E5_VALOR AS VBAIXA,"
 		cQuer2 += " A1_NOME AS NREDUZ,"
 		cQuer2 += " A1_NREDUZ AS FANTASIA,"
 		cQuer2 += " A1_VEND AS COD_REPRES,"
@@ -301,7 +303,7 @@ Static Function GeraExcel()
 		//cQuer2 += " AND (E1_BAIXA >= '"+ DtoS(cPar3) +"' OR  E1_BAIXA = '' ) "
 		//cQuer2 += " AND E1_TIPO NOT IN ('IS-','PIS','CSL','COF','IR','IR-') "
 		cQuer2 += " AND E1_NUM BETWEEN '' AND 'ZZZZZZZZZ' AND E1_PREFIXO BETWEEN '' AND 'ZZZ' AND E1_PARCELA BETWEEN '' AND 'ZZZ' "
-		cQuer2 += " AND E1_BAIXA <> '' AND E5_TIPODOC NOT IN ('JR') "
+		cQuer2 += " AND E1_BAIXA <> '' AND E5_TIPODOC NOT IN ('JR','DC') "
 		cQuer2 += " AND E1.R_E_C_N_O_>0 "
 		//ENDIF
 
@@ -428,7 +430,7 @@ Static Function GeraExcel()
 				TMC->EMISSAO,;
 				TMC->VENCT,;
 				TMC->VENCTR,;
-				TMC->VALOR,;
+				TMC->VBAIXA,;
 				TMC->MULTA,;
 				TMC->ACRESCIMO,;
 				TMC->SALDO,;

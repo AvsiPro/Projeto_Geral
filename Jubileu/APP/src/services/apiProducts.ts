@@ -9,12 +9,13 @@ export const apiProducts = async (page: number, products: any, filter: number) =
     let returnResult: any = []  
     let pageResult: number = page
     let returnObject: any
-        
-    const response = await api.get(`/WSAPP03?pagesize=100&page=${page}`);
+    
+    const pageSize = 100
+
+    const response = await api.get(`/WSAPP03?pagesize=${pageSize}&page=${page}`);
     const json: ApiResponse = response.data;
 
     if(json.status.code === '#200'){
-
         const itemSalva = [...products, ...json.result];
     
         const uniqueArray = itemSalva.reduce((acc: any[], current: any) => {
@@ -45,7 +46,13 @@ export const apiProducts = async (page: number, products: any, filter: number) =
         await AsyncStorage.removeItem("products")
         await AsyncStorage.setItem("products", JSON.stringify([...products, ...returnResult]));
         
-        pageResult++
+        if(json.result.length === pageSize) {
+            pageResult++
+        }
+
+    }else{
+        returnResult = [...products]
+        pageResult = 1
     }
     
     returnObject = {
@@ -117,7 +124,7 @@ export const searchProducts = async (searchQuery: string, isOnline: boolean) => 
 
     returnObject = {
         returnResult: returnResult,
-        pageResult: 2
+        pageResult: 1
     }
 
     return returnObject;

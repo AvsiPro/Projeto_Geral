@@ -124,9 +124,14 @@ const Orders: React.FC = () => {
       
     const apiData = async() => {
       const returnResult: any = await fetchData(page, userContext.token, userContext.type)
+
+      const auxData = returnResult.reduce((acc: any, current: any) => {
+        const x = acc.find((item: { id: any; }) => item.id === current.id);
+        return !x ? acc.concat([current]) : acc;
+      }, []);
       
-      if(returnResult.length > 0){
-        setData((prevData: any) => [...prevData, ...returnResult]);
+      if(auxData.length > 0){
+        setData((prevData: any) => [...prevData, ...auxData]);
       }
       
       setLoad(false)
@@ -200,7 +205,7 @@ const Orders: React.FC = () => {
     let auxResult: any = []
     let returnResult: any = []
 
-    const response = await api.get(`/WSAPP02?pagesize=1&page=1&byId=true&SearchKey=${userContext.code}`);
+    const response = await api.get(`/WSAPP02?pagesize=1&page=1&byId=true&customer=true&SearchKey=${userContext.code}`);
     const json: ApiResponse = response.data;
 
     if(json.status.code === '#200'){    
@@ -228,27 +233,29 @@ const Orders: React.FC = () => {
       const custAux = await apiCustomer();
 
       if (!!custAux) {
-        const payment = {
+        if(custAux.financial.length > 0) {
+          handleSetFinancial(custAux)
+        }else{
+          const payment = {
             code: custAux.payment,
             form: custAux.payment_description,
             id: custAux.payment,
             description: custAux.payment_description,
             mark: true
+          }
+
+          setPaymentContext(payment)
+          setCustomerContext(custAux);
+
+          const auxField = [...fieldsOrders]
+
+          auxField.map((_, index) => {
+            auxField[index].enabled = false
+            auxField[index].search = false
+          })
+          
+          setShowModal(true)
         }
-
-        setPaymentContext(payment)
-        setCustomerContext(custAux);
-
-        const auxField = [...fieldsOrders]
-
-        auxField.map((_, index) => {
-          auxField[index].enabled = false
-          auxField[index].search = false
-        })
-      }
-
-      if(custAux.financial.length > 0) {
-        handleSetFinancial(custAux)
       }
 
     }else{

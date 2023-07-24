@@ -9,8 +9,10 @@ export const apiCustomers = async (page: number, customers: any, filter: number)
     let returnResult: any = []  
     let pageResult: number = page
     let returnObject: any
+    
+    const pageSize = 100
 
-    const response = await api.get(`/WSAPP02?pagesize=100&page=${page}`);
+    const response = await api.get(`/WSAPP02?pagesize=${pageSize}&page=${page}`);
     const json: ApiResponse = response.data;
 
     if(json.status.code === '#200'){    
@@ -26,7 +28,13 @@ export const apiCustomers = async (page: number, customers: any, filter: number)
         await AsyncStorage.removeItem("customers")
         await AsyncStorage.setItem("customers", JSON.stringify([...customers, ...returnResult]));
 
-        pageResult++
+        if(json.result.length === pageSize) {
+            pageResult++
+        }
+        
+    }else{
+        returnResult = [...customers]
+        pageResult = 1
     }
 
     returnObject = {
@@ -98,7 +106,7 @@ export const searchCustomers = async (searchQuery: string, isOnline: boolean) =>
 
     returnObject = {
         returnResult: returnResult,
-        pageResult: 2
+        pageResult: 1
     }
 
     return returnObject;

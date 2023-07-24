@@ -7,27 +7,15 @@
 			"name": "Depuração do idioma TOTVS",
 			"program": "${command:AskForProgramName}",
 			"cwb": "${workspaceFolder}",
-			"smartclientBin": "C://Adm//SMARTCLIENT20.3.0.0//smartclient.exe",
+			"smartclientBin": "/Applications/smartclient.app/Contents/MacOS/smartclient",
 			"isMultiSession": true,
 			"enableTableSync": true
 		}
 	],
 	"lastPrograms": [
 		{
-			"label": "sigaadv"
-		},
-		{
-			"label": "U_TTXML02"
-		},
-		{
-			"label": "u_myjson"
-		},
-		{
-			"label": "xxxx"
-		},
-		{
-			"label": "SIGAMDI"
+			"label": "sigamdi"
 		}
 	],
-	"lastProgramExecuted": "SIGAMDI"
+	"lastProgramExecuted": "sigamdi"
 }
