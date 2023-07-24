@@ -65,6 +65,8 @@ Default oself:byId		:=.F.
 			cWhere += " SE4.E4_COND   LIKE '%" + cSearch + "%' OR "
 			cWhere += " SE4.E4_DESCRI LIKE '%" + cSearch + "%' ) "
 		EndIf
+
+		cWhere += " AND SE4.E4_XENVAPP='1' "
 	EndIf
 
 	cQuery := " SELECT E4_CODIGO,E4_DESCRI,E4_COND "

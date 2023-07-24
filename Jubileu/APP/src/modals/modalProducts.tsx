@@ -113,9 +113,15 @@ export default function modalProducts({getVisible, handleModalProducts, products
         atualiza tambem a state de count para marcar quantos selecionados
     **/
     const handleItem = (index: number) => {
+        const auxData = [...products];
+
+        if(auxData[index].balance < 1){
+
+            return auxData
+        }
+
         atualizaProdutos((prevState: any) => {
             const newData = [...prevState];
-            
             const markAux = !newData[index].marked
 
             newData[index] = {
@@ -398,7 +404,7 @@ export default function modalProducts({getVisible, handleModalProducts, products
     }
     
 
-    const handleClearSearch = () => {
+    const handleClearSearch = async() => {
         setSearch(false)
         setSearchQuery('')
         setInputBarCode('')
@@ -406,7 +412,7 @@ export default function modalProducts({getVisible, handleModalProducts, products
         setItemsBarScanned([])
 
         if(isOnline){
-            loadItems();
+            await loadItems();
 
         }else {
             fetchAsyncStorage();
@@ -452,20 +458,23 @@ export default function modalProducts({getVisible, handleModalProducts, products
         const index = products.findIndex((product: any) => product.id === item.id);
       
         if (index !== -1) {
-          const updatedProducts = [...products]; // Cria uma cópia do array products
-          const updatedItem = { ...updatedProducts[index] }; // Cria uma cópia do objeto item dentro do array
+            const updatedProducts = [...products]; // Cria uma cópia do array products
+            const updatedItem = { ...updatedProducts[index] }; // Cria uma cópia do objeto item dentro do array
 
-          if(updatedItem.selected_quantity === 0){
-            setMarkedCount(markedCount + 1);
-          }
-      
-          // Realize as alterações necessárias no updatedItem
-          updatedItem.marked = true;
-          updatedItem.selected_quantity += 1;
+            if(updatedItem.balance >= updatedItem.selected_quantity + 1){
+                if(updatedItem.selected_quantity === 0){
+                    setMarkedCount(markedCount + 1);
+                }
+            
+                // Realize as alterações necessárias no updatedItem
+                updatedItem.marked = true;
+                updatedItem.selected_quantity += 1;
+    
+                updatedProducts[index] = updatedItem; // Substitui o objeto atualizado no array
+            
+                atualizaProdutos(updatedProducts); // Atualiza o estado com o novo array de produtos
+            }
 
-          updatedProducts[index] = updatedItem; // Substitui o objeto atualizado no array
-        
-          atualizaProdutos(updatedProducts); // Atualiza o estado com o novo array de produtos
         }
     };
       
@@ -494,6 +503,7 @@ export default function modalProducts({getVisible, handleModalProducts, products
                                     returnKeyType="done"
                                     onChangeText={setSearchQuery}
                                     onSubmitEditing={handleSearchButton}
+                                    editable={!isLoadSearch}
                                 />
 
                                 <Style.ButtonSearch onPress={() => handleSearchButton()}>

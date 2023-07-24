@@ -29,9 +29,7 @@
 ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß*/
 
 User Function ROBFAT01
-Local nX        := 0
 Local nOpc      :=  0
-Local aEtiqueta := {}
 Local cGravObs := ''
 
 Private aFrete  :=  {'0=Selecione','1=CIF','2=FOB','3=Terceiros'}
@@ -254,7 +252,7 @@ If nOpc == 1
         EndIf
     EndIf
 
-    SC5->C5_TPFRETE := If(cCombo1=="1","C",If(cCombo1=="2","F","T"))
+    SC5->C5_TPFRETE := "C" //If(cCombo1=="1","C",If(cCombo1=="2","F","T"))
     
     SC5->C5_PESOL   := nPeso
     SC5->C5_PBRUTO  := nPeso

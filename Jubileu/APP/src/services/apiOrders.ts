@@ -11,7 +11,9 @@ export const apiOrders = async (page: number, orders: any, filter: number, token
     let pageResult: number = page
     let returnObject: any
 
-    const response = await api.get(`/WSAPP07?pagesize=10&page=${page}&token=${token}`);
+    const pageSize = 10
+
+    const response = await api.get(`/WSAPP07?pagesize=${pageSize}&page=${page}&token=${token}`);
     const json: ApiResponse = response.data;
 
     if(json.status.code === '#200'){    
@@ -31,7 +33,13 @@ export const apiOrders = async (page: number, orders: any, filter: number, token
         await AsyncStorage.removeItem("orders")
         await AsyncStorage.setItem("orders", JSON.stringify([...orders, ...returnResult]));
 
-        pageResult++
+        if(json.result.length === pageSize) {
+          pageResult++
+        }
+
+    }else{
+        returnResult = [...orders]
+        pageResult = 1
     }
 
     const orcOld = await AsyncStorage.getItem('@orcamento')
@@ -39,20 +47,20 @@ export const apiOrders = async (page: number, orders: any, filter: number, token
 
 
     if (!!orcOld){
-      orcNew = JSON.parse(orcOld)
-      orcNew.sort((a: any, b: any) => b.numorc.localeCompare(a.numorc));
+        orcNew = JSON.parse(orcOld)
+        orcNew.sort((a: any, b: any) => b.numorc.localeCompare(a.numorc));
 
-      /*
-      //expira em 48h
-      const arrayObjetosAtualizado = orcNew.filter((objeto: any) => {
-        const diferencaHoras = moment().diff(moment(objeto.timestamp, 'HH:mm:ss'), 'hours');
-        return diferencaHoras < 48;
-      });
-      */
+        /*
+        //expira em 48h
+        const arrayObjetosAtualizado = orcNew.filter((objeto: any) => {
+          const diferencaHoras = moment().diff(moment(objeto.timestamp, 'HH:mm:ss'), 'hours');
+          return diferencaHoras < 48;
+        });
+        */
 
-      await AsyncStorage.setItem('@orcamento', JSON.stringify(orcNew));
+        await AsyncStorage.setItem('@orcamento', JSON.stringify(orcNew));
 
-      returnResult = orcNew.concat(returnResult);
+        returnResult = orcNew.concat(returnResult);
     }
 
 
@@ -151,7 +159,7 @@ export const searchOrders = async (searchQuery: string, isOnline: boolean) => {
 
     returnObject = {
         returnResult: returnResult,
-        pageResult: 2
+        pageResult: 1
     }
 
     return returnObject;
