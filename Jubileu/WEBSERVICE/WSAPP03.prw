@@ -52,9 +52,13 @@ Default oself:copyItems := ''
 Default oself:page		:= 1
 Default oself:pageSize	:= 20
 Default oself:byId		:=.F.
-	
-    RpcSetType(3)
-    RPCSetEnv('01','0801')
+
+
+RpcClearEnv()	
+RpcSetType(3)
+RPCSetEnv('01','0801')
+
+	cfilant := '0801'
 
     oJsonAux  := JsonObject():New()
     cAliasTMP := GetNextAlias()
@@ -91,6 +95,10 @@ Default oself:byId		:=.F.
 		cQuery += " FETCH NEXT "+cValToChar(oself:pageSize)+" ROWS ONLY "
 	EndIf
 	
+	conout(cQuery)
+	conout(cwhere)
+	conout('filial '+cfilant+' xfilial '+xfilial("SB2"))
+
 	MPSysOpenQuery(cQuery, cAliasTMP)
 
 	While (cAliasTMP)->(!Eof())
@@ -144,6 +152,8 @@ Default oself:byId		:=.F.
 		(cAliasTMP)->(DBSkip())
 	EndDo
 
+	conout(cvaltochar(len(aListAux)))
+
 	(cAliasTMP)->(DBCloseArea())
 
     oStatus := JsonObject():New()
@@ -165,5 +175,8 @@ Default oself:byId		:=.F.
     FreeObj(oStatus)
 
 	oself:SetResponse(cJsonAux)
-    
+
+
+RpcClearEnv()
+
 Return .T.
