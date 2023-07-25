@@ -1,280 +1,227 @@
-import React, { useState, useContext } from "react";
-
-import { Card, Col, Row, DropdownButton, Dropdown } from "react-bootstrap";
-import { AiOutlineBank, AiFillCaretDown, AiFillCaretUp } from 'react-icons/ai';
-
-
+import React, { useContext, useState } from "react";
 import * as Style from "./styles";
 
-import ChartArea from "../charts/area";
-import ChartColumn from "../charts/column";
-import ChartPie from "../charts/pie";
+import { DropdownButton, Dropdown } from "react-bootstrap";
 
 import { ThemeContext } from "../contexts/ThemeContext";
-import { lightTheme, darkTheme } from "../themes";
-
 import { WindowDimensionsContext } from "../contexts/WindowDimensionsContext";
-
-
-import Navbar from "../components/navbar";
-import Header from "../components/header";
-
+import { darkTheme, lightTheme } from "../themes";
 import { useMediaQuery } from "react-responsive";
 
+import Header from "../components/header";
+import Navbar from "../components/navbar";
+
+import ModeloDash from "../dashboards/Modelo";
+import FluxoCaixa from "../dashboards/FluxoCaixa";
+import VendasConsolidado from "../dashboards/VendasConsolidado";
+import VendasDiarias from "../dashboards/VendasDiarias";
+
+import { titleMonth } from "../utils/dateFormat";
+
 const Dashboard: React.FC = () => {
+  
   const { theme } = useContext(ThemeContext);
   const { windowDimensions } = useContext(WindowDimensionsContext);
   const themeContext = theme === "light" ? lightTheme : darkTheme;
   const isMobile = useMediaQuery({ query: "(max-width: 767px)" });
+  
+  const [dash, setDash] = useState('dash1')
+  const [mes, setMes] = useState('Mês')
+  const [ano, setAno] = useState('Ano')
 
-  const optionArea = {
-    chart: {
-      foreColor: themeContext.text,
-      toolbar: {
-        show: false
-      },
-      sparkline: {
-        enabled: true,
-      }
-    },
-    dataLabels: {
-      enabled: false,
-    },
-    stroke: {
-      curve: "smooth",
-    },
-    xaxis: {
-      type: "numeric",
-      categories: [1,2,3,4,5,6,7,8,],
-    },
-  };
-
-  const seriesArea = [
-
-    {
-      name: "series",
-      data: [13, 26, 20, 33, 21, 40, 35, 45],
-    },
-  ];
-
-  const optionColumn = {
-    chart: {
-      type: 'bar',
-      foreColor: themeContext.text,
-    },
-    plotOptions: {
-      bar: {
-        horizontal: false,
-        columnWidth: '55%',
-        endingShape: 'rounded'
-      },
-    },
-    dataLabels: {
-      enabled: false
-    },
-    stroke: {
-      show: true,
-      width: 2,
-      colors: ['transparent']
-    },
-    xaxis: {
-      categories: ['Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'],
-    },
-    yaxis: {
-      title: {
-        text: '$ (thousands)'
-      }
-    },
-    fill: {
-      opacity: 1
-    },
-  }
-
-  const seriesColumn = [{
-    name: 'Net Profit',
-    data: [44, 55, 57, 56, 61, 58, 63, 60, 66]
-  }, {
-    name: 'Revenue',
-    data: [76, 85, 101, 98, 87, 105, 91, 114, 94]
-  }, {
-    name: 'Free Cash Flow',
-    data: [35, 41, 36, 26, 45, 48, 52, 53, 41]
-  }]
-
-  const optionPie = {
-    chart: {
-      type: 'donut',
-      foreColor: themeContext.text,
-    },
-    stroke:{
-      show:false,
-    },
-    responsive: [{
-      breakpoint: 480,
-      options: {
-        chart: {
-          width: 200
-        },
-        legend: {
-          position: 'bottom'
-        }
-      }
-    }]
-  }
-
-  const seriesPie = [
-    44, 55, 41, 17, 15
-  ]
-
-  const MyCard = ({ children }: any) => {
+  const FiltersDash1 = () => {
     return (
-      <Col>
-        <Style.CardDash border={theme} className="h-100">
-          <Style.CardDashBody>{children}</Style.CardDashBody>
-        </Style.CardDash>
-      </Col>
-    );
-  };
+      <Style.DashHorizontal>
+        <DropdownButton
+          variant={theme}
+          menuVariant={theme}
+          title={titleMonth(mes)}
+        >
+          <Dropdown.Item onClick={()=> setMes('corrente')}>Corrente</Dropdown.Item>
+          <Dropdown.Item onClick={()=> setMes('1')}>Janeiro</Dropdown.Item>
+          <Dropdown.Item onClick={()=> setMes('2')}>Fevereiro</Dropdown.Item>
+          <Dropdown.Item onClick={()=> setMes('3')}>Março</Dropdown.Item>
+          <Dropdown.Item onClick={()=> setMes('4')}>Abril</Dropdown.Item>
+          <Dropdown.Item onClick={()=> setMes('5')}>Maio</Dropdown.Item>
+          <Dropdown.Item onClick={()=> setMes('6')}>Junho</Dropdown.Item>
+          <Dropdown.Item onClick={()=> setMes('7')}>Julho</Dropdown.Item>
+          <Dropdown.Item onClick={()=> setMes('8')}>Agosto</Dropdown.Item>
+          <Dropdown.Item onClick={()=> setMes('9')}>Setembro</Dropdown.Item>
+          <Dropdown.Item onClick={()=> setMes('10')}>Outubro</Dropdown.Item>
+          <Dropdown.Item onClick={()=> setMes('12')}>Novembro</Dropdown.Item>
+          <Dropdown.Item onClick={()=> setMes('12')}>Dezembro</Dropdown.Item>
+          
+        </DropdownButton>
+
+        <DropdownButton
+          variant={theme}
+          menuVariant={theme}
+          title={ano}
+          style={{marginLeft:10}}
+        >
+          <Dropdown.Item onClick={()=> setAno('corrente')}>Corrente</Dropdown.Item>
+          <Dropdown.Item onClick={()=> setAno('2023')}>2023</Dropdown.Item>
+          <Dropdown.Item onClick={()=> setAno('2022')}>2022</Dropdown.Item>
+          <Dropdown.Item onClick={()=> setAno('2021')}>2021</Dropdown.Item>
+          <Dropdown.Item onClick={()=> setAno('2020')}>2020</Dropdown.Item>
+        </DropdownButton>
+      </Style.DashHorizontal>
+    )
+  }
+  
+  const FiltersDash3 = () => {
+    return (
+      <Style.DashHorizontal>
+        <DropdownButton
+          variant={theme}
+          menuVariant={theme}
+          title="Mês Slicer"
+        >
+          <Dropdown.Item onClick={()=>{}}>Corrente</Dropdown.Item>
+          <Dropdown.Item onClick={()=>{}}>Janeiro</Dropdown.Item>
+          <Dropdown.Item onClick={()=>{}}>Fevereiro</Dropdown.Item>
+          <Dropdown.Item onClick={()=>{}}>Março</Dropdown.Item>
+          <Dropdown.Item onClick={()=>{}}>Abril</Dropdown.Item>
+          <Dropdown.Item onClick={()=>{}}>Maio</Dropdown.Item>
+          <Dropdown.Item onClick={()=>{}}>Junho</Dropdown.Item>
+          <Dropdown.Item onClick={()=>{}}>Julho</Dropdown.Item>
+          <Dropdown.Item onClick={()=>{}}>Agosto</Dropdown.Item>
+          <Dropdown.Item onClick={()=>{}}>Setembro</Dropdown.Item>
+          <Dropdown.Item onClick={()=>{}}>Outubro</Dropdown.Item>
+          <Dropdown.Item onClick={()=>{}}>Novembro</Dropdown.Item>
+          <Dropdown.Item onClick={()=>{}}>Dezembro</Dropdown.Item>
+          
+        </DropdownButton>
+
+        <DropdownButton
+          variant={theme}
+          menuVariant={theme}
+          title="Ano Slicer"
+          style={{marginLeft:10}}
+        >
+          <Dropdown.Item onClick={()=>{}}>Corrente</Dropdown.Item>
+          <Dropdown.Item onClick={()=>{}}>2023</Dropdown.Item>
+          <Dropdown.Item onClick={()=>{}}>2022</Dropdown.Item>
+          <Dropdown.Item onClick={()=>{}}>2021</Dropdown.Item>
+          <Dropdown.Item onClick={()=>{}}>2020</Dropdown.Item>
+        </DropdownButton>
+      </Style.DashHorizontal>
+    )
+  }
+
+  const FiltersDash4 = () => {
+    return (
+      <Style.DashHorizontal>
+
+        <DropdownButton
+          variant={theme}
+          menuVariant={theme}
+          title="Grife"
+          style={{marginLeft:10}}
+        >
+          <Dropdown.Item onClick={()=>{}}>Tudo</Dropdown.Item>
+        </DropdownButton>
+
+        <DropdownButton
+          variant={theme}
+          menuVariant={theme}
+          title="Classe"
+          style={{marginLeft:10}}
+        >
+          <Dropdown.Item onClick={()=>{}}>Tudo</Dropdown.Item>
+        </DropdownButton>
+
+        <DropdownButton
+          variant={theme}
+          menuVariant={theme}
+          title="Mês"
+          style={{marginLeft:10}}
+        >
+          <Dropdown.Item onClick={()=>{}}>Corrente</Dropdown.Item>
+          <Dropdown.Item onClick={()=>{}}>Janeiro</Dropdown.Item>
+          <Dropdown.Item onClick={()=>{}}>Fevereiro</Dropdown.Item>
+          <Dropdown.Item onClick={()=>{}}>Março</Dropdown.Item>
+          <Dropdown.Item onClick={()=>{}}>Abril</Dropdown.Item>
+          <Dropdown.Item onClick={()=>{}}>Maio</Dropdown.Item>
+          <Dropdown.Item onClick={()=>{}}>Junho</Dropdown.Item>
+          <Dropdown.Item onClick={()=>{}}>Julho</Dropdown.Item>
+          <Dropdown.Item onClick={()=>{}}>Agosto</Dropdown.Item>
+          <Dropdown.Item onClick={()=>{}}>Setembro</Dropdown.Item>
+          <Dropdown.Item onClick={()=>{}}>Outubro</Dropdown.Item>
+          <Dropdown.Item onClick={()=>{}}>Novembro</Dropdown.Item>
+          <Dropdown.Item onClick={()=>{}}>Dezembro</Dropdown.Item>
+          
+        </DropdownButton>
+
+        <DropdownButton
+          variant={theme}
+          menuVariant={theme}
+          title="Ano"
+          style={{marginLeft:10}}
+        >
+          <Dropdown.Item onClick={()=>{}}>Corrente</Dropdown.Item>
+          <Dropdown.Item onClick={()=>{}}>2023</Dropdown.Item>
+          <Dropdown.Item onClick={()=>{}}>2022</Dropdown.Item>
+          <Dropdown.Item onClick={()=>{}}>2021</Dropdown.Item>
+          <Dropdown.Item onClick={()=>{}}>2020</Dropdown.Item>
+        </DropdownButton>
+      </Style.DashHorizontal>
+    )
+  }
+
+  const titleButtonDash = () => {
+    if(dash === 'dash1'){
+      return 'Fluxo Caixa - Financeiro'
+    
+    }else if(dash === 'dash2'){
+      return 'Modelo'
+
+    }else if(dash === 'dash3'){
+      return 'Vendas Consolidado'
+
+    }else if(dash === 'dash4'){
+      return 'Vendas Diárias'
+    
+    }else {
+      return 'Dashboards'
+    }
+  }
 
   return (
     <Style.ContainerAll theme={themeContext}>
       {/* Menu lateral */ !isMobile && <Navbar />}
-
+      
       <Style.Container isMobile={isMobile}>
-        {/* Header */}
         <Header />
-
         <Style.StackDash windowDimensions={windowDimensions} className="mx-auto" gap={4}>
 
-          <DropdownButton
-            variant={theme}
-            menuVariant={theme}
-            title="Dashboards"
-          >
-            <Dropdown.Item onClick={()=>{}}>Financeiro</Dropdown.Item>
-            <Dropdown.Item onClick={()=>{}}>Vendas</Dropdown.Item>
-          </DropdownButton>
+          <Style.DashHorizontal>
+            <DropdownButton
+              variant={theme}
+              menuVariant={theme}
+              title={titleButtonDash()}
+            >
+              <Dropdown.Item onClick={()=> setDash('dash1')}>Fluxo Caixa - Financeiro</Dropdown.Item>
+              <Dropdown.Item onClick={()=> setDash('dash2')}>Modelo</Dropdown.Item>
+              <Dropdown.Item onClick={()=> setDash('dash3')}>Vendas Consolidado</Dropdown.Item>
+              <Dropdown.Item onClick={()=> setDash('dash4')}>Vendas Diárias</Dropdown.Item>
+            </DropdownButton>
 
-          <Row className="g-4">
-            <Col md={6} lg={4}>
-              <Style.CardDash border={theme} className="h-100">
-                  <Style.CardPrimaryDash>
-                    <Style.IconPrimaryDash>
-                    <AiOutlineBank color={themeContext.primary} size={30}/>
-                    </Style.IconPrimaryDash>
-                    <Style.TextDash size={20}>R$12.345</Style.TextDash>
-                    <Style.TextLabelDash size={14} color="grey" fontWeight={500}>Expenses</Style.TextLabelDash>
-                  </Style.CardPrimaryDash>
+            { dash === 'dash1' ? <FiltersDash1 />
+              : dash === 'dash3' ? <FiltersDash3 />
+              : dash === 'dash4' ? <FiltersDash4 />
+              : <></>
+            }
+          </Style.DashHorizontal>
 
-                  <ChartArea options={optionArea} series={seriesArea} />
-              </Style.CardDash>
-            </Col>
-
-            <Col md={6} lg={8}>
-              <Row className="g-4">
-                <Col md={12}>
-                  <Style.CardDash border={theme} className="h-100">
-                    <Card.Body>
-                      <Row>
-                        <Col>
-                          <Style.ContainerIconsDash>
-                            <Style.IconSucessDash size={50} />
-
-                            <Style.ContainerIconTextDash>
-                              <Style.TextDash size={14}>Total Orders</Style.TextDash>
-                              <Style.TextDash size={24}>2254</Style.TextDash>
-                            </Style.ContainerIconTextDash>
-                          </Style.ContainerIconsDash>
-                        </Col>
-
-                        <Col>
-                          <Style.ContainerIconsDash>
-                            <Style.IconRecentDash size={50} />
-
-                            <Style.ContainerIconTextDash>
-                              <Style.TextDash size={14}>Recent Order</Style.TextDash>
-                              <Style.TextDash size={24}>45%</Style.TextDash>
-                            </Style.ContainerIconTextDash>
-                          </Style.ContainerIconsDash>
-                        </Col>
-
-                        <Col>
-                          <Style.ContainerIconsDash>
-                            <Style.IconCanceledDash size={50} />
-
-                            <Style.ContainerIconTextDash>
-                              <Style.TextDash size={14}>Cancel Orders</Style.TextDash>
-                              <Style.TextDash size={24}>30%</Style.TextDash>
-                            </Style.ContainerIconTextDash>
-                          </Style.ContainerIconsDash>
-                        </Col>
-
-                      </Row>
-                    </Card.Body>
-                  </Style.CardDash>
-                </Col>
-
-                <Col md={12}>
-                  <Row xs={1} md={3} className="g-4">
-                    <MyCard>
-                      <Style.TextDash size={14}>Total Invoices</Style.TextDash>
-                      <Style.TextDash size={36}>245</Style.TextDash>
-                      <Style.ContaineSecDash>
-                        <AiFillCaretDown color="tomato" />
-                        <Style.TextLabelDash size={14} color="tomato" fontWeight={500}>{'43.2'}</Style.TextLabelDash>
-                        <Style.TextLabelDash size={14} color="grey" fontWeight={500}>{'last month'}</Style.TextLabelDash>
-                      </Style.ContaineSecDash>
-                    </MyCard>
-
-                    <MyCard>
-                      <Style.TextDash size={14}>Credit Amount</Style.TextDash>
-                      <Style.TextDash size={36}>R$53k</Style.TextDash>
-                      <Style.ContaineSecDash>
-                        <AiFillCaretUp color="#2dce89" />
-                        <Style.TextLabelDash size={14} color="#2dce89" fontWeight={500}>{'19.8'}</Style.TextLabelDash>
-                        <Style.TextLabelDash size={14} color="grey" fontWeight={500}>{'last month'}</Style.TextLabelDash>
-                      </Style.ContaineSecDash>
-                    </MyCard>
-
-                    <MyCard>
-                      <Style.TextDash size={14}>Pending Amount</Style.TextDash>
-                      <Style.TextDash size={36}>R$2354</Style.TextDash>
-                      <Style.ContaineSecDash>
-                        <AiFillCaretUp color="#2dce89" />
-                        <Style.TextLabelDash size={14} color="#2dce89" fontWeight={500}>{'0.8%'}</Style.TextLabelDash>
-                        <Style.TextLabelDash size={14} color="grey" fontWeight={500}>{'last month'}</Style.TextLabelDash>
-                      </Style.ContaineSecDash>
-                    </MyCard>
-
-                  </Row>
-                </Col>
-              </Row>
-            </Col>
-            
-            <Col>
-              <Row className="g-4">
-                <Col md={8}>
-                  <Style.CardDash border={theme} className="h-100">
-                    <Style.TextDash style={{marginTop:20, marginLeft:20}} size={20}>Chart Title</Style.TextDash>
-                    <Style.CardDashBody>
-                      <ChartColumn options={optionColumn} series={seriesColumn} />
-                    </Style.CardDashBody>
-                  </Style.CardDash>
-                </Col>
-
-                <Col md={4}>
-                  <Style.CardDash border={theme} className="h-100">
-                    <Style.TextDash style={{marginTop:20, marginLeft:20}} size={20}>Chart Title</Style.TextDash>
-                    <Style.CardDashBody>
-                      <ChartPie options={optionPie} series={seriesPie} />
-                    </Style.CardDashBody>
-                  </Style.CardDash>
-                </Col>
-              </Row>
-            </Col>
-            
-          </Row>
+          { 
+            dash === 'dash1' ? <FluxoCaixa ano={ano} mes={mes}/>
+            : dash === 'dash2' ? <ModeloDash />
+            : dash === 'dash3' ? <VendasConsolidado ano={ano} mes={mes} />
+            : <VendasDiarias ano={ano} mes={mes} />
+          }
         </Style.StackDash>
+       
       </Style.Container>
     </Style.ContainerAll>
   );
