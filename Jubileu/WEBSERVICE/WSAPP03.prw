@@ -150,6 +150,7 @@ RPCSetEnv('01','0801')
 		aListAux[nAux]['balance']       	:= (cAliasTMP)->SALDO
 		aListAux[nAux]['selected_quantity']	:= 0
 		aListAux[nAux]['marked']	       	:= .F.
+		aListAux[nAux]['realPrice']	       	:= (cAliasTMP)->DA1_PRCVEN
 
 		(cAliasTMP)->(DBSkip())
 	EndDo
