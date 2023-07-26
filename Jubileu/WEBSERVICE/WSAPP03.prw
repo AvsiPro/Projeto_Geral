@@ -82,7 +82,7 @@ RPCSetEnv('01','0801')
 	EndIf
 
 	cQuery := " SELECT B1_COD, B1_DESC, B1_TIPO, B1_GRUPO, B1_CODBAR, B1_POSIPI, B1_FABRIC, B1_PRV1, BM_DESC ,"
-	cQuery += " DA1_PRCVEN, DA1_XPRCV2, DA1_XPRCV3, DA1_XQTRG1, DA1_XQTRG2, DA1_XQTRG3,B2_QATU-B2_RESERVA AS SALDO"
+	cQuery += " DA1_PRCVEN, DA1_XPRCV2, DA1_XPRCV3, DA1_XQTRG1, DA1_XQTRG2, DA1_XQTRG3, DA1_XGRPJU,B2_QATU-B2_RESERVA AS SALDO"
 	cQuery += " FROM "+RetSqlName('SB1')+" SB1 "
 	cQuery += " INNER JOIN "+RetSQLName("SBM")+" BM ON BM_FILIAL=B1_FILIAL AND BM_GRUPO=B1_GRUPO AND BM.D_E_L_E_T_=' '"
 	cQuery += " INNER JOIN "+RetSQLName('DA1')+" DA1 ON DA1_FILIAL='"+FWxFilial("DA1")+"' AND DA1_CODPRO=B1_COD AND DA1.D_E_L_E_T_=' ' "
@@ -136,7 +136,7 @@ RPCSetEnv('01','0801')
 		aListAux[nAux]['code']	            := Alltrim(EncodeUTF8((cAliasTMP)->B1_COD))
 		aListAux[nAux]['description']       := Alltrim(EncodeUTF8((cAliasTMP)->B1_DESC))
 		aListAux[nAux]['type']       		:= Alltrim(EncodeUTF8((cAliasTMP)->B1_TIPO))
-		aListAux[nAux]['codegroup']    		:= Alltrim(EncodeUTF8((cAliasTMP)->B1_GRUPO))
+		aListAux[nAux]['codegroup']    		:= Alltrim(EncodeUTF8((cAliasTMP)->DA1_XGRPJU))
 		aListAux[nAux]['group']       		:= Alltrim(EncodeUTF8((cAliasTMP)->BM_DESC))
 		aListAux[nAux]['ncm']       		:= Alltrim(EncodeUTF8((cAliasTMP)->B1_POSIPI))
 		aListAux[nAux]['ean']       		:= Alltrim(EncodeUTF8((cAliasTMP)->B1_CODBAR))

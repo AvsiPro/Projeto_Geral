@@ -97,6 +97,7 @@ WsMethod POST WsReceive RECEIVE WsService WSAPP12
 	conout("")
 	conout("")
 
+	RpcClearEnv()
 	RPCSetType(3)  
 	RpcSetEnv(cEmp,cFil,,,,GetEnvServer(),{ }) 
 
