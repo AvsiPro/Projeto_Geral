@@ -68,7 +68,7 @@ Default oself:token		:=	''
 
 	// Tratativas para realizar os filtros
 	If !Empty(oself:searchKey) //se tiver chave de busca no request
-		cSearch := Upper( oself:SearchKey )
+		cSearch := Alltrim(Upper( oself:SearchKey ))
 		cVend   := fVendToken( oself:token )
 		
 
