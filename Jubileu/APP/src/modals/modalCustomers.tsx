@@ -36,6 +36,8 @@ export default function modalCustomers({getVisible, handleModalCustomers, custom
     const { customerSelected ,setCustomerSelected } = useContext(AppContext);
     const { colors } = useContext(ThemeContext);
     const searchInputRef = useRef<TextInput>(null);
+
+    const { authDetail } = useContext(AppContext);
     
     const [searchQuery, setSearchQuery] = useState<string>('');
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -46,6 +48,8 @@ export default function modalCustomers({getVisible, handleModalCustomers, custom
     const [financialCustomer, setFinancialCustomer] = useState('')
     const [visiblePopup, setVisiblePopup] = useState(false)
     const [viewTitle, setViwTitle] = useState(false);
+    const [message, setMessage] = useState<string>('');
+    const [typeMessage, setTypeMessage] = useState<string>('');
 
     const [search, setSearch] = useState<boolean>(false);
     const [isLoadSearch, setLoadSearch] = useState<boolean>(false);
@@ -84,7 +88,7 @@ export default function modalCustomers({getVisible, handleModalCustomers, custom
     const loadItems = async () => {
         setIsLoading(true);
 
-        const resultApi = await apiCustomers(page, customers, 1)
+        const resultApi = await apiCustomers(page, customers, 1, authDetail.token)
         
         if(!!resultApi){
             atualizaClientes(resultApi.returnResult)
@@ -121,13 +125,23 @@ export default function modalCustomers({getVisible, handleModalCustomers, custom
     /** verifica se possui titulo **/
     const handleItem = (item: any) => {
 
-        if(item.financial.length > 0) {
+        if(!item.allowed_region){
+            setTypeMessage('error')
+            setMessage('Cliente não cadastrado em sua região')
             setVisiblePopup(true)
-            setFinancialCustomer(item)
-            handleFinancial()
 
-        } else{
-            setCustomer(item)
+        }else{
+            if(item.financial.length > 0) {
+                setTypeMessage('error')
+                setMessage('Cliente possui títulos em aberto')
+                setVisiblePopup(true)
+
+                setFinancialCustomer(item)
+                handleFinancial()
+    
+            } else{
+                setCustomer(item)
+            }
         }
     }
 
@@ -197,7 +211,7 @@ export default function modalCustomers({getVisible, handleModalCustomers, custom
             return
         }
 
-        const resultApi = await searchCustomers(searchQuery, isOnline)
+        const resultApi = await searchCustomers(searchQuery, isOnline, authDetail.token)
 
         if(!!resultApi){
             atualizaClientes(resultApi.returnResult)
@@ -354,9 +368,9 @@ export default function modalCustomers({getVisible, handleModalCustomers, custom
             <Popups 
                 getVisible={visiblePopup}
                 handlePopup={() => setVisiblePopup(!visiblePopup)}
-                type={'error'}
+                type={typeMessage}
                 filter={null}
-                message={'Cliente possui títulos em aberto'}
+                message={message}
             />
         </Modal>
 

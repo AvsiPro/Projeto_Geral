@@ -4,7 +4,7 @@ import api from "./api";
 
 
 /** faz a chamada da api com paginacao, grava no estado de cliente e no storage (online) **/
-export const apiCustomers = async (page: number, customers: any, filter: number) => {
+export const apiCustomers = async (page: number, customers: any, filter: number, token: string) => {
 
     let returnResult: any = []  
     let pageResult: number = page
@@ -12,7 +12,7 @@ export const apiCustomers = async (page: number, customers: any, filter: number)
     
     const pageSize = 100
 
-    const response = await api.get(`/WSAPP02?pagesize=${pageSize}&page=${page}`);
+    const response = await api.get(`/WSAPP02?pagesize=${pageSize}&page=${page}&token=${token}`);
     const json: ApiResponse = response.data;
 
     if(json.status.code === '#200'){    
@@ -82,13 +82,13 @@ export const storageCustomers = async (filter: number) => {
 /** faz a chamada da api conforme o usuario vai digitando na pesquisa.
     Tem um atraso de 500 milisegundo para aguardar o fim da digitacao e nao encavalar a chamada de api
 **/
-export const searchCustomers = async (searchQuery: string, isOnline: boolean) => {
+export const searchCustomers = async (searchQuery: string, isOnline: boolean, token: string) => {
 
     let returnResult: any = []  
     let returnObject: any
 
     if(isOnline){
-        const response = await api.get(`/WSAPP02?pagesize=100&page=1&searchKey=${searchQuery}`);
+        const response = await api.get(`/WSAPP02?pagesize=100&page=1&searchKey=${searchQuery}&token=${token}`);
         const json: ApiResponse = response.data;
 
         returnResult = json.result
