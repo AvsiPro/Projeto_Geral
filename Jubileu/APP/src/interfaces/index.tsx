@@ -127,6 +127,7 @@ export interface PropItemCartContext{
     ean: string;
     gender: string;
     group: string;
+    codegroup: string;
     id: string;
     line: string;
     marked: boolean;
@@ -135,6 +136,7 @@ export interface PropItemCartContext{
     price: any;
     type: string;
     selected_quantity : number;
+    realPrice: number;
 }
 
 export interface FormDataCustomer {

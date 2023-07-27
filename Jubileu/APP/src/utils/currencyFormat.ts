@@ -1,7 +1,8 @@
 export const CurrencyFormat = (valor: any) => {
+
   // Verifica se o valor é numérico e não é NaN
   if (typeof valor !== 'number' || isNaN(valor)) {
-    console.log('O valor fornecido não é um número válido.');
+    //console.log('O valor fornecido não é um número válido.');
     return 'R$ 0,00'
   }
 

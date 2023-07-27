@@ -59,8 +59,36 @@ export default function Neworder(){
     const [load, setLoad] = useState<boolean>(false);
     const [continuaOrc, setContinuaOrc] = useState<boolean>(false);
     const [priceRule, setPriceRule] = useState<boolean>(false);
+    const [group, setGroup] = useState<any>([])
 
-    const toggleSwitch = () => setPriceRule(previousState => !previousState);
+    const toggleSwitch = () => handleToggle();
+
+
+    const handleToggle = () => {
+        const ruleAux = !priceRule
+
+        setPriceRule(ruleAux)
+
+        const groups:any = {};
+
+        dataItens.forEach((item: any) => {
+            const { codegroup, selected_quantity } = item;
+          
+            // Verificar se o grupo já existe no objeto "groups"
+            if (groups[codegroup]) {
+              // Se já existe, somar o valor de "selected_quantity" ao valor atual
+              groups[codegroup].quantity += selected_quantity;
+            } else {
+              // Se não existe, criar o grupo com o valor de "selected_quantity"
+              groups[codegroup] = { codegroup, quantity: selected_quantity };
+            }
+        });
+
+        const result = Object.values(groups);
+
+        setGroup(result)          
+    }
+
 
     /** verifica se esta online ou offline **/
     useEffect(() => {
@@ -88,6 +116,25 @@ export default function Neworder(){
     /* atualiza o carrinho de acordo com o itemcart da context */
     useEffect(() => {
         const atualizaItensContext = () => {
+
+            const groups:any = {};
+
+            itemCart.forEach((item: any) => {
+                const { codegroup, selected_quantity } = item;
+              
+                // Verificar se o grupo já existe no objeto "groups"
+                if (groups[codegroup]) {
+                  // Se já existe, somar o valor de "selected_quantity" ao valor atual
+                  groups[codegroup].quantity += selected_quantity;
+                } else {
+                  // Se não existe, criar o grupo com o valor de "selected_quantity"
+                  groups[codegroup] = { codegroup, quantity: selected_quantity };
+                }
+            });
+    
+            const result = Object.values(groups);
+    
+            setGroup(result)
             setDataItens(itemCart)
             setDataCustomers(customerSelected)
             setDataPayment(paymentSelected)
@@ -212,7 +259,7 @@ export default function Neworder(){
             }
   
             return newData;
-        }); 
+        });
     }
 
 
@@ -459,16 +506,22 @@ export default function Neworder(){
         setContinuaOrc(!continuaOrc)
     }
 
-
+    
     const handlePriceRule = (item: any) => {
 
+        let quantity = 0
+        
+        if(group.length > 0) {
+            const groupAux = group.find((itemGroup: any) => itemGroup.codegroup === item.codegroup);
+            quantity = groupAux.quantity
+        }
+
         let value = 0
-        const quantity = item.selected_quantity
         const price1 = item.price
         const price2 = item.price2
         const price3 = item.price3
     
-        if(!priceRule){
+        if(!priceRule || quantity === 0){
             return price1.price
         }
     
