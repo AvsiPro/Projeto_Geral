@@ -110,7 +110,7 @@ export default function Customers(){
     const loadItems = async() => {
         setIsLoading(true);
         
-        const resultApi: any = await apiCustomers(page, customers, filter)
+        const resultApi: any = await apiCustomers(page, customers, filter, authDetail.token)
         
         if(!!resultApi){
             setCustomers(resultApi.returnResult)
@@ -145,24 +145,32 @@ export default function Customers(){
 
     /** Seta o cliente selecionado **/
     const handleItem = (item: any) => {
-        reset()
-        setValue('name', item.name)
-        setValue('short_name', item.short_name)
-        setValue('cnpj', item.cnpj)
-        setValue('email', item.email)
-        setValue('address', item.address)
-        setValue('complement', item.complement)
-        setValue('cep', item.cep)
-        setValue('district', item.district)
-        setValue('city', item.city)
-        setValue('uf', item.uf)
-        setValue('contact', item.contact)
-        setValue('phone', item.phone)
-        setValue('another_address', item.another_address)
-        setValue('another_cep', item.another_cep)
-        setValue('another_district', item.another_district)
-        
-        setShowModal(true)
+
+        if(!item.allowed_region){
+            setTypeMessage('error')
+            setMessage('Cliente não cadastrado em sua região')
+            setVisiblePopupCust(true)
+
+        }else {
+            reset()
+            setValue('name', item.name)
+            setValue('short_name', item.short_name)
+            setValue('cnpj', item.cnpj)
+            setValue('email', item.email)
+            setValue('address', item.address)
+            setValue('complement', item.complement)
+            setValue('cep', item.cep)
+            setValue('district', item.district)
+            setValue('city', item.city)
+            setValue('uf', item.uf)
+            setValue('contact', item.contact)
+            setValue('phone', item.phone)
+            setValue('another_address', item.another_address)
+            setValue('another_cep', item.another_cep)
+            setValue('another_district', item.another_district)
+            
+            setShowModal(true)
+        }
     }
 
 
@@ -201,13 +209,13 @@ export default function Customers(){
                 setVisiblePopupCust(true)
 
             } else {
-                setTypeMessage('danger')
+                setTypeMessage('error')
                 setMessage(receive.status.message)
                 setVisiblePopupCust(true)
             }
         
         } catch(error){
-            setTypeMessage('danger')
+            setTypeMessage('error')
             setMessage('Erro na comunicação com o servidor, contate um administrador')
             setVisiblePopupCust(true)
         }
@@ -230,7 +238,7 @@ export default function Customers(){
             return
         }
 
-        const resultApi = await searchCustomers(searchQuery, isOnline)
+        const resultApi = await searchCustomers(searchQuery, isOnline,  authDetail.token)
 
         if(!!resultApi){
             setCustomers(resultApi.returnResult)
