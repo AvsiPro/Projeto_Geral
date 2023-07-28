@@ -74,6 +74,8 @@ oReport:SetLandscape()
 oSection1:= TRSection():New(oReport,"Connect",{"TRB"},/*aOrdem*/)
 oSection1:SetHeaderPage()
 // oSection1:SetPageBreak(.T.) // Foi usado o EndPage(.T.) pois o SetPageBreak estava saltando uma pagina em branco no inicio da impressao 
+TRCell():New(oSection1,"Nota_Fiscal","TRB",/*Titulo*/,/*Picture*/,TamSX3("F2_DOC")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
+TRCell():New(oSection1,"Serie","TRB",/*Titulo*/,/*Picture*/,TamSX3("F2_SERIE")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
 TRCell():New(oSection1,"Codigo_Cliente","TRB",/*Titulo*/,/*Picture*/,TamSX3("F2_CLIENTE")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
 TRCell():New(oSection1,"Loja_Cliente","TRB",/*Titulo*/,/*Picture*/,TamSX3("F2_LOJA")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
 TRCell():New(oSection1,"Razao_Social","TRB",/*Titulo*/,/*Picture*/,TamSX3("A1_NOME")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
@@ -109,7 +111,7 @@ Static Function ReportPrint(oReport)
     Local nCont
 
 cQuery := "SELECT F2_CLIENTE,F2_LOJA,A1_NOME,A1_CGC,F2_EMISSAO,F2_TIPO,D2_COD,B1_DESC,"
-cQuery += " D2_QUANT,D2_PRCVEN,D2_TOTAL,D2_LOCAL,D2_CF,D2_TES,D2_PEDIDO,D2_ITEM,"
+cQuery += " D2_QUANT,D2_PRCVEN,D2_TOTAL,D2_LOCAL,D2_CF,D2_TES,D2_PEDIDO,D2_ITEM,F2_DOC,F2_SERIE,"
 cQuery += " D2_VALIPI,D2_VALICM,D2_VALISS,D2_DESPESA,F4_FINALID,F2_FILIAL,MONTH(D2_EMISSAO) AS MES"
 cQuery += " FROM "+RetSQLName("SF2")+" F2"
 cQuery += " INNER JOIN "+RetSQLName("SD2")+" D2 ON D2_FILIAL=F2_FILIAL AND D2_DOC=F2_DOC AND D2_SERIE=F2_SERIE AND D2_CLIENTE=F2_CLIENTE AND D2_LOJA=F2_LOJA AND D2.D_E_L_E_T_=' '"
@@ -132,7 +134,9 @@ dbUseArea(.T.,"TOPCONN",TCGENQRY(,,cQuery),"TRB",.F.,.T.)
 dbSelectArea("TRB")
 						
 While !EOF()
-        Aadd(aAux,{ TRB->F2_CLIENTE,;
+        Aadd(aAux,{ TRB->F2_DOC,;
+                    TRB->F2_SERIE,;
+                    TRB->F2_CLIENTE,;
                     TRB->F2_LOJA,;
                     TRB->A1_NOME,;
                     TRB->A1_CGC,;
@@ -169,29 +173,31 @@ For nCont := 1 to len(aAux)
 
     cDestino := ""
 
-    oSection1:Cell('Codigo_Cliente'):SetValue(aAux[nCont,01])
-    oSection1:Cell('Loja_Cliente'):SetValue(aAux[nCont,02])
-    oSection1:Cell('Razao_Social'):SetValue(aAux[nCont,03])
-    oSection1:Cell('CNPJ'):SetValue(aAux[nCont,04])
-    oSection1:Cell('Data_Emissao'):SetValue(stod(aAux[nCont,05]))
-    oSection1:Cell('Tipo'):SetValue(aAux[nCont,06])
-    oSection1:Cell('Produto'):SetValue(aAux[nCont,07])
-    oSection1:Cell('Descricao'):SetValue(aAux[nCont,08])
-    oSection1:Cell('Quantidade'):SetValue(aAux[nCont,09])
-    oSection1:Cell('Valor_Unitario'):SetValue(aAux[nCont,10])
-    oSection1:Cell('Valor_Total'):SetValue(aAux[nCont,11])
-    oSection1:Cell('Armazem'):SetValue(aAux[nCont,12])
-    oSection1:Cell('CFOP'):SetValue(aAux[nCont,13])
-    oSection1:Cell('TES'):SetValue(aAux[nCont,14])
-    oSection1:Cell('Pedido'):SetValue(aAux[nCont,15])
-    oSection1:Cell('Item_NF'):SetValue(aAux[nCont,16])
-    oSection1:Cell('Valor_Ipi'):SetValue(aAux[nCont,17])
-    oSection1:Cell('Valor_Icms'):SetValue(aAux[nCont,18])
-    oSection1:Cell('Valor_ISS'):SetValue(aAux[nCont,19])
-    oSection1:Cell('Descricao_CFOP'):SetValue(aAux[nCont,20])
-    oSection1:Cell('Despesas'):SetValue(aAux[nCont,21])
-    oSection1:Cell('Filial'):SetValue(aAux[nCont,22])
-    oSection1:Cell('Periodo'):SetValue(aAux[nCont,23])
+    oSection1:Cell('Nota_Fiscal'):SetValue(aAux[nCont,01])
+    oSection1:Cell('Serie'):SetValue(aAux[nCont,02])
+    oSection1:Cell('Codigo_Cliente'):SetValue(aAux[nCont,03])
+    oSection1:Cell('Loja_Cliente'):SetValue(aAux[nCont,04])
+    oSection1:Cell('Razao_Social'):SetValue(aAux[nCont,05])
+    oSection1:Cell('CNPJ'):SetValue(aAux[nCont,06])
+    oSection1:Cell('Data_Emissao'):SetValue(stod(aAux[nCont,07]))
+    oSection1:Cell('Tipo'):SetValue(aAux[nCont,08])
+    oSection1:Cell('Produto'):SetValue(aAux[nCont,09])
+    oSection1:Cell('Descricao'):SetValue(aAux[nCont,10])
+    oSection1:Cell('Quantidade'):SetValue(aAux[nCont,11])
+    oSection1:Cell('Valor_Unitario'):SetValue(aAux[nCont,12])
+    oSection1:Cell('Valor_Total'):SetValue(aAux[nCont,13])
+    oSection1:Cell('Armazem'):SetValue(aAux[nCont,14])
+    oSection1:Cell('CFOP'):SetValue(aAux[nCont,15])
+    oSection1:Cell('TES'):SetValue(aAux[nCont,16])
+    oSection1:Cell('Pedido'):SetValue(aAux[nCont,17])
+    oSection1:Cell('Item_NF'):SetValue(aAux[nCont,18])
+    oSection1:Cell('Valor_Ipi'):SetValue(aAux[nCont,19])
+    oSection1:Cell('Valor_Icms'):SetValue(aAux[nCont,20])
+    oSection1:Cell('Valor_ISS'):SetValue(aAux[nCont,21])
+    oSection1:Cell('Descricao_CFOP'):SetValue(aAux[nCont,22])
+    oSection1:Cell('Despesas'):SetValue(aAux[nCont,23])
+    oSection1:Cell('Filial'):SetValue(aAux[nCont,24])
+    oSection1:Cell('Periodo'):SetValue(aAux[nCont,25])
 
 
 	oReport:IncMeter()

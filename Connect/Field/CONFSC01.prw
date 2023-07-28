@@ -1545,7 +1545,7 @@ If aList[oList:nAt,len(aQtdH)+1] > 1
 EndIf
 
 aAdd( aPerg ,{2,"Escolha uma opção : ",0,aCombo,100,"",.T.})
-aAdd( aPerg ,{1,"PO cliente : "+If(!Empty(aList[oList:nAt,24]),aList[oList:nAt,24],space(20)),,"@!",'.T.',"",'.T.',40,.F.})  
+aAdd( aPerg ,{1,"PO cliente : "+aList[oList:nAt,24]+space(20),,"@!",'.T.',"",'.T.',40,.F.})  
 aAdd( aPerg ,{2,"Filial de Faturameto : ",cFilFat,aFilFat,100,"",.T.})
 
 If !ParamBox(aPerg ,"Parametros ")
