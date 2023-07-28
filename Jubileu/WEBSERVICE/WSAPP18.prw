@@ -36,6 +36,7 @@ Return( lRet )
 
 Static function dailysales( oSelf )
 
+Local cJsonCli      := ""
 Local oJsonAux	    := Nil
 Local aListCli      := {}
 Local cVend 
@@ -43,34 +44,45 @@ Local cQuery
 Local cPriDia
 Local cUltDia
 Local nAux          :=  0
+Local oResult 
+Local aAux1             :=  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}
+Local aAux2             :=  {0,0,0,0,0}
 
 Default oself:page		:=	1
 Default oself:pageSize	:= 	20
-Default oself:ano		:=  ''
-Default oself:mes       :=	''
+Default oself:ano		:=  2023
+Default oself:mes       :=	7
 Default oself:token		:=	''
+
+conout('chegou wsapp18')
 
 RpcClearEnv()
 RpcSetType(3)
 RPCSetEnv('01','0801')
 
     If !Empty(oself:ano) .And. !Empty(oself:mes)
-        cPriDia := cvaltochar(oself:ano)+cvaltochar(oself:mes)+'01'
-        cUltDia := cvaltochar(lastday(stod(cPriDia)))
+        cPriDia := cvaltochar(oself:ano)+cvaltochar(strzero(oself:mes,2))+'01'
+        cUltDia := dtos(ctod(cvaltochar(lastday(stod(cPriDia)))))
     EndIf
+
+    conout('passou dias wsapp18')
 
     oJsonAux  := JsonObject():New()
     cAliasTMP := GetNextAlias()
 
     If !Empty(oself:token)
+        conout('antes vendedor')
         cVend   := fVendToken( oself:token )
+        conout('depois vendedor')
+        conout(cvaltochar(cPriDia))
+        conout(cvaltochar(cUltDia))
 
         cQuery := "SELECT C5_EMISSAO,SUM(C6_VALOR) AS VALOR"
         cQuery += " FROM "+RetSQLName("SC5")+" C5"
         cQuery += " INNER JOIN "+RetSQLName("SC6")+" C6 ON C6_FILIAL=C5_FILIAL AND C6_NUM=C5_NUM AND C6.D_E_L_E_T_=' '"
         cQuery += " WHERE C5.D_E_L_E_T_=' ' AND C5_FILIAL BETWEEN ' ' AND 'ZZ'" 
-        cQuery += " AND C5_VEND1='000005'"
-        cQuery += " AND C5_EMISSAO BETWEEN '20230701' AND '20230727'"
+        cQuery += " AND C5_VEND1='"+cVend+"'"
+        cQuery += " AND C5_EMISSAO BETWEEN '"+cPriDia+"' AND '"+cUltDia+"'"
         cQuery += " GROUP BY C5_EMISSAO"
         cQuery += " ORDER BY 1"
         cQuery += " OFFSET (("+cValToChar(oself:page)+" - 1) * "+cValToChar(oself:pageSize)+") ROWS "
@@ -79,16 +91,9 @@ RPCSetEnv('01','0801')
         MPSysOpenQuery(cQuery, cAliasTMP)
 
 	    While (cAliasTMP)->(!Eof())
+            nPos := day(stod((cAliasTMP)->C5_EMISSAO))
+            aAux1[nPos] := round((cAliasTMP)->VALOR / 1000,1)
             nAux++
-            aAdd(aListCli , JsonObject():New() )
-            conout('linha '+cvaltochar(nAux))
-            fGeraResult(;
-			@aListCli,;
-			nAux,;
-			{;
-                day(stod((cAliasTMP)->C5_EMISSAO)),;
-                (cAliasTMP)->VALOR;
-            })
 
             (cAliasTMP)->(DBSkip())
         EndDo
@@ -96,10 +101,16 @@ RPCSetEnv('01','0801')
         (cAliasTMP)->(DBCloseArea())
 
         oStatus := JsonObject():New()
+        oResult := JsonObject():New()
+
+        oResult['series1'] := Array(1)
+        oResult['series1'][1] := JsonObject():New()
+        oResult['series1'][1]['name'] := "Valor Vendas"
+        oResult['series1'][1]['data'] := aAux1
 
         conout(cvaltochar(len(aListCli)))
         
-        If Len(aListCli) > 0
+        If nAux > 0
             oStatus['code']    := '#200'
             oStatus['message'] := 'sucesso'
 
@@ -111,18 +122,21 @@ RPCSetEnv('01','0801')
     EndIf 
 
     oJsonAux['status'] := oStatus
-	oJsonAux['result'] := aListCli
+	oJsonAux['result'] := Array(1)
+	oJsonAux['result'][1] := oResult
 
 	cJsonCli := FwJsonSerialize(oJsonAux)
+    
+    conout('json # ' + cJsonCli)
 
 	FreeObj(oJsonAux)
     FreeObj(oStatus)
 
 	oself:SetResponse(cJsonCli)
 
-    RpcClearEnv()
+    
 
-Return
+Return .T.
 
 /*/{Protheus.doc} fVendToken
    @description: Token Vendedor
@@ -155,8 +169,8 @@ Return cRet
 
 Static Function fGeraResult(aListCli, nAux, aListAux)
 
-	aListCli[nAux]['id']	            	:= aListAux[1]
-	aListCli[nAux]['code']	            	:= aListAux[2]
+	aListCli[nAux]['day']	            	:= aListAux[1]
+	aListCli[nAux]['amount']            	:= aListAux[2]
 	
 
 Return

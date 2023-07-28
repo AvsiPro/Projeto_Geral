@@ -374,7 +374,7 @@ Static Function Busca(cCond,cQuinze,cLocacS)
 	cQuery += " AAM_XFORFA, AAM_XTIPFA,'' AS AAM_XPERCT,"
 	cQuery += " '' AS AAM_XRENOV,AAN_FILIAL,AAM_XPRDCM,AAM_XPOCLI"
 	cQuery += " FROM "+RetSQLName("AAN")+" AAN"
-	cQuery += " INNER JOIN "+RetSQLName("AAM")+" AAM ON AAM_FILIAL=AAN_FILIAL AND AAM_CONTRT=AAN_CONTRT AND AAM.D_E_L_E_T_=' '"
+	cQuery += " INNER JOIN "+RetSQLName("AAM")+" AAM ON AAM_FILIAL=AAN_FILIAL AND AAM_CONTRT=AAN_CONTRT AND AAM.D_E_L_E_T_=' ' AND AAM_STATUS='1'"
 	cQuery += " INNER JOIN "+RetSQLName("SE4")+" E4 ON E4_FILIAL='"+xFilial("SE4")+"' AND E4_CODIGO=AAN_CONPAG AND E4.D_E_L_E_T_=' '"
 	cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD=AAN_CODPRO AND B1_XCARACT<>'D' AND B1.D_E_L_E_T_=' '"
 	cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_COD=AAM_CODCLI AND A1_LOJA=AAM_LOJA AND A1.D_E_L_E_T_=' '"
@@ -1545,7 +1545,7 @@ If aList[oList:nAt,len(aQtdH)+1] > 1
 EndIf
 
 aAdd( aPerg ,{2,"Escolha uma opção : ",0,aCombo,100,"",.T.})
-aAdd( aPerg ,{1,"PO cliente : "+aList[oList:nAt,24],,"@!",'.T.',"",'.T.',40,.F.})  
+aAdd( aPerg ,{1,"PO cliente : "+If(!Empty(aList[oList:nAt,24]),aList[oList:nAt,24],space(20)),,"@!",'.T.',"",'.T.',40,.F.})  
 aAdd( aPerg ,{2,"Filial de Faturameto : ",cFilFat,aFilFat,100,"",.T.})
 
 If !ParamBox(aPerg ,"Parametros ")
