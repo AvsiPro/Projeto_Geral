@@ -81,7 +81,7 @@ export const seriesColumn = [{
   data: [35, 41, 36, 26, 45, 48, 52, 53, 41]
 }]
 
-export const optionPie = (themeContext: any) => {
+export const optionPie = (themeContext: any, labels: any) => {
   return (
     {
       chart: {
@@ -91,8 +91,10 @@ export const optionPie = (themeContext: any) => {
       stroke:{
         show:false,
       },
-      labels: ["Tng", "Ultra", "Cambridge", "HB", "MX", "Acuvue", "Feel", "Multico", "Varilux", "Speedo", "OptisWiss"],
-      colors: ['#0d6efd', '#6f42c1', '#d63384', '#dc3545', '#fd7e14', '#ffc107', '#198754', '#20c997', '#6610f2', '#0dcaf0', '#6c757d'],
+      //labels: ["Tng", "Ultra", "Cambridge", "HB", "MX", "Acuvue", "Feel", "Multico", "Varilux", "Speedo", "OptisWiss"],
+      //colors: ['#0d6efd', '#6f42c1', '#d63384', '#dc3545', '#fd7e14', '#ffc107', '#198754', '#20c997', '#6610f2', '#0dcaf0', '#6c757d'],
+      labels: labels,
+      colors: ['#0d6efd', '#6f42c1', '#d63384', '#dc3545', '#fd7e14', '#ffc107'],
       responsive: [{
         breakpoint: 480,
         options: {
@@ -149,7 +151,7 @@ export const seriesBubble1 = [
 ];
 
 
-export const optionBar1 = (themeContext: any) => {
+export const optionBar1 = (themeContext: any, labelcat: any) => {
   return(
     {
       chart: {
@@ -171,18 +173,18 @@ export const optionBar1 = (themeContext: any) => {
           colors: [themeContext.text]
         },
         formatter: (val: any) => {
-          return (val + ' M')
-        },
+          return (val + ' K')
+        }        
       },
       xaxis: {
-        categories: ['Lente Oftalmica', 'Oculos Rx', 'Oculos Sol', 'Lente Contato', 'Acessorios'],
+        categories: labelcat,
       }
     }
   )
 }
 
 export const seriesBar1 = [{
-  data: [0.35, 0.15, 0.03, 0.02, 0.01]
+  data: [0.35, 0.15, 0.03, 0.02, 0.01,0.05]
 }]
 
 
@@ -234,27 +236,26 @@ export const seriesArea1 = [
 ]
 
 export const fields1 = [
-  {field: 'filial', headerText: 'Filial', textAlign: 'Center', width: '100px'   },
-  {field: 'vlrVendas', headerText: 'Vlr. Vendas', textAlign: 'Center', width: '100px'},
-  {field: 'percTotal', headerText: '% Total', textAlign: 'Center', width: '100px'  },
-  {field: 'numVendas', headerText: 'Num. Vendas', textAlign: 'Center', width: '100px'  },
-  {field: 'vlrTicket', headerText: 'Vlr. Ticket Medio', textAlign: 'Center', width: '100px' },
+  {field: 'codigo_cliente', headerText: 'Codigo', textAlign: 'Center', width: '50px'   },
+  {field: 'loja', headerText: 'Loja', textAlign: 'Center', width: '50px'},
+  {field: 'razao', headerText: 'Razão Social', textAlign: 'Center', width: '180px'  },
+  {field: 'valorVendas', headerText: 'Valor Vendas', textAlign: 'Center', width: '120px'  },
+  {field: 'vlrTicket', headerText: 'Vlr. Ticket Medio', textAlign: 'Center', width: '150px' },
 ]
 
 export const dataTable1 = [
   {
-    filial: 'Caieiras',
-    vlrVendas: 115591,
-    percTotal: 20.6,
-    numVendas: 131,
+    codigo_cliente: 'Caieiras',
+    loja: 115591,
+    razao: 20.6,
+    valorVendas: 131,
     vlrTicket: 882.38
   },
 ]
 
 export const fields2 = [
-  {field: 'pos', headerText: 'Pos.', textAlign: 'Center'   },
-  {field: 'product', headerText: 'Produto', textAlign: 'Center', width: '100px'},
-  {field: 'upc', headerText: 'UPC', textAlign: 'Center', width: '80px'  },
+  {field: 'ranking', headerText: 'Pos.', textAlign: 'Center' , width: '50px'  },
+  {field: 'product', headerText: 'Produto', textAlign: 'Center', width: '150px'},
   {field: 'description', headerText: 'Descricao', textAlign: 'Left', width: '250px'  },
   {field: 'numVendas', headerText: 'Num. Vendas', textAlign: 'Center', width: '80px' },
   {field: 'quant', headerText: 'Quant.', textAlign: 'Center', width: '80px' },
@@ -263,9 +264,8 @@ export const fields2 = [
 
 export const dataTable2 = [
   {
-    pos: 1,
+    ranking: 1,
     product: '3000002',
-    upc: '',
     description: 'LIMPA LENTES D+ CLEAN 28ML',
     numVendas: 216,
     quant: 231,

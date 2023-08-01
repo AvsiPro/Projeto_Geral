@@ -38,23 +38,30 @@ Static function dailysales( oSelf )
 
 Local cJsonCli      := ""
 Local oJsonAux	    := Nil
-Local aListCli      := {}
 Local cVend 
 Local cQuery 
 Local cPriDia
 Local cUltDia
 Local nAux          :=  0
 Local oResult 
-Local aAux1             :=  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}
-Local aAux2             :=  {0,0,0,0,0}
+Local aAux1             :=  {} 
+Local aAux2             :=  {}
+Local aAux3             :=  {}
+Local aAux4             :=  {}
+Local aAux5             :=  {}
+Local aAux6             :=  {}
+Local aAux7             :=  {}
+Local aAux8             :=  {}
+
+Local nTotVnd           :=  0
+Local ncont 
+Local nTotQtd           :=  0
 
 Default oself:page		:=	1
 Default oself:pageSize	:= 	20
 Default oself:ano		:=  2023
 Default oself:mes       :=	7
 Default oself:token		:=	''
-
-conout('chegou wsapp18')
 
 RpcClearEnv()
 RpcSetType(3)
@@ -65,17 +72,18 @@ RPCSetEnv('01','0801')
         cUltDia := dtos(ctod(cvaltochar(lastday(stod(cPriDia)))))
     EndIf
 
-    conout('passou dias wsapp18')
+    aAux1 := ARRAY(DateDiffDay(stod(cPriDia),stod(cUltDia))+1)
+    
+    for ncont := 1 to len(aAux1)
+        aAux1[ncont] := 0
+    next ncont
+
 
     oJsonAux  := JsonObject():New()
     cAliasTMP := GetNextAlias()
 
     If !Empty(oself:token)
-        conout('antes vendedor')
         cVend   := fVendToken( oself:token )
-        conout('depois vendedor')
-        conout(cvaltochar(cPriDia))
-        conout(cvaltochar(cUltDia))
 
         cQuery := "SELECT C5_EMISSAO,SUM(C6_VALOR) AS VALOR"
         cQuery += " FROM "+RetSQLName("SC5")+" C5"
@@ -100,16 +108,176 @@ RPCSetEnv('01','0801')
 
         (cAliasTMP)->(DBCloseArea())
 
+        cQuery := "SELECT BM_DESC,SUM(C6_VALOR) AS VALOR
+        cQuery += " FROM "+RetSQLName("SC5")+" C5"
+        cQuery += " INNER JOIN "+RetSQLName("SC6")+" C6 ON C6_FILIAL=C5_FILIAL AND C6_NUM=C5_NUM AND C6.D_E_L_E_T_=' '"
+        cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD=C6_PRODUTO AND B1.D_E_L_E_T_=' '"
+        cQuery += " INNER JOIN "+RetSQLName("SBM")+" BM ON BM_FILIAL=B1_FILIAL AND BM_GRUPO=B1_GRUPO AND BM.D_E_L_E_T_=' '"
+        cQuery += " WHERE C5.D_E_L_E_T_=' ' AND C5_FILIAL BETWEEN ' ' AND 'ZZZ'" 
+        cQuery += " AND C5_VEND1='"+cVend+"'"
+        cQuery += " AND C5_EMISSAO BETWEEN '"+cPriDia+"' AND '"+cUltDia+"'"
+        cQuery += " GROUP BY BM_DESC"
+        cQuery += " ORDER BY 1"
+        cQuery += " OFFSET (("+cValToChar(oself:page)+" - 1) * "+cValToChar(oself:pageSize)+") ROWS "
+		cQuery += " FETCH NEXT "+cValToChar(oself:pageSize)+" ROWS ONLY "
+
+        MPSysOpenQuery(cQuery, cAliasTMP)
+
+	    While (cAliasTMP)->(!Eof())
+            Aadd(aAux3,{Alltrim(EncodeUTF8((cAliasTMP)->BM_DESC)),;
+                        (cAliasTMP)->VALOR,;
+                        0})
+            (cAliasTMP)->(DBSkip())
+        EndDo
+
+        (cAliasTMP)->(DBCloseArea())
+
+        cQuery := "SELECT COUNT(C5_NUM) AS QTDTOTAL"
+        cQuery += " FROM "+RetSQLName("SC5")+" C5"
+        cQuery += " WHERE D_E_L_E_T_=' ' AND C5_FILIAL BETWEEN ' ' AND 'ZZZ'" 
+        cQuery += " AND C5_VEND1='"+cVend+"'"
+        cQuery += " AND C5_EMISSAO BETWEEN '"+cPriDia+"' AND '"+cUltDia+"'"
+        
+        MPSysOpenQuery(cQuery, cAliasTMP)
+
+        nTotQtd := (cAliasTMP)->QTDTOTAL
+
+        (cAliasTMP)->(DBCloseArea())
+
+        cQuery := "SELECT C5_CLIENTE,C5_LOJACLI,A1_NOME,SUM(C6_VALOR) AS VALOR"
+        cQuery += " FROM "+RetSQLName("SC5")+" C5"
+        cQuery += " INNER JOIN "+RetSQLName("SC6")+" C6 ON C6_FILIAL=C5_FILIAL AND C6_NUM=C5_NUM AND C6_CLI=C5_CLIENTE AND C6_LOJA=C5_LOJACLI AND C6.D_E_L_E_T_=' '"
+        cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_COD=C5_CLIENTE AND A1_LOJA=C5_LOJACLI AND A1.D_E_L_E_T_=' '"
+        cQuery += " WHERE C5.D_E_L_E_T_=' ' AND C5_FILIAL BETWEEN ' ' AND 'ZZZ'" 
+        cQuery += " AND C5_VEND1='"+cVend+"'"
+        cQuery += " AND C5_EMISSAO BETWEEN '"+cPriDia+"' AND '"+cUltDia+"'"
+        cQuery += " GROUP BY C5_CLIENTE,C5_LOJACLI,A1_NOME"
+        cQuery += " ORDER BY 3"
+
+        MPSysOpenQuery(cQuery, cAliasTMP)
+
+	    While (cAliasTMP)->(!Eof())
+            Aadd(aAux7,{Alltrim(EncodeUTF8((cAliasTMP)->C5_CLIENTE)),;
+                        Alltrim(EncodeUTF8((cAliasTMP)->C5_LOJACLI)),;
+                        Alltrim(EncodeUTF8((cAliasTMP)->A1_NOME)),;
+                        (cAliasTMP)->VALOR})
+
+            (cAliasTMP)->(DBSkip())
+        EndDo
+
+        (cAliasTMP)->(DBCloseArea())
+        
+        cQuery := "SELECT C6_PRODUTO,B1_DESC,SUM(C6_QTDVEN) AS QTDVEND,SUM(C6_VALOR) AS VLRVEND,COUNT(C6_NUM) AS VENDPV"
+        cQuery += " FROM "+RetSQLName("SC5")+" C5"
+        cQuery += " INNER JOIN "+RetSQLName("SC6")+" C6 ON C6_FILIAL=C5_FILIAL AND C6_NUM=C5_NUM AND C6_CLI=C5_CLIENTE AND C6_LOJA=C5_LOJACLI AND C6.D_E_L_E_T_=' '"
+        cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD=C6_PRODUTO AND B1.D_E_L_E_T_=' '"
+        cQuery += " WHERE C5.D_E_L_E_T_=' ' AND C5_FILIAL BETWEEN ' ' AND 'ZZZ'" 
+        cQuery += " AND C5_VEND1='"+cVend+"'"
+        cQuery += " AND C5_EMISSAO BETWEEN '"+cPriDia+"' AND '"+cUltDia+"'"
+        cQuery += " GROUP BY C6_PRODUTO,B1_DESC"
+        cQuery += " ORDER BY 3 DESC"
+
+        MPSysOpenQuery(cQuery, cAliasTMP)
+
+	    While (cAliasTMP)->(!Eof())
+            Aadd(aAux8,{Alltrim(EncodeUTF8((cAliasTMP)->C6_PRODUTO)),;
+                        Alltrim(EncodeUTF8((cAliasTMP)->B1_DESC)),;
+                        (cAliasTMP)->QTDVEND,;
+                        (cAliasTMP)->VENDPV,;
+                        (cAliasTMP)->VLRVEND})
+
+            (cAliasTMP)->(DBSkip())
+        EndDo
+
+        (cAliasTMP)->(DBCloseArea())
+        
+        Aeval(aAux3,{|x| nTotVnd += x[2]})
+        Aeval(aAux3,{|x| x[3] := round((x[2]/nTotVnd) * 100,2)})
+        
+        aAux2 := Array(len(aAux3))
+        aAux4 := Array(len(aAux3))
+
+        For ncont := 1 to len(aAux3)
+            aAux2[ncont] := aAux3[ncont,3]
+        Next ncont
+
+        For ncont := 1 to len(aAux3)
+            aAux4[ncont] := aAux3[ncont,1]
+        next ncont
+
         oStatus := JsonObject():New()
         oResult := JsonObject():New()
-
+        
+        oResult['header'] := Array(3)
+        oResult['header'][1] := JsonObject():New()
+        oResult['header'][2] := JsonObject():New()
+        oResult['header'][3] := JsonObject():New()
+        
         oResult['series1'] := Array(1)
         oResult['series1'][1] := JsonObject():New()
+        oResult['series2'] := Array(1)
+        oResult['series2'][1] := JsonObject():New()
+        oResult['series3'] := Array(1)
+        oResult['series3'][1] := JsonObject():New()
+
+        oResult['dataTable1'] := Array(len(aAux7))
+        oResult['dataTable2'] := Array(len(aAux8))
+        
+        oResult['header'][1]['title'] := "Vlr. Total Vendas"
+        oResult['header'][1]['type'] := "number"
+        oResult['header'][1]['value'] := nTotVnd
+
+        oResult['header'][2]['title'] := EncodeUTF8("Vlr. Ticket Médio")
+        oResult['header'][2]['type'] := "number"
+        oResult['header'][2]['value'] := nTotVnd / nTotQtd
+        
+        oResult['header'][3]['title'] := "Num Vendas"
+        oResult['header'][3]['type'] := ""
+        oResult['header'][3]['value'] := nTotQtd
+        
         oResult['series1'][1]['name'] := "Valor Vendas"
         oResult['series1'][1]['data'] := aAux1
 
-        conout(cvaltochar(len(aListCli)))
+        oResult['series2'][1]['labels'] := aAux4
+        oResult['series2'][1]['data']   := aAux2
+
+        aAux5 := Array(len(aAux3))
+        aAux6 := Array(len(aAux3))
         
+        Asort(aAux3,,,{|x,y| x[2] > y[2]})
+
+        For ncont := 1 to len(aAux3)
+            aAux5[ncont] := round(aAux3[ncont,2] / 1000,2)
+        Next ncont
+
+        For ncont := 1 to len(aAux3)
+            aAux6[ncont] := aAux3[ncont,1]
+        next ncont
+
+        oResult['series3'][1]['labelcat']   := aAux6
+        oResult['series3'][1]['data']       := aAux5
+
+        Asort(aAux7,,,{|x,y| x[4] > y[4]})
+
+        For ncont := 1 to len(aAux7)
+            oResult['dataTable1'][ncont] := JsonObject():New()
+            oResult['dataTable1'][ncont]['codigo_cliente'] := aAux7[ncont,01]
+            oResult['dataTable1'][ncont]['loja'] := aAux7[ncont,02]
+            oResult['dataTable1'][ncont]['razao'] := aAux7[ncont,03]
+            oResult['dataTable1'][ncont]['valorVendas'] := Transform(aAux7[ncont,04],"@E 999,999,999.99")
+            oResult['dataTable1'][ncont]['vlrTicket'] := (aAux7[ncont,04] / nTotVnd) * 100
+        next ncont 
+
+        For ncont := 1 to len(aAux8)
+            oResult['dataTable2'][ncont] := JsonObject():New()
+            oResult['dataTable2'][ncont]['ranking'] := ncont
+            oResult['dataTable2'][ncont]['product'] := aAux8[ncont,01]
+            oResult['dataTable2'][ncont]['description'] := aAux8[ncont,02]
+            oResult['dataTable2'][ncont]['numVendas'] := aAux8[ncont,03]
+            oResult['dataTable2'][ncont]['quant'] := aAux8[ncont,04]
+            oResult['dataTable2'][ncont]['vlrVendas'] := aAux8[ncont,05]
+        next ncont 
+
         If nAux > 0
             oStatus['code']    := '#200'
             oStatus['message'] := 'sucesso'
@@ -166,11 +334,3 @@ Local aArea := GetArea()
 RestArea(aArea)
 
 Return cRet
-
-Static Function fGeraResult(aListCli, nAux, aListAux)
-
-	aListCli[nAux]['day']	            	:= aListAux[1]
-	aListCli[nAux]['amount']            	:= aListAux[2]
-	
-
-Return

@@ -48,7 +48,7 @@ const Dashboard: React.FC = () => {
           <Dropdown.Item onClick={()=> setMes('8')}>Agosto</Dropdown.Item>
           <Dropdown.Item onClick={()=> setMes('9')}>Setembro</Dropdown.Item>
           <Dropdown.Item onClick={()=> setMes('10')}>Outubro</Dropdown.Item>
-          <Dropdown.Item onClick={()=> setMes('12')}>Novembro</Dropdown.Item>
+          <Dropdown.Item onClick={()=> setMes('11')}>Novembro</Dropdown.Item>
           <Dropdown.Item onClick={()=> setMes('12')}>Dezembro</Dropdown.Item>
           
         </DropdownButton>
