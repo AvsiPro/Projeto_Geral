@@ -144,7 +144,7 @@ IF len(aVendas) > 0
     
 ENDIF
 
-savevend()
+//savevend()
 
 Return
 
@@ -274,3 +274,61 @@ next nX
 RestArea(aArea)
 
 RETURN
+
+/*/{Protheus.doc}  Gerahtm
+    (long_description)
+    @type  Static Function
+    @author user
+    @since 02/08/2023
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function Gerahtm()
+    
+Local cHtml := ''
+
+cHtml += '<h2 style="color: #2e6c80;">Cleaning options:</h2>
+cHtml += '<table class="editorDemoTable" style="height: 295px; width: 809px;">
+cHtml += '<thead>
+cHtml += '<tr style="height: 18px;">
+cHtml += '<td style="height: 18px; width: 146.387px;">Name of the feature</td>
+cHtml += '<td style="height: 18px; width: 251.35px;">Example</td>
+cHtml += '<td style="height: 18px; width: 96.3125px;">Default</td>'
+cHtml += '<td style="width: 93.5px;">&nbsp;</td>'
+cHtml += '<td style="width: 93.5px;">&nbsp;</td>'
+cHtml += '<td style="width: 93.55px;">&nbsp;</td>'
+cHtml += '</tr>'
+cHtml += '</thead>'
+cHtml += '<tbody>'
+cHtml += '<tr style="height: 21px;">'
+cHtml += '<td style="height: 21px; width: 146.387px;">Remove tag attributes</td>'
+cHtml += '<td style="height: 21px; width: 251.35px;"><img style="margin: 1px 15px;" src="images/smiley.png" alt="laughing" width="40" height="16" /> (except <strong>img</strong>-<em>src</em> and <strong>a</strong>-<em>href</em>)</td>'
+cHtml += '<td style="height: 21px; width: 96.3125px;">&nbsp;</td>'
+cHtml += '<td style="width: 93.5px;">&nbsp;</td>'
+cHtml += '<td style="width: 93.5px;">&nbsp;</td>'
+cHtml += '<td style="width: 93.55px;">&nbsp;</td>'
+cHtml += '</tr>'
+cHtml += '<tr style="height: 22px;">'
+cHtml += '<td style="height: 22px; width: 146.387px;">Remove inline styles</td>'
+cHtml += '<td style="height: 22px; width: 251.35px;"><span style="color: green; font-size: 13px;">You <strong style="color: blue; text-decoration: underline;">should never</strong>&nbsp;use inline styles!</span></td>'
+cHtml += '<td style="height: 22px; width: 96.3125px;"><strong style="font-size: 17px; color: #2b2301;">x</strong></td>'
+cHtml += '<td style="width: 93.5px;"><strong style="font-size: 17px; color: #2b2301;">&nbsp;</strong></td>'
+cHtml += '<td style="width: 93.5px;"><strong style="font-size: 17px; color: #2b2301;">&nbsp;</strong></td>'
+cHtml += '<td style="width: 93.55px;"><strong style="font-size: 17px; color: #2b2301;">&nbsp;</strong></td>'
+cHtml += '</tr>'
+cHtml += '<tr style="height: 18px;">'
+cHtml += '<td style="height: 18px; width: 146.387px;">&nbsp;</td>'
+cHtml += '<td style="height: 18px; width: 251.35px;">&nbsp;</td>'
+cHtml += '<td style="height: 18px; width: 96.3125px;">&nbsp;</td>'
+cHtml += '<td style="width: 93.5px;">&nbsp;</td>'
+cHtml += '<td style="width: 93.5px;">&nbsp;</td>'
+cHtml += '<td style="width: 93.55px;">&nbsp;</td>'
+cHtml += '</tr>'
+cHtml += '</tbody>'
+cHtml += '</table>'
+
+Return
