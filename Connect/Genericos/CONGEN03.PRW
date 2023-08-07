@@ -196,9 +196,13 @@ User Function CONGEN03(cNumNF,cSerNF,cPathNF,cCNPJNF)
 			If !ParamBox(aPergs ,"Observacoes ")
 				Return
 			EndIf
+
+			cReferentes := MV_PAR04
+		else
+			cReferentes := 'NR. PO '+aAux[nCont,7]
 		ENDIF
 
-		cReferentes := MV_PAR04
+		
 
 		oPrinter := FWMSPrinter():New( "recibo_loc_"+strzero(val(cNum),9)+".rel",IMP_PDF,lAdjustToLegacy,cCaminho+(If(!Empty(cCNPJNF),cCNPJNF+"\","")),lDisableSetup,,,,.F.,,,.F.)
 		

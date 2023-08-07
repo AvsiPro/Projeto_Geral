@@ -2569,7 +2569,7 @@ For nCont := 1 to len(aEmail)
 		cDestino := Alltrim(aEmail[nCont,05])
 		cDestino += ';'+Alltrim(SUPERGETMV( "MV_XMAILFT", .F., 'faturas@connectvending.com.br' ))
 		
-		cSubject := 'Faturamento'
+		cSubject := 'Faturamento NF'+MV_PAR02+' Cliente - '+SA1->A1_NOME
 
 		If SUBSTR(MV_PAR01,1,1) <> "L"
 			CPYT2S('C:\BOLETOS\'+cCnpjj+'\'+MV_PAR02+'.pdf','\SPOOL\')
@@ -2763,17 +2763,13 @@ If len(aAux) > 0
 		
 	EndIf
 
-	//If len(aAbater) > 0
 	If cQuinze == "2" .And. cForFat == "2"
 		Aadd(aAux,{'','',,,})
-		//Aadd(aAux,{'','Doses abatidas quinzena anterior',,,})
 		Aadd(aAux,{'','Doses abatidas quinzena anterior',,,})
 		
-		//Aadd(aAbater,{aList5B[nCont,01],cNumSr,nQtdAb,nVlr})
 		nToQt := 0
 		nToVl := 0
-		//Asort(aList3,,,{|x,y| x[2] > y[2]})
-
+		
 		For nCont := 1 to len(aAbater) 
 			If aList[oList:nAt,01] == aAbater[nCont,01]
 				nPos := Ascan(aAuxB,{|x| Alltrim(x[1]) == Alltrim(aAbater[nCont,02])})
@@ -2805,7 +2801,7 @@ If len(aAux) > 0
 			aAux[nPosDosC,3] := round(aAux[nPosDosC,3]-nToQt,0)
 			aAux[nPosDosC,5] := aAux[nPosDosC,3] * aAux[nPosDosC,4]
 
-			If nPosItCm > 0
+			If nPosItCm > 0 //.And. aAux[nPosDosC,3]>0
 				aItens[nPosItCm,02] := aAux[nPosDosC,3]
 			EndIf 
 
