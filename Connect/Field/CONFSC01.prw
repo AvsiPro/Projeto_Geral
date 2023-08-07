@@ -1978,13 +1978,23 @@ ElseIf nOpcG == 1
 			//If (aList2[nX,11] > 0 .And. cQuinze == "2") .OR.(cForFat=="1" .AND. cTipFat=="2" .and. aList2[nX,11] > 0) //cCond == "2"
 			If (aList2[nX,08] > 0 .And. cQuinze == "2") .OR.(cForFat=="1" .AND. cTipFat=="2" .and. aList2[nX,08] > 0) //cCond == "2"
 				npos := Ascan(aItens,{|x| alltrim(x[1]) == alltrim(aList[oList:nAt,22])})
-				If aList2[nX,08] - aList2[nX,10] > 0
+				If aList2[nX,10] - aList2[nX,08] > 0
+					
+					nVlrDos  := Posicione("DA1",1,xFilial("DA1")+AAM->AAM_XCODTA+aList[oList:nAt,22],"DA1_PRCVEN")
+					
+					If cTipFat == "2"
+						//Minimo por ativo e valor
+						nQtdVlr := (aList2[nX,10] - aList2[nX,08]) / nVlrDos
+					Else 
+						nQtdVlr := (aList2[nX,10] - aList2[nX,08])/aList[oList:nAt,21]
+					EndIf 
+
 					If npos == 0
 						Aadd(aItens,{	aList[oList:nAt,22],;
-										(aList2[nX,08] - aList2[nX,10])/aList[oList:nAt,21],;
-										Posicione("DA1",1,xFilial("DA1")+AAM->AAM_XCODTA+aList[oList:nAt,22],"DA1_PRCVEN")})
+										nQtdVlr,;
+										nVlrDos})
 					Else 
-						aItens[npos,02] += (aList2[nX,08] - aList2[nX,10])/aList[oList:nAt,21]
+						aItens[npos,02] += nQtdVlr
 					EndIf
 				EndIf
 			EndIf 
