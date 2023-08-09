@@ -34,7 +34,7 @@ export default function Orders(){
 
     const { colors } = useContext(ThemeContext);
     
-    const { authDetail, setItemCart, setCustomerSelected, setPaymentSelected, setOrcamentoSelected } = useContext(AppContext);
+    const { authDetail, setItemCart, setCustomerSelected, setPaymentSelected, setOrcamentoSelected, setTablePriceSelected } = useContext(AppContext);
     const navigation: any = useNavigation();
     
     const [refreshing, setRefreshing] = useState(false); 
@@ -180,7 +180,6 @@ export default function Orders(){
                 virgula = ','
             })
             
-            
             const productAux = await apiProductsCopy(productsCopy)
 
             const itemCartAux: any[] = productAux.map((itemNovo: any) => {
@@ -196,11 +195,13 @@ export default function Orders(){
             
             const customerAux = await apiCustomerCopy(itemCopy.customer)
 
+            setTablePriceSelected({id: "001", description: "TABELA PADRAO"})
             setItemCart(itemCartAux)
             setCustomerSelected(customerAux[0])
             setPaymentSelected(null)
 
             navigation.navigate('Neworder')
+        
         }
 
         setLoadCopy(false)
@@ -219,11 +220,18 @@ export default function Orders(){
         let returnObject: any = []
 
         try {
-            const response = await api.get(`/WSAPP03?pagesize=100&page=1&copyItems=${products}`);
+            const response = await api.get(`/WSAPP03?pagesize=100&page=1&copyItems=${products}&codTab=001`);
             const json: ApiResponse = response.data;
         
-            if(json.status.code === '#200'){    
-                returnObject = [...json.result];
+            if(json.status.code === '#200'){
+                
+                returnObject = [...json.result]
+
+                returnObject.reduce((acc: any, current: any) => {
+                    const x = acc.find((item: any) => item.code === current.code);
+                    return !x ? acc.concat([current]) : acc;
+                }, []);
+                
             }
     
         } catch (error) {
