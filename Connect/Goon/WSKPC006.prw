@@ -32,7 +32,7 @@ User Function WSKPC006(aDados)
 
 Local oWS		:= NIL	// Objeto do WebService
 Local oWSArray	:= NIL	// Objeto Array de Int
-Local cMetodo	:= "GetAnswerFormByListOfOrdemNumeroOS"
+//Local cMetodo	:= "GetAnswerFormByListOfOrdemNumeroOS"
 Local cResult	:= ""
 Local nX
 Default aDados	:= {}
