@@ -14,6 +14,7 @@ import ModalObs from '../../modals/modalObs';
 import ModalCustomers from '../../modals/modalCustomers';
 import ModalProducts from '../../modals/modalProducts';
 import ModalPayment from '../../modals/modalPayment';
+import ModalTablePrice from '../../modals/modalTablePrice';
 import Popups from '../../modals/popups';
 import api from '../../services/api';
 
@@ -30,26 +31,31 @@ export default function Neworder(){
         itemCart,
         customerSelected,
         paymentSelected,
+        tablePriceSelected,
         authDetail,
         orcamentoSelected,
         setItemCart,
         setCustomerSelected,
         setPaymentSelected,
+        setTablePriceSelected,
         setOrcamentoSelected
     } = useContext(AppContext);
 
     const [visibleModalProducts, setVisibleModalProducts] = useState(false);
     const [visibleModalCustomers, setVisibleModalCustomers] = useState(false);
     const [visibleModalPayment, setVisibleModalPayment] = useState(false);
+    const [visibleModalTablePrice, setVisibleModalTablePrice] = useState(false);
     const [visibleModalObs, setVisibleModalObs] = useState(false);
     const [dataItens, setDataItens] = useState<any>([]);
     const [dataCustomers, setDataCustomers] = useState<any>(null);
     const [dataPayment, setDataPayment] = useState<any>(null);
+    const [dataTablePrice, setDataTablePrice] = useState<any>(null);
     const [discountInput, setDiscountInput] = useState<string>('');
     const [discountPercent, setDiscountPercent] = useState<number>(0);
     const [products, setProducts] = useState<PropItemCartContext[]>([]);
     const [customers, setCustomers] = useState<any>([]);
     const [payment, setPayment] = useState<any>([]);
+    const [tablePrice, setTablePrice] = useState<any>([]);
     const [keyboardActived, setKeyboardActived] = useState(false);
     const [isOnline, setIsOnline] = useState(true);
     const [visiblePopup, setVisiblePopup] = useState<boolean>(false);
@@ -133,14 +139,15 @@ export default function Neworder(){
             });
     
             const result = Object.values(groups);
-    
+            
             setGroup(result)
             setDataItens(itemCart)
             setDataCustomers(customerSelected)
             setDataPayment(paymentSelected)
+            setDataTablePrice(tablePriceSelected)
         }
         atualizaItensContext()
-    },[itemCart, customerSelected, paymentSelected])
+    },[itemCart, customerSelected, paymentSelected, tablePriceSelected])
 
 
     /** abrir o modal de produtos e garantir que nao tenha duplicidade de itens **/
@@ -186,7 +193,7 @@ export default function Neworder(){
     const handleModalPayment = () =>{
 
         if(payment.length > 0){
-            const newpayment = payment.filter((customer: any) => itemCart.every((item: any) => item.code !== customer.code));
+            const newpayment = payment.filter((pay: any) => itemCart.every((item: any) => item.code !== pay.code));
 
             newpayment.sort((a: any, b: any) => a.code.localeCompare(b.code));
 
@@ -199,6 +206,24 @@ export default function Neworder(){
         }
 
         setVisibleModalPayment(!visibleModalPayment)
+    }
+
+    const handleModalTablePrice = () =>{
+
+        if(tablePrice.length > 0){
+            const newtablePrice = tablePrice.filter((priceT: any) => itemCart.every((item: any) => item.id !== priceT.id));
+
+            newtablePrice.sort((a: any, b: any) => a.id.localeCompare(b.id));
+
+            const uniqueArray = newtablePrice.reduce((acc: any, current: any) => {
+                const x = acc.find((item: any) => item.id === current.id);
+                return !x ? acc.concat([current]) : acc;
+            }, []);
+            
+            setTablePrice(uniqueArray)
+        }
+
+        setVisibleModalTablePrice(!visibleModalTablePrice)
     }
     
     
@@ -214,9 +239,14 @@ export default function Neworder(){
     }
 
 
-    /** atualiza clientes **/
+    /** atualiza pagamentos **/
     const atualizaPagamentos = (item: any) => {
         setPayment(item)
+    }
+
+    /** atualiza tabela preco **/
+    const atualizaTabPreco = (item: any) => {
+        setTablePrice(item)
     }
 
 
@@ -288,6 +318,7 @@ export default function Neworder(){
         setItemCart([]);
         setCustomerSelected(null);
         setPaymentSelected(null);
+        setTablePriceSelected({id: "001", description: "TABELA PADRAO"});
         setDiscountInput('');
     };
 
@@ -334,6 +365,13 @@ export default function Neworder(){
         if(!paymentSelected) {
             setTypeMessage('warning')
             setMessage('Necessário selecionar uma condição de pagamento')
+            setVisiblePopup(true)
+            return
+        }
+
+        if(!tablePriceSelected) {
+            setTypeMessage('warning')
+            setMessage('Necessário selecionar uma tabela de preço')
             setVisiblePopup(true)
             return
         }
@@ -414,6 +452,7 @@ export default function Neworder(){
                 setItemCart([])
                 setCustomerSelected(null)
                 setPaymentSelected(null)
+                setTablePriceSelected({id: "001", description: "TABELA PADRAO"})
                 setTypeMessage('success')
                 setMessage(messageSuccess)
                 
@@ -535,20 +574,20 @@ export default function Neworder(){
     
         if(price3.max === 0){
           price3.max = 9999
-        }
+        }    
     
         if(quantity >= price1.min && quantity <= price1.max){
             value = price1.price
         }
     
-        if(quantity >= price2.min && quantity <= price2.max){
+        if(quantity >= price2.min && quantity <= price2.max && price1.max !== 9999){
             value = price2.price
         }
     
-        if(quantity >= price3.min && quantity <= price3.max){
+        if(quantity >= price3.min && quantity <= price3.max && price1.max !== 9999 && price2.max !== 9999){
             value = price3.price
         }
-    
+        
         return value
     }
 
@@ -596,6 +635,24 @@ export default function Neworder(){
                         <>
                             <Style.ClienteText>
                                 Condição de Pagamento
+                            </Style.ClienteText>
+            
+                            <AntDesign name="search1" size={20} color="#fff" />
+                        </>
+                 
+                }
+            </Style.CliPayHeader>
+
+            <Style.CliPayHeader onPress={handleModalTablePrice}>
+                {
+                    !!dataTablePrice ?
+                        <Style.ClienteText>
+                            {dataTablePrice.id + ' - ' + dataTablePrice.description}
+                        </Style.ClienteText>
+                    :
+                        <>
+                            <Style.ClienteText>
+                                Tabela de Preço
                             </Style.ClienteText>
             
                             <AntDesign name="search1" size={20} color="#fff" />
@@ -755,6 +812,14 @@ export default function Neworder(){
             handleModalPayment={handleModalPayment}
             payment={payment}
             atualizaPagamentos={atualizaPagamentos}
+        />
+
+        <ModalTablePrice
+            getVisible={visibleModalTablePrice}
+            handleModalTablePrice={handleModalTablePrice}
+            tablePrice={tablePrice}
+            atualizaTabPreco={atualizaTabPreco}
+            atualizaProdutos={atualizaProdutos}
         />
 
         <ModalObs

@@ -9,6 +9,7 @@ WsRestFul WSAPP03 Description "produtos API" FORMAT APPLICATION_JSON
 	WsData searchKey AS String	Optional
 	WsData copyItems AS String	Optional
 	WsData byId		 AS Boolean	Optional
+	WsData codTab    AS String	Optional
 
 WsMethod GET products;
     Description 'Lista de produtos';
@@ -30,7 +31,7 @@ Retorna a lista de produtos.
 
 /*/
 
-WsMethod GET products WsReceive searchKey, copyItems, page, pageSize WsRest WSAPP03
+WsMethod GET products WsReceive searchKey, copyItems, page, pageSize, codTab WsRest WSAPP03
 	Local lRet:= .T.
 	lRet := products( self )
 Return( lRet )
@@ -52,6 +53,7 @@ Default oself:copyItems := ''
 Default oself:page		:= 1
 Default oself:pageSize	:= 20
 Default oself:byId		:=.F.
+Default oself:codTab    := '001'
 
 
 RpcClearEnv()	
@@ -85,7 +87,7 @@ RPCSetEnv('01','0801')
 	cQuery += " DA1_PRCVEN, DA1_XPRCV2, DA1_XPRCV3, DA1_XQTRG1, DA1_XQTRG2, DA1_XQTRG3, DA1_XGRPJU,B2_QATU-B2_RESERVA AS SALDO"
 	cQuery += " FROM "+RetSqlName('SB1')+" SB1 "
 	cQuery += " INNER JOIN "+RetSQLName("SBM")+" BM ON BM_FILIAL=B1_FILIAL AND BM_GRUPO=B1_GRUPO AND BM.D_E_L_E_T_=' '"
-	cQuery += " INNER JOIN "+RetSQLName('DA1')+" DA1 ON DA1_FILIAL='"+FWxFilial("DA1")+"' AND DA1_CODPRO=B1_COD AND DA1.D_E_L_E_T_=' ' "
+	cQuery += " INNER JOIN "+RetSQLName('DA1')+" DA1 ON DA1_FILIAL='"+FWxFilial("DA1")+"' AND DA1_CODPRO=B1_COD AND DA1.D_E_L_E_T_=' ' AND DA1_CODTAB = '"+oself:codTab+"'"
 	cQuery += " INNER JOIN "+RetSQLName('SB2')+" B2 ON B2_FILIAL='"+FWxFilial("SB2")+"' AND B2_COD=B1_COD AND B2_LOCAL=B1_LOCPAD AND B2.D_E_L_E_T_=' ' AND B2_QATU-B2_RESERVA >= 1 "
 	cQuery += " WHERE SB1.D_E_L_E_T_ = ' ' ""
 	cQuery += " AND SB1.B1_MSBLQL <> '1' "+cWhere

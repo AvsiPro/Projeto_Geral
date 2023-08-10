@@ -72,7 +72,7 @@ export default function Products(){
     const loadItems = async() => {
         setLoadBottom(true);
         
-        const resultApi = await apiProducts(page, products, filter)
+        const resultApi = await apiProducts(page, products, filter, {id: '001'})
         
         if(!!resultApi){
             setProducts(resultApi.returnResult)
@@ -135,7 +135,7 @@ export default function Products(){
             return
         }
 
-        const resultApi = await searchProducts(searchQuery, isOnline)
+        const resultApi = await searchProducts(searchQuery, isOnline, {id: '001'})
 
         if(!!resultApi){
             setProducts(resultApi.returnResult)
