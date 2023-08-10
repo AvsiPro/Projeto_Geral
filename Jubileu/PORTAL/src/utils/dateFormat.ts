@@ -73,6 +73,6 @@ if(mes === '1'){
   return 'Dezembro'
   
 }else {
-  return 'Corrente'
+  return 'Mês'
 }
 }

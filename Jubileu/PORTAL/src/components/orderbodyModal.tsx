@@ -362,11 +362,11 @@ const OrdersBodyModal: React.FC<Props> = ({
         value = price1.price
     }
 
-    if(quantity >= price2.min && quantity <= price2.max){
+    if(quantity >= price2.min && quantity <= price2.max && price1.max !== 99999){
         value = price2.price
     }
 
-    if(quantity >= price3.min && quantity <= price3.max){
+    if(quantity >= price3.min && quantity <= price3.max && price1.max !== 99999 && price2.max !== 99999){
         value = price3.price
     }
 

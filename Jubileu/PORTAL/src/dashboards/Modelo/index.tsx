@@ -144,7 +144,7 @@ const ModeloDash: React.FC = () => {
                     <Style.CardDash border={theme} className="h-100">
                     <Style.TextDash style={{marginTop:20, marginLeft:20}} size={20}>Chart Title</Style.TextDash>
                     <Style.CardDashBody>
-                        <ChartPie options={optionPie(themeContext)} series={seriesPie} />
+                        {/*<ChartPie options={optionPie(themeContext)} series={seriesPie} />*/}
                     </Style.CardDashBody>
                     </Style.CardDash>
                 </Col>
