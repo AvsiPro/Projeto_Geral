@@ -2330,69 +2330,71 @@ STATIC FUNCTION savevend()
     endif
 
     for nX := 1 to len(aList8B)
-        cCod := GetSXENum("Z08", "Z08_COD") 
-        cSeq := "01"
+        If len(aList8B[nX][1]) > 1
+            cCod := GetSXENum("Z08", "Z08_COD") 
+            cSeq := "01"
 
-        cQuery := " SELECT AAM_CONTRT,AAN_ITEM,AAM_CODCLI,AAM_LOJA,AAN_CODPRO FROM " + RetSQLName("AAN") + " AAN "
-        cQuery += " INNER JOIN " + RetSQLName("AAM") + " AAM ON AAM_CONTRT = AAN_CONTRT "
-        cQuery += " WHERE AAN_XCBASE = '" + aList8B[nX,01,01,06] + "' "
-        cQuery += " AND AAN.D_E_L_E_T_ = ' ' "
-        cQuery += " AND AAM.D_E_L_E_T_ = ' ' "
+            cQuery := " SELECT AAM_CONTRT,AAN_ITEM,AAM_CODCLI,AAM_LOJA,AAN_CODPRO FROM " + RetSQLName("AAN") + " AAN "
+            cQuery += " INNER JOIN " + RetSQLName("AAM") + " AAM ON AAM_CONTRT = AAN_CONTRT "
+            cQuery += " WHERE AAN_XCBASE = '" + aList8B[nX,01,01,06] + "' "
+            cQuery += " AND AAN.D_E_L_E_T_ = ' ' "
+            cQuery += " AND AAM.D_E_L_E_T_ = ' ' "
 
-        if Select("TRB") > 0
-            DBSELECTAREA("TRB")
-            DBCLOSEAREA()
-        endif
-        
-        DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
+            if Select("TRB") > 0
+                DBSELECTAREA("TRB")
+                DBCLOSEAREA()
+            endif
+            
+            DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
 
-        while !EOF()
-            aContrato := {TRB->AAM_CONTRT,TRB->AAN_ITEM,TRB->AAM_CODCLI,TRB->AAM_LOJA,TRB->AAN_CODPRO}
+            while !EOF()
+                aContrato := {TRB->AAM_CONTRT,TRB->AAN_ITEM,TRB->AAM_CODCLI,TRB->AAM_LOJA,TRB->AAN_CODPRO}
 
-            DBSKIP()
-        end
+                DBSKIP()
+            end
 
-        for nY := 1 to len(aList8B[nX,1])
-        
-            aGravarP := {}
+            for nY := 1 to len(aList8B[nX,1])
+            
+                aGravarP := {}
 
-            Aadd( aGravarP, {"Z08_FILIAL"  ,xFilial("Z08")})
-            Aadd( aGravarP, {"Z08_COD"     ,cCod})
-            Aadd( aGravarP, {"Z08_SEQUEN"  ,cSeq})
-            Aadd( aGravarP, {"Z08_NUMSER"  ,aList8B[nX,01,nY,06]})
-            Aadd( aGravarP, {"Z08_DATA"    ,ctod(aList8B[nX,01,nY,01])})
-            Aadd( aGravarP, {"Z08_SELECA"  ,StrZero(val(aList8B[nX,01,nY,02]),3)})
-            Aadd( aGravarP, {"Z08_PRODUT"  ,aList8B[nX,01,nY,03]})
-            Aadd( aGravarP, {"Z08_CONTRT"  ,aContrato[1]})
-            Aadd( aGravarP, {"Z08_ITEM"    ,aContrato[2]})
-            Aadd( aGravarP, {"Z08_QTDLID"  ,aList8B[nX,01,nY,05]})
-            Aadd( aGravarP, {"Z08_VLRLID"  ,aList8B[nX,01,nY,08]})
-            Aadd( aGravarP, {"Z08_DTDIGIT" ,dDataBase}) 
-            Aadd( aGravarP, {"Z08_PERIODO" ,Strtokarr(aList8B[nX,01,nY,01], "/")[2] + SubStr(Strtokarr(aList8B[nX,01,nY,01], "/")[3],3,2) })
-            Aadd( aGravarP, {"Z08_MAQUINA" ,aContrato[5]}) 
-            Aadd( aGravarP, {"Z08_CODCLI"  ,aContrato[3]})  
-            Aadd( aGravarP, {"Z08_LOJACL"  ,aContrato[4]})
-            Aadd( aGravarP, {"Z08_MSBLQL"  ,'2'})
-        
-            IF len(aGravarP) > 0
+                Aadd( aGravarP, {"Z08_FILIAL"  ,xFilial("Z08")})
+                Aadd( aGravarP, {"Z08_COD"     ,cCod})
+                Aadd( aGravarP, {"Z08_SEQUEN"  ,cSeq})
+                Aadd( aGravarP, {"Z08_NUMSER"  ,aList8B[nX,01,nY,06]})
+                Aadd( aGravarP, {"Z08_DATA"    ,ctod(aList8B[nX,01,nY,01])})
+                Aadd( aGravarP, {"Z08_SELECA"  ,StrZero(val(aList8B[nX,01,nY,02]),3)})
+                Aadd( aGravarP, {"Z08_PRODUT"  ,aList8B[nX,01,nY,03]})
+                Aadd( aGravarP, {"Z08_CONTRT"  ,aContrato[1]})
+                Aadd( aGravarP, {"Z08_ITEM"    ,aContrato[2]})
+                Aadd( aGravarP, {"Z08_QTDLID"  ,aList8B[nX,01,nY,05]})
+                Aadd( aGravarP, {"Z08_VLRLID"  ,aList8B[nX,01,nY,08]})
+                Aadd( aGravarP, {"Z08_DTDIGIT" ,dDataBase}) 
+                Aadd( aGravarP, {"Z08_PERIODO" ,Strtokarr(aList8B[nX,01,nY,01], "/")[2] + SubStr(Strtokarr(aList8B[nX,01,nY,01], "/")[3],3,2) })
+                Aadd( aGravarP, {"Z08_MAQUINA" ,aContrato[5]}) 
+                Aadd( aGravarP, {"Z08_CODCLI"  ,aContrato[3]})  
+                Aadd( aGravarP, {"Z08_LOJACL"  ,aContrato[4]})
+                Aadd( aGravarP, {"Z08_MSBLQL"  ,'2'})
+            
+                IF len(aGravarP) > 0
 
-                DbSelectArea("Z08") 
+                    DbSelectArea("Z08") 
 
-                Reclock("Z08",.T.)
+                    Reclock("Z08",.T.)
 
-                FOR nZ := 1 TO len(aGravarP)
+                    FOR nZ := 1 TO len(aGravarP)
 
-                    &("Z08->"+aGravarP[nZ,01]) := aGravarP[nZ,02]
-                
-                NEXT nZ
+                        &("Z08->"+aGravarP[nZ,01]) := aGravarP[nZ,02]
+                    
+                    NEXT nZ
 
-                Z08->(Msunlock())
-                
-            ENDIF
+                    Z08->(Msunlock())
+                    
+                ENDIF
 
-            cSeq := Soma1(cSeq)
+                cSeq := Soma1(cSeq)
 
-        next nY
+            next nY
+        EndIf
         
         // ConfirmSx8()
 

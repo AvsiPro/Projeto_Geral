@@ -2808,10 +2808,15 @@ If len(aAux) > 0
 		nPosItCm := Ascan(aItens,{|x| Alltrim(x[1]) == 'DOSE COMP'})
 
 		If nPosDosC > 0
-			aAux[nPosDosC,3] := round(aAux[nPosDosC,3]-nToQt,0)
-			aAux[nPosDosC,5] := aAux[nPosDosC,3] * aAux[nPosDosC,4]
+			iF aAux[nPosDosC,3]-nToQt > 0
+				aAux[nPosDosC,3] := round(aAux[nPosDosC,3]-nToQt,0)
+				aAux[nPosDosC,5] := aAux[nPosDosC,3] * aAux[nPosDosC,4]
+			/*else
+				aAux[nPosDosC,3] := 0
+				aAux[nPosDosC,5] := 0 */
+			EndIf 
 
-			If nPosItCm > 0 //.And. aAux[nPosDosC,3]>0
+			If nPosItCm > 0 .And. aAux[nPosDosC,3] > 0
 				aItens[nPosItCm,02] := aAux[nPosDosC,3]
 			EndIf 
 
@@ -2828,6 +2833,13 @@ If len(aAux) > 0
 			aAux[nPosTot,05] := nNewVlr
 
 		EndIf 
+
+		If nPosDosC > 0
+			If aAux[nPosDosC,3] <= 0
+				Adel(aAux,nPosDosC)
+				Asize(aAux,len(aAux)-1)
+			EndIf
+		EndIf
 
 		Aadd(aAux,{'','Totais',nToQt,,nToVl})
 		
