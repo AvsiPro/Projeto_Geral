@@ -11,10 +11,10 @@ import { useMediaQuery } from "react-responsive";
 import Header from "../components/header";
 import Navbar from "../components/navbar";
 
-import ModeloDash from "../dashboards/Modelo";
 import FluxoCaixa from "../dashboards/FluxoCaixa";
 import VendasConsolidado from "../dashboards/VendasConsolidado";
 import VendasDiarias from "../dashboards/VendasDiarias";
+import PainelVendas from "../dashboards/PainelVendas";
 
 import { titleMonth } from "../utils/dateFormat";
 
@@ -40,6 +40,17 @@ const Dashboard: React.FC = () => {
 
   },[])
 
+  const handleMonthClick = (selectedMonth: string) => {
+    setMes(selectedMonth);
+  };
+
+  const handleYearClick = (selectedYear: string) => {
+    setAno(selectedYear);
+  };
+
+  const monthsArray = Array.from({ length: 12 }, (_, index) => index + 1);
+  const yearsArray = [2023, 2022, 2021, 2020];
+
   const FiltersDash1 = () => {
     return (
       <Style.DashHorizontal>
@@ -48,126 +59,48 @@ const Dashboard: React.FC = () => {
           menuVariant={theme}
           title={titleMonth(mes)}
         >
-          <Dropdown.Item onClick={()=> setMes('1')}>Janeiro</Dropdown.Item>
-          <Dropdown.Item onClick={()=> setMes('2')}>Fevereiro</Dropdown.Item>
-          <Dropdown.Item onClick={()=> setMes('3')}>Março</Dropdown.Item>
-          <Dropdown.Item onClick={()=> setMes('4')}>Abril</Dropdown.Item>
-          <Dropdown.Item onClick={()=> setMes('5')}>Maio</Dropdown.Item>
-          <Dropdown.Item onClick={()=> setMes('6')}>Junho</Dropdown.Item>
-          <Dropdown.Item onClick={()=> setMes('7')}>Julho</Dropdown.Item>
-          <Dropdown.Item onClick={()=> setMes('8')}>Agosto</Dropdown.Item>
-          <Dropdown.Item onClick={()=> setMes('9')}>Setembro</Dropdown.Item>
-          <Dropdown.Item onClick={()=> setMes('10')}>Outubro</Dropdown.Item>
-          <Dropdown.Item onClick={()=> setMes('11')}>Novembro</Dropdown.Item>
-          <Dropdown.Item onClick={()=> setMes('12')}>Dezembro</Dropdown.Item>
-          
+          {monthsArray.map((month) => (
+            <Dropdown.Item
+              key={month}
+              onClick={() => handleMonthClick(String(month))}
+            >
+              {titleMonth(String(month))}
+            </Dropdown.Item>
+          ))}
         </DropdownButton>
 
         <DropdownButton
           variant={theme}
           menuVariant={theme}
           title={ano}
-          style={{marginLeft:10}}
+          style={{ marginLeft: 10 }}
         >
-          <Dropdown.Item onClick={()=> setAno('2023')}>2023</Dropdown.Item>
-          <Dropdown.Item onClick={()=> setAno('2022')}>2022</Dropdown.Item>
-          <Dropdown.Item onClick={()=> setAno('2021')}>2021</Dropdown.Item>
-          <Dropdown.Item onClick={()=> setAno('2020')}>2020</Dropdown.Item>
+          {yearsArray.map((year) => (
+            <Dropdown.Item
+              key={year}
+              onClick={() => handleYearClick(String(year))}
+            >
+              {year}
+            </Dropdown.Item>
+          ))}
         </DropdownButton>
       </Style.DashHorizontal>
     )
   }
   
-  const FiltersDash3 = () => {
-    return (
-      <Style.DashHorizontal>
-        <DropdownButton
-          variant={theme}
-          menuVariant={theme}
-          title={titleMonth(mes)}
-        >
-          <Dropdown.Item onClick={()=>{setMes('1')}}>Janeiro</Dropdown.Item>
-          <Dropdown.Item onClick={()=>{setMes('2')}}>Fevereiro</Dropdown.Item>
-          <Dropdown.Item onClick={()=>{setMes('3')}}>Março</Dropdown.Item>
-          <Dropdown.Item onClick={()=>{setMes('4')}}>Abril</Dropdown.Item>
-          <Dropdown.Item onClick={()=>{setMes('5')}}>Maio</Dropdown.Item>
-          <Dropdown.Item onClick={()=>{setMes('6')}}>Junho</Dropdown.Item>
-          <Dropdown.Item onClick={()=>{setMes('7')}}>Julho</Dropdown.Item>
-          <Dropdown.Item onClick={()=>{setMes('8')}}>Agosto</Dropdown.Item>
-          <Dropdown.Item onClick={()=>{setMes('9')}}>Setembro</Dropdown.Item>
-          <Dropdown.Item onClick={()=>{setMes('10')}}>Outubro</Dropdown.Item>
-          <Dropdown.Item onClick={()=>{setMes('11')}}>Novembro</Dropdown.Item>
-          <Dropdown.Item onClick={()=>{setMes('12')}}>Dezembro</Dropdown.Item>
-          
-        </DropdownButton>
-
-        <DropdownButton
-          variant={theme}
-          menuVariant={theme}
-          title={ano}
-          style={{marginLeft:10}}
-        >
-          <Dropdown.Item onClick={()=>{setAno('2023')}}>2023</Dropdown.Item>
-          <Dropdown.Item onClick={()=>{setAno('2022')}}>2022</Dropdown.Item>
-          <Dropdown.Item onClick={()=>{setAno('2021')}}>2021</Dropdown.Item>
-          <Dropdown.Item onClick={()=>{setAno('2020')}}>2020</Dropdown.Item>
-        </DropdownButton>
-      </Style.DashHorizontal>
-    )
-  }
-
-  const FiltersDash4 = () => {
-    return (
-      <Style.DashHorizontal>
-
-        <DropdownButton
-          variant={theme}
-          menuVariant={theme}
-          title={titleMonth(mes)}
-          style={{marginLeft:10}}
-        >
-          <Dropdown.Item onClick={()=>{setMes('1')}}>Janeiro</Dropdown.Item>
-          <Dropdown.Item onClick={()=>{setMes('2')}}>Fevereiro</Dropdown.Item>
-          <Dropdown.Item onClick={()=>{setMes('3')}}>Março</Dropdown.Item>
-          <Dropdown.Item onClick={()=>{setMes('4')}}>Abril</Dropdown.Item>
-          <Dropdown.Item onClick={()=>{setMes('5')}}>Maio</Dropdown.Item>
-          <Dropdown.Item onClick={()=>{setMes('6')}}>Junho</Dropdown.Item>
-          <Dropdown.Item onClick={()=>{setMes('7')}}>Julho</Dropdown.Item>
-          <Dropdown.Item onClick={()=>{setMes('8')}}>Agosto</Dropdown.Item>
-          <Dropdown.Item onClick={()=>{setMes('9')}}>Setembro</Dropdown.Item>
-          <Dropdown.Item onClick={()=>{setMes('10')}}>Outubro</Dropdown.Item>
-          <Dropdown.Item onClick={()=>{setMes('11')}}>Novembro</Dropdown.Item>
-          <Dropdown.Item onClick={()=>{setMes('12')}}>Dezembro</Dropdown.Item>
-          
-        </DropdownButton>
-
-        <DropdownButton
-          variant={theme}
-          menuVariant={theme}
-          title={ano}
-          style={{marginLeft:10}}
-        >
-          <Dropdown.Item onClick={()=>{setAno('2023')}}>2023</Dropdown.Item>
-          <Dropdown.Item onClick={()=>{setAno('2022')}}>2022</Dropdown.Item>
-          <Dropdown.Item onClick={()=>{setAno('2021')}}>2021</Dropdown.Item>
-          <Dropdown.Item onClick={()=>{setAno('2020')}}>2020</Dropdown.Item>
-        </DropdownButton>
-      </Style.DashHorizontal>
-    )
-  }
 
   const titleButtonDash = () => {
     if(dash === 'dash1'){
       return 'Fluxo Caixa - Financeiro'
     
-    /*}else if(dash === 'dash2'){
-      return 'Modelo'
-    */
-    }else if(dash === 'dash3'){
+    }else if(dash === 'dash2'){
       return 'Vendas Consolidado'
 
-    }else if(dash === 'dash4'){
+    }else if(dash === 'dash3'){
       return 'Vendas Diárias'
+
+    }else if(dash === 'dash4'){
+      return 'Painel de Vendas'
     
     }else {
       return 'Dashboards'
@@ -189,24 +122,20 @@ const Dashboard: React.FC = () => {
               title={titleButtonDash()}
             >
               <Dropdown.Item onClick={()=> setDash('dash1')}>Fluxo Caixa - Financeiro</Dropdown.Item>
-              {/*<Dropdown.Item onClick={()=> setDash('dash2')}>Modelo</Dropdown.Item>*/}
-              <Dropdown.Item onClick={()=> setDash('dash3')}>Vendas Consolidado</Dropdown.Item>
-              <Dropdown.Item onClick={()=> setDash('dash4')}>Vendas Diárias</Dropdown.Item>
+              <Dropdown.Item onClick={()=> setDash('dash2')}>Vendas Consolidado</Dropdown.Item>
+              <Dropdown.Item onClick={()=> setDash('dash3')}>Vendas Diárias</Dropdown.Item>
+              <Dropdown.Item onClick={()=> setDash('dash4')}>Painel de Vendas</Dropdown.Item>
             </DropdownButton>
 
-            { dash === 'dash1' ? <FiltersDash1 />
-              : dash === 'dash3' ? <FiltersDash3 />
-              : dash === 'dash4' ? <FiltersDash4 />
-              : <></>
-            }
+            <FiltersDash1 />
           </Style.DashHorizontal>
 
-          { 
-            dash === 'dash1' ? <FluxoCaixa ano={ano} mes={mes}/>
-            //: dash === 'dash2' ? <ModeloDash />
-            : dash === 'dash3' ? <VendasConsolidado ano={ano} mes={mes} />
-            : <VendasDiarias ano={ano} mes={mes} />
-          }
+          { dash === 'dash1' && <FluxoCaixa ano={ano} mes={mes}/> }
+          { dash === 'dash2' && <VendasConsolidado ano={ano} mes={mes} /> }
+          { dash === 'dash3' && <VendasDiarias ano={ano} mes={mes} /> }
+          { dash === 'dash4' && <PainelVendas /> }
+
+
         </Style.StackDash>
        
       </Style.Container>

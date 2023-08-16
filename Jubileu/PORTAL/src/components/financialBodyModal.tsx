@@ -85,13 +85,14 @@ const FinancialBodyModal: React.FC <Props> = ({financialCustomer , type = ''})  
             modal={true}
             isMobile={isMobile}
         >
+
             { !!financialCustomer &&
                 <>
                 <Style.TextH4 style={{color:'#000'}}>{financialCustomer.code}</Style.TextH4>
                 <Style.TextH3 style={{color:themeAux.primary}}>{financialCustomer.name}</Style.TextH3>
                 </>
             }
-
+            
             <SyncLoader
                 color={theme === 'dark' ? darkTheme.primary : lightTheme.primary}
                 loading={load}
