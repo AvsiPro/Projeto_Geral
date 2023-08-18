@@ -23,6 +23,7 @@ Local aVendas  :=   {}
 Local dUltLei
 Local dLeiFim
 Local nX,nY
+Local dDiaExe  
 Local aList8   :=   {}
 Local aMaqSVM  :=   {}
 
@@ -33,11 +34,14 @@ IF Select("SM0") == 0
     RPCSetEnv("01","0101")
 ENDIF
 
+dDiaExe := strzero(day(ddatabase),2)
+
 cQuery := "SELECT AAM_CONTRT,AAM_XDIALT,AAN_XCBASE,AAM_CODCLI,AAM_LOJA,AAN_ITEM,AAN_CODPRO"
 cQuery += " FROM "+RetSQLName("AAN")+" AAN"
 cQuery += " INNER JOIN "+RetSQLName("AAM")+" AAM ON AAM_FILIAL=AAN_FILIAL AND AAM_CONTRT=AAN_CONTRT"
-cQuery += "     AND AAM_XDIALT<>' ' AND AAM.D_E_L_E_T_=' '"
-cQuery += " WHERE AAN.D_E_L_E_T_=' '"
+cQuery += "     AND '"+dDiaExe+"' IN(AAM_XDIALT)"
+cQuery += "     AND AAM.D_E_L_E_T_=' '"
+cQuery += " WHERE AAN.D_E_L_E_T_=' ' AND AAN_XBOXVM='1'"
 
 IF Select('TRB') > 0
     dbSelectArea('TRB')
