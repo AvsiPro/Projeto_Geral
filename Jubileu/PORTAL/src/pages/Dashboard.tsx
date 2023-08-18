@@ -17,6 +17,8 @@ import VendasDiarias from "../dashboards/VendasDiarias";
 import PainelVendas from "../dashboards/PainelVendas";
 
 import { titleMonth } from "../utils/dateFormat";
+import FinanceiroDia from "../dashboards/FinanceiroDia";
+import FinanceiroMes from "../dashboards/FinanceiroMes";
 
 const Dashboard: React.FC = () => {
   
@@ -25,7 +27,7 @@ const Dashboard: React.FC = () => {
   const themeContext = theme === "light" ? lightTheme : darkTheme;
   const isMobile = useMediaQuery({ query: "(max-width: 767px)" });
   
-  const [dash, setDash] = useState('dash1')
+  const [dash, setDash] = useState('dash3')
   const [mes, setMes] = useState('Mês')
   const [ano, setAno] = useState('Ano')
 
@@ -101,6 +103,12 @@ const Dashboard: React.FC = () => {
 
     }else if(dash === 'dash4'){
       return 'Painel de Vendas'
+
+    }else if(dash === 'dash5'){
+      return 'Financeiro - Semana'
+
+    }else if(dash === 'dash6'){
+      return 'Financeiro - Mês'
     
     }else {
       return 'Dashboards'
@@ -121,19 +129,32 @@ const Dashboard: React.FC = () => {
               menuVariant={theme}
               title={titleButtonDash()}
             >
-              <Dropdown.Item onClick={()=> setDash('dash1')}>Fluxo Caixa - Financeiro</Dropdown.Item>
-              <Dropdown.Item onClick={()=> setDash('dash2')}>Vendas Consolidado</Dropdown.Item>
+              {
+                /*
+                <Dropdown.Item onClick={()=> setDash('dash1')}>Fluxo Caixa - Financeiro</Dropdown.Item>
+                <Dropdown.Item onClick={()=> setDash('dash2')}>Vendas Consolidado</Dropdown.Item>
+                 */
+              }
               <Dropdown.Item onClick={()=> setDash('dash3')}>Vendas Diárias</Dropdown.Item>
               <Dropdown.Item onClick={()=> setDash('dash4')}>Painel de Vendas</Dropdown.Item>
+              <Dropdown.Item onClick={()=> setDash('dash5')}>Financeiro - Semana</Dropdown.Item>
+              <Dropdown.Item onClick={()=> setDash('dash6')}>Financeiro - Mês</Dropdown.Item>
             </DropdownButton>
 
             <FiltersDash1 />
           </Style.DashHorizontal>
 
-          { dash === 'dash1' && <FluxoCaixa ano={ano} mes={mes}/> }
-          { dash === 'dash2' && <VendasConsolidado ano={ano} mes={mes} /> }
+          {
+            /*
+            
+            { dash === 'dash1' && <FluxoCaixa ano={ano} mes={mes}/> }
+            { dash === 'dash2' && <VendasConsolidado ano={ano} mes={mes} /> }
+            */
+          }
           { dash === 'dash3' && <VendasDiarias ano={ano} mes={mes} /> }
-          { dash === 'dash4' && <PainelVendas /> }
+          { dash === 'dash4' && <PainelVendas ano={ano} mes={mes} /> }
+          { dash === "dash5" && <FinanceiroDia />}
+          { dash === "dash6" && <FinanceiroMes />}
 
 
         </Style.StackDash>
