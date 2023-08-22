@@ -1,3 +1,5 @@
+import { CurrencyFormat } from "./utils/currencyFormat";
+
 //Dash Modelo
 export const optionArea = (themeContext: any) => {
   return {
@@ -316,20 +318,9 @@ export const dataTable2 = [
   },
 ];
 
-export const dataColumn = [
-  {
-    name: "Junho",
-    group: "budget",
-    data: [44000, 55000, 41000, 67000, 22000, 43000, 44000, 55000, 41000, 67000, 22000, 43000],
-  },
-  {
-    name: "Julho",
-    group: "actual",
-    data: [48000, 50000, 40000, 65000, 25000, 40000, 48000, 50000, 40000, 65000, 25000, 40000],
-  },
-];
 
-export const optionColumn2 = (themeContext: any) => {
+/*
+export const optionColumn2 = (themeContext: any, nomes: any) => {
   return {
     chart: {
       type: "bar",
@@ -337,27 +328,29 @@ export const optionColumn2 = (themeContext: any) => {
       stacked: true,
       foreColor: themeContext.text,
     },
-    stroke: {
-      width: 1,
-      colors: ["#fff"],
-    },
+
     dataLabels: {
       formatter: (val: any) => {
-        return val / 1000 + "K";
+        return CurrencyFormat(val)
       },
+      offsetX: 30,
+      enabled: true,
       style: {
         colors: [
-          themeContext.text
+          themeContext.text,
         ]
       }
     },
     plotOptions: {
       bar: {
-        horizontal: false,
+        horizontal: true,
+        dataLabels: {
+          position: 'top',
+        },
       },
     },
     xaxis: {
-      categories: ["Murilo", "Antony", "Felipe", "Sandra", "Tiago", "Nayara","Murilo", "Antony", "Felipe", "Sandra", "Tiago", "Nayara"],
+      categories: nomes,
     },
     fill: {
       opacity: 1,
@@ -367,9 +360,13 @@ export const optionColumn2 = (themeContext: any) => {
       labels: {
         
         formatter: (val: any) => {
-          return val / 1000 + "K";
+          return CurrencyFormat(val)
         },
       },
+    },
+    tooltip: {
+      shared: true,
+      intersect: false
     },
     legend: {
       position: "top",
@@ -378,7 +375,54 @@ export const optionColumn2 = (themeContext: any) => {
     },
   };
 };
+*/
 
+export const optionColumn2 = (themeContext: any, nomes: any) => {
+  return(
+    {
+      chart: {
+        type: 'bar',
+        height: 430,
+        foreColor: themeContext.text,
+      },
+      plotOptions: {
+        bar: {
+          horizontal: true,
+          dataLabels: {
+            position: 'top',
+          },
+        }
+      },
+      dataLabels: {
+        enabled: true,
+        formatter: (val: any) => {
+          return val > 0 ?CurrencyFormat(val) : ''
+        },
+        
+        offsetX: 60,
+        style: {
+          fontSize: '10px',
+          colors: [themeContext.text]
+        },
+      },
+      colors: ["#00E396", "#008FFB"],
+      tooltip: {
+        formatter: (val: any) => {
+          return CurrencyFormat(val)
+        },
+      },
+      xaxis: {
+        categories: nomes,
+        labels: {
+          
+          formatter: (val: any) => {
+            return CurrencyFormat(val)
+          },
+        },
+      },
+    }
+  )
+}
 
 export const lineSeries = [
   {

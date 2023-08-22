@@ -50,7 +50,7 @@ export const Separator = styled.hr`
 `;
 
 export const Div100 = styled.div`
-  max-height: 525px;
+  max-height: 400px;
   overflow-y: auto;
   ::-webkit-scrollbar {
     width: 10px;
