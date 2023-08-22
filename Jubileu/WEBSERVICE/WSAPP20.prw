@@ -34,14 +34,20 @@ Static Function painelvendas( oSelf )
 
 Local aListAux	:= {}
 Local aListAux1	:= {}
+Local aListAux2	:= {}
+Local aListAux3	:= {}
 Local oJsonAux	:= Nil
 Local cJsonAux	:= ''
 Local cQryAux 	:= ''
 Local cPriDia	:= ''
 Local cUltDia	:= ''
+Local cPridMA	:= ''
 Local nAux		:= 0
 Local nX 		:= 0
 Local aBrands 	:= {}
+Local cAno1		:= ''
+Local cAno2		:= ''
+
 
 Default oself:ano :=  2023
 Default oself:mes :=	7
@@ -57,6 +63,7 @@ Default oself:mes :=	7
 	If !Empty(oself:ano) .And. !Empty(oself:mes)
         cPriDia := cValToChar(oself:ano)+cValToChar(StrZero(oself:mes,2))+'01'
         cUltDia := DToS(CToD(cValToChar(LastDay(SToD(cPriDia)))))
+		cPridMA := dtos(firstday(stod(cPriDia)-1))
     EndIf
 
 	While SBM->(!EoF())
@@ -174,8 +181,138 @@ Default oself:mes :=	7
 	EndDo
 
 	(cAliasTMP)->(DBCloseArea())
+
+	cAliasTMP := GetNextAlias()
 	
+	cMes1 := month(stod(cPridMA))
+    cMes2 := month(stod(cUltDia))
+
+	cQuery := " SELECT   " 
+	cQuery += " COALESCE(ROUND(SUM(CASE MONTH(C5_EMISSAO) WHEN "+cvaltochar(cMes2)+" THEN C6_VALOR END),2),0) MES_ATUAL,"
+    cQuery += " COALESCE(ROUND(SUM(CASE MONTH(C5_EMISSAO) WHEN "+cvaltochar(cMes1)+" THEN C6_VALOR END),2),0) MES_ANTERIOR,"
+	cQuery += "   	A3_NOME " 
+	cQuery += "   FROM " + RetSQLName("SC5") + " SC5   " 
+	cQuery += "   INNER JOIN " + RetSQLName("SC6") + " SC6 ON C6_FILIAL = C5_FILIAL   " 
+	cQuery += " 		 AND C6_NUM = C5_NUM   " 
+	cQuery += " 		 AND C6_CLI = C5_CLIENTE   " 
+	cQuery += " 		 AND C6_LOJA = C5_LOJACLI   " 
+	cQuery += " 		 AND SC6.D_E_L_E_T_ = ' '   " 
+	cQuery += "   INNER JOIN " + RetSQLName("SA3") + " SA3 ON A3_FILIAL = ' '   " 
+	cQuery += " 		 AND A3_COD = C5_VEND1   " 
+	cQuery += " 		 AND SA3.D_E_L_E_T_ = ' '   " 
+	cQuery += "   INNER JOIN " + RetSQLName("SB1") + " SB1 ON B1_FILIAL = ' '   " 
+	cQuery += " 		 AND B1_COD = C6_PRODUTO   " 
+	cQuery += " 		 AND SB1.D_E_L_E_T_ = ' '   " 
+	cQuery += "   INNER JOIN " + RetSQLName("SBM") + " SBM ON BM_FILIAL = ' '   " 
+	cQuery += " 		 AND BM_GRUPO = B1_GRUPO   " 
+	cQuery += " 		 AND SBM.D_E_L_E_T_ = ' '   " 
+	cQuery += "   WHERE  C5_FILIAL = '"+FWxFilial('SC5')+"'   " 
+	cQuery += " 		 AND SC5.D_E_L_E_T_ = ' '   " 
+	cQuery += " 		 AND C5_EMISSAO BETWEEN '"+cPridMA+"' AND '"+cUltDia+"' "
+	cQuery += " GROUP BY A3_NOME  " 
+	cQuery += " ORDER BY 3  "
+
+	MPSysOpenQuery(cQuery, cAliasTMP)
 	
+	nAux := 0
+
+    (cAliasTMP)->(Dbgotop())
+
+	While (cAliasTMP)->(!EoF())
+		nAux++
+		aAdd(aListAux2 , JsonObject():New() )
+		
+		aListAux2[nAux]['month_actual'] := cMes2
+		aListAux2[nAux]['data'] := Array(1)
+		
+			
+        aListAux2[nAux]['data'][1] := JsonObject():New()
+        aListAux2[nAux]['data'][1]['name'] := (cAliasTMP)->A3_NOME
+        aListAux2[nAux]['data'][1]['value'] := (cAliasTMP)->MES_ATUAL
+		
+        nAux++
+		aAdd(aListAux2 , JsonObject():New() )
+		
+		aListAux2[nAux]['month_anterior'] := cMes1
+		aListAux2[nAux]['data'] := Array(1)
+		
+        aListAux2[nAux]['data'][1] := JsonObject():New()
+        aListAux2[nAux]['data'][1]['name'] := (cAliasTMP)->A3_NOME
+        aListAux2[nAux]['data'][1]['value'] := (cAliasTMP)->MES_ANTERIOR
+		
+		(cAliasTMP)->(DbSkip())
+	EndDo
+
+	(cAliasTMP)->(DBCloseArea())
+
+	cAliasTMP := GetNextAlias()
+
+	cPriDia := cValToChar(oself:ano-1)+'0101'
+	cUltDia := cvaltochar(oself:ano)+'1231'
+	conout(cPriDia)
+	conout(cUltDia)
+	cAno1 := year(stod(cPriDia))
+    cAno2 := year(stod(cUltDia))
+
+	cQuery := " SELECT   " 
+	cQuery += " COALESCE(ROUND(SUM(CASE YEAR(C5_EMISSAO) WHEN "+cvaltochar(cAno2)+" THEN C6_VALOR END),2),0) ANO_ATUAL,"
+    cQuery += " COALESCE(ROUND(SUM(CASE YEAR(C5_EMISSAO) WHEN "+cvaltochar(cAno1)+" THEN C6_VALOR END),2),0) ANO_ANTERIOR,"
+	cQuery += "   MONTH(C5_EMISSAO) AS ANO " 
+	cQuery += "   FROM " + RetSQLName("SC5") + " SC5   " 
+	cQuery += "   INNER JOIN " + RetSQLName("SC6") + " SC6 ON C6_FILIAL = C5_FILIAL   " 
+	cQuery += " 		 AND C6_NUM = C5_NUM   " 
+	cQuery += " 		 AND C6_CLI = C5_CLIENTE   " 
+	cQuery += " 		 AND C6_LOJA = C5_LOJACLI   " 
+	cQuery += " 		 AND SC6.D_E_L_E_T_ = ' '   " 
+	cQuery += "   INNER JOIN " + RetSQLName("SA3") + " SA3 ON A3_FILIAL = ' '   " 
+	cQuery += " 		 AND A3_COD = C5_VEND1   " 
+	cQuery += " 		 AND SA3.D_E_L_E_T_ = ' '   " 
+	cQuery += "   INNER JOIN " + RetSQLName("SB1") + " SB1 ON B1_FILIAL = ' '   " 
+	cQuery += " 		 AND B1_COD = C6_PRODUTO   " 
+	cQuery += " 		 AND SB1.D_E_L_E_T_ = ' '   " 
+	cQuery += "   INNER JOIN " + RetSQLName("SBM") + " SBM ON BM_FILIAL = ' '   " 
+	cQuery += " 		 AND BM_GRUPO = B1_GRUPO   " 
+	cQuery += " 		 AND SBM.D_E_L_E_T_ = ' '   " 
+	cQuery += "   WHERE  C5_FILIAL = '"+FWxFilial('SC5')+"'   " 
+	cQuery += " 		 AND SC5.D_E_L_E_T_ = ' '   " 
+	cQuery += " 		 AND C5_EMISSAO BETWEEN '"+cPriDia+"' AND '"+cUltDia+"' "
+	cQuery += " GROUP BY MONTH(C5_EMISSAO)  " 
+	cQuery += " ORDER BY 3  "
+	conout(cQuery)
+	MPSysOpenQuery(cQuery, cAliasTMP)
+	
+	nAux := 0
+
+    (cAliasTMP)->(Dbgotop())
+
+	While (cAliasTMP)->(!EoF())
+		nAux++
+		aAdd(aListAux3 , JsonObject():New() )
+		
+		aListAux3[nAux]['current_year'] := cAno2
+		aListAux3[nAux]['months'] := Array(1)
+		
+			
+        aListAux3[nAux]['months'][1] := JsonObject():New()
+        aListAux3[nAux]['months'][1]['name'] := (cAliasTMP)->ANO
+        aListAux3[nAux]['months'][1]['value'] := (cAliasTMP)->ANO_ATUAL
+		
+        nAux++
+		aAdd(aListAux3 , JsonObject():New() )
+		
+		aListAux3[nAux]['last_year'] := cAno1
+		aListAux3[nAux]['months'] := Array(1)
+		
+        aListAux3[nAux]['months'][1] := JsonObject():New()
+        aListAux3[nAux]['months'][1]['name'] := (cAliasTMP)->ANO
+        aListAux3[nAux]['months'][1]['value'] := (cAliasTMP)->ANO_ANTERIOR
+		
+		(cAliasTMP)->(DbSkip())
+	EndDo
+
+	(cAliasTMP)->(DBCloseArea())
+
+
     oStatus := JsonObject():New()
 
 	If Len(aListAux) > 0
@@ -189,6 +326,8 @@ Default oself:mes :=	7
     oJsonAux['status'] := oStatus
 	oJsonAux['card1'] := aListAux
 	oJsonAux['card2'] := aListAux1
+	oJsonAux['card3'] := aListAux2
+	oJsonAux['card4'] := aListAux3
 
 	cJsonAux := FwJsonSerialize(oJsonAux)
 

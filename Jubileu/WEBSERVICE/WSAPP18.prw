@@ -264,7 +264,7 @@ RPCSetEnv('01','0801')
             oResult['dataTable1'][ncont]['codigo_cliente'] := aAux7[ncont,01]
             oResult['dataTable1'][ncont]['loja'] := aAux7[ncont,02]
             oResult['dataTable1'][ncont]['razao'] := aAux7[ncont,03]
-            oResult['dataTable1'][ncont]['valorVendas'] := Transform(aAux7[ncont,04],"@E 999,999,999.99")
+            oResult['dataTable1'][ncont]['valorVendas'] := aAux7[ncont,04]
             oResult['dataTable1'][ncont]['vlrTicket'] := (aAux7[ncont,04] / nTotVnd) * 100
         next ncont 
 
