@@ -31,11 +31,13 @@ const RoutesApp: React.FC = () => {
         userProfile = user.type
       }
     }
+
+    const vendProfile = (userProfile === 'V' || userProfile === 'A')
   
     if ((
         route === '/dashboard' || 
         route === '/customers'  
-      ) && userProfile !== 'V') {
+      ) && !vendProfile) {
       return false;
     }
   

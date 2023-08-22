@@ -160,7 +160,7 @@ const OrdersBodyModal: React.FC<Props> = ({
     );
   };
 
-  const fields = user.type === 'V' ? [
+  const fields = (user.type === 'V' || user.type === 'A') ? [
     { field: "mark", headerText: "", textAlign: "Center" },
     { field: "code", headerText: "Codigo", textAlign: "Center" },
     { field: "description", headerText: "Descrição", textAlign: "Left" },
@@ -491,7 +491,7 @@ const OrdersBodyModal: React.FC<Props> = ({
                     </>
                 */}
 
-                { user.type === 'V' &&
+                { (user.type === 'V' || user.type === 'A' ) &&
                   <Style.DiscountHoriz>
                     <Style.BodyOrderProductDesc>
                         Aplica desconto?

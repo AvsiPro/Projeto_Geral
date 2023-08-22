@@ -165,7 +165,7 @@ const Navbar: React.FC = () => {
     }
   ]
 
-  const navItems = userContext.type === 'V' ? navSeller : navCustomer
+  const navItems = (userContext.type === 'V' || userContext.type === 'A') ? navSeller : navCustomer
 
   const handleClickMenu = async(item: any) => {
     if(item.title === 'Sair'){
