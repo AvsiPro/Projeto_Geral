@@ -11,7 +11,7 @@ User Function JUBPAP08()
 Private aList0    := {}
 Private lCliente  := .F.
 Private cConsP    := 'SA3'
-Private aCombo    := {'Vendedor','Cliente'}
+Private aCombo    := {'Vendedor','Cliente', 'Administrador'}
 Private cCombo1   := aCombo[1]
 Private xGetPesq  := space(20)
 Private cNome     := space(120)
@@ -96,8 +96,16 @@ Static Function fCadastra()
 
     cTokGrv := Encode64('{"'+cConsP+'","'+Alltrim(cNome)+'","'+Alltrim(cCgc)+'"}')
 
+    If cCombo1 == 'Cliente'
+        cTypeAux := 'C'
+    ElseIf cCombo1 == 'Vendedor'
+        cTypeAux := 'V'
+    Else
+        cTypeAux := 'A'
+    EndIf
+
     RecLock('Z01', .T.)
-        Z01->Z01_TYPE := Iif(cCombo1 == 'Cliente','C','V')
+        Z01->Z01_TYPE := cTypeAux
         Z01->Z01_USER := fRemoveCarc(cUser)
         Z01->Z01_PASS := fRemoveCarc(cPass)
         Z01->Z01_TOKEN := cTokGrv
@@ -166,7 +174,7 @@ Static Function fTokenUsr(cType, cToken)
 Local cName := ''
 Local aArea := GetArea()
 
-    If cType == 'V'
+    If cType $ 'V/A'
         cQuery := " SELECT A3_NREDUZ NOME FROM "+RetSqlName('SA3')+" "
         cQuery += " WHERE A3_TOKEN = '"+cToken+"' "
     Else
@@ -207,8 +215,17 @@ Static Function fDados()
 	MPSysOpenQuery(cQuery,cAliasSQL)
 
     While (cAliasSQL)->(!EoF())
+        
+        If (cAliasSQL)->Z01_TYPE == 'C'
+            cTypeAux := 'Cliente'
+        ElseIf (cAliasSQL)->Z01_TYPE == 'V'
+            cTypeAux := 'Vendedor'
+        Else
+            cTypeAux := 'Administrador'
+        EndIf
+
         Aadd(aList0,{;
-            Iif((cAliasSQL)->Z01_TYPE == 'V','Vendedor', 'Cliente'),;
+            cTypeAux,;
             Alltrim((cAliasSQL)->Z01_USER),;
             Alltrim((cAliasSQL)->Z01_PASS),;
             fTokenUsr((cAliasSQL)->Z01_TYPE, (cAliasSQL)->Z01_TOKEN),;
