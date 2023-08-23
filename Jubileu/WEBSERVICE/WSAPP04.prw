@@ -47,12 +47,13 @@ Default oself:page		:= 1
 Default oself:pageSize	:= 20
 Default oself:byId		:=.F.
 	
-    RpcSetType(3)
-    RPCSetEnv('01','0101')
+	RpcClearEnv()	
+	RpcSetType(3)
+	RPCSetEnv('01','0801')
 
     oJsonAux  := JsonObject():New()
     cAliasTMP := GetNextAlias()
-    cWhere    := "AND SE4.E4_FILIAL = '"+FwxFilial('SE4')+"'"
+    cWhere    := "AND SE4.E4_FILIAL = '"+FwxFilial('SE4')+"' AND AND SE4.E4_XENVAPP='1' "
 
 	// Tratativas para realizar os filtros
 	If !Empty(oself:searchKey) //se tiver chave de busca no request
@@ -66,7 +67,7 @@ Default oself:byId		:=.F.
 			cWhere += " SE4.E4_DESCRI LIKE '%" + cSearch + "%' ) "
 		EndIf
 
-		cWhere += " AND SE4.E4_XENVAPP='1' "
+		//cWhere += " AND SE4.E4_XENVAPP='1' "
 	EndIf
 
 	cQuery := " SELECT E4_CODIGO,E4_DESCRI,E4_COND "
