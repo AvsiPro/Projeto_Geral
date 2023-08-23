@@ -53,7 +53,7 @@ Default oself:byId		:=.F.
 
     oJsonAux  := JsonObject():New()
     cAliasTMP := GetNextAlias()
-    cWhere    := "AND SE4.E4_FILIAL = '"+FwxFilial('SE4')+"' AND AND SE4.E4_XENVAPP='1' "
+    cWhere    := "AND SE4.E4_FILIAL = '"+FwxFilial('SE4')+"' AND SE4.E4_XENVAPP='1' "
 
 	// Tratativas para realizar os filtros
 	If !Empty(oself:searchKey) //se tiver chave de busca no request
