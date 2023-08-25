@@ -28,6 +28,9 @@ Local aList8   :=   {}
 Local aMaqSVM  :=   {}
 
 Private aList8B  :=   {}
+PRIVATE cToken         :=    "yVXxnxgOExcIaBQOQ9CFgK0cLgX22dJct7y85WXW" //Token Connect Vending
+PRIVATE oRestClient    :=    FWRest():New("http://vmpay.vertitecnologia.com.br")
+PRIVATE aHeader        :=    {}
 
 IF Select("SM0") == 0
     RpcSetType(3)
@@ -39,7 +42,8 @@ dDiaExe := strzero(day(ddatabase),2)
 cQuery := "SELECT AAM_CONTRT,AAM_XDIALT,AAN_XCBASE,AAM_CODCLI,AAM_LOJA,AAN_ITEM,AAN_CODPRO"
 cQuery += " FROM "+RetSQLName("AAN")+" AAN"
 cQuery += " INNER JOIN "+RetSQLName("AAM")+" AAM ON AAM_FILIAL=AAN_FILIAL AND AAM_CONTRT=AAN_CONTRT"
-cQuery += "     AND '"+dDiaExe+"' IN(AAM_XDIALT)"
+//cQuery += "     AND '"+dDiaExe+"' IN(AAM_XDIALT)"
+cQuery += " AND AAM_XDIALT<>' '"
 cQuery += "     AND AAM.D_E_L_E_T_=' '"
 cQuery += " WHERE AAN.D_E_L_E_T_=' ' AND AAN_XBOXVM='1'"
 
@@ -67,27 +71,77 @@ While !EOF()
     DbSkip()
 EndDo 
 
-For nX := 1 to len(aAux)
-    dUltLei := UltLei(aAux[nX,03])
-    If Empty(dtos(dUltLei))
-        dUltLei := ddatabase-30
-    EndIf
+If len(aAux) > 0
 
-    dLeiFim := ddatabase-1
+    //Busca Maquinas
+    Maquinas()
 
-    //Exemplo URL enviar ao cliente
-    //https://vmpay.vertitecnologia.com.br/verti/reports/vends?
-    //dataInicial=30/06/2023-00:00&dataFinal=01/08/2023-23:59&machine_id=36245
-    aAux[nX,08] := "https://vmpay.vertitecnologia.com.br/verti/reports/vends?"
-    aAux[nX,08] += "dataInicial="+cvaltochar(dUltLei)+"-"+cHri
-    aAux[nX,08] += "&dataFinal="+cvaltochar(dLeiFim)+"-"+cHrf
-    aAux[nX,08] += "&machine_id="+alltrim(aAux[nX,03])
+    For nX := 1 to 10 //len(aAux)
+        dUltLei := UltLei(aAux[nX,03])
+        If Empty(dtos(dUltLei))
+            dUltLei := ddatabase-30
+        EndIf
 
-    aAux[nX,09] := dUltLei
-    aAux[nX,10] := dLeiFim
+        dLeiFim := ddatabase-1
 
-    Aadd(aVendas, U_CONWSC03(aAux[nX,03],2,dUltLei,dLeiFim,cHri,cHrf))
-Next nX
+        //Exemplo URL enviar ao cliente
+        //https://vmpay.vertitecnologia.com.br/verti/reports/vends?
+        //dataInicial=30/06/2023-00:00&dataFinal=01/08/2023-23:59&machine_id=36245
+        /*
+        aAux[nX,08] := "https://vmpay.vertitecnologia.com.br/verti/reports/vends?"
+        aAux[nX,08] += "dataInicial="+cvaltochar(dUltLei)+"-"+cHri
+        aAux[nX,08] += "&dataFinal="+cvaltochar(dLeiFim)+"-"+cHrf
+        aAux[nX,08] += "&machine_id="+alltrim(aAux[nX,03])
+        */
+
+        //Novo Modelo disponbilizado pela vertis
+        //https://vmpay.vertitecnologia.com.br/connect_vending_comercio_de_ma/c/
+        // 35207/   - instalation
+        //reports/vends?
+        //vend[occurred_at]=custom&vend[occurred_at_end]=31/01/2023%2023:59
+        //&vend[occurred_at_start]=01/01/2023%2000:00
+        //&vend[groups][]=client
+        //&vend[groups][]=location
+        //&vend[groups][]=machine
+        //&vend[groups][]=good
+        nPosMaq := Ascan(aHeader,{|x| x[2] == Alltrim(aAux[nX,03])})
+
+        If nPosMaq > 0
+            aAux[nX,08] := "https://vmpay.vertitecnologia.com.br/connect_vending_comercio_de_ma/c/"
+            //aAux[nX,08] += "%INSTALLATION%"
+            aAux[nX,08] += Alltrim(aHeader[nPosMaq,03])
+            aAux[nX,08] += "/reports/vends?"
+            aAux[nX,08] += "vend[occurred_at]=custom&vend[occurred_at_end]="+cvaltochar(dLeiFim)+"%20"+cHrf
+            aAux[nX,08] += "&vend[occurred_at_start]="+cvaltochar(dUltLei)+"%20"+cHri
+            aAux[nX,08] += "&vend[groups][]=client"
+            aAux[nX,08] += "&vend[groups][]=location
+            aAux[nX,08] += "&vend[groups][]=machine
+            aAux[nX,08] += "&vend[groups][]=good
+            
+
+            aAux[nX,09] := dUltLei
+            aAux[nX,10] := dLeiFim
+
+            //Aadd(aVendas, U_CONWSC03(aAux[nX,03],2,dUltLei,dLeiFim,cHri,cHrf))
+            cDtCriac := Dtos(dUltLei)
+            cDtCriac := substr(cDtCriac,1,4)+"-"+substr(cDtCriac,5,2)+"-"+substr(cDtCriac,7,2)
+            // data/hora inicial de venda
+            //cDtCriac += " 00:01:00"
+            
+            cDtCriac += "T" +cHri+"-03:00" //"00:00-03:00"
+            
+            cDtCria2 := Dtos(dLeiFim)
+            cDtCria2 := substr(cDtCria2,1,4)+"-"+substr(cDtCria2,5,2)+"-"+substr(cDtCria2,7,2)
+            // data/hora inicial de venda
+            //cDtCriac += " 00:01:00"
+            
+            cDtCria2 += "T" +cHrf+"-03:00" //"00:00-03:00"
+
+            Aadd(aVendas,Vendas(cDtCriac,aHeader[nPosMaq,01],nPosMaq,cDtCria2))
+        EndIf
+    Next nX
+EndIf 
+
 
 IF len(aVendas) > 0
     aList8B := {}
@@ -96,7 +150,7 @@ IF len(aVendas) > 0
         aList8 := {}
         If aVendas[nX] != NIL
             If len(aVendas[nX]) > 2
-                for nY := 3 to len(aVendas[nX])
+                for nY := 4 to len(aVendas[nX])
                     cCodProt := ''
                     IF aVendas[nX,nY,05] == "null"
                         cCodProt := "Nao Consta"
@@ -148,7 +202,7 @@ IF len(aVendas) > 0
     
 ENDIF
 
-//savevend()
+savevend()
 
 Return
 
@@ -336,3 +390,122 @@ cHtml += '</tbody>'
 cHtml += '</table>'
 
 Return
+
+/*/{Protheus.doc} Maquinas
+    (long_description)
+    @type  Static Function
+    @author user
+    @since 24/08/2023
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function Maquinas()
+
+LOCAL nX
+Local oJsonBody
+
+oRestClient:setPath("/api/v1/machines?access_token="+cToken) 
+
+IF oRestClient:Get(aHeader)
+    cValor := oRestClient:GetResult("GET")
+
+    cValor := DecodeUTF8(cValor, "cp1252")
+
+    FWJsonDeserialize(cValor,@oJsonBody)
+
+    For nX := 1 to len(oJsonBody)
+        If AttIsMemberOf(oJsonBody[nX] , "INSTALLATION") 
+            Aadd(aHeader,{cvaltochar(oJsonBody[nX]:ID),;
+                        oJsonBody[nX]:ASSET_NUMBER,;
+                        cvaltochar(oJsonBody[nX]:INSTALLATION:ID)  })
+        EndIf
+    Next nX 
+
+ENDIF
+
+Return
+
+
+/*
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÉÍÍÍÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍ»±±
+±±ºPrograma  ³CONWSC03   ºAutor  ³Microsiga           º Data ³  05/31/17   º±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±ºDesc.     ³  Vendas por maquina com data inicial                       º±±
+±±º          ³                                                            º±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±ºUso       ³ AP                                                        º±±
+±±ÈÍÍÍÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+*/
+
+STATIC FUNCTION Vendas(cDtCriac,cMaquina,nPos,cDtCria2)
+
+LOCAL cValor    :=    'res'
+LOCAL nPage     :=    1
+LOCAL nX
+///api/v1/vends/?access_token=AkH1cWGwYdvUy3KfKwHdTQaegWcD9SVCsGQ03trB&start_date=31-05-2017%2000:00:00&machine_id=227
+Local aAux     :=    {}
+Local aAux2    :=   {}
+
+WHILE nPage > 0
+    oRestClient:setPath("/api/v1/vends/?access_token="+cToken+"&start_date="+cDtCriac+"&end_date="+cDtCria2+"&machine_id="+cMaquina+"&page="+cvaltochar(nPage)) 
+    
+    IF oRestClient:Get(aHeader)
+        cValor := oRestClient:GetResult("GET")
+
+        cValor := DecodeUTF8(cValor, "cp1252")
+        FWJsonDeserialize(cValor, @aAux2)
+        
+        oJson := JsonObject():New()
+        
+        ret := oJson:FromJson(cValor)
+        
+        
+        cValor := strtran(cValor,"[")
+        cValor := strtran(cValor,"]")
+        cValor := strtran(cValor,'"')
+        
+        
+        IF !Empty(cValor)
+            nPage++ 
+        ELSE
+            nPage := 0
+        ENDIF
+        
+        aLinhas := strtokarr(cValor,"},{")
+
+        For nX := 1 to len(aAux2)
+            If aAux2[nX]:GOOD:CATEGORY_ID != NIL
+                
+                Aadd(aAux,aAux2[nX]:COIL)
+                Aadd(aAux,aAux2[nX]:OCCURRED_AT)
+                Aadd(aAux,cvaltochar(aAux2[nX]:QUANTITY))
+                Aadd(aAux,cvaltochar(aAux2[nX]:VALUE))
+                
+                If aAux2[nX]:GOOD:NAME != NIL
+                    aCod := separa(aAux2[nX]:GOOD:NAME,"#")
+                    Aadd(aAux,Alltrim(aCod[2]))
+                ELSE
+                    Aadd(aAux,'Item Nao encontrado')
+                    
+                EndIf
+
+                Aadd(aHeader[nPos],aAux)
+            ENDIF
+             
+            aAux := {}
+        Next nX       
+        
+    ELSE
+        nPage := 0
+    ENDIF
+ENDDO 
+
+RETURN(aHeader[nPos])

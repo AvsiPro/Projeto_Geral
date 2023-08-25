@@ -16,21 +16,20 @@ User Function CONJOB03()
 
 Local cQuery
 
-Local cHri     :=   '00:00'
-Local cHrf     :=   '23:59'
-Local aAux     :=   {}
-Local aVendas  :=   {}
+Local cHri              :=   '00:00'
+Local cHrf              :=   '23:59'
+Local aAux              :=   {}
 Local dUltLei
 Local dLeiFim
 Local nX,nY
 Local dDiaExe  
-Local aList8   :=   {}
-Local aMaqSVM  :=   {}
-Local aEmail    :=  {}
+Local aEmail            :=  {}
+Local cCntAtu           :=  ''
+Local nIni 
 
-Private cArqXls   := '' 
+Private cArqXls         := '' 
 
-Private aList8B  :=   {}
+Private aList8B         :=   {}
 Private oExcel 
 
 PRIVATE cToken         :=    "yVXxnxgOExcIaBQOQ9CFgK0cLgX22dJct7y85WXW" //Token Connect Vending
@@ -69,7 +68,7 @@ IF Select('TRB') > 0
     dbCloseArea()
 ENDIF
 
-MemoWrite("CONFATC01.SQL",cQuery)
+MemoWrite("CONJOB03.SQL",cQuery)
 DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
 
 DbSelectArea("TRB")
@@ -93,7 +92,19 @@ EndDo
 //Buscar Maquinas                         
 Maquinas()
 
+cCntAtu := aAux[01,01]
+nIni    := 1
+
 For nX := 1 to len(aAux)
+    If cCntAtu <> aAux[nX,01]
+        
+        aRet := Htmanalise(nIni,aAux)
+        Aadd(aEmail,aRet[2])
+        nIni := nX
+        cCntAtu := aAux[nX,01]
+
+    EndIf 
+
     nPosMaq := Ascan(aHeader,{|x| Alltrim(x[1]) == alltrim(aAux[nX,03])})
     If nPosMaq == 0
         aAux[nX,12] := .F.
@@ -161,13 +172,13 @@ For nX := 1 to len(aAux)
     ENDIF
 
 Next nX
-
+/*
 For nX := 1 to len(aAux)
     aRet := Htmanalise(nX,aAux)
     nX := aRet[1]
     Aadd(aEmail,aRet[2])
 Next nX 
-
+*/
 cFrom := 'nf.erp@connectvending.com.br'
 cTo   := 'alexandre.venancio@avsipro.com.br'
 cSubject := 'Validações de Pré-Faturamento'
@@ -182,8 +193,8 @@ U_EnviarEmail(cTo,cSubject,cBody,'',.f.)
 oExcel:Activate()
 oExcel:GetXMLFile(cDir +cArqXls)
 
-oExcelApp := MsExcel():New()
-oExcelApp:Destroy()
+//oExcelApp := MsExcel():New()
+//oExcelApp:Destroy()
 
 //savevend()
 
@@ -231,7 +242,7 @@ Return(dRet)
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
 ±±ÉÍÍÍÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍ»±±
-±±ºPrograma  ³CONFATC01   ºAutor  ³Microsiga           º Data ³  06/08/17   º±±
+±±ºPrograma  ³CONJOB03   ºAutor  ³Microsiga           º Data ³  06/08/17   º±±
 ±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
 ±±ºDesc.     ³                                                            º±±
 ±±º          ³                                                            º±±
@@ -823,10 +834,10 @@ If len(aVndT) > 0
 
     For nY := 1 to len(aVndA)
         oExcel:AddRow(cCntr,"Vendas_por_Ativo",{  aVndA[nY,01],;
-                                        strzero(val(aVndA[nY,02]),3),;
-                                        aVndA[nY,03],;		
-                                        aVndA[nY,04],;
-                                        cvaltochar(aVndA[nY,05])})
+                                                strzero(val(aVndA[nY,02]),3),;
+                                                aVndA[nY,03],;		
+                                                aVndA[nY,04],;
+                                                cvaltochar(aVndA[nY,05])})
     Next nY
 
     cHtml += '	</tbody>'

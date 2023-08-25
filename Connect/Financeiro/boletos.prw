@@ -340,6 +340,7 @@ Static Function MontaRel()
 	Local nRec         := 0
 	Local _nVlrAbat    := 0
 	Local bPermite	   :=.T.
+	Local lRetCbar		:=	.F.
 
 	Private pNumero    := 0
 	Private cNumbco    := ''
@@ -484,6 +485,23 @@ Static Function MontaRel()
 				SA1->A1_CEPC                                     ,;      //6-CEP
 				SA1->A1_CGC                                      }       //7-CGC/CPF
 		Endif
+		
+		If !Empty(SE1->E1_NUMBCO) .AND. !Empty(SE1->E1_CODBAR) .AND. !Empty(SE1->E1_CODDIG)
+			//_cNossoNum	:= SE1->E1_NUMBCO
+			//34191.09008 00000.050047 85366.350008  8  94870000139300
+			cLinhaD := 	substr(SE1->E1_CODDIG,1,5)+'.'+;
+						substr(SE1->E1_CODDIG,6,5)+' '+;
+						substr(SE1->E1_CODDIG,11,5)+'.'+;
+						substr(SE1->E1_CODDIG,16,6)+' '+;
+						substr(SE1->E1_CODDIG,22,5)+'.'+;
+						substr(SE1->E1_CODDIG,27,6)+'  '+;
+						substr(SE1->E1_CODDIG,33,1)+'  '+;
+						substr(SE1->E1_CODDIG,34);
+
+			CB_RN_NN := {SE1->E1_CODBAR,cLinhaD,SE1->E1_NUMBCO,0}
+		Else
+			lRetCbar := .T.
+		EndIf
 
 		//VALOR DOS TITULOS TIPO "AB-"
 		_nVlrAbat   :=  SomaAbat(SE1->E1_PREFIXO,SE1->E1_NUM,SE1->E1_PARCELA,"R",1,,SE1->E1_CLIENTE,SE1->E1_LOJA)
@@ -525,8 +543,10 @@ Static Function MontaRel()
 
 		aBolText    := { cJurdia+mv_par12+mv_par13,mv_par14+mv_par15,mv_par16+mv_par17}
 
-		CB_RN_NN    := Ret_cBarra(Subs(aDadosBanco[1],1,3)+"9",Subs(aDadosBanco[3],1,4),aDadosBanco[4],aDadosBanco[5],;
-			aDadosBanco[6],AllTrim(E1_NUM)+AllTrim(E1_PARCELA),(E1_SALDO-_nVlrAbat),SE1->E1_VENCREA,SEE->EE_CODEMP,SEE->EE_FAXATU,Iif(SE1->E1_DECRESC > 0,.t.,.f.),SE1->E1_PARCELA,aDadosBanco[3])
+		If lRetCbar
+			CB_RN_NN    := Ret_cBarra(Subs(aDadosBanco[1],1,3)+"9",Subs(aDadosBanco[3],1,4),aDadosBanco[4],aDadosBanco[5],;
+				aDadosBanco[6],AllTrim(E1_NUM)+AllTrim(E1_PARCELA),(E1_SALDO-_nVlrAbat),SE1->E1_VENCREA,SEE->EE_CODEMP,SEE->EE_FAXATU,Iif(SE1->E1_DECRESC > 0,.t.,.f.),SE1->E1_PARCELA,aDadosBanco[3])
+		EndIf 
 
 		aDadosTit    :=  {AllTrim(E1_NUM)+AllTrim(E1_PARCELA)	    ,;  //1-Número do título
 			E1_EMISSAO								,;  //2-Data da emissão do título
@@ -565,7 +585,11 @@ Static Function MontaRel()
 				SE1->E1_NUMBCO := cNNum
 				//itau
 			ElseIf SA6->A6_COD == '341'
-				SE1->E1_NUMBCO := strtran(SUBSTR(CB_RN_NN[3],1,15),"/")
+				//SE1->E1_NUMBCO := strtran(SUBSTR(CB_RN_NN[3],1,15),"/")
+				SE1->E1_NUMBCO := CB_RN_NN[3]
+				SE1->E1_CODBAR := CB_RN_NN[1]
+				SE1->E1_CODDIG := STRTRAN(STRTRAN(CB_RN_NN[2],".")," ")
+				
 			ElseIf SA6->A6_COD == '409'
 				SE1->E1_NUMBCO := SUBSTR(CB_RN_NN[3],3,10)
 			ElseIf SA6->A6_COD == "237"
@@ -1900,7 +1924,7 @@ EndIf
 		cNossoNum := substr(cNossoNum,1,9)
 	ENDIF
 
-Return({cCodBarra,cLinDig,cNossoNum})
+Return({cCodBarra,cLinDig,cNossoNum,pNumero})
 /*/
 _____________________________________________________________________________
 ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦

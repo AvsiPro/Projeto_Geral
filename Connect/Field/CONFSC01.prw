@@ -2570,8 +2570,11 @@ For nCont := 1 to len(aEmail)
 			U_CONDANFE(MV_PAR02,MV_PAR01,'C:\BOLETOS\',cCnpjj)
 
 		else 
+			DbSelectArea("SF2")
+			DbSetOrder(1)
+			DbSeek(substr(aEmail[nCont,11],1,4)+MV_PAR02+MV_PAR01)
 
-			U_CONGEN03(MV_PAR02,MV_PAR01,'C:\BOLETOS\',cCnpjj)
+			U_CONGEN03(MV_PAR02,MV_PAR01,'C:\BOLETOS\',cCnpjj,substr(aEmail[nCont,11],1,4))
 		
 		ENDIF
 
