@@ -114,7 +114,7 @@ LOCAL _nVlrAbat    := 0
 //LOCAL cParcela	   := ""
 Local lAdjustToLegacy := .F. 
 Local lDisableSetup  := .T.
-
+Local lRetCbar		:=	.F.
 
 If DBSEEK(xFilial("SE1")+Avkey(MV_PAR01,"E1_PREFIXO")+Avkey(MV_PAR02,"E1_NUM")) //+Avkey(cParcela,"E1_PARCELA"))
 //
@@ -165,10 +165,21 @@ If DBSEEK(xFilial("SE1")+Avkey(MV_PAR01,"E1_PREFIXO")+Avkey(MV_PAR02,"E1_NUM")) 
 		
 		
 
-		If !Empty(SE1->E1_NUMBCO)
-			_cNossoNum	:= SE1->E1_NUMBCO
+		If !Empty(SE1->E1_NUMBCO) .AND. !Empty(SE1->E1_CODBAR) .AND. !Empty(SE1->E1_CODDIG)
+			//_cNossoNum	:= SE1->E1_NUMBCO
+			//34191.09008 00000.050047 85366.350008  8  94870000139300
+			cLinhaD := 	substr(SE1->E1_CODDIG,1,5)+'.'+;
+						substr(SE1->E1_CODDIG,6,5)+' '+;
+						substr(SE1->E1_CODDIG,11,5)+'.'+;
+						substr(SE1->E1_CODDIG,16,6)+' '+;
+						substr(SE1->E1_CODDIG,22,5)+'.'+;
+						substr(SE1->E1_CODDIG,27,6)+'  '+;
+						substr(SE1->E1_CODDIG,33,1)+'  '+;
+						substr(SE1->E1_CODDIG,34);
+
+			CB_RN_NN := {SE1->E1_CODBAR,cLinhaD,SE1->E1_NUMBCO,0}
 		Else
-			//_cNossoNum	:= PegaNNum()
+			lRetCbar := .T.
 		EndIf
 
 		//
@@ -215,9 +226,10 @@ If DBSEEK(xFilial("SE1")+Avkey(MV_PAR01,"E1_PREFIXO")+Avkey(MV_PAR02,"E1_NUM")) 
 		_nVlrAbat   :=  SomaAbat(SE1->E1_PREFIXO,SE1->E1_NUM,SE1->E1_PARCELA,"R",1,,SE1->E1_CLIENTE,SE1->E1_LOJA)
 		
 		//CB_RN_NN    := Ret_cBarra(Subs(aDadosBanco[1],1,3)+"9",aDadosBanco[3],aDadosBanco[4],aDadosBanco[5],AllTrim(_cNossoNum),(E1_VALOR-_nVlrAbat),Datavalida(E1_VENCTO,.T.))
-		CB_RN_NN    := Ret_cBarra(Subs(aDadosBanco[1],1,3)+"9",Subs(aDadosBanco[3],1,4),aDadosBanco[4],aDadosBanco[5],;
-						aDadosBanco[6],AllTrim(E1_NUM)+AllTrim(E1_PARCELA),(E1_SALDO-_nVlrAbat),SE1->E1_VENCREA,SEE->EE_CODEMP,SEE->EE_FAXATU,Iif(SE1->E1_DECRESC > 0,.t.,.f.),SE1->E1_PARCELA,aDadosBanco[3])
-
+		If lRetCbar
+			CB_RN_NN    := Ret_cBarra(Subs(aDadosBanco[1],1,3)+"9",Subs(aDadosBanco[3],1,4),aDadosBanco[4],aDadosBanco[5],;
+							aDadosBanco[6],AllTrim(E1_NUM)+AllTrim(E1_PARCELA),(E1_SALDO-_nVlrAbat),SE1->E1_VENCREA,SEE->EE_CODEMP,SEE->EE_FAXATU,Iif(SE1->E1_DECRESC > 0,.t.,.f.),SE1->E1_PARCELA,aDadosBanco[3])
+		EndIf
 		
 		aDadosTit    :=  {AllTrim(E1_NUM)+AllTrim(E1_PARCELA)	    ,;  //1-Número do título
 						E1_EMISSAO								,;  //2-Data da emissão do título
@@ -239,6 +251,22 @@ If DBSEEK(xFilial("SE1")+Avkey(MV_PAR01,"E1_PREFIXO")+Avkey(MV_PAR02,"E1_NUM")) 
 		endif
 		Impress(oPrint,aBitmap,aDadosEmp,aDadosTit,aDadosBanco,aDatSacado,aBolText,CB_RN_NN)
 		n := n + 1
+
+		IF CB_RN_NN[4] > 0
+			DbSelectArea("SEE")
+			RecLock("SEE",.f.)
+			SEE->EE_FAXATU :=StrZero(CB_RN_NN[4],10)
+			
+			SEE->(DbUnlock())
+		EndIf 
+		
+		DbSelectArea("SE1")
+
+		RecLock("SE1",.f.)
+		SE1->E1_NUMBCO := CB_RN_NN[3]
+		SE1->E1_CODBAR := CB_RN_NN[1]
+		SE1->E1_CODDIG := STRTRAN(STRTRAN(CB_RN_NN[2],".")," ")
+		SE1->(Msunlock())
 		
 		dbSkip()
 		IncProc()
@@ -317,6 +345,7 @@ oPrint:Line (0040,225,0020,225) // linha que separa 341 do codigo de barras
 //Caixa parte pagador do boleto        
 oPrint:Box(0040,010,0350,650, "-4")   //Cabeçalho
 
+oPrint:SayBitmap( 0010,011,'\system\itau.bmp',030,030 )
 // LOGOTIPO  
 /*If File(aBmp)
 	oPrint:SayBitmap( 0010,011,aBmp,030,030 )
@@ -461,6 +490,7 @@ oPrint:Say  (0390, 020, REPLICATE( '- ', 136 ), oFont9)
 oPrint:Box(0431,010,0698,650, "-4")   //Cabeçalho
 
 // LOGOTIPO  
+oPrint:SayBitmap( 0400,011,'\system\itau.bmp',030,030 )
 /*If File(aBmp)
 	oPrint:SayBitmap( 0400,011,aBmp,030,030 )
 	oPrint:Say  (0418,045,"Banco Itaú SA",oFont14n )	// [2]Nome do Banco
@@ -1768,7 +1798,7 @@ If substr(cbanco,1,3) == "422"
 	cNossoNum := substr(cNossoNum,1,9)
 ENDIF
 
-Return({cCodBarra,cLinDig,cNossoNum})
+Return({cCodBarra,cLinDig,cNossoNum,pNumero})
 
 /*
 	Imprimir boleto avulso

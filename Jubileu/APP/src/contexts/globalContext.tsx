@@ -31,6 +31,7 @@ type AppContextType = {
   itemCart: any;
   customerSelected: any;
   paymentSelected: any;
+  tablePriceSelected: any;
   imageProfile: any;
   orcamentoSelected: string;
 
@@ -38,6 +39,7 @@ type AppContextType = {
   setItemCart: React.Dispatch<React.SetStateAction<any>>;
   setCustomerSelected: React.Dispatch<React.SetStateAction<any>>;
   setPaymentSelected: React.Dispatch<React.SetStateAction<any>>;
+  setTablePriceSelected: React.Dispatch<React.SetStateAction<any>>;
   setImageProfile: React.Dispatch<React.SetStateAction<any>>;
   setOrcamentoSelected: React.Dispatch<React.SetStateAction<any>>;
 };
@@ -49,12 +51,14 @@ const AppContext = createContext<AppContextType>({
   itemCart: [],
   customerSelected: null,
   paymentSelected: null,
+  tablePriceSelected: null,
   imageProfile: null,
   orcamentoSelected: '',
 
   setAuthDetail: () => {},
   setItemCart: () => {},
   setCustomerSelected: () => {},
+  setTablePriceSelected: () => {},
   setPaymentSelected: () => {},
   setImageProfile: () => {},
   setOrcamentoSelected: () => {},
@@ -69,6 +73,7 @@ const AppProvider = ({ children }: Props) => {
   const [itemCart, setItemCart] = useState<any>([]);
   const [customerSelected, setCustomerSelected] = useState<any>(null);
   const [paymentSelected, setPaymentSelected] = useState<any>(null);
+  const [tablePriceSelected, setTablePriceSelected] = useState<any>({id: "001", description: "TABELA PADRAO"});
   const [imageProfile, setImageProfile] = useState<any>(null);
   const [orcamentoSelected, setOrcamentoSelected] = useState<string>('');
   const [theme, setTheme] = useState(initialTheme);
@@ -92,12 +97,14 @@ const AppProvider = ({ children }: Props) => {
             itemCart,
             customerSelected,
             paymentSelected,
+            tablePriceSelected,
             imageProfile,
             orcamentoSelected,
             setAuthDetail,
             setItemCart,
             setCustomerSelected,
             setPaymentSelected,
+            setTablePriceSelected,
             setImageProfile,
             setOrcamentoSelected,
           }}

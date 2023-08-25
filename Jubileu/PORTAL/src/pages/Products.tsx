@@ -8,6 +8,7 @@ import Header from "../components/header";
 import Table from "../components/table";
 
 import { useMediaQuery } from 'react-responsive';
+import { fetchData } from "../services/apiProducts";
 
 interface ApiResponse {
   status: {
@@ -35,24 +36,18 @@ const Products: React.FC = () => {
     }
       const apiData = async () => {
       
-      let returnResult: any = []
+        const returnResult: any = await fetchData(1);
+
+        if (returnResult.length > 0) {
+          const auxData = [...data, ...returnResult]
   
-      const response = await api.get(`/WSAPP03?pagesize=100&page=${page}`);
-      const json: ApiResponse = response.data;
-  
-      if(json.status.code === '#200'){    
-  
-        returnResult = json.result.reduce((acc: any, current: any) => {
+          const newData = auxData.reduce((acc: any, current: any) => {
             const x = acc.find((item: { id: any; }) => item.id === current.id);
             return !x ? acc.concat([current]) : acc;
-        }, []);
+          }, []);
 
-        const sortedResult = [...returnResult].sort((a, b) => {
-          return a.code.localeCompare(b.code);
-        });
-
-        setData((prevData: any) => [...prevData, ...sortedResult]);
-      }
+          setData(newData); 
+        }
 
       setLoad(false)
     };
@@ -117,7 +112,7 @@ const Products: React.FC = () => {
     )
   }
 
-  const fields = user.type === 'V' ? [
+  const fields = (user.type === 'V' || user.type === 'A') ? [
     {field: 'code', headerText: 'Codigo', textAlign: 'Center'  },
     {field: 'description', headerText: 'Descrição', textAlign: 'Left' , width: '300px'},
     {field: 'type', headerText: 'Tipo', textAlign: 'Center' },

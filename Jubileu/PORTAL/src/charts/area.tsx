@@ -7,7 +7,7 @@ interface ChartProps {
 }
 
 const ChartArea: React.FC<ChartProps> = ({ options, series }) => {
-  return <ReactApexChart options={options} series={series} type="area" />;
+  return <ReactApexChart options={options} series={series} type="area"  height={150}/>;
 };
 
 export default ChartArea;

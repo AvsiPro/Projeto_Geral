@@ -151,11 +151,25 @@ RETURN
 STATIC FUNCTION Maquinas()
 
     LOCAL nX
+    Local oJsonBody
 
     oRestClient:setPath("/api/v1/machines?access_token="+cToken) 
 
     IF oRestClient:Get(aHeader)
         cValor := oRestClient:GetResult("GET")
+
+        cValor := DecodeUTF8(cValor, "cp1252")
+
+        FWJsonDeserialize(cValor,@oJsonBody)
+
+        For nX := 1 to len(oJsonBody)
+            If AttIsMemberOf(oJsonBody[nX] , "INSTALLATION") 
+                Aadd(aHeader,{cvaltochar(oJsonBody[nX]:ID),;
+                            oJsonBody[nX]:ASSET_NUMBER,;
+                            cvaltochar(oJsonBody[nX]:INSTALLATION:ID)  })
+            EndIf
+        Next nX 
+/*
         cValor := strtran(cValor,"[")
         cValor := strtran(cValor,"]")
         cValor := strtran(cValor,'"')
@@ -171,6 +185,7 @@ STATIC FUNCTION Maquinas()
             ENDIF
 
         NEXT nX
+        */
     ENDIF
 
 RETURN       

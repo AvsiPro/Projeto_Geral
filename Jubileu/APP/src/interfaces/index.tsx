@@ -45,6 +45,14 @@ export interface PropsPaymentModal{
     atualizaPagamentos: (item: any) => void;
 }
 
+export interface PropsTablePriceModal{
+    getVisible: boolean;
+    handleModalTablePrice: () => void;
+    tablePrice: any;
+    atualizaTabPreco: (item: any) => void;
+    atualizaProdutos: (item: any) => void;
+}
+
 export interface PropsRegistModal{
     getVisible: boolean;
     BodyCustRegister: any
@@ -75,6 +83,14 @@ export interface PropsCustomers{
 export interface PropsPayment{
     payment: any;
     handleLoadMore: () => void;
+    handleItem: (item: any) => void;
+    isLoading: boolean;
+    isOnline: boolean;
+}
+
+
+export interface PropsTablePrice{
+    tablePrice: any;
     handleItem: (item: any) => void;
     isLoading: boolean;
     isOnline: boolean;
@@ -127,6 +143,7 @@ export interface PropItemCartContext{
     ean: string;
     gender: string;
     group: string;
+    codegroup: string;
     id: string;
     line: string;
     marked: boolean;
@@ -135,6 +152,7 @@ export interface PropItemCartContext{
     price: any;
     type: string;
     selected_quantity : number;
+    realPrice: number;
 }
 
 export interface FormDataCustomer {

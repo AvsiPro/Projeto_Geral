@@ -97,6 +97,7 @@ WsMethod POST WsReceive RECEIVE WsService WSAPP12
 	conout("")
 	conout("")
 
+	RpcClearEnv()
 	RPCSetType(3)  
 	RpcSetEnv(cEmp,cFil,,,,GetEnvServer(),{ }) 
 
@@ -499,6 +500,7 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
 				aadd(aCabec, {"C5_CONDPAG"	, cCondPg		,Nil})
 				aadd(aCabec, {"C5_NATUREZ"  ,"11010001"     ,Nil})  
 				aadd(aCabec, {"C5_VEND1"    , cCodVnd       ,Nil})
+				aadd(aCabec, {"C5_XOBSAPP"  , cObsApp       ,Nil})
 			
 				cItem := '01'
 

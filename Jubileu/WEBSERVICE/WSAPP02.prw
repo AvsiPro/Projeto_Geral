@@ -57,9 +57,10 @@ Default oself:pageSize	:= 	20
 Default oself:byId		:=	.F.
 Default oself:customer  :=	.F.
 Default oself:token		:=	''
-	
+
+	RpcClearEnv()
     RpcSetType(3)
-    RPCSetEnv('01','0101')
+    RPCSetEnv('01','0801')
 
     oJsonAux  := JsonObject():New()
     cAliasTMP := GetNextAlias()
@@ -67,8 +68,9 @@ Default oself:token		:=	''
 
 	// Tratativas para realizar os filtros
 	If !Empty(oself:searchKey) //se tiver chave de busca no request
-		cSearch := Upper( oself:SearchKey )
+		cSearch := Alltrim(Upper( oself:SearchKey ))
 		cVend   := fVendToken( oself:token )
+		
 
 		If oself:byId //se filtra somente por ID
 			cWhere += " AND SA1.A1_COD = '"	+ cSearch + "'"
@@ -84,7 +86,7 @@ Default oself:token		:=	''
 			If !Empty(cVend)
 				aRegiao := BuscaRegiao(cVend)
 
-				IF len(aRegiao) > 0
+				/*IF len(aRegiao) > 0
 					cRegiao := ""
 					nCont   := 0
 					cVirgula:= ""
@@ -94,7 +96,7 @@ Default oself:token		:=	''
 						
 					Next nCont
 					cWhere += " AND SA1.A1_EST IN('"+upper(cRegiao)+"')"
-				EndIf
+				EndIf*/
 				
 			EndIf
 		EndIf
@@ -105,7 +107,7 @@ Default oself:token		:=	''
 		If !Empty(cVend)
 			aRegiao := BuscaRegiao(cVend)
 			
-			IF len(aRegiao) > 0
+			/*IF len(aRegiao) > 0
 				cRegiao := ""
 				nCont   := 0
 				cVirgula:= ""
@@ -115,7 +117,7 @@ Default oself:token		:=	''
 					
 				Next nCont
 				cWhere += " AND SA1.A1_EST IN('"+upper(cRegiao)+"')"
-			EndIf
+			EndIf*/
 			
 		EndIf
 	EndIf
@@ -183,7 +185,8 @@ Default oself:token		:=	''
 				(cAliasTMP)->A1_MATR,;
 				(cAliasTMP)->A1_PAGATR,;
 				cCond,;
-				Posicione('SE4',1,FwxFilial('SE4')+cCond, 'Alltrim(E4_COND)');
+				Posicione('SE4',1,FwxFilial('SE4')+cCond, 'Alltrim(E4_COND)'),;
+				If(Ascan(aRegiao,{|x| Alltrim(x) == Alltrim((cAliasTMP)->A1_EST)})==0,.F.,.T.);
 			};
 		)
 
@@ -201,7 +204,7 @@ Default oself:token		:=	''
 	Else
 		If !Empty(oself:searchKey)
 			cSearch := StrTran(StrTran(StrTran(StrTran(oself:SearchKey, " ", ""), "-", ""), ".", ""), "/", "")
-			fConsulBraApi(cSearch, @aListCli)
+			fConsulBraApi(cSearch, @aListCli,aRegiao)
 
 			If Len(aListCli) > 0
 				oStatus['code']    := '#200'
@@ -226,7 +229,7 @@ Default oself:token		:=	''
 Return .T.
 
 
-Static Function fConsulBraApi(cSearch, aListCli)
+Static Function fConsulBraApi(cSearch, aListCli,aRegiao)
 			
 	oRestClient  := FWRest():New("https://brasilapi.com.br/api")
 	oRestClient:setPath("/cnpj/v1/" + cSearch)
@@ -273,7 +276,8 @@ Static Function fConsulBraApi(cSearch, aListCli)
 				0,;
 				0,;
 				'',;
-				'';
+				'',;
+				If(Ascan(aRegiao,{|x| Alltrim(x) == Alltrim(upper(oJsonCNPJ["uf"]))})==0,.F.,.T.);
 			};
 		)
 	EndIf
@@ -315,6 +319,7 @@ Static Function fGeraResult(aListCli, nAux, aListAux)
 	aListCli[nAux]['another_district']  	:= ''
 	aListCli[nAux]['payment']  				:= aListAux[27]
 	aListCli[nAux]['payment_description']  	:= aListAux[28]
+	aListCli[nAux]['allowed_region']  	  	:= aListAux[29]
 
 Return
 

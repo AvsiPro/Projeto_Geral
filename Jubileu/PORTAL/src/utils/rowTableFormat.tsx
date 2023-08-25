@@ -34,7 +34,27 @@ export const formatRow = (field: string, data: any) => {
       )
     }
 
-  }else if(field === 'price' || field === 'price2' || field === 'price3' ){
+  }else if(field === 'price' ||
+    field === 'price2' ||
+    field === 'price3' ||
+    field === 'number' ||
+    field === 'valueTotal' ||
+    field === 'valueVcto' ||
+    field === 'valueLiqd' ||
+    field === 'valueReceive' ||
+    field === 'valueCards' ||
+    field === 'valueRTotal' ||
+    field === 'valueFluxo' ||
+    field === 'valueOpen' ||
+    field === 'valueCardsN' ||
+    field === 'valueReceiveO' ||
+    field === 'valueReceiveC' ||
+    field === 'vlrVendas' ||
+    field === 'vlrDesc' ||
+    field === 'vlrTicket' ||
+    field === 'vlrVBrut'
+
+    ){
     return CurrencyFormat(data)
 
   }else if(field === 'cnpj' || field === 'customer_cnpj'){
@@ -43,11 +63,20 @@ export const formatRow = (field: string, data: any) => {
   }else if(field === 'phone'){
     return phoneFormat(data)
 
-  }else if(field === 'issue_date' || field === 'emission'){
+  }else if(field === 'issue_date' ||
+    field === 'emission' ||
+    field === 'date'
+  ){
     return SToD(data)
 
   }else if(field === 'cep'){
     return cepFormat(data)
+
+  }else if(field === 'percent' || field === 'openPercent' || field === 'percTotal' ){
+    return `${data}%`
+
+  }else if(field === 'k'){
+    return `${data} K`
     
   }else if(
     field === 'name' ||

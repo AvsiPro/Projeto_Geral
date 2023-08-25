@@ -21,7 +21,7 @@ import ModalProdDetail from './modalProdDetail';
 
 export default function modalProducts({getVisible, handleModalProducts, products, atualizaProdutos} : PropsProductsModal){
     
-    const { itemCart, setItemCart } = useContext(AppContext);
+    const { itemCart, setItemCart, tablePriceSelected } = useContext(AppContext);
     const { colors } = useContext(ThemeContext);
     const searchInputRef = useRef<TextInput>(null);
     const inputBarCodeRef = useRef<TextInput>(null);
@@ -76,8 +76,7 @@ export default function modalProducts({getVisible, handleModalProducts, products
     /** faz a chamada da api com paginacao, grava no estado de produtos e no storage (online) **/
     const loadItems = async() => {
         setLoadBottom(true);
-        
-        const resultApi = await apiProducts(page, products, 1)
+        const resultApi = await apiProducts(page, products, 1, tablePriceSelected)
         
         if(!!resultApi){
             atualizaProdutos(resultApi.returnResult)
@@ -229,7 +228,7 @@ export default function modalProducts({getVisible, handleModalProducts, products
             }, 1000);
 
         }else{
-            const response = await api.get(`/WSAPP03?pagesize=10&page=1&byId=true&searchKey=${data}`);
+            const response = await api.get(`/WSAPP03?pagesize=10&page=1&byId=true&searchKey=${data}&codTab=${tablePriceSelected}`);
             const json: ApiResponse = response.data;
 
             if(json.status.code === '#200'){
@@ -269,7 +268,7 @@ export default function modalProducts({getVisible, handleModalProducts, products
                 handleItem(find)
             }
         }else{
-            const response = await api.get(`/WSAPP03?pagesize=10&page=1&byId=true&searchKey=${inputBarCode}`);
+            const response = await api.get(`/WSAPP03?pagesize=10&page=1&byId=true&searchKey=${inputBarCode}&codTab=${tablePriceSelected}`);
             const json: ApiResponse = response.data;
 
             if(json.status.code === '#200'){
@@ -360,7 +359,7 @@ export default function modalProducts({getVisible, handleModalProducts, products
             return
         }
 
-        const resultApi = await searchProducts(searchQuery, isOnline)
+        const resultApi = await searchProducts(searchQuery, isOnline, tablePriceSelected)
 
         if(!!resultApi){
 
@@ -477,9 +476,7 @@ export default function modalProducts({getVisible, handleModalProducts, products
 
         }
     };
-      
-
-      
+    
     return(
         <Modal 
             transparent
@@ -541,6 +538,7 @@ export default function modalProducts({getVisible, handleModalProducts, products
                     }
 
                     <Style.MiddleModalNewOrder>
+
                         { hasCamera &&
                             <Style.ComponentQRCode>
                                 <Style.QRCodeScan

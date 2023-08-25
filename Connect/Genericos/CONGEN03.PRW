@@ -12,7 +12,7 @@
 #DEFINE IMP_SPOOL 2
 #DEFINE IMP_PDF	   6
 
-User Function CONGEN03(cNumNF,cSerNF,cPathNF,cCNPJNF)
+User Function CONGEN03(cNumNF,cSerNF,cPathNF,cCNPJNF,cFilNf)
 
 	Local lAdjustToLegacy  := .F.
 	Local lDisableSetup    := .T.
@@ -28,8 +28,8 @@ User Function CONGEN03(cNumNF,cSerNF,cPathNF,cCNPJNF)
 	Local cLogoD           := ""
 	Local cNotD 	       := space(9)
 	Local cNotA 	       := 'ZZZZZZZZZ'
-	Local cFilD 	       := xFilial("SF2")
-	Local cFilA 	       := xFilial("SF2")
+	Local cFilD 	       := cFilNf //xFilial("SF2")
+	Local cFilA 	       := cFilNf //xFilial("SF2")
 	Local nCont            := 0
 	Local nValor           := 0
 	Local nX               := 0
@@ -52,6 +52,7 @@ User Function CONGEN03(cNumNF,cSerNF,cPathNF,cCNPJNF)
 	Default cSerNF			:=	""
 	Default	cPathNF			:=	""
 	Default cCNPJNF			:=	""
+	Default cFilNf			:=	""
 	
 	If Select("SM0") == 0
 		RpcSetType(3)
@@ -98,6 +99,12 @@ User Function CONGEN03(cNumNF,cSerNF,cPathNF,cCNPJNF)
 		cFilD := ' ' 
 		cFilA := 'ZZZ' 
 	EndIf 
+
+	If !Empty(cFilNf)
+		cFilD := cFilNf
+		cFilA := cFilNf
+	EndIf
+
 
 	
 
@@ -196,9 +203,13 @@ User Function CONGEN03(cNumNF,cSerNF,cPathNF,cCNPJNF)
 			If !ParamBox(aPergs ,"Observacoes ")
 				Return
 			EndIf
+
+			cReferentes := MV_PAR04
+		else
+			cReferentes := 'NR. PO '+aAux[nCont,7]
 		ENDIF
 
-		cReferentes := MV_PAR04
+		
 
 		oPrinter := FWMSPrinter():New( "recibo_loc_"+strzero(val(cNum),9)+".rel",IMP_PDF,lAdjustToLegacy,cCaminho+(If(!Empty(cCNPJNF),cCNPJNF+"\","")),lDisableSetup,,,,.F.,,,.F.)
 		

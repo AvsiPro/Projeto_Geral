@@ -1,6 +1,39 @@
+import { Stack } from 'react-bootstrap';
 import styled, {css} from 'styled-components';
-import { Stack, Card } from 'react-bootstrap';
-import { BsCartCheck, BsCart, BsCartX } from 'react-icons/bs';
+
+export const Container = styled.div<{isMobile ?: boolean}>`
+    flex:1;
+    ${({ isMobile }) => !isMobile && `
+        padding-left:15px;
+        padding-right:15px;
+        padding-bottom:15px;
+    `};
+`
+
+export const ContainerAll = styled.div`
+    display:flex;
+    height:100vh;
+    background-color:${(props) => props.theme.background};
+`
+
+export const StackDash = styled(Stack)<{windowDimensions: any}>`
+    padding-top:20px;
+    padding-left:50px;
+    padding-right:50px;
+    padding-bottom:50px;
+    overflow:auto;
+    
+    ${({ windowDimensions }) => `
+        max-height:${(windowDimensions.height * 90) / 100}px
+    `};
+`
+
+export const DashHorizontal = styled.div`
+    display:flex;
+    flex-direction:row;
+    justify-content:space-between;
+    align-items:center;
+`
 
 /** geral **/
 export const TextH1 = styled.h1`
@@ -119,121 +152,6 @@ export const LoginButton2 = styled.button`
     margin-top: 0.5rem;
     font-weight:500;
 `
-
-
-/** dashboard **/
-export const ContainerAll = styled.div`
-    display:flex;
-    height:100vh;
-    background-color:${(props) => props.theme.background};
-`
-
-export const Container = styled.div<{isMobile ?: boolean}>`
-    flex:1;
-    ${({ isMobile }) => !isMobile && `
-        padding-left:15px;
-        padding-right:15px;
-        padding-bottom:15px;
-    `};
-`
-
-export const StackDash = styled(Stack)<{windowDimensions: any}>`
-    padding-top:20px;
-    padding-left:50px;
-    padding-right:50px;
-    padding-bottom:50px;
-    overflow:auto;
-    
-    ${({ windowDimensions }) => `
-        max-height:${(windowDimensions.height * 90) / 100}px
-    `};
-`
-
-export const CardDash = styled(Card)`
-    box-shadow:0px 10px 20px rgba(0, 0, 0, 0.2);
-    background-color:${(props) => props.theme.component};
-    display: flex;
-    flex-direction:column;
-    justify-content:flex-end;
-`
-
-export const CardDashBody = styled(Card.Body)`
-    display: flex;
-    flex-direction:column;
-    justify-content:center;
-`
-
-export const CardPrimaryDash = styled.div`
-    top: 0px;
-    margin:20px;
-    position: absolute;
-    display: flex;
-    flex-direction: column;
-    align-items:center;
-    flex: 1;
-`
-
-export const IconPrimaryDash = styled.div`
-    padding:10px;
-    border-radius:100px;
-    background-color:${(props) => props.theme.background};
-    margin-bottom:5px;
-    display: flex;
-    justify-content:center;
-    align-items:center;
-`
-
-export const TextDash = styled.div<{size: number}>`
-    ${({ size }) => `font-size:${size}px`};
-    color: ${(props) => props.theme.text};
-    font-family: 'Roboto', sans-serif;
-    font-weight:bold;
-`
-
-export const TextLabelDash = styled.div<{size: number, color: string, fontWeight: number}>`
-    ${({ size }) => `font-size:${size}px`};
-    color: ${(props) => props.color};
-    font-family: 'Roboto', sans-serif;
-    font-weight: ${(props) => props.fontWeight};
-    margin: 2px;
-`
-
-export const ContainerIconsDash = styled.div`
-    display:flex;
-    flex-direction:row;
-    align-items:center;
-    justify-content:center;
-`
-
-export const ContaineSecDash = styled.div`
-    display:flex;
-    flex-direction:row;
-    align-items:center;
-`
-
-export const ContainerIconTextDash = styled.div`
-    margin-top:10px;
-`
-
-export const IconSucessDash = styled(BsCartCheck)`
-    color: #2dce89!important;
-    filter:drop-shadow(0px 4px 4px rgba(45,206,137,.3));
-    margin-right:10px;
-`
-
-export const IconRecentDash = styled(BsCart)`
-    color: #4454c3!important;
-    filter:drop-shadow(0px 4px 4px rgba(0,0,0, .3));
-    margin-right:10px;
-`
-
-
-export const IconCanceledDash = styled(BsCartX)`
-    color: #ff5b51!important;
-    filter:drop-shadow(0px 4px 4px rgba(255,91,81,.3));
-    margin-right:10px;
-`
-
 
 
 /** customers **/
@@ -386,4 +304,4 @@ export const CustomersComponent = styled.div<{windowDimensions: any, modal: bool
             padding:0px;
         `
     };
-  `;
+`;

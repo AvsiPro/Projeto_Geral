@@ -14,8 +14,17 @@
 	],
 	"lastPrograms": [
 		{
-			"label": "sigamdi"
+			"label": "sigaadv"
+		},
+		{
+			"label": "U_TTXML02"
+		},
+		{
+			"label": "u_myjson"
+		},
+		{
+			"label": "U_WSAPP20"
 		}
 	],
-	"lastProgramExecuted": "sigamdi"
+	"lastProgramExecuted": "U_WSAPP20"
 }

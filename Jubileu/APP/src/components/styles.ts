@@ -127,6 +127,8 @@ export const ContainerProdModal2 = styled.TouchableOpacity`
     margin-right:20px;
     margin-bottom:15px;
     flex-direction:row;
+    min-height:120px;
+    max-height:140px;
 `
 
 export const ContainerBotton = styled.View`

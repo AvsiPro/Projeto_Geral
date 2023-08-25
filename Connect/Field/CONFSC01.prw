@@ -374,7 +374,7 @@ Static Function Busca(cCond,cQuinze,cLocacS)
 	cQuery += " AAM_XFORFA, AAM_XTIPFA,'' AS AAM_XPERCT,"
 	cQuery += " '' AS AAM_XRENOV,AAN_FILIAL,AAM_XPRDCM,AAM_XPOCLI"
 	cQuery += " FROM "+RetSQLName("AAN")+" AAN"
-	cQuery += " INNER JOIN "+RetSQLName("AAM")+" AAM ON AAM_FILIAL=AAN_FILIAL AND AAM_CONTRT=AAN_CONTRT AND AAM.D_E_L_E_T_=' '"
+	cQuery += " INNER JOIN "+RetSQLName("AAM")+" AAM ON AAM_FILIAL=AAN_FILIAL AND AAM_CONTRT=AAN_CONTRT AND AAM.D_E_L_E_T_=' ' AND AAM_STATUS='1'"
 	cQuery += " INNER JOIN "+RetSQLName("SE4")+" E4 ON E4_FILIAL='"+xFilial("SE4")+"' AND E4_CODIGO=AAN_CONPAG AND E4.D_E_L_E_T_=' '"
 	cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD=AAN_CODPRO AND B1_XCARACT<>'D' AND B1.D_E_L_E_T_=' '"
 	cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_COD=AAM_CODCLI AND A1_LOJA=AAM_LOJA AND A1.D_E_L_E_T_=' '"
@@ -517,7 +517,7 @@ Static Function Busca(cCond,cQuinze,cLocacS)
 		cQuery += " AND C5_NUM=C6_NUM AND C5_CLIENTE=C6_CLI AND C5.D_E_L_E_T_=' '"
 		cQuery += " AND C5_XTPPED IN('F','L','V','Q')"
 		cQuery += " WHERE C6_FILIAL BETWEEN ' ' AND 'ZZ'" //'"+xFilial("SC6")+"'"
-		cQuery += " AND C6_CONTRT='"+aAux3[nCont,01]+"' "
+		//cQuery += " AND C6_CONTRT='"+aAux3[nCont,01]+"' "
 		cQuery += " AND C6_CLI='"+aAux3[nCont,02]+"' AND C6.D_E_L_E_T_=''"
 		
 		If Select("TRB") > 0
@@ -744,6 +744,7 @@ Static Function Busca(cCond,cQuinze,cLocacS)
 
 	Next nCont
 	
+	Asort(aList3B,,,{|x,y| DTOS(x[2]) > DTOS(y[2])})
 	RestArea(aArea)
 
 Return                   
@@ -820,7 +821,7 @@ Else
 	EndIf
 EndIf            
 
-Asort(aList3,,,{|x,y| x[1] > y[1]})
+Asort(aList3,,,{|x,y| x[2] > y[2]})
     
 	
 oList2:SetArray(aList2)
@@ -996,16 +997,32 @@ If aList[nLinha2,20] > 0
 						cNumSr := aList5B[nCont,2]
 						cLeit  := aList5B[nCont,nX,11]
 						cDtAnt := aList5B[nCont,nX,04]
+						If aList5B[nCont,nX,08] == (aList5B[nCont,nX,07] - aList5B[nCont,nX,05])
+							cDtAnt := dtos(stod(cDtAnt)-1)
+						EndIf 
+
 						nQtdAb := abatfat(cNumSr,cLeit,cSelec,cDtAnt)
 						
 						If nQtdAb == 0 .And. aList5B[nCont,nX,05] > 0
 							nQtdAb := aList5B[nCont,nX,05]
 						EndIf 
 						
-						If Ascan(aAbater,{|x| Alltrim(x[1])+Alltrim(x[2])+Alltrim(x[5]) == Alltrim(aList5B[nCont,01])+Alltrim(cNumSr)+Alltrim(cSelec)}) == 0
-							Aadd(aAbater,{aList5B[nCont,01],cNumSr,nQtdAb,nQtdAb *  aList5B[nCont,nX,09],cSelec})
+						/*If Ascan(aAbater,{|x| Alltrim(x[1])+Alltrim(x[6])+Alltrim(x[5]) == Alltrim(aList5B[nCont,01])+Alltrim(cNumSr)+Alltrim(cSelec)}) == 0
+							Aadd(aAbater,{aList5B[nCont,01],aList5B[nCont,nX,02],nQtdAb,nQtdAb *  aList5B[nCont,nX,09],cSelec,cNumSr})
+						EndIF */
+						nPosAbt := Ascan(aAbater,{|x| Alltrim(x[1])+Alltrim(x[2])+Alltrim(x[5]) == Alltrim(aList5B[nCont,01])+Alltrim(aList5B[nCont,nX,02])+Alltrim(cSelec)})
+						nMaqMol := Ascan(aAbater,{|x| Alltrim(cNumSr)+Alltrim(cSelec) $ Alltrim(x[6])}) 
+						
+						If nMaqMol == 0
+							If nPosAbt == 0
+								Aadd(aAbater,{aList5B[nCont,01],aList5B[nCont,nX,02],nQtdAb,aList5B[nCont,nX,09],cSelec,Alltrim(cNumSr)+Alltrim(cSelec)+"#"})
+							Else 
+								aAbater[nPos,03] += nQtdAb
+								aAbater[nPos,06] := Alltrim(aAbater[nPos,06]) + Alltrim(cNumSr)+Alltrim(cSelec)+"#"
+								//aAbater[nPos,04] += nQtdAb *  aList5B[nCont,nX,09]*/
+							EndIf 
 						EndIF 
-											
+
 						nVlrAbt += nQtdAb *  aList5B[nCont,nX,09]
 						
 						
@@ -1545,7 +1562,7 @@ If aList[oList:nAt,len(aQtdH)+1] > 1
 EndIf
 
 aAdd( aPerg ,{2,"Escolha uma opção : ",0,aCombo,100,"",.T.})
-aAdd( aPerg ,{1,"PO cliente : "+aList[oList:nAt,24],,"@!",'.T.',"",'.T.',40,.F.})  
+aAdd( aPerg ,{1,"PO cliente : ",aList[oList:nAt,24],"@!",'.T.',"",'.T.',40,.F.})  
 aAdd( aPerg ,{2,"Filial de Faturameto : ",cFilFat,aFilFat,100,"",.T.})
 
 If !ParamBox(aPerg ,"Parametros ")
@@ -1930,8 +1947,11 @@ ElseIf nOpcG == 1
 		EndIf 
 	
 	ElseIf cTipFat == "2"
+		DbSelectArea("AAM")
+		DbSetOrder(1)
+		DbSeek(xFilial("AAM")+aList[oList:nAt,01])
 		For nX := 1 to len(aList2)
-			aItens := {}
+			//aItens := {}
 			For nCont := 1 to len(aList5B)
 				If aList5B[nCont,01] == aList2[nX,04] .And. len(aList5b[nCont]) > 4 .And. aList5B[nCont,02] == aList2[nX,01]
 					For nJ := 5 to len(aList5b[nCont])
@@ -1955,10 +1975,28 @@ ElseIf nOpcG == 1
 				EndIf
 			Next nCont
 
-			If (aList2[nX,11] > 0 .And. cQuinze == "2") .OR.(cForFat=="1" .AND. cTipFat=="2" .and. aList2[nX,11] > 0) //cCond == "2"
-				Aadd(aItens,{	aList[oList:nAt,22],;
-								aList2[nX,11],;
-								Posicione("DA1",1,xFilial("DA1")+AAM->AAM_XCODTA+aList[oList:nAt,22],"DA1_PRCVEN")})
+			//If (aList2[nX,11] > 0 .And. cQuinze == "2") .OR.(cForFat=="1" .AND. cTipFat=="2" .and. aList2[nX,11] > 0) //cCond == "2"
+			If (aList2[nX,08] > 0 .And. cQuinze == "2") .OR.(cForFat=="1" .AND. cTipFat=="2" .and. aList2[nX,08] > 0) //cCond == "2"
+				npos := Ascan(aItens,{|x| alltrim(x[1]) == alltrim(aList[oList:nAt,22])})
+				If aList2[nX,10] - aList2[nX,08] > 0
+					
+					nVlrDos  := Posicione("DA1",1,xFilial("DA1")+AAM->AAM_XCODTA+aList[oList:nAt,22],"DA1_PRCVEN")
+					
+					If cTipFat == "2"
+						//Minimo por ativo e valor
+						nQtdVlr := (aList2[nX,10] - aList2[nX,08]) / nVlrDos
+					Else 
+						nQtdVlr := (aList2[nX,10] - aList2[nX,08])/aList[oList:nAt,21]
+					EndIf 
+
+					If npos == 0
+						Aadd(aItens,{	aList[oList:nAt,22],;
+										nQtdVlr,;
+										nVlrDos})
+					Else 
+						aItens[npos,02] += nQtdVlr
+					EndIf
+				EndIf
 			EndIf 
 			cAtFat := Alltrim(aList2[nX,01])
 			//If len(aItens) > 0 
@@ -1975,7 +2013,7 @@ ElseIf nOpcG == 1
 EndIF 
 
 If len(aItens) > 0
-	If resumfat(aItens,aItSFt,.F.)
+	If resumfat(aItens,aItSFt,.F.,cForFat)
 					
 		If len(aItens) > 0 .AND. lDose
 		//PEDIDOS DE DOSES
@@ -2094,7 +2132,7 @@ EndIf
 					
 //Faturamento locacao
 If len(aLocac) > 0 .AND. lLoc
-	If resumfat(aLocac,aItSFt,lLoc)
+	If resumfat(aLocac,aItSFt,lLoc,cForFat)
 		cProdLoc := SuperGetMV("TI_PRODLOC",.F.,"SLOC000001")
 		cNaturez := SuperGetMV("TI_NATRLOC",.F.,"31101003  ")
 		cTesLoc  := Posicione("SB1",1,xFilial("SB1")+cProdLoc,"B1_TS")
@@ -2532,8 +2570,11 @@ For nCont := 1 to len(aEmail)
 			U_CONDANFE(MV_PAR02,MV_PAR01,'C:\BOLETOS\',cCnpjj)
 
 		else 
+			DbSelectArea("SF2")
+			DbSetOrder(1)
+			DbSeek(substr(aEmail[nCont,11],1,4)+MV_PAR02+MV_PAR01)
 
-			U_CONGEN03(MV_PAR02,MV_PAR01,'C:\BOLETOS\',cCnpjj)
+			U_CONGEN03(MV_PAR02,MV_PAR01,'C:\BOLETOS\',cCnpjj,substr(aEmail[nCont,11],1,4))
 		
 		ENDIF
 
@@ -2541,7 +2582,7 @@ For nCont := 1 to len(aEmail)
 		cDestino := Alltrim(aEmail[nCont,05])
 		cDestino += ';'+Alltrim(SUPERGETMV( "MV_XMAILFT", .F., 'faturas@connectvending.com.br' ))
 		
-		cSubject := 'Faturamento'
+		cSubject := 'Faturamento NF'+MV_PAR02+' Cliente - '+SA1->A1_NOME
 
 		If SUBSTR(MV_PAR01,1,1) <> "L"
 			CPYT2S('C:\BOLETOS\'+cCnpjj+'\'+MV_PAR02+'.pdf','\SPOOL\')
@@ -2676,7 +2717,7 @@ Return(nRet)
 	(examples)
 	@see (links_or_references)
 /*/
-Static Function resumfat(aItens,aItSFt,lLoc)
+Static Function resumfat(aItens,aItSFt,lLoc,cForFat)
 
 Local aArea	:=	GetArea()
 Local nCont :=  0
@@ -2688,6 +2729,9 @@ Local nToVl2 :=  0
 Local oResumo,oGrRes,oResm1,oResm2,oLRes
 Local aAux  :=  {}
 Local nOpc  :=  0
+Local aAuxB	:=	{}
+
+Asort(aItens,,,{|x,y| x[1] < y[1]})
 
 For nCont := 1 to len(aItens)
 	Aadd(aAux,{	aItens[nCont,01],;
@@ -2732,29 +2776,73 @@ If len(aAux) > 0
 		
 	EndIf
 
-	If len(aAbater) > 0
+	If cQuinze == "2" .And. cForFat == "2"
 		Aadd(aAux,{'','',,,})
 		Aadd(aAux,{'','Doses abatidas quinzena anterior',,,})
 		
-		//Aadd(aAbater,{aList5B[nCont,01],cNumSr,nQtdAb,nVlr})
 		nToQt := 0
 		nToVl := 0
+		
 		For nCont := 1 to len(aAbater) 
 			If aList[oList:nAt,01] == aAbater[nCont,01]
-				nPos := Ascan(aAux,{|x| Alltrim(x[1]) == Alltrim(aAbater[nCont,02])})
-				If nPos > 0
-					Aadd(aAux,{aAbater[nCont,02],;
-								'',;
+				nPos := Ascan(aAuxB,{|x| Alltrim(x[1]) == Alltrim(aAbater[nCont,02])})
+				If nPos == 0
+					Aadd(aAuxB,{aAbater[nCont,02],;
+								Posicione("SB1",1,xFilial("SB1")+aAbater[nCont,02],"B1_DESC"),;
 								aAbater[nCont,03],;
 								aAbater[nCont,04],;
 								aAbater[nCont,03]*aAbater[nCont,04]})
+				else
+					aAuxB[nPos,03] += aAbater[nCont,03]
+					aAuxB[nPos,05] += aAbater[nCont,03]*aAbater[nCont,04]
 				EndIF 
 
 				nToQt += aAbater[nCont,03]
-				nToVl += aAbater[nCont,04]
+				nToVl += aAbater[nCont,03]*aAbater[nCont,04]
 				lAbate := .T.
 			EndIf
 		Next nCont
+
+		For nCont := 1 to len(aAuxB)
+			Aadd(aAux,aAuxB[nCont])
+		Next nCont
+
+		nPosDosC := Ascan(aAux,{|x| Alltrim(x[1]) == 'DOSE COMP'})
+		nPosItCm := Ascan(aItens,{|x| Alltrim(x[1]) == 'DOSE COMP'})
+
+		If nPosDosC > 0
+			iF aAux[nPosDosC,3]-nToQt > 0
+				aAux[nPosDosC,3] := round(aAux[nPosDosC,3]-nToQt,0)
+				aAux[nPosDosC,5] := aAux[nPosDosC,3] * aAux[nPosDosC,4]
+			/*else
+				aAux[nPosDosC,3] := 0
+				aAux[nPosDosC,5] := 0 */
+			EndIf 
+
+			If nPosItCm > 0 .And. aAux[nPosDosC,3] > 0
+				aItens[nPosItCm,02] := aAux[nPosDosC,3]
+			EndIf 
+
+			nNewQtd := 0
+			nNewVlr := 0
+			nPosTot := ascan(aAux,{|x| Alltrim(upper(X[2])) == 'TOTAL'})
+
+			For nCont := 1 to nPosTot - 1
+				nNewQtd += aAux[nCont,03]
+				nNewVlr += aAux[nCont,05]
+			Next nCont
+
+			aAux[nPosTot,03] := round(nNewQtd,0)
+			aAux[nPosTot,05] := nNewVlr
+
+		EndIf 
+
+		If nPosDosC > 0
+			If aAux[nPosDosC,3] <= 0
+				Adel(aAux,nPosDosC)
+				Asize(aAux,len(aAux)-1)
+			EndIf
+		EndIf
 
 		Aadd(aAux,{'','Totais',nToQt,,nToVl})
 		
