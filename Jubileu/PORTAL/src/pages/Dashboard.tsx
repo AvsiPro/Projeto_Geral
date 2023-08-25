@@ -26,6 +26,9 @@ const Dashboard: React.FC = () => {
   const { windowDimensions } = useContext(WindowDimensionsContext);
   const themeContext = theme === "light" ? lightTheme : darkTheme;
   const isMobile = useMediaQuery({ query: "(max-width: 767px)" });
+
+  const userData = localStorage.getItem('userdata');
+  const user = userData ? JSON.parse(userData) : null;
   
   const [dash, setDash] = useState('dash3')
   const [mes, setMes] = useState('Mês')
@@ -136,9 +139,14 @@ const Dashboard: React.FC = () => {
                  */
               }
               <Dropdown.Item onClick={()=> setDash('dash3')}>Vendas Diárias</Dropdown.Item>
-              <Dropdown.Item onClick={()=> setDash('dash4')}>Painel de Vendas</Dropdown.Item>
-              <Dropdown.Item onClick={()=> setDash('dash5')}>Financeiro - Semana</Dropdown.Item>
-              <Dropdown.Item onClick={()=> setDash('dash6')}>Financeiro - Mês</Dropdown.Item>
+
+              { user.type === 'A' &&
+                <>
+                  <Dropdown.Item onClick={()=> setDash('dash4')}>Painel de Vendas</Dropdown.Item>
+                  <Dropdown.Item onClick={()=> setDash('dash5')}>Financeiro - Semana</Dropdown.Item>
+                  <Dropdown.Item onClick={()=> setDash('dash6')}>Financeiro - Mês</Dropdown.Item>
+                </>
+              }
             </DropdownButton>
 
             <FiltersDash1 />

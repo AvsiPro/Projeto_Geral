@@ -51,7 +51,7 @@ WsMethod POST WsReceive RECEIVE WsService WSAPP01
             Z01->(DbSetOrder(1))
             If Z01->(DbSeek(xFilial('Z01')+AvKey(Alltrim(Upper(cUser)),'Z01_USER')))
                 If Alltrim(cPass) == Alltrim(Z01->Z01_PASS)
-                    If Z01->Z01_TYPE == 'V'
+                    If Z01->Z01_TYPE $ 'V/A'
                         cQuery := " SELECT A3_COD CODE, A3_NREDUZ NOME, A3_EMAIL EMAIL, A3_END ENDER, A3_BAIRRO BAIRRO, A3_MUN MUN, A3_DDDTEL DDD, A3_TEL TEL FROM "+RetSqlName('SA3')+" "
                         cQuery += " WHERE A3_TOKEN = '"+Z01->Z01_TOKEN+"'
                     Else
