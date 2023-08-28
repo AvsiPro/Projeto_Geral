@@ -23,6 +23,7 @@ User Function JUBRF201
 	Local cNumNf	:= ""
 	Local cFilDoc  	:= ""
 	Local nValor := 0
+	Local cNome := ""
 	PRIVATE lAuto     := .F.
 
 	If Empty(FunName())
@@ -199,14 +200,14 @@ Static Function ReportPrint(oReport)
 
 	
 	While !oReport:Cancel() .And. !TRB->(Eof())
-		
+		cNome := POSICIONE("SA1",1,XFILIAL("SA1")+TRB->COD_CLIENTE+TRB->LOJA_CLIENTE,"A1_NOME")     
 		cNumNf := TRB->NUMERO_NF
 		cFilDoc := TRB->FILIAL
 
 		oSection1:Cell(TRB->FILIAL)
 		oSection1:Cell(TRB->COD_CLIENTE)
 		oSection1:Cell(TRB->LOJA_CLIENTE)
-		oSection1:Cell(TRB->NOME_CLIENTE)
+		oSection1:Cell(cNome)
 		oSection1:Cell(TRB->NUM_PEDOK)
 		oSection1:Cell(TRB->NUMERO_NF)
 		oSection1:Cell(TRB->NUM_PEDIDO)
