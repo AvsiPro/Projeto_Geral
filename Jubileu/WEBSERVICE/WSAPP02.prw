@@ -49,7 +49,7 @@ Local cVend 		:= ''
 Local cWhere		:= ''
 Local nAux			:= 0
 Local aRegiao 		:=	{}
-Local nCont 
+//Local nCont 
 
 Default oself:searchKey :=	''
 Default oself:page		:=	1
@@ -153,7 +153,11 @@ Default oself:token		:=	''
 		'}'
 
 		cCond := Iif(Empty((cAliasTMP)->A1_COND),'000',(cAliasTMP)->A1_COND)
-		
+		oTabPreco := JsonObject():New()
+
+		oTabPreco['id'] := '001'
+		oTabPreco['description'] := 'TABELA CLIENTE'
+
 		fGeraResult(;
 			@aListCli,;
 			nAux,;
@@ -186,7 +190,8 @@ Default oself:token		:=	''
 				(cAliasTMP)->A1_PAGATR,;
 				cCond,;
 				Posicione('SE4',1,FwxFilial('SE4')+cCond, 'Alltrim(E4_COND)'),;
-				If(Ascan(aRegiao,{|x| Alltrim(x) == Alltrim((cAliasTMP)->A1_EST)})==0,.F.,.T.);
+				If(Ascan(aRegiao,{|x| Alltrim(x) == Alltrim((cAliasTMP)->A1_EST)})==0,.F.,.T.),;
+				oTabPreco;
 			};
 		)
 
@@ -244,6 +249,11 @@ Static Function fConsulBraApi(cSearch, aListCli,aRegiao)
 			'"Nao Cadastrado",'+;
 			'"'+Alltrim(EncodeUTF8(oJsonCNPJ["cnpj"]))+'"'+;
 		'}'
+
+		oTabPreco := JsonObject():New()
+
+		oTabPreco['id'] := '001'
+		oTabPreco['description'] := 'TABELA CLIENTE'
 		
 		fGeraResult(;
 			@aListCli,;
@@ -277,7 +287,8 @@ Static Function fConsulBraApi(cSearch, aListCli,aRegiao)
 				0,;
 				'',;
 				'',;
-				If(Ascan(aRegiao,{|x| Alltrim(x) == Alltrim(upper(oJsonCNPJ["uf"]))})==0,.F.,.T.);
+				If(Ascan(aRegiao,{|x| Alltrim(x) == Alltrim(upper(oJsonCNPJ["uf"]))})==0,.F.,.T.),;
+				oTabPreco;
 			};
 		)
 	EndIf
@@ -320,6 +331,7 @@ Static Function fGeraResult(aListCli, nAux, aListAux)
 	aListCli[nAux]['payment']  				:= aListAux[27]
 	aListCli[nAux]['payment_description']  	:= aListAux[28]
 	aListCli[nAux]['allowed_region']  	  	:= aListAux[29]
+	aListCli[nAux]['priceTable']  	  		:= aListAux[30]
 
 Return
 
