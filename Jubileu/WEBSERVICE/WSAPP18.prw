@@ -3,7 +3,7 @@
 #Include "RestFul.ch"
 
 
-WsRestFul WSAPP18 Description "chamados API" FORMAT APPLICATION_JSON
+WsRestFul WSAPP18 Description "venda diaria API" FORMAT APPLICATION_JSON
 	WsData page		 AS Integer	Optional
 	WsData pageSize  AS Integer	Optional
 	WsData token     AS String
@@ -144,23 +144,29 @@ RPCSetEnv('01','0801')
 
         (cAliasTMP)->(DBCloseArea())
 
-        cQuery := "SELECT C5_CLIENTE,C5_LOJACLI,A1_NOME,SUM(C6_VALOR) AS VALOR"
+        cQuery := " SELECT C5_CLIENTE,C5_LOJACLI,A1_NOME,SUM(C6_VALOR) AS VALOR, C5_NOTA"
         cQuery += " FROM "+RetSQLName("SC5")+" C5"
-        cQuery += " INNER JOIN "+RetSQLName("SC6")+" C6 ON C6_FILIAL=C5_FILIAL AND C6_NUM=C5_NUM AND C6_CLI=C5_CLIENTE AND C6_LOJA=C5_LOJACLI AND C6.D_E_L_E_T_=' '"
-        cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_COD=C5_CLIENTE AND A1_LOJA=C5_LOJACLI AND A1.D_E_L_E_T_=' '"
+        cQuery += " INNER JOIN "+RetSQLName("SC6")+" C6 ON C6_FILIAL=C5_FILIAL AND C6_NUM=C5_NUM AND C6_CLI=C5_CLIENTE AND C6_LOJA=C5_LOJACLI AND C6.D_E_L_E_T_=' ' "
+        cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_COD=C5_CLIENTE AND A1_LOJA=C5_LOJACLI AND A1.D_E_L_E_T_=' ' "
+        cQuery += " INNER JOIN "+RetSQLName("SF4")+" F4 ON F4_FILIAL='"+xFilial("SF4")+"' AND F4_CODIGO=C6_TES AND F4_DUPLIC='S' AND F4.D_E_L_E_T_ =' ' "
         cQuery += " WHERE C5.D_E_L_E_T_=' ' AND C5_FILIAL BETWEEN ' ' AND 'ZZZ'" 
         cQuery += " AND C5_VEND1='"+cVend+"'"
         cQuery += " AND C5_EMISSAO BETWEEN '"+cPriDia+"' AND '"+cUltDia+"'"
-        cQuery += " GROUP BY C5_CLIENTE,C5_LOJACLI,A1_NOME"
+        cQuery += " GROUP BY C5_CLIENTE,C5_LOJACLI,A1_NOME,C5_NOTA"
         cQuery += " ORDER BY 3"
+
+        conout(cQuery)
 
         MPSysOpenQuery(cQuery, cAliasTMP)
 
 	    While (cAliasTMP)->(!Eof())
-            Aadd(aAux7,{Alltrim(EncodeUTF8((cAliasTMP)->C5_CLIENTE)),;
-                        Alltrim(EncodeUTF8((cAliasTMP)->C5_LOJACLI)),;
-                        Alltrim(EncodeUTF8((cAliasTMP)->A1_NOME)),;
-                        (cAliasTMP)->VALOR})
+            Aadd(aAux7,{;
+                Alltrim(EncodeUTF8((cAliasTMP)->C5_CLIENTE)),;
+                Alltrim(EncodeUTF8((cAliasTMP)->C5_LOJACLI)),;
+                Alltrim(EncodeUTF8((cAliasTMP)->A1_NOME)),;
+                (cAliasTMP)->VALOR,;
+                Iif(!Empty((cAliasTMP)->C5_NOTA),'Faturado','Em Aberto');
+            })
 
             (cAliasTMP)->(DBSkip())
         EndDo
@@ -265,7 +271,8 @@ RPCSetEnv('01','0801')
             oResult['dataTable1'][ncont]['loja'] := aAux7[ncont,02]
             oResult['dataTable1'][ncont]['razao'] := aAux7[ncont,03]
             oResult['dataTable1'][ncont]['valorVendas'] := aAux7[ncont,04]
-            oResult['dataTable1'][ncont]['vlrTicket'] := (aAux7[ncont,04] / nTotVnd) * 100
+            //oResult['dataTable1'][ncont]['vlrTicket'] := (aAux7[ncont,04] / nTotVnd) * 100
+            oResult['dataTable1'][ncont]['status'] := aAux7[ncont,05]
         next ncont 
 
         For ncont := 1 to len(aAux8)
