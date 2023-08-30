@@ -256,7 +256,7 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
 	Local aCabec    := {}
 	Local aItens   	:= {}   
 	Local aLinha    := {}
-	Local cDoc 		:= GetSxeNum("SC5", "C5_NUM")
+	Local cDoc 		:= '' 
 	Local nX		:=	0
 	Local aDadCl		:=	{}
 	Local nOpcAuto	:=	3
@@ -268,13 +268,29 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
 	Local aSaldos 		:=	{}
 	Local cProdsSld		:=	''
 	Local nCont
+	Local cFilFat		:=	''
 	Default oBody		:= 	nil
     Default aRetExec    :=  {}
     Default aErro       :=  {}
 
 	cCodVnd := fVendToken(oBody:TOKEN)
 	//cCondPg := STRZERO(VAL(oBody:CONDPAGTO),3)
-	
+	cFilFat := Posicione("SA3",1,xFilial("SA3")+cCodVnd,"A3_FILFUN")
+	conout(cfilfat)
+
+	If CFILANT <> cFilFat 
+		
+		RpcClearEnv()
+		RPCSetType(3)  
+		RpcSetEnv('01',cFilFat,,,,GetEnvServer(),{ }) 
+
+		CFILANT := If(!Empty(cFilFat),cFilFat,'0801')
+	EndIf 
+
+	conout('filial para o pedido# '+CFILANT)
+
+	cDoc := GetSxeNum("SC5", "C5_NUM")
+
 	cCondPg := oBody:CONDPAGTO
 	cObsApp := oBody:OBSERVATION
 	nDescon := oBody:DESCONTO
@@ -489,7 +505,7 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
 		If !Empty(ccnpj) 
 			If oBody:ORCAMENTO <> 'S'
 				aItensCad := oBody:ITEMS
-                aadd(aCabec, {"C5_FILIAL"	, xFilial("SC5"),Nil})
+                aadd(aCabec, {"C5_FILIAL"	, CFILANT		,Nil})
 				aadd(aCabec, {"C5_NUM"		, cDoc			,Nil})
 				aadd(aCabec, {"C5_TIPO"		, "N"			,Nil})
 				aadd(aCabec, {"C5_CLIENTE"	, ccnpj			,Nil})
@@ -519,8 +535,8 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
 						nQtd := aItensCad[nX]:QUANTIDADE
 					EndIf 
 					
-					aadd(aLinha,{"C6_FILIAL"	, xFilial("SC6")	, Nil}) //STRZERO(nX,2)	
-					aadd(aLinha,{"C6_ITEM"		, cItem				, Nil}) //STRZERO(nX,2)	
+					aadd(aLinha,{"C6_FILIAL"	, CFILANT						, Nil}) //STRZERO(nX,2)	
+					aadd(aLinha,{"C6_ITEM"		, cItem							, Nil}) //STRZERO(nX,2)	
 					aadd(aLinha,{"C6_PRODUTO"	, aItensCad[nX]:PRODUTO			, Nil})
 					aadd(aLinha,{"C6_QTDVEN"	, nQtd							, Nil})
 					aadd(aLinha,{"C6_PRCVEN"	, aItensCad[nX]:VALOR			, Nil})
@@ -743,8 +759,8 @@ cHtml += '<tbody>
 
 DbSelectArea("SC6")
 DbSetOrder(1)
-If Dbseek(xFilial("SC6")+cPedido)
-	While !EOF() .And. SC6->C6_FILIAL == xFilial("SC6") .and. SC6->C6_NUM == cPedido
+If Dbseek(CFILANT+cPedido)
+	While !EOF() .And. SC6->C6_FILIAL == CFILANT .and. SC6->C6_NUM == cPedido
 		cHtml += '<tr style="height: 18px;">
 		cHtml += '<td style="width: 148.188px; height: 18px;">'+ALLTRIM(SC6->C6_PRODUTO)+'</td>'
 		cHtml += '<td style="width: 231.95px; height: 18px;">'+ALLTRIM(SC6->C6_DESCRI)+'</td>'
@@ -828,7 +844,7 @@ Local cRet  := ''
 Local aArea := GetArea()
 	
 	cQuery := " SELECT * FROM "+RetSqlName('SA3')+" " + CRLF
-	cQuery += " WHERE D_E_L_E_T_ = ' ' " + CRLF
+	cQuery += " WHERE A3_FILIAL=' ' AND D_E_L_E_T_ = ' ' " + CRLF
 	cQuery += " AND UPPER(A3_TOKEN) = '"+Upper(cToken)+"' " + CRLF
 	
 	cAliasTMP := GetNextAlias()
