@@ -56,6 +56,7 @@ Local aAux8             :=  {}
 Local nTotVnd           :=  0
 Local ncont 
 Local nTotQtd           :=  0
+Local nTotFat           :=  0
 
 Default oself:page		:=	1
 Default oself:pageSize	:= 	20
@@ -108,7 +109,7 @@ RPCSetEnv('01','0801')
 
         (cAliasTMP)->(DBCloseArea())
 
-        cQuery := "SELECT BM_DESC,SUM(C6_VALOR) AS VALOR
+        cQuery := "SELECT BM_DESC,SUM(C6_VALOR) AS VALOR,SUM(C6_PRCVEN*C6_QTDENT) AS FATURADO"
         cQuery += " FROM "+RetSQLName("SC5")+" C5"
         cQuery += " INNER JOIN "+RetSQLName("SC6")+" C6 ON C6_FILIAL=C5_FILIAL AND C6_NUM=C5_NUM AND C6.D_E_L_E_T_=' '"
         cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD=C6_PRODUTO AND B1.D_E_L_E_T_=' '"
@@ -126,7 +127,8 @@ RPCSetEnv('01','0801')
 	    While (cAliasTMP)->(!Eof())
             Aadd(aAux3,{Alltrim(EncodeUTF8((cAliasTMP)->BM_DESC)),;
                         (cAliasTMP)->VALOR,;
-                        0})
+                        0,;
+                        (cAliasTMP)->FATURADO})
             (cAliasTMP)->(DBSkip())
         EndDo
 
@@ -198,6 +200,7 @@ RPCSetEnv('01','0801')
         (cAliasTMP)->(DBCloseArea())
         
         Aeval(aAux3,{|x| nTotVnd += x[2]})
+        Aeval(aAux3,{|x| nTotFat += x[4]})
         Aeval(aAux3,{|x| x[3] := round((x[2]/nTotVnd) * 100,2)})
         
         aAux2 := Array(len(aAux3))
@@ -214,10 +217,11 @@ RPCSetEnv('01','0801')
         oStatus := JsonObject():New()
         oResult := JsonObject():New()
         
-        oResult['header'] := Array(3)
+        oResult['header'] := Array(4)
         oResult['header'][1] := JsonObject():New()
         oResult['header'][2] := JsonObject():New()
         oResult['header'][3] := JsonObject():New()
+        oResult['header'][4] := JsonObject():New()
         
         oResult['series1'] := Array(1)
         oResult['series1'][1] := JsonObject():New()
@@ -233,13 +237,17 @@ RPCSetEnv('01','0801')
         oResult['header'][1]['type'] := "number"
         oResult['header'][1]['value'] := nTotVnd
 
-        oResult['header'][2]['title'] := EncodeUTF8("Vlr. Ticket Médio")
+        oResult['header'][2]['title'] := "Vlr. Total Faturado"
         oResult['header'][2]['type'] := "number"
-        oResult['header'][2]['value'] := nTotVnd / nTotQtd
+        oResult['header'][2]['value'] := nTotFat
+
+        oResult['header'][3]['title'] := EncodeUTF8("Vlr. Ticket Médio")
+        oResult['header'][3]['type'] := "number"
+        oResult['header'][3]['value'] := nTotVnd / nTotQtd
         
-        oResult['header'][3]['title'] := "Num Vendas"
-        oResult['header'][3]['type'] := ""
-        oResult['header'][3]['value'] := nTotQtd
+        oResult['header'][4]['title'] := "Num Vendas"
+        oResult['header'][4]['type'] := ""
+        oResult['header'][4]['value'] := nTotQtd
         
         oResult['series1'][1]['name'] := "Valor Vendas"
         oResult['series1'][1]['data'] := aAux1

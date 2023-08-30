@@ -125,8 +125,9 @@ Default oself:token		:=	''
 	cQuery := " SELECT A1_COD, A1_LOJA, A1_END, A1_BAIRRO, A1_COMPLEM, A1_CGC, A1_INSCR, "
 	cQuery += " A1_NOME, A1_NREDUZ, A1_MUN, A1_EST, A1_CEP, A1_CONTATO, A1_EMAIL, A1_DDD, "
 	cQuery += " A1_TEL, A1_ULTCOM, A1_PRICOM, A1_RISCO, A1_LC, A1_SALDUP, A1_MCOMPRA, "
-	cQuery += " A1_NROCOM, A1_ATR, A1_MATR, A1_PAGATR, A1_COND "
+	cQuery += " A1_NROCOM, A1_ATR, A1_MATR, A1_PAGATR, A1_COND, A1_TABELA, DA0_DESCRI "
 	cQuery += " FROM "+RetSqlName('SA1')+" SA1 "
+	cQuery += " LEFT JOIN "+RetSQLName("DA0")+" DA0 ON DA0_FILIAL='"+xFilial("DA0")+"' AND DA0_CODTAB=A1_TABELA AND DA0.D_E_L_E_T_=' '"
 	cQuery += " WHERE SA1.A1_FILIAL='"+xFilial("SA1")+"' AND SA1.D_E_L_E_T_ = ' ' "
 	
 	If !oself:customer
@@ -155,8 +156,8 @@ Default oself:token		:=	''
 		cCond := Iif(Empty((cAliasTMP)->A1_COND),'000',(cAliasTMP)->A1_COND)
 		oTabPreco := JsonObject():New()
 
-		oTabPreco['id'] := '001'
-		oTabPreco['description'] := 'TABELA CLIENTE'
+		oTabPreco['id'] := Alltrim(EncodeUTF8((cAliasTMP)->A1_TABELA))
+		oTabPreco['description'] := Alltrim(EncodeUTF8((cAliasTMP)->DA0_DESCRI))
 
 		fGeraResult(;
 			@aListCli,;
