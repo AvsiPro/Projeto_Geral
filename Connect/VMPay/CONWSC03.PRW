@@ -159,7 +159,7 @@ STATIC FUNCTION Maquinas()
         cValor := oRestClient:GetResult("GET")
 
         cValor := DecodeUTF8(cValor, "cp1252")
-
+/*
         FWJsonDeserialize(cValor,@oJsonBody)
 
         For nX := 1 to len(oJsonBody)
@@ -168,8 +168,8 @@ STATIC FUNCTION Maquinas()
                             oJsonBody[nX]:ASSET_NUMBER,;
                             cvaltochar(oJsonBody[nX]:INSTALLATION:ID)  })
             EndIf
-        Next nX 
-/*
+        Next nX **/
+
         cValor := strtran(cValor,"[")
         cValor := strtran(cValor,"]")
         cValor := strtran(cValor,'"')
@@ -185,7 +185,7 @@ STATIC FUNCTION Maquinas()
             ENDIF
 
         NEXT nX
-        */
+
     ENDIF
 
 RETURN       

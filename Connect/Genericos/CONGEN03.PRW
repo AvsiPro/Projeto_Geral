@@ -83,8 +83,8 @@ User Function CONGEN03(cNumNF,cSerNF,cPathNF,cCNPJNF,cFilNf)
     aAdd( aPergs ,{01,"Nota de"   ,cNotD   ,"@!"       ,".T.","SF2"    ,".T.", 80,.F.})  
 	aAdd( aPergs ,{01,"Nota Ate"  ,cNotA   ,"@!"       ,".T.","SF2"    ,".T.", 80,.F.})  
 
-	aAdd( aPergs ,{01,"Filial de"   ,cFilD   ,"@!"       ,".T.",""    ,".T.", 80,.F.})  
-	aAdd( aPergs ,{01,"Filial Ate"  ,cFilA   ,"@!"       ,".T.",""    ,".T.", 80,.F.})  
+	aAdd( aPergs ,{01,"Filial de"   ,IF(Empty(cPathNF),space(4),cFilD)   ,"@!"       ,".T.",""    ,".T.", 80,.F.})  
+	aAdd( aPergs ,{01,"Filial Ate"  ,IF(Empty(cPathNF),space(4),cFilA)   ,"@!"       ,".T.",""    ,".T.", 80,.F.})  
 
 	If Empty(cPathNF)
 		If !ParamBox(aPergs ,"Parametros ")

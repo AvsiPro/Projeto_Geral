@@ -266,7 +266,7 @@ If len(aList) > 0
 	oTMenuIte1 := TMenuItem():New(oDlg1,"Procurar",,,,{|| procurar()},,,,,,,,,.T.)
 	oTMenuIte2 := TMenuItem():New(oDlg1,"Listar-Faturamento",,,,{|| Processa({||PreFat(),"Aguarde"})} ,,,,,,,,,.T.)
 	oTMenuIte3 := TMenuItem():New(oDlg1,"Faturar",,,,{|| Processa({||GeraPv(0),"Aguarde"})} ,,,,,,,,,.T.)
-	oTMenuIte4 := TMenuItem():New(oDlg1,"Envio NF/Boleto",,,,{|| NFBol()} ,,,,,,,,,.T.)
+	oTMenuIte4 := TMenuItem():New(oDlg1,"Envio NF/Boleto",,,,{|| NFBol(1)} ,,,,,,,,,.T.)
 	oTMenuIte7 := TMenuItem():New(oDlg1,"Impressoes",,,,{|| Processa({||U_CONFSR02(oSay6:cTitle,.F.),"Aguarde"})} ,,,,,,,,,.T.)
 
 
@@ -1017,8 +1017,8 @@ If aList[nLinha2,20] > 0
 							If nPosAbt == 0
 								Aadd(aAbater,{aList5B[nCont,01],aList5B[nCont,nX,02],nQtdAb,aList5B[nCont,nX,09],cSelec,Alltrim(cNumSr)+Alltrim(cSelec)+"#"})
 							Else 
-								aAbater[nPos,03] += nQtdAb
-								aAbater[nPos,06] := Alltrim(aAbater[nPos,06]) + Alltrim(cNumSr)+Alltrim(cSelec)+"#"
+								aAbater[nPosAbt,03] += nQtdAb
+								aAbater[nPosAbt,06] := Alltrim(aAbater[nPosAbt,06]) + Alltrim(cNumSr)+Alltrim(cSelec)+"#"
 								//aAbater[nPos,04] += nQtdAb *  aList5B[nCont,nX,09]*/
 							EndIf 
 						EndIF 
@@ -1268,31 +1268,49 @@ Return
 ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
 */
 
-Static Function NFBol()
+Static Function NFBol(nOpc)
 
 Local aArea		:=	GetArea()
 Local nX 
 
 Private oBoleto,oGrupo1,oBrw1,oBotao1,oBotao2,oBotao3,oEmail,oBmp1,oBmp2,oBmp3,oBmp4,oSayB1,oSayB2,oSayB3,oSayB4,oBotao4
 Private aEmail	:=	{}
- 
-For nX := 1 to len(aList3b)
-	If strzero(month(aList3b[nX,02]),2)+cvaltochar(year(aList3b[nX,02])) == strzero(month(ddatabase),2)+cvaltochar(year(ddatabase)) .And. !Empty(aList3b[nX,01])
-		nPosL1 := Ascan(aList,{|x| x[1] == aList3b[nX,05]})
-		Aadd(aEmail,{.F.,aList3b[nX,04],Alltrim(aList[nPosL1,05]),If(!Empty(aList3b[nX,04]),'Enviado','Não enviado'),;
-					 aList[nPosL1,13],aList[nPosL1,01],aList3b[nX,01],aList[nPosL1,09],aList[nPosL1,03],aList[nPosL1,04],aList3b[nX,08],''})
-	EndIf
-Next nX 
+
+If nOpc == 1
+	For nX := 1 to len(aList3b)
+		If strzero(month(aList3b[nX,02]),2)+cvaltochar(year(aList3b[nX,02])) == strzero(month(ddatabase),2)+cvaltochar(year(ddatabase)) .And. !Empty(aList3b[nX,01])
+			nPosL1 := Ascan(aList,{|x| x[1] == aList3b[nX,05]})
+			Aadd(aEmail,{.F.,;
+						aList3b[nX,04],;
+						Alltrim(aList[nPosL1,05]),;
+						If(!Empty(aList3b[nX,04]),'Enviado','Não enviado'),;
+						aList[nPosL1,13],;
+						aList[nPosL1,01],;
+						aList3b[nX,01],;
+						aList[nPosL1,09],;
+						aList[nPosL1,03],;
+						aList[nPosL1,04],;
+						aList3b[nX,08],;
+						''})
+		EndIf
+	Next nX 
+else
+	For nX := 1 to len(aDados)
+		Aadd(aEmail,aDados[nX])
+	Next nX 
+EndIf 
 
 If len(aEmail) < 1
 	Aadd(aEmail,{.F.,'','','',''})
 EndIf
 
-oBoleto    := MSDialog():New( 092,232,660,1043,"Nota/Boleto por Email",,,.F.,,,,,,.T.,,,.T. )
+Asort(aEmail,,,{|x,y| x[2] < y[2]})
 
-	oGrupo1      := TGroup():New( 004,008,246,400,"Contratos Faturados",oBoleto,CLR_BLACK,CLR_WHITE,.T.,.F. )
+oBoleto    := MSDialog():New( 092,232,660,1243,"Nota/Boleto por Email",,,.F.,,,,,,.T.,,,.T. )
+
+	oGrupo1      := TGroup():New( 004,008,246,500,"Contratos Faturados",oBoleto,CLR_BLACK,CLR_WHITE,.T.,.F. )
 	//oBrw1      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{016,016,248,292},,, oGrp1 ) 
-	oEmail 	   := TCBrowse():New(016,016,375,225,, {'','Nota','Cliente','Status','Email'},{5,30,40,40,20},;
+	oEmail 	   := TCBrowse():New(016,016,475,225,, {'','Nota','Cliente','Status','Email'},{5,30,40,40,20},;
                             oGrupo1,,,,{|| /*FHelp(oEmail:nAt)*/},{|| editcol(oEmail:nAt)},, ,,,  ,,.F.,,.T.,,.F.,,,)
 	oEmail:SetArray(aEmail)
 	oEmail:bLine := {||{If(aEmail[oEmail:nAt,01],oOk,oNo),; 
@@ -2539,6 +2557,7 @@ Local aArquivos	:=	{}
 Local cFile1	:=	''
 Local cFile2	:=	''
 Local cFile3	:=	''
+Local lEmail 	:=	.T.
 
 For nCont := 1 to len(aEmail)
 	If aEmail[nCont,01]
@@ -2558,8 +2577,11 @@ For nCont := 1 to len(aEmail)
 
 		//Gera boleto?
 		If SA1->A1_XBOL == "S" .OR. EMPTY(SA1->A1_XBOL)
-			
-			U_CONBOL(.T.,'C:\BOLETOS\'+cCnpjj+'\',substr(aEmail[nCont,11],1,4),'')
+			DbSelectArea("SE1")
+			DbSetOrder(1)
+			If Dbseek(substr(aEmail[nCont,11],1,4)+Avkey(MV_PAR01,"E1_PREFIXO")+MV_PAR02)
+				U_CONBOL(.T.,'C:\BOLETOS\'+cCnpjj+'\',substr(aEmail[nCont,11],1,4),'')
+			EndIf
 		
 		ENDIF
 		
@@ -2607,7 +2629,7 @@ For nCont := 1 to len(aEmail)
 		Aadd(aArquivos,{cFile4,''})
 
 		//U_CONMAIL(cRemete,cDestino,cSubject,cBody,aArquivos,.T.) 
-		U_EnviarEmail(cDestino,cSubject,cBody,cFile1+','+cFile2+','+cFile3+','+cFile4,.f.)  
+		lEmail := U_EnviarEmail(cDestino,cSubject,cBody,cFile1+','+cFile2+','+cFile3+','+cFile4,.f.)  
 	EndIf 
 Next nCont
 
@@ -3063,5 +3085,118 @@ Next nConP
 Fhelp(oList:nAt)
 
 RestArea(aArea)
+
+Return
+
+
+/*/{Protheus.doc} User Function nomeFunction
+	(long_description)
+	@type  Function
+	@author user
+	@since 29/08/2023
+	@version version
+	@param param_name, param_type, param_descr
+	@return return_var, return_type, return_description
+	@example
+	(examples)
+	@see (links_or_references)
+	/*/
+User Function CONFSCX1()
+
+Local cQuery 
+Local aRet 		:=	{}
+Local aPergs	:=	{}
+Local dDtFat1	:=	ctod(' / / ')
+Local dDtFat2	:=	ctod(' / / ')
+Local cCliDe	:=	space(9)
+Local cCliAt	:=	'ZZZZZZZZZ'
+Local cFilDe	:=	space(4)
+Local cFilAt	:=	'ZZZZ'
+
+Private aDados	:=	{}
+Private oOk   	:= LoadBitmap(GetResources(),'br_verde')       //Controla se o pedido foi alterado ou nao no grid.
+Private oNo   	:= LoadBitmap(GetResources(),'br_vermelho')    
+
+IF Select("SM0") == 0
+    RpcSetType(3)
+    RPCSetEnv("01","0101")
+ENDIF
+
+aAdd( aPergs ,{1,"Filial de : "  ,cFilDe  ,"@!",'.T.',"",'.T.',60,.F.})  
+aAdd( aPergs ,{1,"Filial Até: "  ,cFilAt  ,"@!",'.T.',"",'.T.',60,.F.}) 
+aAdd( aPergs ,{1,"Faturado de : ",dDtFat1 ,"@!",'.T.',"",'.T.',60,.T.})  
+aAdd( aPergs ,{1,"Faturado Até: ",dDtFat2 ,"@!",'.T.',"",'.T.',60,.T.}) 
+aAdd( aPergs ,{1,"Cliente de : " ,cCliDe  ,"@!",'.T.',"SA1",'.T.',60,.F.})  
+aAdd( aPergs ,{1,"Cliente Até: " ,cCliAt  ,"@!",'.T.',"SA1",'.T.',60,.F.}) 
+aAdd( aPergs ,{2,"Tipo Nota?"    ,"1" 	  ,{"1=Todos","2=Somente Locação"},080,'',.T.})
+
+
+If !ParamBox(aPergs ,"Parâmetros ",aRet)
+	Return
+EndIF 
+
+cQuery := "SELECT F2_DOC,A1_NOME,A1_NREDUZ,F2_COND,F2_CLIENTE,F2_LOJA,F2_FILIAL,F2_SERIE,C5_XTPPED,A1_EMAIL,
+cQuery += " MAX(D2_PEDIDO) AS C5_NUM,"
+cQuery += " MAX(C6_CONTRT) AS CONTRT"
+cQuery += " FROM "+RetSQLName("SF2")+" F2
+cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_COD=F2_CLIENTE AND A1_LOJA=F2_LOJA AND A1.D_E_L_E_T_=' '"
+cQuery += " INNER JOIN "+RetSQLName("SD2")+" D2 ON D2_FILIAL=F2_FILIAL AND D2_DOC=F2_DOC AND D2_SERIE=F2_SERIE AND D2_CLIENTE=F2_CLIENTE AND D2_LOJA=F2_LOJA AND D2.D_E_L_E_T_=' '"
+cQuery += " INNER JOIN "+RetSQLName("SC6")+" C6 ON C6_FILIAL=D2_FILIAL AND C6_NUM=D2_PEDIDO AND C6_ITEM=D2_ITEMPV AND C6.D_E_L_E_T_=' '"
+cQuery += " INNER JOIN "+RetSQLName("SC5")+" C5 ON C5_FILIAL=C6_FILIAL AND C5_NUM=C6_NUM AND C5_CLIENTE=C6_CLI AND C5_LOJACLI=C6_LOJA AND C5.D_E_L_E_T_=' ' AND C5_XTPPED NOT IN('A')"
+cQuery += " WHERE F2.D_E_L_E_T_=' '"
+cQuery += " AND F2_FILIAL BETWEEN '"+aRet[1]+"' AND '"+aRet[2]+"'" 
+cQuery += " AND F2_EMISSAO BETWEEN '"+dtos(aRet[3])+"' AND '"+dtos(aRet[4])+"'"
+cQuery += " AND F2_CLIENTE BETWEEN '"+aRet[5]+"' AND '"+aRet[6]+"'"
+
+If aRet[7] == "2"
+	cQuery += " AND F2_SERIE LIKE 'L%'"
+EndIf 
+
+cQuery += " GROUP BY F2_DOC,A1_NOME,A1_NREDUZ,F2_COND,F2_CLIENTE,F2_LOJA,F2_FILIAL,F2_SERIE,C5_XTPPED,A1_EMAIL"
+
+If Select("TRB") > 0
+	dbSelectArea("TRB")
+	dbCloseArea()
+EndIf
+
+MemoWrite("CONFSC01.SQL",cQuery)
+
+cQuery:= ChangeQuery(cQuery)
+DbUseArea(.T.,"TOPCONN",TcGenQry(,,cQuery),'TRB',.F.,.T.)   
+	
+DbSelectArea("TRB")   
+
+While !EOF()
+/*true ou false	-	enviado ou nao
+nota		-	numero da nota
+cliente		-	razao / fantasia
+enviado ou nao	-	texto
+email		-	email cadastro sa1
+contrato	-	aam_contrt
+pedido		-	numero pedido gerado
+condpgto	-	codigo descricao
+codigo cliente	-	codigo docliente
+loja		-	loja cliente
+filial+serie	-	filial faturamento + serie da nota
+12		-	vazio*/
+	Aadd(aDados,{	.F.,;
+					TRB->F2_DOC,;
+					TRB->A1_NOME+" / "+TRB->A1_NREDUZ,;
+					'',;
+					TRB->A1_EMAIL,;
+					TRB->CONTRT,;
+					TRB->C5_NUM,;
+					TRB->F2_COND,;
+					TRB->F2_CLIENTE,;
+					TRB->F2_LOJA,;
+					TRB->F2_FILIAL+TRB->F2_SERIE,;
+					'',;
+					TRB->C5_XTPPED})
+	Dbskip()
+ENDDO
+
+If len(aDados)
+	NFBOL(2)
+EndIf 
 
 Return

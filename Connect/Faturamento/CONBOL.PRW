@@ -263,7 +263,7 @@ If DBSEEK(xFilial("SE1")+Avkey(MV_PAR01,"E1_PREFIXO")+Avkey(MV_PAR02,"E1_NUM")) 
 		DbSelectArea("SE1")
 
 		RecLock("SE1",.f.)
-		SE1->E1_NUMBCO := CB_RN_NN[3]
+		SE1->E1_NUMBCO := STRTRAN(CB_RN_NN[3],"/")
 		SE1->E1_CODBAR := CB_RN_NN[1]
 		SE1->E1_CODDIG := STRTRAN(STRTRAN(CB_RN_NN[2],".")," ")
 		SE1->(Msunlock())
@@ -1854,3 +1854,202 @@ Else
 Endif
 
 Return(_cRet) 
+
+/*/{Protheus.doc} User Function nomeFunction
+	(long_description)
+	@type  AJUSTAR CODIGO DE BARRAS NOS TITULOS ANTERIORES
+	@author user
+	@since 29/08/2023
+	@version version
+	@param param_name, param_type, param_descr
+	@return return_var, return_type, return_description
+	@example
+	(examples)
+	@see (links_or_references)
+	/*/
+User Function xAjusCoB()
+
+Local cQuery 
+Local aAux 		:=	{}
+Local nCont 
+
+Private _Bco 	:=	'341' 
+Private _Age 	:=	'0048 ' 
+Private _Cta 	:=	'53663     ' 
+Private _DiV 	:=	'5' 
+Private _Car	:=	'109' 
+Private _SubCta	:=  '010' 
+
+
+IF Select("SM0") == 0
+    RpcSetType(3)
+    RPCSetEnv("01","0101")
+ENDIF
+
+cQuery := "SELECT E1_NUMBCO,E1_CODBAR,E1_CODDIG,R_E_C_N_O_ AS REG FROM SE1010 E1"
+cQuery += " WHERE E1_FILIAL='01' AND E1_NUMBCO<>' ' AND D_E_L_E_T_=' '"
+cQuery += " AND E1_EMISSAO>='20230701' AND E1_BAIXA=' '"// AND E1_CODBAR=' '"
+
+If Select("TRB") > 0
+	dbSelectArea("TRB")
+	dbCloseArea()
+EndIf
+
+MemoWrite("CONFSC01.SQL",cQuery)
+
+cQuery:= ChangeQuery(cQuery)
+DbUseArea(.T.,"TOPCONN",TcGenQry(,,cQuery),'TRB',.F.,.T.)   
+	
+DbSelectArea("TRB")   
+
+While !EOF()
+	cLinhaD := 	substr(TRB->E1_CODDIG,1,5)+'.'+;
+				substr(TRB->E1_CODDIG,6,5)+' '+;
+				substr(TRB->E1_CODDIG,11,5)+'.'+;
+				substr(TRB->E1_CODDIG,16,6)+' '+;
+				substr(TRB->E1_CODDIG,22,5)+'.'+;
+				substr(TRB->E1_CODDIG,27,6)+'  '+;
+				substr(TRB->E1_CODDIG,33,1)+'  '+;
+				substr(TRB->E1_CODDIG,34);
+
+	Aadd(aAux,{SUBSTR(SEPARA(alltrim(TRB->E1_NUMBCO),"-")[1],4),;
+				TRB->REG,;
+				alltrim(TRB->E1_NUMBCO),;
+				'',;
+				'',;
+				'',;
+				'',;
+			TRB->E1_CODBAR,;
+			Alltrim(cLinhaD),;
+			.F.})
+	Dbskip()
+ENDDO
+
+DbSelectArea("SA6")
+DbSetOrder(1)
+DbSeek(xFilial("SA6")+_Bco+_Age+_Cta+_SubCta)
+DbSelectArea("SEE")
+DbSetOrder(1)
+DbSeek(xFilial("SEE")+_Bco+_Age+_Cta+_SubCta)
+
+
+For nCont := 1 to len(aAux)
+	DbSelectArea("SE1")
+	DbGoto(aAux[nCont,2])
+	DO CASE
+		CASE Alltrim(SE1->E1_PARCELA) == "A"
+			cParcela := "1"
+		CASE Alltrim(SE1->E1_PARCELA) == "B"
+			cParcela := "2"
+		CASE Alltrim(SE1->E1_PARCELA) == "C"
+			cParcela := "3"
+		CASE Alltrim(SE1->E1_PARCELA) == "D"
+			cParcela := "4"
+		CASE Alltrim(SE1->E1_PARCELA) == "E"
+			cParcela := "5"
+		CASE Alltrim(SE1->E1_PARCELA) == "F"
+			cParcela := "6"
+		CASE Alltrim(SE1->E1_PARCELA) == "G"
+			cParcela := "7"
+		CASE Alltrim(SE1->E1_PARCELA) == "H"
+			cParcela := "8"
+		CASE Alltrim(SE1->E1_PARCELA) == "I"
+			cParcela := "9"
+		OTHERWISE
+			cParcela := "0"
+	ENDCASE
+	
+
+	_nVlrAbat   :=  SomaAbat(SE1->E1_PREFIXO,SE1->E1_NUM,SE1->E1_PARCELA,"R",1,,SE1->E1_CLIENTE,SE1->E1_LOJA)
+		
+	aBol := cBarra(SA6->A6_COD+"9",Subs(SA6->A6_AGENCIA,1,4),Alltrim(SA6->A6_NUMCON),;
+			SA6->A6_DVCTA,alltrim(SEE->EE_CODCART),AllTrim(E1_NUM)+AllTrim(E1_PARCELA),;
+			(E1_SALDO-_nVlrAbat),SE1->E1_VENCREA,SEE->EE_CODEMP,aAux[nCont,01],;
+			Iif(SE1->E1_DECRESC > 0,.t.,.f.),SE1->E1_PARCELA,;
+			Alltrim(SA6->A6_AGENCIA)+If(empty(SA6->A6_DVAGE),'','-')+Alltrim(SA6->A6_DVAGE) )
+	
+	aAux[nCont,4] := aBol[1]
+	aAux[nCont,5] := aBol[2]
+	aAux[nCont,6] := aBol[3]
+	aAux[nCont,7] := aBol[4]
+
+	If aAux[nCont,4] <> aAux[nCont,8] .or. aAux[nCont,5] <> aAux[nCont,9]
+		aAux[nCont,10] := .t.
+		Reclock("SE1",.F.)
+		SE1->E1_CODBAR := aAux[nCont,4]
+		SE1->E1_CODDIG := STRTRAN(STRTRAN(aAux[nCont,5],".")," ")
+		SE1->(Msunlock())
+	EndIf
+	
+	//STRTRAN(STRTRAN(CB_RN_NN[2],".")," ")
+Next nCont
+
+Return
+
+
+Static Function cBarra(cBanco,cAgencia,cConta,cDacCC,cCarteira,cNroDoc,nValor,dvencimento,cConvenio,cSequencial,_lTemDesc,_cParcela,_cAgCompleta)
+
+Local cCodEmp := StrZero(Val(SubStr(cConvenio,1,6)),6)
+Local cNumSeq := cSequencial //strzero(val(cSequencial),5)
+Local blvalorfinal := strzero(round(nValor*100,10),10)
+Local cCpoLivre := cCBSemDig := cCodBarra := cFatVenc := ''
+Local cNossoNum
+Local _cDigito := ""
+Local _cSuperDig := ""
+
+_cParcela := NumParcela(_cParcela)
+
+//Fator Vencimento - POSICAO DE 06 A 09
+cFatVenc := STRZERO(dvencimento - CtoD("07/10/1997"),4)
+
+//Proximo numero da faixa
+pNumero := val(cNumSeq)
+
+if Substr(cBanco,1,3) == "341"  // Banco Itau
+
+	//Nosso Numero sem digito
+	
+	cNNumSDig := alltrim(str(pNumero,10))
+				
+	
+	//Nosso Numero
+	cNumbco	:= strzero(val(cNNumSDig),8) 		 
+	cNNumSDig := cCarteira + cNumbco  		
+
+	cCalcDig      := AllTrim( Str( modulo10( StrZero(Val(cAgencia),4) + StrZero(Val(cConta),5) + cNNumSDig ) ) )
+	cNossoNum := cCarteira + '/' + cNumbco + '-' + cCalcDig
+	
+	cCpoLivre := cNNumSDig + cCalcDig + StrZero(Val(cAgencia),4) + StrZero(Val(cConta),5) + cDacCC + "000"
+
+Endif	
+
+//Dados para Calcular o Dig Verificador Geral
+ccalcg := ''
+cCBSemDig := cBanco + cFatVenc + blvalorfinal + cCpoLivre
+
+cCodBarra := cBanco + modulo11(cCBSemDig,'999') + cFatVenc + blvalorfinal + cCpoLivre      
+
+//Digito Verificador do Primeiro Campo         
+cPrCpo := cBanco + SubStr(cCodBarra,20,5)
+cDvPrCpo := AllTrim(Str(Modulo10(cPrCpo)))
+
+//Digito Verificador do Segundo Campo
+cSgCpo := SubStr(cCodBarra,25,10)
+cDvSgCpo := AllTrim(Str(Modulo10(cSgCpo)))
+
+//Digito Verificador do Terceiro Campo
+cTrCpo := SubStr(cCodBarra,35,10)  //35,10
+cDvTrCpo := AllTrim(Str(Modulo10(cTrCpo)))
+
+//Digito Verificador Geral
+cDvGeral := SubStr(cCodBarra,5,1)
+
+//Linha Digitavel
+cLindig := SubStr(cPrCpo,1,5) + "." + SubStr(cPrCpo,6,4) + cDvPrCpo + " "   //primeiro campo
+cLinDig += SubStr(cSgCpo,1,5) + "." + SubStr(cSgCpo,6,5) + cDvSgCpo + " "   //segundo campo
+cLinDig += SubStr(cTrCpo,1,5) + "." + SubStr(cTrCpo,6,5) + cDvTrCpo + " "   //terceiro campo
+cLinDig += " " + cDvGeral              //dig verificador geral
+cLinDig += "  " + SubStr(cCodBarra,6,4)+SubStr(cCodBarra,10,10)  // fator de vencimento e valor nominal do titulo
+
+
+Return({cCodBarra,cLinDig,cNossoNum,pNumero})

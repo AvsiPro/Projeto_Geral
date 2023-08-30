@@ -20,6 +20,7 @@ User Function AT250ROT()
 Local aRet := { }
 
 aAdd(aRet, {'Faturamento'                   ,'U_CONFSC01()'     , 0 , 2} )
+aAdd(aRet, {'Enviar NF/Boleto p/ Email'     ,'U_CONFSCX1()'     , 0 , 2} )
 aAdd(aRet, {'Status Contrato'               ,'U_CONFSC05()'     , 0 , 2} )
 aAdd(aRet, {'Incluir Maquina'               ,'U_CONFSC06()'     , 0 , 2} )
 aAdd(aRet, {'Retira Maquina'                ,'U_CONOPC07()'     , 0 , 2} )
