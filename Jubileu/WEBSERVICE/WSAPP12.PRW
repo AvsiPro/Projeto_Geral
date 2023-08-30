@@ -273,7 +273,9 @@ Static Function StatPed(oBody As J, aRetExec as Array, aErro As Array, aSld As A
     Default aErro       :=  {}
 
 	cCodVnd := fVendToken(oBody:TOKEN)
-	cCondPg := STRZERO(VAL(oBody:CONDPAGTO),3)
+	//cCondPg := STRZERO(VAL(oBody:CONDPAGTO),3)
+	
+	cCondPg := oBody:CONDPAGTO
 	cObsApp := oBody:OBSERVATION
 	nDescon := oBody:DESCONTO
 
