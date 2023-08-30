@@ -586,7 +586,7 @@ Static Function MontaRel()
 				//itau
 			ElseIf SA6->A6_COD == '341'
 				//SE1->E1_NUMBCO := strtran(SUBSTR(CB_RN_NN[3],1,15),"/")
-				SE1->E1_NUMBCO := CB_RN_NN[3]
+				SE1->E1_NUMBCO := strtran(CB_RN_NN[3],"/")
 				SE1->E1_CODBAR := CB_RN_NN[1]
 				SE1->E1_CODDIG := STRTRAN(STRTRAN(CB_RN_NN[2],".")," ")
 				
