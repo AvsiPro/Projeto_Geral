@@ -10,12 +10,16 @@ import { ThemeContext } from "../../contexts/ThemeContext";
 import { CurrencyFormat } from "../../utils/currencyFormat";
 
 
-interface Props {
+interface Props1 {
     groups1: any;
     card1: any;
 }
 
-const RankBrand: React.FC <Props> = ({groups1, card1}) => {
+interface Props2 {
+    card2: any;
+}
+
+export const RankBrand: React.FC <Props1> = ({groups1, card1}) => {
 
     const { windowDimensions } = useContext(WindowDimensionsContext);
     const { theme } = useContext(ThemeContext);
@@ -46,8 +50,6 @@ const RankBrand: React.FC <Props> = ({groups1, card1}) => {
         });
       });
 
-      
-
     return (
         <Style.Component windowDimensions={windowDimensions}>
             <Row className="g-4">
@@ -55,7 +57,7 @@ const RankBrand: React.FC <Props> = ({groups1, card1}) => {
                     Ranking por Vendedor e Marcas
                 </Style.TextDash>
 
-                <div style={{ maxHeight: 400, overflow: "auto" }}>
+                <div style={{ maxHeight: 350, overflow: "auto" }}>
                     <div style={{ overflow: "auto" }}>
                         <ButtonGroup style={{marginBottom:15}}>
                             { groups1.map((item: any, index: number) =>
@@ -81,14 +83,12 @@ const RankBrand: React.FC <Props> = ({groups1, card1}) => {
                         </thead>
                         <tbody>
                         {transformedData[brand]?.map((item: any, index: number) => 
-                                <tr key={`${brand}-${index}`} style={{color: themeContext.text}}>
+                            <tr key={`${brand}-${index}`} style={{color: themeContext.text}}>
                                 <td>
-                                <Style.HeaderProfileImg>
-                                    <Style.HeaderProfileText>
-                                        {getInitials(
-                                        firstAndLastName(item.name.trim())
-                                        )}
-                                    </Style.HeaderProfileText>
+                                    <Style.HeaderProfileImg>
+                                        <Style.HeaderProfileText>
+                                            {getInitials(firstAndLastName(item.name.trim()))}
+                                        </Style.HeaderProfileText>
                                     </Style.HeaderProfileImg>
                                 </td>
                                 <td>
@@ -96,7 +96,69 @@ const RankBrand: React.FC <Props> = ({groups1, card1}) => {
                                 </td>
                                 <td>{item.quantity}</td>
                                 <td>{CurrencyFormat(item.value)}</td>
+                            </tr>
+                        )}
+                        </tbody>
+                    </Table>
+                </div>
+                    
+            </Row>
+        </Style.Component>
+    );
+};
+
+
+export const RankMonth: React.FC <Props2> = ({card2}) => {
+
+    const { windowDimensions } = useContext(WindowDimensionsContext);
+    const { theme } = useContext(ThemeContext);
+    const themeContext = theme === "light" ? lightTheme : darkTheme;
+
+    return (
+        <Style.Component windowDimensions={windowDimensions}>
+            <Row className="g-4">
+                <Style.TextDash size={14} weight="bold">
+                    Ranking Mês
+                </Style.TextDash>
+
+                <div style={{ maxHeight: 350, overflow: "auto" }}>
+         
+                    <Table hover >
+                        <thead>
+                        <tr style={{color: themeContext.text}}>
+                            <th>Foto</th>
+                            <th>Nome</th>
+                            <th>Valor</th>
+                            <th>Meta</th>
+                            <th>Meta %</th>
+                            <th>Projeção</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {card2.map((item: any, index: number) => {
+                            
+                            return(
+                                <tr key={`${index}`} style={{color: themeContext.text}}>
+                                    <td>
+                                    <Style.HeaderProfileImg>
+                                        <Style.HeaderProfileText>
+                                            {getInitials(firstAndLastName(item.nome.trim()))}
+                                        </Style.HeaderProfileText>
+                                        </Style.HeaderProfileImg>
+                                    </td>
+
+                                    <td>
+                                        {capitalize(firstAndLastName(item.nome.trim()))}
+                                    </td>
+
+                                    <td>{CurrencyFormat(item.total)}</td>
+                                    <td>{CurrencyFormat(item.meta)}</td>
+                                    <td>{(item.atingPercent)}</td>
+                                    <td>{CurrencyFormat(item.projecao)}</td>
                                 </tr>
+                            )
+                        }
+       
                         )}
                         </tbody>
                     </Table>
@@ -108,5 +170,3 @@ const RankBrand: React.FC <Props> = ({groups1, card1}) => {
 
 
 };
-
-export default RankBrand;
