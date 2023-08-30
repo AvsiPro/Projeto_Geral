@@ -148,11 +148,11 @@ RPCSetEnv('01','0801')
         cQuery += " FROM "+RetSQLName("SC5")+" C5"
         cQuery += " INNER JOIN "+RetSQLName("SC6")+" C6 ON C6_FILIAL=C5_FILIAL AND C6_NUM=C5_NUM AND C6_CLI=C5_CLIENTE AND C6_LOJA=C5_LOJACLI AND C6.D_E_L_E_T_=' ' "
         cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_COD=C5_CLIENTE AND A1_LOJA=C5_LOJACLI AND A1.D_E_L_E_T_=' ' "
-        cQuery += " INNER JOIN "+RetSQLName("SF4")+" F4 ON F4_FILIAL='"+xFilial("SF4")+"' AND F4_COD=C6_TES AND F4_DUPLIC='S' AND F4.D_E_L_E_T_ =' ' "
+        cQuery += " INNER JOIN "+RetSQLName("SF4")+" F4 ON F4_FILIAL='"+xFilial("SF4")+"' AND F4_CODIGO=C6_TES AND F4_DUPLIC='S' AND F4.D_E_L_E_T_ =' ' "
         cQuery += " WHERE C5.D_E_L_E_T_=' ' AND C5_FILIAL BETWEEN ' ' AND 'ZZZ'" 
         cQuery += " AND C5_VEND1='"+cVend+"'"
         cQuery += " AND C5_EMISSAO BETWEEN '"+cPriDia+"' AND '"+cUltDia+"'"
-        cQuery += " GROUP BY C5_CLIENTE,C5_LOJACLI,A1_NOME"
+        cQuery += " GROUP BY C5_CLIENTE,C5_LOJACLI,A1_NOME,C5_NOTA"
         cQuery += " ORDER BY 3"
 
         conout(cQuery)
