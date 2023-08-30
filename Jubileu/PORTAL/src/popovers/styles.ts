@@ -173,7 +173,7 @@ export const PopoverSearchComponent = styled(Popover)<{windowDimensions: any}>`
 `
 
 export const PopoverSearchHeader = styled.div`
-    background-color:${(props) => props.theme.text};
+    background-color:#fff;
     color:${(props) => props.theme.component};
     font-family: 'Roboto', sans-serif;
     display: flex;

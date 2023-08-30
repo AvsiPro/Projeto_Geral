@@ -36,6 +36,7 @@ interface PropsTable{
   modal?: boolean ;
   search?: boolean;
   handleRowClick?: (row: any) => void
+  popover?: boolean;
 }
 
 const Table: React.FC <PropsTable> = ({
@@ -48,7 +49,8 @@ const Table: React.FC <PropsTable> = ({
   handleMark,
   modal = false,
   search = true,
-  handleRowClick = () => {}
+  handleRowClick = () => {},
+  popover = false
 }) => {
 
   const { theme } = useContext(ThemeContext);
@@ -125,6 +127,7 @@ const Table: React.FC <PropsTable> = ({
       windowDimensions={windowDimensions}
       modal={modal}
       isMobile={isMobile}
+      popover={popover}
     >
       { !modal &&
         <Style.TextH3 style={{color:'#000'}}>

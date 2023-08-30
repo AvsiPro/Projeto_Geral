@@ -12,6 +12,16 @@ WsRestFul WSAPP05 Description "titulos API" FORMAT APPLICATION_JSON
 	WsData type 	 AS String  Optional
 	WsData seller    AS String  Optional
 
+	WsData emissDe   AS String  Optional
+	WsData emissAt   AS String  Optional
+
+	WsData venctDe   AS String  Optional
+	WsData venctAt   AS String  Optional
+
+	WsData aberto    AS Boolean Optional
+	WsData pago 	 AS Boolean Optional
+	WsData atrasado  AS Boolean Optional
+
 WsMethod GET financial;
     Description 'Lista de titulos';
     WsSyntax '/WSAPP05';
@@ -34,7 +44,7 @@ Retorna a lista de titulos.
 
 /*/
 
-WsMethod GET financial WsReceive searchKey, page, pageSize, customer, type, seller WsRest WSAPP05
+WsMethod GET financial WsReceive searchKey, page, pageSize, customer, type, seller, emissDe, emissAt, venctDe, venctAt, aberto, pago, atrasado WsRest WSAPP05
 	Local lRet:= .T.
 	lRet := financial( self )
 Return( lRet )
@@ -55,9 +65,18 @@ Default oself:byId		:= .F.
 Default oself:customer  := ''
 Default oself:type		:= ''
 Default oself:seller	:= ''
-	
-    RpcSetType(3)
-    RPCSetEnv('01','0101')
+
+Default oself:emissDe	:= ''
+Default oself:emissAt	:= ''
+Default oself:venctDe	:= ''
+Default oself:venctAt	:= ''
+Default oself:aberto	:= .F.
+Default oself:pago		:= .F.
+Default oself:atrasado	:= .F.
+
+	RpcClearEnv()
+	RpcSetType(3)
+	RPCSetEnv('01','0101')
 
     oJsonAux  := JsonObject():New()
     cAliasTMP := GetNextAlias()
@@ -80,13 +99,53 @@ Default oself:seller	:= ''
 	cQuery += "        AND SA1.A1_COD=E1_CLIENTE " 
 	cQuery += "        AND SA1.A1_LOJA=E1_LOJA " 
 	cQuery += "        AND SA1.D_E_L_E_T_=' ' " 
-	cQuery += " LEFT JOIN " + RetSQLName("SF2") + " SF2 "
+	cQuery += " INNER JOIN " + RetSQLName("SF2") + " SF2 "
 	cQuery += "        ON SF2.F2_DOC = E1_NUM " 
 	cQuery += "        AND SF2.F2_SERIE = E1_PREFIXO " 
 	cQuery += "        AND SF2.F2_CLIENTE = E1_CLIENTE " 
 	cQuery += "        AND SF2.F2_LOJA = E1_LOJA " 
 	cQuery += "        AND SF2.D_E_L_E_T_=' ' "
 	cQuery += " WHERE  SE1.D_E_L_E_T_=' ' "
+
+	If !Empty(oself:emissDe)
+		cQuery += " AND E1_EMISSAO >= '"+oself:emissDe+"' "
+	EndIf
+
+	If !Empty(oself:emissAt)
+		cQuery += " AND E1_EMISSAO <= '"+oself:emissAt+"' "
+	EndIf
+
+	If !Empty(oself:venctDe)
+		cQuery += " AND E1_VENCREA >= '"+oself:venctDe+"' "
+	EndIf
+
+	If !Empty(oself:venctAt)
+		cQuery += " AND E1_VENCREA <= '"+oself:venctAt+"' "
+	EndIf
+
+	If oself:pago .And. !oself:aberto .And. !oself:atrasado // pago
+		cQuery += " AND E1_BAIXA != '' "
+	EndIf
+	
+	If oself:aberto .And. !oself:atrasado .And. !oself:pago // em aberto
+		cQuery += " AND E1_BAIXA = '' AND E1_VENCREA >= '"+DToS(Date())+"' "
+	EndIf
+
+	If oself:atrasado .And. !oself:aberto .And. !oself:pago // Atrasado
+		cQuery += " AND E1_BAIXA = '' AND E1_VENCREA < '"+DToS(Date())+"' "
+	EndIf
+
+	If oself:pago .And. oself:aberto .And. !oself:atrasado // pago / Em aberto
+		cQuery += " AND (E1_BAIXA != '' OR E1_VENCREA >= '"+DToS(Date())+"') "
+	EndIf
+
+	If oself:pago .And. !oself:aberto .And. oself:atrasado // pago / atrasado
+		cQuery += " AND (E1_BAIXA != '' OR E1_VENCREA < '"+DToS(Date())+"') "
+	EndIf
+
+	If !oself:pago .And. oself:aberto .And. oself:atrasado // aberto / atrasado
+		cQuery += " AND E1_BAIXA = ''  "
+	EndIf
 
 	If !Empty(oself:seller)
 		cQuery += " AND SF2.F2_VEND1 = '"+oself:seller+"' "
@@ -95,10 +154,12 @@ Default oself:seller	:= ''
 	If !Empty(oself:customer)
 		cQuery += " AND SA1.A1_CGC = '"+oself:customer+"' "+cWhere
 	EndIf
-	
+
 	cQuery += " ORDER BY " + SqlOrder(SE1->(IndexKey(1)))
 	cQuery += " OFFSET (("+cValToChar(oself:page)+" - 1) * "+cValToChar(oself:pageSize)+") ROWS "
 	cQuery += " FETCH NEXT "+cValToChar(oself:pageSize)+" ROWS ONLY "
+
+	conout(cquery)
 
 	MPSysOpenQuery(cQuery, cAliasTMP)
 

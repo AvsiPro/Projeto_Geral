@@ -251,7 +251,7 @@ export const fields1 = [
   {
     field: "razao",
     headerText: "Razão Social",
-    textAlign: "Center",
+    textAlign: "Left",
     width: "180px",
   },
   {
@@ -261,10 +261,10 @@ export const fields1 = [
     width: "120px",
   },
   {
-    field: "vlrTicket",
-    headerText: "Vlr. Ticket Medio",
+    field: "status",
+    headerText: "Status",
     textAlign: "Center",
-    width: "150px",
+    width: "100px",
   },
 ];
 
@@ -318,80 +318,21 @@ export const dataTable2 = [
   },
 ];
 
-
-/*
-export const optionColumn2 = (themeContext: any, nomes: any) => {
-  return {
-    chart: {
-      type: "bar",
-      height: 350,
-      stacked: true,
-      foreColor: themeContext.text,
-    },
-
-    dataLabels: {
-      formatter: (val: any) => {
-        return CurrencyFormat(val)
-      },
-      offsetX: 30,
-      enabled: true,
-      style: {
-        colors: [
-          themeContext.text,
-        ]
-      }
-    },
-    plotOptions: {
-      bar: {
-        horizontal: true,
-        dataLabels: {
-          position: 'top',
-        },
-      },
-    },
-    xaxis: {
-      categories: nomes,
-    },
-    fill: {
-      opacity: 1,
-    },
-    colors: ["#00E396", "#008FFB"],
-    yaxis: {
-      labels: {
-        
-        formatter: (val: any) => {
-          return CurrencyFormat(val)
-        },
-      },
-    },
-    tooltip: {
-      shared: true,
-      intersect: false
-    },
-    legend: {
-      position: "top",
-      horizontalAlign: "left",
-      
-    },
-  };
-};
-*/
-
 export const optionColumn2 = (themeContext: any, nomes: any) => {
   return(
+
     {
       chart: {
         type: 'bar',
-        height: 430,
+        height: 320,
         foreColor: themeContext.text,
       },
       plotOptions: {
         bar: {
-          horizontal: true,
-          dataLabels: {
-            position: 'top',
-          },
-        }
+          horizontal: false,
+          columnWidth: '55%',
+          endingShape: 'rounded'
+        },
       },
       dataLabels: {
         enabled: true,
@@ -399,25 +340,29 @@ export const optionColumn2 = (themeContext: any, nomes: any) => {
           return val > 0 ?CurrencyFormat(val) : ''
         },
         
-        offsetX: 60,
         style: {
           fontSize: '10px',
           colors: [themeContext.text]
         },
       },
+      xaxis: {
+        categories: nomes,
+      },
+
+      fill: {
+        opacity: 1
+      },
+      legend: {
+        show: true,
+        showForSingleSeries: true,
+        position: 'top',
+        horizontalAlign: 'center',
+      },
+
       colors: ["#00E396", "#008FFB"],
       tooltip: {
         formatter: (val: any) => {
           return CurrencyFormat(val)
-        },
-      },
-      xaxis: {
-        categories: nomes,
-        labels: {
-          
-          formatter: (val: any) => {
-            return CurrencyFormat(val)
-          },
         },
       },
     }

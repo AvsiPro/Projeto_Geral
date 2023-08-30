@@ -385,10 +385,10 @@ export const PopOverButton = styled.button`
 `
 
 /** table **/
-export const TableComponent = styled.div<{windowDimensions: any, modal: boolean,isMobile?: boolean}>`
+export const TableComponent = styled.div<{windowDimensions: any, modal: boolean,isMobile?: boolean, popover: boolean}>`
     background-color: #fff;
     padding: 20px;
-    border-radius: 20px;
+    border-radius: ${({ popover }) => (popover ? '0px' : '20px')};
     overflow: auto;
     width: ${({ modal }) => (modal ? '100%' : 'auto')};
     max-height: ${({ windowDimensions }) => (windowDimensions.height * 85) / 100}px;

@@ -82,8 +82,17 @@ const Products: React.FC = () => {
 
   const handleSearch = async(searchText: string) => {
     let returnResult: any = []
+    let tablePrice: any
+    
+    const tablePriceData = localStorage.getItem('tableprice');
 
-    const response = await api.get(`/WSAPP03?pagesize=100&page=1&searchKey=${searchText}`);
+    if(tablePriceData){
+        tablePrice = JSON.parse(tablePriceData);
+    }else {
+        tablePrice = {id: "001", description: "TABELA PADRAO"}
+    }
+
+    const response = await api.get(`/WSAPP03?pagesize=9999&page=1&searchKey=${searchText}&codTab=${tablePrice.id}`);
     const json: ApiResponse = response.data;
 
     if(json.status.code === '#200'){    

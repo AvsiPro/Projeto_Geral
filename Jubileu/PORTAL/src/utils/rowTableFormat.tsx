@@ -50,6 +50,7 @@ export const formatRow = (field: string, data: any) => {
     field === 'valueReceiveO' ||
     field === 'valueReceiveC' ||
     field === 'vlrVendas' ||
+    field === 'valorVendas' ||
     field === 'vlrDesc' ||
     field === 'vlrTicket' ||
     field === 'vlrVBrut'

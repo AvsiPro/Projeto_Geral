@@ -5,11 +5,7 @@ import { Col, Row, Table } from "react-bootstrap";
 
 import { ThemeContext } from "../../contexts/ThemeContext";
 import { lightTheme, darkTheme } from "../../themes";
-import {
-  capitalize,
-  firstAndLastName,
-  getInitials,
-} from "../../utils/nameFormat";
+import { capitalize, firstAndLastName } from "../../utils/nameFormat";
 import ChartColumn from "../../charts/column";
 import { optionColumn2 } from "../../dummy";
 
@@ -18,6 +14,8 @@ import { CurrencyFormat } from "../../utils/currencyFormat";
 import api from "../../services/api";
 import { WindowDimensionsContext } from "../../contexts/WindowDimensionsContext";
 import { titleMonth } from "../../utils/dateFormat";
+
+import { RankBrand, RankMonth } from "./rankBrand";
 
 interface Props {
   ano: string;
@@ -47,6 +45,8 @@ const PainelVendas: React.FC<Props> = ({ ano, mes }) => {
   const [card4, setCard4] = useState<any>([]);
   const [nameCard3, setNameCard3] = useState<any>([]);
 
+  const [groups1, setGroups1] = useState<any>([]);
+
   const { windowDimensions } = useContext(WindowDimensionsContext);
 
   const userData = localStorage.getItem("userdata");
@@ -72,6 +72,17 @@ const PainelVendas: React.FC<Props> = ({ ano, mes }) => {
 
     if (json.status.code === "#200") {
       setCard1(json.card1);
+
+      let auxGroup : any = []
+
+      json.card1[0].brands.map((item: any) => {
+        auxGroup.push(item.title)
+      })
+
+      setGroups1(auxGroup)
+
+
+
       setCard2(json.card2);
 
       const card3Aux = convertData(json.card3);
@@ -216,7 +227,7 @@ const PainelVendas: React.FC<Props> = ({ ano, mes }) => {
     <Style.Component windowDimensions={windowDimensions}>
       <Row className="g-4">
         <Col md={12}>
-          <Row xs={1} md={2} className="g-4">
+          <Row xs={1} md={1} className="g-4">
             <MyCard>
               <Style.TextDash size={14} weight="bold">
                 Comparativo Mês Anterior
@@ -224,91 +235,30 @@ const PainelVendas: React.FC<Props> = ({ ano, mes }) => {
               <ChartColumn
                 options={optionColumn2(themeContext, nameCard3)}
                 series={card3}
+                height={350}
               />
             </MyCard>
-            <MyCard>
-              <div style={{ maxHeight: 400, overflow: "auto" }}>
-                <Style.TextDash size={14} weight="bold">
-                  Ranking Mês
-                </Style.TextDash>
-                {card2.map((row: any, index: number) => {
-                  return (
-                    <>
-                      <Style.Card2Container
-                        key={index}
-                        backGround={theme === "light" && index % 2 == 0}
-                      >
-                        <Style.ContVertical>
-                          <Style.HeaderProfileImg>
-                            <Style.HeaderProfileText>
-                              {getInitials(firstAndLastName(row.nome.trim()))}
-                            </Style.HeaderProfileText>
-                          </Style.HeaderProfileImg>
-                        </Style.ContVertical>
+            
+          </Row>
+        </Col>
+  
+        <Col md={12}>
+          <Row xs={1} md={2} className="g-4">
+            <Col>
+              <Style.CardDash border={theme} className="h-100">
+                <Style.CardDashBody>
+                  <RankBrand groups1={groups1} card1={card1} />
+                </Style.CardDashBody>
+              </Style.CardDash>
+            </Col>
 
-                        <Style.ContVertical
-                          style={{
-                            alignItems: "flex-start",
-                            marginLeft: 20,
-                            minWidth: 120,
-                          }}
-                        >
-                          <Style.TextDash size={14} weight="bold">
-                            Nome
-                          </Style.TextDash>
-                          <Style.TextDash size={14} weight="normal">
-                            {capitalize(firstAndLastName(row.nome.trim()))}
-                          </Style.TextDash>
-                        </Style.ContVertical>
-
-                        <Style.ContVertical
-                          style={{ alignItems: "flex-start", marginLeft: 60 }}
-                        >
-                          <Style.TextDash size={14} weight="bold">
-                            Valor
-                          </Style.TextDash>
-                          <Style.TextDash size={14} weight="normal">
-                            {CurrencyFormat(row.total)}
-                          </Style.TextDash>
-                        </Style.ContVertical>
-                        <Style.ContVertical
-                          style={{ alignItems: "flex-start", marginLeft: 60 }}
-                        >
-                          <Style.TextDash size={14} weight="bold">
-                            Meta
-                          </Style.TextDash>
-                          <Style.TextDash size={14} weight="normal">
-                            {CurrencyFormat(row.meta)}
-                          </Style.TextDash>
-                        </Style.ContVertical>
-                        <Style.ContVertical
-                          style={{ alignItems: "flex-start", marginLeft: 60 }}
-                        >
-                          <Style.TextDash size={14} weight="bold">
-                            % Meta
-                          </Style.TextDash>
-                          <Style.TextDash size={14} weight="normal">
-                            {row.atingPercent} %
-                          </Style.TextDash>
-                        </Style.ContVertical>
-                        <Style.ContVertical
-                          style={{ alignItems: "flex-start", marginLeft: 60 }}
-                        >
-                          <Style.TextDash size={14} weight="bold">
-                            Projeção
-                          </Style.TextDash>
-                          <Style.TextDash size={14} weight="normal">
-                            {CurrencyFormat(row.total + row.projecao)}
-                          </Style.TextDash>
-                        </Style.ContVertical>
-                      </Style.Card2Container>
-
-                      {theme === "dark" && <Style.Separator />}
-                    </>
-                  );
-                })}
-              </div>
-            </MyCard>
+            <Col>
+              <Style.CardDash border={theme} className="h-100">
+                <Style.CardDashBody>
+                  <RankMonth card2={card2} />
+                </Style.CardDashBody>
+              </Style.CardDash>
+            </Col>
           </Row>
         </Col>
 
@@ -386,115 +336,6 @@ const PainelVendas: React.FC<Props> = ({ ano, mes }) => {
             <Style.Separator />
           </MyCard>
         </div>
-
-        <Col md={12}>
-          <div style={{ maxHeight: 400, overflow: "auto" }}>
-            <MyCard>
-              <Style.TextDash size={14} weight="bold">
-                Ranking por Vendedor e Marcas
-              </Style.TextDash>
-
-              {card1.map((row: any, index: number) => {
-                return (
-                  <>
-                    <Style.Card1Container
-                      key={index}
-                      backGround={theme === "light" && index % 2 == 0}
-                    >
-                      <Style.ContVertical style={{ flex: 1 }}>
-                        <Style.ContHorizontal style={{ width: "100%" }}>
-                          <Style.ContHorizontal style={{ marginRight: 50 }}>
-                            <Style.ContVertical style={{ marginRight: 50 }}>
-                              <Style.TextDash
-                                style={{ color: "transparent" }}
-                                size={14}
-                                weight="normal"
-                              >
-                                _
-                              </Style.TextDash>
-                              <Style.HeaderProfileImg>
-                                <Style.HeaderProfileText>
-                                  {getInitials(
-                                    firstAndLastName(row.name.trim())
-                                  )}
-                                </Style.HeaderProfileText>
-                              </Style.HeaderProfileImg>
-                            </Style.ContVertical>
-
-                            <Style.ContVertical
-                              style={{
-                                alignItems: "flex-start",
-                                minWidth: 120,
-                              }}
-                            >
-                              <Style.TextDash
-                                style={{ color: "transparent" }}
-                                size={14}
-                                weight="normal"
-                              >
-                                _
-                              </Style.TextDash>
-
-                              <Style.TextDash
-                                style={{ marginTop: 12 }}
-                                size={16}
-                                weight="normal"
-                              >
-                                {capitalize(firstAndLastName(row.name.trim()))}
-                              </Style.TextDash>
-                            </Style.ContVertical>
-                          </Style.ContHorizontal>
-
-                          {row.brands.map((element: any, index: number) => {
-                            return (
-                              <Style.ContVertical
-                                style={{ paddingLeft: 25, paddingRight: 25 }}
-                                key={index}
-                              >
-                                <Style.TextDash
-                                  style={{ color: themeContext.primary }}
-                                  size={14}
-                                  weight="bold"
-                                >
-                                  {capitalize(element.title.trim())}
-                                </Style.TextDash>
-
-                                <Style.ContHorizontal style={{ marginTop: 15 }}>
-                                  <Style.ContVertical
-                                    style={{ marginRight: 20 }}
-                                  >
-                                    <Style.TextDash size={14} weight="bold">
-                                      Quant.
-                                    </Style.TextDash>
-                                    <Style.TextDash size={14} weight="normal">
-                                      {element.quantity}
-                                    </Style.TextDash>
-                                  </Style.ContVertical>
-
-                                  <Style.ContVertical>
-                                    <Style.TextDash size={14} weight="bold">
-                                      Valor
-                                    </Style.TextDash>
-                                    <Style.TextDash size={14} weight="normal">
-                                      {CurrencyFormat(element.value)}
-                                    </Style.TextDash>
-                                  </Style.ContVertical>
-                                </Style.ContHorizontal>
-                              </Style.ContVertical>
-                            );
-                          })}
-                        </Style.ContHorizontal>
-                      </Style.ContVertical>
-                    </Style.Card1Container>
-
-                    {theme === "dark" && <Style.Separator />}
-                  </>
-                );
-              })}
-            </MyCard>
-          </div>
-        </Col>
-
     
       </Row>
     </Style.Component>
