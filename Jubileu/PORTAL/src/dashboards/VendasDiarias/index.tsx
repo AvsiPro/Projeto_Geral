@@ -113,7 +113,7 @@ const VendasDiarias: React.FC <Props> = ({ano, mes}) => {
       <Col md={12} lg={12}>
         <Row className="g-4">
           <Col md={12}>
-            <Row xs={1} md={3} className="g-4">
+            <Row xs={1} md={4} className="g-4">
               { headerCards1.map((item: any, index: number) => (
                 <MyCard key={index}>
                   <Style.TextDash size={14}>{item.title}</Style.TextDash>

@@ -22,7 +22,7 @@ import { CartContext } from "../contexts/CartContext";
 const Navbar: React.FC = () => {
 
   const { userContext } = useContext(UserContext)
-  const { setCustomerContext, setPaymentContext, setCartContext } = useContext(CartContext);
+  const { setCustomerContext, setPaymentContext, setTablePriceContext, setCartContext } = useContext(CartContext);
   
   const [navigate, setNavigate] = useState('')
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -190,6 +190,7 @@ const Navbar: React.FC = () => {
 
       setCustomerContext(null);
       setPaymentContext(null);
+      setTablePriceContext({id: "001", description: "TABELA PADRAO"});
       setCartContext([])
 
       localStorage.clear();

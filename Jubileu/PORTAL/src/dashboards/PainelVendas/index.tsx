@@ -19,6 +19,8 @@ import api from "../../services/api";
 import { WindowDimensionsContext } from "../../contexts/WindowDimensionsContext";
 import { titleMonth } from "../../utils/dateFormat";
 
+import RankBrand from "./rankBrand";
+
 interface Props {
   ano: string;
   mes: string;
@@ -47,6 +49,8 @@ const PainelVendas: React.FC<Props> = ({ ano, mes }) => {
   const [card4, setCard4] = useState<any>([]);
   const [nameCard3, setNameCard3] = useState<any>([]);
 
+  const [groups1, setGroups1] = useState<any>([]);
+
   const { windowDimensions } = useContext(WindowDimensionsContext);
 
   const userData = localStorage.getItem("userdata");
@@ -72,6 +76,17 @@ const PainelVendas: React.FC<Props> = ({ ano, mes }) => {
 
     if (json.status.code === "#200") {
       setCard1(json.card1);
+
+      let auxGroup : any = []
+
+      json.card1[0].brands.map((item: any) => {
+        auxGroup.push(item.title)
+      })
+
+      setGroups1(auxGroup)
+
+
+
       setCard2(json.card2);
 
       const card3Aux = convertData(json.card3);
@@ -216,7 +231,7 @@ const PainelVendas: React.FC<Props> = ({ ano, mes }) => {
     <Style.Component windowDimensions={windowDimensions}>
       <Row className="g-4">
         <Col md={12}>
-          <Row xs={1} md={2} className="g-4">
+          <Row xs={1} md={1} className="g-4">
             <MyCard>
               <Style.TextDash size={14} weight="bold">
                 Comparativo Mês Anterior
@@ -224,10 +239,18 @@ const PainelVendas: React.FC<Props> = ({ ano, mes }) => {
               <ChartColumn
                 options={optionColumn2(themeContext, nameCard3)}
                 series={card3}
+                height={350}
               />
             </MyCard>
-            <MyCard>
-              <div style={{ maxHeight: 400, overflow: "auto" }}>
+            
+          </Row>
+        </Col>
+        
+        <Col md={12}>
+          <Row xs={1} md={1} className="g-4">
+
+          <MyCard>
+              <div style={{ maxHeight: 300, overflow: "auto" }}>
                 <Style.TextDash size={14} weight="bold">
                   Ranking Mês
                 </Style.TextDash>
@@ -309,6 +332,7 @@ const PainelVendas: React.FC<Props> = ({ ano, mes }) => {
                 })}
               </div>
             </MyCard>
+
           </Row>
         </Col>
 
@@ -386,6 +410,20 @@ const PainelVendas: React.FC<Props> = ({ ano, mes }) => {
             <Style.Separator />
           </MyCard>
         </div>
+        
+        <Col md={12}>
+          <Row xs={1} md={2} className="g-4">
+            <Col>
+            <Style.CardDash border={theme} className="h-100">
+              <Style.CardDashBody>
+                <RankBrand groups1={groups1} card1={card1} />
+              </Style.CardDashBody>
+            </Style.CardDash>
+            </Col>
+          </Row>
+        </Col>
+        {/*
+        
 
         <Col md={12}>
           <div style={{ maxHeight: 400, overflow: "auto" }}>
@@ -494,6 +532,7 @@ const PainelVendas: React.FC<Props> = ({ ano, mes }) => {
             </MyCard>
           </div>
         </Col>
+        */}
 
     
       </Row>

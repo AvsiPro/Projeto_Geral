@@ -4,9 +4,11 @@ interface CartContextProps {
     cartContext: any;
     customerContext: any;
     paymentContext: any;
+    tablePriceContext: any;
     setCartContext: React.Dispatch<React.SetStateAction<any>>;
     setCustomerContext: React.Dispatch<React.SetStateAction<any>>;
     setPaymentContext: React.Dispatch<React.SetStateAction<any>>;
+    setTablePriceContext: React.Dispatch<React.SetStateAction<any>>;
 }
 
 interface Props {
@@ -17,9 +19,11 @@ export const CartContext = createContext<CartContextProps>({
     cartContext: [],
     customerContext: null,
     paymentContext: null,
+    tablePriceContext: null,
     setCartContext: () => {},
     setCustomerContext: () => {},
-    setPaymentContext: () => {}
+    setPaymentContext: () => {},
+    setTablePriceContext: () => {}
 });
 
 export const CartProvider: React.FC <Props> = ({ children }) => {
@@ -54,14 +58,26 @@ export const CartProvider: React.FC <Props> = ({ children }) => {
         }
     });
 
+    const [tablePriceContext, setTablePriceContext] = useState<any>(() => {
+        const tablePriceData = localStorage.getItem('tableprice');
+
+        if(tablePriceData){
+            return JSON.parse(tablePriceData);
+        }else {
+            return {id: "001", description: "TABELA PADRAO"}
+        }
+    });
+
     return (
         <CartContext.Provider value={{
             cartContext,
             customerContext,
             paymentContext,
+            tablePriceContext,
             setCartContext,
             setCustomerContext,
-            setPaymentContext
+            setPaymentContext,
+            setTablePriceContext
         }}>
             {children}
         </CartContext.Provider>

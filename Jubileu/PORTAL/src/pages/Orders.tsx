@@ -33,7 +33,7 @@ interface ApiResponse {
 
 const Orders: React.FC = () => {
 
-  const { setCustomerContext, setPaymentContext, setCartContext, customerContext, paymentContext, cartContext } = useContext(CartContext);
+  const { setCustomerContext, setPaymentContext, setCartContext, setTablePriceContext, customerContext, paymentContext, tablePriceContext, cartContext } = useContext(CartContext);
   const { userContext } = useContext(UserContext)
 
   const isMobile = useMediaQuery({ query: '(max-width: 767px)' });
@@ -107,6 +107,24 @@ const Orders: React.FC = () => {
       value: ''
     },
     { 
+      id: 'tableprice',
+      label: 'Tabela Preço',
+      width: 150,
+      search: true,
+      enabled: true,
+      type: 'tableprice',
+      value: ''
+    },
+    { 
+      id: 'tablepricename',
+      label: 'Descrição',
+      width: 300,
+      search: false,
+      enabled: false,
+      type: '',
+      value: ''
+    },
+    { 
       id: 'products',
       label: 'Descrição',
       width: 300,
@@ -125,13 +143,15 @@ const Orders: React.FC = () => {
     const apiData = async() => {
       const returnResult: any = await fetchData(page, userContext.token, userContext.type)
 
-      const auxData = returnResult.reduce((acc: any, current: any) => {
-        const x = acc.find((item: { id: any; }) => item.id === current.id);
-        return !x ? acc.concat([current]) : acc;
-      }, []);
-      
-      if(auxData.length > 0){
-        setData((prevData: any) => [...prevData, ...auxData]);
+      if (returnResult.length > 0) {
+        const auxData = [...data, ...returnResult]
+
+        const newData = auxData.reduce((acc: any, current: any) => {
+          const x = acc.find((item: { id: any; }) => item.id === current.id);
+          return !x ? acc.concat([current]) : acc;
+        }, []);
+
+        setData(newData); 
       }
       
       setLoad(false)
@@ -228,9 +248,13 @@ const Orders: React.FC = () => {
 
 
   const handleNovoPedido = async() => {
+    
+    const auxField = [...fieldsOrders]
 
     if (userContext.type === 'C') {
       const custAux = await apiCustomer();
+
+      console.log(custAux)
 
       if (!!custAux) {
         if(custAux.financial.length > 0) {
@@ -244,14 +268,23 @@ const Orders: React.FC = () => {
             mark: true
           }
 
-          setPaymentContext(payment)
+          setPaymentContext(payment);
           setCustomerContext(custAux);
-
-          const auxField = [...fieldsOrders]
+          setTablePriceContext(custAux.priceTable);
+          
+          localStorage.setItem('tableprice', JSON.stringify(custAux.priceTable));
 
           auxField.map((_, index) => {
             auxField[index].enabled = false
             auxField[index].search = false
+
+            if(auxField[index].id === 'tableprice'){
+              auxField[index].value = custAux.priceTable.id
+      
+            }else if(auxField[index].id === 'tablepricename'){
+              auxField[index].value = custAux.priceTable.description
+            }
+
           })
           
           setShowModal(true)
@@ -259,6 +292,21 @@ const Orders: React.FC = () => {
       }
 
     }else{
+
+      const jsonAux = {id: "001", description: "TABELA PADRAO"}
+
+      setTablePriceContext(jsonAux)
+      localStorage.setItem('tableprice', JSON.stringify(jsonAux));
+      
+      auxField.map((_, index) => {
+        if(auxField[index].id === 'tableprice'){
+          auxField[index].value = jsonAux.id
+  
+        }else if(auxField[index].id === 'tablepricename'){
+          auxField[index].value = jsonAux.description
+        }
+      });
+
       setShowModal(true)
     }
   
@@ -309,6 +357,17 @@ const Orders: React.FC = () => {
           }
         });
       }
+
+      if(!!tablePriceContext){
+        auxField.map((_, index) => {
+          if(auxField[index].id === 'tableprice'){
+            auxField[index].value = tablePriceContext.id
+  
+          }else if(auxField[index].id === 'tablepricename'){
+            auxField[index].value = tablePriceContext.description
+          }
+        });
+      }
     }
 
   },[customerContext])
@@ -350,6 +409,25 @@ const Orders: React.FC = () => {
           auxField[index].value = selected.selected.description
         }
       });
+
+      setFieldsOrders(auxField)
+
+    }else if(selected.id === 'tableprice'){
+      setTablePriceContext(selected.selected)
+      localStorage.setItem('tableprice', JSON.stringify(selected.selected));
+
+      const auxField = [...fieldsOrders]
+
+      auxField.map((_, index) => {
+        if(auxField[index].id === 'tableprice'){
+          auxField[index].value = selected.selected.id
+
+        }else if(auxField[index].id === 'tablepricename'){
+          auxField[index].value = selected.selected.description
+        }
+      });
+
+      setFieldsOrders(auxField)
     }
   }
 
@@ -359,6 +437,7 @@ const Orders: React.FC = () => {
 
       setCustomerContext(null);
       setPaymentContext(null);
+      setTablePriceContext({id: "001", description: "TABELA PADRAO"});
       setCartContext([])
 
       const auxField = [...fieldsOrders]
@@ -371,6 +450,7 @@ const Orders: React.FC = () => {
 
       localStorage.setItem('customer', JSON.stringify(null));
       localStorage.setItem('payment', JSON.stringify(null));
+      localStorage.setItem('tableprice', JSON.stringify(null));
       localStorage.setItem('cartdata', JSON.stringify([]));
     }
   }
@@ -389,6 +469,13 @@ const Orders: React.FC = () => {
     if(!paymentContext) {
       setTypeAlert('warning')
       setBodyAlert('Necessário selecionar uma condição de pagamento')
+      setShowAlert(true)
+      return
+    }
+
+    if(!tablePriceContext) {
+      setTypeAlert('warning')
+      setBodyAlert('Necessário selecionar uma tabela de preço')
       setShowAlert(true)
       return
     }
@@ -540,6 +627,10 @@ const Orders: React.FC = () => {
         item.value = rowData.payment;
       } else if (item.id === "paymentname") {
         item.value = rowData.payment_name;
+      } else if (item.id === "tableprice") {
+        item.value = rowData.tableprice;
+      } else if (item.id === "tablepricename") {
+        item.value = rowData.tableprice_name;
       }
   
       item.search = false;
@@ -553,7 +644,7 @@ const Orders: React.FC = () => {
         id: encode(`{"SB1","view","${itemCart.product}","${itemCart.description}"}`),
         code: itemCart.product,
         description: itemCart.description,
-        price: itemCart.value_sold,
+        price: {price: itemCart.value_sold, min: 1, max: 99999},
         selected_quantity: itemCart.sold_amount,
         marked: true,
       });

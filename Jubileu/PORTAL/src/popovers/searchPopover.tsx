@@ -10,6 +10,7 @@ import * as Style from './styles'
 import { fetchData as fetchDataCustomers, fetchSearch as fetchSearchCustomers } from '../services/apiCustomers';
 import { fetchData as fetchDataPayment, fetchSearch as fetchSearchPayment } from '../services/apiPayment';
 import { fetchData as fetchDataProduct, fetchSearch as fetchSearchProduct } from '../services/apiProducts';
+import { fetchData as fetchDataTablePrice } from '../services/apiTablePrice';
 
 import { WindowDimensionsContext } from '../contexts/WindowDimensionsContext';
 
@@ -28,6 +29,9 @@ const SearchPopover: React.FC <Props> = ({title, field, handleConfirmSelect}) =>
     const [data, setData] = useState<any>([])
     const [selected, setSelected] = useState<any>([])
 
+    const userData = localStorage.getItem('userdata');
+    const user = userData ? JSON.parse(userData) : null;
+
     useEffect(() => {
         if(!load){
             setLoad(true)
@@ -37,17 +41,24 @@ const SearchPopover: React.FC <Props> = ({title, field, handleConfirmSelect}) =>
             let returnResult: any = []
 
             if(field.type === 'customers'){
-                returnResult = await fetchDataCustomers(1)
+                returnResult = await fetchDataCustomers(1, user.token)
 
             }else if(field.type === 'payment'){
                 returnResult = await fetchDataPayment(1)
+
+            }else if(field.type === 'tableprice'){
+                returnResult = await fetchDataTablePrice()
             
             }else if(field.type === 'product'){
                 returnResult = await fetchDataProduct(1)
             }
 
             if(returnResult.length > 0){
-                setData((prevData: any) => [...prevData, ...returnResult]);
+                if(field.type === 'tableprice'){
+                    setData(returnResult);
+                }else{
+                    setData((prevData: any) => [...prevData, ...returnResult]);
+                }
             }
             
             setLoad(false)
@@ -62,7 +73,7 @@ const SearchPopover: React.FC <Props> = ({title, field, handleConfirmSelect}) =>
         let returnResult: any = []
 
         if(field.type === 'customers'){
-            returnResult = await fetchSearchCustomers(searchText)
+            returnResult = await fetchSearchCustomers(searchText, user.token)
             
         }else if(field.type === 'payment'){
             returnResult = await fetchSearchPayment(searchText)
@@ -102,6 +113,13 @@ const SearchPopover: React.FC <Props> = ({title, field, handleConfirmSelect}) =>
                 {field: 'description', headerText: 'Descrição', textAlign: 'Left'},
             )
 
+        }else if(field.type === 'tableprice'){
+            auxFields.push(
+                {field: 'mark', headerText: '', textAlign: 'Center'  },
+                {field: 'id', headerText: 'Codigo', textAlign: 'Center' },
+                {field: 'description', headerText: 'Descrição', textAlign: 'Left'},
+            )
+
         }else if(field.type === 'product'){
             auxFields.push(
                 {field: 'mark', headerText: '', textAlign: 'Center'  },
@@ -134,6 +152,7 @@ const SearchPopover: React.FC <Props> = ({title, field, handleConfirmSelect}) =>
             id: field.id,
             selected: selected
         }
+        
         handleConfirmSelect(itemSelected)
     }
 
@@ -167,7 +186,9 @@ const SearchPopover: React.FC <Props> = ({title, field, handleConfirmSelect}) =>
                     handleSearch={handleSearch}
                     handleMark={handleMark}
                     ToolsTable={ToolsTable}
+                    search={field.type !== 'tableprice'}
                     modal={true}
+                    popover={true}
                 />
 
             </Style.PopoverSearchBody> 

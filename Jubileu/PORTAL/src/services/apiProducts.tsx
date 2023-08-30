@@ -13,8 +13,18 @@ export const fetchData = async (page: number, ) => {
 
     let auxResult: any = []
     let returnResult: any = []
+    let tablePrice: any
+    
+    const tablePriceData = localStorage.getItem('tableprice');
 
-    const response = await api.get(`/WSAPP03?pagesize=100&page=${page}`);
+    if(!!tablePriceData){
+        tablePrice = JSON.parse(tablePriceData);
+    }else {
+        tablePrice = {id: "001", description: "TABELA PADRAO"}
+    }
+        
+    //const response = await api.get(`/WSAPP03?pagesize=9999&page=${page}&codTab=${tablePrice.id}`);
+    const response = await api.get(`/WSAPP03?pagesize=9999&page=1&codTab=${tablePrice.id}`);
     const json: ApiResponse = response.data;
 
     if(json.status.code === '#200'){    
@@ -42,8 +52,17 @@ export const fetchData = async (page: number, ) => {
 export const fetchSearch = async(searchText: string) => {
     let auxResult: any = []
     let returnResult: any = []
+    let tablePrice: any
+    
+    const tablePriceData = localStorage.getItem('tableprice');
 
-    const response = await api.get(`/WSAPP03?pagesize=100&page=1&searchKey=${searchText}`);
+    if(tablePriceData){
+        tablePrice = JSON.parse(tablePriceData);
+    }else {
+        tablePrice = {id: "001", description: "TABELA PADRAO"}
+    }
+
+    const response = await api.get(`/WSAPP03?pagesize=99999&page=1&searchKey=${searchText}&codTab=${tablePrice.id}`);
     const json: ApiResponse = response.data;
 
     if(json.status.code === '#200'){    

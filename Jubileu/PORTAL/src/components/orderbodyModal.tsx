@@ -168,6 +168,7 @@ const OrdersBodyModal: React.FC<Props> = ({
     { field: "price2", headerText: "Preço 2", textAlign: "Center" },
     { field: "price3", headerText: "Preço 3", textAlign: "Center" },
     { field: "balance", headerText: "Saldo", textAlign: "Center" },
+    { field: 'photo', headerText: 'Foto', textAlign: 'Center' }
   ]:
   [
     { field: "mark", headerText: "", textAlign: "Center" },
@@ -175,6 +176,7 @@ const OrdersBodyModal: React.FC<Props> = ({
     { field: "description", headerText: "Descrição", textAlign: "Left" },
     { field: "price", headerText: "Preço", textAlign: "Center" },
     { field: "balance", headerText: "Saldo", textAlign: "Center" },
+    { field: 'photo', headerText: 'Foto', textAlign: 'Center' }
   ]
 
   
@@ -290,15 +292,26 @@ const OrdersBodyModal: React.FC<Props> = ({
 
 
   const handleConfirmSel = (item: any) => {
-    if(item.id === 'payment'){
+
+    if(item.id === 'tableprice'){
+      setCartContext([])
+      localStorage.setItem('cartdata', JSON.stringify([]));
+      setSelected([]);
+      setData([]);
+      setItensCart([])
       handleConfirmSelect(item)
 
-    }else {
-      if(item.selected.financial.length > 0) {
-        setFinancial(item.selected)
-      
-      }else{
+    }else{
+
+      if(item.id === 'payment'){
         handleConfirmSelect(item)
+      }else {
+        if(item.selected.financial.length > 0) {
+          setFinancial(item.selected)
+        
+        }else{
+          handleConfirmSelect(item)
+        }
       }
     }
   }
