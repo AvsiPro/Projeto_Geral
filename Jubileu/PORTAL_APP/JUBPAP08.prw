@@ -20,13 +20,19 @@ Private cPass     := space(80)
 Private cCgc      := ''
 Private cCod      := ''
 Private cLoj      := ''
+Private aEmpresas := FWLoadSM0( .f. , .f. )
+Private aFilial   := {}
+Private cCombo2   := ''
 
     If Empty(FunName())
         RpcSetType(3)
         RPCSetEnv("01","04")
     EndIf
 
-    SetPrvt("oDlg1","oList0","oCmb1","oSay1","oSay2","oSay3","oSay4","oSay5")
+    Aeval(aEmpresas,{|x| Aadd(aFilial,x[2])})
+    cCombo2 := aFilial[1]
+
+    SetPrvt("oDlg1","oList0","oCmb1","oCmb2","oSay1","oSay2","oSay3","oSay4","oSay5","oSay6")
 
     fDados()
 
@@ -38,6 +44,9 @@ Private cLoj      := ''
 
     oSay1  := TSay():New( 036,012,{||"Perfil"},oDlg1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
     oCmb1  := TComboBox():New(044,012,{|u|if(PCount()>0,cCombo1:=u,cCombo1)},aCombo,060,012,oDlg1,,{||fComboType()},,,,.T.,,,,,,,,,'cCombo1')
+
+    oSay6  := TSay():New( 036,080,{||"Filial Faturamento"},oDlg1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
+    oCmb2  := TComboBox():New(044,080,{|u|if(PCount()>0,cCombo2:=u,cCombo2)},aFilial,060,012,oDlg1,,{||/*fComboType()*/},,,,.T.,,,,,,,,,'cCombo2')
 
     oSay2  := TSay():New( 064,012,{||"Buscar "+cCombo1},oDlg1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,060,008)
     oGet1  := TGet():New( 072,012,{|u|if(PCount()>0,xGetPesq:=u,xGetPesq)},oDlg1,060,012,'',{ || fBuscaNome() },CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,cConsP,"",,)
@@ -123,6 +132,7 @@ Static Function fCadastra()
         If SA3->(DbSeek(xFilial('SA3')+cCod))
             RecLock('SA3', .F.)
                 SA3->A3_TOKEN := cTokGrv
+                SA3->A3_FILFUN := cCombo2
             SA3->(MsUnlock())
         EndIf
     EndIf

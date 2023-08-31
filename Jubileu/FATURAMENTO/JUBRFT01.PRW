@@ -469,7 +469,8 @@ Static Function fMontaRel(oProc,aParams)
 					oPrintPvt:SayAlign(nLinAtu, nPosAIcm, Alltrim(Transform(nAlqICM, cMaskPad)),             oFontDet, 030, 07, , nPadRight, )
 					//oPrintPvt:SayAlign(nLinAtu, nPosAIpi, Alltrim(Transform(nAlqIPI, cMaskPad)),             oFontDet, 030, 07, , nPadRight, )
 				EndIf
-				nLinAtu += 7
+
+				nLinAtu += 10
 				
 				//Se por acaso atingiu o limite da página, finaliza, e começa uma nova página
 				If nLinAtu >= nLinFin
@@ -542,7 +543,7 @@ Static Function fImpCab()
 	Local cEmpCnpj    := Alltrim(Transform(SM0->M0_CGC, cMaskCNPJ))
 	Local cEmpCep     := Alltrim(Transform(SM0->M0_CEPENT, cMaskCEP))
 	Local cEndereco   := Alltrim(QRY_PED->A1_END) + "  -  Bairro: " + Alltrim(QRY_PED->A1_BAIRRO)
-	Local cMunicipio  := Alltrim(QRY_PED->A1_MUN) + " (" + QRY_PED->A1_EST + ")  -  CEP: " + cEmpCep
+	Local cMunicipio  := Alltrim(QRY_PED->A1_MUN) + " (" + QRY_PED->A1_EST + ")  -  CEP: " + QRY_PED->A1_CEP
 	Local cContato    := "( " + QRY_PED->A1_DDD + ") " + Alltrim(QRY_PED->A1_TEL) + "   -   Contato: " + Alltrim(QRY_PED->A1_CONTATO)
 
 	//Iniciando Página
@@ -818,7 +819,7 @@ Static Function fMudaLayout()
 		nPosAIcm := 0520 //Aliquota ICMS
 		//nPosAIpi := 0520 //Aliquota IPI
 		
-		oFontDet   := TFont():New(cNomeFont, , -07, , .F.)
+		oFontDet   := TFont():New(cNomeFont, , -08, , .F.)
 		oFontDetN  := TFont():New(cNomeFont, , -07, , .T.)
 	EndIf
 Return

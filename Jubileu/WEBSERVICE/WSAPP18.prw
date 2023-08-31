@@ -57,6 +57,7 @@ Local nTotVnd           :=  0
 Local ncont 
 Local nTotQtd           :=  0
 Local nTotFat           :=  0
+Local nTotQFt           :=  0
 
 Default oself:page		:=	1
 Default oself:pageSize	:= 	20
@@ -146,6 +147,19 @@ RPCSetEnv('01','0801')
 
         (cAliasTMP)->(DBCloseArea())
 
+        cQuery := "SELECT COUNT(C5_NUM) AS QTDTOTAL"
+        cQuery += " FROM "+RetSQLName("SC5")+" C5"
+        cQuery += " WHERE D_E_L_E_T_=' ' AND C5_FILIAL BETWEEN ' ' AND 'ZZZ'" 
+        cQuery += " AND C5_VEND1='"+cVend+"'"
+        cQuery += " AND C5_EMISSAO BETWEEN '"+cPriDia+"' AND '"+cUltDia+"'"
+        cQuery += " AND C5_NOTA<>' '"
+        
+        MPSysOpenQuery(cQuery, cAliasTMP)
+
+        nTotQFt := (cAliasTMP)->QTDTOTAL
+
+        (cAliasTMP)->(DBCloseArea())
+
         cQuery := " SELECT C5_CLIENTE,C5_LOJACLI,A1_NOME,SUM(C6_VALOR) AS VALOR, C5_NOTA"
         cQuery += " FROM "+RetSQLName("SC5")+" C5"
         cQuery += " INNER JOIN "+RetSQLName("SC6")+" C6 ON C6_FILIAL=C5_FILIAL AND C6_NUM=C5_NUM AND C6_CLI=C5_CLIENTE AND C6_LOJA=C5_LOJACLI AND C6.D_E_L_E_T_=' ' "
@@ -217,11 +231,13 @@ RPCSetEnv('01','0801')
         oStatus := JsonObject():New()
         oResult := JsonObject():New()
         
-        oResult['header'] := Array(4)
+        oResult['header'] := Array(5)
         oResult['header'][1] := JsonObject():New()
         oResult['header'][2] := JsonObject():New()
         oResult['header'][3] := JsonObject():New()
         oResult['header'][4] := JsonObject():New()
+        oResult['header'][5] := JsonObject():New()
+        
         
         oResult['series1'] := Array(1)
         oResult['series1'][1] := JsonObject():New()
@@ -248,6 +264,10 @@ RPCSetEnv('01','0801')
         oResult['header'][4]['title'] := "Num Vendas"
         oResult['header'][4]['type'] := ""
         oResult['header'][4]['value'] := nTotQtd
+
+        oResult['header'][5]['title'] := "Qtd Faturados"
+        oResult['header'][5]['type'] := ""
+        oResult['header'][5]['value'] := nTotQFt
         
         oResult['series1'][1]['name'] := "Valor Vendas"
         oResult['series1'][1]['data'] := aAux1
