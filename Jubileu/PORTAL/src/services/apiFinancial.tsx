@@ -9,12 +9,26 @@ interface ApiResponse {
     result: any;
   }
 
-export const fetchData = async (customer: string, token: string, type: string, seller: string) => {
+export const fetchData = async (customer: string, token: string, type: string, seller: string, filterAux: any) => {
 
     let auxResult: any = []
     let returnResult: any = []
+    let link: string = ''
 
-    const response = await api.get(`/WSAPP05?pagesize=500&page=1&customer=${customer}&token=${token}&type=${type}&seller=${seller}`);
+    link += `/WSAPP05?pagesize=400&page=1`
+    link += `&customer=${customer}`
+    link += `&token=${token}`
+    link += `&type=${type}`
+    link += `&seller=${seller}`
+    link += `&emissDe=${filterAux.emissDe}`
+    link += `&emissAt=${filterAux.emissAt}`
+    link += `&venctDe=${filterAux.venctDe}`
+    link += `&venctAt=${filterAux.venctAt}`
+    link += `&pago=${filterAux.pago}`
+    link += `&aberto=${filterAux.aberto}`
+    link += `&atrasado=${filterAux.atrasado}`
+
+    const response = await api.get(link);
     const json: ApiResponse = response.data;
 
     if(json.status.code === '#200'){    

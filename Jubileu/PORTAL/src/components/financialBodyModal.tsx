@@ -18,6 +18,8 @@ import { SToD } from "../utils/dateFormat";
 import { CurrencyFormat } from "../utils/currencyFormat";
 import { WindowDimensionsContext } from "../contexts/WindowDimensionsContext";
 import { useMediaQuery } from "react-responsive";
+import { Badge, Stack } from "react-bootstrap";
+import FilterPopover from "../popovers/filterPopover";
 
 interface Props{
     financialCustomer: any;
@@ -34,31 +36,79 @@ const FinancialBodyModal: React.FC <Props> = ({financialCustomer , type = ''})  
     const [financial, setFinancial] = useState<any>([])
     const [load, setLoad] = useState<boolean>(false)
 
+    const [dateEmisStart, setDateEmisStart] = useState("");
+    const [dateEmisEnd, setDateEmisEnd] = useState("");
+    const [dateVencStart, setDateVencStart] = useState("");
+    const [dateVencEnd, setDateVencEnd] = useState("");
+  
+    const [btnPay, setBtnPay] = useState(false);
+    const [btnComing, setBtnComing] = useState(false);
+    const [btnRed, setBtnRed] = useState(false);
+  
+    const handleClickPay = (event: any) => {
+      setBtnPay(event);
+    };
+  
+    const handleClickComing = (event: any) => {
+      setBtnComing(event);
+    };
+  
+    const handleClickRed = (event: any) => {
+      setBtnRed(event);
+    };
+  
+    const handleClickEmis = () => {
+      setDateEmisStart("");
+      setDateEmisEnd("");
+    };
+  
+    const handleClickVenc = () => {
+      setDateVencStart("");
+      setDateVencEnd("");
+    };
+
+
+
     useEffect(() => {
-        const loadItems = async () => {
-            if(!financialCustomer) return;
-
-            setLoad(true)
-            
-            const userData = localStorage.getItem('userdata');
-            const user = userData ? JSON.parse(userData) : null;
-
-            let seller = ''
-            if(!!type){
-                seller = user.code
-            }
-            
-            const returnResult: any = await fetchData(financialCustomer.cnpj, user.token, type, seller)
-    
-            if(returnResult.length > 0){
-                setFinancial(returnResult);
-            }
-            
-            setLoad(false)
-        };
-
         loadItems()
-    }, [])
+    }, [dateEmisStart, dateEmisEnd, dateVencStart, dateVencEnd, btnPay, btnComing, btnRed])
+
+
+    const loadItems = async () => {
+        if(!financialCustomer) return;
+
+        setLoad(true)
+        
+        const userData = localStorage.getItem('userdata');
+        const user = userData ? JSON.parse(userData) : null;
+
+        let seller = ''
+
+        if(!!type){
+            seller = user.code
+        }
+
+        const filterAux = {
+            emissDe: dateEmisStart.replace('-','').replace('-',''),
+            emissAt: dateEmisEnd.replace('-','').replace('-',''),
+            venctDe: dateVencStart.replace('-','').replace('-',''),
+            venctAt: dateVencEnd.replace('-','').replace('-',''),
+            pago: btnPay,
+            aberto: btnComing,
+            atrasado: btnRed
+        }
+        
+        const returnResult: any = await fetchData(
+            financialCustomer.cnpj,
+            user.token.trim(),
+            type,
+            seller,
+            filterAux
+        )
+
+        setFinancial(returnResult);
+        setLoad(false)
+    };
 
     const setColorStatus = (status: string) => {
         if(status === 'Pago'){
@@ -85,13 +135,94 @@ const FinancialBodyModal: React.FC <Props> = ({financialCustomer , type = ''})  
             modal={true}
             isMobile={isMobile}
         >
-
             { !!financialCustomer &&
                 <>
                 <Style.TextH4 style={{color:'#000'}}>{financialCustomer.code}</Style.TextH4>
                 <Style.TextH3 style={{color:themeAux.primary}}>{financialCustomer.name}</Style.TextH3>
                 </>
             }
+
+            <div
+                style={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    marginBottom: "10px",
+                }}
+            >
+                <FilterPopover
+                    setDateEmisStart={setDateEmisStart}
+                    setDateEmisEnd={setDateEmisEnd}
+                    setDateVencStart={setDateVencStart}
+                    setDateVencEnd={setDateVencEnd}
+                    handleClickPay={(event: any) => handleClickPay(event)}
+                    handleClickComing={(event: any) => handleClickComing(event)}
+                    handleClickRed={(event: any) => handleClickRed(event)}
+                />
+            </div>
+            <div
+                style={{
+                marginBottom: "10px",
+                boxSizing: "border-box",
+                height: "20px",
+                }}
+            >
+                <Stack direction="horizontal" gap={2}>
+                    <Badge
+                        onClick={() => handleClickPay(false)}
+                        style={{ cursor: "pointer" }}
+                        bg="success"
+                    >
+                        {btnPay ? "Pago" : ""}
+                    </Badge>
+                    <Badge
+                        onClick={() => handleClickRed(false)}
+                        style={{ cursor: "pointer" }}
+                        bg="danger"
+                    >
+                        {btnRed ? "Atrasado" : ""}
+                    </Badge>
+                    <Badge
+                        onClick={() => handleClickComing(false)}
+                        style={{ cursor: "pointer" }}
+                        bg="warning"
+                        text="dark"
+                    >
+                        {btnComing ? "Em Aberto" : ""}
+                    </Badge>
+                    <Badge
+                        onClick={handleClickEmis}
+                        style={{ cursor: "pointer" }}
+                        bg="dark"
+                        text="light"
+                    >
+                        {!!dateEmisStart && 'Emissão de: '+SToD(dateEmisStart.replace('-','').replace('-',''))}
+                    </Badge>
+                    <Badge
+                        onClick={handleClickEmis}
+                        style={{ cursor: "pointer" }}
+                        bg="dark"
+                        text="light"
+                    >
+                        {!!dateEmisEnd && 'Emissão Até: '+SToD(dateEmisEnd.replace('-','').replace('-',''))}
+                    </Badge>
+                    <Badge
+                        onClick={handleClickVenc}
+                        style={{ cursor: "pointer" }}
+                        bg="dark"
+                        text="light"
+                    >
+                        {!!dateVencStart && 'Vencimento de: '+SToD(dateVencStart.replace('-','').replace('-',''))}
+                    </Badge>
+                    <Badge
+                        onClick={handleClickVenc}
+                        style={{ cursor: "pointer" }}
+                        bg="dark"
+                        text="light"
+                    >
+                        {!!dateVencEnd && 'Emissão Até: '+SToD(dateVencEnd.replace('-','').replace('-',''))}
+                    </Badge>
+                </Stack>
+            </div>
             
             <SyncLoader
                 color={theme === 'dark' ? darkTheme.primary : lightTheme.primary}
@@ -140,7 +271,7 @@ const FinancialBodyModal: React.FC <Props> = ({financialCustomer , type = ''})  
 
                         <Style.BodyFinColumn>
                             <Style.BodyFinLabel color="#000" bold size={16}>Status</Style.BodyFinLabel>
-                            <Style.BodyFinLabel color={setColorStatus(item.status)} bold={false} size={16}>{item.status}</Style.BodyFinLabel>
+                            <Style.BodyFinLabel color={setColorStatus(item.status)} bold={true} size={16}>{item.status}</Style.BodyFinLabel>
                         </Style.BodyFinColumn>
 
                         <Style.BodyFinColumn>

@@ -227,3 +227,97 @@ export const PopoverButtonDeleteOrder = styled.button`
         background-color: ${(props) => props.theme.primary};
     }
 `
+
+
+export const PopoverFilterComponent = styled(Popover)`
+  background-color: #fff;
+  color: #000;
+  padding: 20px;
+  font-family: "Roboto", sans-serif;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 300px;
+  max-width: 400px;
+  box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.1);
+`;
+
+export const PopoverFilterHeader = styled.div`
+  background-color: #fff;
+  color: #000;
+  font-family: "Roboto", sans-serif;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+`;
+
+export const PopoverTextLabelFilter = styled.label<{ size: number }>`
+  color: #000;
+  font-family: "Roboto", sans-serif;
+  font-weight: bold;
+  ${({ size }) => `font-size:${size}px`};
+`;
+
+export const PopoverButtonFilter = styled.button`
+  cursor: pointer;
+  border: none;
+  background-color: ${(props) => props.theme.primary};
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  color: #fff;
+  font-weight: bold;
+  font-family: "Roboto", sans-serif;
+  border-radius: 8px;
+  margin-left: 5px;
+  margin-right: 5px;
+`;
+
+export const PopoverButtonFilterClear = styled.button`
+  cursor: pointer;
+  border: none;
+  background-color: #737373;
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  color: #fff;
+  font-weight: bold;
+  font-family: "Roboto", sans-serif;
+  border-radius: 8px;
+  margin-left: 5px;
+  margin-right: 5px;
+`;
+
+export const PopoverBodyFilter = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+`;
+
+export const PopoverBodyDataFilter = styled.div`
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+`;
+
+export const PopoverDataFilter = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+export const PopoverBtnsFilter = styled.div`
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  gap: 10px;
+`;
+
+export const PopoverFilterBtn = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+`;
