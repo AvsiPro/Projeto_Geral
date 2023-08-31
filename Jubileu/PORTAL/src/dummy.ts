@@ -550,3 +550,101 @@ export const optionColumn3 = (themeContext: any) => {
     },
   };
 };
+
+
+export const optionPieCustomer = (themeContext: any) => {
+  return (
+    {
+      chart: {
+        type: 'donut',
+        foreColor: themeContext.text,
+      },
+      stroke:{
+        show:false,
+      },
+      labels: ["Vencidos", "Em Aberto", "Pagos"],
+      colors: [ '#ff6347', '#ffc107', 'rgb(45, 206, 137)',],
+      responsive: [{
+        breakpoint: 480,
+        options: {
+          legend: {
+            position: 'bottom'
+          }
+        }
+      }]
+    }
+  )
+}
+
+
+export const optionColumnCust = (themeContext: any) => {
+  return( 
+    {
+      chart: {
+        height: 350,
+        type: 'bar',
+        foreColor: themeContext.text,
+      },
+      plotOptions: {
+        bar: {
+          borderRadius: 10,
+          dataLabels: {
+            position: 'top',
+          },
+        }
+      },
+      dataLabels: {
+        enabled: true,
+        formatter: function (val: number) {
+          return CurrencyFormat(val)
+        },
+        offsetY: -20,
+        style: {
+          fontSize: '12px',
+          colors: [themeContext.text]
+        }
+      },
+      
+      xaxis: {
+        categories: ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"],
+        position: 'bottom',
+        axisBorder: {
+          show: false
+        },
+        axisTicks: {
+          show: false
+        },
+        crosshairs: {
+          fill: {
+            type: 'gradient',
+            gradient: {
+              colorFrom: themeContext.text,
+              colorTo: themeContext.text,
+              stops: [0, 100],
+              opacityFrom: 0.4,
+              opacityTo: 0.5,
+            }
+          }
+        },
+        tooltip: {
+          enabled: true,
+        }
+      },
+      yaxis: {
+        axisBorder: {
+          show: false
+        },
+        axisTicks: {
+          show: false,
+        },
+        labels: {
+          show: false,
+          formatter: function (val: number) {
+            return CurrencyFormat(val)
+          }
+        }
+      
+      }
+    }
+  )
+}

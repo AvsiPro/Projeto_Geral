@@ -1,36 +1,34 @@
-import React, {useState, useEffect} from "react";
+import React, { useContext } from "react";
+import * as Style from "./styles";
 
-import * as Style from './styles'; 
+import { ThemeContext } from "../contexts/ThemeContext";
+import { WindowDimensionsContext } from "../contexts/WindowDimensionsContext";
+import { darkTheme, lightTheme } from "../themes";
+import { useMediaQuery } from "react-responsive";
 
-import Navbar from "../components/navbar";
 import Header from "../components/header";
-
-import { useMediaQuery } from 'react-responsive';
+import Navbar from "../components/navbar";
+import CustomerDash from "../dashboards/Customer";
 
 const Home: React.FC = () => {
-
-  const isMobile = useMediaQuery({ query: '(max-width: 767px)' });
-
+  
+  const { theme } = useContext(ThemeContext);
+  const { windowDimensions } = useContext(WindowDimensionsContext);
+  const themeContext = theme === "light" ? lightTheme : darkTheme;
+  const isMobile = useMediaQuery({ query: "(max-width: 767px)" });
 
   return (
-    <Style.CustComponent>
+    <Style.ContainerAll theme={themeContext}>
+      {/* Menu lateral */ !isMobile && <Navbar />}
       
-      {/* Menu lateral */
-      !isMobile &&
-        <Navbar/>
-      }
       <Style.Container isMobile={isMobile}>
-          
-          {/* Header */}
-          <Header/>
+        <Header />
+        <Style.StackDash windowDimensions={windowDimensions} className="mx-auto" gap={4}>
+          <CustomerDash />
 
-          {/* Tablea */}
-          <div style={{margin: !isMobile ? 50 : 0}}>
-
-          </div>
-          
+        </Style.StackDash>
       </Style.Container>
-    </Style.CustComponent>
+    </Style.ContainerAll>
   );
 };
 
