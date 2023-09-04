@@ -46,11 +46,14 @@ Static Function GeraPDFs( oSelf )
 
     cFilNota := oself:cFilNF
 
+    conout('Filial Danfe '+cFilNota)
+
     If Select("SM0") == 0
 		RpcSetType(3)
 		RPCSetEnv("01",cFilNota)
 	EndIf
 
+    conout('Filial atual'+cfilant)
     conout(oself:cDoc)
     conout(oself:cTipo)
     conout(oself:cSerie)
@@ -84,15 +87,22 @@ Static Function GeraPDFs( oSelf )
     ElseIf Alltrim(upper(cTipFile)) == 'DANFE' 
         DbSelectArea("SF2")
         DbSetOrder(1)
-        Dbseek(cFilNota+cNumero+cSerNF)
+        If Dbseek(cFilNota+cNumero+cSerNF)
+            conout('posicionou na nota '+cFilNota+cNumero+cSerNF)
+        else
+            conout('não posicionou na nota '+cFilNota+cNumero+cSerNF)
+        endif
 
         DbSelectArea("SF3")
         DbSetOrder(5)
         DbSeek(cFilNota+cSerNF+cNumero)
 
-        U_JUBDANFE(cNumero,cSerNF,cPasta,'Danfe')
-        oFile  := FwFileReader():New(cPasta+"Danfe\"+cNumero+".pdf")
+        U_JUBDANFE(cNumero,cSerNF,cPasta,'Danfe_'+cFilNota)
+        oFile  := FwFileReader():New(cPasta+"Danfe_"+cFilNota+"\"+cNumero+".pdf")
         cFilName := cNumero+".pdf"
+
+        conout(cPasta+"Danfe_"+cFilNota+"\"+cNumero+".pdf")
+        conout(cFilName)
     ElseIf Alltrim(upper(cTipFile)) == 'XML'
         u_ROBXML(cNota, cSerie, cPasta+'xml\' + cArquivo  + ".xml", .F.)
         cFilName := cArquivo  + ".xml"

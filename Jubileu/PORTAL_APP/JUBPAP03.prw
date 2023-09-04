@@ -102,7 +102,7 @@ User Function JUBDANFE(cNota, cSerie, cPasta, ccnpj)
             //Chamando a impressão da danfe no RDMAKE
             u_DanfeProc(@oDanfe, @lEnd, cIdent, , , .F.) //}, "Imprimindo Danfe...")
 
-            //oDanfe:EndPage()
+            oDanfe:EndPage()
             oDanfe:Print()
             aArquivos := {}
             //Necessário enviar a copia para o servidor, caso o arquivo seja gerado localmente
@@ -131,7 +131,7 @@ If Select("SM0") == 0
 EndIf
 
 cSerNF := '8'
-cNumero := '000000580'
+cNumero := '000000954'
 
 DbSelectArea("SF2")
 DbSetOrder(1)

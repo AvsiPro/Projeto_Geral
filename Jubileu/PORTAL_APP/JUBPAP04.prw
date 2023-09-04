@@ -21,7 +21,7 @@ User Function ROBXML(cDocumento, cSerie, cArqXML, lMostra)
     Local aArea        := GetArea()
     Local cURLTss      := PadR(GetNewPar("MV_SPEDURL","http://"),250)  
     Local oWebServ
-    Local cIdEnt       := If(cfilant=='0101','000001','000002') //GetIdEnt()
+    Local cIdEnt       := GetIdEnt() //If(cfilant=='0101','000001','000002') //GetIdEnt()
     Local cTextoXML    := ""
     Default cDocumento := ""
     Default cSerie     := ""
