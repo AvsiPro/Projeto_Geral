@@ -1,3 +1,10 @@
+#INCLUDE 'PROTHEUS.CH'
+/*
+    Adiciona campos na grid de Aprovação de Solicitação de Compras
+    MIT 44_COMPRAS_COM011 _ Tipos de solicitação de compras
+    https://docs.google.com/document/d/1ESMwrvQ37rSRT1_DmEgjO9yVyINOCblA/edit
+    
+*/
 User Function MT110CP2()
 Local aAreaSC1 := SC1->(GetArea())
 Local aItens := PARAMIXB[1]
@@ -14,16 +21,16 @@ DbSetOrder(1)
 For nX := 1 To Len(PARAMIXB[2]:AARRAY)
  MsSeek(xFilial("SC1")+cNumSC)
  While !Eof() .And. C1_FILIAL == xFilial("SC1") .And. C1_NUM == cNumSc
-  If C1_PRODUTO == PARAMIXB[2]:AARRAY[nX][1] .And. ;
-   C1_UM  == PARAMIXB[2]:AARRAY[nX][2] .And. ;
-   C1_QUANT == PARAMIXB[2]:AARRAY[nX][3] .And. ;
-   C1_OBS  == PARAMIXB[2]:AARRAY[nX][4] .And. ;
-   C1_EMISSAO == PARAMIXB[2]:AARRAY[nX][5] .And. ;
-   C1_DESCRI == PARAMIXB[2]:AARRAY[nX][6] .And. ;
-   C1_FILENT == PARAMIXB[2]:AARRAY[nX][7]
-   AADD(PARAMIXB[2]:AARRAY[nX],SC1->C1_XTIPCOT)
-   Exit
-  EndIf
+    If C1_PRODUTO == PARAMIXB[2]:AARRAY[nX][1] .And. ;
+        C1_UM  == PARAMIXB[2]:AARRAY[nX][2] .And. ;
+        C1_QUANT == PARAMIXB[2]:AARRAY[nX][3] .And. ;
+        C1_OBS  == PARAMIXB[2]:AARRAY[nX][4] .And. ;
+        C1_EMISSAO == PARAMIXB[2]:AARRAY[nX][5] .And. ;
+        C1_DESCRI == PARAMIXB[2]:AARRAY[nX][6] .And. ;
+        C1_FILENT == PARAMIXB[2]:AARRAY[nX][7]
+        AADD(PARAMIXB[2]:AARRAY[nX],SC1->C1_XTIPCOT)
+        Exit
+    EndIf
   DbSkip()
  EndDo
 Next nX

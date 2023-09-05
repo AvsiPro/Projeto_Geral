@@ -1,5 +1,10 @@
 #INCLUDE 'PROTHEUS.CH'
-
+/*
+    Ponto de entrada para validação de linhas da solicitação
+    MIT 44_COMPRAS_COM011 _ Tipos de solicitação de compras
+    https://docs.google.com/document/d/1ESMwrvQ37rSRT1_DmEgjO9yVyINOCblA/edit
+    
+*/
 User Function  MT110LOK()
 
 Local nPosPrd    := aScan(aHeader,{|x| AllTrim(x[2]) == 'C1_PRODUTO'})
