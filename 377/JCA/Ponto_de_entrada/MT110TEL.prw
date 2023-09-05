@@ -9,8 +9,8 @@ user function MT110TEL
 Local oNewDialog := PARAMIXB[1]
 Local aPosGet    := PARAMIXB[2]
 Local aStatusP   := {}
-Local nEditS     := IF(INCLUI,1,VAL(SC1->C1_XTIPCOT))
 Private aCombo   := RetSX3Box(GetSX3Cache("C1_XTIPCOT", "X3_CBOX"),,,1)
+Public nEditS     := IF(INCLUI,1,VAL(SC1->C1_XTIPCOT))
 //Public cEx	     := SPACE(5)   
 
 Aeval(aCombo,{|x| Aadd(aStatusP,x[1]) })
@@ -23,6 +23,8 @@ aPosGet[1,8]:=450
 
 @ 51,aPosGet[1,7] SAY 'Tipo de Solicitação' PIXEL SIZE 60,9 Of oNewDialog
 @ 50, aPosGet[1,8] COMBOBOX oEdit1 VAR nEditS ITEMS aStatusP SIZE 60, 013 OF oNewDialog PIXEL COLORS 0, 16777215
+
+nEditS := cvaltochar(nEditS)
 
 RETURN 
 
