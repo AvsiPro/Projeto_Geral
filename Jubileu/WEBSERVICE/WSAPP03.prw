@@ -10,6 +10,7 @@ WsRestFul WSAPP03 Description "produtos API" FORMAT APPLICATION_JSON
 	WsData copyItems AS String	Optional
 	WsData byId		 AS Boolean	Optional
 	WsData codTab    AS String	Optional
+	WsData barCode   AS String	Optional
 
 WsMethod GET products;
     Description 'Lista de produtos';
@@ -31,7 +32,7 @@ Retorna a lista de produtos.
 
 /*/
 
-WsMethod GET products WsReceive searchKey, copyItems, page, pageSize, codTab WsRest WSAPP03
+WsMethod GET products WsReceive searchKey, copyItems, page, pageSize, codTab, barCode WsRest WSAPP03
 	Local lRet:= .T.
 	lRet := products( self )
 Return( lRet )
@@ -54,6 +55,7 @@ Default oself:page		:= 1
 Default oself:pageSize	:= 20
 Default oself:byId		:=.F.
 Default oself:codTab    := '001'
+Default oself:barCode   := ''
 
 
 RpcClearEnv()	
@@ -70,6 +72,10 @@ RPCSetEnv('01','0801')
 	
 	If !Empty(oself:copyItems)
 		cWhere += " AND SB1.B1_COD IN (" + oself:copyItems + " ) "
+
+	ElseIf !Empty(oself:barCode)
+		cWhere += " AND SB1.B1_CODBAR = '"	+ oself:barCode + "'"
+		
 	Else
 		If !Empty(oself:searchKey) //se tiver chave de busca no request
 			cSearch := Upper( oself:SearchKey )
