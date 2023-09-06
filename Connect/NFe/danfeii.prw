@@ -129,11 +129,11 @@ If nTipo <> 1
 	If lExistNFe
 		oDanfe:Preview()//Visualiza antes de imprimir
 		//RODRIGO
-		asaveb := GetArea()
+		/*asaveb := GetArea()
 		If ApMsgNoYes("Deseja imprimir os boletos","Boleto")==.T.
 			U_ImprimeBOL(MV_PAR01,MV_PAR02,MV_PAR03)         
 		EndIf
-		RestArea(asaveb)
+		RestArea(asaveb)*/
 	Else
 		if !lIsLoja .and. !lJob
 			Aviso("DANFE","Nenhuma NF-e a ser impressa nos parametros utilizados.",{"OK"},3)
