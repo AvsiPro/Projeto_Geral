@@ -1,5 +1,10 @@
 #INCLUDE 'PROTHEUS.CH'
-
+/*
+    Job que faz verificação de solicitações de compras perto da data de entrega
+    MIT 44_COMPRAS COM013 _ Workflow Compradores - Solicitação de Compra
+    https://docs.google.com/document/d/11M9mO4K4g0u4fKVXEKy0rUvwpnvDN1-m/edit
+    
+*/
 User Function JCAJOB01
 
 Local cQuery 
