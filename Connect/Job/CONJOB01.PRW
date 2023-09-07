@@ -39,9 +39,10 @@ ENDIF
 
 dDiaExe := strzero(day(ddatabase),2)
 
-cQuery := "SELECT AAM_CONTRT,AAM_XDIALT,AAN_XCBASE,AAM_CODCLI,AAM_LOJA,AAN_ITEM,AAN_CODPRO"
+cQuery := "SELECT AAM_CONTRT,AAM_XDIALT,AAN_XCBASE,AAM_CODCLI,AAM_LOJA,AAN_ITEM,AAN_CODPRO,A1_TELEX"
 cQuery += " FROM "+RetSQLName("AAN")+" AAN"
 cQuery += " INNER JOIN "+RetSQLName("AAM")+" AAM ON AAM_FILIAL=AAN_FILIAL AND AAM_CONTRT=AAN_CONTRT"
+cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_COD=AAM_CODCLI AND A1_LOJA=AAM_LOJA AND A1.D_E_L_E_T_=' '"
 //cQuery += "     AND '"+dDiaExe+"' IN(AAM_XDIALT)"
 cQuery += " AND AAM_XDIALT<>' '"
 cQuery += "     AND AAM.D_E_L_E_T_=' '"
@@ -67,7 +68,8 @@ While !EOF()
                 TRB->AAN_CODPRO,;   //07
                 "",;                //08
                 "",;                //09
-                ""})                //10
+                "",;                //10
+                TRB->A1_TELEX})     //11
     DbSkip()
 EndDo 
 
@@ -109,7 +111,8 @@ If len(aAux) > 0
         If nPosMaq > 0
             aAux[nX,08] := "https://vmpay.vertitecnologia.com.br/connect_vending_comercio_de_ma/c/"
             //aAux[nX,08] += "%INSTALLATION%"
-            aAux[nX,08] += Alltrim(aHeader[nPosMaq,03])
+            //aAux[nX,08] += Alltrim(aHeader[nPosMaq,03])
+            aAux[nX,08] += Alltrim(aAux[nX,11])
             aAux[nX,08] += "/reports/vends?"
             aAux[nX,08] += "vend[occurred_at]=custom&vend[occurred_at_end]="+cvaltochar(dLeiFim)+"%20"+cHrf
             aAux[nX,08] += "&vend[occurred_at_start]="+cvaltochar(dUltLei)+"%20"+cHri

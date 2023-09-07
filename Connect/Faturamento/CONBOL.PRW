@@ -345,7 +345,7 @@ oPrint:Line (0040,225,0020,225) // linha que separa 341 do codigo de barras
 //Caixa parte pagador do boleto        
 oPrint:Box(0040,010,0350,650, "-4")   //Cabeçalho
 
-oPrint:SayBitmap( 0010,011,'\system\itau.bmp',030,030 )
+oPrint:SayBitmap( 0010,011,'\system\itau.bmp',040,030 )
 // LOGOTIPO  
 /*If File(aBmp)
 	oPrint:SayBitmap( 0010,011,aBmp,030,030 )
@@ -490,7 +490,7 @@ oPrint:Say  (0390, 020, REPLICATE( '- ', 136 ), oFont9)
 oPrint:Box(0431,010,0698,650, "-4")   //Cabeçalho
 
 // LOGOTIPO  
-oPrint:SayBitmap( 0400,011,'\system\itau.bmp',030,030 )
+oPrint:SayBitmap( 0400,011,'\system\itau.bmp',040,030 )
 /*If File(aBmp)
 	oPrint:SayBitmap( 0400,011,aBmp,030,030 )
 	oPrint:Say  (0418,045,"Banco Itaú SA",oFont14n )	// [2]Nome do Banco

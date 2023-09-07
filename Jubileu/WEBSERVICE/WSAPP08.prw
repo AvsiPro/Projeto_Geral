@@ -48,6 +48,9 @@ Default oself:type  	:= ''
     RpcSetType(3)
     RPCSetEnv('01','0101')
 
+	conout(Alltrim(Upper(oself:token)))
+	conout(oself:token)
+	
     oJsonAux  := JsonObject():New()
     cAliasTMP := GetNextAlias()
 
@@ -59,7 +62,7 @@ Default oself:type  	:= ''
 	cQuery += " 	AND SA1.D_E_L_E_T_=' ' "
 	
 	If oself:type == 'C'
-		cQuery += " AND UPPER(A1_TOKEN) = '"+Upper(oself:token)+"' "
+		cQuery += " AND RTRIM(UPPER(A1_TOKEN)) = '"+Alltrim(Upper(oself:token))+"' "
 	EndIf
 
 	If oself:type == 'V'

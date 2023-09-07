@@ -2579,7 +2579,7 @@ For nCont := 1 to len(aEmail)
 		If SA1->A1_XBOL == "S" .OR. EMPTY(SA1->A1_XBOL)
 			DbSelectArea("SE1")
 			DbSetOrder(1)
-			If Dbseek(substr(aEmail[nCont,11],1,4)+Avkey(MV_PAR01,"E1_PREFIXO")+MV_PAR02)
+			If Dbseek(avkey(substr(aEmail[nCont,11],1,2),"E1_FILIAL")+Avkey(MV_PAR01,"E1_PREFIXO")+MV_PAR02)
 				U_CONBOL(.T.,'C:\BOLETOS\'+cCnpjj+'\',substr(aEmail[nCont,11],1,4),'')
 			EndIf
 		
