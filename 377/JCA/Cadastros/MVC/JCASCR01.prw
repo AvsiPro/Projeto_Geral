@@ -27,7 +27,7 @@ USER FUNCTION JCASCR01()
     oBrowse:AddLegend( "ZPM->ZPM_MSBLQL = '1'", "RED",   "Bloqueado" )
      
     //Filtrando
-    //oBrowse:SetFilterDefault("ZPM->ZPM_CODIGO >= '000000' .And. ZPM->ZPM_CODIGO <= 'ZZZZZZ'")
+    //oBrowse:SetFilterDefault("ZPM->ZPM_COD >= '000000' .And. ZPM->ZPM_COD <= 'ZZZZZZ'")
      
     //Ativa a Browse
     oBrowse:Activate()
@@ -60,10 +60,10 @@ STATIC FUNCTION ModelDef()
     LOCAL oStZPM    :=    FWFormStruct(1, "ZPM")
      
     //Editando características do dicionário
-    oStZPM:SetProperty('ZPM_CODIGO',  MODEL_FIELD_WHEN,    FwBuildFeature(STRUCT_FEATURE_WHEN,    '.T.'))                                 //Modo de Edição
-    oStZPM:SetProperty('ZPM_CODIGO',  MODEL_FIELD_INIT,    FwBuildFeature(STRUCT_FEATURE_INIPAD,  'GetSXENum("ZPM", "ZPM_CODIGO")'))      //Ini Padrão
-    oStZPM:SetProperty('ZPM_DESCRI',  MODEL_FIELD_VALID,   FwBuildFeature(STRUCT_FEATURE_VALID,   'Iif(Empty(M->ZPM_DESCRI), .F., .T.)')) //Validação de Campo
-    oStZPM:SetProperty('ZPM_DESCRI',  MODEL_FIELD_OBRIGAT, Iif(RetCodUsr()!='000000', .T., .F.) )                                         //Campo Obrigatório
+    oStZPM:SetProperty('ZPM_COD',  MODEL_FIELD_WHEN,    FwBuildFeature(STRUCT_FEATURE_WHEN,    '.T.'))                                 //Modo de Edição
+    oStZPM:SetProperty('ZPM_COD',  MODEL_FIELD_INIT,    FwBuildFeature(STRUCT_FEATURE_INIPAD,  'GetSXENum("ZPM", "ZPM_COD")'))      //Ini Padrão
+    oStZPM:SetProperty('ZPM_DESC',  MODEL_FIELD_VALID,   FwBuildFeature(STRUCT_FEATURE_VALID,   'Iif(Empty(M->ZPM_DESC), .F., .T.)')) //Validação de Campo
+    oStZPM:SetProperty('ZPM_DESC',  MODEL_FIELD_OBRIGAT, Iif(RetCodUsr()!='000000', .T., .F.) )                                         //Campo Obrigatório
      
     //Instanciando o modelo, não é recomendado colocar nome da USER FUNCTION (por causa do u_), respeitando 10 caracteres
     oModel := MPFormModel():New("JCASCR01M",/*bPre*/, /*bPos*/,/*bCommit*/,/*bCancel*/) 
@@ -72,7 +72,7 @@ STATIC FUNCTION ModelDef()
     oModel:AddFields("FORMZPM",/*cOwner*/,oStZPM)
      
     //Setando a chave primária da rotina
-    oModel:SetPrimaryKey({'ZPM_FILIAL','ZPM_CODIGO'})
+    oModel:SetPrimaryKey({'ZPM_FILIAL','ZPM_COD'})
      
     //Adicionando descrição ao modelo
     oModel:SetDescription("Modelo de Dados do Cadastro "+cTitulo)
@@ -119,7 +119,7 @@ STATIC FUNCTION ViewDef()
         cCampoAux := Alltrim(aStruZPM[nAtual][01])
          
         //Se o campo atual não estiver nos que forem considerados
-        IF Alltrim(cCampoAux) $ "ZPM_CODIGO;"
+        IF Alltrim(cCampoAux) $ "ZPM_COD;"
             oStZPM:RemoveField(cCampoAux)
         ENDIF
     NEXT
