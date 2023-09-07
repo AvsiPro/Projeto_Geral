@@ -1,132 +1,147 @@
-//Bibliotecas
-#INCLUDE 'Protheus.ch'
-#INCLUDE 'FWMVCDef.ch'
- 
-//Variáveis Estáticas
-STATIC cTitulo    :=    "Cadastro de Marcas"
- 
-USER FUNCTION JCASCR01()
+#Include "TOTVS.ch"
+#Include "FWMVCDEF.ch"
 
-    LOCAL aArea      :=    GetArea()
-    LOCAL oBrowse
-    LOCAL cFunBkp    :=    FunName()
-     
-    SetFunName("JCASCR01")
-     
-    //Instânciando FWMBrowse - Somente com dicionário de dados
-    oBrowse := FWMBrowse():New()
-     
-    //Setando a tabela de cadastro de Autor/Interprete
+/*---------------------------------------------------------------------*
+ | Func:  MenuDef                                                      |
+ | Autor: Alexandre Venâncio                                           |
+ | Data:  06/09/2023                                                   |
+ | Desc:  Criação do menu MVC                                          |
+ | Obs.:  /                                                            |
+ *---------------------------------------------------------------------*/
+
+User Function JCASCR01()
+
+Local oBrowse := FwLoadBrw("JCASCR01")
+    
+oBrowse:AddLegend( "ZPM->ZPM_MSBLQL = '2'", "GREEN", "Não bloqueado" )
+oBrowse:AddLegend( "ZPM->ZPM_MSBLQL = '1'", "RED",   "Bloqueado" )
+
+oBrowse:Activate()
+
+Return (NIL)
+
+/*---------------------------------------------------------------------*
+ | Func:  MenuDef                                                      |
+ | Autor: Alexandre Venâncio                                           |
+ | Data:  01/08/2021                                                   |
+ | Desc:  Criação do Browse                                            |
+ | Obs.:  /                                                            |
+ *---------------------------------------------------------------------*/
+
+Static Function BrowseDef()
+
+Local oBrowse := FwMBrowse():New()
+
     oBrowse:SetAlias("ZPM")
- 
-    //Setando a descrição da rotina
-    oBrowse:SetDescription(cTitulo)
-     
-    //Legendas
-    oBrowse:AddLegend( "ZPM->ZPM_MSBLQL = '2'", "GREEN", "Não bloqueado" )
-    oBrowse:AddLegend( "ZPM->ZPM_MSBLQL = '1'", "RED",   "Bloqueado" )
-     
-    //Filtrando
-    //oBrowse:SetFilterDefault("ZPM->ZPM_COD >= '000000' .And. ZPM->ZPM_COD <= 'ZZZZZZ'")
-     
-    //Ativa a Browse
-    oBrowse:Activate()
-     
-    SetFunName(cFunBkp)
-    RestArea(aArea)
-RETURN Nil
+    oBrowse:SetDescription("Cadastro de Equipe de Vendas")
 
- 
-STATIC FUNCTION MenuDef()
+   // DEFINE DE ONDE SERÁ RETIRADO O MENUDEF
+   oBrowse:SetMenuDef("JCASCR01")
+   //oBrowse:SetFilterDefault( "ZPM->A3_XFUNCAO == '2'" )
 
-    LOCAL aRot    :=    {}
+
+Return (oBrowse)
+
+/*---------------------------------------------------------------------*
+ | Func:  MenuDef                                                      |
+ | Autor: Alexandre Venâncio                                           |
+ | Data:  01/08/2021                                                   |
+ | Desc:  Criação do menu DEF                                          |
+ | Obs.:  /                                                            |
+ *---------------------------------------------------------------------*/
+
+Static Function MenuDef()
+
+Local aRot := {}
      
     //Adicionando opções
     ADD OPTION aRot TITLE 'Visualizar' ACTION 'VIEWDEF.JCASCR01' OPERATION MODEL_OPERATION_VIEW   ACCESS 0 //OPERATION 1
-    ADD OPTION aRot TITLE 'Legenda'    ACTION 'U_ZPMLeg'        OPERATION 6                      ACCESS 0 //OPERATION X
+    ADD OPTION aRot TITLE 'Legenda'    ACTION 'u_ZPMLEG'         OPERATION 6                      ACCESS 0 //OPERATION X
     ADD OPTION aRot TITLE 'Incluir'    ACTION 'VIEWDEF.JCASCR01' OPERATION MODEL_OPERATION_INSERT ACCESS 0 //OPERATION 3
     ADD OPTION aRot TITLE 'Alterar'    ACTION 'VIEWDEF.JCASCR01' OPERATION MODEL_OPERATION_UPDATE ACCESS 0 //OPERATION 4
     ADD OPTION aRot TITLE 'Excluir'    ACTION 'VIEWDEF.JCASCR01' OPERATION MODEL_OPERATION_DELETE ACCESS 0 //OPERATION 5
  
-RETURN aRot
+Return (aRot)
 
- 
-STATIC FUNCTION ModelDef()
+/*---------------------------------------------------------------------*
+ | Func:  MenuDef                                                      |
+ | Autor: Alexandre Venâncio                                           |
+ | Data:  01/08/2021                                                   |
+ | Desc:  Criação da regra de negócio                                  |
+ | Obs.:  /                                                            |
+ *---------------------------------------------------------------------*/
 
-    //Criação do objeto do modelo de dados
-    LOCAL oModel    :=    Nil
-     
-    //Criação da estrutura de dados utilizada na interface
-    LOCAL oStZPM    :=    FWFormStruct(1, "ZPM")
-     
-    //Editando características do dicionário
-    oStZPM:SetProperty('ZPM_COD',  MODEL_FIELD_WHEN,    FwBuildFeature(STRUCT_FEATURE_WHEN,    '.T.'))                                 //Modo de Edição
-    oStZPM:SetProperty('ZPM_COD',  MODEL_FIELD_INIT,    FwBuildFeature(STRUCT_FEATURE_INIPAD,  'GetSXENum("ZPM", "ZPM_COD")'))      //Ini Padrão
-    oStZPM:SetProperty('ZPM_DESC',  MODEL_FIELD_VALID,   FwBuildFeature(STRUCT_FEATURE_VALID,   'Iif(Empty(M->ZPM_DESC), .F., .T.)')) //Validação de Campo
-    oStZPM:SetProperty('ZPM_DESC',  MODEL_FIELD_OBRIGAT, Iif(RetCodUsr()!='000000', .T., .F.) )                                         //Campo Obrigatório
-     
-    //Instanciando o modelo, não é recomendado colocar nome da USER FUNCTION (por causa do u_), respeitando 10 caracteres
-    oModel := MPFormModel():New("JCASCR01M",/*bPre*/, /*bPos*/,/*bCommit*/,/*bCancel*/) 
-     
-    //Atribuindo formulários para o modelo
-    oModel:AddFields("FORMZPM",/*cOwner*/,oStZPM)
-     
-    //Setando a chave primária da rotina
-    oModel:SetPrimaryKey({'ZPM_FILIAL','ZPM_COD'})
-     
-    //Adicionando descrição ao modelo
-    oModel:SetDescription("Modelo de Dados do Cadastro "+cTitulo)
-     
-    //Setando a descrição do formulário
-    oModel:GetModel("FORMZPM"):SetDescription("Formulário do Cadastro "+cTitulo)
-RETURN oModel
+Static Function ModelDef()
 
- 
-STATIC FUNCTION ViewDef()
-    // LOCAL aStruZPM    := ZPM->(DbStruct())
-     
-    //Criação do objeto do modelo de dados da Interface do Cadastro de Autor/Interprete
-    LOCAL oModel    :=    FWLoadModel("JCASCR01")
-     
-    //Criação da estrutura de dados utilizada na interface do cadastro de Autor
-    LOCAL oStZPM    :=    FWFormStruct(2, "ZPM")  //pode se usar um terceiro parâmetro para filtrar os campos exibidos { |cCampo| cCampo $ 'SZPM_NOME|SZPM_DTAFAL|'}
-     
-    //Criando oView como nulo
-    LOCAL oView     :=    Nil
- 
-    //Criando a view que será o retorno da função e setando o modelo da rotina
-    oView := FWFormView():New()
+Local oModel   := MPFormModel():New("ROBCMS")
+Local oStruSC5 := FwFormStruct(1, "ZPM")
+
+    
+    // DEFINE SE OS SUBMODELOS SERÃO FIELD OU GRID
+    oModel:AddFields("ZPMMASTER", NIL, oStruSC5)
+    //oModel:AddGrid("Z30DETAIL", "ZPMMASTER", oStruSC6)
+    
+    oModel:SetPrimaryKey( { "ZPM_FILIAL", "ZPM_COD" } )
+
+    // DEFINE A RELAÇÃO ENTRE OS SUBMODELOS
+    //oModel:SetRelation("Z30DETAIL", {{"Z30_FILIAL", "FwXFilial('Z30')"}, {"Z30_CODGER", "A3_COD"}}, Z30->(IndexKey(1)))
+
+    
+    // DESCRIÇÃO DO MODELO
+    oModel:SetDescription("Cadastro de Marcas")
+
+    // DESCRIÇÃO DOS SUBMODELOS
+    oModel:GetModel("ZPMMASTER"):SetDescription("Cabeçalho")
+    //oModel:GetModel("Z30DETAIL"):SetDescription("Itens")
+    
+Return (oModel)
+
+
+/*---------------------------------------------------------------------*
+ | Func:  MenuDef                                                      |
+ | Autor: Alexandre Venâncio                                           |
+ | Data:  01/08/2021                                                   |
+ | Desc:  Criação // INTERFACE GRÁFICA                                 |
+ | Obs.:  /                                                            |
+ *---------------------------------------------------------------------*/
+Static Function ViewDef()
+
+Local oView    := FwFormView():New()
+Local oStruSC5 := FwFormStruct(2, "ZPM")
+
+Local oModel   := FwLoadModel("JCASCR01")
+
+    // REMOVE CAMPOS DA EXIBIÇÃO
+    oStruSC5:RemoveField("ZPM_FILIAL")
+        
+    // INDICA O MODELO DA VIEW
     oView:SetModel(oModel)
-     
-    //Atribuindo formulários para interface
-    oView:AddField("VIEW_ZPM", oStZPM, "FORMZPM")
-     
-    //Criando um container com nome tela com 100%
-    oView:CreateHorizontalBox("TELA",100)
-     
-    //Colocando título do formulário
-    oView:EnableTitleView('VIEW_ZPM', 'Dados - '+cTitulo )  
-     
-    //Força o fechamento da janela na confirmação
-    oView:SetCloseOnOk({||.T.})
-     
-    //O formulário da interface será colocado dentro do container
-    oView:SetOwnerView("VIEW_ZPM","TELA")
-     
-    /*
-    //Tratativa para remover campos da visualização
-    FOR nAtual := 1 TO Len(aStruZPM)
-        cCampoAux := Alltrim(aStruZPM[nAtual][01])
-         
-        //Se o campo atual não estiver nos que forem considerados
-        IF Alltrim(cCampoAux) $ "ZPM_COD;"
-            oStZPM:RemoveField(cCampoAux)
-        ENDIF
-    NEXT
-    */
-RETURN oView
 
- 
+    // CRIA ESTRUTURA VISUAL DE CAMPOS
+    oView:AddField("VIEW_SC5", oStruSC5, "ZPMMASTER")
+
+    // CRIA A ESTRUTURA VISUAL DAS GRIDS
+    //oView:AddGrid("VIEW_SC6", oStruSC6, "Z30DETAIL")
+    
+    //oView:AddIncrementField( 'VIEW_SC6', 'ZY1_ITEM' )
+
+    
+
+    // CRIA BOXES HORIZONTAIS
+    oView:CreateHorizontalBox("EMCIMA", 100)
+    //oView:CreateHorizontalBox("MEIO", 60)
+    
+    // RELACIONA OS BOXES COM AS ESTRUTURAS VISUAIS
+    oView:SetOwnerView("VIEW_SC5", "EMCIMA")
+    //oView:SetOwnerView("VIEW_SC6", "MEIO")
+    
+
+    // DEFINE OS TÍTULOS DAS SUBVIEWS
+    oView:EnableTitleView("VIEW_SC5")
+    //oView:EnableTitleView("VIEW_SC6", "REPRESENTANTES", RGB(224, 30, 43))
+    
+Return (oView)
+
 USER FUNCTION ZPMLeg()
 
     LOCAL aLegenda    :=    {}
@@ -137,4 +152,3 @@ USER FUNCTION ZPMLeg()
      
     BrwLegenda(cTitulo, "Status", aLegenda)
 RETURN
-
