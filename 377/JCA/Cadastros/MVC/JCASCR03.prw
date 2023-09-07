@@ -9,12 +9,12 @@
  | Obs.:  /                                                            |
  *---------------------------------------------------------------------*/
 
-User Function JCASCR01()
+User Function JCASCR03()
 
-Local oBrowse := FwLoadBrw("JCASCR01")
+Local oBrowse := FwLoadBrw("JCASCR03")
     
-oBrowse:AddLegend( "ZPM->ZPM_MSBLQL = '2'", "GREEN", "Não bloqueado" )
-oBrowse:AddLegend( "ZPM->ZPM_MSBLQL = '1'", "RED",   "Bloqueado" )
+//oBrowse:AddLegend( "ZPN->ZPN_MSBLQL = '2'", "GREEN", "Não bloqueado" )
+//oBrowse:AddLegend( "ZPN->ZPN_MSBLQL = '1'", "RED",   "Bloqueado" )
 
 oBrowse:Activate()
 
@@ -32,13 +32,12 @@ Static Function BrowseDef()
 
 Local oBrowse := FwMBrowse():New()
 
-    oBrowse:SetAlias("ZPM")
-    oBrowse:SetDescription("Cadastro de Marcas")
+    oBrowse:SetAlias("ZPN")
+    oBrowse:SetDescription("Cadastro de Produtos x Marcas")
 
    // DEFINE DE ONDE SERÁ RETIRADO O MENUDEF
-   oBrowse:SetMenuDef("JCASCR01")
-   //oBrowse:SetFilterDefault( "ZPM->A3_XFUNCAO == '2'" )
-
+   oBrowse:SetMenuDef("JCASCR03")
+   
 
 Return (oBrowse)
 
@@ -55,11 +54,11 @@ Static Function MenuDef()
 Local aRot := {}
      
     //Adicionando opções
-    ADD OPTION aRot TITLE 'Visualizar' ACTION 'VIEWDEF.JCASCR01' OPERATION MODEL_OPERATION_VIEW   ACCESS 0 //OPERATION 1
-    ADD OPTION aRot TITLE 'Legenda'    ACTION 'u_ZPMLEG'         OPERATION 6                      ACCESS 0 //OPERATION X
-    ADD OPTION aRot TITLE 'Incluir'    ACTION 'VIEWDEF.JCASCR01' OPERATION MODEL_OPERATION_INSERT ACCESS 0 //OPERATION 3
-    ADD OPTION aRot TITLE 'Alterar'    ACTION 'VIEWDEF.JCASCR01' OPERATION MODEL_OPERATION_UPDATE ACCESS 0 //OPERATION 4
-    ADD OPTION aRot TITLE 'Excluir'    ACTION 'VIEWDEF.JCASCR01' OPERATION MODEL_OPERATION_DELETE ACCESS 0 //OPERATION 5
+    ADD OPTION aRot TITLE 'Visualizar' ACTION 'VIEWDEF.JCASCR03' OPERATION MODEL_OPERATION_VIEW   ACCESS 0 //OPERATION 1
+    ADD OPTION aRot TITLE 'Legenda'    ACTION 'u_ZPNLEG'         OPERATION 6                      ACCESS 0 //OPERATION X
+    ADD OPTION aRot TITLE 'Incluir'    ACTION 'VIEWDEF.JCASCR03' OPERATION MODEL_OPERATION_INSERT ACCESS 0 //OPERATION 3
+    ADD OPTION aRot TITLE 'Alterar'    ACTION 'VIEWDEF.JCASCR03' OPERATION MODEL_OPERATION_UPDATE ACCESS 0 //OPERATION 4
+    ADD OPTION aRot TITLE 'Excluir'    ACTION 'VIEWDEF.JCASCR03' OPERATION MODEL_OPERATION_DELETE ACCESS 0 //OPERATION 5
  
 Return (aRot)
 
@@ -73,26 +72,21 @@ Return (aRot)
 
 Static Function ModelDef()
 
-Local oModel   := MPFormModel():New("ZPMMRC")
-Local oStruSC5 := FwFormStruct(1, "ZPM")
+Local oModel   := MPFormModel():New("ROBCMS")
+Local oStruSC5 := FwFormStruct(1, "ZPN")
 
     
     // DEFINE SE OS SUBMODELOS SERÃO FIELD OU GRID
-    oModel:AddFields("ZPMMASTER", NIL, oStruSC5)
-    //oModel:AddGrid("Z30DETAIL", "ZPMMASTER", oStruSC6)
+    oModel:AddFields("ZPNMASTER", NIL, oStruSC5)
+    //oModel:AddGrid("Z30DETAIL", "ZPNMASTER", oStruSC6)
     
-    oModel:SetPrimaryKey( { "ZPM_FILIAL", "ZPM_COD" } )
+    oModel:SetPrimaryKey( { "ZPN_FILIAL", "ZPN_COD" } )
 
-    // DEFINE A RELAÇÃO ENTRE OS SUBMODELOS
-    //oModel:SetRelation("Z30DETAIL", {{"Z30_FILIAL", "FwXFilial('Z30')"}, {"Z30_CODGER", "A3_COD"}}, Z30->(IndexKey(1)))
-
-    
     // DESCRIÇÃO DO MODELO
     oModel:SetDescription("Cadastro de Marcas")
 
     // DESCRIÇÃO DOS SUBMODELOS
-    oModel:GetModel("ZPMMASTER"):SetDescription("Cabeçalho")
-    //oModel:GetModel("Z30DETAIL"):SetDescription("Itens")
+    oModel:GetModel("ZPNMASTER"):SetDescription("Cabeçalho")
     
 Return (oModel)
 
@@ -107,18 +101,18 @@ Return (oModel)
 Static Function ViewDef()
 
 Local oView    := FwFormView():New()
-Local oStruSC5 := FwFormStruct(2, "ZPM")
+Local oStruSC5 := FwFormStruct(2, "ZPN")
 
-Local oModel   := FwLoadModel("JCASCR01")
+Local oModel   := FwLoadModel("JCASCR03")
 
     // REMOVE CAMPOS DA EXIBIÇÃO
-    oStruSC5:RemoveField("ZPM_FILIAL")
+    oStruSC5:RemoveField("ZPN_FILIAL")
         
     // INDICA O MODELO DA VIEW
     oView:SetModel(oModel)
 
     // CRIA ESTRUTURA VISUAL DE CAMPOS
-    oView:AddField("VIEW_SC5", oStruSC5, "ZPMMASTER")
+    oView:AddField("VIEW_SC5", oStruSC5, "ZPNMASTER")
 
     // CRIA A ESTRUTURA VISUAL DAS GRIDS
     //oView:AddGrid("VIEW_SC6", oStruSC6, "Z30DETAIL")
@@ -142,13 +136,13 @@ Local oModel   := FwLoadModel("JCASCR01")
     
 Return (oView)
 
-USER FUNCTION ZPMLeg()
+USER FUNCTION ZPNLeg()
 
     LOCAL aLegenda    :=    {}
      
     //Monta as cores
-    AADD(aLegenda,{"BR_VERDE"   ,    "Não Bloqueado"    })
-    AADD(aLegenda,{"BR_VERMELHO",    "Bloqueado"        })
+    AADD(aLegenda,{"BR_VERDE",        "Não Bloqueado"  })
+    AADD(aLegenda,{"BR_VERMELHO",    "Bloqueado"})
      
     BrwLegenda(cTitulo, "Status", aLegenda)
 RETURN
