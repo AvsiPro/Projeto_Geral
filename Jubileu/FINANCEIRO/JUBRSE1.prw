@@ -24,8 +24,7 @@ user function JUBRSE1()
 	Local dVenDe	:= StoD('')
 	Local dVenAt	:= StoD('')
 	Local nTipo		:= 0
-	//Local nAdia	   := Space(1)
-
+	Private cNatur := ""
 
 	//PREPARE ENVIRONMENT EMPRESA "01" FILIAL "01"
 
@@ -87,6 +86,7 @@ Static Function GeraExcel()
 		cQuery += " A1_VEND AS COD_REPRES,"
 		cQuery += " A3_NOME AS REPRESENTATE,"
 		cQuery += " A1_CONTATO AS CONTATO,"
+		cQuery += " E1_NATUREZ AS NATUREZA,"
 		cQuery += " A1_EMAIL AS EMAIL, A1_EST AS UF, A1_MUN AS MUNICIPIO,"
 		cQuery += " A1_TEL AS TELEFONE, A1_CGC AS CNPJ, "
 		cQuery += " CONVERT(VARCHAR(10), CAST(E1_EMISSAO AS DATE),103) AS EMISSAO,"
@@ -166,10 +166,13 @@ Static Function GeraExcel()
 		oExcel:AddColumn("Contas a Receber","Titulos em Aberto","TELEFONE"         	,1,1)
 		oExcel:AddColumn("Contas a Receber","Titulos em Aberto","UF"         	,1,1)
 		oExcel:AddColumn("Contas a Receber","Titulos em Aberto","MUNICIPIO"         	,1,1)
+		oExcel:AddColumn("Contas a Receber","Titulos em Aberto","NATUREZA"         	,1,1)
+		oExcel:AddColumn("Contas a Receber","Titulos em Aberto","DESCRIC NATUREZA"         	,1,1)
 
 		While TMP->(!EOF())
 
 			cStatus := ""
+			cNatur	:= posicione("SED",1,xFilial('SED') + TMP->NATUREZA,"ED_DESCRIC")
 
 			If EMPTY(TMP->E1_BAIXA) .and. CTOD(TMP->VENCTR) < date()
 				cStatus := "VENCIDO"
@@ -204,8 +207,9 @@ Static Function GeraExcel()
 				TMP->EMAIL,;
 				TMP->TELEFONE,;
 				TMP->UF,;
-				TMP->MUNICIPIO})
-
+				TMP->MUNICIPIO,;
+				TMP->NATUREZA,;
+				cNatur})
 			lOK := .T.
 			TMP->(dbSkip())
 		EndDo
@@ -234,6 +238,7 @@ Static Function GeraExcel()
 		cQuery += " A1_VEND AS COD_REPRES,"
 		cQuery += " A3_NOME AS REPRESENTATE,"
 		cQuery += " A1_CONTATO AS CONTATO,"
+		cQuery += " E1_NATUREZ AS NATUREZA,"
 		cQuery += " A1_EMAIL AS EMAIL, A1_EST AS UF, A1_MUN AS MUNICIPIO,"
 		cQuery += " A1_TEL AS TELEFONE, A1_CGC AS CNPJ, "
 		cQuery += " CONVERT(VARCHAR(10), CAST(E1_EMISSAO AS DATE),103) AS EMISSAO,"
@@ -281,6 +286,7 @@ Static Function GeraExcel()
 		cQuer2 += " A1_VEND AS COD_REPRES,"
 		cQuer2 += " A3_NOME AS REPRESENTATE,"
 		cQuer2 += " A1_CONTATO AS CONTATO,"
+		cQuer2 += " E1_NATUREZ AS NATUREZA,"
 		cQuer2 += " A1_EMAIL AS EMAIL, A1_EST AS UF, A1_MUN AS MUNICIPIO,"
 		cQuer2 += " A1_TEL AS TELEFONE, A1_CGC AS CNPJ, "
 		cQuer2 += " CONVERT(VARCHAR(10), CAST(E1_EMISSAO AS DATE),103) AS EMISSAO,"
@@ -366,10 +372,13 @@ Static Function GeraExcel()
 		oExcel:AddColumn("Contas a Receber","Titulos em Aberto","TELEFONE"         	,1,1)
 		oExcel:AddColumn("Contas a Receber","Titulos em Aberto","UF"         	,1,1)
 		oExcel:AddColumn("Contas a Receber","Titulos em Aberto","MUNICIPIO"         	,1,1)
+		oExcel:AddColumn("Contas a Receber","Titulos em Aberto","NATUREZA"         	,1,1)
+		oExcel:AddColumn("Contas a Receber","Titulos em Aberto","DESCRIC NATUREZA"         	,1,1)
 
 		While TMP->(!EOF())
 
 			cStatus := ""
+			cNatur	:= posicione("SED",1,xFilial('SED') + TMP->NATUREZA,"ED_DESCRIC")
 
 			If EMPTY(TMP->E1_BAIXA) .and. CTOD(TMP->VENCTR) < date()
 				cStatus := "VENCIDO"
@@ -404,7 +413,9 @@ Static Function GeraExcel()
 				TMP->EMAIL,;
 				TMP->TELEFONE,;
 				TMP->UF,;
-				TMP->MUNICIPIO})
+				TMP->MUNICIPIO,;
+				TMP->NATUREZA,;
+				cNatur})
 
 			lOK := .T.
 			TMP->(dbSkip())
@@ -413,6 +424,7 @@ Static Function GeraExcel()
 		While TMC->(!EOF())
 
 			cStatus := ""
+			cNatur	:= posicione("SED",1,xFilial('SED') + TMP->NATUREZA,"ED_DESCRIC")
 
 			If EMPTY(TMC->E1_BAIXA) .and. CTOD(TMC->VENCTR) < date()
 				cStatus := "VENCIDO"
@@ -447,7 +459,9 @@ Static Function GeraExcel()
 				TMC->EMAIL,;
 				TMC->TELEFONE,;
 				TMC->UF,;
-				TMC->MUNICIPIO})
+				TMC->MUNICIPIO,;
+				TMP->NATUREZA,;
+				cNatur})
 
 			lOK := .T.
 			TMC->(dbSkip())
@@ -458,7 +472,6 @@ Static Function GeraExcel()
 
 		dbSelectArea("TMC")
 		dbCloseArea()
-
 
 	ENDIF
 	cDirTmp:= cGetFile( '*.csv|*.csv' , 'Selecionar um diretório para salvar', 1, 'C:\', .F., nOR( GETF_LOCALHARD, GETF_LOCALFLOPPY, GETF_RETDIRECTORY ),.T., .T. )
