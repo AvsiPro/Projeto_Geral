@@ -57,7 +57,7 @@ oDlg1      := MSDialog():New( 092,232,586,1221,"Campanha X Veículos",,,.F.,,,,,,
     //    oBrw1      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{044,012,208,476},,, oGrp2 ) 
         oList1 	   := TCBrowse():New(044,012,465,165,, {'Sel','Filial','Veículo','Ano','Chassi','Num. OS','Data Ini. OS','Data Fim OS'},;
                                     {20,150,40,60,40,40,40,40},;
-									oGrp2,,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList:nAt)*/},,,,,,,.F.,,.T.,,.F.,,,)
+									oGrp2,,,,{|| /*FHelp(oList:nAt)*/},{|| editcol(oList1:nAt)},,,,,,,.F.,,.T.,,.F.,,,)
         oList1:SetArray(aList1)
         oList1:bLine := {||{ IF(aList1[oList1:nAt,01],oOk,oNo),;
                              aList1[oList1:nAt,02],; 
@@ -146,5 +146,36 @@ oList1:refresh()
 oDlg1:refresh()
 
 RestArea(aArea)
+
+Return
+
+/*/{Protheus.doc} editcol
+    (long_description)
+    @type  Static Function
+    @author user
+    @since 08/09/2023
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function editcol(nLinha)
+
+Local aArea := GetArea()
+
+If !Empty(aList1[nLinha,02])
+    If aList1[nLinha,01]
+        aList1[nLinha,01] := .F.
+    Else 
+        aList1[nLinha,01] := .T.
+    EndIf 
+EndIf 
+
+oList1:refresh()
+oDlg1:refresh()
+
+RestArea(aAreA)
 
 Return
