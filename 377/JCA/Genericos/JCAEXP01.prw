@@ -1,5 +1,10 @@
 #INCLUDE "PROTHEUS.CH"
-
+/*
+    Rotina para gerar arquivo excel de indicadores de produtos SBZ - Exportar e importar dados
+    MIT 44_ESTOQUE_EST012 - Processamento rotina gerar pre-requisição de forma automática
+    https://docs.google.com/document/d/1rAM0C2yu5RCbSzqiOUx3xwuG2ibxqY4N/edit
+    
+*/
 User Function JCAEXP01()
 
 Local aPergs    :=  {}
