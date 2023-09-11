@@ -1,5 +1,6 @@
 {
     "totvsLanguageServer.welcomePage": false,
     "git.ignoreLimitWarning": true,
-    "totvsLanguageServer.askCompileResult": false
+    "totvsLanguageServer.askCompileResult": false,
+    "advpl.debug_multiThread": true
 }
