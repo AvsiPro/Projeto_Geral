@@ -606,7 +606,8 @@ Static Function Busca(cCond,cQuinze,cLocacS)
 		Next nLeitur
 			
 		If !Empty(cQuery)
-			cQuery += "  ORDER BY Z08_COD DESC"
+			//cQuery += "  ORDER BY Z08_COD DESC"
+			cQuery += " ORDER BY Z08_DATA DESC,Z08_COD DESC"
 
 			If Select("TRB") > 0
 				dbSelectArea("TRB")
