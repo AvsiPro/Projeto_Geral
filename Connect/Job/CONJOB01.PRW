@@ -16,18 +16,20 @@ User Function CONJOB01()
 
 Local cQuery
 
-Local cHri     :=   '00:00'
-Local cHrf     :=   '23:59'
-Local aAux     :=   {}
-Local aVendas  :=   {}
+Local cHri             :=   '00:00'
+Local cHrf             :=   '23:59'
+Local aAux             :=   {}
+Local aVendas          :=   {}
 Local dUltLei
 Local dLeiFim
 Local nX,nY
 Local dDiaExe  
-Local aList8   :=   {}
-Local aMaqSVM  :=   {}
+Local aList8           :=   {}
+Local aMaqSVM          :=   {}
 
-Private aList8B  :=   {}
+Private cArqHTML
+Private cPathHTML
+Private aList8B        :=   {}
 PRIVATE cToken         :=    "yVXxnxgOExcIaBQOQ9CFgK0cLgX22dJct7y85WXW" //Token Connect Vending
 PRIVATE oRestClient    :=    FWRest():New("http://vmpay.vertitecnologia.com.br")
 PRIVATE aHeader        :=    {}
@@ -37,13 +39,17 @@ IF Select("SM0") == 0
     RPCSetEnv("01","0101")
 ENDIF
 
+cArqHTML    := "\workflow\Leituras_Salvas.html"
+cPathHTML   := GetMV("MV_WFDIR") 
+
+
 dDiaExe := strzero(day(ddatabase),2)
 
 cQuery := "SELECT AAM_CONTRT,AAM_XDIALT,AAN_XCBASE,AAM_CODCLI,AAM_LOJA,AAN_ITEM,AAN_CODPRO,A1_TELEX"
 cQuery += " FROM "+RetSQLName("AAN")+" AAN"
 cQuery += " INNER JOIN "+RetSQLName("AAM")+" AAM ON AAM_FILIAL=AAN_FILIAL AND AAM_CONTRT=AAN_CONTRT"
 cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_COD=AAM_CODCLI AND A1_LOJA=AAM_LOJA AND A1.D_E_L_E_T_=' '"
-//cQuery += "     AND '"+dDiaExe+"' IN(AAM_XDIALT)"
+cQuery += "     AND '"+dDiaExe+"' IN(AAM_XDIALT)"
 cQuery += " AND AAM_XDIALT<>' '"
 cQuery += "     AND AAM.D_E_L_E_T_=' '"
 cQuery += " WHERE AAN.D_E_L_E_T_=' ' AND AAN_XBOXVM='1'"
@@ -205,7 +211,50 @@ IF len(aVendas) > 0
     
 ENDIF
 
-savevend()
+//savevend()
+
+If len(aAux) > 0
+    oHtml := TWFHtml():New( cArqHTML )
+
+    oHTML:ValByName("DIA_LEITURA",ddatabase)
+
+    cBodyLin := ""
+
+    For nX := 1 to len(aAux)
+        cStatus := ""
+        If Ascan(aList8B,{|x| x[1,1,6] == Alltrim(aAux[nX,03])}) > 0
+            cStatus := "OK"
+        ElseIf Ascan(aMaqSVM,{|x| Alltrim(x[2]) == Alltrim(aAux[nX,03]) }) > 0
+            cStatus := "Maquina sem venda"
+        Else 
+            cStatus := "Sem Comunicação"
+        EndIf 
+
+        cBodyLin += cHtmStatus()
+
+        cBodyLin := strtran(cBodyLin,"!CONTRATO!",Alltrim(aAux[nX,01]))
+        cBodyLin := strtran(cBodyLin,"!ATIVO!",Alltrim(aAux[nX,03]))
+        cBodyLin := strtran(cBodyLin,"!STATUS!",cStatus)
+        
+    Next nX
+
+
+    oHTML:ValByName("linhasPedido",cBodyLin)
+    cMail := 'reports@connectvending.com.br' // pode ser obtido de um parâmetro
+    
+    cFileName    := CriaTrab(NIL,.F.) + ".htm"
+    cFileName    := cPathHTML + "\" + cFileName 
+    oHtml:SaveFile(cFileName)
+
+    cRet         := WFLoadFile(cFileName)
+    cMensagem    := StrTran(cRet,chr(13),"")
+    cMensagem    := StrTran(cRet,chr(10),"")
+    cMensagem    := OemtoAnsi(cMensagem)
+    cSubject     := 'Job de Leituras diaria'
+
+    lEmail := U_EnviarEmail(cMail,cSubject,cMensagem,'',.f.) 
+    
+EndIf  
 
 Return
 
@@ -512,3 +561,25 @@ WHILE nPage > 0
 ENDDO 
 
 RETURN(aHeader[nPos])
+
+/*/{Protheus.doc} nomeStaticFunction
+    (long_description)
+    @type  Static Function
+    @author user
+    @since 12/09/2023
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function cHtmStatus()
+
+cRet := '<tr>'     
+cRet += '    <td width=150><strong>!CONTRATO!</strong></td>'
+cRet += '    <td width=150><strong>!ATIVO!</strong></td>'
+cRet += '    <td width=100 align=right><strong>!STATUS!</strong></td>'
+cRet += '</tr>'
+
+Return(cRet)
