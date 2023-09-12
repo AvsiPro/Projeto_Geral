@@ -37,7 +37,7 @@ lMarkB     := .F.
 lDtNec     := (MV_PAR01 == 1)
 BFiltro    := {||.t.}
 lConsSPed  := (MV_PAR02 == 1)
-lGeraSC1   := (MV_PAR03 == 1)
+lGeraSC1   := (MV_PAR03 == 1)   // nao gerar solicitacao de compra
 lAmzSA     := (MV_PAR04 == 1)
 cSldAmzIni := MV_PAR05
 cSldAmzFim := MV_PAR06
