@@ -9,7 +9,7 @@
     https://docs.google.com/document/d/1nkTlKsGJ1tOAhvsvDDAPpwq4RHwnh0lQ/edit
 */
 
-User Function F473VIEW()
+User Function F473VIEW() 
 
     Local aRet As Object
 
