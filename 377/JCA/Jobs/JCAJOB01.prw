@@ -25,7 +25,7 @@ cArqHTML    := "\workflow\Aviso_Compra.html"
 cPathHTML   := GetMV("MV_WFDIR") 
 nDias       := SUPERGETMV( "JC_DIASSC", .F., 2 )
     
-sDiaRef := dtos(ddatabase + nDias)
+sDiaRef := dtos(datavalida(ddatabase + nDias))
 
 cQuery := "SELECT C1_FILIAL,C1_SCORI,C1_DATPRF,C1_ITSCORI,C1_FISCORI,'' AS C1_NOMCOMP,C1_APROV"  	 
 cQuery += ",C1_CONDPAG,C1_VUNIT,'' AS C1_CODITE,'' AS C1_CODGRP,C1_SOLICIT,C1_ITEMPED"

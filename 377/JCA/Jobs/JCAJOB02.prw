@@ -25,7 +25,7 @@ cArqHTML    := "\workflow\Aviso_Compra_Fornecedor.html"
 cPathHTML   := GetMV("MV_WFDIR") 
 nDias       := SUPERGETMV( "JC_DIASPC", .F., 2 )
     
-sDiaRef := dtos(ddatabase + nDias)
+sDiaRef := dtos(DATAVALIDA(ddatabase + nDias))
 
 cQuery := "SELECT DISTINCT C7_FILIAL,C7_EMISSAO,C7_FORNECE,A2_NREDUZ,C7_LOJA,C7_DATPRF,C7_NUM,"
 cQuery += "C7_ITEM,C7_PRODUTO,C7_QUANT,C7_PRECO,C7_TOTAL,B1_DESC"  	 
@@ -123,7 +123,7 @@ If len(aAux) > 0
         cMensagem    := StrTran(cRet,chr(10),"")
         cMensagem    := OemtoAnsi(cMensagem)
         
-        U_JCAMAIL2('alexandre.venancio@avsipro.com.br','Solicitação de compra empresa - '+FwCutOff(aAux[nX,05],.T.)+' '+FwCutOff(aAux[nX,07],.T.),cMensagem,'',.F.)
+        U_JCAMAIL2('alexandre.venancio@avsipro.com.br','Pedido de compra empresa - '+FwCutOff(aAux[nX,05],.T.)+' '+FwCutOff(aAux[nX,07],.T.),cMensagem,'',.F.)
     Next nX 
 EndIf
 
