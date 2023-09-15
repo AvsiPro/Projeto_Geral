@@ -16,6 +16,8 @@ Local aRotUser := {}
 //    6 - Altera determinados campos sem incluir novos Regs     
 
 AAdd( aRotUser, { 'Cadastro de Marcas', 'U_JCASCR01()', 0, 3 } )
-AAdd( aRotUser, { 'Cadastro de Produtos x Marcas', 'U_JCASCR03()', 0, 3 } )
+//AAdd( aRotUser, { 'Cadastro de Produtos x Marcas', 'U_JCASCR03()', 0, 3 } )
+AAdd( aRotUser, { 'copia jca', 'U_JCAGAT02()', 0, 3 } )
+
 
 Return (aRotUser)

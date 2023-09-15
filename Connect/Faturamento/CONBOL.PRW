@@ -115,6 +115,7 @@ LOCAL _nVlrAbat    := 0
 Local lAdjustToLegacy := .F. 
 Local lDisableSetup  := .T.
 Local lRetCbar		:=	.F.
+Local nCont			:=	1
 
 If DBSEEK(xFilial("SE1")+Avkey(MV_PAR01,"E1_PREFIXO")+Avkey(MV_PAR02,"E1_NUM")) //+Avkey(cParcela,"E1_PARCELA"))
 //
@@ -154,14 +155,17 @@ If DBSEEK(xFilial("SE1")+Avkey(MV_PAR01,"E1_PREFIXO")+Avkey(MV_PAR02,"E1_NUM")) 
 				cParcela := "0"
 		ENDCASE
 		
-		oPrint 	:= FWMSPrinter():New("Boleto_"+strzero(VAL(MV_PAR02),9)+".rel",  IMP_PDF, lAdjustToLegacy, cPasta, lDisableSetup,,,,.F.,,,.F.)
+		If nCont == 1
+			oPrint 	:= FWMSPrinter():New("Boleto_"+strzero(VAL(MV_PAR02),9)+".rel",  IMP_PDF, lAdjustToLegacy, cPasta, lDisableSetup,,,,.F.,,,.F.)
 
-		oPrint:SetResolution(78) //Tamanho estipulado para a Danfe
-		oPrint:SetPortrait()
-		oPrint:SetPaperSize(DMPAPER_A4)
-		oPrint:StartPage()   	// Inicia uma nova página
-		oPrint:SetMargin(60,60,60,60)
-		oPrint:cPathPDF := cPasta //ctemp
+			oPrint:SetResolution(78) //Tamanho estipulado para a Danfe
+			oPrint:SetPortrait()
+			oPrint:SetPaperSize(DMPAPER_A4)
+			oPrint:StartPage()   	// Inicia uma nova página
+			oPrint:SetMargin(60,60,60,60)
+			oPrint:cPathPDF := cPasta //ctemp
+			nCont++
+		Endif
 		
 		
 
