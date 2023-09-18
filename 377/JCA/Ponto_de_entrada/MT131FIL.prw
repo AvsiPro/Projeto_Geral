@@ -1,36 +1,13 @@
 #Include 'Protheus.ch'
-/*
+
 User Function MT131FIL()
 
-Local cFiltroSC1 := "C1_NUM == '000001'"
+Local cItmNeg    := BuscaIt(cfilant)
+Local cFiltroSC1 := "!C1_FILIAL+C1_PRODUTO $ '"+cItmNeg+"'"
 
-Alert ('Ponto de Entrada MT131FIL') //Validações do usuário
 
 Return cFiltroSC1
-*/
 
-
-
-
-//#Include 'Protheus.ch'
-/*
-User Function MT131FIL()
-
-Local aFiltroSC1 := {}
-Local aPrdFil    := BuscaIt(cfilant)
-Local nCont      := 1
-Local cAndCnd    := ""
-
-If len(aPrdFil) > 0
-    //aAdd(aFiltroSC1,"C1_NUM >= '000006' .AND. C1_NUM <= '000009'")
-    For nCont := 1 to len(aPrdFil)
-        aAdd(aFiltroSC1, cAndCnd + " SUBSTR(C1_PRODUTO,1,8) <> '"+Substr(aPrdFil[nCont,01],1,8)+"'")
-        cAndCnd := " .AND. "
-    Next nCont
-ENDIF
-
-Return aFiltroSC1
-*/
 /*/{Protheus.doc} BuscaIt
     (long_description)
     @type  Static Function
@@ -46,10 +23,12 @@ Return aFiltroSC1
 Static Function BuscaIt(cfilant)
 
 Local aArea := GetArea()
-Local aRet  := {}
+//Local aRet  := {}
 Local cQuery 
+Local cRet  := ""
+Local cBarra:= ""
 
-cQuery := " SELECT ZPN_PRODUT,ZPN_MARCA"
+cQuery := " SELECT ZPN_FILIAL,ZPN_PRODUT"
 cQuery += " FROM "+RetSQLName("ZPN")
 cQuery += " WHERE ZPN_FILIAL='"+cFilant+"' AND D_E_L_E_T_=' '"
 
@@ -64,14 +43,16 @@ DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
 DbSelectArea("TRB")  
 
 WHILE !EOF()
-    Aadd(aRet,{TRB->ZPN_PRODUT,TRB->ZPN_MARCA})
+    //Aadd(aRet,{TRB->ZPN_FILIAL+TRB->ZPN_PRODUT})
+    cRet += cBarra + TRB->ZPN_FILIAL+TRB->ZPN_PRODUT
+    cBarra := "/"
     Dbskip()
 ENDDO 
 
 RestArea(aArea)
 
-Return(aRet)
-
+Return(cRet)
+/*
 #Include 'Protheus.ch'
 
 User Function MTA131C8()
@@ -109,3 +90,4 @@ User Function MT131C8()
 Local cCamposC8 := "|C8_XCODPAI)" 
 // O retorno deve começar com uma barra vertical ( | ) e ir intercalando o nomes do campos com barras verticais.
 Return (cCamposC8)
+*/
