@@ -2565,7 +2565,10 @@ For nCont := 1 to len(aEmail)
 		MV_PAR01 := Substr(aEmail[nCont,11],5)
 		MV_PAR02 := aEmail[nCont,02]
 		
-		
+		cBoletos := ""
+		cBarra 	 := ""
+		cFile3	 := ""
+
 		DbSelectArea("SA1")
 		DBSetOrder(1)
 		DbSeek(xFilial("SA1")+aEmail[nCont,09]+aEmail[nCont,10])
@@ -2581,7 +2584,15 @@ For nCont := 1 to len(aEmail)
 			DbSelectArea("SE1")
 			DbSetOrder(1)
 			If Dbseek(avkey(substr(aEmail[nCont,11],1,2),"E1_FILIAL")+Avkey(MV_PAR01,"E1_PREFIXO")+MV_PAR02)
-				U_CONBOL(.T.,'C:\BOLETOS\'+cCnpjj+'\',substr(aEmail[nCont,11],1,4),'')
+				//While !EOF() .AND. SE1->E1_PREFIXO == MV_PAR01 .AND. SE1->E1_NUM == MV_PAR02 
+					//aAreaE1 := GetArea()//+Alltrim(SE1->E1_PARCELA)
+					U_CONBOL(.T.,'C:\BOLETOS\'+cCnpjj+'\',substr(aEmail[nCont,11],1,4),'')
+					//RestArea(aAreaE1)
+					CPYT2S('C:\BOLETOS\'+cCnpjj+'\boleto_'+MV_PAR02+'.pdf','\SPOOL\')
+					cFile3 += cBarra + '\SPOOL\boleto_'+MV_PAR02+'.pdf'
+					cBarra := ','
+					//Dbskip()
+				//EndDo
 			EndIf
 		
 		ENDIF
@@ -2617,11 +2628,11 @@ For nCont := 1 to len(aEmail)
 
 		EnDIf 
 		
-		CPYT2S('C:\BOLETOS\'+cCnpjj+'\boleto_'+MV_PAR02+'.pdf','\SPOOL\')
+		//CPYT2S('C:\BOLETOS\'+cCnpjj+'\boleto_'+MV_PAR02+'.pdf','\SPOOL\')
 		
 		cFile1 := '\SPOOL\'+MV_PAR02+'.pdf'
 		cFile2 := '\SPOOL\'+MV_PAR02+'.xml'
-		cFile3 := '\SPOOL\boleto_'+MV_PAR02+'.pdf'
+		//cFile3 := '\SPOOL\boleto_'+MV_PAR02+'.pdf'
 		cFile4 := '\SPOOL\recibo_loc_'+MV_PAR02+'.pdf'
 
 		Aadd(aArquivos,{cFile1,''})

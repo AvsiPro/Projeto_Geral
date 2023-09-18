@@ -31,7 +31,7 @@ If nPosPv > 0
         Aadd(aPar2,{"C5_TRANSP" , aRet[1,1], Nil})
         Aadd(aPar2,{"C5_VOLUME1", aRet[1,2], Nil})
         Aadd(aPar2,{"C5_ESPECI1", aRet[1,3], Nil})
-        Aadd(aPar2,{"C5_PLACA1" , aRet[1,4], Nil})
+        Aadd(aPar2,{"C5_VEICULO", aRet[1,4], Nil})
         Aadd(aPar2,{"C5_PESOL"  , aRet[1,5], Nil})
         Aadd(aPar2,{"C5_PBRUTO" , aRet[1,6], Nil})
         Aadd(aPar2,{"C5_TPFRETE", aRet[1,7], Nil})
@@ -110,8 +110,8 @@ oDlg1      := MSDialog():New( 092,232,617,910,"Transportadora x Observações Nota
         oSay10     := TSay():New( 088,225,{||"Numeração"},oGrp2,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
         oGet5      := TGet():New( 088,265,{|x|If(Pcount()>0,cNumera:=x,cNumera)},oGrp2,040,008,'',,CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"","",,)
         
-        oSay6      := TSay():New( 108,024,{||"Placa"},oGrp2,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
-        oGet4      := TGet():New( 108,064,{|x|If(Pcount()>0,cPlaca:=x,cPlaca)},oGrp2,040,008,'',,CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"","",,)
+        oSay6      := TSay():New( 108,024,{||"Veículo"},oGrp2,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
+        oGet4      := TGet():New( 108,064,{|x|If(Pcount()>0,cPlaca:=x,cPlaca)},oGrp2,040,008,'',,CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"DA3","",,)
     
         oSay7      := TSay():New( 108,118,{||"Tipo Frete"},oGrp2,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
         oCBox1	:= TComboBox():New( 108/*Y*/,170/*X*/,{ |u| If(PCount()>0,cTipo:=u,cTipo) },aTipo,044,010,oGrp2,,{ ||  },,CLR_BLACK,CLR_WHITE,.T.,,"",,,,,,,cTipo)
