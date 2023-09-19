@@ -595,7 +595,7 @@ Static Function Busca(cCond,cQuinze,cLocacS)
 			EndIf 
 
 			cQuery += "SELECT Z08_COD,Z08_SEQUEN,Z08_SELECA,Z08_PRODUT,B1_DESC,Z08_QTDLID,"
-			cQuery += " Z08_DATA,Z08_CONTRT,Z08_FATURA,Z08.R_E_C_N_O_ AS RECZ08,Z08_PEDIDO" 
+			cQuery += " Z08_DATA,Z08_CONTRT,Z08_FATURA,Z08.R_E_C_N_O_ AS RECZ08,Z08_PEDIDO,Z08_URLFAT" 
 			cQuery += "  FROM "+RetSQLname("Z08")+" Z08" 
 			cQuery += "  LEFT JOIN "+RetSQLname("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"'"
 			cQuery += "   AND B1_COD=Z08_PRODUT AND B1.D_E_L_E_T_=' ' 
@@ -671,6 +671,7 @@ Static Function Busca(cCond,cQuinze,cLocacS)
 
 					Aadd(aAuxL5,TRB->RECZ08)  //16
 					Aadd(aAuxL5,TRB->Z08_PEDIDO)  //17
+					Aadd(aAuxL5,TRB->Z08_URLFAT)  //18
 
 				Else 
 					If TRB->Z08_DATA < aAux5[nPos,04] .OR. Empty(aAux5[nPos,04]) //TRB->Z08_QTDLID < aAux5[nPos,05]

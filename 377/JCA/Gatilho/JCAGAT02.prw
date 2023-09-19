@@ -13,11 +13,14 @@ Local aPergs := {}
 Local cMarca := space(4)
 Local cDescM := ''
 Local cCodigo:= SB1->B1_COD
+Local lPerm  := .T.
 
 If Select("SM0") == 0
     RpcSetType(3)
     RPCSetEnv("01","00020087")
 EndIf
+
+lPerm := SUPERGETMV( "TI_PERMCA", .F., "377" )
 
 If !Empty(SB1->B1_XCODPAI)
     MsgAlert("Somente produtos Pai podem ser utilizados na cópia JCA")
@@ -25,7 +28,7 @@ Else
 
     aAdd(aPergs, {1, "Marca",  cMarca,  "", ".T.", "ZPM", ".T.", 80,  .F.})
 
-    If ParamBox(aPergs, "Informe a natureza para movimento bancário")
+    If ParamBox(aPergs, "Informe o código da Marca a ser gerada para o produto")
         cMarca := MV_PAR01
         cDescM := Alltrim(Posicione("ZPM",1,xFilial("ZPM")+cMarca,"ZPM_DESC"))
         If !Dbseek(xFilial("SB1")+Alltrim(cCodigo)+"-"+Alltrim(cMarca))
