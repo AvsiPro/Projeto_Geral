@@ -28,41 +28,47 @@ Return aRet
 User Function LIBREJ(nOpt)
 
 Local lAdm := RetCodUsr() == '000000'
-
+    
     If Alltrim(SCP->CP_XORIGEM) == 'MNTA420'
-        If nOpt == 1
-            fTelaInsumo()
 
-        ElseIf nOpt == 2
+        If !Empty(SCP->CP_PREREQU) .AND. !SCP->CP_STATSA $ 'BR'
+            MsgAlert('Não é possível liberar ou rejeitar uma pré-requisição gerada.','MT105MNU')
+        Else
+            If nOpt == 1
 
-            ZPT->(DbSetOrder(1))
-            lAprov := ZPT->(DbSeek( FWxFilial('ZPT') + AvKey(RetCodUsr(),'ZPT_USER') ))
+                fTelaInsumo()
+            ElseIf nOpt == 2
 
-            If ( lAprov .Or. lAdm )
-                cMsg := FWInputBox("Informe a justificativa da rejeição", "")
+                ZPT->(DbSetOrder(1))
+                lAprov := ZPT->(DbSeek( FWxFilial('ZPT') + AvKey(RetCodUsr(),'ZPT_USER') ))
 
-                If Empty(cMsg)
-                    MsgStop('Necessário preencher a justificativa da rejeição', 'MT105MNU')
-                    lRet := .F.
+                If ( lAprov .Or. lAdm )
+                    cMsg := FWInputBox("Informe a justificativa da rejeição", "")
+
+                    If Empty(cMsg)
+                        MsgStop('Necessário preencher a justificativa da rejeição', 'MT105MNU')
+                        lRet := .F.
+                    Else
+                        cMsgAux := 'Usuário Rejeição: '+UsrRetName(RetCodUsr()) + CRLF
+                        cMsgAux += 'Data Rejeição: '+DToC(Date()) + CRLF
+                        cMsgAux += 'Hora Rejeição: '+Left(Time(),5) + CRLF
+                        cMsgAux += 'Justificativa: '+cMsg + CRLF
+                        
+                        RecLock('SCP', .F.)
+                            SCP->CP_XMSGLIB := cMsgAux
+                            SCP->CP_STATSA  := 'R'
+                            SCP->CP_SALBLQ  := SCP->CP_QUANT
+                        SCP->(MsUnlock())
+                    EndIf
                 Else
-                    cMsgAux := 'Usuário Rejeição: '+UsrRetName(RetCodUsr()) + CRLF
-                    cMsgAux += 'Data Rejeição: '+DToC(Date()) + CRLF
-                    cMsgAux += 'Hora Rejeição: '+Left(Time(),5) + CRLF
-                    cMsgAux += 'Justificativa: '+cMsg + CRLF
-                    
-                    RecLock('SCP', .F.)
-                        SCP->CP_XMSGLIB := cMsgAux
-                        SCP->CP_STATSA  := 'R'
-                        SCP->CP_SALBLQ  := SCP->CP_QUANT
-                    SCP->(MsUnlock())
+                    MsgStop('Usuário não possui permissão para rejeitar a solicitação.', 'MT105MNU')
                 EndIf
-            Else
-                MsgStop('Usuário não possui permissão para rejeitar a solicitação.', 'MT105MNU')
             EndIf
         EndIf
     Else
         MsgStop('Somente é possível liberar ou rejeitar solicitações geradas na rotina O.S. Corretiva (MNTA420)','MT105MNU')
     EndIf
+
 Return
 
   

@@ -102,6 +102,15 @@ If Empty(FunName())
    RpcSetType(3)
    RpcSetEnv('01','00020087')
 EndIf
+    
+ZPT->(DbSetOrder(1))
+lAprov := ZPT->(DbSeek( FWxFilial('ZPT') + AvKey(RetCodUsr(),'ZPT_USER') ))
+lAdm := RetCodUsr() == '000000'
+
+If !( lAprov .Or. lAdm )
+    MsgAlert('Usuário não possui permissão para cadastrar aprovadores.')
+    Return
+EndIf
 
 //Objetos da Janela
 Private oDlgPvt
