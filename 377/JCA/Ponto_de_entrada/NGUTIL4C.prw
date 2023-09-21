@@ -5,10 +5,28 @@ User Function NGUTIL4C()
 Local aArea     :=  GetArea()
 Local cFilBem   :=  ''
 Local lMnt656   :=  FUNNAME() == 'MNTA656'
+Local lMnt655   :=  FUNNAME() == 'MNTA655'
 
 If INCLUI .AND. lMnt656
     cFilBem := Posicione("ST9",1,xFilial("ST9")+aCols[1,3],"T9_ZFILORI")
     gerAbstOri(cFilBem)
+EndIf
+
+//Grava o numero do abastecimento CT2 / SD3
+If Inclui .And. (lMnt656 .Or.lMnt655)
+    cAbast := Iif(lMnt656 .And. Type('cAbast') == 'C',cAbast, M->TQN_NABAST)
+
+    If CT2->(FieldPos("CT2_XABAST")) > 0 .And. SD3->D3_DOC $ CT2->CT2_HIST .And. SD3->D3_FILIAL == CT2->CT2_FILORI
+        RecLock('CT2', .F.)
+            CT2->CT2_XABAST := cAbast
+        CT2->(MsUnlock())
+    EndIf
+
+    If SD3->(FieldPos("D3_XABAST")) > 0
+        RecLock('SD3', .F.)
+            SD3->D3_XABAST := cAbast
+        SD3->(MsUnlock())
+    EndIf
 EndIf
 
 RestArea(aArea)

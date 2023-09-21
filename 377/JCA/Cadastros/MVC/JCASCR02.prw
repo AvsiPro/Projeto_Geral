@@ -1,17 +1,14 @@
 //Bibliotecas
-#INCLUDE 'Protheus.ch'
-#INCLUDE 'FWMVCDef.ch'
+#Include 'Protheus.ch'
+#Include 'FWMVCDef.ch'
+#Include "TopConn.ch"
  
 //Variáveis Estáticas
-STATIC cTitulo    :=    "Cadastro de Marcas"
- 
-USER FUNCTION JCASCR02()
+Static cTitulo := "Cadastro de Peças com Tempo Previsto"
 
-    LOCAL aArea      :=    GetArea()
-    LOCAL oBrowse
-    LOCAL cFunBkp    :=    FunName()
-     
-    SetFunName("JCASCR02")
+User Function JCASCR02()
+    Local aArea   := GetArea()
+    Local oBrowse
      
     //Instânciando FWMBrowse - Somente com dicionário de dados
     oBrowse := FWMBrowse():New()
@@ -21,52 +18,34 @@ USER FUNCTION JCASCR02()
  
     //Setando a descrição da rotina
     oBrowse:SetDescription(cTitulo)
-     
-    //Legendas
-    oBrowse:AddLegend( "ZPO->ZPO_MSBLQL = '2'", "GREEN", "Não bloqueado" )
-    oBrowse:AddLegend( "ZPO->ZPO_MSBLQL = '1'", "RED",   "Bloqueado" )
-     
-    //Filtrando
-    //oBrowse:SetFilterDefault("ZPO->ZPO_CODIGO >= '000000' .And. ZPO->ZPO_CODIGO <= 'ZZZZZZ'")
-     
+
     //Ativa a Browse
     oBrowse:Activate()
      
-    SetFunName(cFunBkp)
     RestArea(aArea)
-RETURN Nil
-
+Return Nil
  
-STATIC FUNCTION MenuDef()
-
-    LOCAL aRot    :=    {}
+Static Function MenuDef()
+    Local aRot := {}
      
     //Adicionando opções
-    ADD OPTION aRot TITLE 'Visualizar' ACTION 'VIEWDEF.JCASCR02' OPERATION MODEL_OPERATION_VIEW   ACCESS 0 //OPERATION 1
-    ADD OPTION aRot TITLE 'Legenda'    ACTION 'U_ZPOLeg'        OPERATION 6                      ACCESS 0 //OPERATION X
-    ADD OPTION aRot TITLE 'Incluir'    ACTION 'VIEWDEF.JCASCR02' OPERATION MODEL_OPERATION_INSERT ACCESS 0 //OPERATION 3
-    ADD OPTION aRot TITLE 'Alterar'    ACTION 'VIEWDEF.JCASCR02' OPERATION MODEL_OPERATION_UPDATE ACCESS 0 //OPERATION 4
-    ADD OPTION aRot TITLE 'Excluir'    ACTION 'VIEWDEF.JCASCR02' OPERATION MODEL_OPERATION_DELETE ACCESS 0 //OPERATION 5
+    ADD OPTION aRot TITLE 'Visualizar'  ACTION 'VIEWDEF.JCASCR02' OPERATION MODEL_OPERATION_VIEW   ACCESS 0 //OPERATION 1
+    ADD OPTION aRot TITLE 'Incluir'     ACTION 'VIEWDEF.JCASCR02' OPERATION MODEL_OPERATION_INSERT ACCESS 0 //OPERATION 3
+    ADD OPTION aRot TITLE 'Alterar'     ACTION 'VIEWDEF.JCASCR02' OPERATION MODEL_OPERATION_UPDATE ACCESS 0 //OPERATION 4
+    ADD OPTION aRot TITLE 'Excluir'     ACTION 'VIEWDEF.JCASCR02' OPERATION MODEL_OPERATION_DELETE ACCESS 0 //OPERATION 5
+    ADD OPTION aRot TITLE 'Aprovadores' ACTION 'u_JCA2APRV()'     OPERATION 9 ACCESS 0
  
-RETURN aRot
-
+Return aRot
  
-STATIC FUNCTION ModelDef()
-
+Static Function ModelDef()
     //Criação do objeto do modelo de dados
-    LOCAL oModel    :=    Nil
+    Local oModel := Nil
      
     //Criação da estrutura de dados utilizada na interface
-    LOCAL oStZPO    :=    FWFormStruct(1, "ZPO")
+    Local oStZPO := FWFormStruct(1, "ZPO")
      
-    //Editando características do dicionário
-    oStZPO:SetProperty('ZPO_CODIGO',  MODEL_FIELD_WHEN,    FwBuildFeature(STRUCT_FEATURE_WHEN,    '.T.'))                                 //Modo de Edição
-    oStZPO:SetProperty('ZPO_CODIGO',  MODEL_FIELD_INIT,    FwBuildFeature(STRUCT_FEATURE_INIPAD,  'GetSXENum("ZPO", "ZPO_CODIGO")'))      //Ini Padrão
-    oStZPO:SetProperty('ZPO_DESCRI',  MODEL_FIELD_VALID,   FwBuildFeature(STRUCT_FEATURE_VALID,   'Iif(Empty(M->ZPO_DESCRI), .F., .T.)')) //Validação de Campo
-    oStZPO:SetProperty('ZPO_DESCRI',  MODEL_FIELD_OBRIGAT, Iif(RetCodUsr()!='000000', .T., .F.) )                                         //Campo Obrigatório
-     
-    //Instanciando o modelo, não é recomendado colocar nome da USER FUNCTION (por causa do u_), respeitando 10 caracteres
-    oModel := MPFormModel():New("JCASCR02M",/*bPre*/, /*bPos*/,/*bCommit*/,/*bCancel*/) 
+    //Instanciando o modelo, não é recomendado colocar nome da user function (por causa do u_), respeitando 10 caracteres
+    oModel := MPFormModel():New("JCASC2M",/*bPre*/, /*bPos*/,/*bCommit*/,/*bCancel*/) 
      
     //Atribuindo formulários para o modelo
     oModel:AddFields("FORMZPO",/*cOwner*/,oStZPO)
@@ -79,20 +58,19 @@ STATIC FUNCTION ModelDef()
      
     //Setando a descrição do formulário
     oModel:GetModel("FORMZPO"):SetDescription("Formulário do Cadastro "+cTitulo)
-RETURN oModel
+Return oModel
 
- 
-STATIC FUNCTION ViewDef()
-    // LOCAL aStruZPO    := ZPO->(DbStruct())
+
+Static Function ViewDef()
      
     //Criação do objeto do modelo de dados da Interface do Cadastro de Autor/Interprete
-    LOCAL oModel    :=    FWLoadModel("JCASCR02")
+    Local oModel := FWLoadModel("JCASCR02")
      
     //Criação da estrutura de dados utilizada na interface do cadastro de Autor
-    LOCAL oStZPO    :=    FWFormStruct(2, "ZPO")  //pode se usar um terceiro parâmetro para filtrar os campos exibidos { |cCampo| cCampo $ 'SZPO_NOME|SZPO_DTAFAL|'}
+    Local oStZPO := FWFormStruct(2, "ZPO")  //pode se usar um terceiro parâmetro para filtrar os campos exibidos { |cCampo| cCampo $ 'SZPO_NOME|SZPO_DTAFAL|'}
      
     //Criando oView como nulo
-    LOCAL oView     :=    Nil
+    Local oView := Nil
  
     //Criando a view que será o retorno da função e setando o modelo da rotina
     oView := FWFormView():New()
@@ -112,29 +90,199 @@ STATIC FUNCTION ViewDef()
      
     //O formulário da interface será colocado dentro do container
     oView:SetOwnerView("VIEW_ZPO","TELA")
-     
-    /*
-    //Tratativa para remover campos da visualização
-    FOR nAtual := 1 TO Len(aStruZPO)
-        cCampoAux := Alltrim(aStruZPO[nAtual][01])
-         
-        //Se o campo atual não estiver nos que forem considerados
-        IF Alltrim(cCampoAux) $ "ZPO_CODIGO;"
-            oStZPO:RemoveField(cCampoAux)
-        ENDIF
-    NEXT
-    */
-RETURN oView
 
+Return oView
+
+
+User Function JCA2APRV()
+
+Local aArea := GetArea()
+
+If Empty(FunName())
+   RpcSetType(3)
+   RpcSetEnv('01','00020087')
+EndIf
+
+//Objetos da Janela
+Private oDlgPvt
+Private oMsGetZPT
+Private aHeadZPT := {}
+Private aColsZPT := {}
+Private oBtnSalv
+Private oBtnFech
+//Tamanho da Janela
+Private    nJanLarg    := 700
+Private    nJanAltu    := 500
+//Fontes
+Private    cFontUti   := "Tahoma"
+Private    oFontSub   := TFont():New(cFontUti,,-20)
+Private    oFontSubN  := TFont():New(cFontUti,,-20,,.T.)
+Private    oFontBtn   := TFont():New(cFontUti,,-14)
+     
+    //Criando o cabeçalho da Grid
+    //              Título      Campo        Máscara                        Tamanho                   Decimal      Valid                    Usado  Tipo F3   Combo
+    aAdd(aHeadZPT, {"Filial",   "ZPT_FILIAL", "",                           TamSX3("ZPT_FILIAL")[01], 0,           "NaoVazio()",            ".T.", "C", "SM0",""} )
+    aAdd(aHeadZPT, {"Usuário",  "ZPT_USER",   "",                           TamSX3("ZPT_USER")[01],   0,           "u_USRGAT(ReadVar())",   ".T.", "C", "USR",""} )
+    aAdd(aHeadZPT, {"Nome",     "ZPT_NOME",   "",                           TamSX3("ZPT_NOME")[01],   0,           ".F.",                   ".F.", "C", ""   ,""} )
+    aAdd(aHeadZPT, {"Recno",    "XX_RECNO",  "@E 999,999,999,999,999,999",  018,                      0,           ".F.",                   ".F.", "N", ""   ,""} )
  
-USER FUNCTION ZPOLeg()
-
-    LOCAL aLegenda    :=    {}
+    Processa({|| fCarAcols()}, "Processando")
+ 
+    //Criação da tela com os dados que serão informados
+    DEFINE MSDIALOG oDlgPvt TITLE "Usuários Aprovadores" FROM 000, 000  TO nJanAltu, nJanLarg COLORS 0, 16777215 PIXEL
+        //Labels gerais
+        @ 004, 003 SAY "Usuários Aprovadores"                SIZE 200, 030 FONT oFontSub  OF oDlgPvt COLORS RGB(031,073,125) PIXEL
+        @ 014, 003 SAY "Peças por tempo fora do previsto"    SIZE 200, 030 FONT oFontSubN OF oDlgPvt COLORS RGB(031,073,125) PIXEL
+         
+        //Botões
+        @ 006, (nJanLarg/2-001)-(0052*01) BUTTON oBtnFech  PROMPT "Fechar"  SIZE 050, 018 OF oDlgPvt ACTION (oDlgPvt:End()) FONT oFontBtn PIXEL
+        @ 006, (nJanLarg/2-001)-(0052*02) BUTTON oBtnSalv  PROMPT "Salvar"  SIZE 050, 018 OF oDlgPvt ACTION (fSalvar())     FONT oFontBtn PIXEL
+         
+        //Grid dos grupos
+        oMsGetZPT := MsNewGetDados():New(;
+            029,;                //nTop      - Linha Inicial
+            003,;                //nLeft     - Coluna Inicial
+            (nJanAltu/2)-3,;     //nBottom   - Linha Final
+            (nJanLarg/2)-3,;     //nRight    - Coluna Final
+            GD_INSERT + GD_UPDATE + GD_DELETE,; //nStyle    - Estilos para edição da Grid (GD_INSERT = Inclusão de Linha; GD_UPDATE = Alteração de Linhas; GD_DELETE = Exclusão de Linhas)
+            "AllwaysTrue()",;    //cLinhaOk  - Validação da linha
+            ,;                   //cTudoOk   - Validação de todas as linhas
+            "",;                 //cIniCpos  - Função para inicialização de campos
+            ,;                   //aAlter    - Colunas que podem ser alteradas
+            ,;                   //nFreeze   - Número da coluna que será congelada
+            9999,;               //nMax      - Máximo de Linhas
+            ,;                   //cFieldOK  - Validação da coluna
+            ,;                   //cSuperDel - Validação ao apertar '+'
+            ,;                   //cDelOk    - Validação na exclusão da linha
+            oDlgPvt,;            //oWnd      - Janela que é a dona da grid
+            aHeadZPT,;           //aHeader   - Cabeçalho da Grid
+            aColsZPT)            //aCols     - Dados da Grid
+         
+    ACTIVATE MSDIALOG oDlgPvt CENTERED
      
-    //Monta as cores
-    AADD(aLegenda,{"BR_VERDE",        "Não Bloqueado"  })
-    AADD(aLegenda,{"BR_VERMELHO",    "Bloqueado"})
-     
-    BrwLegenda(cTitulo, "Status", aLegenda)
-RETURN
+    RestArea(aArea)
+Return
+ 
+/*------------------------------------------------*
+ | Func.: fCarAcols                               |
+ | Desc.: Função que carrega o aCols              |
+ *------------------------------------------------*/
+ 
+Static Function fCarAcols()
 
+Local aArea  := GetArea()
+Local cQry   := ""
+Local nAtual := 0
+Local nTotal := 0
+    
+    //Seleciona dados do documento de entrada
+    cQry := " SELECT R_E_C_N_O_ AS RECZPT, * FROM "+RetSqlName("ZPT")+" "
+    cQry += " WHERE D_E_L_E_T_ = '' "
+
+    TCQuery cQry New Alias "QRYTMP"
+     
+    //Setando o tamanho da régua
+    Count To nTotal
+    ProcRegua(nTotal)
+     
+    //Enquanto houver dados
+    QRYTMP->(DbGoTop())
+    While ! QRYTMP->(EoF())
+     
+        //Atualizar régua de processamento
+        nAtual++
+        IncProc("Adicionando " + Alltrim(QRYTMP->ZPT_NOME) + " (" + cValToChar(nAtual) + " de " + cValToChar(nTotal) + ")...")
+         
+        //Adiciona o item no aCols
+        aAdd(aColsZPT, { ;
+            QRYTMP->ZPT_FILIAL,;
+            QRYTMP->ZPT_USER,;
+            QRYTMP->ZPT_NOME,;
+            QRYTMP->RECZPT,;
+            .F.;
+        })
+         
+        QRYTMP->(DbSkip())
+    EndDo
+    QRYTMP->(DbCloseArea())
+     
+    RestArea(aArea)
+Return
+ 
+ 
+/*--------------------------------------------------------*
+ | Func.: fSalvar                                         |
+ | Desc.: Função que percorre as linhas e faz a gravação  |
+ *--------------------------------------------------------*/
+ 
+Static Function fSalvar()
+
+Local aColsAux := oMsGetZPT:aCols
+Local nPosFil  := aScan(aHeadZPT, {|x| Alltrim(x[2]) == "ZPT_FILIAL"})
+Local nPosUsr  := aScan(aHeadZPT, {|x| Alltrim(x[2]) == "ZPT_USER"})
+Local nPosNom  := aScan(aHeadZPT, {|x| Alltrim(x[2]) == "ZPT_NOME"})
+Local nPosRec  := aScan(aHeadZPT, {|x| Alltrim(x[2]) == "XX_RECNO"})
+Local nPosDel  := Len(aHeadZPT) + 1
+Local nLinha   := 0
+     
+    DbSelectArea('ZPT')
+     
+    //Percorrendo todas as linhas
+    For nLinha := 1 To Len(aColsAux)
+     
+        //Posiciona no registro
+        If aColsAux[nLinha][nPosRec] != 0
+            ZPT->(DbGoTo(aColsAux[nLinha][nPosRec]))
+        EndIf
+         
+        //Se a linha estiver excluída
+        If aColsAux[nLinha][nPosDel]
+             
+            //Se não for uma linha nova
+            If aColsAux[nLinha][nPosRec] != 0
+                RecLock("ZPT", .F.)
+                    DbDelete()
+                ZPT->(MsUnlock())
+            EndIf
+             
+        //Se a linha for incluída
+        ElseIf aColsAux[nLinha][nPosRec] == 0
+            RecLock('ZPT', .T.)
+                ZPT->ZPT_FILIAL  := aColsAux[nLinha][nPosFil]
+                ZPT->ZPT_USER    := aColsAux[nLinha][nPosUsr]
+                ZPT->ZPT_NOME    := aColsAux[nLinha][nPosNom]
+            ZPT->(MsUnlock())
+
+       //Senão, será alteração
+        Else
+            RecLock('ZPT', .F.)
+                ZPT->ZPT_FILIAL  := aColsAux[nLinha][nPosFil]
+                ZPT->ZPT_USER    := aColsAux[nLinha][nPosUsr]
+                ZPT->ZPT_NOME    := aColsAux[nLinha][nPosNom]
+            SBM->(MsUnlock())
+        EndIf
+         
+    Next
+    
+    MsgInfo('Alteraçãoes Salvas')
+    oDlgPvt:Refresh()
+Return
+
+
+/*/{Protheus.doc} fMarkNow
+    @type Static Function
+    @author Felipe Mayer
+    @since 20/02/2023
+    @Desc 
+/*/
+User Function USRGAT(cCampo)
+
+Local lRet    := .T.
+Local nPosNom := aScan(oMsGetZPT:aHeader,{|x| AllTrim(x[2]) == "ZPT_NOME"})
+
+    oMsGetZPT:aCols[oMsGetZPT:nAt][nPosNom] := UsrFullName(&(cCampo))
+
+    oMsGetZPT:Refresh()
+    oDlgPvt:Refresh()
+
+Return lRet
