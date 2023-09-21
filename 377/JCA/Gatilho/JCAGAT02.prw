@@ -92,7 +92,7 @@ If DbSeek(xFilial("SB1")+cCodigo) //
     oView:AddField('FORMSB5' , oStruSB5,'SB5DETAIL' )
 
 
-    oModel:SetValue("SB1MASTER","B1_COD"      ,Alltrim(SB1->B1_COD)+'-'+cMarca)
+    oModel:SetValue("SB1MASTER","B1_COD"      ,Alltrim(SB1->B1_COD)+cMarca)
     
     For nCont := 1 to len(aHoBrw1)
         If !Alltrim(aHoBrw1[nCont,01]) $ 'B1_COD'
