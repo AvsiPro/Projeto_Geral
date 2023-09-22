@@ -45,7 +45,6 @@ export const apiOrders = async (page: number, orders: any, filter: number, token
     const orcOld = await AsyncStorage.getItem('@orcamento')
     let orcNew: any = []
 
-
     if (!!orcOld){
         orcNew = JSON.parse(orcOld)
         orcNew.sort((a: any, b: any) => b.numorc.localeCompare(a.numorc));

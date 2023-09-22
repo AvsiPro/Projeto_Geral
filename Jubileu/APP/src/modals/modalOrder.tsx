@@ -31,7 +31,7 @@ export default function modalOrder({getVisible, handleModal, itemModal} : Props)
         if(!!objetos){
             objetos.map((objeto: any) => {
               somaQuantidade += objeto.sold_amount;
-              somaValorTotal += objeto.billed_amount;
+              somaValorTotal += objeto.sold_amount * objeto.value_sold;
             });
           
         }
@@ -114,7 +114,7 @@ export default function modalOrder({getVisible, handleModal, itemModal} : Props)
                                                         Valor Total
                                                     </Style.DropDownHeaderSection>
                                                     <Style.DropDownItemSection>
-                                                        {CurrencyFormat(item.billed_amount)}
+                                                        {CurrencyFormat(item.sold_amount * item.value_sold)}
                                                     </Style.DropDownItemSection>
                                                 </Style.DropDownSection>
                                             </Style.DropDownListContainer>
