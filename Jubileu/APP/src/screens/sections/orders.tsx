@@ -332,6 +332,10 @@ export default function Orders(){
         setCustomerSelected(item.customer)
         setPaymentSelected(item.payment)
         setOrcamentoSelected(item.numorc)
+
+        if(!!item.tablePrice){
+            setTablePriceSelected(item.tablePrice)
+        }
         
         navigation.navigate('Neworder')
     }

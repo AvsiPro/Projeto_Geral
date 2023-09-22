@@ -49,7 +49,7 @@ cQuery := "SELECT AAM_CONTRT,AAM_XDIALT,AAN_XCBASE,AAM_CODCLI,AAM_LOJA,AAN_ITEM,
 cQuery += " FROM "+RetSQLName("AAN")+" AAN"
 cQuery += " INNER JOIN "+RetSQLName("AAM")+" AAM ON AAM_FILIAL=AAN_FILIAL AND AAM_CONTRT=AAN_CONTRT"
 cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_COD=AAM_CODCLI AND A1_LOJA=AAM_LOJA AND A1.D_E_L_E_T_=' '"
-cQuery += "     AND '"+dDiaExe+"' IN(AAM_XDIALT)"
+cQuery += "     AND AAM_XDIALT LIKE '%"+dDiaExe+"%'"
 cQuery += " AND AAM_XDIALT<>' '"
 cQuery += "     AND AAM.D_E_L_E_T_=' '"
 cQuery += " WHERE AAN.D_E_L_E_T_=' ' AND AAN_XBOXVM='1'"
@@ -84,7 +84,7 @@ If len(aAux) > 0
     //Busca Maquinas
     Maquinas()
 
-    For nX := 1 to 10 //len(aAux)
+    For nX := 1 to len(aAux)
         dUltLei := UltLei(aAux[nX,03])
         If Empty(dtos(dUltLei))
             dUltLei := ddatabase-30
@@ -157,8 +157,11 @@ IF len(aVendas) > 0
 //'Data','Seleção','Produto','Descrição','Quant. Apont.',chapa,codigo cliente
     FOR nX := 1 TO len(aVendas) 
         aList8 := {}
+        nPosAux := Ascan(aAux,{|x| alltrim(x[3])==alltrim(aVendas[nX,2])})
+                
         If aVendas[nX] != NIL
             If len(aVendas[nX]) > 2
+                        
                 for nY := 4 to len(aVendas[nX])
                     cCodProt := ''
                     IF aVendas[nX,nY,05] == "null"
@@ -173,7 +176,7 @@ IF len(aVendas) > 0
                         cDesc := "Codigo do produto nao se encontra no VMPay"
                     endif
 
-                    nPosit := Ascan(aList8,{|x| x[2] == aVendas[nX,nY,01]})
+                    nPosit := Ascan(aList8,{|x| x[2]+x[6] == aVendas[nX,nY,01]+alltrim(aVendas[nX,2])})
                     IF nPosit == 0
                         cData := ddatabase //stod(StrTran(SubStr(aVendas[nX,nY,02], 1, 10), '-')) //StrTran(StrTran(SubStr(aVendas[nX,nY,02], 1, 10), '-', '/'), 'T', ' ')
                         Aadd(aList8,{cvaltochar(cData),;
@@ -182,16 +185,16 @@ IF len(aVendas) > 0
                                     cDesc,;
                                     val(aVendas[nX,nY,03]),;
                                     aVendas[nX,2],;
-                                    aAux[nX,04],;
+                                    aAux[nPosAux,04],;
                                     IF(val(aVendas[nX,nY,03])>1,val(aVendas[nX,nY,04])/val(aVendas[nX,nY,03]),val(aVendas[nX,nY,04])),;
-                                    aAux[nX,01],;
-                                    aAux[nX,03],;
-                                    aAux[nX,05],;
-                                    aAux[nX,06],;
-                                    aAux[nX,07],;
-                                    aAux[nX,08],;
-                                    aAux[nX,09],;
-                                    aAux[nX,10]})
+                                    aAux[nPosAux,01],;
+                                    aAux[nPosAux,03],;
+                                    aAux[nPosAux,05],;
+                                    aAux[nPosAux,06],;
+                                    aAux[nPosAux,07],;
+                                    aAux[nPosAux,08],;
+                                    aAux[nPosAux,09],;
+                                    aAux[nPosAux,10]})
                     ELSE
                         aList8[nPosit,05] += val(aVendas[nX,nY,03])
                     ENDIF
@@ -211,7 +214,7 @@ IF len(aVendas) > 0
     
 ENDIF
 
-//savevend()
+savevend()
 
 If len(aAux) > 0
     oHtml := TWFHtml():New( cArqHTML )

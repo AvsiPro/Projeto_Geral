@@ -72,7 +72,7 @@ Return (aRot)
 
 Static Function ModelDef()
 
-Local oModel   := MPFormModel():New("ROBCMS")
+Local oModel   := MPFormModel():New("ZPNBLQ")
 Local oStruSC5 := FwFormStruct(1, "ZPN")
 
     
@@ -83,7 +83,7 @@ Local oStruSC5 := FwFormStruct(1, "ZPN")
     oModel:SetPrimaryKey( { "ZPN_FILIAL", "ZPN_COD" } )
 
     // DESCRIÇÃO DO MODELO
-    oModel:SetDescription("Cadastro de Marcas")
+    oModel:SetDescription("Cadastro de Bloqueio de Marcas por filial")
 
     // DESCRIÇÃO DOS SUBMODELOS
     oModel:GetModel("ZPNMASTER"):SetDescription("Cabeçalho")
@@ -106,7 +106,7 @@ Local oStruSC5 := FwFormStruct(2, "ZPN")
 Local oModel   := FwLoadModel("JCASCR03")
 
     // REMOVE CAMPOS DA EXIBIÇÃO
-    oStruSC5:RemoveField("ZPN_FILIAL")
+    //oStruSC5:RemoveField("ZPN_FILIAL")
         
     // INDICA O MODELO DA VIEW
     oView:SetModel(oModel)

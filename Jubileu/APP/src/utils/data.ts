@@ -1,28 +1,4 @@
 
-export const graphics = [
-    {
-        color: "primary",
-        title: 'VictoryLine',
-        data: [
-            { x: 1, y: 2 },
-            { x: 2, y: 3 },
-            { x: 3, y: 5 },
-            { x: 4, y: 4 },
-            { x: 5, y: 6.8 },
-            { x: 6, y: 6.5 },
-            { x: 7, y: 7 }
-        ]
-    },
-    {
-        color: "grey",
-        title: 'VictoryPie',
-        data: [
-            { x: "Cambridge", y: 30 },
-            { x: "Tng", y: 70 }
-          ]
-    }
-]
-
 interface OptionSection {
     color: string;
     backgroundColor: string;

@@ -68,10 +68,11 @@ oDlg1      := MSDialog():New( 092,232,586,1221,"Campanha X Veículos",,,.F.,,,,,,
                              aList1[oList1:nAt,07],; 
                              aList1[oList1:nAt,08]}}
 
-    oBtn1      := TButton():New( 218,088,"Associa Veículo",oDlg1,,047,012,,,,.T.,,"",,,,.F. )
-    oBtn2      := TButton():New( 218,174,"Gerar OS",oDlg1,,047,012,,,,.T.,,"",,,,.F. )
-    oBtn3      := TButton():New( 218,256,"Relatório",oDlg1,,047,012,,,,.T.,,"",,,,.F. )
-    oBtn4      := TButton():New( 218,344,"Sair",oDlg1,{||oDlg1:end()},047,012,,,,.T.,,"",,,,.F. )
+    oBtn1      := TButton():New( 218,068,"Associa Veículo",oDlg1,,047,012,,,,.T.,,"",,,,.F. ) //88
+    oBtn5      := TButton():New( 218,130,"Remover Veículo",oDlg1,,047,012,,,,.T.,,"",,,,.F. )
+    oBtn2      := TButton():New( 218,192,"Gerar OS",oDlg1,,047,012,,,,.T.,,"",,,,.F. ) //174
+    oBtn3      := TButton():New( 218,254,"Relatório",oDlg1,,047,012,,,,.T.,,"",,,,.F. ) //256
+    oBtn4      := TButton():New( 218,316,"Sair",oDlg1,{||oDlg1:end()},047,012,,,,.T.,,"",,,,.F. ) //344
 
 oDlg1:Activate(,,,.T.)
 

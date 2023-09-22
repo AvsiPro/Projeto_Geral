@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import Routes from './src/routes/routes';
 import { AppProvider } from './src/contexts/globalContext';

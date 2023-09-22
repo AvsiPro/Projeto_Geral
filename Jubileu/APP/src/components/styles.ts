@@ -411,3 +411,27 @@ export const ImageArea = styled.Image<{height: number, width: number}>`
     height:${(props) => `${props.height}px`};
     overflow:hidden;
 `
+
+
+export const CardGraphic = styled.View`
+    height: 90px;
+    padding: 15px;
+    background-color:#eee;
+    border-radius: 10px;
+
+`
+
+export const TextGraphic = styled.Text <{size: number, weight: string}>`
+    font-size: ${(props) => `${props.size}px`};
+    font-weight: ${(props) => `${props.weight}`};
+`
+
+export const DropContainer = styled.View <{width: number}>`
+    align-items: center;
+    justify-content: center;
+    margin-left: 30px;
+    margin-right: 30px;
+    width: ${(props) => `${props.width}px`};
+    z-index: 9999;
+    top: 25px;
+`

@@ -479,7 +479,8 @@ export default function Neworder(){
                         orcamento: orcamento,
                         numorc: receive.status.message,
                         emission: formattedDate,
-                        timestamp: moment().format('HH:mm:ss')
+                        timestamp: moment().format('HH:mm:ss'),
+                        tablePrice: tablePriceSelected
                     }
 
                     const orcamentoIndex = orcNew.findIndex((orcamento: any) => orcamento.numorc === orcamentoSelected);
@@ -552,7 +553,9 @@ export default function Neworder(){
         
         if(group.length > 0) {
             const groupAux = group.find((itemGroup: any) => itemGroup.codegroup === item.codegroup);
-            quantity = groupAux.quantity
+            if(!!groupAux){
+                quantity = groupAux.quantity
+            }
         }
 
         let value = 0
