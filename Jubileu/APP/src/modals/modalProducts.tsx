@@ -43,8 +43,6 @@ export default function modalProducts({getVisible, handleModalProducts, products
     const [isLoadSearch, setLoadSearch] = useState<boolean>(false);
     const [search, setSearch] = useState<boolean>(false);
 
-    const [itemsBarScanned, setItemsBarScanned] = useState<any>([]);
-
 
     /** verifica se esta online ou offline **/
     useEffect(() => {
@@ -129,28 +127,6 @@ export default function modalProducts({getVisible, handleModalProducts, products
                 selected_quantity: markAux ? 1 : 0
             };
 
-            
-            if(hasBar){
-                let auxItem: any[] = [];
-
-                const itemSalva = [...itemsBarScanned, ...newData];
-        
-                const uniqueArray = itemSalva.reduce((acc, current) => {
-                    const x = acc.find((item: { id: any; }) => item.id === current.id);
-                    return !x ? acc.concat([current]) : acc;
-                }, []);
-
-                uniqueArray.forEach((item: PropItemCartContext) => {
-                    if (item.marked) {
-                        item.selected_quantity = 1
-                        auxItem.push(item);
-                    }
-                });
-
-                handleFocusTextInput();
-                setItemsBarScanned(auxItem);
-            }
-
             return newData;
         });
 
@@ -170,7 +146,6 @@ export default function modalProducts({getVisible, handleModalProducts, products
             return item;
         });
 
-        setItemsBarScanned([]);
         setInputBarCode('')
         atualizaProdutos(newData);
         setMarkedCount(0);
@@ -228,7 +203,8 @@ export default function modalProducts({getVisible, handleModalProducts, products
             }, 1000);
 
         }else{
-            const response = await api.get(`/WSAPP03?pagesize=10&page=1&byId=true&searchKey=${data}&codTab=${tablePriceSelected}`);
+
+            const response = await api.get(`/WSAPP03?pagesize=10&page=1&byId=true&searchKey=${data}&codTab=${tablePriceSelected.id}`);
             const json: ApiResponse = response.data;
 
             if(json.status.code === '#200'){
@@ -261,74 +237,69 @@ export default function modalProducts({getVisible, handleModalProducts, products
 
         setLoadTop(true);
         
-        const find = findProductIndexByCode(products,inputBarCode)
+        const find = findProductIndexByBar(products,inputBarCode)
         
         if (find !== null){
             if(!products[find].marked){
                 handleItem(find)
             }
         }else{
-            const response = await api.get(`/WSAPP03?pagesize=10&page=1&byId=true&searchKey=${inputBarCode}&codTab=${tablePriceSelected}`);
+            const response = await api.get(`/WSAPP03?pagesize=10&page=1&&barCode=${inputBarCode}&codTab=${tablePriceSelected.id}`);
             const json: ApiResponse = response.data;
-
+    
             if(json.status.code === '#200'){
                 json.result[0].marked = true
-
+    
                 const itemSalva = [...products, ...json.result];
-        
-                const uniqueArray = itemSalva.reduce((acc, current) => {
-                    const x = acc.find((item: { id: any; }) => item.id === current.id);
-                    return !x ? acc.concat([current]) : acc;
-                }, []);
-
-
-                const itemBarAux = [...itemsBarScanned, ...uniqueArray];
-
-                const uniqueBar = itemBarAux.reduce((acc: any[], current: any) => {
+    
+                const uniqueBar = itemSalva.reduce((acc: any[], current: any) => {
                     const index = acc.findIndex((item: { id: any; marked: boolean }) => item.id === current.id);
-                  
+                    
                     if (index === -1) {
-                      // O objeto não existe no acumulador, então o adicionamos
-                      return [...acc, current];
+                        // O objeto não existe no acumulador, então o adicionamos
+                        return [...acc, current];
                     } else {
-                      // O objeto já existe no acumulador
-                      if (acc[index].marked) {
+                        // O objeto já existe no acumulador
+                        if (acc[index].marked) {
                         // O objeto existente tem marked como true, então o mantemos e não fazemos alterações
                         return acc;
-                      } else if (current.marked) {
+                        } else if (current.marked) {
                         // O objeto atual tem marked como true, então substituímos o objeto existente pelo objeto atual
                         const updatedArray = [...acc];
                         updatedArray[index] = current;
                         return updatedArray;
-                      } else {
+                        } else {
                         // Ambos os objetos têm marked como false, então não fazemos alterações
                         return acc;
-                      }
+                        }
                     }
-                  }, []);
-
-
-                let auxItem: any[] = [];
-
-                uniqueBar.forEach((item: PropItemCartContext) => {
+                }, []);
+        
+                uniqueBar.forEach((item: PropItemCartContext, index) => {
                     if (item.marked) {
-                        item.selected_quantity = 1
-                        auxItem.push(item);
+                        uniqueBar[index].selected_quantity = 1
                     }
                 });
+                  
+                uniqueBar.sort(compareMarked);
 
                 handleFocusTextInput();
-                setItemsBarScanned(auxItem);
-
-                atualizaProdutos(uniqueArray);
+                atualizaProdutos(uniqueBar);
                 setMarkedCount(markedCount+1);
             }
         }
 
         setLoadTop(false)
     }
-    
 
+
+    const compareMarked = (a: any, b: any) => {
+        if (a.marked === b.marked) {
+          return 0; // Mantém a ordem relativa entre objetos "marked: true" e "marked: false"
+        }
+        return a.marked ? -1 : 1; // Coloca os objetos "marked: true" no início
+    }
+    
 
     const HandleBarScan = async() => {
         setHasBar(!hasBar);
@@ -337,6 +308,11 @@ export default function modalProducts({getVisible, handleModalProducts, products
 
     const findProductIndexByCode = (prod: any, codeToFind: string): number | null =>{
         const foundProductIndex = prod.findIndex((product: any) => product.code === codeToFind);
+        return foundProductIndex !== -1 ? foundProductIndex : null;
+    }
+
+    const findProductIndexByBar = (prod: any, codeToFind: string): number | null =>{
+        const foundProductIndex = prod.findIndex((product: any) => product.ean === codeToFind);
         return foundProductIndex !== -1 ? foundProductIndex : null;
     }
 
@@ -408,7 +384,6 @@ export default function modalProducts({getVisible, handleModalProducts, products
         setSearchQuery('')
         setInputBarCode('')
         setPage(1)
-        setItemsBarScanned([])
 
         if(isOnline){
             await loadItems();
@@ -622,7 +597,7 @@ export default function modalProducts({getVisible, handleModalProducts, products
                             }
                             
                             <Products
-                                products={hasBar ? itemsBarScanned : products}
+                                products={products}
                                 handleLoadMore={handleLoadMore}
                                 handleItem={handleItem}
                                 handleLongItem={handleLongItem}

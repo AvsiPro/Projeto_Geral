@@ -16,16 +16,27 @@ const Customers: React.FC = () => {
   const [page, setPage] = useState<number>(1)
   const isMobile = useMediaQuery({ query: '(max-width: 767px)' });
 
+  const userData = localStorage.getItem('userdata');
+  const user = userData ? JSON.parse(userData) : null;
+
   useEffect(() => {
     if(page === 1){
       setLoad(true)
     }
       
     const apiData = async() => {
-      const returnResult: any = await fetchData(page)
+
+      const returnResult: any = await fetchData(page, user.token)
       
-      if(returnResult.length > 0){
-        setData((prevData: any) => [...prevData, ...returnResult]);
+      if (returnResult.length > 0) {
+        const auxData = [...data, ...returnResult]
+
+        const newData = auxData.reduce((acc: any, current: any) => {
+          const x = acc.find((item: { id: any; }) => item.id === current.id);
+          return !x ? acc.concat([current]) : acc;
+        }, []);
+
+        setData(newData); 
       }
       
       setLoad(false)
@@ -59,13 +70,10 @@ const Customers: React.FC = () => {
   };
 
   const handleSearch = async (searchText: string) => {
-      let returnResult: any = await fetchSearch(searchText)
+      let returnResult: any = await fetchSearch(searchText, user.token)
 
-      if(returnResult.length > 0) {
-        setData(returnResult);
-      }
-
-    setPage(1)
+      setData(returnResult);
+      setPage(1)
   }
 
   const ToolsTable = () => {
