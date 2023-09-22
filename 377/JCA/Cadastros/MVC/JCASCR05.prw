@@ -165,6 +165,8 @@ User Function JcaCmxVe(nOpc)
 Private cCampanha := space(6)
 
 SetPrvt("oDlg1","oGrp1","oSay1","oSay2","oGet1","oGrp2","oBrw1","oBtn1","oBtn2","oBtn3","oBtn4")
+PRIVATE oOk        :=    LoadBitmap(GetResources(),'br_verde')  //Controla se o pedido foi alterado ou nao no grid.
+PRIVATE oNo        :=    LoadBitmap(GetResources(),'br_vermelho')
 
 Private aList1  :=  {}
 Private oList1
@@ -177,7 +179,7 @@ If Select("SM0") == 0
 EndIf
 
 If nOpc == 1
-    Aadd(aList1,{'','','','','','','','','',0})
+    Aadd(aList1,{.F.,'','','','','','','','',0})
 Else 
     cCampanha := ZPR->ZPR_CODIGO
 EndIf
@@ -197,9 +199,9 @@ oDlg1      := MSDialog():New( 092,232,596,1360,"Campanha x Veiculos",,,.F.,,,,,,
         //oBrw1      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{048,012,212,544},,, oGrp2 ) 
         oList1    := TCBrowse():New(048,012,532,165,, {'','Filial','Veículo','Placa','Ano','Chassi','Num. OS','Data Ini. OS','Data Fim Os'},;
                                         {10,40,50,40,70,40,40,40},;
-                                        oGrp2,,,,{|| /*FHelp(oList1:nAt)*/},{|| /*editped(oList1:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
+                                        oGrp2,,,,{|| /*FHelp(oList1:nAt)*/},{|| editcol(oList1:nAt)},, ,,,  ,,.F.,,.T.,,.F.,,,)
         oList1:SetArray(aList1)
-        oList1:bLine := {||{aList1[oList1:nAt,01],; 
+        oList1:bLine := {||{IF(aList1[oList1:nAt,01],oOk,oNo),; 
                             aList1[oList1:nAt,02],;
                             aList1[oList1:nAt,03],;
                             aList1[oList1:nAt,04],;
@@ -208,14 +210,22 @@ oDlg1      := MSDialog():New( 092,232,596,1360,"Campanha x Veiculos",,,.F.,,,,,,
                             aList1[oList1:nAt,07],;
                             aList1[oList1:nAt,08],;
                             aList1[oList1:nAt,09]}}
-
+/*
     oBtn1      := TButton():New( 224,120,"Associar Veiculo",oDlg1,{|| associar()},044,012,,,,.T.,,"",,,,.F. )
     oBtn2      := TButton():New( 224,216,"Gerar O.S.",oDlg1,{|| geraros()},044,012,,,,.T.,,"",,,,.F. )
     oBtn3      := TButton():New( 224,308,"Relatório",oDlg1,,044,012,,,,.T.,,"",,,,.F. )
     oBtn4      := TButton():New( 224,404,"Sair",oDlg1,{||oDlg1:end()},044,012,,,,.T.,,"",,,,.F. )
+*/
+    oBtn1      := TButton():New( 218,068,"Associa Veículo",oDlg1,{|| associar()},047,012,,,,.T.,,"",,,,.F. ) //88
+    oBtn5      := TButton():New( 218,130,"Remover Veículo",oDlg1,{|| removbem()},047,012,,,,.T.,,"",,,,.F. )
+    oBtn2      := TButton():New( 218,192,"Gerar OS",oDlg1,{|| Processa({|| geraros()},"Aguarde")},047,012,,,,.T.,,"",,,,.F. ) //174
+    oBtn3      := TButton():New( 218,254,"Relatório",oDlg1,,047,012,,,,.T.,,"",,,,.F. ) //256
+    oBtn4      := TButton():New( 218,316,"Sair",oDlg1,{||oDlg1:end()},047,012,,,,.T.,,"",,,,.F. ) //344
+
 
     oBtn1:disable()
     oBtn2:disable()
+    oBtn3:disable()
     
     If nOpc == 2
         Busca()
@@ -266,7 +276,7 @@ If !Empty(TRB->ZPP_DESCRI)
 EndIf
 
 WHILE !EOF() 
-    Aadd(aList1,{   '',;
+    Aadd(aList1,{   .F.,;
                     TRB->ZPR_FILIAL,;
                     TRB->ZPR_CODBEM,;
                     TRB->ZPR_PLACA,;
@@ -280,12 +290,45 @@ WHILE !EOF()
 EndDo 
 
 If len(aList1) < 1
-     Aadd(aList1,{'','','','','','','','','',0})
+     Aadd(aList1,{.F.,'','','','','','','','',0})
 EndIf
 
 
 
 Return
+
+
+/*/{Protheus.doc} editcol
+    (long_description)
+    @type  Static Function
+    @author user
+    @since 08/09/2023
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function editcol(nLinha)
+
+Local aArea := GetArea()
+
+If !Empty(aList1[nLinha,02])
+    If aList1[nLinha,01]
+        aList1[nLinha,01] := .F.
+    Else 
+        aList1[nLinha,01] := .T.
+    EndIf 
+EndIf 
+
+oList1:refresh()
+oDlg1:refresh()
+
+RestArea(aAreA)
+
+Return
+
 
 /*/{Protheus.doc} nomeStaticFunction
     (long_description)
@@ -324,7 +367,7 @@ If ParamBox(aPergs, "Informe o código da Marca a ser gerada para o produto",aRet
                 //Aadd(aList1,{'','','','','','','',''})
                 //'','Filial','Veículo','Ano','Chassi','Num. OS','Data Ini. OS','Data Fim Os'
             
-                Aadd(aList1,{   '',;
+                Aadd(aList1,{   .F.,;
                                 cfilant,;
                                 Alltrim(cVeiculo),;
                                 ST9->T9_PLACA,;
@@ -346,10 +389,10 @@ If ParamBox(aPergs, "Informe o código da Marca a ser gerada para o produto",aRet
                 ZPR->(Msunlock())
                 aList1[len(alist1),10] := nRecno                
             Else     
-                Aadd(aList1,{'','','','','','','','','',0})                
+                Aadd(aList1,{.F.,'','','','','','','','',0})                
             EndIf 
         Else 
-            Aadd(aList1,{'','','','','','','','','',0})
+            Aadd(aList1,{.F.,'','','','','','','','',0})
             MsgAlert("Veículo não encontrado na base, verifique!!!")
         EndIf
     Else 
@@ -360,7 +403,7 @@ If ParamBox(aPergs, "Informe o código da Marca a ser gerada para o produto",aRet
 EndIf 
 
 oList1:SetArray(aList1)
-oList1:bLine := {||{aList1[oList1:nAt,01],; 
+oList1:bLine := {||{IF(aList1[oList1:nAt,01],oOk,oNo),; 
                     aList1[oList1:nAt,02],;
                     aList1[oList1:nAt,03],;
                     aList1[oList1:nAt,04],;
@@ -391,108 +434,113 @@ Static Function geraros()
 
 Local aArea :=  GetArea()
 Local nCont :=  0
+Local nX    :=  0
 Private aAux  :=  {}
 
-If Empty(aList1[oList1:nAt,07])
-    DbSelectArea("ZPQ")
-    DbSetOrder(1)
-    If Dbseek(xFilial("ZPQ")+cCampanha)
-        While !EOF() .AND. ZPQ->ZPQ_CODIGO == cCampanha 
-            Aadd(aAux,{ZPQ->ZPQ_PRODUT,;
-                        Posicione("SB1",1,xFilial("SB1")+ZPQ->ZPQ_PRODUT,"B1_UM"),;
-                        Posicione("SB1",1,xFilial("SB1")+ZPQ->ZPQ_PRODUT,"B1_LOCPAD"),;
-                        ZPQ->ZPQ_QUANT,;
-                        ZPQ->ZPQ_ITEM,;
-                        '',;
-                        ''})
-            Dbskip()
-        EndDo 
-    EndIf 
-    
-    cOrdem  := GETSXENUM("STJ","TJ_ORDEM")
-    cPlano  := SuperGetmv("TI_TJPLANO",.F.,"000000")
-    cTipOs  := SuperGetmv("TI_TJTIPOS",.F.,"B")
-    cCodBem := aList1[oList1:nAt,03]
-    cServico:= SuperGetmv("TI_TJSERVI",.F.,"C00001")
-    //SEQRELA
-    cTipo   := SuperGetmv("TI_TJTIPO" ,.F.,"C01")
-    cCodAre := SuperGetmv("TI_CODAREA",.F.,"000003")
-    cCntCust:= Posicione("ST9",1,xFilial("ST9")+cCodBem,"T9_CCUSTO")
-    cContado:= Posicione("ST9",1,xFilial("ST9")+cCodBem,"T9_POSCONT")
+For nX := 1 to len(aList1)
+    If aList1[nX,01]
+        If Empty(aList1[nX,07])
+            DbSelectArea("ZPQ")
+            DbSetOrder(1)
+            If Dbseek(xFilial("ZPQ")+cCampanha)
+                While !EOF() .AND. ZPQ->ZPQ_CODIGO == cCampanha 
+                    Aadd(aAux,{ZPQ->ZPQ_PRODUT,;
+                                Posicione("SB1",1,xFilial("SB1")+ZPQ->ZPQ_PRODUT,"B1_UM"),;
+                                Posicione("SB1",1,xFilial("SB1")+ZPQ->ZPQ_PRODUT,"B1_LOCPAD"),;
+                                ZPQ->ZPQ_QUANT,;
+                                ZPQ->ZPQ_ITEM,;
+                                '',;
+                                ''})
+                    Dbskip()
+                EndDo 
+            EndIf 
+            
+            cOrdem  := GETSXENUM("STJ","TJ_ORDEM")
+            cPlano  := SuperGetmv("TI_TJPLANO",.F.,"000000")
+            cTipOs  := SuperGetmv("TI_TJTIPOS",.F.,"B")
+            cCodBem := aList1[nX,03]
+            cServico:= SuperGetmv("TI_TJSERVI",.F.,"C00001")
+            //SEQRELA
+            cTipo   := SuperGetmv("TI_TJTIPO" ,.F.,"C01")
+            cCodAre := SuperGetmv("TI_CODAREA",.F.,"000003")
+            cCntCust:= Posicione("ST9",1,xFilial("ST9")+cCodBem,"T9_CCUSTO")
+            cContado:= Posicione("ST9",1,xFilial("ST9")+cCodBem,"T9_POSCONT")
 
-    If gerasa(cCodBem,cOrdem)
-        
-        Reclock("STJ",.T.)
-        STJ->TJ_FILIAL  :=  CFILANT
-        STJ->TJ_ORDEM   :=  cOrdem
-        STJ->TJ_PLANO   :=  cPlano
-        STJ->TJ_DTORIGI :=  DDATABASE
-        STJ->TJ_TIPOOS  :=  cTipOs
-        STJ->TJ_CODBEM  :=  cCodBem
-        STJ->TJ_SERVICO :=  cServico
-        STJ->TJ_SEQRELA :=  '0'
-        STJ->TJ_TIPO    :=  cTipo
-        STJ->TJ_CODAREA :=  cCodAre
-        STJ->TJ_POSCONT :=  cContado
-        STJ->TJ_HORACO1 :=  cvaltochar(Time())
-        STJ->TJ_DTMPINI :=  DDATABASE
-        STJ->TJ_HOMPINI :=  cvaltochar(Time())
-        STJ->TJ_DTMPFIM :=  DDATABASE
-        STJ->TJ_HOMPFIM :=  cvaltochar(Time())
-        STJ->TJ_USUARIO :=  CUSERNAME
-        STJ->TJ_PRIORID :=  'ZZZ'
-        STJ->TJ_TERMINO :=  'N'
-        STJ->TJ_SITUACA :=  'L'
-        STJ->TJ_TERCEIR :=  '1'
-        STJ->TJ_CONTINI :=  cContado
-        STJ->TJ_USUAINI :=  CUSERNAME
-        STJ->TJ_FATURA  :=  '2'
-        STJ->TJ_APROPRI :=  '2'
-        STJ->(MSUNLOCK())
+            If gerasa(cCodBem,cOrdem)
+                
+                Reclock("STJ",.T.)
+                STJ->TJ_FILIAL  :=  CFILANT
+                STJ->TJ_ORDEM   :=  cOrdem
+                STJ->TJ_PLANO   :=  cPlano
+                STJ->TJ_DTORIGI :=  DDATABASE
+                STJ->TJ_TIPOOS  :=  cTipOs
+                STJ->TJ_CODBEM  :=  cCodBem
+                STJ->TJ_SERVICO :=  cServico
+                STJ->TJ_SEQRELA :=  '0'
+                STJ->TJ_TIPO    :=  cTipo
+                STJ->TJ_CODAREA :=  cCodAre
+                STJ->TJ_POSCONT :=  cContado
+                STJ->TJ_HORACO1 :=  cvaltochar(Time())
+                STJ->TJ_DTMPINI :=  DDATABASE
+                STJ->TJ_HOMPINI :=  cvaltochar(Time())
+                STJ->TJ_DTMPFIM :=  DDATABASE
+                STJ->TJ_HOMPFIM :=  cvaltochar(Time())
+                STJ->TJ_USUARIO :=  CUSERNAME
+                STJ->TJ_PRIORID :=  'ZZZ'
+                STJ->TJ_TERMINO :=  'N'
+                STJ->TJ_SITUACA :=  'L'
+                STJ->TJ_TERCEIR :=  '1'
+                STJ->TJ_CONTINI :=  cContado
+                STJ->TJ_USUAINI :=  CUSERNAME
+                STJ->TJ_FATURA  :=  '2'
+                STJ->TJ_APROPRI :=  '2'
+                STJ->(MSUNLOCK())
 
-        
+                
 
-        For nCont := 1 to len(aAux)
-            RECLOCK( "STL", .T. )
-            STL->TL_FILIAL  :=  cfilant
-            STL->TL_ORDEM   :=  cOrdem
-            STL->TL_PLANO   :=  cPlano
-            STL->TL_SEQRELA :=  '0'
-            STL->TL_TAREFA  :=  '0'
-            STL->TL_TIPOREG :=  'P'
-            STL->TL_CODIGO  :=  aAux[nCont,01]
-            STL->TL_USACALE :=  'N'
-            STL->TL_QUANTID :=  aAux[nCont,04]
-            STL->TL_UNIDADE :=  aAux[nCont,02]
-            STL->TL_CUSTO   :=  Posicione("SB2",1,cfilant+aAux[nCont,01],"B2_CM1")
-            STL->TL_DESTINO :=  'T'
-            STL->TL_DTINICI :=  ddatabase
-            STL->TL_HOINICI :=  cvaltochar(Time())
-            STL->TL_DTFIM   :=  DDATABASE
-            STL->TL_HOFIM   :=  cvaltochar(Time())
-            STL->TL_LOCAL   :=  aAux[nCont,03]
-            STL->TL_TIPOHOR :=  'D'
-            STL->TL_NUMSA   :=  aAux[nCont,06]
-            STL->TL_ITEMSA  :=  aAux[nCont,07]
-            STL->TL_SEQTARE :=  aAux[nCont,05]
-            STL->(MSUNLOCK())
-        Next nCont
+                For nCont := 1 to len(aAux)
+                    RECLOCK( "STL", .T. )
+                    STL->TL_FILIAL  :=  cfilant
+                    STL->TL_ORDEM   :=  cOrdem
+                    STL->TL_PLANO   :=  cPlano
+                    STL->TL_SEQRELA :=  '0'
+                    STL->TL_TAREFA  :=  '0'
+                    STL->TL_TIPOREG :=  'P'
+                    STL->TL_CODIGO  :=  aAux[nCont,01]
+                    STL->TL_USACALE :=  'N'
+                    STL->TL_QUANTID :=  aAux[nCont,04]
+                    STL->TL_UNIDADE :=  aAux[nCont,02]
+                    STL->TL_CUSTO   :=  Posicione("SB2",1,cfilant+aAux[nCont,01],"B2_CM1")
+                    STL->TL_DESTINO :=  'T'
+                    STL->TL_DTINICI :=  ddatabase
+                    STL->TL_HOINICI :=  cvaltochar(Time())
+                    STL->TL_DTFIM   :=  DDATABASE
+                    STL->TL_HOFIM   :=  cvaltochar(Time())
+                    STL->TL_LOCAL   :=  aAux[nCont,03]
+                    STL->TL_TIPOHOR :=  'D'
+                    STL->TL_NUMSA   :=  aAux[nCont,06]
+                    STL->TL_ITEMSA  :=  aAux[nCont,07]
+                    STL->TL_SEQTARE :=  aAux[nCont,05]
+                    STL->(MSUNLOCK())
+                Next nCont
 
-        aList1[oList1:nAt,07] := cOrdem
-        aList1[oList1:nAt,08] := ddatabase
-        DbSelectarea("ZPR")
-        DbGoto(aList1[oList1:nAt,10])
-        Reclock("ZPR",.F.)
-        ZPR->ZPR_NUMOS := cOrdem
-        ZPR->ZPR_DTINI := ddatabase
-        ZPR->(MSUNLOCK())
-    EndIf 
+                aList1[nX,07] := cOrdem
+                aList1[nX,08] := ddatabase
+                DbSelectarea("ZPR")
+                DbGoto(aList1[nX,10])
+                Reclock("ZPR",.F.)
+                ZPR->ZPR_NUMOS := cOrdem
+                ZPR->ZPR_DTINI := ddatabase
+                ZPR->(MSUNLOCK())
+            EndIf 
 
-    oList1:refresh()
-    oDlg1:refresh()
-else
-    MsgAlert("OS já criada para o bem")
-EndIf 
+            oList1:refresh()
+            oDlg1:refresh()
+        else
+            MsgAlert("OS já criada para o bem")
+        EndIf 
+    EndIf
+Next nX
 
 RestArea(aArea)
 
@@ -561,3 +609,80 @@ EndIf
 RestArea(aArea)
 
 Return(lRet)
+
+/*/{Protheus.doc} removbem
+    (long_description)
+    @type  Static Function
+    @author user
+    @since 21/09/2023
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function removbem()
+
+Local nX        := 1
+Local aAreaTL   :=  {}
+Local lNegar    :=  .F.
+Local nTam      := len(aList1)
+
+For nX := 1 to len(aList1)
+    If aList1[nX,01]
+        DbSelectArea("STL")
+        DbSetOrder(1)
+        If Dbseek(aList1[nX,02]+aList1[nX,07])
+            While !EOF() .And. STL->TL_FILIAL == aList1[nX,02] .AND. STL->TL_ORDEM == aList1[nX,07]
+                aAreaTL := GetArea()
+                DbSelectArea("SCP")
+                DbSetOrder(1)
+                If Dbseek(aList1[nX,02]+STL->TL_NUMSA+STL->TL_ITEMSA)
+                    If SCP->CP_PREREQU == "S"
+                        lNegar := .T.
+                        exit
+                    EndIf
+                EndIf
+                RestArea(aAreaTL)
+                DbSkip()
+            EndDo
+        EndIf
+        
+        If !lNegar
+            aList1[nX,02] := strtran(aList1[nX,02],"0","X")
+        EndIf
+    EndIf 
+Next nX 
+
+nX := 1
+
+While nTam <= len(aList1)
+    If "X" $ aList1[nX,02]
+        Adel(aList1,nX)
+        Asize(aList1,len(aList1)-1)
+    ENDIF
+    nX++
+ENDDO
+
+If len(aList1) < 1
+     Aadd(aList1,{.F.,'','','','','','','','',0})
+EndIf
+
+
+
+oList1:SetArray(aList1)
+oList1:bLine := {||{IF(aList1[oList1:nAt,01],oOk,oNo),; 
+                    aList1[oList1:nAt,02],;
+                    aList1[oList1:nAt,03],;
+                    aList1[oList1:nAt,04],;
+                    aList1[oList1:nAt,05],;
+                    aList1[oList1:nAt,06],;
+                    aList1[oList1:nAt,07],;
+                    aList1[oList1:nAt,08],;
+                    aList1[oList1:nAt,09]}}
+
+oList1:refresh()
+oDlg1:refresh()
+
+Return
