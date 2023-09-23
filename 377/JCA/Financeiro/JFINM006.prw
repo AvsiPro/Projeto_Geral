@@ -13,7 +13,7 @@
     https://docs.google.com/document/d/1nkTlKsGJ1tOAhvsvDDAPpwq4RHwnh0lQ/edit
 */
 
-User Function JCATARIF1()
+User Function JFINM006()
 
 	Local   nOpc       := 0
 	Local 	nX 			:= 0
