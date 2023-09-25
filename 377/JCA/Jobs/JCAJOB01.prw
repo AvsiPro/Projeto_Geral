@@ -8,13 +8,14 @@
 User Function JCAJOB01
 
 Local cQuery 
-Local aAux      :=  {}
-Local aCampos   :=  {}
 Local cArqHTML
 Local oHtml
 Local cPathHTML
 Local nX,nY 
 Local nDias
+Local aAuxEnv     :=  {}
+Private aAux      :=  {}
+Private aCampos   :=  {}
 
 If Select("SM0") == 0
     RpcSetType(3)
@@ -33,7 +34,7 @@ cQuery += ",C1_PEDIDO,C1_LOJA,C1_FORNECE,C1_COTACAO,C1_EMISSAO,C1_LOCAL,C1_TOTAL
 cQuery += ",C1_QUANT,C1_DESCRI,C1_UM,C1_PRODUTO,C1_ITEM,C1_NUM"
 cQuery += " FROM "+RetSQLName("SC1")
 cQuery += " WHERE D_E_L_E_T_=' '"
-cQuery += " AND C1_DATPRF='"+sDiaRef+"'"
+//cQuery += " AND C1_DATPRF='"+sDiaRef+"'"
 
 IF Select('TRB') > 0
     dbSelectArea('TRB')
@@ -106,32 +107,94 @@ If len(aAux) > 0
     //JCAMAIL1(cFrom,cTo,cSubject,cBody,aAttach,lConfirm,cCC,cBCC)
     //JCAMAIL2(cPara,cAssunto,cBody,cAtach,lLog)
     For nX := 1 to len(aAux)
-        oHtml := TWFHtml():New( cArqHTML )
-        
-        For nY := 1 to len(aCampos[1])
-            aAuxCmp := FWSX3Util():GetFieldStruct( FwCutOff(aCampos[1,nY]) )
+        If Ascan(aAuxEnv,{|x| x == aAux[nX,26]}) == 0
+            Aadd(aAuxEnv,aAux[nX,26])
+            oHtml := TWFHtml():New( cArqHTML )
             
-            If aAuxCmp[2] == "N"
-                cConteudo := Transform(aAux[nX,nY],"@R 999,999,999.99")
-            ElseIf aAuxCmp[2] == "D"
-                cConteudo := cvaltochar(stod(aAux[nX,nY]))
-            Else 
-                cConteudo := FwCutOff(aAux[nX,nY],.t.)
-            EndIf
-            oHTML:ValByName(aCampos[1,nY],cConteudo)
-        Next nY 
+            For nY := 1 to len(aCampos[1])
+                aAuxCmp := FWSX3Util():GetFieldStruct( FwCutOff(aCampos[1,nY]) )
+                
+                If aAuxCmp[2] == "N"
+                    cConteudo := Transform(aAux[nX,nY],"@R 999,999,999.99")
+                ElseIf aAuxCmp[2] == "D"
+                    cConteudo := cvaltochar(stod(aAux[nX,nY]))
+                Else 
+                    cConteudo := FwCutOff(aAux[nX,nY],.t.)
+                EndIf
+                oHTML:ValByName(aCampos[1,nY],cConteudo)
+            Next nY 
 
-        cFileName    := CriaTrab(NIL,.F.) + ".htm"
-        cFileName    := cPathHTML + "\" + cFileName 
-        oHtml:SaveFile(cFileName)
-        
-        cRet         := WFLoadFile(cFileName)
-        cMensagem    := StrTran(cRet,chr(13),"")
-        cMensagem    := StrTran(cRet,chr(10),"")
-        cMensagem    := OemtoAnsi(cMensagem)
-        
-        U_JCAMAIL2('alexandre.venancio@avsipro.com.br','Solicitação de compra empresa - '+FwCutOff(aAux[nX,27],.T.),cMensagem,'',.F.)
+            cConteudo := linhassc(aAux[nX,26])
+            oHTML:ValByName('linhasc',cConteudo)
+
+            cFileName    := CriaTrab(NIL,.F.) + ".htm"
+            cFileName    := cPathHTML + "\" + cFileName 
+            oHtml:SaveFile(cFileName)
+            
+            cRet         := WFLoadFile(cFileName)
+            cMensagem    := StrTran(cRet,chr(13),"")
+            cMensagem    := StrTran(cRet,chr(10),"")
+            cMensagem    := OemtoAnsi(cMensagem)
+            
+            U_JCAMAIL2('alexandre.venancio@avsipro.com.br','Solicitação de compra empresa - '+FwCutOff(aAux[nX,27],.T.),cMensagem,'',.F.)
+        EndIf
     Next nX 
 EndIf
 
 Return 
+
+/*/{Protheus.doc} linhassc
+    (long_description)
+    @type  Static Function
+    @author user
+    @since 24/09/2023
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function linhassc(cNumCot)
+
+Local aArea := GetArea()
+Local cRet  := ''
+Local nCont := 1
+Local cLinha := ''
+Local nY 
+
+cLinha := "<tr>"
+cLinha += "	<td width=150><strong>!C1_LOCAL!</strong></td>"
+cLinha += "	<td width=150><strong>!C1_ITEM!</strong></td>"
+cLinha += "	<td width=150><strong>!C1_PRODUTO!</strong></td>
+cLinha += "	<td width=350><strong>!C1_DESCRI!</strong></td>
+cLinha += "	<td width=150><strong>!C1_QUANT!</strong></td>
+cLinha += "	<td width=150><strong>!C1_PRECO!</strong></td>
+cLinha += "	<td width=150><strong>!C1_TOTAL!</strong></td>
+cLinha += "	<td width=150><strong>!C1_UM!</strong></td>
+cLinha += "	<td width=150><strong>!C1_VUNIT!</strong></td>
+cLinha += "	<td width=150><strong>!C1_ITEMPED!</strong></td>
+cLinha += "	<td width=150><strong>!C1_PEDIDO!</strong></td>
+cLinha += " </tr>"
+
+For nCont := 1 to len(aAux)
+    If aAux[nCont,26] == cNumCot
+        cRet += cLinha
+        For nY := 1 to len(aCampos[1])
+            aAuxCmp := FWSX3Util():GetFieldStruct( FwCutOff(aCampos[1,nY]) )
+            
+            If aAuxCmp[2] == "N"
+                cConteudo := Transform(aAux[nCont,nY],"@R 999,999,999.99")
+            ElseIf aAuxCmp[2] == "D"
+                cConteudo := cvaltochar(stod(aAux[nCont,nY]))
+            Else 
+                cConteudo := FwCutOff(aAux[nCont,nY],.t.)
+            EndIf
+            cRet := strtran(cRet,'!'+alltrim(aCampos[1,nY])+'!',cConteudo)
+        Next nY 
+    EndIf
+Next nCont
+
+RestArea(aArea)
+
+Return(cRet)

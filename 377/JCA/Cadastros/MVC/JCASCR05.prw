@@ -215,8 +215,9 @@ oDlg1      := MSDialog():New( 092,232,596,1360,"Campanha x Veiculos",,,.F.,,,,,,
     oBtn2      := TButton():New( 224,216,"Gerar O.S.",oDlg1,{|| geraros()},044,012,,,,.T.,,"",,,,.F. )
     oBtn3      := TButton():New( 224,308,"Relatório",oDlg1,,044,012,,,,.T.,,"",,,,.F. )
     oBtn4      := TButton():New( 224,404,"Sair",oDlg1,{||oDlg1:end()},044,012,,,,.T.,,"",,,,.F. )
+    associar
 */
-    oBtn1      := TButton():New( 218,068,"Associa Veículo",oDlg1,{|| associar()},047,012,,,,.T.,,"",,,,.F. ) //88
+    oBtn1      := TButton():New( 218,068,"Associa Veículo",oDlg1,{|| veiculos()},047,012,,,,.T.,,"",,,,.F. ) //88
     oBtn5      := TButton():New( 218,130,"Remover Veículo",oDlg1,{|| removbem()},047,012,,,,.T.,,"",,,,.F. )
     oBtn2      := TButton():New( 218,192,"Gerar OS",oDlg1,{|| Processa({|| geraros()},"Aguarde")},047,012,,,,.T.,,"",,,,.F. ) //174
     oBtn3      := TButton():New( 218,254,"Relatório",oDlg1,,047,012,,,,.T.,,"",,,,.F. ) //256
@@ -684,5 +685,143 @@ oList1:bLine := {||{IF(aList1[oList1:nAt,01],oOk,oNo),;
 
 oList1:refresh()
 oDlg1:refresh()
+
+Return
+
+
+/*/{Protheus.doc} veiculos
+    (long_description)
+    @type  Static Function
+    @author user
+    @since 24/09/2023
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function veiculos()
+
+Local aArea     := GetArea()
+Local nOpc      :=  0
+
+
+
+Local cQuery 
+Private lCheck     :=   .F.
+PRIVATE aVeiculos :=  {}
+
+PRIVATE oOk        :=    LoadBitmap(GetResources(),'br_verde')  //Controla se o pedido foi alterado ou nao no grid.
+PRIVATE oNo        :=    LoadBitmap(GetResources(),'br_vermelho')
+Private nPrimMrk   :=   1
+Private oDlg1,oGrp1,oBtn1,oBtn2,oList1
+
+cQuery := "SELECT T9_CODBEM,T9_NOME,T9_PLACA,T9_ZFILORI FROM "+RetSQLName("ST9")
+cQuery += " WHERE T9_FILIAL='"+xFilial("ST9")+"' AND T9_CATBEM='4' AND D_E_L_E_T_=' '"
+
+IF Select('TRB') > 0
+    dbSelectArea('TRB')
+    dbCloseArea()
+ENDIF
+
+MemoWrite("CONFATC01.SQL",cQuery)
+DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
+
+DbSelectArea("TRB")  
+
+While !EOF()
+    Aadd(aVeiculos,{.F.,;
+                    TRB->T9_CODBEM,;
+                    TRB->T9_NOME,;
+                    TRB->T9_PLACA,;
+                    TRB->T9_ZFILORI})
+    Dbskip()
+ENDDO
+
+If len(aVeiculos) > 0
+    oDlg1      := MSDialog():New( 092,232,557,863,"Veiculos",,,.F.,,,,,,.T.,,,.T. )
+        oGrp1      := TGroup():New( 012,016,192,294,"Selecione",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
+        //oBrw1      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{024,024,184,236},,, oGrp1 ) 
+        oList1 	   := TCBrowse():New(024,024,260,165,, {'','Veículo','Descricao','Placa','Filial Veiculo'},;
+                                    {20,50,70,50,50},;
+									oGrp1,,,,{|| /*FHelp(oList:nAt)*/},{|| editcol2(oList1:nAt)},,,,,,,.F.,,.T.,,.F.,,,)
+        oList1:SetArray(aVeiculos)
+        oList1:bLine := {||{ IF(aVeiculos[oList1:nAt,01],oOk,oNo),;
+                                aVeiculos[oList1:nAt,02],; 
+                                aVeiculos[oList1:nAt,03],;
+                                aVeiculos[oList1:nAt,04],; 
+                                aVeiculos[oList1:nAt,05]}}
+
+        oCBox1     := TCheckBox():New( 200,016,"Marcar varios",{|u| If(Pcount()>0,lCheck:=u,lCheck)},oDlg1,048,008,,{|| variaslin(oList1:nAt) },,,CLR_BLACK,CLR_WHITE,,.T.,"",, )
+        //oCheck1 := TCheckBox():New(046,005,'Mais de um atendente?',{|u|if(PCount()>0,lSegAtend:=u,lSegAtend) },oGrp,100,210,,{|| VldAtend() },,,,,,.T.,,,)
+	
+        oBtn1      := TButton():New( 200,080,"Confirmar",oDlg1,{|x| oDlg1:end(nOpc:=1)},037,012,,,,.T.,,"",,,,.F. )
+        oBtn2      := TButton():New( 200,160,"Cancelar",oDlg1,{|x| oDlg1:end(nOpc:=0)},037,012,,,,.T.,,"",,,,.F. )
+
+    oDlg1:Activate(,,,.T.)
+else
+    MsgAlert("Não há veículos para atrelar")
+Endif 
+
+RestArea(aArea)
+
+Return 
+
+/*/{Protheus.doc} editcol
+    (long_description)
+    @type  Static Function
+    @author user
+    @since 24/09/2023
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function editcol2(nLinha)
+
+Local nX := 1
+
+If lCheck .And. nLinha > nPrimMrk
+    For nX := nPrimMrk to nLinha
+        aVeiculos[nX,01] := .T.
+    Next nX 
+
+    lCheck := .F.
+    oCBox1:refresh()
+Else 
+    If aVeiculos[nLinha,01]
+        aVeiculos[nLinha,01] := .F.
+    else
+        aVeiculos[nLinha,01] := .t.
+    endif
+EndIf 
+
+oList1:refresh()
+oDlg1:refresh()
+
+Return
+
+/*/{Protheus.doc} variaslin(oList1:nAt)
+    (long_description)
+    @type  Static Function
+    @author user
+    @since 24/09/2023
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function variaslin(nLinha)
+
+If lCheck
+    nPrimMrk := nLinha
+Else 
+    nPrimMrk := 1
+ENDIF 
 
 Return

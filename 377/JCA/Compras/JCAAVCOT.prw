@@ -87,7 +87,7 @@ oGrp2      := TGroup():New( 108,004,212,560,"Anteriores Vencedoras",oDlg1,CLR_BL
 //cotacao item produto quant vlruni vlrtot fornece loja condpg frete filent dtentr flagwin
     oList2    := TCBrowse():New(116,008,545,090,, {'Cotação','Item','Produto','Qtd','Valor Unit.','Valor Total','Fornecedor','CondPagto','Frete','Filial','Entrega'},;
                                         {70,30,20,30,50,30,30,30},;
-                                        oGrp2,,,,{|| FHelp(oList2:nAt)},{|| /*editped(oList2:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
+                                        oGrp2,,,,{||/* FHelp(oList2:nAt) */},{|| /*editped(oList2:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
     oList2:SetArray(aList2)
     oList2:bLine := {||{aList2[oList2:nAt,01],; 
                         aList2[oList2:nAt,02],;
@@ -101,12 +101,12 @@ oGrp2      := TGroup():New( 108,004,212,560,"Anteriores Vencedoras",oDlg1,CLR_BL
                         aList2[oList2:nAt,10],;
                         aList2[oList2:nAt,11]}}
 
-oGrp3      := TGroup():New( 212,004,296,560,"Anteriores Derrotadas",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
+oGrp3      := TGroup():New( 212,004,296,560,"Atualizações no item da Proposta",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
     //oBrw3      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{220,008,292,556},,, oGrp3 ) 
-    oList3    := TCBrowse():New(220,008,545,070,, {'Cotação','Item','Produto','Qtd','Valor Unit.','Valor Total','Fornecedor','CondPagto','Frete','Filial','Entrega'},;
-                                        {70,30,20,30,50,30,30,30},;
-                                        oGrp3,,,,{|| FHelp(oList3:nAt)},{|| /*editped(oList3:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
-    oList3:SetArray(aList3)
+    //oList3    := TCBrowse():New(220,008,545,070,, {'Cotação','Item','Produto','Qtd','Valor Unit.','Valor Total','Fornecedor','CondPagto','Frete','Filial','Entrega'},;
+    //                                    {70,30,20,30,50,30,30,30},;
+    //                                    oGrp3,,,,{|| FHelp(oList3:nAt)},{|| /*editped(oList3:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
+    /*oList3:SetArray(aList3)
     oList3:bLine := {||{aList3[oList3:nAt,01],; 
                         aList3[oList3:nAt,02],;
                         aList3[oList3:nAt,03],;
@@ -117,7 +117,18 @@ oGrp3      := TGroup():New( 212,004,296,560,"Anteriores Derrotadas",oDlg1,CLR_BL
                         aList3[oList3:nAt,08],;
                         aList3[oList3:nAt,09],;
                         aList3[oList3:nAt,10],;
-                        aList3[oList3:nAt,11]}}
+                        aList3[oList3:nAt,11]}}*/
+
+    oList3    := TCBrowse():New(220,008,545,070,, {'Cotação','Item','Usuario','Data','Hora','Alteração'},;
+                                        {50,40,50,40,40,150},;
+                                        oGrp3,,,,{|| /*FHelp(oList3:nAt)*/},{|| /*editped(oList3:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
+    oList3:SetArray(aList3)
+    oList3:bLine := {||{aList3[oList3:nAt,01],; 
+                        aList3[oList3:nAt,02],;
+                        aList3[oList3:nAt,03],;
+                        aList3[oList3:nAt,04],; 
+                        aList3[oList3:nAt,05],;
+                        aList3[oList3:nAt,06]}}
 
 oBtn1      := TButton():New( 300,256,"Sair",oDlg1,{||oDlg1:end()},037,010,,,,.T.,,"",,,,.F. )
 
@@ -141,7 +152,7 @@ Static Function OrcAtu()
 
 Local cQuery
 
-cQuery := "SELECT C8_FORNOME,C8_NUM,C8_ITEM,C8_PRODUTO,B1_DESC,C8_QUANT,C8_PRECO,C8_TOTAL"
+cQuery := "SELECT C8_FORNOME,C8_NUM,C8_ITEM,C8_PRODUTO,B1_DESC,C8_QUANT,C8_PRECO,C8_TOTAL,C8_FORNECE,C8_LOJA"
 cQuery += " FROM "+RetSQLName("SC8")+" C8"
 cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_COD=C8_PRODUTO AND B1.D_E_L_E_T_=' '"
 cQuery += " WHERE C8.D_E_L_E_T_=' ' AND C8_NUM='"+SC8->C8_NUM+"'"
@@ -168,9 +179,42 @@ WHILE !EOF()
                   TRB->B1_DESC,;
                   TRB->C8_QUANT,;
                   TRB->C8_PRECO,;
-                  TRB->C8_TOTAL})
+                  TRB->C8_TOTAL,;
+                  TRB->C8_FORNECE,;
+                  TRB->C8_LOJA})
     Dbskip()
 EndDo 
+
+cQuery := "SELECT ZL_DOCTO,ZL_ITEM,ZL_USUARIO,ZL_DATA,ZL_HORA,ZL_OBS,ZL_CLIENTE,ZL_LOJA"
+cQuery += " FROM "+RetSQLName("SZL")+" ZL"
+cQuery += " WHERE ZL.D_E_L_E_T_=' '"
+cQuery += " AND ZL_FILIAL='"+xFilial("SZL")+"' AND ZL_DOCTO='"+SC8->C8_NUM+"' AND ZL_TABELA='SC8'"
+
+IF Select('TRB') > 0
+    dbSelectArea('TRB')
+    dbCloseArea()
+ENDIF
+
+MemoWrite("CONFATC01.SQL",cQuery)
+DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
+
+DbSelectArea("TRB")  
+
+WHILE !EOF() 
+    Aadd(aList3B,{  TRB->ZL_DOCTO,;
+                    TRB->ZL_ITEM,;
+                    TRB->ZL_USUARIO,;
+                    stod(TRB->ZL_DATA),;
+                    TRB->ZL_HORA,;
+                    TRB->ZL_OBS,;
+                    TRB->ZL_CLIENTE,;
+                    TRB->ZL_LOJA })
+    Dbskip()
+EndDo 
+
+If len(aList3B) < 1
+    Aadd(aList3B,{'','','','','','','','','','','','',''})
+EndIf 
 
 Return
 
@@ -235,7 +279,7 @@ For nCont := 1 to len(aProds)
                             TRB->ZPS_FILENT,;
                             stod(TRB->ZPS_DTENTR),;
                             TRB->ZPS_FLAGWI})
-        Else 
+        /*Else 
             Aadd(aList3B,{  TRB->ZPS_COTACA,;
                             TRB->ZPS_ITEMCO,;
                             TRB->ZPS_PRODUT,;
@@ -247,7 +291,7 @@ For nCont := 1 to len(aProds)
                             TRB->ZPS_FRETE,;
                             TRB->ZPS_FILENT,;
                             stod(TRB->ZPS_DTENTR),;
-                            TRB->ZPS_FLAGWI})
+                            TRB->ZPS_FLAGWI})*/
         EndIf
         Dbskip()
     EndDo
@@ -257,9 +301,7 @@ If len(aList2B) < 1
     Aadd(aList2B,{'','','','','','','','','','','','',''})
 EndIf 
 
-If len(aList3B) < 1
-    Aadd(aList3B,{'','','','','','','','','','','','',''})
-EndIf 
+
 
 Return
 
@@ -306,9 +348,17 @@ oList2:bLine := {||{aList2[oList2:nAt,01],;
                     aList2[oList2:nAt,10],;
                     aList2[oList2:nAt,11]}}
 
+/*
 For nCont := 1 to len(aList3B)
     nPos := Ascan(aList3,{|x| x[1]+x[2]+x[3]+x[7] == aList3B[nCont,01]+aList3B[nCont,02]+aList3B[nCont,03]+aList3B[nCont,07]})
     If Alltrim(aList3B[nCont,03]) == Alltrim(aList1[nLinha,04]) .And. nPos == 0
+        Aadd(aList3,aList3B[nCont])
+    EndIf
+Next nCont
+*/
+
+For nCont := 1 to len(aList3B)
+    If Alltrim(aList3B[nCont,01]) == Alltrim(aList1[nLinha,02]) .And. Alltrim(aList3B[nCont,02]) == Alltrim(aList1[nLinha,03]) .AND. Alltrim(aList3B[nCont,07]) == Alltrim(aList1[nLinha,09]) .AND. Alltrim(aList3B[nCont,08]) == Alltrim(aList1[nLinha,10]) 
         Aadd(aList3,aList3B[nCont])
     EndIf
 Next nCont
@@ -321,14 +371,9 @@ oList3:SetArray(aList3)
 oList3:bLine := {||{aList3[oList3:nAt,01],; 
                     aList3[oList3:nAt,02],;
                     aList3[oList3:nAt,03],;
-                    aList3[oList3:nAt,04],;
+                    aList3[oList3:nAt,04],; 
                     aList3[oList3:nAt,05],;
-                    aList3[oList3:nAt,06],;
-                    aList3[oList3:nAt,07],;
-                    aList3[oList3:nAt,08],;
-                    aList3[oList3:nAt,09],;
-                    aList3[oList3:nAt,10],;
-                    aList3[oList3:nAt,11]}}
+                    aList3[oList3:nAt,06]}}
 
 oList2:refresh()
 oList3:refresh()
