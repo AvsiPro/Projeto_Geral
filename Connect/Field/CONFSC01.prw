@@ -511,11 +511,14 @@ Static Function Busca(cCond,cQuinze,cLocacS)
 	For nCont := 1 to len(aAux3)         
 		//Buscando os pedidos faturados
 		cQuery := "SELECT C6_NUM,C5_EMISSAO,C6_NOTA,C6_VALOR,"
-		cQuery += " C6_DESCRI,C6_ITEM,C6_QTDVEN,C6_SERIE,C6_FILIAL"
+		cQuery += " C6_DESCRI,C6_ITEM,C6_QTDVEN,C6_SERIE,C6_FILIAL,"
+		cQuery += " ISNULL(CAST(CAST(Z08_URLFAT AS VARBINARY(8000)) AS VARCHAR(8000)),'') AS URL"
 		cQuery += " FROM "+RetSQLName("SC6")+" C6"
 		cQuery += " INNER JOIN "+RetSQLName("SC5")+" C5 ON C5_FILIAL=C6_FILIAL "
 		cQuery += " AND C5_NUM=C6_NUM AND C5_CLIENTE=C6_CLI AND C5.D_E_L_E_T_=' '"
 		cQuery += " AND C5_XTPPED IN('F','L','V','Q')"
+		cQuery += " LEFT JOIN "+RetSQLName("Z08")+" Z08 ON Z08_FILIAL='"+xFilial("Z08")+"' AND Z08_PEDIDO=C5_NUM AND Z08_NOTA=C5_NOTA AND Z08.D_E_L_E_T_=' '"
+		cQuery += " AND Z08_URLFAT<>' ' "
 		cQuery += " WHERE C6_FILIAL BETWEEN ' ' AND 'ZZ'" //'"+xFilial("SC6")+"'"
 		//cQuery += " AND C6_CONTRT='"+aAux3[nCont,01]+"' "
 		cQuery += " AND C6_CLI='"+aAux3[nCont,02]+"' AND C6.D_E_L_E_T_=''"
@@ -539,7 +542,8 @@ Static Function Busca(cCond,cQuinze,cLocacS)
 								aAux3[nCont,01],;
 								aAux3[nCont,02],;
 								aAux3[nCont,03],;
-								TRB->C6_FILIAL+Alltrim(TRB->C6_SERIE)})
+								TRB->C6_FILIAL+Alltrim(TRB->C6_SERIE),;
+								TRB->URL})
 			Else
 				aList3b[Ascan(aList3b,{|x| x[1] == TRB->C6_NUM}),03] += TRB->C6_VALOR
 			EndIF
@@ -595,7 +599,8 @@ Static Function Busca(cCond,cQuinze,cLocacS)
 			EndIf 
 
 			cQuery += "SELECT Z08_COD,Z08_SEQUEN,Z08_SELECA,Z08_PRODUT,B1_DESC,Z08_QTDLID,"
-			cQuery += " Z08_DATA,Z08_CONTRT,Z08_FATURA,Z08.R_E_C_N_O_ AS RECZ08,Z08_PEDIDO,Z08_URLFAT" 
+			cQuery += " Z08_DATA,Z08_CONTRT,Z08_FATURA,Z08.R_E_C_N_O_ AS RECZ08,Z08_PEDIDO,"
+			cQuery += " ISNULL(CAST(CAST(Z08_URLFAT AS VARBINARY(8000)) AS VARCHAR(8000)),'') AS URL" 
 			cQuery += "  FROM "+RetSQLname("Z08")+" Z08" 
 			cQuery += "  LEFT JOIN "+RetSQLname("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"'"
 			cQuery += "   AND B1_COD=Z08_PRODUT AND B1.D_E_L_E_T_=' ' 
@@ -671,7 +676,7 @@ Static Function Busca(cCond,cQuinze,cLocacS)
 
 					Aadd(aAuxL5,TRB->RECZ08)  //16
 					Aadd(aAuxL5,TRB->Z08_PEDIDO)  //17
-					Aadd(aAuxL5,TRB->Z08_URLFAT)  //18
+					Aadd(aAuxL5,TRB->URL)  //18
 
 				Else 
 					If TRB->Z08_DATA < aAux5[nPos,04] .OR. Empty(aAux5[nPos,04]) //TRB->Z08_QTDLID < aAux5[nPos,05]
@@ -1293,7 +1298,9 @@ If nOpc == 1
 						aList[nPosL1,03],;
 						aList[nPosL1,04],;
 						aList3b[nX,08],;
-						''})
+						'',;
+						'',;
+						aList3b[nX,09]})
 		EndIf
 	Next nX 
 else
@@ -1325,7 +1332,8 @@ oBoleto    := MSDialog():New( 092,232,660,1243,"Nota/Boleto por Email",,,.F.,,,,
 	oBotao4    := TButton():New( 260,098,"Marcar/Desm. Todos",oBoleto,{||inverte(2)},037,012,,,,.T.,,"",,,,.F. )
 	oBotao2    := TButton():New( 260,179,"Enviar",oBoleto,{||Processa({|| bolmail()},"Processando...") },037,012,,,,.T.,,"",,,,.F. )
 	oBotao3    := TButton():New( 260,300,"Sair",oBoleto,{||oBoleto:end()},037,012,,,,.T.,,"",,,,.F. )
-
+	oBotao5    := TButton():New( 260,398,"URL Faturam.",oBoleto,{|| urlfat(aEmail[oEmail:nAt,14])},037,012,,,,.T.,,"",,,,.F. )
+	
 oBoleto:Activate(,,,.T.)
 
 RestArea(aArea)
@@ -1777,6 +1785,7 @@ If nOpcG == 0
 						//Msgalert("Pedido gerado de faturamento de doses "+SC5->C5_NUM)
 						DbSelectArea("Z08")
 						DbSetOrder(3)
+						cUrlfat := ''
 						For nCont := 1 to len(aList5B)
 							If aList5B[nCont,01] == aList[nCntG,01] .And. len(aList5b[nCont]) > 4
 								For nJ := 5 to len(aList5b[nCont])
@@ -1792,6 +1801,7 @@ If nOpcG == 0
 										Z08->(MsUnlock())
 										aList5b[nCont,nJ,12] := 'S'
 										Dbskip() 
+										cUrlFat := aList5b[nCont,nJ,18]
 									EndIf 
 								Next nJ
 							EndIf 
@@ -1804,7 +1814,8 @@ If nOpcG == 0
 										aList[nCntG,01],;
 										aList[nCntG,03],;
 										aList[nCntG,04],;
-										SC5->C5_FILIAL})
+										SC5->C5_FILIAL,;
+										cUrlFat})
 
 						Aadd(aList3,{	SC5->C5_NUM,;
 										SC5->C5_EMISSAO,;
@@ -1813,7 +1824,8 @@ If nOpcG == 0
 										aList[nCntG,01],;
 										aList[nCntG,03],;
 										aList[nCntG,04],;
-										SC5->C5_FILIAL})
+										SC5->C5_FILIAL,;
+										cUrlFat})
 
 						For nCont := 1 to len(aList5B)
 							If aList5B[nCont,01] == aList[nCntG,01] .And. len(aList5b[nCont]) > 4
@@ -1900,7 +1912,8 @@ If nOpcG == 0
 										aList[nCntG,01],;
 										aList[nCntG,03],;
 										aList[nCntG,04],;
-										SC5->C5_FILIAL})
+										SC5->C5_FILIAL,;
+										''})
 										
 						Aadd(aList3,{	SC5->C5_NUM,;
 										SC5->C5_EMISSAO,;
@@ -1909,7 +1922,8 @@ If nOpcG == 0
 										aList[nCntG,01],;
 										aList[nCntG,03],;
 										aList[nCntG,04],;
-										SC5->C5_FILIAL})
+										SC5->C5_FILIAL,;
+										''})
 					aLocac := {}
 					
 				ENDIF    
@@ -2090,6 +2104,7 @@ If len(aItens) > 0
 				Msgalert("Pedido gerado de faturamento de doses "+SC5->C5_NUM)
 				DbSelectArea("Z08")
 				DbSetOrder(3)
+				cUrlFat := ''
 				For nCont := 1 to len(aList5B)
 					If aList5B[nCont,01] == aList[oList:nAt,01] .And. len(aList5b[nCont]) > 4
 						For nJ := 5 to len(aList5b[nCont])
@@ -2105,6 +2120,7 @@ If len(aItens) > 0
 								Z08->(MsUnlock())
 								aList5b[nCont,nJ,12] := 'S'
 								Dbskip() 
+								cUrlFat := aList5b[nCont,nJ,18] 
 							EndIf 
 						Next nJ
 					EndIf 
@@ -2117,7 +2133,8 @@ If len(aItens) > 0
 								aList[oList:nAt,01],;
 								aList[oList:nAt,03],;
 								aList[oList:nAt,04],;
-								SC5->C5_FILIAL})
+								SC5->C5_FILIAL,;
+								cUrlFat})
 
 				Aadd(aList3,{	SC5->C5_NUM,;
 								SC5->C5_EMISSAO,;
@@ -2126,7 +2143,8 @@ If len(aItens) > 0
 								aList[oList:nAt,01],;
 								aList[oList:nAt,03],;
 								aList[oList:nAt,04],;
-								SC5->C5_FILIAL})
+								SC5->C5_FILIAL,;
+								cUrlFat})
 
 				For nCont := 1 to len(aList5B)
 					If aList5B[nCont,01] == aList[oList:nAt,01] .And. len(aList5b[nCont]) > 4
@@ -2210,7 +2228,8 @@ If len(aLocac) > 0 .AND. lLoc
 								aList[oList:nAt,01],;
 								aList[oList:nAt,03],;
 								aList[oList:nAt,04],;
-								SC5->C5_FILIAL})
+								SC5->C5_FILIAL,;
+								''})
 								
 				Aadd(aList3,{	SC5->C5_NUM,;
 								SC5->C5_EMISSAO,;
@@ -2219,7 +2238,8 @@ If len(aLocac) > 0 .AND. lLoc
 								aList[oList:nAt,01],;
 								aList[oList:nAt,03],;
 								aList[oList:nAt,04],;
-								SC5->C5_FILIAL})
+								SC5->C5_FILIAL,;
+								''})
 			
 		ENDIF    
 	EndIf
@@ -2394,6 +2414,7 @@ ELSE
 	Msgalert("Pedido gerado de faturamento de doses "+SC5->C5_NUM)
 	DbSelectArea("Z08")
 	DbSetOrder(3)
+	cUrlFat := ''
 	For nCont := 1 to len(aList5B)
 		If aList5B[nCont,01] == aList[oList:nAt,01] .And. len(aList5b[nCont]) > 4
 			For nJ := 5 to len(aList5b[nCont])
@@ -2410,6 +2431,7 @@ ELSE
 						Z08->(MsUnlock())
 						aList5b[nCont,nJ,12] := 'S'
 						Dbskip()
+						cUrlFat := aList5b[nCont,nJ,18]
 					//EndDo 
 				EndIf 
 			Next nJ
@@ -2423,7 +2445,8 @@ ELSE
 					aList[oList:nAt,01],;
 					aList[oList:nAt,03],;
 					aList[oList:nAt,04],;
-					SC5->C5_FILIAL})
+					SC5->C5_FILIAL,;
+					cUrlFat})
 					
 	Aadd(aList3,{	SC5->C5_NUM,;
 					SC5->C5_EMISSAO,;
@@ -2432,7 +2455,8 @@ ELSE
 					aList[oList:nAt,01],;
 					aList[oList:nAt,03],;
 					aList[oList:nAt,04],;
-					SC5->C5_FILIAL})
+					SC5->C5_FILIAL,;
+					cUrlFat})
 
 	For nCont := 1 to len(aList5B)
 		If aList5B[nCont,01] == aList[oList:nAt,01] .And. len(aList5b[nCont]) > 4 .AND. Alltrim(aList5B[nCont,02]) == Alltrim(cAtFat)
@@ -2640,6 +2664,16 @@ For nCont := 1 to len(aEmail)
 		Aadd(aArquivos,{cFile2,''})
 		Aadd(aArquivos,{cFile3,''})
 		Aadd(aArquivos,{cFile4,''})
+		
+		cBody     :=  corpo() 
+/*
+		If !Empty(aEmail[nCont,14])
+			cBody :=  strtran(cBody,"URLFATURAMENTO","URL Faturamento "+aEmail[nCont,14])
+		else
+			cBody :=  strtran(cBody,"URLFATURAMENTO","")
+		ENDIF
+*/
+		cBody :=  strtran(cBody,"URLFATURAMENTO","")
 
 		//U_CONMAIL(cRemete,cDestino,cSubject,cBody,aArquivos,.T.) 
 		lEmail := U_EnviarEmail(cDestino,cSubject,cBody,cFile1+','+cFile2+','+cFile3+','+cFile4,.f.)  
@@ -2668,19 +2702,15 @@ Static Function corpo
 Local cRet := ""
 
 cRet := If(val(substr(time(),1,2))<12 .and.val(substr(time(),1,2))>=0,'Bom dia','Boa tarde' )+'<br><br>'
-/*
-If cQuinze == "1"
-	cRet += "Olá, você está recebendo a fatura referente a 1ª quinzena de "+MesExtenso(ddatabase)+" de "+cvaltochar(year(ddatabase))+" da sua máquina de café. Em caso de dúvidas, basta entrar em contato conosco."
-Else 
-	cRet += "Olá, você está recebendo a fatura referente a 2ª quinzena de "+MesExtenso(ddatabase)+" de "+cvaltochar(year(ddatabase))+" da sua máquina de café. Em caso de dúvidas, basta entrar em contato conosco."
-EndIF 
-*/
+
 
 cRet += "Prezados(as),<br><br>"
 cRet += "Você está recebendo em anexo a fatura referente ao consumo de doses ou locação de sua(s) máquina(s) de café.<br><br>"
 cRet += "Em caso de dúvidas, basta entrar em contato conosco.<br><br>"
 
-cRet += "Atenciosamente,<br><br>"
+cRet += "URLFATURAMENTO"
+
+cRet += "<br><br>Atenciosamente,<br><br>"
 
 cRet += "Connect Vending Comércio de Máquinas Automatizadas Ltda.<br><br>"
 
@@ -3148,7 +3178,8 @@ If !ParamBox(aPergs ,"Parâmetros ",aRet)
 	Return
 EndIF 
 
-cQuery := "SELECT F2_DOC,A1_NOME,A1_NREDUZ,F2_COND,F2_CLIENTE,F2_LOJA,F2_FILIAL,F2_SERIE,C5_XTPPED,A1_EMAIL,
+cQuery := "SELECT F2_DOC,A1_NOME,A1_NREDUZ,F2_COND,F2_CLIENTE,F2_LOJA,F2_FILIAL,F2_SERIE,C5_XTPPED,A1_EMAIL,"
+cQuery += " ISNULL(CAST(CAST(Z08_URLFAT AS VARBINARY(8000)) AS VARCHAR(8000)),'') AS URL,"
 cQuery += " MAX(D2_PEDIDO) AS C5_NUM,"
 cQuery += " MAX(C6_CONTRT) AS CONTRT"
 cQuery += " FROM "+RetSQLName("SF2")+" F2
@@ -3156,6 +3187,7 @@ cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"
 cQuery += " INNER JOIN "+RetSQLName("SD2")+" D2 ON D2_FILIAL=F2_FILIAL AND D2_DOC=F2_DOC AND D2_SERIE=F2_SERIE AND D2_CLIENTE=F2_CLIENTE AND D2_LOJA=F2_LOJA AND D2.D_E_L_E_T_=' '"
 cQuery += " INNER JOIN "+RetSQLName("SC6")+" C6 ON C6_FILIAL=D2_FILIAL AND C6_NUM=D2_PEDIDO AND C6_ITEM=D2_ITEMPV AND C6.D_E_L_E_T_=' '"
 cQuery += " INNER JOIN "+RetSQLName("SC5")+" C5 ON C5_FILIAL=C6_FILIAL AND C5_NUM=C6_NUM AND C5_CLIENTE=C6_CLI AND C5_LOJACLI=C6_LOJA AND C5.D_E_L_E_T_=' ' AND C5_XTPPED NOT IN('A')"
+cQuery += " LEFT JOIN "+RetSQLName("Z08")+" Z08 ON Z08_FILIAL='"+xFilial("Z08")+"' AND Z08_PEDIDO=C5_NUM AND Z08_NOTA=F2_DOC AND Z08.D_E_L_E_T_=' '"
 cQuery += " WHERE F2.D_E_L_E_T_=' '"
 cQuery += " AND F2_FILIAL BETWEEN '"+aRet[1]+"' AND '"+aRet[2]+"'" 
 cQuery += " AND F2_EMISSAO BETWEEN '"+dtos(aRet[3])+"' AND '"+dtos(aRet[4])+"'"
@@ -3165,7 +3197,7 @@ If aRet[7] == "2"
 	cQuery += " AND F2_SERIE LIKE 'L%'"
 EndIf 
 
-cQuery += " GROUP BY F2_DOC,A1_NOME,A1_NREDUZ,F2_COND,F2_CLIENTE,F2_LOJA,F2_FILIAL,F2_SERIE,C5_XTPPED,A1_EMAIL"
+cQuery += " GROUP BY F2_DOC,A1_NOME,A1_NREDUZ,F2_COND,F2_CLIENTE,F2_LOJA,F2_FILIAL,F2_SERIE,C5_XTPPED,A1_EMAIL,Z08_URLFAT"
 
 If Select("TRB") > 0
 	dbSelectArea("TRB")
@@ -3204,12 +3236,39 @@ filial+serie	-	filial faturamento + serie da nota
 					TRB->F2_LOJA,;
 					TRB->F2_FILIAL+TRB->F2_SERIE,;
 					'',;
-					TRB->C5_XTPPED})
+					TRB->C5_XTPPED,;
+					TRB->URL})
 	Dbskip()
 ENDDO
 
 If len(aDados)
 	NFBOL(2)
 EndIf 
+
+Return
+
+/*/{Protheus.doc} urlfat
+	(long_description)
+	@type  Static Function
+	@author user
+	@since 26/09/2023
+	@version version
+	@param param_name, param_type, param_descr
+	@return return_var, return_type, return_description
+	@example
+	(examples)
+	@see (links_or_references)
+/*/
+Static Function urlfat(curl)
+
+SetPrvt("oUrl","oGrp1","oMGet1","oBtn1")
+
+oUrl       := MSDialog():New( 092,232,452,663,"Url de Faturamento",,,.F.,,,,,,.T.,,,.T. )
+oGrp1      := TGroup():New( 004,004,156,204,"",oUrl,CLR_BLACK,CLR_WHITE,.T.,.F. )
+oMGet1     := TMultiGet():New( 012,008,{|u| If(PCount()>0,curl:=u,curl) },oGrp1,192,140,,,CLR_BLACK,CLR_WHITE,,.T.,"",,,.F.,.F.,.F.,,,.F.,,  )
+oMGet1:Disable()
+oBtn1      := TButton():New( 160,084,"Sair",oUrl,{|| oUrl:end()},037,008,,,,.T.,,"",,,,.F. )
+
+oUrl:Activate(,,,.T.)
 
 Return

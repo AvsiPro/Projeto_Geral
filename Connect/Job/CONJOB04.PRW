@@ -60,7 +60,7 @@ user function CONJOB4a(cCodEmp,cCodFil)
 	Aadd(aArquivos,{"\system\LGRL01.png",'Content-ID: <ID_LGRL01,png>'})
 
 	// Validação para 03 dias 22/02/2023 alterado para 1
-
+/*
 	IF DOW(dDataBase) == 2
 		dDtFour := datavalida(dDataBase+1,.T.) //Condição para Segunda
 	ELSEIF DOW(dDataBase) == 3
@@ -72,6 +72,8 @@ user function CONJOB4a(cCodEmp,cCodFil)
 	ELSE
 		dDtFour := datavalida(dDataBase+1,.T.)//+2
 	ENDIF
+*/
+	dDtFour := datavalida(dDataBase+3,.T.)
 
 	cQuery := "SELECT E1_FILIAL,E1_PREFIXO,E1_NUM,E1_TIPO,E1_NATUREZ,ED_DESCRIC,E1_FILORIG,"
 	cQuery += " E1_CLIENTE,E1_LOJA,A1_NOME,E1_VENCREA,E1_VALOR,A1_EMAIL,E1_PARCELA,A1_CGC,"
@@ -102,7 +104,7 @@ user function CONJOB4a(cCodEmp,cCodFil)
 
 	While !EOF()
 		cDestino 	:=	Alltrim(TRB->A1_EMAIL)
-		cDestino 	:=	"hayewok628@jontra.com" 
+		cDestino 	:=	"alexandre.venancio@avsipro.com.br;gustavo@connectvending.com.br" 
 		MV_PAR01	:=	TRB->E1_PREFIXO
 		MV_PAR02	:=	TRB->E1_NUM
 		MV_PAR03	:=	TRB->E1_PARCELA
@@ -144,7 +146,7 @@ user function CONJOB4a(cCodEmp,cCodFil)
 
 	cBody := AvisFin(cSubject,{})
 
-	cDestino := "alexandre.venancio@avsipro.com.br"
+	cDestino := "alexandre.venancio@avsipro.com.br;gustavo@connectvending.com.br"
 
 	//U_robmail(cRemete,cDestino,cSubject+" "+cvaltochar(ddatabase),cBody,{},.T.)
 	U_EnviarEmail(cDestino,cSubject+" "+cvaltochar(ddatabase),cBody,'',.f.)
@@ -592,7 +594,7 @@ Static Function Aviso_1(cBoleto)
 	cHtml += "  <tr>"
 	cHtml += "    <td>Prezado (a), Cliente<br>"
 	cHtml += Alltrim(TRB->A1_NOME)+" Cnpj "+Transform(TRB->A1_CGC,'@R 99.999.999/9999-99')+"<br>"
-	cHtml += "Lembramos do vencimento de seu boleto bancário do dia ( "+cvaltochar(stod(TRB->E1_VENCREA))+" ) "+IF(!Empty(cBoleto),", se encontra em anexo.","")+"<br>"
+	cHtml += "Lembramos do vencimento de sua nota fiscal para o dia ( "+cvaltochar(stod(TRB->E1_VENCREA))+" ) "+IF(!Empty(cBoleto),", se encontra em anexo.","")+"<br>"
 	cHtml += "Essa é uma mensagem automática, caso já tenha efetuado o pagamento, por favor desconsiderar o e-mail</td>"
 	cHtml += "  </tr><br>"
 

@@ -30,9 +30,10 @@ Local aMaqSVM          :=   {}
 Private cArqHTML
 Private cPathHTML
 Private aList8B        :=   {}
-PRIVATE cToken         :=    "yVXxnxgOExcIaBQOQ9CFgK0cLgX22dJct7y85WXW" //Token Connect Vending
-PRIVATE oRestClient    :=    FWRest():New("http://vmpay.vertitecnologia.com.br")
-PRIVATE aHeader        :=    {}
+PRIVATE cToken         :=   "yVXxnxgOExcIaBQOQ9CFgK0cLgX22dJct7y85WXW" //Token Connect Vending
+PRIVATE oRestClient    :=   FWRest():New("http://vmpay.vertitecnologia.com.br")
+PRIVATE aHeader        :=   {}
+Private aClientes      :=   {}
 
 IF Select("SM0") == 0
     RpcSetType(3)
@@ -45,7 +46,7 @@ cPathHTML   := GetMV("MV_WFDIR")
 
 dDiaExe := strzero(day(ddatabase),2)
 
-cQuery := "SELECT AAM_CONTRT,AAM_XDIALT,AAN_XCBASE,AAM_CODCLI,AAM_LOJA,AAN_ITEM,AAN_CODPRO,A1_TELEX"
+cQuery := "SELECT AAM_CONTRT,AAM_XDIALT,AAN_XCBASE,AAM_CODCLI,AAM_LOJA,AAN_ITEM,AAN_CODPRO,A1_TELEX,A1_CGC"
 cQuery += " FROM "+RetSQLName("AAN")+" AAN"
 cQuery += " INNER JOIN "+RetSQLName("AAM")+" AAM ON AAM_FILIAL=AAN_FILIAL AND AAM_CONTRT=AAN_CONTRT"
 cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_COD=AAM_CODCLI AND A1_LOJA=AAM_LOJA AND A1.D_E_L_E_T_=' '"
@@ -75,12 +76,14 @@ While !EOF()
                 "",;                //08
                 "",;                //09
                 "",;                //10
-                TRB->A1_TELEX})     //11
+                TRB->A1_TELEX,;     //11
+                TRB->A1_CGC})       //12
     DbSkip()
 EndDo 
 
 If len(aAux) > 0
-
+    //Busca Clientes
+    Clientes()
     //Busca Maquinas
     Maquinas()
 
@@ -113,18 +116,19 @@ If len(aAux) > 0
         //&vend[groups][]=machine
         //&vend[groups][]=good
         nPosMaq := Ascan(aHeader,{|x| x[2] == Alltrim(aAux[nX,03])})
+        nPosCli := Ascan(aClientes,{|x| x[1] == Alltrim(aAux[nX,12])})
 
-        If nPosMaq > 0
+        If nPosMaq > 0 .And. nPosCli > 0
             aAux[nX,08] := "https://vmpay.vertitecnologia.com.br/connect_vending_comercio_de_ma/c/"
             //aAux[nX,08] += "%INSTALLATION%"
             //aAux[nX,08] += Alltrim(aHeader[nPosMaq,03])
-            aAux[nX,08] += Alltrim(aAux[nX,11])
+            aAux[nX,08] += cvaltochar(aClientes[nPosCli,02]) //Alltrim(aAux[nX,11])
             aAux[nX,08] += "/reports/vends?"
             aAux[nX,08] += "vend[occurred_at]=custom&vend[occurred_at_end]="+cvaltochar(dLeiFim)+"%20"+cHrf
             aAux[nX,08] += "&vend[occurred_at_start]="+cvaltochar(dUltLei)+"%20"+cHri
             aAux[nX,08] += "&vend[groups][]=client"
-            aAux[nX,08] += "&vend[groups][]=location
-            aAux[nX,08] += "&vend[groups][]=machine
+            //aAux[nX,08] += "&vend[groups][]=location
+            //aAux[nX,08] += "&vend[groups][]=machine
             aAux[nX,08] += "&vend[groups][]=good
             
 
@@ -484,6 +488,42 @@ ENDIF
 
 Return
 
+/*/{Protheus.doc} Clientes
+    (long_description)
+    @type  Static Function
+    @author user
+    @since 26/09/2023
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function Clientes()
+    
+LOCAL nX
+Local oJsonBody
+
+oRestClient:setPath("/api/v1/clients?access_token="+cToken) 
+
+IF oRestClient:Get(aHeader)
+    cValor := oRestClient:GetResult("GET")
+
+    cValor := DecodeUTF8(cValor, "cp1252")
+
+    FWJsonDeserialize(cValor,@oJsonBody)
+
+    For nX := 1 to len(oJsonBody)
+        If AttIsMemberOf(oJsonBody[nX] , "CNPJ") 
+            Aadd(aClientes,{cvaltochar(oJsonBody[nX]:CNPJ),;
+                            oJsonBody[nX]:ID  })
+        EndIf
+    Next nX 
+
+ENDIF
+
+Return
 
 /*
 ‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹

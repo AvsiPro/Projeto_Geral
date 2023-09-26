@@ -109,13 +109,14 @@ User Function CONGEN03(cNumNF,cSerNF,cPathNF,cCNPJNF,cFilNf)
 	
 
     cQuery := "SELECT DISTINCT D2_PEDIDO,D2_PRCVEN,D2_TOTAL,F2_EMISSAO,F2_DOC,F2_EMISSAO,"
-	cQuery += " C5_XTPPED,C6_PEDCLI,A1_NOME,A1_CGC,A1_END,A1_NREDUZ,B1_DESC"
+	cQuery += " C5_XTPPED,C6_PEDCLI,A1_NOME,A1_CGC,A1_END,A1_NREDUZ,B1_DESC,C5_FILIAL,E1_VENCREA"
 	cQuery += " FROM "+RetSQLName("SF2")+" F2 "
 	cQuery += " INNER JOIN "+RetSQLName("SD2")+" D2 ON D2_FILIAL=F2_FILIAL AND D2_DOC=F2_DOC AND D2_SERIE=F2_SERIE AND D2.D_E_L_E_T_=' '"
 	cQuery += " INNER JOIN "+RetSQLName("SC5")+" C5 ON C5_FILIAL=D2_FILIAL AND C5_NUM=D2_PEDIDO AND C5_CLIENTE=F2_CLIENTE AND C5_LOJACLI=F2_LOJA AND C5.D_E_L_E_T_=' '"
 	cQuery += " INNER JOIN "+RetSQLName("SC6")+" C6 ON C6_FILIAL=D2_FILIAL AND C6_NUM=D2_PEDIDO AND C6_ITEM=D2_ITEMPV AND C6.D_E_L_E_T_=' '"
 	cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_COD=F2_CLIENTE AND A1_LOJA=F2_LOJA AND A1.D_E_L_E_T_=' '"
 	cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD=D2_COD AND B1.D_E_L_E_T_=' '"
+	cQuery += " LEFT JOIN "+RetSQLName("SE1")+" E1 ON E1_FILIAL='"+xFilial("SE1")+"' AND E1_PREFIXO=F2_SERIE AND E1_NUM=F2_DOC AND E1_CLIENTE=F2_CLIENTE AND E1_LOJA=F2_LOJA AND E1.D_E_L_E_T_=' '"
 	cQuery += " WHERE F2_FILIAL BETWEEN '"+cFilD+"' AND '"+cFilA+"'"
 	cQuery += " AND F2_SERIE IN("+cSerie+")"
 	cQuery += " AND F2.D_E_L_E_T_=' '"
@@ -144,7 +145,9 @@ User Function CONGEN03(cNumNF,cSerNF,cPathNF,cCNPJNF,cFilNf)
 					TRB->A1_NREDUZ,;	//11
 					TRB->F2_DOC,;		//12
 					TRB->B1_DESC,;		//13
-					TRB->C5_XTPPED})	//14
+					TRB->C5_XTPPED,;	//14
+					TRB->C5_FILIAL,;	//15
+					TRB->E1_VENCREA})	//16
 				
 		lOK := .T.
 		DBSKIP()
@@ -176,8 +179,13 @@ User Function CONGEN03(cNumNF,cSerNF,cPathNF,cCNPJNF,cFilNf)
 			DBSKIP()
 		end
 
+		CFILANT := aAux[nCont,15]
+
+		aSM0Data2 := FWSM0Util():GetSM0Data()
+
 		cNum := cvaltochar(val(aAux[nCont,12]))
 		cEmissao := dtoc(stod(aAux[nCont,2]))
+		cVencto  := dtoc(stod(aAux[nCont,16]))
 		cValor := "R$ " + Transform(nValor, "@E 999,999.99")
 		cValor1 := Transform(nValor, "@E 999,999.99")
 		cNota := aAux[nCont,5]
@@ -188,7 +196,10 @@ User Function CONGEN03(cNumNF,cSerNF,cPathNF,cCNPJNF,cFilNf)
 		cCnpj := Transform(val(aAux[nCont,9]), "@E 99,999,999/9999-99")
 		cPeriodo := If(aAux[nCont,14] <> "G","Locação de máquina referente mês " + SubStr(aAux[nCont,6],5,2) + "/" + SubStr(aAux[nCont,6],3,2),"")
 		cPonto := aAux[nCont,13]
-		cEmitente := SM0->M0_NOMECOM + " " + Transform(val(SM0->M0_CGC), "@E 99,999,999/9999-99")
+
+		cCGC := aSM0Data2[ASCAN(aSM0Data2,{|X| X[1] == "M0_CGC"}),02]
+		cEmitente := SM0->M0_NOMECOM + " " + Transform(cCGC, "@R 99.999.999/9999-99")
+
 		cEnd :=  aAux[nCont,10]
 		cEndEmit := SM0->M0_ENDENT
 
@@ -262,6 +273,8 @@ User Function CONGEN03(cNumNF,cSerNF,cPathNF,cCNPJNF,cFilNf)
 		oPrinter:Box( 400, 5, 400, 590,"-1" )
 		oPrinter:Say( 360, 10,"DATA DE EMISSÃO", oF10FFF,, rgb(102, 102, 102)/*Cor*/ )
 		oPrinter:Say( 375, 10,cEmissao, oF13FFF,, /*Cor*/ )
+		oPrinter:Say( 360, 180,"DATA DE VENCTO", oF10FFF,, rgb(102, 102, 102)/*Cor*/ )
+		oPrinter:Say( 375, 180,cVencto, oF13FFF,, /*Cor*/ )
 		oPrinter:Say( 360, 310,"ASSINATURA", oF10FFF,, rgb(102, 102, 102)/*Cor*/ )
 
 		nLinha := 390
