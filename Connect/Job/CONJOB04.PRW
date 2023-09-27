@@ -77,7 +77,7 @@ user function CONJOB4a(cCodEmp,cCodFil)
 
 	cQuery := "SELECT E1_FILIAL,E1_PREFIXO,E1_NUM,E1_TIPO,E1_NATUREZ,ED_DESCRIC,E1_FILORIG,"
 	cQuery += " E1_CLIENTE,E1_LOJA,A1_NOME,E1_VENCREA,E1_VALOR,A1_EMAIL,E1_PARCELA,A1_CGC,"
-	cQuery += " E1_PORTADO,E1.R_E_C_N_O_ AS REGE1,E1_NUMBCO,E1_CODBAR,E1_CODDIG"
+	cQuery += " E1_PORTADO,E1.R_E_C_N_O_ AS REGE1,E1_NUMBCO,E1_CODBAR,E1_CODDIG,A1_XBOL"
 	cQuery += " FROM "+RetSQLName("SE1")+" E1"
 	cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_COD=E1_CLIENTE AND A1_LOJA=E1_LOJA AND A1.D_E_L_E_T_=''"
 	cQuery += " INNER JOIN "+RetSQLName("SED")+" ED ON ED_CODIGO=E1_NATUREZ AND ED.D_E_L_E_T_=''"
@@ -104,7 +104,7 @@ user function CONJOB4a(cCodEmp,cCodFil)
 
 	While !EOF()
 		cDestino 	:=	Alltrim(TRB->A1_EMAIL)
-		cDestino 	:=	"alexandre.venancio@avsipro.com.br;gustavo@connectvending.com.br" 
+		//cDestino 	:=	"alexandre.venancio@avsipro.com.br;gustavo@connectvending.com.br" 
 		MV_PAR01	:=	TRB->E1_PREFIXO
 		MV_PAR02	:=	TRB->E1_NUM
 		MV_PAR03	:=	TRB->E1_PARCELA
@@ -123,7 +123,7 @@ user function CONJOB4a(cCodEmp,cCodFil)
 			EndIf
 		ENDIF*/
 
-		cBody 		:=	Aviso_1(TRB->E1_CODDIG)
+		cBody 		:=	Aviso_1(TRB->E1_CODDIG,TRB->A1_XBOL)
 
 		aArquivos 	:=  {}
 
@@ -146,7 +146,7 @@ user function CONJOB4a(cCodEmp,cCodFil)
 
 	cBody := AvisFin(cSubject,{})
 
-	cDestino := "alexandre.venancio@avsipro.com.br;gustavo@connectvending.com.br"
+	cDestino := "alexandre.venancio@avsipro.com.br;gustavo@connectvending.com.br;cobrancas@connectvending.com.br;financeiro@connectvending.com.br"
 
 	//U_robmail(cRemete,cDestino,cSubject+" "+cvaltochar(ddatabase),cBody,{},.T.)
 	U_EnviarEmail(cDestino,cSubject+" "+cvaltochar(ddatabase),cBody,'',.f.)
@@ -568,7 +568,7 @@ Return
 ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
 */
 
-Static Function Aviso_1(cBoleto)
+Static Function Aviso_1(cBoleto,cGerBol)
 
 	Local aArea	:=	GetArea()
 
@@ -617,7 +617,25 @@ Static Function Aviso_1(cBoleto)
 		cHtml += " </tr>"
 
 		cHtml += "<br><br>"
-		
+	else
+		cHtml += " <tr>"
+		cHtml += "  <td>Para agilizar o processo, estamos incluindo os dados bancários abaixo:</td>"
+		cHtml += " </tr>"
+		cHtml += " <tr>"
+		cHtml += "  <td>Itau Unibanco</td>"
+		cHtml += " </tr>"
+		cHtml += " <tr>"
+		cHtml += "  <td>Ag. 0048</td>"
+		cHtml += " </tr>"
+		cHtml += " <tr>"
+		cHtml += "  <td>CC. 53663-5</td>"
+		cHtml += " </tr>"
+		cHtml += " <tr>"
+		cHtml += "  <td>Razão Social: CONNECT VENDING COMERCIO DE MAQUINAS AUTOMATIZADAS LTDA</td>"
+		cHtml += " </tr>"
+		cHtml += " <tr>"
+		cHtml += "  <td>CNPJ: 24.575.331/0001-18</td>"	
+		cHtml += " </tr>"
 	EndIf
 
 	cHtml += "  <tr>"
