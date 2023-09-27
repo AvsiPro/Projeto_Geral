@@ -30,7 +30,7 @@ EndIf
 cArqHTML    := "\workflow\Aviso_Requisicao_Pecas.html"
 cPathHTML   := GetMV("MV_WFDIR") 
 
-// preenche os parâmetros MV_PARnn com as respostas das perguntas da rotina MATA106
+// preenche os parÃ¢metros MV_PARnn com as respostas das perguntas da rotina MATA106
 Pergunte("MTA106",.F.)
 
 lMarkB     := .F.
@@ -51,7 +51,7 @@ lRateio    := .F.
 
 MaSAPreReq(lMarkB,lDtNec,BFiltro,lConsSPed,lGeraSC1,lAmzSA,cSldAmzIni,cSldAmzFim,lLtEco,lConsEmp,nAglutSC,lAuto,lEstSeg,@aRecSCP,lRateio)
 
-// monta o array com as solicitações e seus itens
+// monta o array com as solicitaÃ§Ãµes e seus itens
 For n1Cnt := 1 to Len(aRecSCP)
     SCP->(dbGoTo(aRecSCP[n1Cnt]))
     aItens := {}
@@ -83,7 +83,7 @@ For n1Cnt := 1 to Len(aSolicit)
 
     cItens := xGermail(aSolicit[n1Cnt])
     oHTML:ValByName("linhasPedido",cItens)
-    cMail := 'alexandre.venancio@avsipro.com.br' // pode ser obtido de um parâmetro
+    cMail := 'alexandre.venancio@avsipro.com.br' // pode ser obtido de um parÃ¢metro
     
     cFileName    := CriaTrab(NIL,.F.) + ".htm"
     cFileName    := cPathHTML + "\" + cFileName 
@@ -94,9 +94,9 @@ For n1Cnt := 1 to Len(aSolicit)
     cMensagem    := StrTran(cRet,chr(10),"")
     cMensagem    := OemtoAnsi(cMensagem)
 
-    cEmailTst := SUPERGETMV( "TI_EMAILTST", .F., "alexandre.venancio@avsipro.com.br" )
+    cEmailTst := SUPERGETMV( "TI_EMAILTS", .F., "alexandre.venancio@avsipro.com.br" )
 
-    U_JCAMAIL2(cEmailTst,'Solicitação de peças disponíveis',cMensagem,'',.F.)
+    U_JCAMAIL2(cEmailTst,'SolicitaÃ§Ã£o de peÃ§as disponÃ­veis',cMensagem,'',.F.)
 
 Next n1Cnt
 
@@ -162,14 +162,14 @@ cSldAmzIni : Armazem inicial para considerar o saldo/necessidade
 cSldAmzFim : Armazem final paraa considerar o saldo/necessidade
 lLtEco     : Considerar o Lote Economico na geracacao da SC ? (default = .T.)
 lConsEmp   : Considerar o saldo ja empenhado qdo baixa de OP ? (default = .F.)
-nAglutSC   : Indica se aglutina ou nao as SC‘s (default = 1 Aglutina)
-lAuto      : Rotina automática ? (default = .F.)
+nAglutSC   : Indica se aglutina ou nao as SCâ€˜s (default = 1 Aglutina)
+lAuto      : Rotina automÃ¡tica ? (default = .F.)
 lEstSeg    : Subtrai o estoque de seguranca ? (default = .F.)
-aRecSCP    : Array com os números dos registros manipulados na SCP (passar por referência)
+aRecSCP    : Array com os nÃºmeros dos registros manipulados na SCP (passar por referÃªncia)
 lRateio    : Efetua rateio na solicitacao ao armazem ? (default = .F.)
 
 
-Para executar "automaticamente", você pode utilizar as respostas do grupo de perguntas MTA106.
+Para executar "automaticamente", vocÃª pode utilizar as respostas do grupo de perguntas MTA106.
 
 Grupo de perguntas MTA106:
 mv_par01 - Considera Data     ? Necessidade/Emissao
