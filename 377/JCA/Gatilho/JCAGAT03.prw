@@ -34,9 +34,9 @@ If !Empty(cCodBar)
         */
     ENDIF
 
-    If cFatCBr <> cFatVct
+    /*If cFatCBr <> cFatVct
         MsgAlert("Data do título divergente do boleto")
-    EndIf 
+    EndIf */
 
 
     If nVlrT <> nVlrCBr

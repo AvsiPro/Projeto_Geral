@@ -94,7 +94,9 @@ For n1Cnt := 1 to Len(aSolicit)
     cMensagem    := StrTran(cRet,chr(10),"")
     cMensagem    := OemtoAnsi(cMensagem)
 
-    U_JCAMAIL2('alexandre.venancio@avsipro.com.br','Solicitação de peças disponíveis',cMensagem,'',.F.)
+    cEmailTst := SUPERGETMV( "TI_EMAILTST", .F., "alexandre.venancio@avsipro.com.br" )
+
+    U_JCAMAIL2(cEmailTst,'Solicitação de peças disponíveis',cMensagem,'',.F.)
 
 Next n1Cnt
 

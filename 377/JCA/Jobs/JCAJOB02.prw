@@ -123,7 +123,9 @@ If len(aAux) > 0
         cMensagem    := StrTran(cRet,chr(10),"")
         cMensagem    := OemtoAnsi(cMensagem)
         
-        U_JCAMAIL2('alexandre.venancio@avsipro.com.br','Pedido de compra empresa - '+FwCutOff(aAux[nX,05],.T.)+' '+FwCutOff(aAux[nX,07],.T.),cMensagem,'',.F.)
+        cEmailTst := SUPERGETMV( "TI_EMAILTST", .F., "alexandre.venancio@avsipro.com.br" )
+
+        U_JCAMAIL2(cEmailTst,'Pedido de compra empresa - '+FwCutOff(aAux[nX,05],.T.)+' '+FwCutOff(aAux[nX,07],.T.),cMensagem,'',.F.)
     Next nX 
 EndIf
 

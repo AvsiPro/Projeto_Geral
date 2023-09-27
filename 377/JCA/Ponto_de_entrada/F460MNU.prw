@@ -93,7 +93,7 @@ Else
         MV_PAR05 := aRet[5]
         MV_PAR06 := aRet[6]
 
-        cQuery := "SELECT FO0.FO0_FILIAL,FO0.FO0_PROCES,"
+        cQuery := "SELECT DISTINCT FO0.FO0_FILIAL,FO0.FO0_PROCES,"
         cQuery += " FO0.FO0_VERSAO,FO0.FO0_NUMLIQ,"
         cQuery += " SA1.A1_COD,SA1.A1_NOME,SA1.A1_EMAIL,"
         cQuery += " SE1.E1_PREFIXO+'/'+SE1.E1_NUM+'/'+SE1.E1_PARCELA AS TIT,SE1.E1_VENCREA,SE1.E1_SALDO,SE1.E1_VALOR" 
@@ -229,7 +229,7 @@ For nCont := 1 to len(aItens)
     
     cItens := xGermail(aItens[nCont],2)
     oHTML:ValByName("linhasliq",cItens)
-    cMail := 'alexandre.venancio@avsipro.com.br' // pode ser obtido de um parâmetro
+    //cMail := 'alexandre.venancio@avsipro.com.br' // pode ser obtido de um parâmetro
 
     cFileName    := CriaTrab(NIL,.F.) + ".htm"
     cFileName    := cPathHTML + "\" + cFileName 
@@ -241,7 +241,9 @@ For nCont := 1 to len(aItens)
     cMensagem    := OemtoAnsi(cMensagem)
     
     //EMAIL aItens[nCont,7]
-    U_JCAMAIL2('alexandre.venancio@avsipro.com.br','Solicitação de peças disponíveis',cMensagem,'',.F.)
+    cEmailTst := SUPERGETMV( "TI_EMAILTST", .F., "alexandre.venancio@avsipro.com.br" )
+
+    U_JCAMAIL2(cEmailTst,'Solicitação de peças disponíveis',cMensagem,'',.F.)
 Next nCont 
 
 Return
