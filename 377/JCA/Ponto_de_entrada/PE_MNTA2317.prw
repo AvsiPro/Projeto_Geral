@@ -25,10 +25,10 @@ If "E1" $ CREADVAR .OR. nNrEixos == 4 .or. Alltrim(cEstepe) == "EST"
         lRet := .F.
     EndIf 
 
-    If ST9->T9_STATUS <> Alltrim(cEstNew) .AND. lRet
+    /*If ST9->T9_STATUS <> Alltrim(cEstNew) .AND. lRet
         MsgAlert("Pneu não pode ser utilizado neste eixo","PE_MNTA2317")
         lRet := .F.    
-    EndIf  
+    EndIf  */
 
 EndIf 
 
