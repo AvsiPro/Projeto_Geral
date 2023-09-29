@@ -16,7 +16,7 @@ Return
 User Function MT170SC1
 
 SC1->C1_OBS := 'SC gerada por ponto de pedido'
-
+//aqui alterar
 Return
 
 User Function MT170QRY
