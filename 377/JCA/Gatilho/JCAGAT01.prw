@@ -10,22 +10,36 @@ User Function JCAGAT01()
 
 Local cRet := ''
 Local cQuery := ''
+Local lCopJca := .F.
+Local nPos  :=  0
 
-cQuery := "SELECT MAX(SUBSTRING(B1_COD,5,4))+1 AS SEQ"
-cQuery += " FROM "+RetSQLName("SB1")
-cQuery += " WHERE SUBSTRING(B1_COD,1,4) ='"+M->B1_GRUPO+"'"
-cQuery += " ORDER BY 1"
+ While !Empty(procname(nPos))
+    If 'JCAGAT02' $ Alltrim(upper(procname(nPos)))
+        lCopJca := .T.
+        exit 
+    EndIf 
+    nPos++
+EndDo
 
-IF Select('TRB') > 0
-    dbSelectArea('TRB')
-    dbCloseArea()
-ENDIF
+If !lCopJca
+    cQuery := "SELECT MAX(SUBSTRING(B1_COD,5,4))+1 AS SEQ"
+    cQuery += " FROM "+RetSQLName("SB1")
+    cQuery += " WHERE SUBSTRING(B1_COD,1,4) ='"+M->B1_GRUPO+"'"
+    cQuery += " ORDER BY 1"
 
-MemoWrite("CONFATC01.SQL",cQuery)
-DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
+    IF Select('TRB') > 0
+        dbSelectArea('TRB')
+        dbCloseArea()
+    ENDIF
 
-DbSelectArea("TRB")  
+    MemoWrite("CONFATC01.SQL",cQuery)
+    DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
 
-cRet := Alltrim(M->B1_GRUPO)+Strzero(TRB->SEQ,4)
+    DbSelectArea("TRB")  
+
+    cRet := Alltrim(M->B1_GRUPO)+Strzero(TRB->SEQ,4)
+else
+    cRet := SB1->B1_COD
+EndIf 
 
 Return(cRet)

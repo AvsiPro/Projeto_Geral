@@ -14,6 +14,7 @@ Local cMarca := space(4)
 Local cDescM := ''
 Local cCodigo:= SB1->B1_COD
 Local lPerm  := .T.
+Local cGrupo := SB1->B1_GRUPO
 
 If Select("SM0") == 0
     RpcSetType(3)
@@ -31,8 +32,8 @@ Else
     If ParamBox(aPergs, "Informe o código da Marca a ser gerada para o produto")
         cMarca := MV_PAR01
         cDescM := Alltrim(Posicione("ZPM",1,xFilial("ZPM")+cMarca,"ZPM_DESC"))
-        If !Dbseek(xFilial("SB1")+Alltrim(cCodigo)+"-"+Alltrim(cMarca))
-            Processa({|| gerafilho(cMarca,cDescM,cCodigo)},"Aguarde!!!")
+        If !Dbseek(xFilial("SB1")+Alltrim(cCodigo)+Alltrim(cMarca))
+            Processa({|| gerafilho(cMarca,cDescM,cCodigo,cGrupo)},"Aguarde!!!")
         else
             MsgAlert("Produto já existe com a marca selecionada.")
         Endif 
@@ -53,12 +54,13 @@ Return
     (examples)
     @see (links_or_references)
 /*/
-Static Function gerafilho(cMarca,cDescM,cCodigo)
+Static Function gerafilho(cMarca,cDescM,cCodigo,cGrupo)
 
 Local nCont  := 1
 Local cTabela:= "SB1"
 Local aHoBrw1:= {}
 Local aAuxX3 := {}
+Local cNewCd := ""
 
 If DbSeek(xFilial("SB1")+cCodigo) //
 
@@ -91,8 +93,9 @@ If DbSeek(xFilial("SB1")+cCodigo) //
     oStruSB5:= FWFormStruct(2, 'SB5')
     oView:AddField('FORMSB5' , oStruSB5,'SB5DETAIL' )
 
+    cNewCd := Alltrim(SB1->B1_COD)+cMarca
 
-    oModel:SetValue("SB1MASTER","B1_COD"      ,Alltrim(SB1->B1_COD)+cMarca)
+    oModel:SetValue("SB1MASTER","B1_COD"      ,cNewCd)
     
     For nCont := 1 to len(aHoBrw1)
         If !Alltrim(aHoBrw1[nCont,01]) $ 'B1_COD'
@@ -104,15 +107,21 @@ If DbSeek(xFilial("SB1")+cCodigo) //
     oModel:SetValue("SB1MASTER",aHoBrw1[nCont,01]      ,aHoBrw1[nCont,02])
     nCont := Ascan(aHoBrw1,{|x| Alltrim(x[1]) == "B1_DESC"})
 
-    oModel:SetValue("SB1MASTER","B1_XCODPAI"  ,SB1->B1_COD)
-    oModel:SetValue("SB1MASTER","B1_ZMARCA"   ,cMarca)
+    //oModel:SetValue("SB1MASTER","B1_GRUPO"    ,cGrupo)
+    oModel:SetValue("SB1MASTER","B1_XCODPAI"  ,cCodigo)
+    //oModel:SetValue("SB1MASTER","B1_ZMARCA"   ,cMarca)
     
     oModel:SetValue("SB5DETAIL","B5_FILIAL" ,xFilial("SB5"))
-    oModel:SetValue("SB5DETAIL","B5_COD"    ,Alltrim(SB1->B1_COD)+'-'+cMarca)
+    oModel:SetValue("SB5DETAIL","B5_COD"    ,cNewCd)
     oModel:SetValue("SB5DETAIL","B5_CEME"   ,aHoBrw1[nCont,02])
     
     If oModel:VldData()
         oModel:CommitData()
+        Dbseek(xFilial("SB1")+cNewCd)
+        Reclock("SB1",.F.)
+        SB1->B1_GRUPO := cGrupo
+        SB1->B1_ZMARCA:= cMarca 
+        SB1->(Msunlock())
         MsgAlert("Registro INCLUIDO!", "Atenção")
     Else
         VarInfo("",oModel:GetErrorMessage())
