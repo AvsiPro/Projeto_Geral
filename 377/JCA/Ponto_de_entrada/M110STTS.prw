@@ -17,7 +17,7 @@ Local nZ        :=  1
 
 If nOpt == 1 .And. !lCopia
     For nCont := 1 to len(aCols)
-        aAux1 := buscaitem(aCols[nCont,nPosProd])
+        aAux1 := U__SearchSon(aCols[nCont,nPosProd])
         If len(aAux1) > 0
             For nX := 1 to len(aAux1)
                 aAux2 := {}
@@ -62,7 +62,7 @@ EndIf
 
 Return Nil
 
-/*/{Protheus.doc} BuscaItem
+/*/{Protheus.doc} _SearchSon
     (long_description)
     @type  Static Function
     @author user
@@ -74,7 +74,7 @@ Return Nil
     (examples)
     @see (links_or_references)
 /*/
-Static Function BuscaItem(cCodigo)
+User Function _SearchSon(cCodigo)
 
 Local aArea := GetArea()
 Local aRet  := {}

@@ -61,7 +61,7 @@ Local cTabela:= "SB1"
 Local aHoBrw1:= {}
 Local aAuxX3 := {}
 Local cNewCd := ""
-
+Local cCpoNcp := SuperGetMv("TI_CPONTCP",.F.,"B1_EMIN/B1_ESTSEG/B1_PE/B1_TIPE/B1_LE/B1_TOLER/B1_EMAX")
 If DbSeek(xFilial("SB1")+cCodigo) //
 
     //aAuxX3 := FWSX3Util():GetAllFields( cTabela , .F. )
@@ -69,7 +69,7 @@ If DbSeek(xFilial("SB1")+cCodigo) //
 
     For nCont := 1 to len(aAuxX3)
         lUsado := X3USO(GetSX3Cache(aAuxX3[nCont,1], "X3_USADO"))
-        If lUsado
+        If lUsado .And. !Alltrim(aAuxX3[nCont,1]) $ cCpoNcp
             If Alltrim(aAuxX3[nCont,1]) == "B1_DESC"
                 Aadd(aHoBrw1,{aAuxX3[nCont,1],Alltrim(&("SB1->"+aAuxX3[nCont,1]))+' '+cDescM})
             Else
