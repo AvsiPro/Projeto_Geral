@@ -36,6 +36,8 @@ If len(aFilho) > 0
 
     
     For nCont := 1 to len(aFilho)
+        nBkpQtd := 0
+        
         For nX := 1 to len(aFilho[nCont])-1
 
             aAuxiliar := BuscaSolc(aFilho[nCont,len(aFilho[nCont]),1],aFilho[nCont,len(aFilho[nCont]),3],aCampos)
