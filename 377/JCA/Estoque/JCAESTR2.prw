@@ -2,12 +2,16 @@
 #INCLUDE "FWPrintSetup.ch"
 #INCLUDE "protheus.ch"
 #Include 'TopConn.ch'
+
 User Function JCAESTR2()
-	Local lFinal	:= .T.
- If Select("SM0") == 0
-    RpcSetType(3)
-    RPCSetEnv("01","00020087")
-EndIf
+
+	//Local lFinal	:= .T.
+
+	If Select("SM0") == 0
+		RpcSetType(3)
+		RPCSetEnv("01","00020087")
+	EndIf
+
 	If ValidPerg()
 		MsAguarde({|| ImpEtiq() },"Impressão de etiqueta","Aguarde...")
 	EndIf
@@ -19,10 +23,11 @@ Static Function ImpEtiq()
 	Local cProdDe	:= MV_PAR01
 	Local cProdAte	:= MV_PAR02
 	Local nQuant	:= MV_PAR03
-	Local cImpress  := Alltrim(MV_PAR04) //pego o nome da impressora
-	Local cLogo 	:= "\system\logo.jpg"
-    Local oFont10	:= TFont():New('Arial',10,10,,.F.,,,,.T.,.F.,.F.)
-	Local oFont16	:= TFont():New('Arial',16,16,,.F.,,,,.T.,.F.,.F.)
+	Local cImpress  := Alltrim(MV_PAR05) //pego o nome da impressora
+	Local cTipo     := Alltrim(MV_PAR04)
+	Local oFont08	:= TFont():New('Arial',06,06,,.F.,,,,.T.,.F.,.F.)
+	Local oFont10	:= TFont():New('Arial',10,10,,.F.,,,,.T.,.F.,.F.)
+	//Local oFont16	:= TFont():New('Arial',16,16,,.F.,,,,.T.,.F.,.F.)
 	//Local oFont16N	:= TFont():New('Arial',16,16,,.T.,,,,.T.,.F.,.F.)
  
 	Local lAdjustToLegacy 	:= .F.
@@ -69,7 +74,11 @@ Static Function ImpEtiq()
 			oPrinter:StartPage()
  
 			//oPrinter:SayBitmap(nLin,nCol,cLogo,100,030)
-            oPrinter:Box(10,5,100,160)
+			If cTipo == "1"
+            	oPrinter:Box(10,5,100,160)
+			else
+				oPrinter:Box(10,5,080,160)
+			EndIf
 			//nLin+= 45
 			//oPrinter:Say(nLin,nCol,"Produto",oFont16)
  
@@ -89,15 +98,19 @@ Static Function ImpEtiq()
             
             //nLinC += 1
 			oPrinter:FWMSBAR("CODE128" , nLinC , nColC, alltrim(QRYTMP->CODIGO), oPrinter,/*lCheck*/,/*Color*/,/*lHorz*/, nWidth, nHeigth,.F.,/*cFont*/,/*cMode*/,.F./*lPrint*/,nPFWidth,nPFHeigth,lCmtr2Pix)
-            nLin+= 45
-            oPrinter:Say(nLin,nCol,alltrim(QRYTMP->MARCA) ,oFont10)
-            oPrinter:Say(nLin,nCol+100,"UM:"+alltrim(QRYTMP->UM) ,oFont10)
-
-            nLin+= 10
-            oPrinter:Say(nLin,nCol,"NF:" ,oFont10)
-            nLin+= 10
-            oPrinter:Say(nLin,nCol,"DATA:" ,oFont10)
             
+			oPrinter:Say(nLin+20,nCol-5,alltrim(QRYTMP->CODIGO) ,oFont08)
+            
+			If cTipo == "1"
+				nLin+= 45
+				oPrinter:Say(nLin,nCol,alltrim(QRYTMP->MARCA) ,oFont10)
+				oPrinter:Say(nLin,nCol+100,"UM:"+alltrim(QRYTMP->UM) ,oFont10)
+
+				nLin+= 10
+				oPrinter:Say(nLin,nCol,"NF:" ,oFont10)
+				nLin+= 10
+				oPrinter:Say(nLin,nCol,"DATA:" ,oFont10)
+            EndIf
 			
 			oPrinter:EndPage()
 		Next
@@ -114,14 +127,13 @@ Return
  
 /*Montagem da tela de perguntas*/
 Static Function ValidPerg()
-	Local aRet 		:= {}
 	Local aParamBox	:= {}
 	Local lRet 		:= .F.
 	Local aOpcoes	:= {}
 	Local cProdDe	:= ""
 	Local cProdAte	:= ""
-	Local cLocal	:= Space(99)
- 
+	Local aTipos	:= {"1=Produto","2=Prateleira"}
+	
 	If Empty(getMV("ZZ_IMPRESS")) //se o parametro estiver vazio, ja o defino com a impressora PDFCreator 
 		aOpcoes := {"PDFCreator"}
 	Else
@@ -134,7 +146,8 @@ Static Function ValidPerg()
 	aAdd(aParamBox,{01,"Produto de"	  			,cProdDe 	,""					,"","SB1"	,"", 60,.F.})	// MV_PAR01
 	aAdd(aParamBox,{01,"Produto ate"	   		,cProdAte	,""					,"","SB1"	,"", 60,.T.})	// MV_PAR02
 	aAdd(aParamBox,{01,"Quantidade Etiqueta"	,1			,"@E 9999"			,"",""		,"", 60,.F.})	// MV_PAR03
-	aadd(aParamBox,{02,"Imprimir em"			,Space(50)	,aOpcoes			,100,".T.",.T.,".T."})		// MV_PAR04
+	aadd(aParamBox,{02,"Tipo Etiqueta"			,Space(50)	,aTipos				,100,".T.",.T.,".T."})		// MV_PAR04
+ 	aadd(aParamBox,{02,"Imprimir em"			,Space(50)	,aOpcoes			,100,".T.",.T.,".T."})		// MV_PAR04
  
 	If ParamBox(aParamBox,"Etiqueta Produto",/*aRet*/,/*bOk*/,/*aButtons*/,.T.,,,,FUNNAME(),.T.,.T.)
  
