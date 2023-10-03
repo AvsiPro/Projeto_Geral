@@ -13,7 +13,8 @@ Local nCont5    := 1
 Local aAux      := {}
 Local aAux2     := {}
 Local aDados    := {}
-Local lCotOk    := valc1qtd(SC8->C8_NUM)
+Local lCotOk    := .t. //valc1qtd(SC8->C8_NUM)
+Local aItensV   := {}
 
 If lCotOk
     //Primeiro são as paginas da tela de propostas
@@ -42,9 +43,28 @@ If lCotOk
         Next nCont2
     Next nCont1
 
-    gravar(aDados)
-else
-    lRetPE := lCotOk
+    For nCont1 := 1 to len(aDados)
+        For nCont2 := 1 to len(aDados[nCont1])
+            If Valtype(aDados[nCont1,nCont2]) == "A"
+                //For nCont3 := 1 to len(aDados[nCont1][nCont2])
+                    If aDados[nCont1,nCont2,1]
+                        Aadd(aItensV,{  aDados[nCont1,nCont2,3],;
+                                        aDados[nCont1,nCont2,4],;
+                                        aDados[nCont1,nCont2,13]})
+                    EndIf 
+                //Next nCont3
+            EndIf 
+        Next nCont2 
+    Next nCont1
+
+    If len(aItensV) > 0
+        lCotOk := valc1qtd(SC8->C8_NUM,aItensV)
+        If lCotOk
+            gravar(aDados)
+        Else 
+            lRetPE := lCotOk
+        EndIf 
+    EndIf
 EndIf 
 
 Return lRetPE
@@ -143,18 +163,22 @@ Return
     (examples)
     @see (links_or_references)
 /*/
-Static Function valc1qtd(cCotacao)
+Static Function valc1qtd(cCotacao,aItensV)
 
 Local aArea := GetArea()
 Local cQuery 
 Local lRet  := .T.
+Local aItem := {}
+Local nCont := 1
+Local cMsg  := ""
+Local aAux  := {}
 
-cQuery := "SELECT C8_NUMSC,B1_XCODPAI,C1_QUANT,SUM(C8_QUANT) AS QTDC8"
+cQuery := "SELECT C8_NUMSC,C8_PRODUTO,B1_XCODPAI,C1_QUANT,SUM(C8_QUANT) AS QTDC8"
 cQuery += " FROM "+RetSQLName("SC8")+" C8"
 cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_FILIAL=' ' AND B1_COD=C8_PRODUTO AND B1.D_E_L_E_T_=' '" 
 cQuery += " INNER JOIN "+RetSQLName("SC1")+" C1 ON C1_FILIAL=C8_FILIAL AND C1_NUM=C8_NUMSC AND C1.D_E_L_E_T_=' ' AND C1_PRODUTO=B1_XCODPAI AND C1_COTACAO<>C8_NUM"
 cQuery += " WHERE C8_FILIAL='"+xFilial("SC8")+"' AND C8_NUM='"+cCotacao+"' AND C8.D_E_L_E_T_=' '"
-cQuery += " GROUP BY C8_NUMSC,B1_XCODPAI,C1_QUANT"
+cQuery += " GROUP BY C8_NUMSC,C8_PRODUTO,B1_XCODPAI,C1_QUANT"
 
 IF Select('TRB') > 0
     dbSelectArea('TRB')
@@ -166,12 +190,43 @@ DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
 
 DbSelectArea("TRB")  
 
-If TRB->C1_QUANT <> TRB->QTDC8 
-    cMsg := "Divergência na quantidade de itens selecionados com a quantidade de itens da solicitação de compra"
-    cMsg += CRLF + "Quantidade Solicitação item "+TRB->B1_XCODPAI+" - "+cvaltochar(TRB->C1_QUANT)
-    cMsg += CRLF + "Quantidade aprovada na cotação para o item total (somando todas as marcas selecionadas) "+cvaltochar(TRB->QTDC8)
+While !EOF()
+    Aadd(aItem,{    TRB->C8_PRODUTO,;
+                    TRB->B1_XCODPAI,;
+                    TRB->C1_QUANT,;
+                    TRB->QTDC8,;
+                    0})
+    Dbskip()
+EndDo 
+
+
+For nCont := 1 to len(aItensV)
+    nPos := Ascan(aItem,{|x| alltrim(x[1]) == alltrim(aItensV[nCont,01])})
+    If nPos > 0
+        nPos2 := Ascan(aAux,{|x| alltrim(x[1]) == alltrim(aItem[nPos,02])})
+
+        If nPos2 == 0
+            Aadd(aAux,{aItem[nPos,02],aItem[nPos,3],aItensV[nCont,02] / aItensV[nCont,03]})
+        Else 
+            aAux[nPos2,3] += aItensV[nCont,02] / aItensV[nCont,03]
+        EndIf
+    EndIf 
+Next nCont
+
+For nCont := 1 to len(aAux)
+    If aAux[nCont,03] > aAux[nCont,02] 
+        If Empty(cMsg)
+            cMsg := "Divergência na quantidade de itens selecionados com a quantidade de itens da solicitação de compra"
+        ENDIF
+
+        cMsg += CRLF + "Quantidade Solicitação item "+aAux[nCont,01]+" - "+cvaltochar(aAux[nCont,02])
+        cMsg += CRLF + "Quantidade aprovada na cotação para o item total (somando todas as marcas selecionadas) "+cvaltochar(aAux[nCont,03])
+        lRet := .F.
+    EndIf 
+Next nCont 
+
+If !Empty(cMsg)
     MsgAlert(cMsg,"PE_MT161OK")
-    lRet := .F.
 EndIf 
 
 RestArea(aArea)
