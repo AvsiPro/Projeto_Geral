@@ -13,34 +13,39 @@ Local nCont5    := 1
 Local aAux      := {}
 Local aAux2     := {}
 Local aDados    := {}
+Local lCotOk    := valc1qtd(SC8->C8_NUM)
 
-//Primeiro são as paginas da tela de propostas
-For nCont1 := 1 to len(aPropPE)
-    //Segundo são os itens de cada proposta
-    For nCont2 := 1 to len(aPropPE[nCont1])
-        aAux := {}
-        For nCont3 := 1 to len(aPropPE[nCont1][nCont2])
-            If len(aPropPE[nCont1][nCont2][nCont3]) > 0
-                If valtype(aPropPE[nCont1][nCont2][nCont3][1]) == "C"
-                    For nCont4 := 1 to len(aPropPE[nCont1][nCont2][nCont3])
-                        Aadd(aAux,aPropPE[nCont1][nCont2][nCont3][nCont4])
-                    Next nCont4
-                Else 
-                    For nCont4 := 1 to len(aPropPE[nCont1][nCont2][nCont3])
-                        aAux2 := {}
-                        For nCont5 := 1 to len(aPropPE[nCont1][nCont2][nCont3][nCont4])
-                            Aadd(aAux2,aPropPE[nCont1][nCont2][nCont3][nCont4][nCont5])
-                        Next nCont5
-                        Aadd(aAux,aAux2)
-                    Next nCont4
+If lCotOk
+    //Primeiro são as paginas da tela de propostas
+    For nCont1 := 1 to len(aPropPE)
+        //Segundo são os itens de cada proposta
+        For nCont2 := 1 to len(aPropPE[nCont1])
+            aAux := {}
+            For nCont3 := 1 to len(aPropPE[nCont1][nCont2])
+                If len(aPropPE[nCont1][nCont2][nCont3]) > 0
+                    If valtype(aPropPE[nCont1][nCont2][nCont3][1]) == "C"
+                        For nCont4 := 1 to len(aPropPE[nCont1][nCont2][nCont3])
+                            Aadd(aAux,aPropPE[nCont1][nCont2][nCont3][nCont4])
+                        Next nCont4
+                    Else 
+                        For nCont4 := 1 to len(aPropPE[nCont1][nCont2][nCont3])
+                            aAux2 := {}
+                            For nCont5 := 1 to len(aPropPE[nCont1][nCont2][nCont3][nCont4])
+                                Aadd(aAux2,aPropPE[nCont1][nCont2][nCont3][nCont4][nCont5])
+                            Next nCont5
+                            Aadd(aAux,aAux2)
+                        Next nCont4
+                    EndIf
                 EndIf
-            EndIf
-        Next nCont3
-        Aadd(aDados,aAux)
-    Next nCont2
-Next nCont1
+            Next nCont3
+            Aadd(aDados,aAux)
+        Next nCont2
+    Next nCont1
 
-gravar(aDados)
+    gravar(aDados)
+else
+    lRetPE := lCotOk
+EndIf 
 
 Return lRetPE
 
@@ -125,3 +130,51 @@ Next nCont
 RestArea(aArea)
 
 Return
+
+/*/{Protheus.doc} nomeStaticFunction
+    (long_description)
+    @type  Static Function
+    @author user
+    @since 03/10/2023
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function valc1qtd(cCotacao)
+
+Local aArea := GetArea()
+Local cQuery 
+Local lRet  := .T.
+
+cQuery := "SELECT C8_NUMSC,B1_XCODPAI,C1_QUANT,SUM(C8_QUANT) AS QTDC8"
+cQuery += " FROM "+RetSQLName("SC8")+" C8"
+cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_FILIAL=' ' AND B1_COD=C8_PRODUTO AND B1.D_E_L_E_T_=' '" 
+cQuery += " INNER JOIN "+RetSQLName("SC1")+" C1 ON C1_FILIAL=C8_FILIAL AND C1_NUM=C8_NUMSC AND C1.D_E_L_E_T_=' ' AND C1_PRODUTO=B1_XCODPAI AND C1_COTACAO<>C8_NUM"
+cQuery += " WHERE C8_FILIAL='"+xFilial("SC8")+"' AND C8_NUM='"+cCotacao+"' AND C8.D_E_L_E_T_=' '"
+cQuery += " GROUP BY C8_NUMSC,B1_XCODPAI,C1_QUANT"
+
+IF Select('TRB') > 0
+    dbSelectArea('TRB')
+    dbCloseArea()
+ENDIF
+
+MemoWrite("JCAJOB01.SQL",cQuery)
+DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
+
+DbSelectArea("TRB")  
+
+If TRB->C1_QUANT <> TRB->QTDC8 
+    cMsg := "Divergência na quantidade de itens selecionados com a quantidade de itens da solicitação de compra"
+    cMsg += CRLF + "Quantidade Solicitação item "+TRB->B1_XCODPAI+" - "+cvaltochar(TRB->C1_QUANT)
+    cMsg += CRLF + "Quantidade aprovada na cotação para o item total (somando todas as marcas selecionadas) "+cvaltochar(TRB->QTDC8)
+    MsgAlert(cMsg,"PE_MT161OK")
+    lRet := .F.
+EndIf 
+
+RestArea(aArea)
+
+
+Return(lRet)
