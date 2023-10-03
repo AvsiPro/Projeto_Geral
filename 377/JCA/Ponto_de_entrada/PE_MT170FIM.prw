@@ -36,7 +36,7 @@ If len(aFilho) > 0
 
     
     For nCont := 1 to len(aFilho)
-        nBkpQtd := 0
+        //nBkpQtd := 0
         
         For nX := 1 to len(aFilho[nCont])-1
 
@@ -49,21 +49,21 @@ If len(aFilho) > 0
                 EndIf 
             Next nCnt2
 
-            If nBkpQtd == 0
+            /*If nBkpQtd == 0
                 nBkpQtd := aFilho[nCont,len(aFilho[nCont]),02]
                 nDivQtd := round(nBkpQtd / (len(aFilho[nCont])-1),0)
-            ENDIF
+            ENDIF*/
 
             _aCols[nPos1,02] := aFilho[nCont,nX,01]
             _aCols[nPos2,02] := aFilho[nCont,nX,02]
             _aCols[nPos3,02] := maxitem(aFilho[nCont,len(aFilho[nCont]),01])
 
-            If nDivQtd < nBkpQtd
+            /*If nDivQtd < nBkpQtd
                 _aCols[npos4,02] := nDivQtd
                 nBkpQtd := nBkpQtd - nDivQtd
             Else 
                 _aCols[npos4,02] := nBkpQtd
-            EndIf 
+            EndIf */
 
             Reclock("SC1",.T.)
             For nCnt2 := 1 to len(aCampos)

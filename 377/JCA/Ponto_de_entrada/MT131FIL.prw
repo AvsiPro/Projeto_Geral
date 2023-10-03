@@ -8,6 +8,9 @@ Local cFiltroSC1 := "!C1_FILIAL+C1_PRODUTO $ '"+cItmNeg+"'"
 
 Return cFiltroSC1
 
+
+
+
 /*/{Protheus.doc} BuscaIt
     (long_description)
     @type  Static Function
