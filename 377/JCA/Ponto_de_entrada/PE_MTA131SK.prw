@@ -1,27 +1,19 @@
-#Include 'Protheus.ch'
+#INCLUDE 'PROTHEUS.CH'
 
-User Function MT161CIT()
+User Function MTA131SK()
 
-Local cFiltro := ''
-Local cBackpc8 := SC8->C8_NUM
+Local lReturn := .T.
 
-DbSelectArea("SC8")
-DbSetOrder(1)
-DbSeek(xfilial("SC8")+cBackpc8)
+nQtdPai := cntfilho(SC1->C1_PRODUTO)
 
-While !EOF() .AND. SC8->C8_NUM == cBackpc8 .AND. SC8->C8_FILIAL == xFilial("SC8")
+If nQtdPai > 0
+    Reclock("SC1",.F.)
+    SC1->C1_COTACAO := 'XXX'
+    SC1->(Msunlock())
+    lReturn := .F.
+EndIf 
 
-    cMarca  := Posicione("SB1",1,xFilial("SB1")+SC8->C8_PRODUTO,"B1_ZMARCA")
-    nQtdFil := cntfilho(SC8->C8_PRODUTO)
-
-    If Empty(cMarca) .And. nQtdFil > 0
-        cFiltro += " AND C8_PRODUTO <> '"+SC8->C8_PRODUTO+"'"
-    EndIf 
-
-    Dbskip()
-EndDo 
-
-Return (cFiltro)
+Return lReturn
 
 
 /*/{Protheus.doc} nomeStaticFunction
