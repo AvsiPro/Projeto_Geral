@@ -3,10 +3,14 @@
     xx Gatilho campo Grupo para produto para criar sequencial do codigo de acordo
     xx com grupo selecionado
     xxxMIT 44_ESTOQUE_EST001 - Codificação de Produtos
-    xxxhttps://docs.google.com/document/d/10vxbtI4iBcPuf7l3qImxY1BYB1OKtP3Q/edit
     
+    DOC MIT
+    xxxhttps://docs.google.com/document/d/10vxbtI4iBcPuf7l3qImxY1BYB1OKtP3Q/edit
+    DOC ENTREGA
+    https://docs.google.com/document/d/1qU10HGIjy-NU6P6bpPoa5rTvqtE3AaQX/edit
+
 */
-User Function JCAGAT02()
+User Function JCOMG002()
 
 
 Local aPergs := {}
@@ -62,6 +66,7 @@ Local aHoBrw1:= {}
 Local aAuxX3 := {}
 Local cNewCd := ""
 Local cCpoNcp := SuperGetMv("TI_CPONTCP",.F.,"B1_EMIN/B1_ESTSEG/B1_PE/B1_TIPE/B1_LE/B1_TOLER/B1_EMAX")
+
 If DbSeek(xFilial("SB1")+cCodigo) //
 
     //aAuxX3 := FWSX3Util():GetAllFields( cTabela , .F. )

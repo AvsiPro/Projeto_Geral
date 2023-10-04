@@ -2,7 +2,76 @@
 #include "AP5MAIL.CH"
 #include "TOTVS.CH"
 
-User Function JCAMAIL1(cFrom,cTo,cSubject,cBody,aAttach,lConfirm,cCC,cBCC)
+/*
+    Rotina generica para envio de email 
+    MIT 44_COMPRAS COM013 _ Workflow Compradores - Solicitação de Compra
+
+    Doc Mit
+    https://docs.google.com/document/d/11M9mO4K4g0u4fKVXEKy0rUvwpnvDN1-m/edit
+    Doc Entrega
+    https://docs.google.com/document/d/1wMKXeqRVfl-fXWk7_09PjV39MBnOyTx0/edit
+    
+*/
+User Function JGENX002(cPara,cAssunto,cBody,cAtach,lLog)
+
+	Local cServer := Alltrim( GetMV("MV_RELSERV") )
+	Local cMail   := Alltrim( GetMV("MV_RELACNT") ) 
+	Local cPass	  := Alltrim( GetMV("MV_RELPSW")  ) 
+	Local cErro
+	
+	Default cAtach  := if(cAtach==nil,"",cAtach)
+	Default lLog    := if(lLog  == nil .Or. Empty(lLog),.f.,lLog)
+	
+	CONNECT SMTP SERVER cServer ACCOUNT cMail PASSWORD cPass RESULT lOk
+	
+	If !lOK
+		cErro := MailGetErr()
+		If !lLog
+			//Alert("Erro ao Conectar o Servidor - "+cErro)
+		Endif
+		Return .F.
+	Endif
+	
+	//Servidor de Autenticacao
+	lRelauth := GetNewPar("MV_RELAUTH",.F.)
+	
+	If lRelAuth
+		lOk := MailAuth( GetMV("MV_RELACNT") , GetMV("MV_RELPSW") )
+		If !lOK
+			cErro := MailGetErr()
+			//Alert("Erro ao conectar com autenticacao - " + cErro)
+			lOk := MailSmtpOff()
+			Return .F.
+		Endif
+	Endif
+	
+	SEND MAIL FROM cMail TO cPara SUBJECT cAssunto BODY cBody ATTACHMENT cAtach RESULT lOK 
+	
+	If !lOK
+		cErro := MailGetErr()
+
+		if !lLog
+			//Alert("Erro ao Enviar Mensagem - " + cErro)
+		endif
+		lOk := MailSmtpOff()
+		Return .F.
+	EndIf
+	
+	lOk := MailSmtpOff()
+	
+	If !lOK
+		if !lLog
+			//Alert("Erro ao Desconectar do Servidor")
+		endif
+		Return .F.
+	EndIf
+
+Return .T.
+
+
+//esta não funcionou adequadamente
+
+static Function JCAMAIL1(cFrom,cTo,cSubject,cBody,aAttach,lConfirm,cCC,cBCC)
 
     Local lRet			:= .F.  
     Local oServer
@@ -113,59 +182,3 @@ User Function JCAMAIL1(cFrom,cTo,cSubject,cBody,aAttach,lConfirm,cCC,cBCC)
     EndIf 
    
 Return lRet
-
-User Function JCAMAIL2(cPara,cAssunto,cBody,cAtach,lLog)
-
-	Local cServer := Alltrim( GetMV("MV_RELSERV") )
-	Local cMail   := Alltrim( GetMV("MV_RELACNT") ) 
-	Local cPass	  := Alltrim( GetMV("MV_RELPSW")  ) 
-	Local cErro
-	
-	Default cAtach  := if(cAtach==nil,"",cAtach)
-	Default lLog    := if(lLog  == nil .Or. Empty(lLog),.f.,lLog)
-	
-	CONNECT SMTP SERVER cServer ACCOUNT cMail PASSWORD cPass RESULT lOk
-	
-	If !lOK
-		cErro := MailGetErr()
-		If !lLog
-			//Alert("Erro ao Conectar o Servidor - "+cErro)
-		Endif
-		Return .F.
-	Endif
-	
-	//Servidor de Autenticacao
-	lRelauth := GetNewPar("MV_RELAUTH",.F.)
-	
-	If lRelAuth
-		lOk := MailAuth( GetMV("MV_RELACNT") , GetMV("MV_RELPSW") )
-		If !lOK
-			cErro := MailGetErr()
-			//Alert("Erro ao conectar com autenticacao - " + cErro)
-			lOk := MailSmtpOff()
-			Return .F.
-		Endif
-	Endif
-	
-	SEND MAIL FROM cMail TO cPara SUBJECT cAssunto BODY cBody ATTACHMENT cAtach RESULT lOK 
-	
-	If !lOK
-		cErro := MailGetErr()
-
-		if !lLog
-			//Alert("Erro ao Enviar Mensagem - " + cErro)
-		endif
-		lOk := MailSmtpOff()
-		Return .F.
-	EndIf
-	
-	lOk := MailSmtpOff()
-	
-	If !lOK
-		if !lLog
-			//Alert("Erro ao Desconectar do Servidor")
-		endif
-		Return .F.
-	EndIf
-
-Return .T.

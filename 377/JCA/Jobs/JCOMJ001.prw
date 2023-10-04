@@ -2,10 +2,14 @@
 /*
     Job que faz verificação de solicitações de compras perto da data de entrega
     MIT 44_COMPRAS COM013 _ Workflow Compradores - Solicitação de Compra
+
+    Doc Mit
     https://docs.google.com/document/d/11M9mO4K4g0u4fKVXEKy0rUvwpnvDN1-m/edit
+    Doc Entrega
+    https://docs.google.com/document/d/1wMKXeqRVfl-fXWk7_09PjV39MBnOyTx0/edit
     
 */
-User Function JCAJOB01
+User Function JCOMJ001
 
 Local cQuery 
 Local cArqHTML
@@ -34,14 +38,14 @@ cQuery += ",C1_PEDIDO,C1_LOJA,C1_FORNECE,C1_COTACAO,C1_EMISSAO,C1_LOCAL,C1_TOTAL
 cQuery += ",C1_QUANT,C1_DESCRI,C1_UM,C1_PRODUTO,C1_ITEM,C1_NUM"
 cQuery += " FROM "+RetSQLName("SC1")
 cQuery += " WHERE D_E_L_E_T_=' '"
-//cQuery += " AND C1_DATPRF='"+sDiaRef+"'"
+cQuery += " AND C1_DATPRF='"+sDiaRef+"'"
 
 IF Select('TRB') > 0
     dbSelectArea('TRB')
     dbCloseArea()
 ENDIF
 
-MemoWrite("JCAJOB01.SQL",cQuery)
+MemoWrite("JCOMJ001.SQL",cQuery)
 DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
 
 DbSelectArea("TRB")  
@@ -104,8 +108,7 @@ If len(aAux) > 0
                     "C1_PRODUTO",;
                     "C1_ITEM",;
                     "C1_NUM"})
-    //JCAMAIL1(cFrom,cTo,cSubject,cBody,aAttach,lConfirm,cCC,cBCC)
-    //JCAMAIL2(cPara,cAssunto,cBody,cAtach,lLog)
+    
     For nX := 1 to len(aAux)
         If Ascan(aAuxEnv,{|x| x == aAux[nX,26]}) == 0
             Aadd(aAuxEnv,aAux[nX,26])
@@ -137,8 +140,8 @@ If len(aAux) > 0
             cMensagem    := OemtoAnsi(cMensagem)
             
             cEmailTst := SUPERGETMV( "TI_EMAILTST", .F., "alexandre.venancio@avsipro.com.br" )
-
-            U_JCAMAIL2(cEmailTst,'Solicitação de compra empresa - '+FwCutOff(aAux[nX,27],.T.),cMensagem,'',.F.)
+            //DEFINIR DESTINATARIO DE EMAIL DE ONDE VAI PEGAR
+            U_JGENX002(cEmailTst,'Solicitação de compra empresa - '+FwCutOff(aAux[nX,27],.T.),cMensagem,'',.F.)
         EndIf
     Next nX 
 EndIf

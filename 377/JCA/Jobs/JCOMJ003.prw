@@ -1,6 +1,16 @@
 #INCLUDE 'PROTHEUS.CH'
+/*
+    Job que faz Processamento rotina pre-requisiÁ„o de forma autom·tica
+    MIT 44_ESTOQUE_EST012 - Processamento rotina gerar pre-requisiÁ„o de forma autom·tica
 
-User Function JCAJOB03
+    Doc Mit
+    https://docs.google.com/document/d/1rAM0C2yu5RCbSzqiOUx3xwuG2ibxqY4N/edit
+    Doc Entrega
+    https://docs.google.com/document/d/19XIaOCoeiybBXtKkBhLhoUcnOW83mxPr/edit
+    
+*/
+
+User Function JCOMJ003
 
 Local aSolicit              := {}
 Local aItens                := {}
@@ -73,7 +83,9 @@ For n1Cnt := 1 to Len(aRecSCP)
         aAdd(aSolicit[nFind][5],aItens)
     EndIf
 Next n1Cnt
+
 // envia o email
+/*
 For n1Cnt := 1 to Len(aSolicit)
     oHtml := TWFHtml():New( cArqHTML )
 
@@ -96,9 +108,10 @@ For n1Cnt := 1 to Len(aSolicit)
 
     cEmailTst := SUPERGETMV( "TI_EMAILTS", .F., "alexandre.venancio@avsipro.com.br" )
 
-    U_JCAMAIL2(cEmailTst,'Solicita√ß√£o de pe√ßas dispon√≠veis',cMensagem,'',.F.)
+    U_JGENX002(cEmailTst,'Solicita√ß√£o de pe√ßas dispon√≠veis',cMensagem,'',.F.)
 
 Next n1Cnt
+*/
 
 Return
 /*/{Protheus.doc} xGermail

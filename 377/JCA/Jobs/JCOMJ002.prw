@@ -1,6 +1,17 @@
 #INCLUDE 'PROTHEUS.CH'
 
-User Function JCAJOB02
+/*
+    Job que faz SLA para controle da entrega dos pedidos de compras.
+    MIT 44_COMPRAS COM014 _ Workflow Fornecedores -Pedido de Compra
+
+    Doc Mit
+    https://docs.google.com/document/d/1QgwX8AcEWRYl4b44QEqZrgHcqyoq3iz8/edit
+    Doc Entrega
+    https://docs.google.com/document/d/1qg2_MSBUdXCNqS8z1DkpChikQshCVjVo/edit
+    
+*/
+
+User Function JCOMJ002
 
 Local cQuery 
 Local aAux      :=  {}
@@ -44,7 +55,7 @@ IF Select('TRB') > 0
     dbCloseArea()
 ENDIF
 
-MemoWrite("JCAJOB02.SQL",cQuery)
+MemoWrite("JCOMJ002.SQL",cQuery)
 DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
 
 DbSelectArea("TRB")  
@@ -89,7 +100,7 @@ If len(aAux) > 0
                     "C7_TOTAL"})
 
     //JCAMAIL1(cFrom,cTo,cSubject,cBody,aAttach,lConfirm,cCC,cBCC)
-    //JCAMAIL2(cPara,cAssunto,cBody,cAtach,lLog)
+    //JGENX002(cPara,cAssunto,cBody,cAtach,lLog)
     For nX := 1 to len(aAux)
         
         oHtml := TWFHtml():New( cArqHTML )
@@ -125,7 +136,7 @@ If len(aAux) > 0
         
         cEmailTst := SUPERGETMV( "TI_EMAILTST", .F., "alexandre.venancio@avsipro.com.br" )
 
-        U_JCAMAIL2(cEmailTst,'Pedido de compra empresa - '+FwCutOff(aAux[nX,05],.T.)+' '+FwCutOff(aAux[nX,07],.T.),cMensagem,'',.F.)
+        U_JGENX002(cEmailTst,'Pedido de compra empresa - '+FwCutOff(aAux[nX,05],.T.)+' '+FwCutOff(aAux[nX,07],.T.),cMensagem,'',.F.)
     Next nX 
 EndIf
 

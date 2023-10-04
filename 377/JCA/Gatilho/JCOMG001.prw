@@ -3,10 +3,14 @@
     Gatilho campo Grupo para produto para criar sequencial do codigo de acordo
     com grupo selecionado
     MIT 44_ESTOQUE_EST001 - Codificação de Produtos
+
+    Doc MIT
     https://docs.google.com/document/d/10vxbtI4iBcPuf7l3qImxY1BYB1OKtP3Q/edit
+    Doc Entrega
+    https://docs.google.com/document/d/1qU10HGIjy-NU6P6bpPoa5rTvqtE3AaQX/edit
     
 */
-User Function JCAGAT01()
+User Function JCOMG001()
 
 Local cRet := ''
 Local cQuery := ''
@@ -14,7 +18,7 @@ Local lCopJca := .F.
 Local nPos  :=  0
 
  While !Empty(procname(nPos))
-    If 'JCAGAT02' $ Alltrim(upper(procname(nPos)))
+    If 'JCOMG002' $ Alltrim(upper(procname(nPos)))
         lCopJca := .T.
         exit 
     EndIf 

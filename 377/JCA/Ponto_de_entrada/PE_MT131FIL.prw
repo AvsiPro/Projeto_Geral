@@ -40,13 +40,12 @@ IF Select('TRB') > 0
     dbCloseArea()
 ENDIF
 
-MemoWrite("JCAJOB01.SQL",cQuery)
+MemoWrite("MT131FIL.SQL",cQuery)
 DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
 
 DbSelectArea("TRB")  
 
 WHILE !EOF()
-    //Aadd(aRet,{TRB->ZPN_FILIAL+TRB->ZPN_PRODUT})
     cRet += cBarra + TRB->ZPN_FILIAL+TRB->ZPN_PRODUT
     cBarra := "/"
     Dbskip()

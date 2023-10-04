@@ -1,17 +1,21 @@
 #Include "TOTVS.ch"
 #Include "FWMVCDEF.ch"
 
-/*---------------------------------------------------------------------*
- | Func:  MenuDef                                                      |
- | Autor: Alexandre Venâncio                                           |
- | Data:  06/09/2023                                                   |
- | Desc:  Criação do menu MVC                                          |
- | Obs.:  /                                                            |
- *---------------------------------------------------------------------*/
 
-User Function JCASCR05()
+/*
+    Campanha – Desenvolvimento do Cadastro de campanha
+    MIT 44_Frotas GFR0010, GFR0012 Campanha_Desenvolvimento do Cadastro de campanha
 
-Local oBrowse := FwLoadBrw("JCASCR05")
+    DOC MIT
+    https://docs.google.com/document/d/1qvdxNSSNnZY8UKejDBjbIECIhlhng81j/edit
+    DOC Entrega
+    https://docs.google.com/document/d/1AGjIbZXbvj9FcdANT7qEdpCmvUNEwDpu/edit
+
+*/
+
+User Function JGFRA001()
+
+Local oBrowse := FwLoadBrw("JGFRA001")
     
 //oBrowse:AddLegend( "ZPR->ZPR_MSBLQL = '2'", "GREEN", "Não bloqueado" )
 //oBrowse:AddLegend( "ZPR->ZPR_MSBLQL = '1'", "RED",   "Bloqueado" )
@@ -36,7 +40,7 @@ Local oBrowse := FwMBrowse():New()
     oBrowse:SetDescription("Cadastro de Campanha x Veiculos")
 
    // DEFINE DE ONDE SERÁ RETIRADO O MENUDEF
-   oBrowse:SetMenuDef("JCASCR05")
+   oBrowse:SetMenuDef("JGFRA001")
    
 
 Return (oBrowse)
@@ -54,12 +58,12 @@ Static Function MenuDef()
 Local aRot := {}
      
     //Adicionando opções
-    ADD OPTION aRot TITLE 'Visualizar' ACTION 'VIEWDEF.JCASCR05' OPERATION MODEL_OPERATION_VIEW   ACCESS 0 //OPERATION 1
+    ADD OPTION aRot TITLE 'Visualizar' ACTION 'VIEWDEF.JGFRA001' OPERATION MODEL_OPERATION_VIEW   ACCESS 0 //OPERATION 1
     ADD OPTION aRot TITLE 'Legenda'    ACTION 'u_ZPRLeg5'         OPERATION 6                      ACCESS 0 //OPERATION X
-    //ADD OPTION aRot TITLE 'Incluir'    ACTION 'VIEWDEF.JCASCR05' OPERATION MODEL_OPERATION_INSERT ACCESS 0 //OPERATION 3
+    //ADD OPTION aRot TITLE 'Incluir'    ACTION 'VIEWDEF.JGFRA001' OPERATION MODEL_OPERATION_INSERT ACCESS 0 //OPERATION 3
     ADD OPTION aRot TITLE 'Incluir'    ACTION 'U_JcaCmxVe(1)' OPERATION MODEL_OPERATION_INSERT ACCESS 0 //OPERATION 3
     ADD OPTION aRot TITLE 'Alterar'    ACTION 'U_JcaCmxVe(2)' OPERATION MODEL_OPERATION_UPDATE ACCESS 0 //OPERATION 3
-    //ADD OPTION aRot TITLE 'Excluir'    ACTION 'VIEWDEF.JCASCR05' OPERATION MODEL_OPERATION_DELETE ACCESS 0 //OPERATION 5
+    //ADD OPTION aRot TITLE 'Excluir'    ACTION 'VIEWDEF.JGFRA001' OPERATION MODEL_OPERATION_DELETE ACCESS 0 //OPERATION 5
  
 Return (aRot)
 
@@ -104,7 +108,7 @@ Static Function ViewDef()
 Local oView    := FwFormView():New()
 Local oStruSC5 := FwFormStruct(2, "ZPR")
 
-Local oModel   := FwLoadModel("JCASCR05")
+Local oModel   := FwLoadModel("JGFRA001")
 
     // REMOVE CAMPOS DA EXIBIÇÃO
     //oStruSC5:RemoveField("ZPR_FILIAL")
@@ -210,13 +214,7 @@ oDlg1      := MSDialog():New( 092,232,596,1360,"Campanha x Veiculos",,,.F.,,,,,,
                             aList1[oList1:nAt,07],;
                             aList1[oList1:nAt,08],;
                             aList1[oList1:nAt,09]}}
-/*
-    oBtn1      := TButton():New( 224,120,"Associar Veiculo",oDlg1,{|| associar()},044,012,,,,.T.,,"",,,,.F. )
-    oBtn2      := TButton():New( 224,216,"Gerar O.S.",oDlg1,{|| geraros()},044,012,,,,.T.,,"",,,,.F. )
-    oBtn3      := TButton():New( 224,308,"Relatório",oDlg1,,044,012,,,,.T.,,"",,,,.F. )
-    oBtn4      := TButton():New( 224,404,"Sair",oDlg1,{||oDlg1:end()},044,012,,,,.T.,,"",,,,.F. )
-    associar
-*/
+
     oBtn1      := TButton():New( 218,068,"Associa Veículo",oDlg1,{|| veiculos()},047,012,,,,.T.,,"",,,,.F. ) //88
     oBtn5      := TButton():New( 218,130,"Remover Veículo",oDlg1,{|| removbem()},047,012,,,,.T.,,"",,,,.F. )
     oBtn2      := TButton():New( 218,192,"Gerar OS",oDlg1,{|| Processa({|| geraros()},"Aguarde")},047,012,,,,.T.,,"",,,,.F. ) //174

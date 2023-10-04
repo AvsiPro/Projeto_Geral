@@ -243,7 +243,7 @@ For nCont := 1 to len(aItens)
     //EMAIL aItens[nCont,7]
     cEmailTst := SUPERGETMV( "TI_EMAILTST", .F., "alexandre.venancio@avsipro.com.br" )
 
-    U_JCAMAIL2(cEmailTst,'Titulos aglutinados JCA',cMensagem,'',.F.)
+    U_JGENX002(cEmailTst,'Titulos aglutinados JCA',cMensagem,'',.F.)
 Next nCont 
 
 Return

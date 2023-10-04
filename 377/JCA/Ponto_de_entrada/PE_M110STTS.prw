@@ -1,5 +1,17 @@
 #INCLUDE 'PROTHEUS.CH'
+/*
+    Ponto de entrada
+    Cadastro de Marca do produto. Este cadastro precisa ser exibido na cotação e impresso nos relatórios.
+    
+    MIT 44_COMPRAS_COM009 - Marca do produto a ser exibido na cotação e impresso nos relatórios.
 
+    Doc Mit
+    https://docs.google.com/document/d/12hwpYztGFmFivlgxVfnDndqlwzB4nnZ6/edit
+    Doc Validação entrega
+    https://docs.google.com/document/d/1TQi-rLxiiEsTbCZE82Os3HvqnTZrdqP2/edit
+    
+    
+*/
 User Function M110STTS()
  
 Local cNumSol   :=  Paramixb[1]

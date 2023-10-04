@@ -2,10 +2,14 @@
 /*
     Rotina para gerar arquivo excel de indicadores de produtos SBZ - Exportar e importar dados
     MIT 44_ESTOQUE_EST012 - Processamento rotina gerar pre-requisição de forma automática
+    
+    DOC MIT
     https://docs.google.com/document/d/1rAM0C2yu5RCbSzqiOUx3xwuG2ibxqY4N/edit
+    DOC Entrega
+    https://docs.google.com/document/d/1VBv__srwihwlfninPxz45jr8Xgx2-CV3/edit
     
 */
-User Function JCAEXP01()
+User Function JCOMM001()
 
 Local aPergs    :=  {}
 Local aRet      :=  {}
