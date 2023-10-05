@@ -61,28 +61,35 @@ PRIVATE oCouNew12S	:= TFont():New("Courier New",12,12,,.T.,,,,.F.,.F.)		// SubLi
 PRIVATE cContato    := ""
 PRIVATE cNomFor     := ""
 Private nReg 		:= 0
+Private lBrowse		:= .F.
 
 If Select("SM0") == 0
     RpcSetType(3)
     RPCSetEnv("01","00020087")
 EndIf
 
-AjustaSx1(cPerg)
-Pergunte(cPerg,.f.)
+If Funname() == "MNTA420" .OR. Funname() <> "MATA105"
+	AjustaSx1(cPerg)
+	Pergunte(cPerg,.f.)
 
 
-@ 096,042 TO 323,505 DIALOG oDlg TITLE OemToAnsi("Relatorio de Entrega de peças")
-@ 008,010 TO 084,222
-@ 018,020 SAY OemToAnsi(cDesc1)
-@ 030,020 SAY OemToAnsi(cDesc2)
-@ 045,020 SAY OemToAnsi(cDesc3)
+	@ 096,042 TO 323,505 DIALOG oDlg TITLE OemToAnsi("Relatorio de Entrega de peças")
+	@ 008,010 TO 084,222
+	@ 018,020 SAY OemToAnsi(cDesc1)
+	@ 030,020 SAY OemToAnsi(cDesc2)
+	@ 045,020 SAY OemToAnsi(cDesc3)
 
-@ 095,120 BMPBUTTON TYPE 5 	ACTION Pergunte(cPerg,.T.)
-@ 095,155 BMPBUTTON TYPE 1  ACTION Eval( { || nOpcRel := 1, oDlg:End() } )
-@ 095,187 BMPBUTTON TYPE 2  ACTION Eval( { || nOpcRel := 0, oDlg:End() } )
+	@ 095,120 BMPBUTTON TYPE 5 	ACTION Pergunte(cPerg,.T.)
+	@ 095,155 BMPBUTTON TYPE 1  ACTION Eval( { || nOpcRel := 1, oDlg:End() } )
+	@ 095,187 BMPBUTTON TYPE 2  ACTION Eval( { || nOpcRel := 0, oDlg:End() } )
 
-ACTIVATE DIALOG oDlg CENTERED
-
+	ACTIVATE DIALOG oDlg CENTERED
+else
+	MV_PAR01 := SCP->CP_NUM
+	MV_PAR02 := SCP->CP_NUM
+	lBrowse := .t.
+	nOpcRel := 1
+EndIf
 
 
 IF nOpcRel == 1 
@@ -110,7 +117,7 @@ Return .T.
 ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
 */
 Static Function COMR01Cfg(Titulo)
-Local cFilename := 'relestat'
+Local cFilename := 'requisicao'+dtos(ddatabase)+strtran(cvaltochar(time()),":")
 
 lAdjustToLegacy := .T.   //.F.
 lDisableSetup  := .T.
@@ -149,16 +156,20 @@ Static Function GFR01(lEnd,WnRel,cString,nReg)
 nPg		  := 0
 
 cQuery := "SELECT CP_FILIAL,CP_NUM,CP_ITEM,CP_PRODUTO,CP_DESCRI,CP_QUANT,CP_EMISSAO,CP_SOLICIT,"
-cQuery += " CP_CC,CP_OP,ZPM_DESC,B2_QATU-B2_RESERVA AS SALDO,B2_CM1"
+cQuery += " CP_CC,CP_OP,ZPM_DESC,B2_QATU-B2_RESERVA AS SALDO,B2_CM1,CP_XMATREQ,CP_XNOMREQ"
 cQuery += " FROM "+RetSQLName("SCP")+" CP"
 cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD=CP_PRODUTO AND B1.D_E_L_E_T_=' '"
-cQuery += " INNER JOIN "+RetSQLName("ZPM")+" ZPM ON ZPM_FILIAL=B1_FILIAL AND ZPM_COD=B1_ZMARCA AND ZPM.D_E_L_E_T_=' '" 
-cQuery += " INNER JOIN "+RetSQLName("SB2")+" B2 ON B2_FILIAL=CP_FILIAL AND B2_COD=CP_PRODUTO AND B2_LOCAL=B1_LOCPAD AND B2.D_E_L_E_T_=' '"
+cQuery += " LEFT JOIN "+RetSQLName("ZPM")+" ZPM ON ZPM_FILIAL=B1_FILIAL AND ZPM_COD=B1_ZMARCA AND ZPM.D_E_L_E_T_=' '" 
+cQuery += " LEFT JOIN "+RetSQLName("SB2")+" B2 ON B2_FILIAL=CP_FILIAL AND B2_COD=CP_PRODUTO AND B2_LOCAL=B1_LOCPAD AND B2.D_E_L_E_T_=' '"
 cQuery += " WHERE CP_FILIAL='"+xFilial("SCP")+"'"
 
-cQuery += " AND CP_EMISSAO BETWEEN '"+dtos(MV_PAR01)+"' AND '"+dtos(MV_PAR02)+"'"
-cQuery += " AND CP_NUM BETWEEN '"+MV_PAR03+"' AND '"+MV_PAR04+"'"
-cQuery += " AND CP_NUMOS BETWEEN '"+MV_PAR05+"' AND '"+MV_PAR06+"'"
+If !lBrowse
+	cQuery += " AND CP_EMISSAO BETWEEN '"+dtos(MV_PAR01)+"' AND '"+dtos(MV_PAR02)+"'"
+	cQuery += " AND CP_NUM BETWEEN '"+MV_PAR03+"' AND '"+MV_PAR04+"'"
+	cQuery += " AND CP_NUMOS BETWEEN '"+MV_PAR05+"' AND '"+MV_PAR06+"'"
+Else 
+	cQuery += " AND CP_NUM BETWEEN '"+MV_PAR01+"' AND '"+MV_PAR02+"'"
+EndIf 
 
 cQuery += " ORDER BY CP_NUM"
 
@@ -296,7 +307,7 @@ oPrint:Say(0280,1300,"Local:",oArial09N)
 oPrint:Say(0280,1480,CADTMP->CP_FILIAL,oArial09N)
 
 oPrint:Say(0280,1740,"OS:",oArial09N)
-oPrint:Say(0280,1940,CADTMP->CP_OP,oArial09N)
+oPrint:Say(0280,1940,substr(CADTMP->CP_OP,1,6),oArial09N)
 
 oPrint:Say(0280,2340,"Data Requisição:",oArial09N)
 oPrint:Say(0280,2640,cvaltochar(STOD(CADTMP->CP_EMISSAO)),oArial09N)
@@ -309,10 +320,16 @@ oPrint:Say(0320,1300,"Setor:",oArial09N)
 oPrint:Say(0320,2340,"Hora Requisição:",oArial09N)
 
 oPrint:Say(0360,0040,"Solicitante:",oArial09N)
-oPrint:Say(0360,0340,CADTMP->CP_SOLICIT,oArial09N)
+oPrint:Say(0360,0340,CADTMP->CP_XMATREQ+" - "+CADTMP->CP_XNOMREQ,oArial09N)
 
 oPrint:Say(0360,1300,"Veiculo:",oArial09N)
+
+cBem := Posicione("STJ",1,CADTMP->CP_FILIAL+substr(CADTMP->CP_OP,1,6),"TJ_CODBEM")
+cVeic := Posicione("ST9",1,xFilial("ST9")+cBem,"T9_PLACA")
+oPrint:Say(0360,1480,Alltrim(cBem)+' - '+cVeic,oArial09N)
+
 oPrint:Say(0400,0040,"Almoxarife:",oArial09N)
+oPrint:Say(0360,0340,CADTMP->CP_SOLICIT,oArial09N)
 
 oPrint:Say(0450,0030,Replicate("-",299),oCouNew08)
 

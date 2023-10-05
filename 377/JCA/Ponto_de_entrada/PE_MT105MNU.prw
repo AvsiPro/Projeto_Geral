@@ -14,6 +14,7 @@ Local aRet := {}
     
     aAdd(aRet,{'Libera por Tempo Previso','u_LIBREJ(1)', 0 , 2})
     aAdd(aRet,{'Rejeitar','u_LIBREJ(2)', 0 , 2})
+    aAdd(aRet,{'Impressão Requisição','U_JESTR001()', 0 , 2})
 
 Return aRet
 

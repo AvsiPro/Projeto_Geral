@@ -7,6 +7,10 @@ Local nOpcao    := PARAMIXB[1]   // Opção Escolhida pelo usuario no aRotina
 Local aAux      := {}
 Local cChaveNf  := SF1->F1_FILIAL+SF1->F1_DOC+SF1->F1_SERIE+SF1->F1_FORNECE+SF1->F1_LOJA
 
+/*
+
+RETIRADO, POIS TONINHO INFORMOU QUE ENDEREÇAMENTO É APENAS INFORMATIVO NO CADASTRO DO PRODUTO
+
 DbSelectArea("SD1")
 DbSetOrder(1)
 DbSeek(cChaveNf)
@@ -25,7 +29,7 @@ EndDo
 If len(aAux) > 0
     fMta265I(aAux,nOpcao)
 EndIf
-
+*/
 RETURN
 
 static Function fMta265I(aAux,nOpcao)

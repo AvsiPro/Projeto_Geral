@@ -62,27 +62,34 @@ PRIVATE oCouNew12S	:= TFont():New("Courier New",12,12,,.T.,,,,.F.,.F.)		// SubLi
 PRIVATE cContato    := ""
 PRIVATE cNomFor     := ""
 Private nReg 		:= 0
+Private lBrowse		:= .F.
 
 If Select("SM0") == 0
     RpcSetType(3)
     RPCSetEnv("01","00020087")
 EndIf
 
-AjustaSx1(cPerg)
-Pergunte(cPerg,.f.)
+If !MsgYesNo("Imprimir OS posicionada?")
+	AjustaSx1(cPerg)
+	Pergunte(cPerg,.f.)
 
 
-@ 096,042 TO 323,505 DIALOG oDlg TITLE OemToAnsi("Relatorio de Ordem de Serviço")
-@ 008,010 TO 084,222
-@ 018,020 SAY OemToAnsi(cDesc1)
-@ 030,020 SAY OemToAnsi(cDesc2)
-@ 045,020 SAY OemToAnsi(cDesc3)
+	@ 096,042 TO 323,505 DIALOG oDlg TITLE OemToAnsi("Relatorio de Ordem de Serviço")
+	@ 008,010 TO 084,222
+	@ 018,020 SAY OemToAnsi(cDesc1)
+	@ 030,020 SAY OemToAnsi(cDesc2)
+	@ 045,020 SAY OemToAnsi(cDesc3)
 
-@ 095,120 BMPBUTTON TYPE 5 	ACTION Pergunte(cPerg,.T.)
-@ 095,155 BMPBUTTON TYPE 1  ACTION Eval( { || nOpcRel := 1, oDlg:End() } )
-@ 095,187 BMPBUTTON TYPE 2  ACTION Eval( { || nOpcRel := 0, oDlg:End() } )
+	@ 095,120 BMPBUTTON TYPE 5 	ACTION Pergunte(cPerg,.T.)
+	@ 095,155 BMPBUTTON TYPE 1  ACTION Eval( { || nOpcRel := 1, oDlg:End() } )
+	@ 095,187 BMPBUTTON TYPE 2  ACTION Eval( { || nOpcRel := 0, oDlg:End() } )
 
-ACTIVATE DIALOG oDlg CENTERED
+	ACTIVATE DIALOG oDlg CENTERED
+Else 
+	MV_PAR01 := STJ->TJ_ORDEM
+	lBrowse  := .t.
+	nOpcRel  := 1
+EndIf
 
 
 
@@ -113,6 +120,7 @@ Return .T.
 ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
 */
 Static Function COMR01Cfg(Titulo)
+
 Local cFilename := 'ordem_servico'
 
 lAdjustToLegacy := .T.   //.F.
@@ -159,11 +167,21 @@ cQuery += " INNER JOIN "+RetSQLName("TT9")+" TT9 ON TT9_FILIAL='"+xFilial("TT9")
 cQuery += " INNER JOIN "+RetSQLName("ST4")+" T4 ON T4_FILIAL='"+xFilial("ST4")+"' AND T4_SERVICO=TJ_SERVICO AND T4.D_E_L_E_T_=' '"
 cQuery += " INNER JOIN "+RetSQLName("ST9")+" T9 ON T9_FILIAL='"+xFilial("ST9")+"' AND T9_CODBEM=TJ_CODBEM AND T9.D_E_L_E_T_=' '"
 cQuery += " WHERE TJ.D_E_L_E_T_=' '" 
-cQuery += " AND TJ_FILIAL='00020087' AND TJ_ORDEM='000037'"
+cQuery += " AND TJ_FILIAL='"+xFilial("STJ")+"'"
+
+If lBrowse
+	cQuery += " AND TJ_ORDEM='"+MV_PAR01+"'"
+
+else
+	cQuery += " AND TJ_DTORIGI BETWEEN '"+DTOS(MV_PAR01)+"' AND '"+DTOS(MV_PAR02)+"'"
+	cQuery += " AND TJ_ORDEM BETWEEN '"+MV_PAR03+"' AND '"+MV_PAR04+"'"
+
+EndIf 
+ 
 
 TCQUERY cQuery NEW ALIAS "CADTMP"
 
-TcSetField('CADTMP','D2_EMISSAO','D')
+//TcSetField('CADTMP','D2_EMISSAO','D')
 
 Count To nReg
 
@@ -226,7 +244,7 @@ While CADTMP->(!Eof())
 
 	li+=150
 	
-	//CADTMP->(DbSkip(1))
+	CADTMP->(DbSkip(1))
 
 EndDo
 //Next nCont
@@ -261,10 +279,10 @@ oPrint:StartPage() 		// Inicia uma nova pagina
 oPrint:Box(000,0030,3100,2550 )  //LINHA/COLUNA/ALTURA/LARGURA
 
 oPrint:Say(060,0040,OemToAnsi("Ordem de Seriço corretiva :"),oCouNew12N)
-oPrint:Say(060,0580,OemToAnsi('998989898' ),oArial14N)
+oPrint:Say(060,0580,OemToAnsi( CADTMP->TJ_ORDEM ),oArial14N)
 
 oPrint:Say(060,1040,OemToAnsi("Abertura :"),oCouNew12N)
-oPrint:Say(060,1280,OemToAnsi(cvaltochar(dDatabase)+" - "+ cvaltochar(time()) ),oCouNew12N)
+oPrint:Say(060,1280,OemToAnsi(cvaltochar(STOD(CADTMP->TJ_DTORIGI))+" - "+ cvaltochar(CADTMP->TJ_HORACO1) ),oCouNew12N)
 
 oPrint:Say(060,1740,OemToAnsi("Emissão :"),oCouNew12N)
 oPrint:Say(060,1980,OemToAnsi(cvaltochar(dDatabase)+" - "+ cvaltochar(time()) ),oCouNew12N)
@@ -279,10 +297,10 @@ oPrint:Say(130,1380,OemToAnsi( SM0->M0_CODFIL+" "+SM0->M0_NOMECOM),oCouNew12N)
 oPrint:line(190,0030,190,2550)
 
 oPrint:Say(250,0040,OemToAnsi("Data da Execução:"),oCouNew12N)
-oPrint:Say(250,0400,OemToAnsi('05/06/2023' ),oCouNew12N)
+oPrint:Say(250,0400,OemToAnsi(' ' ),oCouNew12N)
 
 oPrint:Say(250,1240,OemToAnsi("Hora do Termino:"),oCouNew12N)
-oPrint:Say(250,1720,OemToAnsi('10:00' ),oCouNew12N)
+oPrint:Say(250,1720,OemToAnsi(' ' ),oCouNew12N)
 
 oPrint:Say(320,0040,OemToAnsi("Empresa:"),oCouNew12N)
 oPrint:Say(320,0400,OemToAnsi(SM0->M0_CODIGO+" "+SM0->M0_NOME ),oCouNew12N)
@@ -294,13 +312,13 @@ oPrint:Say(390,0040,OemToAnsi("Garagem:"),oCouNew12N)
 oPrint:Say(390,0400,OemToAnsi(SM0->M0_CODIGO+" "+SM0->M0_NOME ),oCouNew12N)
 
 oPrint:Say(390,1070,OemToAnsi("Carro:"),oArial14N)
-oPrint:Say(390,1200,OemToAnsi("7899546" ),oArial14N)
+oPrint:Say(390,1200,OemToAnsi(CADTMP->TJ_CODBEM ),oArial14N)
 
 oPrint:Say(390,1440,OemToAnsi("Placa:"),oCouNew12N)
-oPrint:Say(390,1580,OemToAnsi("BKI-9494" ),oCouNew12N)
+oPrint:Say(390,1580,OemToAnsi(CADTMP->T9_PLACA ),oCouNew12N)
 
 oPrint:Say(390,1870,OemToAnsi("KM Atual Veiculo:"),oCouNew12N)
-oPrint:Say(390,2280,OemToAnsi("231346" ),oCouNew12N)
+oPrint:Say(390,2280,OemToAnsi(CVALTOCHAR(CADTMP->TJ_POSCONT) ),oCouNew12N)
 
 
 oPrint:line(450,0030,450,2550)
