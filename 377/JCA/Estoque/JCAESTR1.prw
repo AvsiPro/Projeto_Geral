@@ -259,9 +259,6 @@ cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"
 cQuery += " INNER JOIN "+RetSQLName("ZPM")+" ZPM ON ZPM_FILIAL=B1_FILIAL AND ZPM_COD=B1_ZMARCA AND ZPM.D_E_L_E_T_=' '" 
 cQuery += " INNER JOIN "+RetSQLName("SB2")+" B2 ON B2_FILIAL=CP_FILIAL AND B2_COD=CP_PRODUTO AND B2_LOCAL=B1_LOCPAD AND B2.D_E_L_E_T_=' '"
 cQuery += " WHERE CP_FILIAL='"+xFilial("SCP")+"' AND CP_OP=' '"
-/*cQuery += " AND D2_CLIENTE BETWEEN '"+MV_PAR01+"' AND '"+MV_PAR02+"'"
-cQuery += " AND D2_EMISSAO BETWEEN '"+DTOS(MV_PAR03)+"' AND '"+DTOS(MV_PAR04)+"'"*/
-//cQuery += " AND D2.D_E_L_E_T_<>'*'"
 
 	If Select('QUERY') > 0
 		dbSelectArea('QUERY')
