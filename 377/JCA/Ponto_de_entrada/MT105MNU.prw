@@ -7,7 +7,6 @@
    @since: 20/09/2023
    @see: https://tdn.totvs.com/pages/releaseview.action?pageId=6087703
 /*/
-
 User Function MT105MNU()
     
 Local aRet := {}
@@ -87,8 +86,8 @@ Private aHeaderGrid := {}
 Private aColsGrid := {}
 //Tamanho da janela
 Private aTamanho := MsAdvSize()
-Private nJanLarg := aTamanho[5] / 1.5
-Private nJanAltu := aTamanho[6] / 1.7
+Private nJanLarg := aTamanho[5] / 1.1
+Private nJanAltu := aTamanho[6] / 1.3
   
     //Monta o cabecalho
     fMontaHead()
@@ -139,13 +138,8 @@ Return
 Static Function fMontaHead()
     Local nAtual
     Local aHeadAux := {}
-  
-    //Adicionando colunas
-    //[1] - Titulo
-    //[2] - Tipo
-    //[3] - Tamanho
-    //[4] - Decimais
-    //[5] - Máscara
+    
+    aAdd(aHeadAux, {"Serviço",           "C", 10,   0, ""})
     aAdd(aHeadAux, {"Ordem Serv.",       "C", TamSX3('TL_ORDEM')[01],   0, ""})
     aAdd(aHeadAux, {"Tarefa",            "C", TamSX3('TL_TAREFA')[01],    0, ""})
     aAdd(aHeadAux, {"Nome Tarefa",       "C", TamSX3('TL_NOMTAR')[01],  0, ""})
@@ -158,6 +152,7 @@ Static Function fMontaHead()
     aAdd(aHeadAux, {"Hora Inicio",       "C", TamSX3('TL_HOINICI')[01],  0, ""})
     aAdd(aHeadAux, {"Data Fim",          "D", TamSX3('TL_DTFIM')[01],  0, ""})
     aAdd(aHeadAux, {"Hora Fim",          "C", TamSX3('TL_HOFIM')[01],  0, ""})
+    aAdd(aHeadAux, {"Motivo Bloqueio",   "C", TamSX3('TJ_XMOTIVO')[01],  0, ""})
     aAdd(aHeadAux, {"Recno",             "N", 18, 0, "@E 999,999,999,999,999,999"})
   
     //Percorrendo e criando as colunas
@@ -219,6 +214,7 @@ Static Function fMontDados(oSay)
             oSay:SetText("Adicionando registro " + cValToChar(nAtual) + " de " + cValToChar(nTotal) + "...")
             
             aAdd(aColsGrid, {;
+                'Atual',;
                 QRYTMP->TL_ORDEM,;
                 QRYTMP->TL_TAREFA,;
                 NGNOMETAR(QRYTMP->TJ_CODBEM+QRYTMP->TJ_SERVICO+QRYTMP->TJ_SEQRELA,QRYTMP->TL_TAREFA,TAMSX3('TL_NOMTAR')[1]),;
@@ -231,23 +227,86 @@ Static Function fMontDados(oSay)
                 QRYTMP->TL_HOINICI,;
                 QRYTMP->TL_DTFIM,;
                 QRYTMP->TL_HOFIM,;
+                QRYTMP->TJ_XMOTIVO,;
                 QRYTMP->RECSTL,;
                 .F.;
             })
 
+            fServAnt(QRYTMP->TL_CODIGO)
             QRYTMP->(DbSkip())
         EndDo
-  
-    Else  
-        aAdd(aColsGrid, {"","","","","","","","","","","","",0,.F.})
+    Else
+        aAdd(aColsGrid, {"","","","","","","","","","","","","",0,.F.})
     EndIf
 
     QRYTMP->(DbCloseArea())
-  
-    //Define o array
+    
+    If Len(aColsGrid) > 0
+        aSort(aColsGrid, , , {|x, y| x[14] < y[14]})
+    EndIf
+
     oSay:SetText("Atribuindo os dados na tela")
     oGetGrid:SetArray(aColsGrid)
     oGetGrid:Refresh()
+  
+    RestArea(aArea)
+Return
+
+
+Static Function fServAnt(cCodigo)
+    Local aArea := GetArea()
+
+    cQuery := " SELECT STL.R_E_C_N_O_ AS RECSTL, * FROM "+RetSqlName("STL")+" STL
+    cQuery += " INNER JOIN "+RetSqlName("ZPO")+" ZPO
+    cQuery += " 	ON ZPO_FILIAL = ''
+    cQuery += " 	AND ZPO_CODIGO = TL_CODIGO
+    cQuery += " 	AND ZPO.D_E_L_E_T_ = ''
+    cQuery += " INNER JOIN "+RetSqlName("STJ")+" STJ
+    cQuery += " 	ON  TJ_FILIAL = TL_FILIAL
+    cQuery += " 	AND TJ_ORDEM = TL_ORDEM
+    cQuery += " 	AND STJ.D_E_L_E_T_ = ''
+    cQuery += " WHERE STL.D_E_L_E_T_ = ''
+    cQuery += "     AND TL_FILIAL = '"+FWxFilial('STL')+"' "
+    cQuery += " 	AND TL_CODIGO = '"+cCodigo+"'
+    cQuery += " 	AND TL_SEQRELA = '1'
+    cQuery += " 	AND TL_TIPOREG = 'P'
+
+    //Executando a query
+    PLSQuery(cQuery, "QRYTMP1")
+  
+    //Se houve dados
+    If ! QRYTMP1->(EoF())
+        //Pegando o total de registros
+        DbSelectArea("QRYTMP1")
+        QRYTMP1->(DbGoTop())
+  
+        //Enquanto houver dados
+        While ! QRYTMP1->(EoF())
+            
+            aAdd(aColsGrid, {;
+                'Anterior',;
+                QRYTMP1->TL_ORDEM,;
+                QRYTMP1->TL_TAREFA,;
+                NGNOMETAR(QRYTMP1->TJ_CODBEM+QRYTMP1->TJ_SERVICO+QRYTMP1->TJ_SEQRELA,QRYTMP1->TL_TAREFA,TAMSX3('TL_NOMTAR')[1]),;
+                QRYTMP1->TL_TIPOREG,;
+                TIPREGBRW(QRYTMP1->TL_TIPOREG),;
+                QRYTMP1->TL_CODIGO,;
+                NOMINSBRW(QRYTMP1->TL_TIPOREG,QRYTMP1->TL_CODIGO),;
+                QRYTMP1->TL_LOCAL,;
+                QRYTMP1->TL_DTINICI,;
+                QRYTMP1->TL_HOINICI,;
+                QRYTMP1->TL_DTFIM,;
+                QRYTMP1->TL_HOFIM,;
+                '',;
+                QRYTMP1->RECSTL,;
+                .F.;
+            })
+
+            QRYTMP1->(DbSkip())
+        EndDo
+    EndIf
+
+    QRYTMP1->(DbCloseArea())
   
     RestArea(aArea)
 Return

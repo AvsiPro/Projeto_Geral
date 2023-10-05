@@ -2,7 +2,8 @@
 #Include 'Protheus.ch'
 #Include 'FWMVCDef.ch'
 #Include "TopConn.ch"
- 
+
+
 //Variáveis Estáticas
 Static cTitulo := "Cadastro de Peças com Tempo Previsto"
 

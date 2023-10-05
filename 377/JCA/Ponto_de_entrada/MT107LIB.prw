@@ -77,8 +77,7 @@ Local cMsgAux := ''
         Else
             MsgStop('Usuário não possui permissão para liberar a solicitação.', 'MT107LIB')
             lRet := .F.
-        EndIf
-        
+        EndIf        
     EndIf
 
 Return lRet

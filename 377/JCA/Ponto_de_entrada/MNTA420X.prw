@@ -9,6 +9,7 @@
 User Function MNTA420X()
     
 Local lLibera := .T.
+Local cMotivo := ''
 
     If Inclui .And. STL->TL_TIPOREG == 'P'
         cQuery := " SELECT * FROM "+RetSqlName("STL")+" STL
@@ -33,6 +34,10 @@ Local lLibera := .T.
             
             If (cAliasTMP)->ZPO_TIPO == '1' .Or. (cAliasTMP)->ZPO_TIPO == '3' //Contador
                 lLibera := Iif((cAliasTMP)->ZPO_CONTAD >= STJ->TJ_POSCONTAD,.T.,.F.)
+
+                If !lLibera
+                    cMotivo := 'Contador inferior ao configurado. Contador: '+cValToChar((cAliasTMP)->ZPO_CONTAD)
+                EndIf
             EndIf
 
             If ((cAliasTMP)->ZPO_TIPO == '2' .Or. (cAliasTMP)->ZPO_TIPO == '3') .And. lLibera //Tempo
@@ -43,12 +48,24 @@ Local lLibera := .T.
 
                 If (cAliasTMP)->ZPO_TPTEMP == 'M' //mes
                     lLibera := Iif(nTempo > DateDiffMonth(dFimAnt, dIniAtu),.T.,.F.)
+                    
+                    If !lLibera
+                        cMotivo := 'Tempo inferior ao configurado. '+cValToChar(nTempo)+Iif(nTempo > 1,' meses',' mês')
+                    EndIf
 
                 ElseIf (cAliasTMP)->ZPO_TPTEMP == 'S' //semana
                     lLibera := Iif(nTempo > GetWeekDifference(dFimAnt, dIniAtu),.T.,.F.)
 
+                    If !lLibera
+                        cMotivo := 'Tempo inferior ao configurado. '+cValToChar(nTempo)+Iif(nTempo > 1,' semanas',' semana')
+                    EndIf
+
                 ElseIf (cAliasTMP)->ZPO_TPTEMP == 'D' //dia
                     lLibera := Iif(nTempo > DateDiffDay(dFimAnt, dIniAtu),.T.,.F.)
+
+                    If !lLibera
+                        cMotivo := 'Tempo inferior ao configurado. '+cValToChar(nTempo)+Iif(nTempo > 1,' dias',' dia')
+                    EndIf
 
                 ElseIf (cAliasTMP)->ZPO_TPTEMP == 'H' //hora
                     
@@ -59,6 +76,10 @@ Local lLibera := .T.
                     dateTime2 := DToC(dIniAtu) + " " + cHrIniAtu
 
                     lLibera := Iif(nTempo > GetHourDifference(dateTime1, dateTime2),.T.,.F.)
+
+                    If !lLibera
+                        cMotivo := 'Tempo inferior ao configurado. '+cValToChar(nTempo)+Iif(nTempo > 1,' horas',' hora')
+                    EndIf
                 EndIf
 
             EndIf
@@ -70,6 +91,7 @@ Local lLibera := .T.
         If !lLibera
             MsgInfo('Bloqueado de acordo com a regra de peças com tempo previsto.')
             STJ->TJ_SITUACA := 'B'
+            STJ->TJ_XMOTIVO := cMotivo  
             
             If NGIFDBSEEK("SCP",STL->TL_NUMSA+STL->TL_ITEMSA,1,.F.)
                 RecLock('SCP', .F.)

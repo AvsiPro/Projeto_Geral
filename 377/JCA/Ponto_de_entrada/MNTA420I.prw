@@ -20,7 +20,7 @@ User Function LEG420()
 
 Local aLegenda := {}
 
-    aAdd(aLegenda,{"BR_VERMELHO", "Bloqueado"  })
+    aAdd(aLegenda,{"BR_VERMELHO", "Bloqueado" })
     aAdd(aLegenda,{"BR_AMARELO" , "Pendente" })
     aAdd(aLegenda,{"BR_VERDE" , "Liberado" })
     aAdd(aLegenda,{"BR_CINZA" , "Cancelado" })
