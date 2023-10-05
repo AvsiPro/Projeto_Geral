@@ -4,7 +4,7 @@ User Function MNTA2324(xy)
 Local aEsquema  := Paramixb
 Local lRet      := .T.
 Local cEixoAlt  := aEsquema[2]
-Local cEstNew   := SuperGetMV("TI_ESTNEW",.F.,"61") //Estoque de pneu novo no campo status
+//Local cEstNew   := SuperGetMV("TI_ESTNEW",.F.,"61") //Estoque de pneu novo no campo status
 
 //If nNrEixos == 3
 /* 1=OR;2=R1;3=R2;4=R3;5=R4

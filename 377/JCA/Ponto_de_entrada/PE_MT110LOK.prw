@@ -2,7 +2,11 @@
 /*
     Ponto de entrada para validação de linhas da solicitação
     MIT 44_COMPRAS_COM011 _ Tipos de solicitação de compras
+    
+    Doc Mit
     https://docs.google.com/document/d/1ESMwrvQ37rSRT1_DmEgjO9yVyINOCblA/edit
+    Doc Entrega
+    https://docs.google.com/document/d/1WLVRJPTqv6ou7Q4bhUW5dIJZCuDqy2v8/edit
     
 */
 User Function  MT110LOK()

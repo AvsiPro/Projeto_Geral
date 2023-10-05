@@ -1,3 +1,17 @@
+#INCLUDE 'PROTHEUS.CH'
+/*
+    Ponto de entrada
+    Renegociação com fornecedor e gravar este histórico de negociação.
+    
+    MIT 44_COMPRAS_COM010 - Histórico de Renegociações com Fornecedor - processo cotação
+
+    Doc Mit
+    https://docs.google.com/document/d/16xzLf8aK-K80MuSAq9ejX0ExjPrX7efc/edit
+    Doc Validação entrega
+    https://docs.google.com/document/d/1JhdsRjmUgZ7KhZ0-5UaWeBTaWKrNXyRu/edit
+    
+    
+*/
 User Function MT150OK()  
 
 Local nOpcx := Paramixb[1]   
@@ -27,8 +41,6 @@ EndDo
 
 If nOpcx == 3 .and. lGravar
     nPosNum := Ascan(aHeader,{|x| Alltrim(x[2]) == 'C8_NUM'})
-    //nPosFor := Ascan(aHeader,{|x| Alltrim(x[2]) == 'C8_FORNECE'})
-    //nPosLoj := Ascan(aHeader,{|x| Alltrim(x[2]) == 'C8_LOJA'})
     nPosItm := Ascan(aHeader,{|x| Alltrim(x[2]) == 'C8_ITEM'})
     nPosPro := Ascan(aHeader,{|x| Alltrim(x[2]) == 'C8_NUMPRO'})
     nPosGrd := Ascan(aHeader,{|x| Alltrim(x[2]) == 'C8_ITEMGRD'})
@@ -57,7 +69,7 @@ If nOpcx == 3 .and. lGravar
         cConteudo += ' - Conteudo anterior '+cvaltochar(aAlt[nCont,04])
         cConteudo += ' - Conteudo atual '+cvaltochar(aAlt[nCont,05])
 
-        U_JCAGEN01(xFilial("SZL"),'Compras','Alteracao Cotacao','',aAlt[nCont,01],aAlt[nCont,02],CUSERNAME,ddatabase,cvaltochar(time()),0,'Alteracao nos itens da cotacao - '+cConteudo,CA150FORN,CA150LOJ,'SC8')
+        U_JGENX001(xFilial("SZL"),'Compras','Alteracao Cotacao','',aAlt[nCont,01],aAlt[nCont,02],CUSERNAME,ddatabase,cvaltochar(time()),0,'Alteracao nos itens da cotacao - '+cConteudo,CA150FORN,CA150LOJ,'SC8')
 
     Next nCont
 EndIF 

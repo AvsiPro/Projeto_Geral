@@ -1,5 +1,17 @@
 #INCLUDE 'PROTHEUS.CH'
+/*
+    Ponto de entrada
+    Cadastro de Marca do produto. Este cadastro precisa ser exibido na cotação e impresso nos relatórios.
+    
+    MIT 44_COMPRAS_COM009 - Marca do produto a ser exibido na cotação e impresso nos relatórios.
 
+    Doc Mit
+    https://docs.google.com/document/d/12hwpYztGFmFivlgxVfnDndqlwzB4nnZ6/edit
+    Doc Validação entrega
+    https://docs.google.com/document/d/1TQi-rLxiiEsTbCZE82Os3HvqnTZrdqP2/edit
+    
+    
+*/
 User Function M110STTS()
  
 Local cNumSol   :=  Paramixb[1]
@@ -17,7 +29,7 @@ Local nZ        :=  1
 
 If nOpt == 1 .And. !lCopia
     For nCont := 1 to len(aCols)
-        aAux1 := buscaitem(aCols[nCont,nPosProd])
+        aAux1 := U__SearchSon(aCols[nCont,nPosProd])
         If len(aAux1) > 0
             For nX := 1 to len(aAux1)
                 aAux2 := {}
@@ -62,7 +74,7 @@ EndIf
 
 Return Nil
 
-/*/{Protheus.doc} BuscaItem
+/*/{Protheus.doc} _SearchSon
     (long_description)
     @type  Static Function
     @author user
@@ -74,7 +86,7 @@ Return Nil
     (examples)
     @see (links_or_references)
 /*/
-Static Function BuscaItem(cCodigo)
+User Function _SearchSon(cCodigo)
 
 Local aArea := GetArea()
 Local aRet  := {}

@@ -2,16 +2,20 @@
 /*
     Ponto de entrada inclusão itens cabeçalho Solicitação de compras
     MIT 44_COMPRAS_COM011 _ Tipos de solicitação de compras
+
+    Doc Mit
     https://docs.google.com/document/d/1ESMwrvQ37rSRT1_DmEgjO9yVyINOCblA/edit
+    Doc Entrega
+    https://docs.google.com/document/d/1WLVRJPTqv6ou7Q4bhUW5dIJZCuDqy2v8/edit
     
 */
-user function MT110TEL      
+user function MT110TEL    
+
 Local oNewDialog := PARAMIXB[1]
 Local aPosGet    := PARAMIXB[2]
 Local aStatusP   := {}
 Private aCombo   := RetSX3Box(GetSX3Cache("C1_XTIPCOT", "X3_CBOX"),,,1)
 Public nEditS     := IF(INCLUI,1,VAL(SC1->C1_XTIPCOT))
-//Public cEx	     := SPACE(5)   
 
 Aeval(aCombo,{|x| Aadd(aStatusP,x[1]) })
 

@@ -1,17 +1,20 @@
 #Include "TOTVS.ch"
 #Include "FWMVCDEF.ch"
 
-/*---------------------------------------------------------------------*
- | Func:  MenuDef                                                      |
- | Autor: Alexandre Venâncio                                           |
- | Data:  06/09/2023                                                   |
- | Desc:  Criação do menu MVC                                          |
- | Obs.:  /                                                            |
- *---------------------------------------------------------------------*/
+/*
+    Rotina para Cadastro de produto x marcas por empresa
+    MIT 44_ESTOQUE_EST021 - Cadastro de produto x marcas por empresa
 
-User Function JCASCR03()
+    DOC MIT
+    https://docs.google.com/document/d/118_XuS6Plsqk-B29zyMZ3jNdqYkyMp0D/edit
+    DOC Entrega
+    https://docs.google.com/document/d/1s6Z8YMCWilkdT6hk0uwbhuAPfE4FsWRO/edit
+    
+*/
 
-Local oBrowse := FwLoadBrw("JCASCR03")
+User Function JCOMA001()
+
+Local oBrowse := FwLoadBrw("JCOMA001")
     
 //oBrowse:AddLegend( "ZPN->ZPN_MSBLQL = '2'", "GREEN", "Não bloqueado" )
 //oBrowse:AddLegend( "ZPN->ZPN_MSBLQL = '1'", "RED",   "Bloqueado" )
@@ -36,7 +39,7 @@ Local oBrowse := FwMBrowse():New()
     oBrowse:SetDescription("Cadastro de Produtos x Marcas")
 
    // DEFINE DE ONDE SERÁ RETIRADO O MENUDEF
-   oBrowse:SetMenuDef("JCASCR03")
+   oBrowse:SetMenuDef("JCOMA001")
    
 
 Return (oBrowse)
@@ -54,11 +57,11 @@ Static Function MenuDef()
 Local aRot := {}
      
     //Adicionando opções
-    ADD OPTION aRot TITLE 'Visualizar' ACTION 'VIEWDEF.JCASCR03' OPERATION MODEL_OPERATION_VIEW   ACCESS 0 //OPERATION 1
+    ADD OPTION aRot TITLE 'Visualizar' ACTION 'VIEWDEF.JCOMA001' OPERATION MODEL_OPERATION_VIEW   ACCESS 0 //OPERATION 1
     ADD OPTION aRot TITLE 'Legenda'    ACTION 'u_ZPNLEG'         OPERATION 6                      ACCESS 0 //OPERATION X
-    ADD OPTION aRot TITLE 'Incluir'    ACTION 'VIEWDEF.JCASCR03' OPERATION MODEL_OPERATION_INSERT ACCESS 0 //OPERATION 3
-    ADD OPTION aRot TITLE 'Alterar'    ACTION 'VIEWDEF.JCASCR03' OPERATION MODEL_OPERATION_UPDATE ACCESS 0 //OPERATION 4
-    ADD OPTION aRot TITLE 'Excluir'    ACTION 'VIEWDEF.JCASCR03' OPERATION MODEL_OPERATION_DELETE ACCESS 0 //OPERATION 5
+    ADD OPTION aRot TITLE 'Incluir'    ACTION 'VIEWDEF.JCOMA001' OPERATION MODEL_OPERATION_INSERT ACCESS 0 //OPERATION 3
+    ADD OPTION aRot TITLE 'Alterar'    ACTION 'VIEWDEF.JCOMA001' OPERATION MODEL_OPERATION_UPDATE ACCESS 0 //OPERATION 4
+    ADD OPTION aRot TITLE 'Excluir'    ACTION 'VIEWDEF.JCOMA001' OPERATION MODEL_OPERATION_DELETE ACCESS 0 //OPERATION 5
  
 Return (aRot)
 
@@ -103,7 +106,7 @@ Static Function ViewDef()
 Local oView    := FwFormView():New()
 Local oStruSC5 := FwFormStruct(2, "ZPN")
 
-Local oModel   := FwLoadModel("JCASCR03")
+Local oModel   := FwLoadModel("JCOMA001")
 
     // REMOVE CAMPOS DA EXIBIÇÃO
     //oStruSC5:RemoveField("ZPN_FILIAL")

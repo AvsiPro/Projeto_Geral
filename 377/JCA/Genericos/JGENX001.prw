@@ -15,7 +15,7 @@
 ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
 */
 
-User Function JCAGEN01(xFil,Modulo,TipoMov,Prefixo,Docto,cItem,UserMov,DiaMov,HoraMov,Valor,Obs,cCli,cLoja,cTabela)
+User Function JGENX001(xFil,Modulo,TipoMov,Prefixo,Docto,cItem,UserMov,DiaMov,HoraMov,Valor,Obs,cCli,cLoja,cTabela)
 
 Local aArea	:= 	GetArea()
 
