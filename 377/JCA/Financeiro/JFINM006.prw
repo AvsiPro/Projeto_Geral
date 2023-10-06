@@ -34,6 +34,10 @@ User Function JFINM006()
 
 	nOpc := Aviso("Efetivação em lote",aDesc,{"Sim","Nao"})
 
+	IF nOpc == 2
+		Return
+	ENDIF
+
 	If !Pergunte (cPerg,.t.)
 		Return
 	Endif
@@ -88,7 +92,6 @@ User Function JFINM006()
 //		RetIndex("SIG")
 
 //		FErase(cIndexName+OrdBagExt())
-
 	Endif
 
 Return Nil
