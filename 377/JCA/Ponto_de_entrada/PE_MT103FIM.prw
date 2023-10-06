@@ -3,10 +3,16 @@
 User function MT103FIM
 
 Local nOpcao    := PARAMIXB[1]   // Opção Escolhida pelo usuario no aRotina 
-//Local nConfirma := PARAMIXB[2]   // Se o usuario confirmou a operação de gravação da NFECODIGO DE APLICAÇÃO DO USUARIO
+Local nConfirma := PARAMIXB[2]   // Se o usuario confirmou a operação de gravação da NFECODIGO DE APLICAÇÃO DO USUARIO
 Local aAux      := {}
 Local cChaveNf  := SF1->F1_FILIAL+SF1->F1_DOC+SF1->F1_SERIE+SF1->F1_FORNECE+SF1->F1_LOJA
 
+
+If nConfirma == 1 .And. nOpcao == 3
+    If MsgYesNo("Deseja imprimir etiqueta para os produtos da nota?")
+        U_JCAESTR2(1)
+    EndIf 
+EndIf 
 /*
 
 RETIRADO, POIS TONINHO INFORMOU QUE ENDEREÇAMENTO É APENAS INFORMATIVO NO CADASTRO DO PRODUTO

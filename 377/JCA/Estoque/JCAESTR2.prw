@@ -3,22 +3,40 @@
 #INCLUDE "protheus.ch"
 #Include 'TopConn.ch'
 
-User Function JCAESTR2()
+User Function JCAESTR2(nOpc)
 
 	//Local lFinal	:= .T.
+	Local nCont 
+	Default nOpc := 0
 
 	If Select("SM0") == 0
 		RpcSetType(3)
 		RPCSetEnv("01","00020087")
 	EndIf
 
-	If ValidPerg()
-		MsAguarde({|| ImpEtiq() },"Impressão de etiqueta","Aguarde...")
+	If nOpc == 1	
+		nPosPrd  := Ascan(aHeader,{|x| Alltrim(x[2]) == "D1_COD"})
+		nPosQtd  := Ascan(aHeader,{|x| Alltrim(x[2]) == "D1_QUANT"})
+
+		For nCont := 1 to len(aCols)
+			
+			MV_PAR01 := aCols[nCont,nPosPrd]
+			MV_PAR02 := aCols[nCont,nPosPrd]
+			MV_PAR03 := aCols[nCont,nPosQtd]
+			MV_PAR04 := "1"
+			MV_PAR05 := 'PDFCreator'
+			ImpEtiq()
+		Next nCont
+
+	Else 
+		If ValidPerg()
+			MsAguarde({|| ImpEtiq() },"Impressão de etiqueta","Aguarde...")
+		EndIf
 	EndIf
- 
 Return
  
 Static Function ImpEtiq()
+
 	Local cQuery	:= ""
 	Local cProdDe	:= MV_PAR01
 	Local cProdAte	:= MV_PAR02
@@ -54,7 +72,7 @@ Static Function ImpEtiq()
  
 	cQuery := "SELECT B1_COD AS CODIGO,B1_DESC AS DESCRI,B1_CODBAR AS CODBAR,ZPM_DESC AS MARCA,B1_UM AS UM"
     cQuery += " FROM "+RetSQLName("SB1")+" B1"
-    cQuery += " INNER JOIN "+RetSQLName("ZPM")+" ZPM ON ZPM_FILIAL=B1_FILIAL AND ZPM_COD=B1_ZMARCA AND ZPM.D_E_L_E_T_=' '"
+    cQuery += " LEFT JOIN "+RetSQLName("ZPM")+" ZPM ON ZPM_FILIAL=B1_FILIAL AND ZPM_COD=B1_ZMARCA AND ZPM.D_E_L_E_T_=' '"
     cQuery += " WHERE B1_FILIAL='"+xFilial("SB1")+"'"
 
     cQuery += " AND B1_COD BETWEEN '"+cProdDe+"' AND '"+cProdAte+"'"
@@ -94,7 +112,14 @@ Static Function ImpEtiq()
 			//nLin+= 10
             oPrinter:Say(nLin,nCol,alltrim(QRYTMP->CODIGO) ,oFont10)
             nLin+= 10
-            oPrinter:Say(nLin,nCol,alltrim(QRYTMP->DESCRI) ,oFont10) 
+
+			If len(alltrim(QRYTMP->DESCRI)) > 30
+				oPrinter:Say(nLin-1,nCol,substr(QRYTMP->DESCRI,1,30) ,oFont08)
+				
+				oPrinter:Say(nLin+5,nCol,substr(QRYTMP->DESCRI,31) ,oFont08)
+			Else 
+            	oPrinter:Say(nLin,nCol,alltrim(QRYTMP->DESCRI) ,oFont10) 
+			EndIf
             
             //nLinC += 1
 			oPrinter:FWMSBAR("CODE128" , nLinC , nColC, alltrim(QRYTMP->CODIGO), oPrinter,/*lCheck*/,/*Color*/,/*lHorz*/, nWidth, nHeigth,.F.,/*cFont*/,/*cMode*/,.F./*lPrint*/,nPFWidth,nPFHeigth,lCmtr2Pix)
