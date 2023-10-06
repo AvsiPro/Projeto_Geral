@@ -6,6 +6,6 @@ User Function MNTA420M()
 aCores := { {"TJ_SITUACA=='L'","BR_VERDE"},;
 			{"TJ_SITUACA=='C'","BR_CINZA"},;
             {"TJ_SITUACA=='P'","BR_AMARELO"},;
-            {"TJ_SITUACA=='B'","BR_VERMELHO"} }
+            {"TJ_SITUACA=='B'","BR_VERMELHO"}}
 
 Return .T.
