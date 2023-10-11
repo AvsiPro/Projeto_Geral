@@ -18,7 +18,7 @@ User Function JFINM006()
 	Local   nOpc       := 0
 	Local 	nX 			:= 0
 	Local   aDesc      := "Este programa irá efetivar os movimentos em lote."+chr(13)+"Informe as 3 primieras letras dos históricos desejados."+chr(13)+"Separando por ponto e virula, para mais de uma opção. EX: TAR;REN "
-	Local 	cHist	:=	""
+	PRIVATE	cHist	:=	""
 
 	PRIVATE 	cBanco	:= ''
 	PRIVATE aHist	:= {}
@@ -30,13 +30,13 @@ User Function JFINM006()
 	Private _lBcoCorrespondente := .f.
 
 	If Empty(FunName())
-	   RpcSetType(3)
-	   RpcSetEnv('01','00020087')
+		RpcSetType(3)
+		RpcSetEnv('01','00020087')
 	EndIf
 
 	nOpc := Aviso("Efetivação em lote",aDesc,{"Sim","Nao"})
 
- 	aPergs   := {}
+	aPergs   := {}
 
 	aAdd(aPergs, {1, "Histórico",  space(100),  "",             ".T.",        "", ".T.", 80,  .F.})
 	aAdd(aPergs, {1, "Banco", Space(TamSx3('A6_COD')[1]),  "",             ".T.",        "SA6", ".T.", 80,  .T.})
@@ -60,94 +60,98 @@ User Function JFINM006()
 
 	If nOpc == 1
 
+		fSeleSIF()
 
-	fSeleSIF()
+		lSIF :=.f.
 
-	TTRB1->(DbGoTop())
-	while !TTRB1->(Eof())
-		IF !Empty(TTRB1->IF_XOK)
-
-			IF Select('TTRB') > 0
-				dbSelectArea('TTRB')
-				dbCloseArea()
+		TTRB1->(DbGoTop())
+		while !TTRB1->(Eof())
+			IF !Empty(TTRB1->IF_XOK)
+				IF !lSIF
+					cProcesso := TTRB1->IF_IDPROC
+					lSIF := .T.
+				ELSE
+					cProcesso += ","+TTRB1->IF_IDPROC
+				ENDIF
 			ENDIF
+			TTRB1->(DbSkip())
+		EndDo
 
-			cMarca := GetMark( )
-			_stru   := SIG->(DbStruct())
-
-			cArq:=Criatrab(_stru,.T.)
-
-			DBUSEAREA(.t.,,carq,"TTRB") //Alimenta o arquivo de apoio com os registros do cadastro de clientes (SA1)
-
-			cQuery := " SELECT * FROM "+RetSqlName("SIG")+" "
-			cQuery += " WHERE D_E_L_E_T_ = ' ' "
-			cQuery += " AND IG_BCOEXT = '"+MV_PAR02+"' "
-			cQuery += " AND IG_AGEEXT = '"+MV_PAR03+"' "
-			cQuery += " AND IG_CONEXT = '"+MV_PAR04+"' "
-			cQuery += " AND IG_DTEXTR BETWEEN '"+DTOS(MV_PAR05)+"' AND '"+DTOS(MV_PAR06)+"' "
-			cQuery += " AND IG_IDPROC = '"+TTRB1->IF_IDPROC+"' "
-			cQuery += " AND IG_STATUS = '1' "
-			cQuery += " AND IG_CARTER = '2' "
-					
-			cAliasTMP := GetNextAlias()
-			MPSysOpenQuery(cQuery, cAliasTMP)
-			
-			While (cAliasTMP)->(!EoF())
-				if SUBSTRING(ALLTRIM((cAliasTMP)->IG_HISTEXT),1,3) $ cHist
-
-					RecLock("TTRB",.T.)                                 
-						TTRB->IG_XOK 	:= cMarca
-						TTRB->IG_IDPROC := (cAliasTMP)->IG_IDPROC
-						TTRB->IG_ITEM   := (cAliasTMP)->IG_ITEM
-						TTRB->IG_VLREXT := (cAliasTMP)->IG_VLREXT
-						TTRB->IG_DTEXTR := SToD((cAliasTMP)->IG_DTEXTR)
-						TTRB->IG_HISTEXT:= (cAliasTMP)->IG_HISTEXT
-						TTRB->IG_AGEEXT := (cAliasTMP)->IG_AGEEXT
-						TTRB->IG_CONEXT := (cAliasTMP)->IG_CONEXT
-						TTRB->IG_DOCEXT := (cAliasTMP)->IG_DOCEXT
-						TTRB->IG_SEQMOV := (cAliasTMP)->IG_SEQMOV
-					TTRB->(MsUnlock())
-
-				EndIf
-
-				(cAliasTMP)->(DbSkip())
-			EndDo
-			
-			(cAliasTMP)->(DbCloseArea())
-
-			DbSelectArea('TTRB')
-			TTRB->(dbGoTop())
-
-			aCpoBro := {;
-				{ "IG_XOK" ,, "Mark" ,"@!"},;
-				{ "IG_ITEM" ,, "Item" ,"@!"},;
-				{ "IG_VLREXT" ,, "Valor" ,"@E 999,999,999.99"},;
-				{ "IG_DTEXTR" ,, "Data" ,"@!"},;
-				{ "IG_HISTEXT" ,, "Histórico" ,"@!"},;
-				{ "IG_AGEEXT" ,, "Agencia" ,"@!"},;
-				{ "IG_CONEXT" ,, "Conta" ,"@!"},;
-				{ "IG_DOCEXT" ,, "Documento" ,"@!"};
-			}
-
-			@ 001,001 TO 400,700 DIALOG oDlg TITLE "Selecao de Movimentos"
-			oMark:=MsSelect():New("TTRB","IG_XOK",,aCpoBro,,cMarca,{02,1,170,350})
-			oMark:oBrowse:lhasMark := .t.
-			oMark:oBrowse:lCanAllmark := .t.
-			oMark:oBrowse:bAllMark := {|| Inverte(cMarca,@oMark)}
-
-			@ 180,310 BMPBUTTON TYPE 01 ACTION (Exec := .T.,Close(oDlg))
-			@ 180,280 BMPBUTTON TYPE 02 ACTION (Exec := .F.,Close(oDlg))
-			ACTIVATE DIALOG oDlg CENTERED
-
-			If Exec
-				Processa({|lEnd|EFETIVA()})  //Executa movimento financeiro a pagar e atualiza SIG
-			Endif
-
+		IF Select('TTRB') > 0
+			dbSelectArea('TTRB')
+			dbCloseArea()
 		ENDIF
 
-		TTRB1->(DbSkip())
-	EndDo
+		cMarca := GetMark( )
+		_stru   := SIG->(DbStruct())
 
+		cArq:=Criatrab(_stru,.T.)
+
+		DBUSEAREA(.t.,,carq,"TTRB") //Alimenta o arquivo de apoio com os registros do cadastro de clientes (SA1)
+
+		cQuery := " SELECT * FROM "+RetSqlName("SIG")+" "
+		cQuery += " WHERE D_E_L_E_T_ = ' ' "
+		cQuery += " AND IG_BCOEXT = '"+MV_PAR02+"' "
+		cQuery += " AND IG_AGEEXT = '"+MV_PAR03+"' "
+		cQuery += " AND IG_CONEXT = '"+MV_PAR04+"' "
+		cQuery += " AND IG_DTEXTR BETWEEN '"+DTOS(MV_PAR05)+"' AND '"+DTOS(MV_PAR06)+"' "
+		cQuery += " AND IG_IDPROC IN ("+cProcesso+") "
+		cQuery += " AND IG_STATUS = '1' "
+		cQuery += " AND IG_CARTER = '2' "
+
+		cAliasTMP := GetNextAlias()
+		MPSysOpenQuery(cQuery, cAliasTMP)
+
+		While (cAliasTMP)->(!EoF())
+			if SUBSTRING(ALLTRIM((cAliasTMP)->IG_HISTEXT),1,3) $ cHist
+
+				RecLock("TTRB",.T.)
+				TTRB->IG_XOK 	:= cMarca
+				TTRB->IG_IDPROC := (cAliasTMP)->IG_IDPROC
+				TTRB->IG_ITEM   := (cAliasTMP)->IG_ITEM
+				TTRB->IG_VLREXT := (cAliasTMP)->IG_VLREXT
+				TTRB->IG_DTEXTR := SToD((cAliasTMP)->IG_DTEXTR)
+				TTRB->IG_HISTEXT:= (cAliasTMP)->IG_HISTEXT
+				TTRB->IG_AGEEXT := (cAliasTMP)->IG_AGEEXT
+				TTRB->IG_CONEXT := (cAliasTMP)->IG_CONEXT
+				TTRB->IG_DOCEXT := (cAliasTMP)->IG_DOCEXT
+				TTRB->IG_SEQMOV := (cAliasTMP)->IG_SEQMOV
+				TTRB->(MsUnlock())
+
+			EndIf
+
+			(cAliasTMP)->(DbSkip())
+		EndDo
+
+		(cAliasTMP)->(DbCloseArea())
+
+		DbSelectArea('TTRB')
+		TTRB->(dbGoTop())
+
+		aCpoBro := {;
+			{ "IG_XOK" ,, "Mark" ,"@!"},;
+			{ "IG_ITEM" ,, "Item" ,"@!"},;
+			{ "IG_VLREXT" ,, "Valor" ,"@E 999,999,999.99"},;
+			{ "IG_DTEXTR" ,, "Data" ,"@!"},;
+			{ "IG_HISTEXT" ,, "Histórico" ,"@!"},;
+			{ "IG_AGEEXT" ,, "Agencia" ,"@!"},;
+			{ "IG_CONEXT" ,, "Conta" ,"@!"},;
+			{ "IG_DOCEXT" ,, "Documento" ,"@!"};
+			}
+
+		@ 001,001 TO 400,700 DIALOG oDlg TITLE "Selecao de Movimentos"
+		oMark:=MsSelect():New("TTRB","IG_XOK",,aCpoBro,,cMarca,{02,1,170,350})
+		oMark:oBrowse:lhasMark := .t.
+		oMark:oBrowse:lCanAllmark := .t.
+		oMark:oBrowse:bAllMark := {|| Inverte(cMarca,@oMark)}
+
+		@ 180,310 BMPBUTTON TYPE 01 ACTION (Exec := .T.,Close(oDlg))
+		@ 180,280 BMPBUTTON TYPE 02 ACTION (Exec := .F.,Close(oDlg))
+		ACTIVATE DIALOG oDlg CENTERED
+
+		If Exec
+			Processa({|lEnd|EFETIVA()})  //Executa movimento financeiro a pagar e atualiza SIG
+		Endif
 
 	Endif
 
@@ -156,7 +160,7 @@ Return Nil
 
 
 /*/{Protheus.doc} fSeleSIF
-   @description: 
+   @description:
    @type: Static Function
    @author: Felipe Mayer
    @since: 09/10/2023
@@ -164,7 +168,7 @@ Return Nil
 
 Static Function fSeleSIF()
 
-Local cMarca := GetMark( )
+	Local cMarca := GetMark( )
 
 
 	IF Select('TTRB1') > 0
@@ -181,25 +185,25 @@ Local cMarca := GetMark( )
 
 	cQuery := " SELECT * FROM "+RetSqlName("SIF")+" "
 	cQuery += " WHERE D_E_L_E_T_ = ' ' "
-	
+
 	cAliasTMP := GetNextAlias()
 	MPSysOpenQuery(cQuery, cAliasTMP)
-	
+
 	While (cAliasTMP)->(!EoF())
 
-		RecLock("TTRB1",.T.)                                 
-			TTRB1->IF_IDPROC := (cAliasTMP)->IF_IDPROC
-			TTRB1->IF_DTPROC := SToD((cAliasTMP)->IF_DTPROC)
-			TTRB1->IF_BANCO := (cAliasTMP)->IF_BANCO
-			TTRB1->IF_DESC := (cAliasTMP)->IF_DESC
-			TTRB1->IF_ARQIMP:= (cAliasTMP)->IF_ARQIMP
-			TTRB1->IF_ARQCFG := (cAliasTMP)->IF_ARQCFG
-			TTRB1->IF_STATUS := (cAliasTMP)->IF_STATUS
+		RecLock("TTRB1",.T.)
+		TTRB1->IF_IDPROC := (cAliasTMP)->IF_IDPROC
+		TTRB1->IF_DTPROC := SToD((cAliasTMP)->IF_DTPROC)
+		TTRB1->IF_BANCO := (cAliasTMP)->IF_BANCO
+		TTRB1->IF_DESC := (cAliasTMP)->IF_DESC
+		TTRB1->IF_ARQIMP:= (cAliasTMP)->IF_ARQIMP
+		TTRB1->IF_ARQCFG := (cAliasTMP)->IF_ARQCFG
+		TTRB1->IF_STATUS := (cAliasTMP)->IF_STATUS
 		TTRB1->(MsUnlock())
-		
+
 		(cAliasTMP)->(DbSkip())
 	EndDo
-	
+
 	(cAliasTMP)->(DbCloseArea())
 
 
@@ -212,7 +216,7 @@ Local cMarca := GetMark( )
 		{ "IF_ARQIMP" ,, "Arquivo Imp" ,"@!"},;
 		{ "IF_ARQCFG" ,, "Arquivo Cfg" ,"@!"},;
 		{ "IF_STATUS" ,, "Status" ,"@!"};
-	}
+		}
 
 	@ 001,001 TO 400,700 DIALOG oDlg TITLE "Selecao de Registros"
 	oMark:=MsSelect():New("TTRB1","IF_XOK",,aCpoBro1,,cMarca,{02,1,170,350})
@@ -223,7 +227,7 @@ Local cMarca := GetMark( )
 	@ 180,280 BMPBUTTON TYPE 02 ACTION (Exec := .F.,Close(oDlg))
 	ACTIVATE DIALOG oDlg CENTERED
 
-	
+
 Return
 
 
@@ -240,7 +244,7 @@ static function EFETIVA()
 	Private lApC := .F.
 	Private aAlcada := {}
 	Private lMsErroAuto := .F.
-		
+
 	TTRB->(DbGoTop())
 	while !TTRB->(Eof())
 		IF !Empty(TTRB->IG_XOK)
@@ -293,7 +297,7 @@ static function EFETIVA()
 					Conout(cMsgErro)
 					lRet := .F.
 				ELSE
-					
+
 					//ATUALIZA SIG
 					//IG_FILIAL+IG_IDPROC+IG_ITEM
 					DbSelectArea('SIG')
@@ -311,7 +315,7 @@ static function EFETIVA()
 						SIG->IG_VLRMOV  := aEfetiv[nAt,3]
 						SIG->(MsUnLock())
 					ENDIF
-					
+
 				ENDIF
 			ENDIF
 		Next nAt
