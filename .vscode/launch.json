@@ -24,7 +24,10 @@
 		},
 		{
 			"label": "U_WSAPP20"
+		},
+		{
+			"label": "SIGAMDI"
 		}
 	],
-	"lastProgramExecuted": "U_WSAPP20"
+	"lastProgramExecuted": "SIGAMDI"
 }
