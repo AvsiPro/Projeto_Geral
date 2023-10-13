@@ -212,39 +212,78 @@ Return
 Static Function xf460a(aItens)
 
 Local nCont 
+Local aAttach := {}
+
 Private oHtml
 
-cArqHTML    := "\workflow\Aviso_Liquidacao.html"
-cPathHTML   := GetMV("MV_WFDIR") 
 
-For nCont := 1 to len(aItens)
-    oHtml := TWFHtml():New( cArqHTML )
+Private cMarca  	:= GetMark()
 
-    //oHTML:ValByName("E1_TIT",aItens[nCont,8])
-    //oHTML:ValByName("E1_EMISSAO",aItens[nCont,12])
-    oHTML:ValByName("A1_NOME",aItens[nCont,6])
+If len(aItens[1]) >= 8
+    For nCont := 1 to len(aItens[1,8])
+        aChave := separa(aItens[1,8,nCont,01],"/")
+        DbSelectArea("SE1")
+        DbsetOrder(1)
+        If Dbseek(aItens[1,1]+aChave[1]+aChave[2]+aChave[3]) //+aChave[4])
+            Reclock("SE1",.F.)
+            Replace E1_OK With cMarca
+            MsUnLock()
+        EndIf
+    Next nCont 
+
+    lBolSeparado := .f.
+
+    MV_PAR19 := '001'
+    MV_PAR20 := '237'
+    MV_PAR21 := '3375'
+    MV_PAR22 := '00000628'
+    CCMPVENCTO := SE1->E1_VENCTO
+
+
+    cFileBol := U_RF01BImp(.f.)
+    If !'.pdf' $ cFileBol
+        cFileBol := alltrim(cFileBol)+'.pdf'
+    EndIf 
+
+    cpyt2s(alltrim(cFileBol),'\spool\')
+    aAux := separa(cFileBol,"\")
+    cNewloc := '\spool\'+aaux[len(aaux)]
     
-    cItens := xGermail(aItens[nCont,8],1)
-    oHTML:ValByName("linhasnovo",cItens)
-    
-    cItens := xGermail(aItens[nCont],2)
-    oHTML:ValByName("linhasliq",cItens)
-    //cMail := 'alexandre.venancio@avsipro.com.br' // pode ser obtido de um parâmetro
+    Aadd(aAttach,cNewloc)
 
-    cFileName    := CriaTrab(NIL,.F.) + ".htm"
-    cFileName    := cPathHTML + "\" + cFileName 
-    oHtml:SaveFile(cFileName)
+    cArqHTML    := "\workflow\Aviso_Liquidacao.html"
+    cPathHTML   := GetMV("MV_WFDIR") 
 
-    cRet         := WFLoadFile(cFileName)
-    cMensagem    := StrTran(cRet,chr(13),"")
-    cMensagem    := StrTran(cRet,chr(10),"")
-    cMensagem    := OemtoAnsi(cMensagem)
-    
-    //EMAIL aItens[nCont,7]
-    cEmailTst := SUPERGETMV( "TI_EMAILTST", .F., "alexandre.venancio@avsipro.com.br" )
+    For nCont := 1 to len(aItens)
+        oHtml := TWFHtml():New( cArqHTML )
 
-    U_JGENX002(cEmailTst,'Titulos aglutinados JCA',cMensagem,'',.F.)
-Next nCont 
+        //oHTML:ValByName("E1_TIT",aItens[nCont,8])
+        //oHTML:ValByName("E1_EMISSAO",aItens[nCont,12])
+        oHTML:ValByName("A1_NOME",aItens[nCont,6])
+        
+        cItens := xGermail(aItens[nCont,8],1)
+        oHTML:ValByName("linhasnovo",cItens)
+        
+        cItens := xGermail(aItens[nCont],2)
+        oHTML:ValByName("linhasliq",cItens)
+        //cMail := 'alexandre.venancio@avsipro.com.br' // pode ser obtido de um parâmetro
+
+        cFileName    := CriaTrab(NIL,.F.) + ".htm"
+        cFileName    := cPathHTML + "\" + cFileName 
+        oHtml:SaveFile(cFileName)
+
+        cRet         := WFLoadFile(cFileName)
+        cMensagem    := StrTran(cRet,chr(13),"")
+        cMensagem    := StrTran(cRet,chr(10),"")
+        cMensagem    := OemtoAnsi(cMensagem)
+        
+        //EMAIL aItens[nCont,7]
+        cEmailTst := SUPERGETMV( "TI_EMAILTST", .F., "alexandre.venancio@avsipro.com.br" )
+        //cEmailTst := 'alexandre.venancio@avsipro.com.br'
+        U_JGENX002(cEmailTst,'Titulos aglutinados JCA',cMensagem,cNewloc,.F.)
+        //U_JGENX2z('',cEmailTst,'Titulos aglutinados JCA',cMensagem,aAttach,lConfirm,cCC,cBCC)
+    Next nCont 
+EndIf
 
 Return
 

@@ -39,7 +39,7 @@ For nX := 1 To Len(PARAMIXB[2]:AARRAY)
  EndDo
 Next nX
 
-// Redefine bLine do objeto oQual inlcuindo a coluna nova
+// Redefine bLine do objeto oQual incluindo a coluna nova
 aItens := PARAMIXB[2]:AARRAY
 PARAMIXB[2]:bLine := { || {aItens[oQual:nAT][1],aItens[oQual:nAT][2],aItens[oQual:nAT][3],aItens[oQual:nAT][4],aItens[oQual:nAT][5],aItens[oQual:nAT][6],aItens[oQual:nAT][7],aItens[oQual:nAT][8]}}
 // 1-Produto; 2-Unid.Medida; 3-Quantidade; 4-Obs.; 5-Dt.Emissao; 6-Descricao; 7-Fil.Entrega

@@ -1,6 +1,15 @@
 #INCLUDE 'PROTHEUS.CH'
+/*
+    Gatilhar o campo com quantidade na atualização de cotações
+    MIT 44_COMPRAS_COM010 - Histórico de Renegociações com Fornecedor - processo cotação
 
-User Function JCAGAT05
+    Doc Mit
+    https://docs.google.com/document/d/16xzLf8aK-K80MuSAq9ejX0ExjPrX7efc/edit
+    Doc Entrega
+    https://docs.google.com/document/d/1JhdsRjmUgZ7KhZ0-5UaWeBTaWKrNXyRu/edit
+    
+*/
+User Function JCOMG003
 
 Local aArea := GetArea()
 Local nRet  := M->C8_XQTDATU

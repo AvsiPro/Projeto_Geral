@@ -17,6 +17,7 @@ Local oHtml
 Local cPathHTML
 Local nX,nY 
 Local nDias
+Local aGrpCom     :=  {}
 Local aAuxEnv     :=  {}
 Private aAux      :=  {}
 Private aCampos   :=  {}
@@ -29,16 +30,17 @@ EndIf
 cArqHTML    := "\workflow\Aviso_Compra.html"
 cPathHTML   := GetMV("MV_WFDIR") 
 nDias       := SUPERGETMV( "JC_DIASSC", .F., 2 )
-    
+
+sDiaRed := dtos(ddatabase + nDias)
 sDiaRef := dtos(datavalida(ddatabase + nDias))
 
 cQuery := "SELECT C1_FILIAL,C1_SCORI,C1_DATPRF,C1_ITSCORI,C1_FISCORI,'' AS C1_NOMCOMP,C1_APROV"  	 
 cQuery += ",C1_CONDPAG,C1_VUNIT,'' AS C1_CODITE,'' AS C1_CODGRP,C1_SOLICIT,C1_ITEMPED"
 cQuery += ",C1_PEDIDO,C1_LOJA,C1_FORNECE,C1_COTACAO,C1_EMISSAO,C1_LOCAL,C1_TOTAL,C1_PRECO"
-cQuery += ",C1_QUANT,C1_DESCRI,C1_UM,C1_PRODUTO,C1_ITEM,C1_NUM"
+cQuery += ",C1_QUANT,C1_DESCRI,C1_UM,C1_PRODUTO,C1_ITEM,C1_NUM,C1_GRUPCOM,C1_USER"
 cQuery += " FROM "+RetSQLName("SC1")
 cQuery += " WHERE D_E_L_E_T_=' '"
-cQuery += " AND C1_DATPRF='"+sDiaRef+"'"
+cQuery += " AND C1_DATPRF BETWEEN '"+sDiaRed+"' AND '"+sDiaRef+"'"
 
 IF Select('TRB') > 0
     dbSelectArea('TRB')
@@ -51,6 +53,10 @@ DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
 DbSelectArea("TRB")  
 
 WHILE !EOF()
+    If Ascan(aGrpCom,{|x| x[1] == TRB->C1_NUM}) == 0
+        Aadd(aGrpCom,{TRB->C1_NUM,TRB->C1_FILIAL,TRB->C1_GRUPCOM,TRB->C1_USER,''})
+    EndIf 
+
     Aadd(aAux,{ TRB->C1_SCORI,;
                 TRB->C1_DATPRF,;
                 TRB->C1_ITSCORI,;
@@ -80,6 +86,43 @@ WHILE !EOF()
                 FWFilialName('01',TRB->C1_FILIAL)})
     Dbskip()
 EndDo
+
+For nX := 1 to len(aGrpCom)
+    If Empty(aGrpCom[nX,03])
+        DbSelectArea("SY1")
+        DbSetOrder(3)
+        If Dbseek(xFilial("SY1")+aGrpCom[nX,04])
+            aGrpCom[nX,03] := SY1->Y1_GRUPCOM
+        EndIf
+    EndIf 
+
+    If !Empty(aGrpCom[nX,03])
+        DbSelectArea("SAJ")
+        DbSetOrder(1)
+        cBarra := ""
+        If Dbseek(xFilial("SAJ")+aGrpCom[nX,03])
+            While !EOF() .AND. SAJ->AJ_FILIAL == xFilial("SAJ") .And. SAJ->AJ_GRCOM == aGrpCom[nX,03]
+                //DEFINIR DESTINATARIO DE EMAIL DE ONDE VAI PEGAR
+                //UsrRetMail(cUserID)
+                aGrpCom[nX,05] += cBarra + Alltrim(UsrRetMail(SAJ->AJ_USER))
+                cBarra := ";"
+
+                Dbskip()
+            EndDo
+        EndIf 
+    Else 
+        DbSelectArea("SAJ")
+        DbSetOrder(1)
+        Dbgotop()
+        DbSeek(xFilial("SAJ"))
+        cBarra := ""
+        While !EOF() .AND. SAJ->AJ_FILIAL == xFilial("SAJ")
+            aGrpCom[nX,05] += cBarra + Alltrim(UsrRetMail(SAJ->AJ_USER))
+            cBarra := ";"
+            Dbskip()
+        EndDo
+    EndIf 
+Next nX
 
 If len(aAux) > 0
     Aadd(aCampos,{  "C1_SCORI",;
@@ -139,8 +182,14 @@ If len(aAux) > 0
             cMensagem    := StrTran(cRet,chr(10),"")
             cMensagem    := OemtoAnsi(cMensagem)
             
-            cEmailTst := SUPERGETMV( "TI_EMAILTST", .F., "alexandre.venancio@avsipro.com.br" )
-            //DEFINIR DESTINATARIO DE EMAIL DE ONDE VAI PEGAR
+            nPosic := ascan(aGrpCom,{|x| x[1] == aAuxEnv[len(aAuxEnv)]})
+
+            If nPosic > 0
+                cEmailTst := Alltrim(aGrpCom[nPosic,05])
+            Else
+                cEmailTst := SUPERGETMV( "TI_MAILCMP", .F., "caio.xavier@totvs.com.br" )
+            endIf
+            
             U_JGENX002(cEmailTst,'Solicitação de compra empresa - '+FwCutOff(aAux[nX,27],.T.),cMensagem,'',.F.)
         EndIf
     Next nX 

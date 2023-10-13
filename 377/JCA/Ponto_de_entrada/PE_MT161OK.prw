@@ -50,7 +50,8 @@ If lCotOk
                     If aDados[nCont1,nCont2,1]
                         Aadd(aItensV,{  aDados[nCont1,nCont2,3],;
                                         aDados[nCont1,nCont2,4],;
-                                        aDados[nCont1,nCont2,13]})
+                                        aDados[nCont1,nCont2,13],;
+                                        aDados[nCont1,nCont2,4] / aDados[nCont1,nCont2,13]})
                     EndIf 
                 //Next nCont3
             EndIf 
@@ -58,6 +59,7 @@ If lCotOk
     Next nCont1
 
     If len(aItensV) > 0
+        
         lCotOk := valc1qtd(SC8->C8_NUM,aItensV)
         If lCotOk
             gravar(aDados)
@@ -201,20 +203,28 @@ EndDo
 
 
 For nCont := 1 to len(aItensV)
+    nSoma := 0
+    //Aeval(aItem,{|x| nSoma += IF(Alltrim(x[2])==substr(aItensV[nCont,01],1,8),x[4],0)})
+    nPosc1 := Ascan(aItem,{|x| alltrim(x[2]) == substr(aItensV[nCont,01],1,8)})
+    If nPosc1 > 0
+        nSoma := aItem[nPosc1,03]
+    EndIf 
+
     nPos := Ascan(aItem,{|x| alltrim(x[1]) == alltrim(aItensV[nCont,01])})
     If nPos > 0
         nPos2 := Ascan(aAux,{|x| alltrim(x[1]) == alltrim(aItem[nPos,02])})
 
         If nPos2 == 0
-            Aadd(aAux,{aItem[nPos,02],aItem[nPos,3],aItensV[nCont,02] / aItensV[nCont,03]})
+            Aadd(aAux,{aItem[nPos,02],aItem[nPos,3],round(aItensV[nCont,02] / aItensV[nCont,03],2),nSoma}) //round(aItensV[nCont,04],2)})
         Else 
-            aAux[nPos2,3] += aItensV[nCont,02] / aItensV[nCont,03]
+            aAux[nPos2,3] += round(aItensV[nCont,02] / aItensV[nCont,03],2)
+            //aAux[nPos2,4] += round(aItensV[nCont,04],2)
         EndIf
     EndIf 
 Next nCont
 
 For nCont := 1 to len(aAux)
-    If aAux[nCont,03] > aAux[nCont,02] 
+    If aAux[nCont,03] > aAux[nCont,04] 
         If Empty(cMsg)
             cMsg := "Divergência na quantidade de itens selecionados com a quantidade de itens da solicitação de compra"
         ENDIF

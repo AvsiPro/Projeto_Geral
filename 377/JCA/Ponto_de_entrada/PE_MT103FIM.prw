@@ -10,7 +10,7 @@ Local cChaveNf  := SF1->F1_FILIAL+SF1->F1_DOC+SF1->F1_SERIE+SF1->F1_FORNECE+SF1-
 
 If nConfirma == 1 .And. nOpcao == 3
     If MsgYesNo("Deseja imprimir etiqueta para os produtos da nota?")
-        U_JCAESTR2(1)
+        U_JESTR002(1)
     EndIf 
 EndIf 
 /*

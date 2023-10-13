@@ -15,7 +15,7 @@
 ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
 */
 
-User Function JGENX001(xFil,Modulo,TipoMov,Prefixo,Docto,cItem,UserMov,DiaMov,HoraMov,Valor,Obs,cCli,cLoja,cTabela)
+User Function JGENX001(xFil,Modulo,TipoMov,Prefixo,Docto,cItem,UserMov,DiaMov,HoraMov,Valor,Obs,cCli,cLoja,cTabela,nQtdAtu,nVlTotA,nVlAnt,nQtdAnt,nTotAnt)
 
 Local aArea	:= 	GetArea()
 
@@ -34,6 +34,11 @@ Local aArea	:= 	GetArea()
 	SZL->ZL_CLIENTE		:= cCli           							//6		Caracter
 	SZL->ZL_LOJA		:= cLoja	                				//4		Caracter   
 	SZL->ZL_TABELA		:= cTabela									//3 	Caracter
+	SZL->ZL_QTD 		:= nQtdAtu
+	SZL->ZL_TOTAL		:= nVlTotA
+	SZL->ZL_VLRANT		:= nVlAnt
+	SZL->ZL_QTDANT 		:= nQtdAnt
+	SZL->ZL_TOTLANT		:= nTotAnt
 	SZL->(MsUnLock())
 
 RestArea(aArea)
