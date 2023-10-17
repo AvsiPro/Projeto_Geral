@@ -26,6 +26,7 @@ Local nPosDesc  :=  Ascan(aHeader,{|x| Alltrim(x[2]) == "C1_DESCRI"})
 Local nCont     :=  1
 Local nX        :=  1
 Local nZ        :=  1
+Local cFiEntr   :=  If(nOpt==1,CFILENT,'')
 
 If nOpt == 1 .And. !lCopia
     For nCont := 1 to len(aCols)
@@ -65,6 +66,7 @@ If nOpt == 1 .And. !lCopia
             Reclock("SC1",.T.)
             SC1->C1_FILIAL := cFilant
             SC1->C1_NUM    := cNumSol
+            SC1->C1_FILENT := cFiEntr
             For nX := 1 to len(aHeader)
                 lUsado := X3USO(GetSX3Cache(aHeader[nX,02], "X3_USADO"))
                 cTipo := GetSX3Cache(aHeader[nX,02], "X3_CONTEXT")

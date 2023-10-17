@@ -14,7 +14,8 @@ Local nNumSc    := SC7->C7_NUMSC
     If !Empty(cNumCot)
         DbSelectArea("SC8")
         DbSetOrdeR(1)
-        If Dbseek(xFilial("SC8")+cNumCot+SC7->C7_FORNECE+SC7->C7_LOJA+'0001')
+        DbGotop()
+        If Dbseek(xFilial("SC8")+cNumCot)
             While !EOF() .AND. SC8->C8_FILIAL == xFilial("SC8") .AND. SC8->C8_NUM == cNumCot
                 If SC8->C8_NUMPED == SC7->C7_NUM .OR. Alltrim(SC8->C8_NUMPED) == 'XXXXXX' 
                     Reclock("SC8",.F.)

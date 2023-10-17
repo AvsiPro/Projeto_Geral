@@ -130,6 +130,7 @@ If DbSeek(xFilial("SB1")+cCodigo) //
         MsgAlert("Registro INCLUIDO!", "Atenção")
     Else
         VarInfo("",oModel:GetErrorMessage())
+        MsgAlert((oModel:GetErrorMessage()[6]), "Atenção")
     EndIf       
 
     oModel:DeActivate()
