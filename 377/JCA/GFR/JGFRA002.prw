@@ -7,7 +7,7 @@
 //Variáveis Estáticas
 Static cTitulo := "Cadastro de Peças com Tempo Previsto"
 
-User Function JCASCR02()
+User Function JGFRA002()
     Local aArea   := GetArea()
     Local oBrowse
      
@@ -30,10 +30,10 @@ Static Function MenuDef()
     Local aRot := {}
      
     //Adicionando opções
-    ADD OPTION aRot TITLE 'Visualizar'  ACTION 'VIEWDEF.JCASCR02' OPERATION MODEL_OPERATION_VIEW   ACCESS 0 //OPERATION 1
-    ADD OPTION aRot TITLE 'Incluir'     ACTION 'VIEWDEF.JCASCR02' OPERATION MODEL_OPERATION_INSERT ACCESS 0 //OPERATION 3
-    ADD OPTION aRot TITLE 'Alterar'     ACTION 'VIEWDEF.JCASCR02' OPERATION MODEL_OPERATION_UPDATE ACCESS 0 //OPERATION 4
-    ADD OPTION aRot TITLE 'Excluir'     ACTION 'VIEWDEF.JCASCR02' OPERATION MODEL_OPERATION_DELETE ACCESS 0 //OPERATION 5
+    ADD OPTION aRot TITLE 'Visualizar'  ACTION 'VIEWDEF.JGFRA002' OPERATION MODEL_OPERATION_VIEW   ACCESS 0 //OPERATION 1
+    ADD OPTION aRot TITLE 'Incluir'     ACTION 'VIEWDEF.JGFRA002' OPERATION MODEL_OPERATION_INSERT ACCESS 0 //OPERATION 3
+    ADD OPTION aRot TITLE 'Alterar'     ACTION 'VIEWDEF.JGFRA002' OPERATION MODEL_OPERATION_UPDATE ACCESS 0 //OPERATION 4
+    ADD OPTION aRot TITLE 'Excluir'     ACTION 'VIEWDEF.JGFRA002' OPERATION MODEL_OPERATION_DELETE ACCESS 0 //OPERATION 5
     ADD OPTION aRot TITLE 'Aprovadores' ACTION 'u_JCA2APRV()'     OPERATION 9 ACCESS 0
  
 Return aRot
@@ -65,7 +65,7 @@ Return oModel
 Static Function ViewDef()
      
     //Criação do objeto do modelo de dados da Interface do Cadastro de Autor/Interprete
-    Local oModel := FWLoadModel("JCASCR02")
+    Local oModel := FWLoadModel("JGFRA002")
      
     //Criação da estrutura de dados utilizada na interface do cadastro de Autor
     Local oStZPO := FWFormStruct(2, "ZPO")  //pode se usar um terceiro parâmetro para filtrar os campos exibidos { |cCampo| cCampo $ 'SZPO_NOME|SZPO_DTAFAL|'}

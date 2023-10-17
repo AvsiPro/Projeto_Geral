@@ -15,7 +15,7 @@ Local aRotUser := {}
 //    5 - Remove o registro corrente do Banco de Dados         
 //    6 - Altera determinados campos sem incluir novos Regs     
 
-AAdd( aRotUser, { 'Cadastro de Marcas', 'U_JCASCR01()', 0, 3 } )
+AAdd( aRotUser, { 'Cadastro de Marcas', 'U_JCOMA002()', 0, 3 } )
 //AAdd( aRotUser, { 'Cadastro de Produtos x Marcas', 'U_JCOMA001()', 0, 3 } )
 AAdd( aRotUser, { 'Copia JCA', 'U_JCOMG002()', 0, 3 } )
 AAdd( aRotUser, { 'Bloqueio Marca x Filial', 'U_JCOMA001()', 0, 3 } )

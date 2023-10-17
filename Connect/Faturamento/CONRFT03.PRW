@@ -79,7 +79,7 @@ TRCell():New(oSection1,"Serie","TRB",/*Titulo*/,/*Picture*/,TamSX3("F2_SERIE")[1
 TRCell():New(oSection1,"Codigo_Cliente","TRB",/*Titulo*/,/*Picture*/,TamSX3("F2_CLIENTE")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
 TRCell():New(oSection1,"Loja_Cliente","TRB",/*Titulo*/,/*Picture*/,TamSX3("F2_LOJA")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
 TRCell():New(oSection1,"Razao_Social","TRB",/*Titulo*/,/*Picture*/,TamSX3("A1_NOME")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
-TRCell():New(oSection1,"CNPJ","TRB",/*Titulo*/,/*Picture*/"@E 999.999.999/9999-99",TamSX3("A1_CGC")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
+TRCell():New(oSection1,"CNPJ","TRB",/*Titulo*/,/*Picture*/"@R 99.999.999/9999-99",TamSX3("A1_CGC")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
 TRCell():New(oSection1,"Data_Emissao","TRB",/*Titulo*/,/*Picture*/,TamSX3("F2_EMISSAO")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
 TRCell():New(oSection1,"Tipo","TRB",/*Titulo*/,/*Picture*/,TamSX3("F2_TIPO")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
 TRCell():New(oSection1,"Produto","TRB",/*Titulo*/,/*Picture*/,TamSX3("D2_COD")[1],/*lPixel*/,/*{|| code-block de impressao }*/)

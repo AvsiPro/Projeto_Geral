@@ -5,9 +5,9 @@
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
 ±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
-±±³Fun‡…o    ³ JFISR07  ³ Autor ³ Alexandre Venancio  ³ Data ³20/09/2023 ³±±
+±±³Fun‡…o    ³ JGFRR002  ³ Autor ³ Alexandre Venancio  ³ Data ³18/09/2023  ³±±
 ±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
-±±³Descri‡…o ³ Relatorio de Vendas						                  ³±±
+±±³Descri‡…o ³ Relatorio de Durabilidade de peças                         ³±±
 ±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
 ±±³Sintaxe   ³                                                            ³±±
 ±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
@@ -16,7 +16,7 @@
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
 ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
 /*/
-User Function JFISR07
+User Function JGFRR002
 
 Local oReport
 
@@ -36,7 +36,7 @@ Return
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
 ±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
-±±³Programa  ³ ReportDef³Autor  ³Alexandre Venancio     ³Data  ³20/09/2023 ±±
+±±³Programa  ³ ReportDef³Autor  ³Alexandre Venancio     ³Data  ³18/09/2023 ±±
 ±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
 ±±³Descri‡…o ³ Dados para exibição                                       ³±±
 ±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
@@ -52,16 +52,16 @@ Static Function ReportDef()
 Local oReport 
 Local oSection1 
 //Local oBreak
-Local cTitle := "Relatório de Cálculo Diferencial de Alíquota"
+Local cTitle := "Relatório de Durabilidade de peças"
 //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
 //³ Variaveis utilizadas para parametros                         ³
 //³ mv_par01    Data De                                          ³
 //³ mv_par02    Data Ate                                         ³
 //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
 
-Pergunte("JFISR07",.F.)
+Pergunte("JGFRR002",.F.)
 
-oReport := TReport():New("JFISR07",cTitle,If(lAuto,Nil,"JFISR07"), {|oReport| ReportPrint(oReport)},"") 
+oReport := TReport():New("JGFRR002",cTitle,If(lAuto,Nil,"JGFRR002"), {|oReport| ReportPrint(oReport)},"") 
 oReport:SetLandscape() 
 
 //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
@@ -83,29 +83,23 @@ oReport:SetLandscape()
 //³        Default : ExpC2                                                 ³
 //³                                                                        ³
 //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-oSection1:= TRSection():New(oReport,"JCA",{"TRB"},/*aOrdem*/)
+oSection1:= TRSection():New(oReport,"Robsol",{"TRB"},/*aOrdem*/)
 oSection1:SetHeaderPage()
 // oSection1:SetPageBreak(.T.) // Foi usado o EndPage(.T.) pois o SetPageBreak estava saltando uma pagina em branco no inicio da impressao 
-//F2_EMISSAO,F2_SERIE,F2_DOC,F2_BASEICM,D2_ALFCPST,M0_ESTENT,D2_VALICM,F2_EST,F2_BRICMS,D2_ICMSRET,D2_VFECPST
-TRCell():New(oSection1,"Empresa/Filial","TRB",/*Titulo*/,/*Picture*/,TamSX3("F1_FILIAL")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
-TRCell():New(oSection1,"Origem","TRB",/*Titulo*/,/*Picture*/,TamSX3("F1_ESPECIE")[1],/*lPixel*/)
-TRCell():New(oSection1,"Tipo","TRB",/*Titulo*/,/*Picture*/,TamSX3("F1_ESPECIE")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
-TRCell():New(oSection1,"Serie","TRB",/*Titulo*/,/*Picture*/,TamSX3("F1_SERIE")[1],/*lPixel*/, /**/ )
-TRCell():New(oSection1,"Documento"   ,"TRB",/*Titulo*/,/*Picture*/,TamSX3("F1_DOC")[1],/*lPixel*/)
-TRCell():New(oSection1,"Chave","TRB",/*Titulo*/,/*Picture*/,TamSX3("F1_CHVNFE")[1],/*lPixel*/)
-TRCell():New(oSection1,"Fornecedor"	,"TRB",/*Titulo*/,/*Picture*/,TamSX3("A2_NOME")[1],/*lPixel*/)
-TRCell():New(oSection1,"UF" 	,"TRB",/*Titulo*/,/*Picture*/,TamSX3("A2_EST")[1],/*lPixel*/)
-TRCell():New(oSection1,"Emissão","TRB",/*Titulo*/,/*Picture*/,TamSX3("F1_EMISSAO")[1],/*lPixel*/)
-TRCell():New(oSection1,"Entrada","TRB",/*Titulo*/,/*Picture*/,TamSX3("F1_EMISSAO")[1],/*lPixel*/)
-TRCell():New(oSection1,"CFOP","TRB",/*Titulo*/,/*Picture*/,TamSX3("D1_CF")[1],/*lPixel*/)
-TRCell():New(oSection1,"Contabil","TRB",/*Titulo*/,'@E 999,999,999.99'/*Picture*/,TamSX3("F1_VALBRUT")[1],/*lPixel*/)
-TRCell():New(oSection1,"Base","TRB",/*Titulo*/,'@E 999,999,999.99'/*Picture*/,TamSX3("F1_VALBRUT")[1],/*lPixel*/)
-TRCell():New(oSection1,"Aliquota","TRB",/*Titulo*/,'@E 99.99'/*Picture*/,TamSX3("D1_PICM")[1],/*lPixel*/)
-TRCell():New(oSection1,"ICMS Difer","TRB",/*Titulo*/,'@E 999,999,999.99'/*Picture*/,TamSX3("D1_ICMSRET")[1],/*lPixel*/)
-TRCell():New(oSection1,"Cod Ajuste","TRB",/*Titulo*/,/*Picture*/,TamSX3("F1_ESPECIE")[1],/*lPixel*/)
-TRCell():New(oSection1,"Aliq FCP","TRB",/*Titulo*/,'@E 99.99'/*Picture*/,TamSX3("D1_PICM")[1],/*lPixel*/)
-TRCell():New(oSection1,"ICMS FCP","TRB",/*Titulo*/,'@E 999,999,999.99'/*Picture*/,TamSX3("D1_ICMSRET")[1],/*lPixel*/)
-TRCell():New(oSection1,"Cod FCP","TRB",/*Titulo*/,/*Picture*/,TamSX3("F1_ESPECIE")[1],/*lPixel*/)
+
+TRCell():New(oSection1,"Material","TRB",/*Titulo*/,/*Picture*/,TamSX3("B1_DESC")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
+TRCell():New(oSection1,"Veiculo","TRB",/*Titulo*/,/*Picture*/,TamSX3("TJ_CODBEM")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
+TRCell():New(oSection1,"Requisicao","TRB",/*Titulo*/,/*Picture*/,TamSX3("TL_NUMSA")[1]+TamSX3("TL_ITEMSA")[1],/*lPixel*/, /**/ )
+TRCell():New(oSection1,"Data_Saida","TRB",/*Titulo*/,/*Picture*/,TamSX3("TJ_DTMPFIM")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
+TRCell():New(oSection1,"Qtde"   ,"TRB",/*Titulo*/,/*Picture*/,TamSX3("TL_QUANTID")[1],/*lPixel*/)
+TRCell():New(oSection1,"Vlr.Saida","TRB",/*Titulo*/,'@E 999,999,999.99'/*Picture*/,TamSX3("TL_CUSTO")[1],/*lPixel*/)
+TRCell():New(oSection1,"Vlr.Atual"	,"TRB",/*Titulo*/,'@E 999,999,999.99'/*Picture*/,TamSX3("TL_CUSTO")[1],/*lPixel*/)
+TRCell():New(oSection1,"Filial" 	,"TRB",/*Titulo*/,/*Picture*/,TamSX3("TJ_FILIAL")[1],/*lPixel*/)
+TRCell():New(oSection1,"Loc","TRB",/*Titulo*/,/*Picture*/,TamSX3("TL_LOCAL")[1],/*lPixel*/)
+TRCell():New(oSection1,"Km na data","TRB",/*Titulo*/,/*Picture*/,TamSX3("TL_POSCONT")[1],/*lPixel*/)
+TRCell():New(oSection1,"Km Ult. Trc","TRB",/*Titulo*/,/*Picture*/,TamSX3("TL_POSCONT")[1],/*lPixel*/)
+TRCell():New(oSection1,"Dt Ult. Trc","TRB",/*Titulo*/,/*Picture*/,TamSX3("TJ_DTMPFIM")[1],/*lPixel*/)
+TRCell():New(oSection1,"KM","TRB",/*Titulo*/,/*Picture*/,TamSX3("TJ_DTMPFIM")[1],/*lPixel*/)
 
 Return(oReport)
 
@@ -131,15 +125,17 @@ Local cQuery 	:= ""
 Local aAux      :=  {}
 Local nCont
 
+//TL_CODIGO,B1_DESC,TJ_CODBEM,TL_NUMSA+TL_ITEMSA,TJ_DTMPFIM,TL_QUANTID,TL_CUSTO,
+//TL_CUSTO,TJ_FILIAL,TL_LOCAL,TL_POSCONT,TL_SEQRELA,'ULTIMATROCA','DATAULTIMATROCA','KMULTIMATROCA'
 
-cQuery := "SELECT F1_FILIAL,F1_ESPECIE,F1_TIPO,F1_SERIE,F1_DOC,F1_CHVNFE,F1_FORNECE,F1_EST,A2_NOME,"
-cQuery += " F1_EMISSAO,F1_DTDIGIT,D1_CF,F1_VALBRUT,D1_BASEICM,D1_PICM,D1_ICMSRET,D1_VALFECP,D1_VFECPST"
-cQuery += " FROM "+RetSQLName("SF1")+" F1"
-cQuery += " INNER JOIN "+RetSQLName("SD1")+" D1 ON D1_FILIAL=F1_FILIAL AND D1_DOC=F1_DOC AND D1_SERIE=F1_SERIE AND D1_FORNECE=F1_FORNECE AND D1_LOJA=F1_LOJA AND D1.D_E_L_E_T_=' '"
-cQuery += " INNER JOIN "+RetSQLName("SA2")+" A2 ON A2_FILIAL='"+xFilial("SA2")+"' AND A2_COD=F1_FORNECE AND A2_LOJA=F1_LOJA AND A2.D_E_L_E_T_=' '"
-cQuery += " WHERE F1.D_E_L_E_T_=' '"
-cQuery += " AND F1_FILIAL BETWEEN '"+MV_PAR01+"' AND '"+MV_PAR02+"'"
-cQuery += " AND F1_EMISSAO BETWEEN '"+DTOS(MV_PAR03)+"' AND '"+DTOS(MV_PAR04)+"'"
+cQuery := "SELECT TL_CODIGO,B1_DESC,TJ_CODBEM,TL_NUMSA+TL_ITEMSA AS REQUISICAO,"
+cQuery += " TJ_DTMPFIM,TL_QUANTID,TL_CUSTO,TJ_FILIAL,TL_LOCAL,TJ_POSCONT,"
+cQuery += " TL_SEQRELA,'ULTIMATROCA' AS ULTTROCA,'DATAULTIMATROCA' AS DATULTTR,'KMULTIMATROCA' AS KMULTTR"
+cQuery += " FROM "+RetSQLName("STL")+" STL"
+cQuery += " INNER JOIN "+RetSQLName("STJ")+" STJ ON TJ_FILIAL=TL_FILIAL AND TJ_ORDEM=TL_ORDEM AND TJ_PLANO=TL_PLANO AND STJ.D_E_L_E_T_=' '"
+cQuery += " LEFT JOIN "+RetSQLName("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD=TL_CODIGO AND B1.D_E_L_E_T_=' '
+cQuery += " WHERE STL.D_E_L_E_T_=' '"
+cQuery += " ORDER BY TJ_CODBEM,TJ_ORDEM,TL_SEQRELA DESC,TL_CODIGO"
 
 If Select('TRB') > 0
 	dbSelectArea('TRB')
@@ -153,26 +149,19 @@ dbUseArea(.T.,"TOPCONN",TCGENQRY(,,cQuery),"TRB",.F.,.T.)
 dbSelectArea("TRB")
 
 While !EOF()
-        Aadd(aAux,{ TRB->F1_FILIAL,;
-                    TRB->F1_ESPECIE,;
-                    TRB->F1_TIPO,;
-                    TRB->F1_SERIE,;
-                    TRB->F1_DOC,;
-                    TRB->F1_CHVNFE,;
-                    TRB->F1_FORNECE+" - "+TRB->A2_NOME,;
-                    TRB->F1_EST,;
-                    TRB->F1_EMISSAO,;
-                    TRB->F1_DTDIGIT,;
-                    TRB->D1_CF,;
-                    TRB->F1_VALBRUT,;
-                    TRB->D1_BASEICM,;
-                    TRB->D1_PICM,;
-                    TRB->D1_ICMSRET,;
-                    '',;
-                    TRB->D1_VALFECP,;
-                    TRB->D1_VFECPST,;
-                    ''})
-    
+    Aadd(aAux,{ TRB->TL_CODIGO+Alltrim(TRB->B1_DESC),;
+                TRB->TJ_CODBEM,;
+                TRB->REQUISICAO,;
+                TRB->TJ_DTMPFIM,;
+                TRB->TL_QUANTID,;
+                TRB->TL_CUSTO,;
+                TRB->TL_CUSTO,;
+                TRB->TJ_FILIAL,;
+                TRB->TL_LOCAL,;
+                TRB->TJ_POSCONT,;
+                TRB->ULTTROCA,;
+                TRB->DATULTTR,;
+                TRB->KMULTTR })
     
     Dbskip()
 ENDDO
@@ -188,27 +177,20 @@ oSection1:Init()
 //While !oReport:Cancel() .And. !TRB->(Eof()) 
 For nCont := 1 to len(aAux) 
 
-    oSection1:Cell('Empresa/Filial'):SetValue(aAux[nCont,01])
-    oSection1:Cell('Origem'):SetValue(aAux[nCont,02])
-    oSection1:Cell('Tipo'):SetValue(aAux[nCont,03])
-    oSection1:Cell('Serie'):SetValue(aAux[nCont,04])
-    oSection1:Cell('Documento'):SetValue(aAux[nCont,05])
-    oSection1:Cell('Chave'):SetValue(aAux[nCont,06])
-    oSection1:Cell('Fornecedor'):SetValue(aAux[nCont,07])
-    oSection1:Cell('UF'):SetValue(aAux[nCont,08])
-    oSection1:Cell('Emissão'):SetValue(stod(aAux[nCont,09]))
-    oSection1:Cell('Entrada'):SetValue(stod(aAux[nCont,10]))
-    oSection1:Cell('CFOP'):SetValue(aAux[nCont,11])
-    oSection1:Cell('Contabil'):SetValue(aAux[nCont,12])
-    oSection1:Cell('Base'):SetValue(aAux[nCont,13])
-    oSection1:Cell('Aliquota'):SetValue(aAux[nCont,14])
-    oSection1:Cell('ICMS Difer'):SetValue(aAux[nCont,15])
-    oSection1:Cell('Cod Ajuste'):SetValue(aAux[nCont,16])
-    oSection1:Cell('Aliq FCP'):SetValue(aAux[nCont,17])
-    oSection1:Cell('ICMS FCP'):SetValue(aAux[nCont,18])
-    oSection1:Cell('Cod FCP'):SetValue(aAux[nCont,19])
-  
-   
+    oSection1:Cell('Material'):SetValue(aAux[nCont,01])
+    oSection1:Cell('Veiculo'):SetValue(aAux[nCont,02])
+    oSection1:Cell('Requisicao'):SetValue(aAux[nCont,03])
+    oSection1:Cell('Data_Saida'):SetValue(stod(aAux[nCont,04]))
+    oSection1:Cell('Qtde'):SetValue(aAux[nCont,05])
+    oSection1:Cell('Vlr.Saida'):SetValue(aAux[nCont,06])
+    oSection1:Cell('Vlr.Atual'):SetValue(aAux[nCont,07])
+    oSection1:Cell('Filial'):SetValue(aAux[nCont,08])
+    oSection1:Cell('Loc'):SetValue(aAux[nCont,09])
+    oSection1:Cell('Km na data'):SetValue(aAux[nCont,10])
+    oSection1:Cell('Km Ult. Trc'):SetValue(aAux[nCont,11])
+    oSection1:Cell('Dt Ult. Trc'):SetValue(aAux[nCont,12])
+    oSection1:Cell('KM'):SetValue(aAux[nCont,13])
+    
 	oReport:IncMeter()
 
 	If oReport:Cancel()
@@ -217,6 +199,7 @@ For nCont := 1 to len(aAux)
 
 	oSection1:PrintLine()
 	
+
 Next nCont
 
 oSection1:Finish()

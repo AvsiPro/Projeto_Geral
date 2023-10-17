@@ -11,6 +11,6 @@ User Function MNTA0843()
 
 Local aRotina := PARAMIXB[1]
 
-    ADD OPTION aRotina Title 'Alterar Cod Bem' Action 'u_JCAGFR02()'   OPERATION 9 ACCESS 0
+    ADD OPTION aRotina Title 'Alterar Cod Bem' Action 'u_JGFRM001()'   OPERATION 9 ACCESS 0
 
 Return aRotina

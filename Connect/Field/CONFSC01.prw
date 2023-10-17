@@ -2628,6 +2628,8 @@ For nCont := 1 to len(aEmail)
 			//(cNota, cSerie, cPasta, ccnpj)
 			U_CONDANFE(MV_PAR02,MV_PAR01,'C:\BOLETOS\',cCnpjj)
 
+			U_CONFSR02()
+
 		else 
 			DbSelectArea("SF2")
 			DbSetOrder(1)
@@ -2875,13 +2877,13 @@ If len(aAux) > 0
 		nPosDosC := Ascan(aAux,{|x| Alltrim(x[1]) == 'DOSE COMP'})
 		nPosItCm := Ascan(aItens,{|x| Alltrim(x[1]) == 'DOSE COMP'})
 
-		If nPosDosC > 0
+		/*If nPosDosC > 0
 			iF aAux[nPosDosC,3]-nToQt > 0
 				aAux[nPosDosC,3] := round(aAux[nPosDosC,3]-nToQt,0)
 				aAux[nPosDosC,5] := aAux[nPosDosC,3] * aAux[nPosDosC,4]
 			/*else
 				aAux[nPosDosC,3] := 0
-				aAux[nPosDosC,5] := 0 */
+				aAux[nPosDosC,5] := 0 * /
 			EndIf 
 
 			If nPosItCm > 0 .And. aAux[nPosDosC,3] > 0
@@ -2900,7 +2902,7 @@ If len(aAux) > 0
 			aAux[nPosTot,03] := round(nNewQtd,0)
 			aAux[nPosTot,05] := nNewVlr
 
-		EndIf 
+		EndIf */
 
 		If nPosDosC > 0
 			If aAux[nPosDosC,3] <= 0

@@ -3,7 +3,7 @@
 #INCLUDE "protheus.ch"
 #Include 'TopConn.ch'
 
-User Function JCAESTR2(nOpc)
+User Function JESTR002(nOpc)
 
 	//Local lFinal	:= .T.
 	Local nCont 

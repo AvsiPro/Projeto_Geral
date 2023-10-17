@@ -29,23 +29,29 @@ Local nZ        :=  1
 
 If nOpt == 1 .And. !lCopia
     For nCont := 1 to len(aCols)
-        aAux1 := U__SearchSon(aCols[nCont,nPosProd])
-        If len(aAux1) > 0
-            For nX := 1 to len(aAux1)
-                aAux2 := {}
-                For nZ := 1 to len(aHeader)
-                    If nZ == nPosProd
-                        Aadd(aAux2,aAux1[nX,01])
-                    ElseIf nZ == nPosDesc
-                        Aadd(aAux2,aAux1[nX,02])
-                    ElseIf nZ == nPosItem
-                        Aadd(aAux2,"    ")
-                    Else 
-                        Aadd(aAux2,aCols[nCont,nZ])
-                    EndIF
-                Next nZ 
-                Aadd(aAux3,aAux2)
-            Next nX
+        If empty(Posicione("SB1",1,xFilial("SB1")+aCols[nCont,nPosProd],"B1_XCODPAI"))
+            aAux1 := U__SearchSon(aCols[nCont,nPosProd])
+            If len(aAux1) > 0
+                For nX := 1 to len(aAux1)
+                    nPosCol := Ascan(aCols,{|x| Alltrim(x[nPosProd]) == Alltrim(aAux1[nX,01])})
+                    nPosAux := Ascan(aAux3,{|x| Alltrim(x[nPosProd]) == Alltrim(aAux1[nX,01])})
+                    If nPosCol == 0 .and. nPosAux == 0
+                        aAux2 := {}
+                        For nZ := 1 to len(aHeader)
+                            If nZ == nPosProd
+                                Aadd(aAux2,aAux1[nX,01])
+                            ElseIf nZ == nPosDesc
+                                Aadd(aAux2,aAux1[nX,02])
+                            ElseIf nZ == nPosItem
+                                Aadd(aAux2,"    ")
+                            Else 
+                                Aadd(aAux2,aCols[nCont,nZ])
+                            EndIF
+                        Next nZ 
+                        Aadd(aAux3,aAux2)
+                    EndIf
+                Next nX
+            EndIf
         EndIf
     Next nCont
 

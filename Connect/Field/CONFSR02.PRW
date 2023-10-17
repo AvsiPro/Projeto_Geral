@@ -85,7 +85,7 @@ Static Function ExtLeitura()
 	Local oF15TFF          := TFont():New('Arial' /*Fonte*/,,15 /*Tamanho*/,,.T. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
 	Local oF25TFF          := TFont():New('Arial' /*Fonte*/,,25 /*Tamanho*/,,.T. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
 	
-	Private oPrinter := FWMSPrinter():New( "extraTo_leitura_.pdf",IMP_PDF,lAdjustToLegacy,"C:\temp\",lDisableSetup,,,,,,,, )
+	Private oPrinter := FWMSPrinter():New( "extrato_leitura_.pdf",IMP_PDF,lAdjustToLegacy,"C:\temp\",lDisableSetup,,,,,,,, )
 
 	If lFatur
 		cQuery := " SELECT Z08.Z08_NUMSER,Z08.Z08_PRODUT,Z08.Z08_SELECA,SB1.B1_DESC,Z08.Z08_DATA,"
@@ -98,7 +98,7 @@ Static Function ExtLeitura()
 		cQuery += "        AND DA1_CODPRO = Z08.Z08_PRODUT   " 
 		cQuery += " INNER JOIN " + RetSQLName("SB1") + " SB1 ON B1_FILIAL='"+xFilial("SB1")+"' AND SB1.B1_COD = Z08.Z08_PRODUT   " 
 		cQuery += " INNER JOIN " + RetSQLName("SA1") + " SA1 ON A1_FILIAL='"+xFilial("SA1")+"' AND SA1.A1_COD = AAM.AAM_CODCLI AND SA1.A1_LOJA = AAM.AAM_LOJA   " 
-		cQuery += " WHERE  Z08.Z08_PEDIDO = '" + _cPedido + "'   " 
+		cQuery += " WHERE  Z08.Z08_PEDIDO = '" + _cPedido + "' " 
 		cQuery += " AND Z08_CONTRT='"+aList[oList:nAt,01]+"'"
 		cQuery += "        AND DA1.D_E_L_E_T_ = ' '   " 
 		cQuery += "        AND Z08.D_E_L_E_T_ = ' '   "
@@ -176,12 +176,12 @@ Static Function ExtLeitura()
 		oBrush2 := TBrush():New( , rgb(238, 238, 238) )
 		oBrush3 := TBrush():New( , rgb(0, 99, 125) )
 
-		oPrinter:Say( nLin+=40, 10,"ExtraTo de Leituras", oF25TFF,, rgb(0, 99, 125) )
+		oPrinter:Say( nLin+=40, 10,"Extrato de Leituras", oF25TFF,, rgb(0, 99, 125) )
 		oPrinter:Say( nLin+=10, 10,"Realizadas entre " + cEntre, oF12FFT,, rgb(102, 102, 102) )
 
 		oPrinter:Fillrect( { nLin+=30, 10, nLin+30, 590 }, oBrush2, "-2")
 		oPrinter:Fillrect( { nLin+=10, 20, nLin+10, 30 }, oBrush1, "-2")
-		oPrinter:Say( nLin+5, 45,"ToTAL GERAL", oF15TFF )
+		oPrinter:Say( nLin+5, 45,"Totaal Geral", oF15TFF )
 		oPrinter:Say( nLin+15, 45,"Totalizando 1 Cliente", oF10FFF )
 
 		For nX := 1 To Len(aPontos)
@@ -249,10 +249,10 @@ Static Function ExtLeitura()
 			oPrinter:Say( nLin+=20, 45,aAux[nX,2], oF10FFF )
 			oPrinter:Say( nLin, 100,AllTrim(aAux[nX,7]), oF10FFF )
 			oPrinter:Say( nLin, 280,AllTrim(aAux[nX,13]), oF10FFF )
-			oPrinter:Say( nLin, 360,cvalTochar(aAux[nX,3]), oF10FFF )
-			oPrinter:Say( nLin, 410,TransForm(aAux[nX,5], "@E 99,999.99"), oF10FFF )
-			oPrinter:Say( nLin, 480,TransForm(aAux[nX,6], "@E 99,999.99"), oF10FFF )
-			oPrinter:Say( nLin, 550,TransForm(aAux[nX,4], "@E 99,999.99"), oF10FFF )
+			oPrinter:Say( nLin, 360,Transform(aAux[nX,3], "@R 99,999.99" ), oF10FFF )
+			oPrinter:Say( nLin, 410,TransForm(aAux[nX,5], "@E 999,999.99"), oF10FFF )
+			oPrinter:Say( nLin, 480,TransForm(aAux[nX,6], "@E 999,999.99"), oF10FFF )
+			oPrinter:Say( nLin, 550,TransForm(aAux[nX,4], "@E 999,999.99"), oF10FFF )
 			oPrinter:Fillrect( { nLin+5, 10, nLin+5, 590 }, oBrush2, "-2")
 		Next
 
@@ -266,13 +266,13 @@ Static Function ExtLeitura()
 		oPrinter:Fillrect( { nLin+=15, 10, nLin+30, 590 }, oBrush2, "-2")
 		oPrinter:Fillrect( { nLin+10, 20, nLin+20, 30 }, oBrush3, "-2")
 		oPrinter:Say( nLin+15, 40,SubStr(aAux[1,8],1,55), oF12FFF )
-		oPrinter:Say( nLin+25, 40,"Totalizando " + cValToChar(Len(aPontos)) + " PonTos de VEnda", oF10FFF )
+		oPrinter:Say( nLin+25, 40,"Totalizando " + cValToChar(Len(aPontos)) + " Pontos de Venda", oF10FFF )
 		oPrinter:Say( nLin+=15, 360,cCon1, oF10FFF )
 		oPrinter:Say( nLin, 410,TransForm(val(cSub1), "@E 99,999.99"), oF10FFF )
 		oPrinter:Say( nLin, 480,TransForm(val(cConRS1), "@E 99,999.99"), oF10FFF )
 		oPrinter:Say( nLin, 550,TransForm(val(cTot1), "@E 99,999.99"), oF10FFF )
 
-		oPrinter:Say( nLin+=30, 45,"ProduTo", oF10FFF )
+		oPrinter:Say( nLin+=30, 45,"Produto", oF10FFF )
 		oPrinter:Say( nLin, 100,"Descrição", oF10FFF )
 		oPrinter:Say( nLin, 280,"NCM", oF10FFF )
 		oPrinter:Say( nLin, 360,"Consumo", oF10FFF )
@@ -313,7 +313,7 @@ Static Function ExtLeitura()
 			cTot1 := cValToChar(nTot1)
 
 			oPrinter:Say( nLin:=20, 10,". . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .", oF25TFF,, rgb(0, 99, 125) )
-			oPrinter:Say( nLin+=15, 10,"PONTo DE VEndA", oF15FFF )
+			oPrinter:Say( nLin+=15, 10,"Ponto de Venda", oF15FFF )
 			oPrinter:Fillrect( { nLin+5, 10, nLin+5, 590 }, oBrush1, "-2")
 			oPrinter:Fillrect( { nLin+10, 10, nLin+40, 590 }, oBrush2, "-2")
 			oPrinter:Fillrect( { nLin+20, 30, nLin+30, 20 }, oBrush1, "-2")
@@ -344,10 +344,10 @@ Static Function ExtLeitura()
 				oPrinter:Say( nLin, 50,AllTrim(aPontos[nX,nY,2]), oF10FFF )
 				oPrinter:Say( nLin, 100,AllTrim(aPontos[nX,nY,7]), oF10FFF )
 				oPrinter:Say( nLin, 280,AllTrim(aPontos[nX,nY,13]), oF10FFF )
-				oPrinter:Say( nLin, 360,cvalTochar(aPontos[nX,nY,3]), oF10FFF )
-				oPrinter:Say( nLin, 410,TransForm(aPontos[nX,nY,5], "@E 99,999.99"), oF10FFF ) //PEndente Subsidio
-				oPrinter:Say( nLin, 480,TransForm(aPontos[nX,nY,6], "@E 99,999.99"), oF10FFF ) //PEndente Consumido - subsidio
-				oPrinter:Say( nLin, 550,TransForm(aPontos[nX,nY,4], "@E 99,999.99"), oF10FFF )
+				oPrinter:Say( nLin, 360,Transform(aPontos[nX,nY,3], "@R 99,999.99"), oF10FFF )
+				oPrinter:Say( nLin, 410,TransForm(aPontos[nX,nY,5], "@E 999,999.99"), oF10FFF ) //PEndente Subsidio
+				oPrinter:Say( nLin, 480,TransForm(aPontos[nX,nY,6], "@E 999,999.99"), oF10FFF ) //PEndente Consumido - subsidio
+				oPrinter:Say( nLin, 550,TransForm(aPontos[nX,nY,4], "@E 999,999.99"), oF10FFF )
 				oPrinter:Fillrect( { nLin+5, 10, nLin+5, 590 }, oBrush2, "-2")
 			Next
 
@@ -444,12 +444,12 @@ Static Function ExtLeitura()
 		oBrush2 := TBrush():New( , rgb(238, 238, 238) )
 		oBrush3 := TBrush():New( , rgb(0, 99, 125) )
 
-		oPrinter:Say( nLin+=40, 10,"ExtraTo de Leituras", oF25TFF,, rgb(0, 99, 125) )
+		oPrinter:Say( nLin+=40, 10,"Extrato de Leituras", oF25TFF,, rgb(0, 99, 125) )
 		oPrinter:Say( nLin+=10, 10,"Realizadas entre " + cEntre, oF12FFT,, rgb(102, 102, 102) )
 
 		oPrinter:Fillrect( { nLin+=30, 10, nLin+30, 590 }, oBrush2, "-2")
 		oPrinter:Fillrect( { nLin+=10, 20, nLin+10, 30 }, oBrush1, "-2")
-		oPrinter:Say( nLin+5, 45,"ToTAL GERAL", oF15TFF )
+		oPrinter:Say( nLin+5, 45,"Total Geral", oF15TFF )
 		oPrinter:Say( nLin+15, 45,"Totalizando 1 Cliente", oF10FFF )
 
 		For nX := 1 To Len(aPontos)
@@ -490,7 +490,7 @@ Static Function ExtLeitura()
 		oPrinter:Say( nLin, 480,transForm(val(cConRS1), "@E 99,999.99"), oF10FFF )
 		oPrinter:Say( nLin, 550,transForm(val(cTot1), "@E 99,999.99"), oF10FFF )
 
-		oPrinter:Say( nLin+=30, 45,"ProduTo", oF10FFF )
+		oPrinter:Say( nLin+=30, 45,"Produto", oF10FFF )
 		oPrinter:Say( nLin, 100,"Descrição", oF10FFF )
 		oPrinter:Say( nLin, 280,"NCM", oF10FFF )
 		oPrinter:Say( nLin, 360,"Consumo", oF10FFF )
@@ -502,10 +502,10 @@ Static Function ExtLeitura()
 			oPrinter:Say( nLin+=20, 45,aAux[nX,2], oF10FFF )
 			oPrinter:Say( nLin, 100,AllTrim(aAux[nX,3]), oF10FFF )
 			oPrinter:Say( nLin, 280,AllTrim(aAux[nX,13]), oF10FFF )
-			oPrinter:Say( nLin, 360,cvalTochar(aAux[nX,8]), oF10FFF )
-			oPrinter:Say( nLin, 410,TransForm(aAux[nX,9]*aAux[nX,8], "@E 99,999.99"), oF10FFF )
-			oPrinter:Say( nLin, 480,TransForm(aAux[nX,15]*aAux[nX,8], "@E 99,999.99"), oF10FFF )
-			oPrinter:Say( nLin, 550,TransForm(aAux[nX,10], "@E 99,999.99"), oF10FFF )
+			oPrinter:Say( nLin, 360,Transform(aAux[nX,8], "@R 99,999.99"), oF10FFF )
+			oPrinter:Say( nLin, 410,TransForm(aAux[nX,9]*aAux[nX,8], "@E 999,999.99"), oF10FFF )
+			oPrinter:Say( nLin, 480,TransForm(aAux[nX,15]*aAux[nX,8], "@E 999,999.99"), oF10FFF )
+			oPrinter:Say( nLin, 550,TransForm(aAux[nX,10], "@E 999,999.99"), oF10FFF )
 			oPrinter:Fillrect( { nLin+5, 10, nLin+5, 590 }, oBrush2, "-2")
 		Next
 
@@ -525,7 +525,7 @@ Static Function ExtLeitura()
 		oPrinter:Say( nLin, 480,TransForm(val(cConRS1), "@E 99,999.99"), oF10FFF )
 		oPrinter:Say( nLin, 550,TransForm(val(cTot1), "@E 99,999.99"), oF10FFF )
 
-		oPrinter:Say( nLin+=30, 45,"ProduTo", oF10FFF )
+		oPrinter:Say( nLin+=30, 45,"Produto", oF10FFF )
 		oPrinter:Say( nLin, 100,"Descrição", oF10FFF )
 		oPrinter:Say( nLin, 280,"NCM", oF10FFF )
 		oPrinter:Say( nLin, 360,"Consumo", oF10FFF )
@@ -537,10 +537,10 @@ Static Function ExtLeitura()
 			oPrinter:Say( nLin+=20, 45,aAux[nX,2], oF10FFF )
 			oPrinter:Say( nLin, 100,AllTrim(aAux[nX,3]), oF10FFF )
 			oPrinter:Say( nLin, 280,AllTrim(aAux[nX,13]), oF10FFF )
-			oPrinter:Say( nLin, 360,cvalTochar(aAux[nX,8]), oF10FFF )
-			oPrinter:Say( nLin, 410,TransForm(aAux[nX,9]*aAux[nX,8], "@E 99,999.99"), oF10FFF ) //PEndente Subsidiado
-			oPrinter:Say( nLin, 480,TransForm(aAux[nX,15]*aAux[nX,8], "@E 99,999.99"), oF10FFF ) //PEndente Consumo - Subsidiado
-			oPrinter:Say( nLin, 550,TransForm(aAux[nX,10], "@E 99,999.99"), oF10FFF )
+			oPrinter:Say( nLin, 360,TransForm(aAux[nX,8], "@R 99,999.99"), oF10FFF )
+			oPrinter:Say( nLin, 410,TransForm(aAux[nX,9]*aAux[nX,8], "@E 999,999.99"), oF10FFF ) //PEndente Subsidiado
+			oPrinter:Say( nLin, 480,TransForm(aAux[nX,15]*aAux[nX,8], "@E 999,999.99"), oF10FFF ) //PEndente Consumo - Subsidiado
+			oPrinter:Say( nLin, 550,TransForm(aAux[nX,10], "@E 999,999.99"), oF10FFF )
 			oPrinter:Fillrect( { nLin+5, 10, nLin+5, 590 }, oBrush2, "-2")
 		Next
 
@@ -566,7 +566,7 @@ Static Function ExtLeitura()
 			cTot1 := cValToChar(nTot1)
 
 			oPrinter:Say( nLin:=20, 10,". . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .", oF25TFF,, rgb(0, 99, 125) )
-			oPrinter:Say( nLin+=15, 10,"PONTo DE VEndA", oF15FFF )
+			oPrinter:Say( nLin+=15, 10,"Ponto de Venda", oF15FFF )
 			oPrinter:Fillrect( { nLin+5, 10, nLin+5, 590 }, oBrush1, "-2")
 			oPrinter:Fillrect( { nLin+10, 10, nLin+40, 590 }, oBrush2, "-2")
 			oPrinter:Fillrect( { nLin+20, 30, nLin+30, 20 }, oBrush1, "-2")

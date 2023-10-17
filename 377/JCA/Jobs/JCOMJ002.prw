@@ -36,17 +36,19 @@ cArqHTML    := "\workflow\Aviso_Compra_Fornecedor.html"
 cPathHTML   := GetMV("MV_WFDIR") 
 nDias       := SUPERGETMV( "JC_DIASPC", .F., 2 )
     
+
+sDiaRed := dtos(ddatabase + nDias)
 sDiaRef := dtos(DATAVALIDA(ddatabase + nDias))
 
 cQuery := "SELECT DISTINCT C7_FILIAL,C7_EMISSAO,C7_FORNECE,A2_NREDUZ,C7_LOJA,C7_DATPRF,C7_NUM,"
-cQuery += "C7_ITEM,C7_PRODUTO,C7_QUANT,C7_PRECO,C7_TOTAL,B1_DESC"  	 
+cQuery += "C7_ITEM,C7_PRODUTO,C7_QUANT,C7_PRECO,C7_TOTAL,B1_DESC,A2_EMAIL"  	 
 cQuery += " FROM "+RetSQLName("SC7")+" SC7"
 cQuery += " INNER JOIN "+RetSQLName("SCR")+" SCR ON SCR.CR_FILIAL =  SC7.C7_FILIAL"
 cQuery += " AND SCR.CR_NUM = SC7.C7_NUM AND SCR.CR_TIPO   =  'PC' AND SCR.D_E_L_E_T_=' ' AND CR_LIBAPRO<>' '"
 cQuery += " INNER JOIN "+RetSQLName("SA2")+" A2 ON A2_FILIAL='"+xFilial("SA2")+"' AND A2_COD=C7_FORNECE AND A2_LOJA=C7_LOJA AND A2.D_E_L_E_T_=' '"
 cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD=C7_PRODUTO AND B1.D_E_L_E_T_=' '"
 cQuery += " WHERE SC7.D_E_L_E_T_=' '"
-//cQuery += " AND C7_DATPRF='"+sDiaRef+"'"
+cQuery += " AND C7_DATPRF BETWEEN '"+sDiaRed+"' AND '"+sDiaRef+"'"
 cQuery += " AND C7_QUJE<C7_QUANT AND C7_CONAPRO<>'B'"
 cQuery += " ORDER BY C7_NUM,C7_ITEM"
                      
@@ -62,18 +64,20 @@ DbSelectArea("TRB")
 
 WHILE !EOF()
 //C7_EMISSAO,C7_FORNECE,A2_NREDUZ,C7_LOJA,C7_DATPRF,C7_NUM,C7_ITEM,C7_PRODUTO,C7_QUANT,C7_PRECO,C7_TOTAL
-    If Empty(cPedAtu)
+    /*If Empty(cPedAtu)
         cPedAtu := TRB->C7_NUM
+    EndIf */
+    If Ascan(aAux,{|x| x[6] == TRB->C7_NUM}) == 0
+        Aadd(aAux,{ TRB->C7_EMISSAO,;
+                    TRB->C7_DATPRF,;
+                    TRB->C7_FORNECE,;
+                    TRB->C7_LOJA,;
+                    TRB->A2_NREDUZ,;
+                    TRB->C7_NUM,;
+                    FWFilialName('01',TRB->C7_FILIAL),;
+                    TRB->C7_FILIAL,;
+                    TRB->A2_EMAIL})
     EndIf 
-
-    Aadd(aAux,{ TRB->C7_EMISSAO,;
-                TRB->C7_DATPRF,;
-                TRB->C7_FORNECE,;
-                TRB->C7_LOJA,;
-                TRB->A2_NREDUZ,;
-                TRB->C7_NUM,;
-                FWFilialName('01',TRB->C7_FILIAL),;
-                TRB->C7_FILIAL})
 
     Aadd(aAuxIt,{TRB->C7_ITEM,;
                 TRB->C7_PRODUTO+'-'+Alltrim(TRB->B1_DESC),;
@@ -134,8 +138,12 @@ If len(aAux) > 0
         cMensagem    := StrTran(cRet,chr(10),"")
         cMensagem    := OemtoAnsi(cMensagem)
         
-        cEmailTst := SUPERGETMV( "TI_EMAILTST", .F., "alexandre.venancio@avsipro.com.br" )
-
+        If !Empty(aAux[nX,09])
+            cEmailTst := Alltrim(aAux[nX,09])
+        Else 
+            cEmailTst := SUPERGETMV( "TI_EMAILTST", .F., "alexandre.venancio@avsipro.com.br" )
+        EndI 
+        
         U_JGENX002(cEmailTst,'Pedido de compra empresa - '+FwCutOff(aAux[nX,05],.T.)+' '+FwCutOff(aAux[nX,07],.T.),cMensagem,'',.F.)
     Next nX 
 EndIf

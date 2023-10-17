@@ -1,6 +1,14 @@
 #INCLUDE 'PROTHEUS.CH'
-
-User Function JCAGAT04
+/*
+    Gatilho TQN_FROTA -> TQN_FROTA
+    
+    Doc Mit
+    
+    Doc Entrega
+    
+    
+*/
+User Function JGFRG001
 
 Local aArea  := GetArea()
 Local cBem   := M->TQN_FROTA

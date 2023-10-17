@@ -12,7 +12,7 @@
     (examples)
     @see (links_or_references)
     /*/
-User Function JCOMB07()
+User Function JGFRA004()
 
 Local aRet      :=  {}
 Local aPergs    :=  {}

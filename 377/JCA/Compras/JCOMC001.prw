@@ -28,7 +28,7 @@
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
 ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß*/
 
-User Function JCAAVCOT
+User Function JCOMC001
 
 Private oDlg1,oGrp1,oGrp2,oBtn1,oGrp3,oList1,oList2,oList3
 Private aList1  :=  {}
@@ -37,6 +37,8 @@ Private aList2B :=  {}
 Private aList3  :=  {}
 Private aList3B :=  {}
 Private aProds  :=  {}
+Private aHeader :=  {}
+Private aHeade2 :=  {}
 
 If Select("SM0") == 0
     RpcSetType(3)
@@ -44,6 +46,32 @@ If Select("SM0") == 0
 EndIf
 
 Aadd(aList2,{'','','','','','','','','','','','',.f.})
+
+Aadd(aHeader,{  "C8_FORNOME",;
+                "C8_NUM",;
+                "C8_ITEM",;
+                "C8_PRODUTO",;
+                "B1_DESC",;
+                "C8_QUANT",;
+                "C8_PRECO",;
+                "C8_TOTAL",;
+                "C8_FORNECE",;
+                "C8_LOJA" })
+
+Aadd(aHeade2,{  "ZL_DOCTO",;
+                "ZL_ITEM",;
+                "ZL_USUARIO",;
+                "ZL_DATA",;
+                "ZL_HORA",;
+                "ZL_OBS",;
+                "ZL_CLIENTE",;
+                "ZL_LOJA",;
+                "ZL_QTD",;
+                "ZL_VALOR",;
+                "ZL_TOTAL",;
+                "ZL_QTDANT",;
+                "ZL_VLRANT",;
+                "ZL_TOTLANT"})
 
 OrcAtu()
 OrcAnt()
@@ -78,9 +106,9 @@ oGrp1      := TGroup():New( 004,004,104,560,"Atual",oDlg1,CLR_BLACK,CLR_WHITE,.T
                         aList1[oList1:nAt,03],;
                         aList1[oList1:nAt,04],;
                         aList1[oList1:nAt,05],;
-                        aList1[oList1:nAt,06],;
-                        aList1[oList1:nAt,07],;
-                        aList1[oList1:nAt,08]}}
+                        Transform(aList1[oList1:nAt,06],"@E 999,999.99"),;
+                        Transform(aList1[oList1:nAt,07],"@E 999,999.99"),;
+                        Transform(aList1[oList1:nAt,08],"@E 999,999.99")}}
 
 oGrp2      := TGroup():New( 108,004,212,560,"Anteriores Vencedoras",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
     //oBrw2      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{116,008,208,556},,, oGrp2 ) 
@@ -92,9 +120,9 @@ oGrp2      := TGroup():New( 108,004,212,560,"Anteriores Vencedoras",oDlg1,CLR_BL
     oList2:bLine := {||{aList2[oList2:nAt,01],; 
                         aList2[oList2:nAt,02],;
                         aList2[oList2:nAt,03],;
-                        aList2[oList2:nAt,04],;
-                        aList2[oList2:nAt,05],;
-                        aList2[oList2:nAt,06],;
+                        Transform(aList2[oList2:nAt,04],"@E 999,999.99"),;
+                        Transform(aList2[oList2:nAt,05],"@E 999,999.99"),;
+                        Transform(aList2[oList2:nAt,06],"@E 999,999.99"),;
                         aList2[oList2:nAt,07],;
                         aList2[oList2:nAt,08],;
                         aList2[oList2:nAt,09],;
@@ -102,25 +130,10 @@ oGrp2      := TGroup():New( 108,004,212,560,"Anteriores Vencedoras",oDlg1,CLR_BL
                         aList2[oList2:nAt,11]}}
 
 oGrp3      := TGroup():New( 212,004,296,560,"Atualizações no item da Proposta",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
-    //oBrw3      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{220,008,292,556},,, oGrp3 ) 
-    //oList3    := TCBrowse():New(220,008,545,070,, {'Cotação','Item','Produto','Qtd','Valor Unit.','Valor Total','Fornecedor','CondPagto','Frete','Filial','Entrega'},;
-    //                                    {70,30,20,30,50,30,30,30},;
-    //                                    oGrp3,,,,{|| FHelp(oList3:nAt)},{|| /*editped(oList3:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
-    /*oList3:SetArray(aList3)
-    oList3:bLine := {||{aList3[oList3:nAt,01],; 
-                        aList3[oList3:nAt,02],;
-                        aList3[oList3:nAt,03],;
-                        aList3[oList3:nAt,04],;
-                        aList3[oList3:nAt,05],;
-                        aList3[oList3:nAt,06],;
-                        aList3[oList3:nAt,07],;
-                        aList3[oList3:nAt,08],;
-                        aList3[oList3:nAt,09],;
-                        aList3[oList3:nAt,10],;
-                        aList3[oList3:nAt,11]}}*/
-
-    oList3    := TCBrowse():New(220,008,545,070,, {'Cotação','Item','Usuario','Data','Hora','Alteração'},;
-                                        {50,40,50,40,40,150},;
+    
+    oList3    := TCBrowse():New(220,008,545,070,, {'Cotação','Item','Usuario','Data','Hora',;
+                                        'Qtd Atual','Vlr.Un.Atual','Vlr.Tot.Atual','Qtd Ant.','Vlr.Un.Ant.','Vlr.Tot.Ant','Alteração'},;
+                                        {50,40,50,40,40,40,40,40,40,40,40,150},;
                                         oGrp3,,,,{|| /*FHelp(oList3:nAt)*/},{|| /*editped(oList3:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
     oList3:SetArray(aList3)
     oList3:bLine := {||{aList3[oList3:nAt,01],; 
@@ -128,9 +141,17 @@ oGrp3      := TGroup():New( 212,004,296,560,"Atualizações no item da Proposta",o
                         aList3[oList3:nAt,03],;
                         aList3[oList3:nAt,04],; 
                         aList3[oList3:nAt,05],;
+                        Transform(aList3[oList3:nAt,09],"@E 999,999.99"),; 
+                        Transform(aList3[oList3:nAt,10],"@E 999,999.99"),;
+                        Transform(aList3[oList3:nAt,11],"@E 999,999.99"),;
+                        Transform(aList3[oList3:nAt,12],"@E 999,999.99"),; 
+                        Transform(aList3[oList3:nAt,13],"@E 999,999.99"),;
+                        Transform(aList3[oList3:nAt,14],"@E 999,999.99"),;
                         aList3[oList3:nAt,06]}}
 
 oBtn1      := TButton():New( 300,256,"Sair",oDlg1,{||oDlg1:end()},037,010,,,,.T.,,"",,,,.F. )
+
+oBtn2      := TButton():New( 300,156,"Imprimir",oDlg1,{|| Processa({|| GeraPlan()},"Aguarde")},037,010,,,,.T.,,"",,,,.F. )
 
 oDlg1:Activate(,,,.T.)
 
@@ -185,7 +206,8 @@ WHILE !EOF()
     Dbskip()
 EndDo 
 
-cQuery := "SELECT ZL_DOCTO,ZL_ITEM,ZL_USUARIO,ZL_DATA,ZL_HORA,ZL_OBS,ZL_CLIENTE,ZL_LOJA"
+cQuery := "SELECT ZL_DOCTO,ZL_ITEM,ZL_USUARIO,ZL_DATA,ZL_HORA,ZL_OBS,ZL_CLIENTE,ZL_LOJA,"
+cQuery += " ZL_VALOR,ZL_QTD,ZL_TOTAL,ZL_VLRANT,ZL_QTDANT,ZL_TOTLANT"
 cQuery += " FROM "+RetSQLName("SZL")+" ZL"
 cQuery += " WHERE ZL.D_E_L_E_T_=' '"
 cQuery += " AND ZL_FILIAL='"+xFilial("SZL")+"' AND ZL_DOCTO='"+SC8->C8_NUM+"' AND ZL_TABELA='SC8'"
@@ -208,7 +230,13 @@ WHILE !EOF()
                     TRB->ZL_HORA,;
                     TRB->ZL_OBS,;
                     TRB->ZL_CLIENTE,;
-                    TRB->ZL_LOJA })
+                    TRB->ZL_LOJA,;
+                    TRB->ZL_QTD,;
+                    TRB->ZL_VALOR,;
+                    TRB->ZL_TOTAL,;
+                    TRB->ZL_QTDANT,;
+                    TRB->ZL_VLRANT,;
+                    TRB->ZL_TOTLANT })
     Dbskip()
 EndDo 
 
@@ -279,19 +307,7 @@ For nCont := 1 to len(aProds)
                             TRB->ZPS_FILENT,;
                             stod(TRB->ZPS_DTENTR),;
                             TRB->ZPS_FLAGWI})
-        /*Else 
-            Aadd(aList3B,{  TRB->ZPS_COTACA,;
-                            TRB->ZPS_ITEMCO,;
-                            TRB->ZPS_PRODUT,;
-                            TRB->ZPS_QUANT,;
-                            TRB->ZPS_VLRUNI,;
-                            TRB->ZPS_VLRTOT,;
-                            Posicione("SA2",1,xFilial("SA2")+TRB->ZPS_FORNEC+TRB->ZPS_LOJA,"A2_NOME"),;
-                            TRB->ZPS_CONDPG,;
-                            TRB->ZPS_FRETE,;
-                            TRB->ZPS_FILENT,;
-                            stod(TRB->ZPS_DTENTR),;
-                            TRB->ZPS_FLAGWI})*/
+        
         EndIf
         Dbskip()
     EndDo
@@ -339,9 +355,9 @@ oList2:SetArray(aList2)
 oList2:bLine := {||{aList2[oList2:nAt,01],; 
                     aList2[oList2:nAt,02],;
                     aList2[oList2:nAt,03],;
-                    aList2[oList2:nAt,04],;
-                    aList2[oList2:nAt,05],;
-                    aList2[oList2:nAt,06],;
+                    Transform(aList2[oList2:nAt,04],"@E 999,999.99"),;
+                    Transform(aList2[oList2:nAt,05],"@E 999,999.99"),;
+                    Transform(aList2[oList2:nAt,06],"@E 999,999.99"),;
                     aList2[oList2:nAt,07],;
                     aList2[oList2:nAt,08],;
                     aList2[oList2:nAt,09],;
@@ -373,6 +389,12 @@ oList3:bLine := {||{aList3[oList3:nAt,01],;
                     aList3[oList3:nAt,03],;
                     aList3[oList3:nAt,04],; 
                     aList3[oList3:nAt,05],;
+                    Transform(aList3[oList3:nAt,09],"@E 999,999.99"),; 
+                    Transform(aList3[oList3:nAt,10],"@E 999,999.99"),;
+                    Transform(aList3[oList3:nAt,11],"@E 999,999.99"),;
+                    Transform(aList3[oList3:nAt,12],"@E 999,999.99"),; 
+                    Transform(aList3[oList3:nAt,13],"@E 999,999.99"),;
+                    Transform(aList3[oList3:nAt,14],"@E 999,999.99"),;
                     aList3[oList3:nAt,06]}}
 
 oList2:refresh()
@@ -380,3 +402,82 @@ oList3:refresh()
 oDlg1:refresh()
 
 Return
+
+/*/{Protheus.doc} GeraPlan
+    (long_description)
+    @type  Static Function
+    @author user
+    @since 04/08/2022
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function GeraPlan()
+
+Local oExcel 	:= FWMSEXCEL():New()
+Local cDir 		:= ""
+Local cArqXls 	:= "Negociacoes_"+dtos(ddatabase)+strtran(time(),":")+".xls" 
+Local nX,nY 
+Local aAux      :=  {}
+//Local cGuia     :=  'Conciliação'
+Local cInterno  :=  'Cotacao_Atual'
+Local cExterno  :=  'Negociacoes'
+
+cDir := cGetFile(, OemToAnsi("Selecione o diretório de destino"), 0, "C:\", .T., GETF_LOCALHARD+GETF_NETWORKDRIVE+GETF_RETDIRECTORY, .F., .F.) 
+
+If Empty(cDir)
+	Return
+EndIf
+
+oExcel:AddworkSheet(cInterno) 
+oExcel:AddTable (cInterno,cInterno)
+
+For nX := 1 to len(aHeader[1])
+    oExcel:AddColumn(cInterno,cInterno,aHeader[1,nX],1,1)
+Next nX
+
+
+For nX := 1 to len(aList1)
+    aAux := {}
+    For nY := 1 to len(aHeader[1])
+        Aadd(aAux,aList1[nX,nY])
+    Next nY
+
+    oExcel:AddRow(cInterno,cInterno,aAux)
+Next nX
+
+
+oExcel:AddworkSheet(cExterno) 
+oExcel:AddTable (cExterno,cExterno)
+
+For nX := 1 to len(aHeade2[1])
+    oExcel:AddColumn(cExterno,cExterno,aHeade2[1,nX],1,1)
+Next nX
+
+
+For nX := 1 to len(aList3B)
+    aAux := {}
+    For nY := 1 to len(aHeade2[1])
+        Aadd(aAux,aList3B[nX,nY])
+    Next nY
+
+    oExcel:AddRow(cExterno,cExterno,aAux)
+Next nX
+
+
+
+oExcel:Activate()
+
+oExcel:GetXMLFile(cDir +cArqXls)
+
+oExcelApp := MsExcel():New()
+oExcelApp:WorkBooks:Open(cDir +cArqXls)     //Abre uma planilha
+oExcelApp:SetVisible(.T.)        
+oExcelApp:Destroy()
+
+	
+    
+Return(cDir+cArqXls)

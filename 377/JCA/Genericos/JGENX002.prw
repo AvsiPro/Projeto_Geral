@@ -71,7 +71,7 @@ Return .T.
 
 //esta não funcionou adequadamente
 
-static Function JCAMAIL1(cFrom,cTo,cSubject,cBody,aAttach,lConfirm,cCC,cBCC)
+User Function JGENX2z(cFrom,cTo,cSubject,cBody,aAttach,lConfirm,cCC,cBCC)
 
     Local lRet			:= .F.  
     Local oServer
@@ -87,7 +87,7 @@ static Function JCAMAIL1(cFrom,cTo,cSubject,cBody,aAttach,lConfirm,cCC,cBCC)
     Local nErro			:= 0
     Local cAttach		:= ""
     Local cContent		:= ""
-    Default cFrom		:= ""
+    Default cFrom		:= cAccount //""
     Default cTo			:= ""
     Default cCC			:= ""
     Default cBCC		:= ""
