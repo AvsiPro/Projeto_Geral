@@ -36,7 +36,7 @@ Static __lSx6  := .F.
 Static __lSx7  := .F.
 Static __lMnu  := .F.
 
-User Function CALLCHGXNU() //Afterlogin()
+STATIC Function CALLCHGXNU() //Afterlogin()
 
     SetKey(K_ALT_S, {|| U_TIDev() })
 

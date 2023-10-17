@@ -161,4 +161,6 @@ If !Empty(cTransp)
     oSay3:settext(SA4->A4_END+SA4->A4_BAIRRO+SA4->A4_MUN+SA4->A4_EST)
 ENDIF
 
+oDlg1:refresh()
+
 Return

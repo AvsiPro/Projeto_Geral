@@ -2628,7 +2628,7 @@ For nCont := 1 to len(aEmail)
 			//(cNota, cSerie, cPasta, ccnpj)
 			U_CONDANFE(MV_PAR02,MV_PAR01,'C:\BOLETOS\',cCnpjj)
 
-			U_CONFSR02()
+			//U_CONFSR02(,,,2)
 
 		else 
 			DbSelectArea("SF2")

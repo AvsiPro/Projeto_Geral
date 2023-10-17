@@ -14,14 +14,13 @@
     @since 16/12/2022
     @version 1
     /*/
-User Function CONFSR02(cXTitle, xFatur, xPedido)
+User Function CONFSR02(cXTitle, xFatur, xPedido,nOpc)
 
 	Local aCombo := {"1=ExtraTo de Leitura", "2=Demonstrativo de Consumo", "3=Todos" }
 	Local aPergs := {}
 	Local dDtDe  := CToD(" / / ")
 	Local dDtAt  := CToD(" / / ")
-	Local nOpc := 0
-
+	
 	Private _aList := aClone(aList)
 	Private _aList2 := aClone(aList2)
 	Private _aList3 := aClone(aList3)
@@ -32,27 +31,32 @@ User Function CONFSR02(cXTitle, xFatur, xPedido)
 
 	Default xFatur   := .F.
 	Default xPedido  := ''
+	Default nOpc := 0
 
 	lFatur 	  := xFatur
 	_cPedido  := xPedido
 	
-	aAdd( aPergs ,{2,"Escolha uma opção : ",0,aCombo,100,"",.T.})
-	aAdd( aPergs ,{1,"Leitura De : ", dDtDe,"@!",'.T.',,'.T.',40,.F.})
-	aAdd( aPergs ,{1,"Leitura Até : ", dDtAt,"@!",'.T.',,'.T.',40,.F.})
-
 	If nOpc == 0
-		If !ParamBox(aPergs ,"Parametros ")
-			Return
-		EndIf
-	EndIf
+		aAdd( aPergs ,{2,"Escolha uma opção : ",0,aCombo,100,"",.T.})
+		aAdd( aPergs ,{1,"Leitura De : ", dDtDe,"@!",'.T.',,'.T.',40,.F.})
+		aAdd( aPergs ,{1,"Leitura Até : ", dDtAt,"@!",'.T.',,'.T.',40,.F.})
 
-	If MV_PAR01 == "1" .OR. nOpc == 1
+		If nOpc == 0
+			If !ParamBox(aPergs ,"Parametros ")
+				Return
+			EndIf
+		EndIf
+
+		If MV_PAR01 == "1" .OR. nOpc == 1
+			ExtLeitura()
+		ElseIf MV_PAR01 == "2" .OR. nOpc == 2
+			DemonsCon()
+		ElseIf MV_PAR01 == "3" .OR. nOpc == 3
+			ExtLeitura()
+			DemonsCon()
+		EndIf
+	else
 		ExtLeitura()
-	ElseIf MV_PAR01 == "2" .OR. nOpc == 2
-		DemonsCon()
-	ElseIf MV_PAR01 == "3" .OR. nOpc == 3
-		ExtLeitura()
-		DemonsCon()
 	EndIf
 
 Return

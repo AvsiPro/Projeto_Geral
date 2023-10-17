@@ -241,7 +241,7 @@ WHILE !EOF()
 EndDo 
 
 If len(aList3B) < 1
-    Aadd(aList3B,{'','','','','','','','','','','','',''})
+    Aadd(aList3B,{'','','','','','','','','','','','','','',''})
 EndIf 
 
 Return
@@ -380,7 +380,7 @@ For nCont := 1 to len(aList3B)
 Next nCont
 
 If len(aList3) < 1
-    Aadd(aList3,{'','','','','','','','','','','','',''})
+    Aadd(aList3,{'','','','','','','','','','','','','','',''})
 EndIf 
 
 oList3:SetArray(aList3)

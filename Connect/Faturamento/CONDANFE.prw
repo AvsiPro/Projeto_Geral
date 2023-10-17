@@ -65,7 +65,7 @@ User Function CONDANFE(cNota, cSerie, cPasta, ccnpj)
             U_CONXML(cNota, cSerie, cPasta + cArquivo  + ".xml", .F.)
         EndIf 
 
-        If !File(cPasta+cArquivo+".pdf") 
+        //If !File(cPasta+cArquivo+".pdf") 
             //Define as perguntas da DANFE
             Pergunte("NFSIGW",.F.)
             MV_PAR01 := PadR(cNota,  nTamNota)     //Nota Inicial
@@ -115,7 +115,7 @@ User Function CONDANFE(cNota, cSerie, cPasta, ccnpj)
             
             //WinExec("copy c:\totvs\protheus_data\"+cPatSer+"\*.* c:\inetpub\wwwroot\50308\ /y")
             //aAuxFile := Directory(cPasta+'*.*',"D")
-        EndIf
+        //EndIf
 		
 		
 		
