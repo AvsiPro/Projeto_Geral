@@ -233,10 +233,11 @@ If len(aItens[1]) >= 8
 
     lBolSeparado := .f.
 
-    MV_PAR19 := '001'
-    MV_PAR20 := '237'
-    MV_PAR21 := '3375'
-    MV_PAR22 := '00000628'
+    MV_PAR19 := SUPERGETMV("TI_SUBCTA",.F.,'123') //sub-conta
+    MV_PAR20 := SUPERGETMV("TI_BNCBOL",.F.,'001') //banco
+    MV_PAR21 := SUPERGETMV("TI_AGEBOL",.F.,'0005') //agencia     
+    MV_PAR22 := SUPERGETMV("TI_CNTBOL",.F.,'139074') // conta
+
     CCMPVENCTO := SE1->E1_VENCTO
 
 
