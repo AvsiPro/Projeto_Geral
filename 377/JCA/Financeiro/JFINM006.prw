@@ -36,6 +36,10 @@ User Function JFINM006()
 
 	nOpc := Aviso("Efetivação em lote",aDesc,{"Sim","Nao"})
 
+	IF !nOpc
+		RETURN NIL
+	ENDIF
+
 	aPergs   := {}
 
 	aAdd(aPergs, {1, "Histórico",  space(100),  "",             ".T.",        "", ".T.", 80,  .F.})
