@@ -112,9 +112,9 @@ If DbSeek(xFilial("SB1")+cCodigo) //
     oModel:SetValue("SB1MASTER",aHoBrw1[nCont,01]      ,aHoBrw1[nCont,02])
     nCont := Ascan(aHoBrw1,{|x| Alltrim(x[1]) == "B1_DESC"})
 
-    //oModel:SetValue("SB1MASTER","B1_GRUPO"    ,cGrupo)
+    oModel:SetValue("SB1MASTER","B1_GRUPO"    ,cGrupo)
     oModel:SetValue("SB1MASTER","B1_XCODPAI"  ,cCodigo)
-    //oModel:SetValue("SB1MASTER","B1_ZMARCA"   ,cMarca)
+    oModel:SetValue("SB1MASTER","B1_ZMARCA"   ,cMarca)
     
     oModel:SetValue("SB5DETAIL","B5_FILIAL" ,xFilial("SB5"))
     oModel:SetValue("SB5DETAIL","B5_COD"    ,cNewCd)
@@ -122,11 +122,11 @@ If DbSeek(xFilial("SB1")+cCodigo) //
     
     If oModel:VldData()
         oModel:CommitData()
-        Dbseek(xFilial("SB1")+cNewCd)
+        /*Dbseek(xFilial("SB1")+cNewCd)
         Reclock("SB1",.F.)
         SB1->B1_GRUPO := cGrupo
         SB1->B1_ZMARCA:= cMarca 
-        SB1->(Msunlock())
+        SB1->(Msunlock())*/
         MsgAlert("Registro INCLUIDO!", "Atenção")
     Else
         VarInfo("",oModel:GetErrorMessage())
