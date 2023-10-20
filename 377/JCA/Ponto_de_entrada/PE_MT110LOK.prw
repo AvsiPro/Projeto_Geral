@@ -14,8 +14,30 @@ User Function  MT110LOK()
 Local nPosPrd    := aScan(aHeader,{|x| AllTrim(x[2]) == 'C1_PRODUTO'})
 Local nPosItem   := aScan(aHeader,{|x| AllTrim(x[2]) == 'C1_ITEM'})
 Local nPosTpCt   := aScan(aHeader,{|x| AllTrim(x[2]) == 'C1_XTIPCOT'})
+Local nPosQtd    := aScan(aHeader,{|x| AllTrim(x[2]) == 'C1_QUANT'})
+Local nPosQtO    := aScan(aHeader,{|x| AllTrim(x[2]) == 'C1_QTDORIG'})
 Local lValido    := .T.
+Local lPrdPai    := Empty(Posicione("SB1",1,xFilial("SB1")+aCols[n,nPosPrd],"B1_XCODPAI"))
 Local nCont      := 1
+Local lQtdAlt    := aCols[n,nPosQtd] <> aCols[n,nPosQtO]
+
+If !lPrdPai 
+    cProdPai := Posicione("SB1",1,xFilial("SB1")+aCols[n,nPosPrd],"B1_XCODPAI") 
+    nPosPai := Ascan(aCols,{ |x| alltrim(x[nPosPrd]) == alltrim(cProdPai)})
+    If nPosPai > 0
+        lQtdPai := aCols[nPosPai,nPosQtd] <> aCols[n,nPosQtd]
+        If lQtdPai .And. lQtdAlt
+            lValido := .F.
+            nPosTpCt := 0
+            MsgAlert("Não é permitido alterar a quantidade dos produtos filhos","PE_MT110LOK")
+        EndIf 
+    Else 
+        lValido := .F.
+        nPosTpCt := 0
+        MsgAlert("Produto pai não encontrado na solicitação de compra","PE_MT110LOK")
+    EndIf 
+
+EndIf 
 
 If nPosTpCt > 0
     dbSelectArea('SC1')
@@ -23,6 +45,11 @@ If nPosTpCt > 0
     For nCont := 1 to len(aCols)
         If MsSeek(xFilial('SC1')+aCols[nCont][nPosPrd]+cA110Num+aCols[nCont][nPosItem])
             aCols[nCont][nPosTpCt] := cvaltochar(nEditS)
+            If lPrdPai .And. lQtdAlt
+                If Alltrim(Posicione("SB1",1,xFilial("SB1")+aCols[nCont,nPosPrd],"B1_XCODPAI")) == alltrim(aCols[n,nPosPrd])
+                    aCols[nCont,nPosQtd] := aCols[n,nPosQtd]
+                EndIf 
+            EndIf
         EndIf 
     Next nCont
 EndIf
