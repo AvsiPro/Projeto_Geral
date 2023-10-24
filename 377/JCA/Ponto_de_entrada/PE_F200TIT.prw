@@ -16,7 +16,7 @@ User Function F200TIT()
         RecLock("SE1",.f.)
         SE1->E1_TIPO  := "RA "
         SE1->E1_SALDO := SE1->E1_VALOR
-
+        SE1->E1_SITUAC := "0"
         MsUnlock()
     EndIf
 
