@@ -43,7 +43,7 @@ If !lCopJca
 
     cRet := Alltrim(M->B1_GRUPO)+Strzero(TRB->SEQ,4)
 else
-    cRet := SB1->B1_COD
+    cRet := M->B1_COD
 EndIf 
 
 Return(cRet)

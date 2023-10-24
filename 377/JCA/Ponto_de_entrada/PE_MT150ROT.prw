@@ -68,125 +68,140 @@ aAdd(aPergs, {1, "Código",  cCodigo,  "", ".T.", "SB1", ".T.", 80,  .F.})
 If ParamBox(aPergs, "Informe o código do produto a ser incluído nesta cotação",aRet)
 
     aForAtu := QtdFor(SC8->C8_NUM)
+
     nFornec   := len(aForAtu)
-        
-    For nY := 1 to nFornec 
-        _aCols := {}
-        _aCols2:= {}
 
-        If !aRet[1] $ cProdC1
-            aItmCs1 := maxc1(SC8->C8_NUMSC)
-            CITSC1  := aItmCs1[1]
-            cIdent  := aItmCs1[2]
-        EndIf
-
-        aCampos := FWSX3Util():GetListFieldsStruct( "SC8" , .F. )   
-
-        For nCont := 1 to len(aCampos)
-            Aadd(_aCols,{aCampos[nCont,01],&("SC8->"+aCampos[nCont,01])}) 
-        Next nCont
-
-        aCampo1 := FWSX3Util():GetListFieldsStruct( "SC1" , .F. ) 
-        
-        For nCont := 1 to len(aCampo1)
-            Aadd(_aCols2,{aCampo1[nCont,01],&("SC1->"+aCampo1[nCont,01])}) 
-        Next nCont
-
-        nPosPrd := Ascan(aCampos,{|x| Alltrim(x[1]) == "C8_PRODUTO"})
-        nPosItm := Ascan(aCampos,{|x| Alltrim(x[1]) == "C8_ITEM"})
-        nPosIsc := Ascan(aCampos,{|x| Alltrim(x[1]) == "C8_ITEMSC"})
-        nPosId1 := Ascan(aCampos,{|x| Alltrim(x[1]) == "C8_IDENT"})
-        nPosFoc := Ascan(aCampos,{|x| Alltrim(x[1]) == "C8_FORNECE"})
-        nPosFno := Ascan(aCampos,{|x| Alltrim(x[1]) == "C8_FORNOME"})
-        nPosFma := Ascan(aCampos,{|x| Alltrim(x[1]) == "C8_FORMAIL"})
-
-        nPosPr2 := Ascan(aCampo1,{|x| Alltrim(x[1]) == "C1_PRODUTO"})
-        nPosIt2 := Ascan(aCampo1,{|x| Alltrim(x[1]) == "C1_ITEM"})
-        nPosDes := Ascan(aCampo1,{|x| Alltrim(x[1]) == "C1_DESCRI"})
-        nPosId2 := Ascan(aCampo1,{|x| Alltrim(x[1]) == "C1_IDENT"})
-
-        cProdPai := Posicione("SB1",1,xFilial("SB1")+aRet[1],"B1_XCODPAI")
-        DbSelectArea("ZPN")
-        DbSetOrder(1)
-        If Dbseek(SC8->C8_FILIAL+aRet[1])
-            MsgAlert("Marca com restrição de compra para esta filial","PE_MT150ROT")
+    cProdPai := Posicione("SB1",1,xFilial("SB1")+aRet[1],"B1_XCODPAI")
+    
+    If Empty(cProdPai)
+        MsgAlert("Somente produtos filhos podem ser adicionados","PE_MT150ROT")
+        lPermitir := .F.  
+    Else 
+        lPaiSol := BusPaiSC(SC8->C8_NUM,cProdPai)
+        If !lPaiSol
+            MsgAlert("Produto pai não encontrado na solicitação de compra","PE_MT150ROT")
             lPermitir := .F.
-            exit
-        EndIf
+        EndIf 
+    EndIf 
 
-        If lPermitir
-            If Empty(cProdPai)
-                MsgAlert("Somente produtos filhos podem ser adicionados","PE_MT150ROT")
-                lPermitir := .F.
-                exit
-            Else 
-
-                nItens := 0
-
-                DbSelectArea("SC8")
-                DbGotop()
-                DbSetOrder(1)
-                If Dbseek(xfilial("SC8")+cCotacao)
-                    While !EOF() .And. SC8->C8_FILIAL == xFilial("SC8") .And. SC8->C8_NUM == cCotacao
-                        nPosFoPr := Ascan(aForProd,{|x| x[1]+x[2] == SC8->C8_PRODUTO+SC8->C8_FORNECE}) 
-
-                        If Alltrim(SC8->C8_PRODUTO) == Alltrim(aRet[1]) .and. nPosFoPr > 0
-                            MsgAlert("Produto já consta na Cotação","PE_MT150ROT")
-                            lPermitir := .F.
-                            exit
-                        Else 
-                            Aadd(aForProd,{SC8->C8_PRODUTO,SC8->C8_FORNECE,SC8->C8_FORNOME,SC8->C8_FORMAIL})
-                        EndIf
-
-                        nItens++
-                        Dbskip()
-                    EndDo 
-                    //Posicionar novamente para continuar o tratamento na mesma cotação
-                    Dbseek(xfilial("SC8")+cCotacao)
-                EndIf 
-            EndIf
-        EndIf
-
-        If lPermitir
-            _aCols[nPosPrd,02] := aRet[1]
-            _aCols[nPosItm,02] := Strzero(nItens+1,4)
-
-            _aCols[nPosId1,02] := cIdent
-
-            
-            _aCols[nPosFoc,02] := aForAtu[nY,01]
-            _aCols[nPosFno,02] := aForAtu[nY,02]
-            _aCols[nPosFma,02] := aForAtu[nY,03]
-
-            _aCols2[nPosPr2,02] := aRet[1]
-            _aCols2[nPosIt2,02] := CITSC1
-            _aCols2[nPosId2,02] := cIdent
-
-            If nPosDes > 0
-                _aCols2[nPosDes,02] := Posicione("SB1",1,xFilial("SB1")+aRet[1],"B1_DESC")
-            EndIF 
+    If lPermitir 
+        For nY := 1 to nFornec 
+            _aCols := {}
+            _aCols2:= {}
 
             If !aRet[1] $ cProdC1
-                Reclock("SC1",.T.)
-                For nCont := 1 to len(_aCols2)
-                    &("SC1->"+_aCols2[nCont,01]) := _aCols2[nCont,02]
-                Next nCont
-                SC1->(MSUNLOCK())
-            
-            EndIf 
+                aItmCs1 := maxc1(SC8->C8_NUMSC)
+                CITSC1  := aItmCs1[1]
+                cIdent  := aItmCs1[2]
+            EndIf
 
-            cProdC1 += aRet[1]+"/"
+            aCampos := FWSX3Util():GetListFieldsStruct( "SC8" , .F. )   
 
-            _aCols[nPosIsc,02] := CITSC1
-
-            Reclock("SC8",.T.)
-            For nCont := 1 to len(_aCols)
-                &("SC8->"+_aCols[nCont,01]) := _aCols[nCont,02]
+            For nCont := 1 to len(aCampos)
+                Aadd(_aCols,{aCampos[nCont,01],&("SC8->"+aCampos[nCont,01])}) 
             Next nCont
-            SC8->(MSUNLOCK())
 
-        EndIf 
-    Next nY
+            aCampo1 := FWSX3Util():GetListFieldsStruct( "SC1" , .F. ) 
+            
+            For nCont := 1 to len(aCampo1)
+                Aadd(_aCols2,{aCampo1[nCont,01],&("SC1->"+aCampo1[nCont,01])}) 
+            Next nCont
+
+            nPosPrd := Ascan(aCampos,{|x| Alltrim(x[1]) == "C8_PRODUTO"})
+            nPosItm := Ascan(aCampos,{|x| Alltrim(x[1]) == "C8_ITEM"})
+            nPosIsc := Ascan(aCampos,{|x| Alltrim(x[1]) == "C8_ITEMSC"})
+            nPosId1 := Ascan(aCampos,{|x| Alltrim(x[1]) == "C8_IDENT"})
+            nPosFoc := Ascan(aCampos,{|x| Alltrim(x[1]) == "C8_FORNECE"})
+            nPosFno := Ascan(aCampos,{|x| Alltrim(x[1]) == "C8_FORNOME"})
+            nPosFma := Ascan(aCampos,{|x| Alltrim(x[1]) == "C8_FORMAIL"})
+
+            nPosPr2 := Ascan(aCampo1,{|x| Alltrim(x[1]) == "C1_PRODUTO"})
+            nPosIt2 := Ascan(aCampo1,{|x| Alltrim(x[1]) == "C1_ITEM"})
+            nPosDes := Ascan(aCampo1,{|x| Alltrim(x[1]) == "C1_DESCRI"})
+            nPosId2 := Ascan(aCampo1,{|x| Alltrim(x[1]) == "C1_IDENT"})
+
+            DbSelectArea("ZPN")
+            DbSetOrder(1)
+            If Dbseek(SC8->C8_FILIAL+aRet[1])
+                MsgAlert("Marca com restrição de compra para esta filial","PE_MT150ROT")
+                lPermitir := .F.
+                exit
+            EndIf
+
+            If lPermitir
+                /*If Empty(cProdPai)
+                    MsgAlert("Somente produtos filhos podem ser adicionados","PE_MT150ROT")
+                    lPermitir := .F.
+                    exit
+                Else */
+
+                    nItens := 0
+
+                    DbSelectArea("SC8")
+                    DbGotop()
+                    DbSetOrder(1)
+                    If Dbseek(xfilial("SC8")+cCotacao)
+                        While !EOF() .And. SC8->C8_FILIAL == xFilial("SC8") .And. SC8->C8_NUM == cCotacao
+                            nPosFoPr := Ascan(aForProd,{|x| x[1]+x[2] == SC8->C8_PRODUTO+SC8->C8_FORNECE}) 
+
+                            If Alltrim(SC8->C8_PRODUTO) == Alltrim(aRet[1]) .and. nPosFoPr > 0
+                                MsgAlert("Produto já consta na Cotação","PE_MT150ROT")
+                                lPermitir := .F.
+                                exit
+                            Else 
+                                Aadd(aForProd,{SC8->C8_PRODUTO,SC8->C8_FORNECE,SC8->C8_FORNOME,SC8->C8_FORMAIL})
+                            EndIf
+
+                            nItens++
+                            Dbskip()
+                        EndDo 
+                        //Posicionar novamente para continuar o tratamento na mesma cotação
+                        Dbseek(xfilial("SC8")+cCotacao)
+                    EndIf 
+                //EndIf
+            EndIf
+
+            If lPermitir
+                _aCols[nPosPrd,02] := aRet[1]
+                _aCols[nPosItm,02] := Strzero(nItens+1,4)
+
+                _aCols[nPosId1,02] := cIdent
+
+                
+                _aCols[nPosFoc,02] := aForAtu[nY,01]
+                _aCols[nPosFno,02] := aForAtu[nY,02]
+                _aCols[nPosFma,02] := aForAtu[nY,03]
+
+                _aCols2[nPosPr2,02] := aRet[1]
+                _aCols2[nPosIt2,02] := CITSC1
+                _aCols2[nPosId2,02] := cIdent
+
+                If nPosDes > 0
+                    _aCols2[nPosDes,02] := Posicione("SB1",1,xFilial("SB1")+aRet[1],"B1_DESC")
+                EndIF 
+
+                If !aRet[1] $ cProdC1
+                    Reclock("SC1",.T.)
+                    For nCont := 1 to len(_aCols2)
+                        &("SC1->"+_aCols2[nCont,01]) := _aCols2[nCont,02]
+                    Next nCont
+                    SC1->(MSUNLOCK())
+                
+                EndIf 
+
+                cProdC1 += aRet[1]+"/"
+
+                _aCols[nPosIsc,02] := CITSC1
+
+                Reclock("SC8",.T.)
+                For nCont := 1 to len(_aCols)
+                    &("SC8->"+_aCols[nCont,01]) := _aCols[nCont,02]
+                Next nCont
+                SC8->(MSUNLOCK())
+
+            EndIf 
+        Next nY
+    Endif
 
     If lPermitir
         MsgAlert("Produto incluído na cotação com sucesso!!!","PE_MT150ROT")
@@ -285,3 +300,44 @@ ENDDO
 RestArea(aAreaC1)
     
 Return(aRet)
+
+/*/{Protheus.doc} BusPaiSC(SC8->C8_NUM,cProdPai)
+    (long_description)
+    @type  Static Function
+    @author user
+    @since 20/10/2023
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function BusPaiSC(cNumSc1,cProdPai)
+
+Local aAreaC1 := GetArea()
+Local cQuery  := ""
+Local lRet    := .F.
+
+cQuery := "SELECT C1_PRODUTO"
+cQuery += " FROM "+RetSQLName("SC1")
+cQuery += " WHERE C1_FILIAL='"+xFilial("SC1")+"' AND C1_NUM='"+cNumSc1+"'"
+cQuery += " AND C1_PRODUTO='"+cProdPai+"' AND D_E_L_E_T_=' ' "
+
+IF Select('TRB') > 0
+    dbSelectArea('TRB')
+    dbCloseArea()
+ENDIF
+
+MemoWrite("PE_MT150ROT.SQL",cQuery)
+DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
+
+DbSelectArea("TRB")
+
+If !Empty(TRB->C1_PRODUTO)
+    lRet := .T.
+EndIf 
+
+RestArea(aAreaC1)
+
+Return(lRet)

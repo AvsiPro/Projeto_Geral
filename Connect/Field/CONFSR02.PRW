@@ -14,7 +14,7 @@
     @since 16/12/2022
     @version 1
     /*/
-User Function CONFSR02(cXTitle, xFatur, xPedido,nOpc)
+User Function CONFSR02(cXTitle, xFatur, xPedido,nOpc,cPasta,ccnpj)
 
 	Local aCombo := {"1=ExtraTo de Leitura", "2=Demonstrativo de Consumo", "3=Todos" }
 	Local aPergs := {}
@@ -48,7 +48,7 @@ User Function CONFSR02(cXTitle, xFatur, xPedido,nOpc)
 		EndIf
 
 		If MV_PAR01 == "1" .OR. nOpc == 1
-			ExtLeitura()
+			ExtLeitura('')
 		ElseIf MV_PAR01 == "2" .OR. nOpc == 2
 			DemonsCon()
 		ElseIf MV_PAR01 == "3" .OR. nOpc == 3
@@ -56,12 +56,25 @@ User Function CONFSR02(cXTitle, xFatur, xPedido,nOpc)
 			DemonsCon()
 		EndIf
 	else
-		ExtLeitura()
+
+		If SubStr(cPasta, Len(cPasta), 1) != "\"
+            cPasta := cPasta+"\"+ccnpj+"\"
+            If !ExistDir(cPasta)
+            	Makedir(cPasta)
+            EndIf
+        Else
+        	cPasta := cPasta+ccnpj+"\"
+            If !ExistDir(cPasta)
+            	Makedir(cPasta)
+            EndIf
+        EndIf
+
+		ExtLeitura(cPasta)
 	EndIf
 
 Return
 
-Static Function ExtLeitura()
+Static Function ExtLeitura(cCaminho)
 
 	Local lAdjustToLegacy  := .F.
 	Local lDisableSetup    := .T.
@@ -89,7 +102,9 @@ Static Function ExtLeitura()
 	Local oF15TFF          := TFont():New('Arial' /*Fonte*/,,15 /*Tamanho*/,,.T. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
 	Local oF25TFF          := TFont():New('Arial' /*Fonte*/,,25 /*Tamanho*/,,.T. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
 	
-	Private oPrinter := FWMSPrinter():New( "extrato_leitura_.pdf",IMP_PDF,lAdjustToLegacy,"C:\temp\",lDisableSetup,,,,,,,, )
+	Private oPrinter := FWMSPrinter():New( "extrato_leitura_"+dtos(ddatabase)+".pdf",IMP_PDF,lAdjustToLegacy,"",lDisableSetup,,,,,,,.f., )
+
+	oPrinter:cPathPDF := If(!Empty(cCaminho),cCaminho,"C:\temp\")
 
 	If lFatur
 		cQuery := " SELECT Z08.Z08_NUMSER,Z08.Z08_PRODUT,Z08.Z08_SELECA,SB1.B1_DESC,Z08.Z08_DATA,"
@@ -523,7 +538,7 @@ Static Function ExtLeitura()
 		oPrinter:Fillrect( { nLin+=15, 10, nLin+30, 590 }, oBrush2, "-2")
 		oPrinter:Fillrect( { nLin+10, 20, nLin+20, 30 }, oBrush3, "-2")
 		oPrinter:Say( nLin+15, 40,SubStr(_aList[oList:nAt,5],1,55), oF12FFF )
-		oPrinter:Say( nLin+25, 40,"Totalizando " + cValToChar(Len(_aList2)) + " PonTos de VEnda", oF10FFF )
+		oPrinter:Say( nLin+25, 40,"Totalizando " + cValToChar(Len(_aList2)) + " Pontos de Venda", oF10FFF )
 		oPrinter:Say( nLin+=15, 360,cCon1, oF10FFF )
 		oPrinter:Say( nLin, 410,TransForm(val(cSub1), "@E 99,999.99"), oF10FFF )
 		oPrinter:Say( nLin, 480,TransForm(val(cConRS1), "@E 99,999.99"), oF10FFF )

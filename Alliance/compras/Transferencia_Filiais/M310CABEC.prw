@@ -157,6 +157,9 @@ oSay2:settext("")
 oSay3:settext("")
 
 If !Empty(cTransp)
+    DbSelectArea("SA4")
+    DbSetOrder(1)
+    DbSeek(xFilial("SA4")+cTranp)
     oSay2:settext(SA4->A4_NOME+Transform(SA4->A4_CGC,"@E99.999.999/9999-99"))
     oSay3:settext(SA4->A4_END+SA4->A4_BAIRRO+SA4->A4_MUN+SA4->A4_EST)
 ENDIF
