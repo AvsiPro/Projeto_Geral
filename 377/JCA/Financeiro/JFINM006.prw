@@ -36,10 +36,6 @@ User Function JFINM006()
 
 	nOpc := Aviso("Efetivação em lote",aDesc,{"Sim","Nao"})
 
-	IF !nOpc
-		RETURN NIL
-	ENDIF
-
 	aPergs   := {}
 
 	aAdd(aPergs, {1, "Histórico",  space(100),  "",             ".T.",        "", ".T.", 80,  .F.})
@@ -239,6 +235,7 @@ static function EFETIVA()
 
 	Local nAt := 0
 	Local aDados    := {}
+	Local lRet := .T.
 	Private aLstAux := {}
 	Private aEfetiv := {}
 	Private lP := .F.
@@ -292,16 +289,19 @@ static function EFETIVA()
 				aAdd( aDados, {"E5_BANCO"   , cBanco    , NIL} )
 				aAdd( aDados, {"E5_AGENCIA" , cAgencia  , NIL} )
 				aAdd( aDados, {"E5_CONTA"   , cConta    , NIL} )
-
-				//Efetua a inclusão do movimento a pagar via Rotina Automática FINA100 (Movimentos Bancários)
+				aAdd( aDados, {"NCTBONLINE"        ,1                         ,Nil}) //1=Sim;2=Não
+					//Efetua a inclusão do movimento a pagar via Rotina Automática FINA100 (Movimentos Bancários)
+				
 				MsExecAuto( {|w,x, y| FINA100(w, x, y)}, 0, aDados, nOperacao )
-				If lMsErroAuto
-					cMsgErro:= MostraErro("\")
-					cMsgErro := "Erro de Inclusao na Rotina Automatica FINA100:" + Chr(13) + cMsgErro
-					Conout(cMsgErro)
-					lRet := .F.
-				ELSE
 
+				If lMsErroAuto
+					MostraErro()
+					//cMsgErro := MostraErro("\")
+					//cMsgErro := "Erro na geração do movimento bancário:" + Chr(13) + cMsgErro
+					//Conout(cMsgErro)
+					lRet := .F.
+					EXIT
+				ELSE
 					//ATUALIZA SIG
 					//IG_FILIAL+IG_IDPROC+IG_ITEM
 					DbSelectArea('SIG')
@@ -324,9 +324,14 @@ static function EFETIVA()
 			ENDIF
 		Next nAt
 
-		FWAlertSuccess("Movimentos realizados.", "Conciliação concluída.")
+		IF lRet
+			FWAlertSuccess("Movimentos realizados.", "Conciliação concluída.")
+		ELSE
+			FWAlertError("Não foi possível concluir a efetivação.", "Verifique a natureza se é de movimento bancário.")
+		ENDIF
+
 	else
-		FWAlertError("Marque ao menos um item para conciliar", "Erro na conciliação")
+		FWAlertError("Marque ao menos um item para efetivar", "Erro na conciliação")
 	endIf
 
 Return Nil
