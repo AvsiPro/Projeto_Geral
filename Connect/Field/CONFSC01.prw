@@ -2633,10 +2633,10 @@ For nCont := 1 to len(aEmail)
 			MV_PAR02 := CTOD('01/10/2023')
 			MV_PAR03 := CTOD('01/10/2023')
 			
-			U_CONFSR02(,,,2,'C:\BOLETOS\',cCnpjj)
+			/*U_CONFSR02(,,,2,'C:\BOLETOS\',cCnpjj)
 
 			MV_PAR01 := cSeri 
-			MV_PAR02 := cNota
+			MV_PAR02 := cNota*/
 
 		else 
 			DbSelectArea("SF2")
@@ -2656,7 +2656,7 @@ For nCont := 1 to len(aEmail)
 		If SUBSTR(MV_PAR01,1,1) <> "L"
 			CPYT2S('C:\BOLETOS\'+cCnpjj+'\'+MV_PAR02+'.pdf','\SPOOL\')
 			CPYT2S('C:\BOLETOS\'+cCnpjj+'\'+MV_PAR02+'.xml','\SPOOL\')
-			CPYT2S('C:\BOLETOS\'+cCnpjj+'\'+"extrato_leitura_"+dtos(ddatabase)+".pdf",'\SPOOL\')
+			//CPYT2S('C:\BOLETOS\'+cCnpjj+'\'+"extrato_leitura_"+dtos(ddatabase)+".pdf",'\SPOOL\')
 		Else
 		
 			CPYT2S('C:\BOLETOS\'+cCnpjj+'\'+"recibo_loc_"+MV_PAR02+'.pdf','\SPOOL\')
@@ -2668,12 +2668,12 @@ For nCont := 1 to len(aEmail)
 		cFile1 := '\SPOOL\'+MV_PAR02+'.pdf'
 		cFile2 := '\SPOOL\'+MV_PAR02+'.xml'
 		cFile3 := '\SPOOL\extrato_leitura_'+dtos(ddatabase)+'.pdf'
-		cFile4 := '\SPOOL\recibo_loc_'+MV_PAR02+'.pdf'
-
+		//cFile4 := '\SPOOL\recibo_loc_'+MV_PAR02+'.pdf'
+		cFile4 := ''
 		Aadd(aArquivos,{cFile1,''})
 		Aadd(aArquivos,{cFile2,''})
 		Aadd(aArquivos,{cFile3,''})
-		Aadd(aArquivos,{cFile4,''})
+		//Aadd(aArquivos,{cFile4,''})
 		
 		cBody     :=  corpo() 
 /*
