@@ -365,7 +365,7 @@ Static Function Busca(cCond,cQuinze,cLocacS)
 	Local nX     	:=	0
 
 	cQuery := "SELECT AAN_CONTRT,AAM_CODCLI,AAM_LOJA,AAN_ITEM,AAN_CODPRO,"
-	cQuery += " B1_DESC,AAN_XCBASE,AAN_QUANT,AAN_ULTEMI,"
+	cQuery += " B1_DESC,AAN_XCBASE,AAN_QUANT,AAN_ULTEMI,AAM_XDOSCM,"
 	cQuery += " AAN_XMINQT,AAN_XVLRMI,"
 	cQuery += " AAN_VLRUNI,AAN_INICOB,AAN_FIMCOB,AAN_CONPAG,"
 	cQuery += " E4_COND,E4_DESCRI,A1_NREDUZ,A1_NOME,A1_END,"
@@ -464,8 +464,9 @@ Static Function Busca(cCond,cQuinze,cLocacS)
 						0,;
 						0,;
 						TRB->AAM_XPRDCM,;
-						TRB->A1_EST,;
-						TRB->AAM_XPOCLI})
+						TRB->A1_EST,;		//23
+						TRB->AAM_XPOCLI,;	//24
+						TRB->AAM_XDOSCM})	//25
 		Else
 			//Soma todos os itens do contrato para pegar o valor total.
 			aList[nPos1,02] += nNewVlr //(TRB->AAN_QUANT*TRB->AAN_VLRUNI)
@@ -1576,6 +1577,10 @@ Local cFilFat	:=	If(aList[oList:nAt,23]=="RJ","0102","0101")
 Local cBkpcFil  :=	cFilant 
 Local aFilFat	:=	{'0101=SP','0102=RJ'} //,'0103=PR'}
 Local nLst5
+Local aCompSep	:=	{'','1=Sim','2=Nao'}
+Local nDoseSep	:=	aList[oList:nAt,25]
+Local aDoseSep	:=	{}
+Local cDoseSep	:=	''
 
 If nOpcG == 0 .And. !lLiberaF .And. cLocacS <> "2"
 	MsgAlert("Primeiro rode a opção de Liberação para faturamento")
@@ -1592,6 +1597,8 @@ EndIf
 aAdd( aPerg ,{2,"Escolha uma opção : ",0,aCombo,100,"",.T.})
 aAdd( aPerg ,{1,"PO cliente : ",aList[oList:nAt,24],"@!",'.T.',"",'.T.',40,.F.})  
 aAdd( aPerg ,{2,"Filial de Faturameto : ",cFilFat,aFilFat,100,"",.T.})
+aAdd( aPerg ,{2,"Dose Compl. Sep. : ",nDoseSep,aCompSep,100,"",.T.})
+
 
 If !ParamBox(aPerg ,"Parametros ")
 	Return
@@ -1599,6 +1606,7 @@ EndIf
 
 cFilant := MV_PAR03
 cFilFat := MV_PAR03
+cDoseSep:= MV_PAR04
 
 if MV_PAR01 == "1" 
 	lDose := .T.
@@ -2061,6 +2069,7 @@ If len(aItens) > 0
 			DbSeek(xFilial("AAM")+aList[oList:nAt,01])
 			aCabec := {}
 			aItC6  := {}
+			aDoseSep := {}
 			cItem  := '01'
 
 			aAdd( aCabec , { "C5_FILIAL"    , cFilFat		      , Nil } ) 
@@ -2074,6 +2083,8 @@ If len(aItens) > 0
 			aAdd( aCabec , { "C5_XCONTRT"	, aList[oList:nAt,01]	, Nil })
 				
 			For nCont := 1 to len(aItens)
+				 
+
 				aLinha := {}
 				aAdd( aLinha , { "C6_FILIAL"     , cFilFat		                          , Nil })
 				aAdd( aLinha , { "C6_ITEM"       , cItem 							      , Nil })
@@ -2089,10 +2100,17 @@ If len(aItens) > 0
 					aAdd( aLinha , { "C6_PEDCLI"	,	MV_PAR02 	, Nil })
 				EndIf 
 
+				If cDoseSep == '1' .and. Alltrim(aItens[nCont,01]) == "DOSE COMP"
+					aAdd( aDoseSep , aLinha )
+					LOOP
+				EndIf
+
 				aAdd( aItC6 , aLinha ) 
 				cItem := Soma1(cItem)
 			Next nCont
 
+			DbSelectArea("SC5")
+			DbGotop()
 			lMsErroAuto := .F.
 			MSExecAuto({|x,y,z| Mata410(x,y,z)},aCabec,aItC6,3)
 				
@@ -2102,6 +2120,8 @@ If len(aItens) > 0
 				aDadNF := GeraNF(SC5->C5_NUM,SC5->C5_CONDPAG,'1')
 				nVlrFt := 0
 				Msgalert("Pedido gerado de faturamento de doses "+SC5->C5_NUM)
+
+
 				DbSelectArea("Z08")
 				DbSetOrder(3)
 				cUrlFat := ''
@@ -2160,6 +2180,44 @@ If len(aItens) > 0
 						Next nJ
 					EndIF 
 				Next nCont
+				
+				If cDoseSep == '1'
+					DbSelectArea("SC5")
+					DbGotop()
+
+					lMsErroAuto := .F.
+					MSExecAuto({|x,y,z| Mata410(x,y,z)},aCabec,aDoseSep,3)
+					IF lMsErroAuto  
+						MostraErro()
+					ELSE
+						aDadNF := GeraNF(SC5->C5_NUM,SC5->C5_CONDPAG,If(cFilfat=='0101','LOC','LRJ'))
+						nVlrFt := 0
+						Msgalert("Pedido de dose complementar gerado "+SC5->C5_NUM)
+						Aadd(aList3b,{	SC5->C5_NUM,;
+								SC5->C5_EMISSAO,;
+								nVlrFt,;
+								aDadNF[1],;
+								aList[oList:nAt,01],;
+								aList[oList:nAt,03],;
+								aList[oList:nAt,04],;
+								SC5->C5_FILIAL,;
+								cUrlFat})
+
+						Aadd(aList3,{	SC5->C5_NUM,;
+										SC5->C5_EMISSAO,;
+										nVlrFt,;
+										aDadNF[1],;
+										aList[oList:nAt,01],;
+										aList[oList:nAt,03],;
+										aList[oList:nAt,04],;
+										SC5->C5_FILIAL,;
+										cUrlFat})
+
+					EndIf
+						
+				EndIf 
+
+				
 			ENDIF
 
 		EndIF 
@@ -2591,10 +2649,13 @@ For nCont := 1 to len(aEmail)
 		MV_PAR02 := aEmail[nCont,02]
 		cNfEmail := MV_PAR02
 		cSerNf   := MV_PAR01
+		CTIP := POSICIONE("SC5",1,substr(aEmail[nCont,11],1,4)+aEmail[nCont,07],"C5_XTPPED")
+
 
 		cBoletos := ""
 		cBarra 	 := ""
 		cFile3	 := ""
+		cFile4	 := ""
 
 		DbSelectArea("SA1")
 		DBSetOrder(1)
@@ -2616,7 +2677,7 @@ For nCont := 1 to len(aEmail)
 					U_CONBOL(.T.,'C:\BOLETOS\'+cCnpjj+'\',substr(aEmail[nCont,11],1,4),'')
 					//RestArea(aAreaE1)
 					CPYT2S('C:\BOLETOS\'+cCnpjj+'\boleto_'+MV_PAR02+'.pdf','\SPOOL\')
-					cFile3 += cBarra + '\SPOOL\boleto_'+MV_PAR02+'.pdf'
+					cFile3 := '\SPOOL\boleto_'+MV_PAR02+'.pdf'
 					cBarra := ','
 					//Dbskip()
 				//EndDo
@@ -2632,13 +2693,16 @@ For nCont := 1 to len(aEmail)
 			//(cNota, cSerie, cPasta, ccnpj)
 			U_CONDANFE(cNfEmail,cSerNf,'C:\BOLETOS\',cCnpjj)
 			
+
 			MV_PAR02 := CTOD('01/10/2023')
 			MV_PAR03 := CTOD('01/10/2023')
-			
-			/*U_CONFSR02(,,,2,'C:\BOLETOS\',cCnpjj)
+
+			If CTIP == "F"
+				U_CONFSR02(,.T.,aEmail[nCont,07],2,'C:\BOLETOS\',cCnpjj,aEmail[nCont,06])
+			EndIf 
 
 			MV_PAR01 := cSeri 
-			MV_PAR02 := cNota*/
+			MV_PAR02 := cNota
 
 		else 
 			DbSelectArea("SF2")
@@ -2658,24 +2722,28 @@ For nCont := 1 to len(aEmail)
 		If SUBSTR(cSerNf,1,1) <> "L"
 			CPYT2S('C:\BOLETOS\'+cCnpjj+'\'+cNfEmail+'.pdf','\SPOOL\')
 			CPYT2S('C:\BOLETOS\'+cCnpjj+'\'+cNfEmail+'.xml','\SPOOL\')
-			//CPYT2S('C:\BOLETOS\'+cCnpjj+'\'+"extrato_leitura_"+dtos(ddatabase)+".pdf",'\SPOOL\')
+			
+			If CTIP == "F"
+				CPYT2S('C:\BOLETOS\'+cCnpjj+'\'+"extrato_leitura_"+dtos(ddatabase)+".pdf",'\SPOOL\')
+
+				cFile4 := '\SPOOL\extrato_leitura_'+dtos(ddatabase)+'.pdf'
+			EndIf 
 		Else
 		
 			CPYT2S('C:\BOLETOS\'+cCnpjj+'\'+"recibo_loc_"+cNfEmail+'.pdf','\SPOOL\')
-
+			cFile4 := '\SPOOL\recibo_loc_'+MV_PAR02+'.pdf'
+		
 		EnDIf 
 		
 		//CPYT2S('C:\BOLETOS\'+cCnpjj+'\boleto_'+MV_PAR02+'.pdf','\SPOOL\')
 		
 		cFile1 := '\SPOOL\'+cNfEmail+'.pdf'
 		cFile2 := '\SPOOL\'+cNfEmail+'.xml'
-		cFile3 := '\SPOOL\extrato_leitura_'+dtos(ddatabase)+'.pdf'
-		//cFile4 := '\SPOOL\recibo_loc_'+MV_PAR02+'.pdf'
-		cFile4 := ''
+		
 		Aadd(aArquivos,{cFile1,''})
 		Aadd(aArquivos,{cFile2,''})
 		Aadd(aArquivos,{cFile3,''})
-		//Aadd(aArquivos,{cFile4,''})
+		Aadd(aArquivos,{cFile4,''})
 		
 		cBody     :=  corpo() 
 /*

@@ -14,7 +14,7 @@
     @since 16/12/2022
     @version 1
     /*/
-User Function CONFSR02(cXTitle, xFatur, xPedido,nOpc,cPasta,ccnpj)
+User Function CONFSR02(cXTitle, xFatur, xPedido,nOpc,cPasta,ccnpj,ccontr)
 
 	Local aCombo := {"1=ExtraTo de Leitura", "2=Demonstrativo de Consumo", "3=Todos" }
 	Local aPergs := {}
@@ -28,13 +28,18 @@ User Function CONFSR02(cXTitle, xFatur, xPedido,nOpc,cPasta,ccnpj)
 	Private _aList5 := aClone(aList5)
 	Private _aList5B := aClone(aList5B)
 	Private cTitle := cXTitle
+	Private ccont	:=	""
+	Private nOpca 	:=	0
 
 	Default xFatur   := .F.
 	Default xPedido  := ''
 	Default nOpc := 0
+	Default ccont := "" 
 
+	nOpca	  := nOpc
 	lFatur 	  := xFatur
 	_cPedido  := xPedido
+	ccont 	  := ccontr
 	
 	If nOpc == 0
 		aAdd( aPergs ,{2,"Escolha uma opção : ",0,aCombo,100,"",.T.})
@@ -48,11 +53,11 @@ User Function CONFSR02(cXTitle, xFatur, xPedido,nOpc,cPasta,ccnpj)
 		EndIf
 
 		If MV_PAR01 == "1" .OR. nOpc == 1
-			ExtLeitura('')
+			ExtLeitura('',nOpc)
 		ElseIf MV_PAR01 == "2" .OR. nOpc == 2
 			DemonsCon()
 		ElseIf MV_PAR01 == "3" .OR. nOpc == 3
-			ExtLeitura()
+			ExtLeitura('',nOpc)
 			DemonsCon()
 		EndIf
 	else
@@ -69,12 +74,12 @@ User Function CONFSR02(cXTitle, xFatur, xPedido,nOpc,cPasta,ccnpj)
             EndIf
         EndIf
 
-		ExtLeitura(cPasta)
+		ExtLeitura(cPasta,nOpc)
 	EndIf
 
 Return
 
-Static Function ExtLeitura(cCaminho)
+Static Function ExtLeitura(cCaminho,nOpc)
 
 	Local lAdjustToLegacy  := .F.
 	Local lDisableSetup    := .T.
@@ -118,7 +123,7 @@ Static Function ExtLeitura(cCaminho)
 		cQuery += " INNER JOIN " + RetSQLName("SB1") + " SB1 ON B1_FILIAL='"+xFilial("SB1")+"' AND SB1.B1_COD = Z08.Z08_PRODUT   " 
 		cQuery += " INNER JOIN " + RetSQLName("SA1") + " SA1 ON A1_FILIAL='"+xFilial("SA1")+"' AND SA1.A1_COD = AAM.AAM_CODCLI AND SA1.A1_LOJA = AAM.AAM_LOJA   " 
 		cQuery += " WHERE  Z08.Z08_PEDIDO = '" + _cPedido + "' " 
-		cQuery += " AND Z08_CONTRT='"+aList[oList:nAt,01]+"'"
+		cQuery += " AND Z08_CONTRT='"+If(nOpca==0,aList[oList:nAt,01],ccont)+"'"
 		cQuery += "        AND DA1.D_E_L_E_T_ = ' '   " 
 		cQuery += "        AND Z08.D_E_L_E_T_ = ' '   "
 		cQuery += " GROUP BY Z08.Z08_NUMSER, Z08.Z08_SELECA,Z08.Z08_PRODUT,SB1.B1_DESC,Z08.Z08_DATA,SA1.A1_NOME,SA1.A1_NREDUZ,SA1.A1_COD,SA1.A1_LOJA,DA1.DA1_XCONSU,DA1.DA1_PRCVEN   " 
