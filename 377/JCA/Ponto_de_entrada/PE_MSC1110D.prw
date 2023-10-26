@@ -20,9 +20,9 @@ For nCont := 1 to len(aCols)
         If SB2->(dbSeek( xFilial("SB2") + aCols[nCont,nPosPrd] + aCols[nCont,nPosLoc]) )
             //B2_QATU+B2_SALPEDI-B2_QPEDVEN
             nSaldP := SB2->B2_SALPEDI
-            If aCols[nCont,nPosQtd] > nSaldP
+            If aCols[nCont,nPosQtd] > nSaldP  
                 Reclock("SB2",.F.)
-                SB2->B2_SALPEDI := nSaldP - aCols[nCont,nPosQtd]
+                SB2->B2_SALPEDI := nSaldP + aCols[nCont,nPosQtd] 
                 SB2->(Msunlock())
             EndIf
         EndIf 
