@@ -17,6 +17,7 @@ User Function F200TIT()
         SE1->E1_TIPO  := "RA "
         SE1->E1_SALDO := SE1->E1_VALOR
         SE1->E1_SITUACA := "0"
+
         MsUnlock()
     EndIf
 
