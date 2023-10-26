@@ -45,6 +45,20 @@ Local aItens := {}
 Local aNovos := {}
 
 If MsgYesNo("Deseja enviar somente a selecionada?")
+
+    aAdd(aPergs ,{1,"Banco"	        ,space(TamSx3("EE_CODIGO")[1])   ,"@!",".T.","SA6",".T.",80,.T.})
+    aAdd(aPergs ,{1,"Agência"	    ,space(TamSx3("EE_AGENCIA")[1])   ,"@!",".T.","",".T.",80,.T.})
+    aAdd(aPergs ,{1,"Conta"	        ,space(TamSx3("EE_CONTA")[1])   ,"@!",".T.","",".T.",80,.T.})
+    aAdd(aPergs ,{1,"Sub-Conta"	    ,space(TamSx3("EE_SUBCTA")[1])   ,"@!",".T.","",".T.",80,.T.})
+    
+    If ParamBox(aPergs ,"Filtrar por",@aRet)    
+        
+        MV_PAR19 := aRet[1]
+        MV_PAR20 := aRet[2]
+        MV_PAR21 := aRet[3]
+        MV_PAR22 := aRet[4]
+    EndIf 
+
     cFil  := FO0->FO0_FILIAL
     cProc := FO0->FO0_PROCES
     cVers := FO0->FO0_VERSAO
@@ -84,6 +98,10 @@ Else
     aAdd(aPergs ,{1,"Cliente de"    ,space(TamSx3("A1_COD")[1])   ,"@!",".T.","SA1",".T.",80,.F.})
     aAdd(aPergs ,{1,"Cliente Até"	,padr('zz',TamSx3("A1_COD")[1])   ,"@!",".T.","SA1",".T.",80,.F.})
 
+    aAdd(aPergs ,{1,"Banco"	        ,space(TamSx3("EE_CODIGO")[1])   ,"@!",".T.","SA6",".T.",80,.T.})
+    aAdd(aPergs ,{1,"Agência"	    ,space(TamSx3("EE_AGENCIA")[1])   ,"@!",".T.","",".T.",80,.T.})
+    aAdd(aPergs ,{1,"Conta"	        ,space(TamSx3("EE_CONTA")[1])   ,"@!",".T.","",".T.",80,.T.})
+    aAdd(aPergs ,{1,"Sub-Conta"	    ,space(TamSx3("EE_SUBCTA")[1])   ,"@!",".T.","",".T.",80,.T.})
     
     If ParamBox(aPergs ,"Filtrar por",@aRet)    
         MV_PAR01 := aRet[1]
@@ -92,6 +110,12 @@ Else
         MV_PAR04 := aRet[4]
         MV_PAR05 := aRet[5]
         MV_PAR06 := aRet[6]
+
+        MV_PAR19 := aRet[7]
+        MV_PAR20 := aRet[8]
+        MV_PAR21 := aRet[9]
+        MV_PAR22 := aRet[10]
+        
 
         cQuery := "SELECT DISTINCT FO0.FO0_FILIAL,FO0.FO0_PROCES,"
         cQuery += " FO0.FO0_VERSAO,FO0.FO0_NUMLIQ,"
@@ -232,12 +256,12 @@ If len(aItens[1]) >= 8
     Next nCont 
 
     lBolSeparado := .f.
-
+/*
     MV_PAR19 := SUPERGETMV("TI_SUBCTA",.F.,'123') //sub-conta
     MV_PAR20 := SUPERGETMV("TI_BNCBOL",.F.,'001') //banco
     MV_PAR21 := SUPERGETMV("TI_AGEBOL",.F.,'0005') //agencia     
     MV_PAR22 := SUPERGETMV("TI_CNTBOL",.F.,'139074') // conta
-
+*/
     CCMPVENCTO := SE1->E1_VENCTO
 
 

@@ -2589,7 +2589,9 @@ For nCont := 1 to len(aEmail)
 	If aEmail[nCont,01]
 		MV_PAR01 := Substr(aEmail[nCont,11],5)
 		MV_PAR02 := aEmail[nCont,02]
-		
+		cNfEmail := MV_PAR02
+		cSerNf   := MV_PAR01
+
 		cBoletos := ""
 		cBarra 	 := ""
 		cFile3	 := ""
@@ -2623,27 +2625,27 @@ For nCont := 1 to len(aEmail)
 		ENDIF
 		
 		//Danfe ou Recibo de locação
-		If SUBSTR(MV_PAR01,1,1) <> "L"
-			cNota := MV_PAR02
-			cSeri := MV_PAR01 
+		If SUBSTR(cSerNf,1,1) <> "L"
+			cNota := cNfEmail
+			cSeri := cSerNf 
 
 			//(cNota, cSerie, cPasta, ccnpj)
-			U_CONDANFE(MV_PAR02,MV_PAR01,'C:\BOLETOS\',cCnpjj)
+			U_CONDANFE(cNfEmail,cSerNf,'C:\BOLETOS\',cCnpjj)
 			
 			MV_PAR02 := CTOD('01/10/2023')
 			MV_PAR03 := CTOD('01/10/2023')
 			
-			U_CONFSR02(,,,2,'C:\BOLETOS\',cCnpjj)
+			/*U_CONFSR02(,,,2,'C:\BOLETOS\',cCnpjj)
 
 			MV_PAR01 := cSeri 
-			MV_PAR02 := cNota
+			MV_PAR02 := cNota*/
 
 		else 
 			DbSelectArea("SF2")
 			DbSetOrder(1)
-			DbSeek(substr(aEmail[nCont,11],1,4)+MV_PAR02+MV_PAR01)
+			DbSeek(substr(aEmail[nCont,11],1,4)+cNfEmail+cSerNf)
 
-			U_CONGEN03(MV_PAR02,MV_PAR01,'C:\BOLETOS\',cCnpjj,substr(aEmail[nCont,11],1,4))
+			U_CONGEN03(cNfEmail,cSerNf,'C:\BOLETOS\',cCnpjj,substr(aEmail[nCont,11],1,4))
 		
 		ENDIF
 
@@ -2651,29 +2653,29 @@ For nCont := 1 to len(aEmail)
 		cDestino := Alltrim(aEmail[nCont,05])
 		cDestino += ';'+Alltrim(SUPERGETMV( "MV_XMAILFT", .F., 'faturas@connectvending.com.br' ))
 		
-		cSubject := 'Faturamento NF'+MV_PAR02+' Cliente - '+SA1->A1_NOME
+		cSubject := 'Faturamento NF'+cNfEmail+' Cliente - '+SA1->A1_NOME
 
-		If SUBSTR(MV_PAR01,1,1) <> "L"
-			CPYT2S('C:\BOLETOS\'+cCnpjj+'\'+MV_PAR02+'.pdf','\SPOOL\')
-			CPYT2S('C:\BOLETOS\'+cCnpjj+'\'+MV_PAR02+'.xml','\SPOOL\')
-			CPYT2S('C:\BOLETOS\'+cCnpjj+'\'+"extrato_leitura_"+dtos(ddatabase)+".pdf",'\SPOOL\')
+		If SUBSTR(cSerNf,1,1) <> "L"
+			CPYT2S('C:\BOLETOS\'+cCnpjj+'\'+cNfEmail+'.pdf','\SPOOL\')
+			CPYT2S('C:\BOLETOS\'+cCnpjj+'\'+cNfEmail+'.xml','\SPOOL\')
+			//CPYT2S('C:\BOLETOS\'+cCnpjj+'\'+"extrato_leitura_"+dtos(ddatabase)+".pdf",'\SPOOL\')
 		Else
 		
-			CPYT2S('C:\BOLETOS\'+cCnpjj+'\'+"recibo_loc_"+MV_PAR02+'.pdf','\SPOOL\')
+			CPYT2S('C:\BOLETOS\'+cCnpjj+'\'+"recibo_loc_"+cNfEmail+'.pdf','\SPOOL\')
 
 		EnDIf 
 		
 		//CPYT2S('C:\BOLETOS\'+cCnpjj+'\boleto_'+MV_PAR02+'.pdf','\SPOOL\')
 		
-		cFile1 := '\SPOOL\'+MV_PAR02+'.pdf'
-		cFile2 := '\SPOOL\'+MV_PAR02+'.xml'
+		cFile1 := '\SPOOL\'+cNfEmail+'.pdf'
+		cFile2 := '\SPOOL\'+cNfEmail+'.xml'
 		cFile3 := '\SPOOL\extrato_leitura_'+dtos(ddatabase)+'.pdf'
-		cFile4 := '\SPOOL\recibo_loc_'+MV_PAR02+'.pdf'
-
+		//cFile4 := '\SPOOL\recibo_loc_'+MV_PAR02+'.pdf'
+		cFile4 := ''
 		Aadd(aArquivos,{cFile1,''})
 		Aadd(aArquivos,{cFile2,''})
 		Aadd(aArquivos,{cFile3,''})
-		Aadd(aArquivos,{cFile4,''})
+		//Aadd(aArquivos,{cFile4,''})
 		
 		cBody     :=  corpo() 
 /*
