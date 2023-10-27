@@ -7,7 +7,7 @@
 
 //Cabecalho: CODIGO, NUMERO DE SERIE, DATA, CODIGO CONTRATO, ITEM CONTRATO, PERIODO, COD MAQUINA, CODIGO CLIENTE, CODIGO CLEINTE PAGAMENTO
 //Itens: SEQUENCIA, SELECAO, PRODUTO, QUANTIDADE LEITURA, QUANTIDADE VALOR
-User Function CONOPC05()
+User Function CONOPC05(nChamada)
 
     Local nOpc      :=  0
     Local nCont 
@@ -22,10 +22,14 @@ User Function CONOPC05()
     Private oFont4  := TFont():New('Arial',,-16,.T.)
     Private dDiaLei := ctod(" / / ") 
 
+    Default nChamada := 0
+
     IF Select("SM0") == 0
         RpcSetType(3)
         RPCSetEnv("01","0101")
     ENDIF
+
+    
 
     oDlg1      := MSDialog():New( 057,187,748,993,"Inclusão manual de Leituras",,,.F.,,,,,,.T.,,,.T. )
 
@@ -66,6 +70,10 @@ User Function CONOPC05()
         oBtn1      := TButton():New( 316,112,"Confirmar",oDlg1,{|| oDlg1:end(nOpc:=1)},037,012,,,,.T.,,"",,,,.F. )
         oBtn2      := TButton():New( 316,240,"Cancelar",oDlg1,{|| oDlg1:end(nOpc:=0)},037,012,,,,.T.,,"",,,,.F. )
 
+        If nChamada == 1
+            cPatr := Z08->Z08_NUMSER 
+            Basexcli()
+        Endif 
     oDlg1:Activate(,,,.T.)
 
     if nOpc = 1 
