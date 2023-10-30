@@ -30,10 +30,10 @@ Local nPosCC    :=  Ascan(aHeader,{|x| Alltrim(x[2]) == "C1_CC"})
 Local nCont     :=  1
 Local nX        :=  1   
 Local nZ        :=  1
-Local cFiEntr   :=  If(nOpt==1,CFILENT,'')
+Local cFiEntr   :=  If(cvaltochar(nOpt) $ '1/2',CFILENT,'')
 
 
-If nOpt == 1 .And. !lCopia
+If cvaltochar(nOpt) $ '1/2' .And. !lCopia
     For nCont := 1 to len(aCols)
         If empty(Posicione("SB1",1,xFilial("SB1")+aCols[nCont,nPosProd],"B1_XCODPAI"))
             aAux1 := U__SearchSon(aCols[nCont,nPosProd])

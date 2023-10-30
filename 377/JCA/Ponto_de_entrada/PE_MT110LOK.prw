@@ -44,7 +44,10 @@ If nPosTpCt > 0
     dbSetOrder(2)
     For nCont := 1 to len(aCols)
         If MsSeek(xFilial('SC1')+aCols[nCont][nPosPrd]+cA110Num+aCols[nCont][nPosItem])
-            aCols[nCont][nPosTpCt] := cvaltochar(nEditS)
+            If Empty(aCols[nCont][nPosTpCt]) 
+                aCols[nCont][nPosTpCt] := cvaltochar(nEditS)
+            EndIf 
+            
             If lPrdPai .And. lQtdAlt
                 If Alltrim(Posicione("SB1",1,xFilial("SB1")+aCols[nCont,nPosPrd],"B1_XCODPAI")) == alltrim(aCols[n,nPosPrd])
                     aCols[nCont,nPosQtd] := aCols[n,nPosQtd]

@@ -22,8 +22,8 @@ Aeval(aCombo,{|x| Aadd(aStatusP,x[1]) })
 aadd(aPosGet[1],0) 
 aadd(aPosGet[1],0)
 
-aPosGet[1,7]:=400
-aPosGet[1,8]:=450
+aPosGet[1,7]:= (aPosGet[1,4]+((aPosGet[1,5]-aPosGet[1,4])/2)) - 30 //380
+aPosGet[1,8]:=aPosGet[1,7]+50 //430
 
 @ 51,aPosGet[1,7] SAY 'Tipo de Solicitação' PIXEL SIZE 60,9 Of oNewDialog
 @ 50, aPosGet[1,8] COMBOBOX oEdit1 VAR nEditS ITEMS aStatusP SIZE 60, 013 OF oNewDialog PIXEL COLORS 0, 16777215

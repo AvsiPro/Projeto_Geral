@@ -25,6 +25,8 @@ User Function JESTR002(nOpc)
 			MV_PAR03 := aCols[nCont,nPosQtd]
 			MV_PAR04 := "1"
 			MV_PAR05 := 'PDFCreator'
+			MV_PAR06 := SPACE(9)
+			MV_PAR07 := ctod(' / / ')
 			ImpEtiq()
 		Next nCont
 
@@ -45,6 +47,8 @@ Static Function ImpEtiq()
 	Local cTipo     := Alltrim(MV_PAR04)
 	Local oFont08	:= TFont():New('Arial',06,06,,.F.,,,,.T.,.F.,.F.)
 	Local oFont10	:= TFont():New('Arial',10,10,,.F.,,,,.T.,.F.,.F.)
+	Local cNota  	:= MV_PAR06
+	Local dData 	:= MV_PAR07
 	//Local oFont16	:= TFont():New('Arial',16,16,,.F.,,,,.T.,.F.,.F.)
 	//Local oFont16N	:= TFont():New('Arial',16,16,,.T.,,,,.T.,.F.,.F.)
  
@@ -132,9 +136,9 @@ Static Function ImpEtiq()
 				oPrinter:Say(nLin,nCol+100,"UM:"+alltrim(QRYTMP->UM) ,oFont10)
 
 				nLin+= 10
-				oPrinter:Say(nLin,nCol,"NF:" ,oFont10)
+				oPrinter:Say(nLin,nCol,"NF: "+cNota ,oFont10)
 				nLin+= 10
-				oPrinter:Say(nLin,nCol,"DATA:" ,oFont10)
+				oPrinter:Say(nLin,nCol,"DATA: "+cvaltochar(dData)  ,oFont10)
             EndIf
 			
 			oPrinter:EndPage()
@@ -157,6 +161,8 @@ Static Function ValidPerg()
 	Local aOpcoes	:= {}
 	Local cProdDe	:= ""
 	Local cProdAte	:= ""
+	Local cNota 	:= space(9)
+	Local dDataNF	:= CTOD(' / / ')
 	Local aTipos	:= {"1=Produto","2=Prateleira"}
 	
 	If Empty(getMV("ZZ_IMPRESS")) //se o parametro estiver vazio, ja o defino com a impressora PDFCreator 
@@ -171,8 +177,12 @@ Static Function ValidPerg()
 	aAdd(aParamBox,{01,"Produto de"	  			,cProdDe 	,""					,"","SB1"	,"", 60,.F.})	// MV_PAR01
 	aAdd(aParamBox,{01,"Produto ate"	   		,cProdAte	,""					,"","SB1"	,"", 60,.T.})	// MV_PAR02
 	aAdd(aParamBox,{01,"Quantidade Etiqueta"	,1			,"@E 9999"			,"",""		,"", 60,.F.})	// MV_PAR03
-	aadd(aParamBox,{02,"Tipo Etiqueta"			,Space(50)	,aTipos				,100,".T.",.T.,".T."})		// MV_PAR04
- 	aadd(aParamBox,{02,"Imprimir em"			,Space(50)	,aOpcoes			,100,".T.",.T.,".T."})		// MV_PAR04
+	aadd(aParamBox,{02,"Tipo Etiqueta"			,Space(50)	,aTipos				,100,".T."	,.T.,".T."})	// MV_PAR04
+ 	aadd(aParamBox,{02,"Imprimir em"			,Space(50)	,aOpcoes			,100,".T."	,.T.,".T."})	// MV_PAR04
+
+	aAdd(aParamBox,{01,"Nota"		  			,cNota 		,""					,"","SF1"	,"", 60,.F.})	// MV_PAR01
+	aAdd(aParamBox,{01,"Data"		  			,dDataNF 	,""					,"",""		,"", 60,.F.})	// MV_PAR01
+	
  
 	If ParamBox(aParamBox,"Etiqueta Produto",/*aRet*/,/*bOk*/,/*aButtons*/,.T.,,,,FUNNAME(),.T.,.T.)
  
