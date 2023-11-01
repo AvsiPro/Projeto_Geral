@@ -943,6 +943,12 @@ else
 		If aList2[nLinha,07] - aList2[nLinha,09] > 0
 			aList2[nLinha,11] := aList2[nLinha,07] - aList2[nLinha,09]
 		EndIf 
+	EndIf 
+	
+	If (aList2[nLinha,08] > 0 .And. cQuinze == "2") .or. (aList[nLinha2,15] == "2")	
+		If aList2[nLinha,09] - aList2[nLinha,10] > 0
+			aList2[nLinha,11] := aList2[nLinha,08] - aList2[nLinha,10]
+		EndIf 
 	EndIf
 EndIf 
 
@@ -966,11 +972,25 @@ If !Empty(AAM->AAM_XFORFA)
 	EndIF 
 EndIF 
 
+lMinAtv := .F.
+
 If !Empty(AAM->AAM_XTIPFA)
 	aTipFa := {'Minino Global','Minimo Unid./Ativo','Sem Minimo'}
 	AAM->AAM_XTIPFA
 	cTexto += " - "+aTipFa[val(AAM->AAM_XTIPFA)]
-EndIF 
+	cDifAtv := 0
+
+	Aeval(aList2b,{|x| nDifCb += If(x[4] == aList[nLinha2,01],If(AAM->AAM_XTIPMI=="1",x[7],x[8]),0)})
+	Aeval(aList2b,{|x| cDifAtv += If(x[4] == aList[nLinha2,01],If(AAM->AAM_XTIPMI=="1",x[9],x[10]),0)})
+
+	cTexto += " - Qtd/Vlr Minimo "+Transform(nDifCb,"@E 999,999,999") 
+
+	if cDifAtv < nDifCb .AND. cQuinze == "2"
+		aList[nLinha2,20] := nDifCb - cDifAtv
+		lMinAtv := .t.
+	endif 
+EndIF
+
 If !Empty(AAM->AAM_XTIPMI)
 	//1=Quantidade;2=Valor  
 	IF AAM->AAM_XTIPMI == "1"
@@ -1058,7 +1078,12 @@ If aList[nLinha2,20] > 0
 		EndIf
 	else
 		aList[nLinha2,21] := POSICIONE("DA1",1,XFILIAL("DA1")+AAM->AAM_XCODTA+AAM->AAM_XPRDCM,"DA1_PRCVEN")
-		aList[nLinha2,20] := (AAM->AAM_XQTVLM-nDifCb-nVlrAbt) / aList[nLinha2,21] 
+		If !lMinAtv
+			aList[nLinha2,20] := (AAM->AAM_XQTVLM-nDifCb-nVlrAbt) / aList[nLinha2,21] 
+		Else 
+			aList[nLinha2,20] := (nDifCb-cDifAtv-nVlrAbt) / aList[nLinha2,21] 
+		EndIf 
+
 		If aList[nLinha2,20]*aList[nLinha2,21] > 0 .And. aList[nLinha2,len(aQtdH)+1] <= 1
 			oSay7:settext("Valor Excedente a ser cobrado "+Transform(aList[nLinha2,20]*aList[nLinha2,21],"@E 999,999.99"))
 		EndIf 
@@ -2020,7 +2045,27 @@ ElseIf nOpcG == 1
 			//If (aList2[nX,11] > 0 .And. cQuinze == "2") .OR.(cForFat=="1" .AND. cTipFat=="2" .and. aList2[nX,11] > 0) //cCond == "2"
 			If (aList2[nX,08] > 0 .And. cQuinze == "2") .OR.(cForFat=="1" .AND. cTipFat=="2" .and. aList2[nX,08] > 0) //cCond == "2"
 				npos := Ascan(aItens,{|x| alltrim(x[1]) == alltrim(aList[oList:nAt,22])})
-				If aList2[nX,10] - aList2[nX,08] > 0
+
+				If aList2[nX,08] - aList2[nX,10] > 0
+					
+					nVlrDos  := Posicione("DA1",1,xFilial("DA1")+AAM->AAM_XCODTA+aList[oList:nAt,22],"DA1_PRCVEN")
+					
+					If cTipFat == "2"
+						//Minimo por ativo e valor
+						nQtdVlr := (aList2[nX,08] - aList2[nX,10]) / nVlrDos
+					Else 
+						nQtdVlr := (aList2[nX,08] - aList2[nX,10])/aList[oList:nAt,21]
+					EndIf 
+
+					If npos == 0
+						Aadd(aItens,{	aList[oList:nAt,22],;
+										nQtdVlr,;
+										nVlrDos})
+					Else 
+						aItens[npos,02] += nQtdVlr
+					EndIf
+				EndIf
+				/*If aList2[nX,10] - aList2[nX,08] > 0
 					
 					nVlrDos  := Posicione("DA1",1,xFilial("DA1")+AAM->AAM_XCODTA+aList[oList:nAt,22],"DA1_PRCVEN")
 					
@@ -2038,7 +2083,7 @@ ElseIf nOpcG == 1
 					Else 
 						aItens[npos,02] += nQtdVlr
 					EndIf
-				EndIf
+				EndIf*/
 			EndIf 
 			cAtFat := Alltrim(aList2[nX,01])
 			//If len(aItens) > 0 
@@ -2642,6 +2687,7 @@ Local cFile1	:=	''
 Local cFile2	:=	''
 Local cFile3	:=	''
 Local lEmail 	:=	.T.
+Local cCliSAF	:=	Supergetmv("TI_ENVSAF",.F.,"60701521/03803992/61087367")
 
 For nCont := 1 to len(aEmail)
 	If aEmail[nCont,01]
@@ -2746,14 +2792,18 @@ For nCont := 1 to len(aEmail)
 		Aadd(aArquivos,{cFile4,''})
 		
 		cBody     :=  corpo() 
-/*
-		If !Empty(aEmail[nCont,14])
-			cBody :=  strtran(cBody,"URLFATURAMENTO","URL Faturamento "+aEmail[nCont,14])
+
+		If Alltrim(aEmail[nCont,09]) $ cCliSAF //!Empty(aEmail[nCont,14])
+			//provisorio
+			aSeSAF := separa(aEmail[nCont,14],"&")
+			cSaf  := ""
+			cSaf  :=  alltrim(aSeSAF[1])+"&"+alltrim(aSeSAF[2])+"&"+alltrim(aSeSAF[3])+"&"+alltrim(aSeSAF[7])+"&sort_column=quantity&sort_direction=DESC"
+			cBody :=  strtran(cBody,"URLFATURAMENTO","URL Faturamento "+cSaf)
 		else
 			cBody :=  strtran(cBody,"URLFATURAMENTO","")
 		ENDIF
-*/
-		cBody :=  strtran(cBody,"URLFATURAMENTO","")
+
+		//cBody :=  strtran(cBody,"URLFATURAMENTO","")
 
 		//U_CONMAIL(cRemete,cDestino,cSubject,cBody,aArquivos,.T.) 
 		lEmail := U_EnviarEmail(cDestino,cSubject,cBody,cFile1+','+cFile2+','+cFile3+','+cFile4,.f.)  
