@@ -126,7 +126,7 @@ If len(aAux) > 0
             aAux[nX,08] += "/reports/vends?"
             aAux[nX,08] += "vend[occurred_at]=custom&vend[occurred_at_end]="+cvaltochar(dLeiFim)+"%20"+cHrf
             aAux[nX,08] += "&vend[occurred_at_start]="+cvaltochar(dUltLei)+"%20"+cHri
-            aAux[nX,08] += "&vend[groups][]=client"
+            //aAux[nX,08] += "&vend[groups][]=client"
             //aAux[nX,08] += "&vend[groups][]=location
             //aAux[nX,08] += "&vend[groups][]=machine
             aAux[nX,08] += "&vend[groups][]=good

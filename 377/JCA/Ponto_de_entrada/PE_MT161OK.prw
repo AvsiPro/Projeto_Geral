@@ -51,7 +51,7 @@ If lCotOk
                         Aadd(aItensV,{  aDados[nCont1,nCont2,3],;
                                         aDados[nCont1,nCont2,4],;
                                         aDados[nCont1,nCont2,13],;
-                                        aDados[nCont1,nCont2,4] / aDados[nCont1,nCont2,13]})
+                                        round(aDados[nCont1,nCont2,4] / aDados[nCont1,nCont2,13],0)})
                     EndIf 
                 //Next nCont3
             EndIf 
@@ -215,9 +215,9 @@ For nCont := 1 to len(aItensV)
         nPos2 := Ascan(aAux,{|x| alltrim(x[1]) == alltrim(aItem[nPos,02])})
 
         If nPos2 == 0
-            Aadd(aAux,{aItem[nPos,02],aItem[nPos,3],round(aItensV[nCont,02] / aItensV[nCont,03],2),nSoma}) //round(aItensV[nCont,04],2)})
+            Aadd(aAux,{aItem[nPos,02],aItem[nPos,3],round(aItensV[nCont,02] / aItensV[nCont,03],0),nSoma}) //round(aItensV[nCont,04],2)})
         Else 
-            aAux[nPos2,3] += round(aItensV[nCont,02] / aItensV[nCont,03],2)
+            aAux[nPos2,3] += round(aItensV[nCont,02] / aItensV[nCont,03],0)
             //aAux[nPos2,4] += round(aItensV[nCont,04],2)
         EndIf
     EndIf 

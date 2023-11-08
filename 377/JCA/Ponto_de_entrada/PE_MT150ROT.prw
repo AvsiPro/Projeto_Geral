@@ -62,6 +62,7 @@ Local cIdent    :=  ''
 Local nPosId1   :=  0
 Local nPosId2   :=  0
 Local aForAtu   :=  {}
+Local cItens    :=  ''
 
 aAdd(aPergs, {1, "Código",  cCodigo,  "", ".T.", "SB1", ".T.", 80,  .F.})
 
@@ -77,7 +78,7 @@ If ParamBox(aPergs, "Informe o código do produto a ser incluído nesta cotação",a
         MsgAlert("Somente produtos filhos podem ser adicionados","PE_MT150ROT")
         lPermitir := .F.  
     Else 
-        lPaiSol := BusPaiSC(SC8->C8_NUM,cProdPai)
+        lPaiSol := BusPaiSC(SC8->C8_NUMSC,cProdPai)
         If !lPaiSol
             MsgAlert("Produto pai não encontrado na solicitação de compra","PE_MT150ROT")
             lPermitir := .F.
@@ -100,6 +101,10 @@ If ParamBox(aPergs, "Informe o código do produto a ser incluído nesta cotação",a
             For nCont := 1 to len(aCampos)
                 Aadd(_aCols,{aCampos[nCont,01],&("SC8->"+aCampos[nCont,01])}) 
             Next nCont
+
+            DbSelectArea("SC1")
+            DbSetOrder(1)
+            Dbseek(xFilial("SC1")+SC8->C8_NUMSC)
 
             aCampo1 := FWSX3Util():GetListFieldsStruct( "SC1" , .F. ) 
             
@@ -144,7 +149,7 @@ If ParamBox(aPergs, "Informe o código do produto a ser incluído nesta cotação",a
                         While !EOF() .And. SC8->C8_FILIAL == xFilial("SC8") .And. SC8->C8_NUM == cCotacao
                             nPosFoPr := Ascan(aForProd,{|x| x[1]+x[2] == SC8->C8_PRODUTO+SC8->C8_FORNECE}) 
 
-                            If Alltrim(SC8->C8_PRODUTO) == Alltrim(aRet[1]) .and. nPosFoPr > 0
+                            If Alltrim(SC8->C8_PRODUTO) == Alltrim(aRet[1]) .and. nPosFoPr > 0 .And. !SC8->C8_ITEM $ cItens
                                 MsgAlert("Produto já consta na Cotação","PE_MT150ROT")
                                 lPermitir := .F.
                                 exit
@@ -164,6 +169,7 @@ If ParamBox(aPergs, "Informe o código do produto a ser incluído nesta cotação",a
             If lPermitir
                 _aCols[nPosPrd,02] := aRet[1]
                 _aCols[nPosItm,02] := Strzero(nItens+1,4)
+                cItens += Strzero(nItens+1,4)+"/"
 
                 _aCols[nPosId1,02] := cIdent
 

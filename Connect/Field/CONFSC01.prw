@@ -2797,8 +2797,12 @@ For nCont := 1 to len(aEmail)
 			//provisorio
 			aSeSAF := separa(aEmail[nCont,14],"&")
 			cSaf  := ""
-			cSaf  :=  alltrim(aSeSAF[1])+"&"+alltrim(aSeSAF[2])+"&"+alltrim(aSeSAF[3])+"&"+alltrim(aSeSAF[7])+"&sort_column=quantity&sort_direction=DESC"
-			cBody :=  strtran(cBody,"URLFATURAMENTO","URL Faturamento "+cSaf)
+			If len(aSeSAF) > 1
+				cSaf  :=  alltrim(aSeSAF[1])+"&"+alltrim(aSeSAF[2])+"&"+alltrim(aSeSAF[3])+"&"+alltrim(aSeSAF[7])+"&sort_column=quantity&sort_direction=DESC"
+				cBody :=  strtran(cBody,"URLFATURAMENTO","URL Faturamento "+cSaf)
+			Else 
+				cBody :=  strtran(cBody,"URLFATURAMENTO","")
+			EndIf 
 		else
 			cBody :=  strtran(cBody,"URLFATURAMENTO","")
 		ENDIF

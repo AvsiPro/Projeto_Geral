@@ -51,6 +51,11 @@ PRIVATE aList8     :=    {}
 PRIVATE aList10    :=    {}
 PRIVATE oOk        :=    LoadBitmap(GetResources(),'br_verde')  //Controla se o pedido foi alterado ou nao no grid.
 PRIVATE oNo        :=    LoadBitmap(GetResources(),'br_vermelho')
+PRIVATE cToken     :=   "yVXxnxgOExcIaBQOQ9CFgK0cLgX22dJct7y85WXW" //Token Connect Vending
+PRIVATE oRestClient:=   FWRest():New("http://vmpay.vertitecnologia.com.br")
+Private aClientes  :=   {}
+
+Clientes()
 
 DEFAULT contrato   := ''
 
@@ -2229,12 +2234,20 @@ IF ParamBox(aPergs ,"Periodo de vendas",@aRet)
                     dUltLei := aRet[1]
                     dLeiFim := aRet[2]
                     Aadd(aVendas, U_CONWSC03(aList[nX,02],2,dUltLei,dLeiFim,cHri,cHrf))
+                    If valtype(aVendas[len(aVendas)]) == "A"
+                        Aadd(aVendas[len(aVendas)],dUltLei)
+                        Aadd(aVendas[len(aVendas)],dLeiFim)
+                    EndIf 
                     lDataG := .T.
                 else
                     RETURN
                 EndIf 
             else
                 Aadd(aVendas, U_CONWSC03(aList[nX,02],2,dUltLei,dLeiFim,cHri,cHrf))
+                If valtype(aVendas[len(aVendas)]) == "A"
+                    Aadd(aVendas[len(aVendas)],dUltLei)
+                    Aadd(aVendas[len(aVendas)],dLeiFim)
+                EndIf
             EndIf 
         EndIf
     next
@@ -2247,33 +2260,43 @@ IF ParamBox(aPergs ,"Periodo de vendas",@aRet)
             If aVendas[nX] != NIL
                 If len(aVendas[nX]) > 2
                     for nY := 3 to len(aVendas[nX])
-                        cCodProt := ''
-                        IF aVendas[nX,nY,05] == "null"
-                            cCodProt := "Nao Consta"
-                        ELSE
-                            cCodProt := aVendas[nX,nY,05]
-                        ENDIF
-                        
-                        if cCodProt != "Nao Consta"
-                            cDesc := Posicione("SB1",1,xFilial("SB1")+cCodProt,"B1_DESC")
-                        else
-                            cDesc := "Codigo do produto nao se encontra no VMPay"
-                        endif
+                        If valtype(aVendas[nX,nY]) == "A"
+                            cCodProt := ''
+                            IF aVendas[nX,nY,05] == "null"
+                                cCodProt := "Nao Consta"
+                            ELSE
+                                cCodProt := aVendas[nX,nY,05]
+                            ENDIF
+                            
+                            if cCodProt != "Nao Consta"
+                                cDesc := Posicione("SB1",1,xFilial("SB1")+cCodProt,"B1_DESC")
+                            else
+                                cDesc := "Codigo do produto nao se encontra no VMPay"
+                            endif
 
-                        nPosit := Ascan(aList8,{|x| x[2] == aVendas[nX,nY,01]})
-                        IF nPosit == 0
-                            cData := ddatabase //stod(StrTran(SubStr(aVendas[nX,nY,02], 1, 10), '-')) //StrTran(StrTran(SubStr(aVendas[nX,nY,02], 1, 10), '-', '/'), 'T', ' ')
-                            Aadd(aList8,{cvaltochar(cData),;
-                                        aVendas[nX,nY,01],;
-                                        cCodProt,;
-                                        cDesc,;
-                                        val(aVendas[nX,nY,03]),;
-                                        aVendas[nX,2],;
-                                        aList[nX,17],;
-                                        IF(val(aVendas[nX,nY,03])>1,val(aVendas[nX,nY,04])/val(aVendas[nX,nY,03]),val(aVendas[nX,nY,04]))})
-                        ELSE
-                            aList8[nPosit,05] += val(aVendas[nX,nY,03])
-                        ENDIF
+                            nPosit := Ascan(aList8,{|x| x[2] == aVendas[nX,nY,01]})
+                            IF nPosit == 0
+                                cData := ddatabase //stod(StrTran(SubStr(aVendas[nX,nY,02], 1, 10), '-')) //StrTran(StrTran(SubStr(aVendas[nX,nY,02], 1, 10), '-', '/'), 'T', ' ')
+                                nPosc := ASCAN(ALIST,{|X| ALLTRIM(X[2]) == (AVENDAS[nX,2])})
+                                If nPosc > 0
+                                    ccnpj := Posicione("SA1",1,xFilial("SA1")+aList[nPosc,17]+aList[nPosc,18],"A1_CGC")
+                                endif 
+                                
+                                Aadd(aList8,{cvaltochar(cData),;
+                                            aVendas[nX,nY,01],;
+                                            cCodProt,;
+                                            cDesc,;
+                                            val(aVendas[nX,nY,03]),;
+                                            aVendas[nX,2],;
+                                            aList[nX,17],;
+                                            IF(val(aVendas[nX,nY,03])>1,val(aVendas[nX,nY,04])/val(aVendas[nX,nY,03]),val(aVendas[nX,nY,04])),;
+                                            ccnpj,;
+                                            aVendas[nX,len(aVendas[nX])-1],;
+                                            aVendas[nX,len(aVendas[nX])]})
+                            ELSE
+                                aList8[nPosit,05] += val(aVendas[nX,nY,03])
+                            ENDIF
+                        EndIf
                     next nY
                 EndIf
             EndIf 
@@ -2323,6 +2346,8 @@ STATIC FUNCTION savevend()
     LOCAL nX   
     LOCAL nY   
     LOCAL nZ
+    Local cHri             :=   '00:00'
+    Local cHrf             :=   '23:59'
     
     if validvend() .or. len(aList8B) < 1
         MsgAlert("Nao foi possivel salvar as vendas!", "Erro!")
@@ -2356,6 +2381,18 @@ STATIC FUNCTION savevend()
             for nY := 1 to len(aList8B[nX,1])
             
                 aGravarP := {}
+                nPosCli := ascan(aClientes,{|x| alltrim(x[1]) == aList8B[nX,01,nY,09]})
+                cUrlFat := ""
+                If nPosCli > 0
+                    cUrlFat := "https://vmpay.vertitecnologia.com.br/connect_vending_comercio_de_ma/c/"
+                    cUrlFat += cvaltochar(aClientes[nPosCli,02])
+                    cUrlFat += "/reports/vends?"
+                    cUrlFat += "vend[occurred_at]=custom&vend[occurred_at_end]="+cvaltochar(aList8B[nX,01,nY,11])+"%20"+cHrf
+                    cUrlFat += "&vend[occurred_at_start]="+cvaltochar(aList8B[nX,01,nY,10])+"%20"+cHri
+                    cUrlFat += "&vend[groups][]=good
+
+
+                EndIf
 
                 Aadd( aGravarP, {"Z08_FILIAL"  ,xFilial("Z08")})
                 Aadd( aGravarP, {"Z08_COD"     ,cCod})
@@ -2374,6 +2411,7 @@ STATIC FUNCTION savevend()
                 Aadd( aGravarP, {"Z08_CODCLI"  ,aContrato[3]})  
                 Aadd( aGravarP, {"Z08_LOJACL"  ,aContrato[4]})
                 Aadd( aGravarP, {"Z08_MSBLQL"  ,'2'})
+                Aadd( aGravarP, {"Z08_URLFAT"  ,cUrlFat})
             
                 IF len(aGravarP) > 0
 
@@ -2539,3 +2577,42 @@ Static Function validvend()
     RestArea(aArea)
 
 Return (lRet)
+
+
+/*/{Protheus.doc} Clientes
+    (long_description)
+    @type  Static Function
+    @author user
+    @since 26/09/2023
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function Clientes()
+    
+LOCAL nX
+Local oJsonBody
+Local aHeader := {}
+
+oRestClient:setPath("/api/v1/clients?access_token="+cToken) 
+
+IF oRestClient:Get(aHeader)
+    cValor := oRestClient:GetResult("GET")
+
+    cValor := DecodeUTF8(cValor, "cp1252")
+
+    FWJsonDeserialize(cValor,@oJsonBody)
+
+    For nX := 1 to len(oJsonBody)
+        If AttIsMemberOf(oJsonBody[nX] , "CNPJ") 
+            Aadd(aClientes,{cvaltochar(oJsonBody[nX]:CNPJ),;
+                            oJsonBody[nX]:ID  })
+        EndIf
+    Next nX 
+
+ENDIF
+
+Return

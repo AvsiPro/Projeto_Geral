@@ -34,6 +34,12 @@ If Altera
             EndIf 
         Next nCont
     EndIf
+ElseIf Inclui
+    For nCont := 1 to len(aCols)
+        If Alltrim(Posicione("SB1",1,xFilial("SB1")+aCols[nCont,nPosPrd],"B1_XCODPAI")) == alltrim(aCols[n,nPosPrd])
+            aCols[nCont,nPosQtd] := aCols[n,nPosQtd]
+        EndIf 
+    Next nCont
 EndIf
 
 Return(nRet)

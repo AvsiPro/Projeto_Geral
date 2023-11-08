@@ -53,10 +53,10 @@ If MsgYesNo("Deseja enviar somente a selecionada?")
     
     If ParamBox(aPergs ,"Filtrar por",@aRet)    
         
-        MV_PAR19 := aRet[1]
-        MV_PAR20 := aRet[2]
-        MV_PAR21 := aRet[3]
-        MV_PAR22 := aRet[4]
+        MV_PAR19 := aRet[4]
+        MV_PAR20 := aRet[1]
+        MV_PAR21 := aRet[2]
+        MV_PAR22 := aRet[3]
     EndIf 
 
     cFil  := FO0->FO0_FILIAL
