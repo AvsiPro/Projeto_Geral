@@ -2691,6 +2691,14 @@ Local cCliSAF	:=	Supergetmv("TI_ENVSAF",.F.,"60701521/03803992/61087367")
 
 For nCont := 1 to len(aEmail)
 	If aEmail[nCont,01]
+		
+		If cFilant <> SUBSTR(aEmail[nCont,11],1,4)
+			cFilant := SUBSTR(aEmail[nCont,11],1,4)
+			RpcClearEnv()
+			RpcSetType(3)
+    		RPCSetEnv(cEmpAnt,cFilant)
+		EndIf
+
 		MV_PAR01 := Substr(aEmail[nCont,11],5)
 		MV_PAR02 := aEmail[nCont,02]
 		cNfEmail := MV_PAR02
