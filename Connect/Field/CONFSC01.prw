@@ -522,7 +522,7 @@ Static Function Busca(cCond,cQuinze,cLocacS)
 		cQuery += " AND Z08_URLFAT<>' ' "
 		cQuery += " WHERE C6_FILIAL BETWEEN ' ' AND 'ZZ'" //'"+xFilial("SC6")+"'"
 		//cQuery += " AND C6_CONTRT='"+aAux3[nCont,01]+"' "
-		cQuery += " AND C6_CLI='"+aAux3[nCont,02]+"' AND C6.D_E_L_E_T_=''"
+		cQuery += " AND C6_CLI='"+aAux3[nCont,02]+"' AND C6_LOJA='"+aAux3[nCont,03]+"' AND C6.D_E_L_E_T_=''"
 		
 		If Select("TRB") > 0
 			dbSelectArea("TRB")
@@ -706,13 +706,13 @@ Static Function Busca(cCond,cQuinze,cLocacS)
 			Next nAux
 		EndIf
 
-		lZerou := .F.
-		for nX := 5 to len(aList5b[nCont])
+		lZerou := .T.
+		/*for nX := 5 to len(aList5b[nCont])
 			If aList5b[nCont,nX,07] < aList5b[nCont,nX,05]
 				lZerou := .T.
 				exit 
 			EndIf 
-		Next nX 
+		Next nX*/ 
 
 		for nX := 5 to len(aList5b[nCont])
 			
@@ -1606,6 +1606,7 @@ Local aCompSep	:=	{'','1=Sim','2=Nao'}
 Local nDoseSep	:=	aList[oList:nAt,25]
 Local aDoseSep	:=	{}
 Local cDoseSep	:=	''
+Local cPoCli 	:=	''
 
 If nOpcG == 0 .And. !lLiberaF .And. cLocacS <> "2"
 	MsgAlert("Primeiro rode a opção de Liberação para faturamento")
@@ -1628,6 +1629,12 @@ aAdd( aPerg ,{2,"Dose Compl. Sep. : ",nDoseSep,aCompSep,100,"",.T.})
 If !ParamBox(aPerg ,"Parametros ")
 	Return
 EndIf
+
+If !Empty(MV_PAR02)
+	cPoCli  := 'PO Cliente: '+ALLTRIM(MV_PAR02)
+else
+	cPoCli  := ''
+EndIf 
 
 cFilant := MV_PAR03
 cFilFat := MV_PAR03
@@ -1782,7 +1789,7 @@ If nOpcG == 0
 					aAdd( aCabec , { "C5_TIPO"      , 'N'                 , Nil } )
 					aAdd( aCabec , { "C5_CLIENTE"   , aList[nCntG,03]    , Nil } )
 					aAdd( aCabec , { "C5_LOJACLI"   , aList[nCntG,04]    , Nil } )
-					Aadd( aCabec , { "C5_MENNOTA"   , 'Faturamento de Doses - Ref. Patrimonio(s) '+cAtFat   , Nil } )
+					Aadd( aCabec , { "C5_MENNOTA"   , 'Faturamento de Doses - Ref. Patrimonio(s) '+cAtFat+' - '+cPoCli   , Nil } )
 					aAdd( aCabec , { "C5_CONDPAG"   , AAM->AAM_CPAGPV     , Nil } )    
 					aAdd( aCabec , { "C5_NATUREZ"   , "31101001  "     , Nil } )    
 					aAdd( aCabec , { "C5_XCONTRT"	, aList[nCntG,01]	, Nil })
@@ -1904,7 +1911,7 @@ If nOpcG == 0
 				aAdd( aCabec , { "C5_TIPO"      , 'N'                 	, Nil } )
 				aAdd( aCabec , { "C5_CLIENTE"   , aList[nCntG,03]   , Nil } )
 				aAdd( aCabec , { "C5_LOJACLI"   , aList[nCntG,04]   , Nil } )
-				Aadd( aCabec , { "C5_MENNOTA"   , 'Locacao de Maquinas Ref. Patrimonio(s) '+cAtLoc    , Nil } )
+				Aadd( aCabec , { "C5_MENNOTA"   , 'Locacao de Maquinas Ref. Patrimonio(s) '+cAtLoc+' - '+cPoCli    , Nil } )
 				aAdd( aCabec , { "C5_CONDPAG"   , aLocac[1,3]     		, Nil } )    //AAM->AAM_CPAGPV
 				aAdd( aCabec , { "C5_NATUREZ"   , cNaturez     			, Nil } )
 				aAdd( aCabec , { "C5_XCONTRT"	, aList[nCntG,01]	, Nil })
@@ -2122,7 +2129,7 @@ If len(aItens) > 0
 			aAdd( aCabec , { "C5_TIPO"      , 'N'                 , Nil } )
 			aAdd( aCabec , { "C5_CLIENTE"   , aList[oList:nAt,03]    , Nil } )
 			aAdd( aCabec , { "C5_LOJACLI"   , aList[oList:nAt,04]    , Nil } )
-			Aadd( aCabec , { "C5_MENNOTA"   , 'Faturamento de Doses - Ref. Patrimonio(s) '+cAtFat   , Nil } )
+			Aadd( aCabec , { "C5_MENNOTA"   , 'Faturamento de Doses - Ref. Patrimonio(s) '+cAtFat+' - '+cPoCli   , Nil } )
 			aAdd( aCabec , { "C5_CONDPAG"   , AAM->AAM_CPAGPV     , Nil } )    
 			aAdd( aCabec , { "C5_NATUREZ"   , "31101001  "     , Nil } )    
 			aAdd( aCabec , { "C5_XCONTRT"	, aList[oList:nAt,01]	, Nil })
@@ -2289,7 +2296,7 @@ If len(aLocac) > 0 .AND. lLoc
 		aAdd( aCabec , { "C5_TIPO"      , 'N'                 	, Nil } )
 		aAdd( aCabec , { "C5_CLIENTE"   , aList[oList:nAt,03]   , Nil } )
 		aAdd( aCabec , { "C5_LOJACLI"   , aList[oList:nAt,04]   , Nil } )
-		Aadd( aCabec , { "C5_MENNOTA"   , 'Locacao de Maquinas Ref. Patrimonio(s) '+cAtLoc    , Nil } )
+		Aadd( aCabec , { "C5_MENNOTA"   , 'Locacao de Maquinas Ref. Patrimonio(s) '+cAtLoc+' - '+cPoCli    , Nil } )
 		aAdd( aCabec , { "C5_CONDPAG"   , aLocac[1,3]     		, Nil } )    //AAM->AAM_CPAGPV
 		aAdd( aCabec , { "C5_NATUREZ"   , cNaturez     			, Nil } )
 		aAdd( aCabec , { "C5_XCONTRT"	, aList[oList:nAt,01]	, Nil })
@@ -2806,7 +2813,11 @@ For nCont := 1 to len(aEmail)
 			aSeSAF := separa(aEmail[nCont,14],"&")
 			cSaf  := ""
 			If len(aSeSAF) > 1
-				cSaf  :=  alltrim(aSeSAF[1])+"&"+alltrim(aSeSAF[2])+"&"+alltrim(aSeSAF[3])+"&"+alltrim(aSeSAF[7])+"&sort_column=quantity&sort_direction=DESC"
+				If len(aSeSAF) > 4
+					cSaf  :=  alltrim(aSeSAF[1])+"&"+alltrim(aSeSAF[2])+"&"+alltrim(aSeSAF[3])+"&"+alltrim(aSeSAF[7])+"&sort_column=quantity&sort_direction=DESC"
+				else 
+					cSaf  :=  alltrim(aSeSAF[1])+"&"+alltrim(aSeSAF[2])+"&"+alltrim(aSeSAF[3])+"&"+alltrim(aSeSAF[4])+"&sort_column=quantity&sort_direction=DESC"
+				endif 
 				cBody :=  strtran(cBody,"URLFATURAMENTO","URL Faturamento "+cSaf)
 			Else 
 				cBody :=  strtran(cBody,"URLFATURAMENTO","")
