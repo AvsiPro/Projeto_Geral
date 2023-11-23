@@ -174,6 +174,7 @@ If !Empty(cPatr)
     cQuery += " AND Z08_COD IN(SELECT Z08_COD FROM "+RetSQLName("Z08")
     cQuery += " WHERE Z08_FILIAL='"+xFilial("Z08")+"' AND Z08_NUMSER='"+cPatr+"'"
     cQuery += " AND D_E_L_E_T_=' ' AND Z08_FATURA = ' ')"
+    cQuery += " AND Z08_COD = '"+Z08->Z08_COD+"'"
 
     IF Select('TRB') > 0
         dbSelectArea('TRB')
