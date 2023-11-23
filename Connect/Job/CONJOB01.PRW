@@ -368,6 +368,8 @@ for nX := 1 to len(aList8B)
         Aadd( aGravarP, {"Z08_CODCLI"  ,aList8B[nX,01,nY,07]})  
         Aadd( aGravarP, {"Z08_LOJACL"  ,aList8B[nX,01,nY,11]})
         Aadd( aGravarP, {"Z08_URLFAT"  ,aList8B[nX,01,nY,14]})
+        Aadd( aGravarP, {"Z08_XDTANT"  ,aList8B[nX,01,nY,15]})
+        Aadd( aGravarP, {"Z08_XDTATU"  ,aList8B[nX,01,nY,16]})
         Aadd( aGravarP, {"Z08_MSBLQL"  ,'2'})
     
         IF len(aGravarP) > 0

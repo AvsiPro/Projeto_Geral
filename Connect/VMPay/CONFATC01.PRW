@@ -2412,6 +2412,9 @@ STATIC FUNCTION savevend()
                 Aadd( aGravarP, {"Z08_LOJACL"  ,aContrato[4]})
                 Aadd( aGravarP, {"Z08_MSBLQL"  ,'2'})
                 Aadd( aGravarP, {"Z08_URLFAT"  ,cUrlFat})
+                Aadd( aGravarP, {"Z08_XDTANT"  ,aList8B[nX,01,nY,10]})
+                Aadd( aGravarP, {"Z08_XDTATU"  ,aList8B[nX,01,nY,11]})
+                
             
                 IF len(aGravarP) > 0
 

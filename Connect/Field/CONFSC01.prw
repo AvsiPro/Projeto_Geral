@@ -513,6 +513,7 @@ Static Function Busca(cCond,cQuinze,cLocacS)
 		//Buscando os pedidos faturados
 		cQuery := "SELECT C6_NUM,C5_EMISSAO,C6_NOTA,C6_VALOR,"
 		cQuery += " C6_DESCRI,C6_ITEM,C6_QTDVEN,C6_SERIE,C6_FILIAL,"
+		cQuery += " Z08_XDTATU,Z08_XDTANT,"
 		cQuery += " ISNULL(CAST(CAST(Z08_URLFAT AS VARBINARY(8000)) AS VARCHAR(8000)),'') AS URL"
 		cQuery += " FROM "+RetSQLName("SC6")+" C6"
 		cQuery += " INNER JOIN "+RetSQLName("SC5")+" C5 ON C5_FILIAL=C6_FILIAL "
@@ -544,7 +545,9 @@ Static Function Busca(cCond,cQuinze,cLocacS)
 								aAux3[nCont,02],;
 								aAux3[nCont,03],;
 								TRB->C6_FILIAL+Alltrim(TRB->C6_SERIE),;
-								TRB->URL})
+								TRB->URL,;
+								TRB->Z08_XDTANT,;
+								TRB->Z08_XDTATU})
 			Else
 				aList3b[Ascan(aList3b,{|x| x[1] == TRB->C6_NUM}),03] += TRB->C6_VALOR
 			EndIF
@@ -1316,7 +1319,8 @@ If nOpc == 1
 			Aadd(aEmail,{.F.,;
 						aList3b[nX,04],;
 						Alltrim(aList[nPosL1,05]),;
-						If(!Empty(aList3b[nX,04]),'Enviado','Não enviado'),;
+						STOD(aList3b[nX,10]),;
+						STOD(aList3b[nX,11]),;
 						aList[nPosL1,13],;
 						aList[nPosL1,01],;
 						aList3b[nX,01],;
@@ -1327,6 +1331,8 @@ If nOpc == 1
 						'',;
 						'',;
 						aList3b[nX,09]})
+
+			//If(!Empty(aList3b[nX,04]),'Enviado','Não enviado'),;
 		EndIf
 	Next nX 
 else
@@ -1345,14 +1351,15 @@ oBoleto    := MSDialog():New( 092,232,660,1243,"Nota/Boleto por Email",,,.F.,,,,
 
 	oGrupo1      := TGroup():New( 004,008,246,500,"Contratos Faturados",oBoleto,CLR_BLACK,CLR_WHITE,.T.,.F. )
 	//oBrw1      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{016,016,248,292},,, oGrp1 ) 
-	oEmail 	   := TCBrowse():New(016,016,475,225,, {'','Nota','Cliente','Status','Email'},{5,30,40,40,20},;
+	oEmail 	   := TCBrowse():New(016,016,475,225,, {'','Nota','Cliente','Leitura de','Leitura Ate','Email'},{5,30,40,40,40,20},;
                             oGrupo1,,,,{|| /*FHelp(oEmail:nAt)*/},{|| editcol(oEmail:nAt)},, ,,,  ,,.F.,,.T.,,.F.,,,)
 	oEmail:SetArray(aEmail)
 	oEmail:bLine := {||{If(aEmail[oEmail:nAt,01],oOk,oNo),; 
 						aEmail[oEmail:nAt,02],;
 						aEmail[oEmail:nAt,03],; 
 						aEmail[oEmail:nAt,04],;  
-	 					aEmail[oEmail:nAt,05]}}
+	 					aEmail[oEmail:nAt,05],;
+						aEmail[oEmail:nAt,06]}}
 
 	oBotao1    := TButton():New( 260,048,"Inverter Marc.",oBoleto,{||inverte(1)},037,012,,,,.T.,,"",,,,.F. )
 	oBotao4    := TButton():New( 260,098,"Marcar/Desm. Todos",oBoleto,{||inverte(2)},037,012,,,,.T.,,"",,,,.F. )
@@ -1384,7 +1391,7 @@ Return
 Static Function editcol(nLinha)
 
 Local aArea		:=	GetArea()
-Local cBkMail	:=	aEmail[nLinha,5]
+Local cBkMail	:=	aEmail[nLinha,6]
 
 If oEmail:colpos == 1
 	If aEmail[nLinha,oEmail:colpos]
@@ -1392,15 +1399,17 @@ If oEmail:colpos == 1
 	Else
 		aEmail[nLinha,oEmail:colpos] := .T.
 	EndIf
-ElseIf oEmail:colpos == 5
+ElseIf oEmail:colpos == 4 .or. oEmail:colpos == 5
 	lEditCell( aEmail, oEmail, "", oEmail:colpos)
-	If aEmail[nLinha,05] <> cBkMail
+ElseIf oEmail:colpos == 6
+	lEditCell( aEmail, oEmail, "", oEmail:colpos)
+	If aEmail[nLinha,06] <> cBkMail
 		IF MsgYesNo("Atualizar o email no cadastro do cliente?","editcol - CONFSC01")
 			DbSelectArea("SA1")
 			DbSetOrder(1)
 			If DbSeek(xFilial("SA1")+aList[oList:nAt,03]+aList[oList:nAt,04])
 				Reclock("SA1",.F.)
-				SA1->A1_EMAIL := Alltrim(SA1->A1_EMAIL)+";"+Alltrim(aEmail[nLinha,05])
+				SA1->A1_EMAIL := Alltrim(SA1->A1_EMAIL)+";"+Alltrim(aEmail[nLinha,06])
 				SA1->(Msunlock())
 			EndIF 
 		endIf 
@@ -2699,18 +2708,18 @@ Local cCliSAF	:=	Supergetmv("TI_ENVSAF",.F.,"60701521/03803992/61087367")
 For nCont := 1 to len(aEmail)
 	If aEmail[nCont,01]
 		
-		If cFilant <> SUBSTR(aEmail[nCont,11],1,4)
-			cFilant := SUBSTR(aEmail[nCont,11],1,4)
+		If cFilant <> SUBSTR(aEmail[nCont,12],1,4)
+			cFilant := SUBSTR(aEmail[nCont,12],1,4)
 			RpcClearEnv()
 			RpcSetType(3)
     		RPCSetEnv(cEmpAnt,cFilant)
 		EndIf
 
-		MV_PAR01 := Substr(aEmail[nCont,11],5)
+		MV_PAR01 := Substr(aEmail[nCont,12],5)
 		MV_PAR02 := aEmail[nCont,02]
 		cNfEmail := MV_PAR02
 		cSerNf   := MV_PAR01
-		CTIP := POSICIONE("SC5",1,substr(aEmail[nCont,11],1,4)+aEmail[nCont,07],"C5_XTPPED")
+		CTIP := POSICIONE("SC5",1,substr(aEmail[nCont,12],1,4)+aEmail[nCont,08],"C5_XTPPED")
 
 
 		cBoletos := ""
@@ -2720,8 +2729,13 @@ For nCont := 1 to len(aEmail)
 
 		DbSelectArea("SA1")
 		DBSetOrder(1)
-		DbSeek(xFilial("SA1")+aEmail[nCont,09]+aEmail[nCont,10])
+		DbSeek(xFilial("SA1")+aEmail[nCont,10]+aEmail[nCont,11])
 		cCnpjj := SA1->A1_CGC
+
+		If Empty(cCnpjj)
+			MsgAlert("CNPJ Inválido para a nota "+MV_PAR02)
+			exit
+		EndIf 
 		
 		If !ExistDir('C:\BOLETOS\'+cCnpjj+'\')
 			Makedir('C:\BOLETOS\'+cCnpjj+'\')
@@ -2732,10 +2746,10 @@ For nCont := 1 to len(aEmail)
 		If SA1->A1_XBOL == "S" .OR. EMPTY(SA1->A1_XBOL)
 			DbSelectArea("SE1")
 			DbSetOrder(1)
-			If Dbseek(avkey(substr(aEmail[nCont,11],1,2),"E1_FILIAL")+Avkey(MV_PAR01,"E1_PREFIXO")+MV_PAR02)
+			If Dbseek(avkey(substr(aEmail[nCont,12],1,2),"E1_FILIAL")+Avkey(MV_PAR01,"E1_PREFIXO")+MV_PAR02)
 				//While !EOF() .AND. SE1->E1_PREFIXO == MV_PAR01 .AND. SE1->E1_NUM == MV_PAR02 
 					//aAreaE1 := GetArea()//+Alltrim(SE1->E1_PARCELA)
-					U_CONBOL(.T.,'C:\BOLETOS\'+cCnpjj+'\',substr(aEmail[nCont,11],1,4),'')
+					U_CONBOL(.T.,'C:\BOLETOS\'+cCnpjj+'\',substr(aEmail[nCont,12],1,4),'')
 					//RestArea(aAreaE1)
 					CPYT2S('C:\BOLETOS\'+cCnpjj+'\boleto_'+MV_PAR02+'.pdf','\SPOOL\')
 					cFile3 := '\SPOOL\boleto_'+MV_PAR02+'.pdf'
@@ -2755,8 +2769,8 @@ For nCont := 1 to len(aEmail)
 			U_CONDANFE(cNfEmail,cSerNf,'C:\BOLETOS\',cCnpjj)
 			
 
-			MV_PAR02 := CTOD('01/10/2023')
-			MV_PAR03 := CTOD('01/10/2023')
+			MV_PAR02 := aEmail[nCont,04] //CTOD('01/10/2023')
+			MV_PAR03 := aEmail[nCont,05] //CTOD('01/10/2023')
 
 			If CTIP == "F"
 				U_CONFSR02(,.T.,aEmail[nCont,07],2,'C:\BOLETOS\',cCnpjj,aEmail[nCont,06])
@@ -2768,14 +2782,14 @@ For nCont := 1 to len(aEmail)
 		else 
 			DbSelectArea("SF2")
 			DbSetOrder(1)
-			DbSeek(substr(aEmail[nCont,11],1,4)+cNfEmail+cSerNf)
+			DbSeek(substr(aEmail[nCont,12],1,4)+cNfEmail+cSerNf)
 
-			U_CONGEN03(cNfEmail,cSerNf,'C:\BOLETOS\',cCnpjj,substr(aEmail[nCont,11],1,4))
+			U_CONGEN03(cNfEmail,cSerNf,'C:\BOLETOS\',cCnpjj,substr(aEmail[nCont,12],1,4))
 		
 		ENDIF
 
 		cRemete := 'nf.erp@connectvending.com.br'
-		cDestino := Alltrim(aEmail[nCont,05])
+		cDestino := Alltrim(aEmail[nCont,06])
 		cDestino += ';'+Alltrim(SUPERGETMV( "MV_XMAILFT", .F., 'faturas@connectvending.com.br' ))
 		
 		cSubject := 'Faturamento NF'+cNfEmail+' Cliente - '+SA1->A1_NOME
@@ -2808,9 +2822,9 @@ For nCont := 1 to len(aEmail)
 		
 		cBody     :=  corpo() 
 
-		If Alltrim(aEmail[nCont,09]) $ cCliSAF //!Empty(aEmail[nCont,14])
+		If Alltrim(aEmail[nCont,10]) $ cCliSAF //!Empty(aEmail[nCont,14])
 			//provisorio
-			aSeSAF := separa(aEmail[nCont,14],"&")
+			aSeSAF := separa(aEmail[nCont,15],"&")
 			cSaf  := ""
 			If len(aSeSAF) > 1
 				If len(aSeSAF) > 4
@@ -3332,6 +3346,7 @@ If !ParamBox(aPergs ,"Parâmetros ",aRet)
 EndIF 
 
 cQuery := "SELECT F2_DOC,A1_NOME,A1_NREDUZ,F2_COND,F2_CLIENTE,F2_LOJA,F2_FILIAL,F2_SERIE,C5_XTPPED,A1_EMAIL,"
+cQuery += " Z08_XDTATU,Z08_XDTANT,"
 cQuery += " ISNULL(CAST(CAST(Z08_URLFAT AS VARBINARY(8000)) AS VARCHAR(8000)),'') AS URL,"
 cQuery += " MAX(D2_PEDIDO) AS C5_NUM,"
 cQuery += " MAX(C6_CONTRT) AS CONTRT"
@@ -3350,7 +3365,7 @@ If aRet[7] == "2"
 	cQuery += " AND F2_SERIE LIKE 'L%'"
 EndIf 
 
-cQuery += " GROUP BY F2_DOC,A1_NOME,A1_NREDUZ,F2_COND,F2_CLIENTE,F2_LOJA,F2_FILIAL,F2_SERIE,C5_XTPPED,A1_EMAIL,Z08_URLFAT"
+cQuery += " GROUP BY F2_DOC,A1_NOME,A1_NREDUZ,F2_COND,F2_CLIENTE,F2_LOJA,F2_FILIAL,F2_SERIE,C5_XTPPED,A1_EMAIL,Z08_DATA,Z08_XDTANT,Z08_URLFAT"
 
 If Select("TRB") > 0
 	dbSelectArea("TRB")
@@ -3380,7 +3395,8 @@ filial+serie	-	filial faturamento + serie da nota
 	Aadd(aDados,{	.F.,;
 					TRB->F2_DOC,;
 					TRB->A1_NOME+" / "+TRB->A1_NREDUZ,;
-					'',;
+					STOD(TRB->Z08_XDTANT),;
+					STOD(TRB->Z08_XDTATU),;
 					TRB->A1_EMAIL,;
 					TRB->CONTRT,;
 					TRB->C5_NUM,;
