@@ -2773,7 +2773,7 @@ For nCont := 1 to len(aEmail)
 			MV_PAR03 := aEmail[nCont,05] //CTOD('01/10/2023')
 
 			If CTIP == "F"
-				U_CONFSR02(,.T.,aEmail[nCont,07],2,'C:\BOLETOS\',cCnpjj,aEmail[nCont,06])
+				U_CONFSR02(,.T.,aEmail[nCont,08],2,'C:\BOLETOS\',cCnpjj,aEmail[nCont,07])
 			EndIf 
 
 			MV_PAR01 := cSeri 

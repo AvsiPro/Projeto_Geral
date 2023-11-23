@@ -23,7 +23,7 @@ User Function CONGEN05()
     Local nLast        := 0
 
     Private cCod       := ""
-    Private nHandlel	:=	fcreate('C:\000\baixas1611.txt', FO_READWRITE + FO_SHARED )
+    Private nHandlel	:=	fcreate('C:\000\baixas2311.txt', FO_READWRITE + FO_SHARED )
 
 
     If Empty(FunName())
