@@ -36,7 +36,7 @@ User Function CONOPC05(nChamada)
     oGrp1      := TGroup():New( 004,016,108,380,"Cadastro",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
         
         oSay1      := TSay():New( 012,116,{||"Codigo"},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
-        oGet1      := TGet():New( 012,168,{|u| If(PCount()>0,cPatr:=u,cPatr)},oGrp1,060,008,'',{|| Basexcli()},CLR_BLACK,CLR_WHITE,,,,.T.,,,,,,,,,"AA3_01",,,)
+        oGet1      := TGet():New( 012,168,{|u| If(PCount()>0,cPatr:=u,cPatr)},oGrp1,060,008,'',{|| Basexcli(nChamada)},CLR_BLACK,CLR_WHITE,,,,.T.,,,,,,,,,"AA3_01",,,)
 
         oSay2      := TSay():New( 030,020,{||"Cliente"},oGrp1,,oFont4,.F.,.F.,.F.,.T.,CLR_BLUE,CLR_WHITE,332,018)
         
@@ -65,14 +65,14 @@ User Function CONOPC05(nChamada)
                             aCols[oList1:nAt,03],; 
                             aCols[oList1:nAt,04],;
                             aCols[oList1:nAt,05],;
-                            aCols[oList1:nAt,05]-aCols[oList1:nAt,04]}} 
-
+                            aCols[oList1:nAt,05]}} 
+                //aCols[oList1:nAt,05]-aCols[oList1:nAt,04]
         oBtn1      := TButton():New( 316,112,"Confirmar",oDlg1,{|| oDlg1:end(nOpc:=1)},037,012,,,,.T.,,"",,,,.F. )
         oBtn2      := TButton():New( 316,240,"Cancelar",oDlg1,{|| oDlg1:end(nOpc:=0)},037,012,,,,.T.,,"",,,,.F. )
 
         If nChamada == 1
             cPatr := Z08->Z08_NUMSER 
-            Basexcli()
+            Basexcli(nChamada)
         Endif 
     oDlg1:Activate(,,,.T.)
 
@@ -117,7 +117,7 @@ Return
     @see (links_or_references)
 /*/
 
-Static Function Basexcli()
+Static Function Basexcli(nChamada)
 
 Local aArea     :=  GetArea()
  
@@ -169,12 +169,23 @@ If !Empty(cPatr)
         Dbskip()
     EndDo 
 
-    cQuery := "SELECT Z08_DATA,Z08_SELECA,Z08_PRODUT,Z08_QTDLID FROM "+RetSQLName("Z08")
-    cQuery += " WHERE Z08_FILIAL='"+xFilial("Z08")+"' AND Z08_NUMSER='"+cPatr+"'"
-    cQuery += " AND Z08_COD IN(SELECT Z08_COD FROM "+RetSQLName("Z08")
-    cQuery += " WHERE Z08_FILIAL='"+xFilial("Z08")+"' AND Z08_NUMSER='"+cPatr+"'"
-    cQuery += " AND D_E_L_E_T_=' ' AND Z08_FATURA = ' ')"
-    cQuery += " AND Z08_COD = '"+Z08->Z08_COD+"'"
+    If nChamada == 0
+        cQuery := "SELECT Z08_DATA,Z08_SELECA,Z08_PRODUT,Z08_QTDLID FROM "+RetSQLName("Z08")
+        cQuery += " WHERE Z08_FILIAL='"+xFilial("Z08")+"' AND Z08_NUMSER='"+cPatr+"'"
+        cQuery += " AND Z08_COD IN(SELECT Z08_COD FROM "+RetSQLName("Z08")
+        cQuery += " WHERE Z08_FILIAL='"+xFilial("Z08")+"' AND Z08_NUMSER='"+cPatr+"'"
+        cQuery += " AND D_E_L_E_T_=' ' AND Z08_FATURA = ' ')"
+    Else 
+        cQuery := " SELECT '01' AS LEI,Z08_DATA,Z08_SELECA,Z08_PRODUT,Z08_QTDLID FROM "+RetSQLName("Z08")
+        cQuery += " WHERE Z08_FILIAL='"+xFilial("Z08")+"' AND Z08_NUMSER='"+cPatr+"'"
+        cQuery += " AND Z08_COD = '"+Z08->Z08_COD+"'"
+        cQuery += " UNION "
+        cQuery += " SELECT '02' AS LEI,Z08_DATA,Z08_SELECA,Z08_PRODUT,Z08_QTDLID FROM "+RetSQLName("Z08")
+        cQuery += " WHERE Z08_FILIAL='"+xFilial("Z08")+"' AND Z08_NUMSER='"+cPatr+"'"
+        cQuery += " AND Z08_COD IN(SELECT MAX(Z08_COD) FROM "+RetSQLName("Z08")
+        cQuery += " WHERE Z08_FILIAL='"+xFilial("Z08")+"' AND Z08_NUMSER='"+cPatr+"'"
+        cQuery += " AND Z08_COD <> '"+Z08->Z08_COD+"' AND Z08_DATA<'"+DTOS(Z08->Z08_DATA)+"')"
+    EndIf
 
     IF Select('TRB') > 0
         dbSelectArea('TRB')
@@ -190,7 +201,15 @@ If !Empty(cPatr)
         dDiaLei := stod(TRB->Z08_DATA)
         nPos := Ascan(aCols,{|x| x[2] == TRB->Z08_PRODUT})
         If nPos > 0
-            aCols[nPos,04] := TRB->Z08_QTDLID
+            If nChamada == 1
+                If TRB->LEI == '01'
+                    aCols[nPos,05] := TRB->Z08_QTDLID
+                Else 
+                    aCols[nPos,04] := TRB->Z08_QTDLID
+                EndIf
+            else
+                aCols[nPos,04] := TRB->Z08_QTDLID
+            EndIf 
         EndIf 
         DBSkip()
     EndDo 
@@ -218,7 +237,8 @@ If !Empty(cPatr)
                         aCols[oList1:nAt,03],; 
                         aCols[oList1:nAt,04],;
                         aCols[oList1:nAt,05],;
-                        aCols[oList1:nAt,05]-aCols[oList1:nAt,04]}}
+                        aCols[oList1:nAt,05]}}
+                        //aCols[oList1:nAt,05]-aCols[oList1:nAt,04]
 
     oList1:refresh()
     oDlg1:refresh()

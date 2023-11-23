@@ -2772,7 +2772,7 @@ For nCont := 1 to len(aEmail)
 			MV_PAR02 := aEmail[nCont,04] //CTOD('01/10/2023')
 			MV_PAR03 := aEmail[nCont,05] //CTOD('01/10/2023')
 
-			If CTIP == "F"
+			If CTIP == "F" .AND. Empty(aEmail[nCont,15])
 				U_CONFSR02(,.T.,aEmail[nCont,08],2,'C:\BOLETOS\',cCnpjj,aEmail[nCont,07])
 			EndIf 
 
