@@ -118,14 +118,19 @@ If len(aAux) > 0
         nPosMaq := Ascan(aHeader,{|x| x[2] == Alltrim(aAux[nX,03])})
         nPosCli := Ascan(aClientes,{|x| x[1] == Alltrim(aAux[nX,12])})
 
+        aParVM  := separa(cvaltochar(dLeiFim),"/")
+        cPar1VM := aParVM[1]+"/"+aParVM[2]+"/20"+aParVM[3]
+        aParVM  := separa(cvaltochar(dUltLei),"/")
+        cPar2VM := aParVM[1]+"/"+aParVM[2]+"/20"+aParVM[3]
+        
         If nPosMaq > 0 .And. nPosCli > 0
             aAux[nX,08] := "https://vmpay.vertitecnologia.com.br/connect_vending_comercio_de_ma/c/"
             //aAux[nX,08] += "%INSTALLATION%"
             //aAux[nX,08] += Alltrim(aHeader[nPosMaq,03])
             aAux[nX,08] += cvaltochar(aClientes[nPosCli,02]) //Alltrim(aAux[nX,11])
             aAux[nX,08] += "/reports/vends?"
-            aAux[nX,08] += "vend[occurred_at]=custom&vend[occurred_at_end]="+cvaltochar(dLeiFim)+"%20"+cHrf
-            aAux[nX,08] += "&vend[occurred_at_start]="+cvaltochar(dUltLei)+"%20"+cHri
+            aAux[nX,08] += "vend[occurred_at]=custom&vend[occurred_at_end]="+cPar1VM+"%20"+cHrf
+            aAux[nX,08] += "&vend[occurred_at_start]="+cPar2VM+"%20"+cHri
             //aAux[nX,08] += "&vend[groups][]=client"
             //aAux[nX,08] += "&vend[groups][]=location
             //aAux[nX,08] += "&vend[groups][]=machine
