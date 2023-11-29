@@ -372,7 +372,7 @@ Static Function Busca(cCond,cQuinze,cLocacS)
 	cQuery += " A1_BAIRRO,A1_MUN,A1_EST,"
 	cQuery += " AAM_INIVIG,AAM_FIMVIG,A1_EMAIL,'' AS AAN_XISENT,"
 	cQuery += " AAM_XFORFA, AAM_XTIPFA,'' AS AAM_XPERCT,"
-	cQuery += " '' AS AAM_XRENOV,AAN_FILIAL,AAM_XPRDCM,AAM_XPOCLI"
+	cQuery += " '' AS AAM_XRENOV,AAN_FILIAL,AAM_XPRDCM,AAM_XPOCLI,AAM_XPRCAJ"
 	cQuery += " FROM "+RetSQLName("AAN")+" AAN"
 	cQuery += " INNER JOIN "+RetSQLName("AAM")+" AAM ON AAM_FILIAL=AAN_FILIAL AND AAM_CONTRT=AAN_CONTRT AND AAM.D_E_L_E_T_=' ' AND AAM_STATUS='1'"
 	cQuery += " INNER JOIN "+RetSQLName("SE4")+" E4 ON E4_FILIAL='"+xFilial("SE4")+"' AND E4_CODIGO=AAN_CONPAG AND E4.D_E_L_E_T_=' '"
@@ -466,7 +466,8 @@ Static Function Busca(cCond,cQuinze,cLocacS)
 						TRB->AAM_XPRDCM,;
 						TRB->A1_EST,;		//23
 						TRB->AAM_XPOCLI,;	//24
-						TRB->AAM_XDOSCM})	//25
+						TRB->AAM_XDOSCM,;	//25
+						TRB->AAM_XPRCAJ})	//26
 		Else
 			//Soma todos os itens do contrato para pegar o valor total.
 			aList[nPos1,02] += nNewVlr //(TRB->AAN_QUANT*TRB->AAN_VLRUNI)
@@ -1616,6 +1617,9 @@ Local nDoseSep	:=	aList[oList:nAt,25]
 Local aDoseSep	:=	{}
 Local cDoseSep	:=	''
 Local cPoCli 	:=	''
+Local lDesvio	:=	If(aList[oList:nAt,26]>0,.T.,.F.)
+Local aDesvio	:=	{}
+Local nBkpDes	:=	aList[oList:nAt,20]
 
 If nOpcG == 0 .And. !lLiberaF .And. cLocacS <> "2"
 	MsgAlert("Primeiro rode a opção de Liberação para faturamento")
@@ -1638,6 +1642,32 @@ aAdd( aPerg ,{2,"Dose Compl. Sep. : ",nDoseSep,aCompSep,100,"",.T.})
 If !ParamBox(aPerg ,"Parametros ")
 	Return
 EndIf
+
+
+If lDesvio
+	MsgAlert("Contrato com desvio de leitura, as doses cobradas serão reajustadas em "+CVALTOCHAR(aList[oList:nAt,26])+"%")
+
+	For nX := 1 to len(aList5B)
+		If aList5B[nX,01] == aList[oList:nAt,01] 
+			For nJ := 5 to len(aList5B[nX])
+				If aList5B[nX,nJ,09] > 0
+					nAcresc := ROUND(aList5B[nX,nJ,07] * (aList[oList:nAt,26]/100),0)
+					If aList[oList:nAt,20] > 0 
+						If aList[oList:nAt,20] >= nAcresc
+							aList[oList:nAt,20] := aList[oList:nAt,20] - nAcresc 
+						Else
+							aList[oList:nAt,20] := 0
+						EndIf 
+					EndIf 
+					Aadd(aDesvio,{nX,nJ,aList5B[nX,nJ,07],aList5B[nX,nJ,08],aList5B[nX,nJ,10]})
+					aList5B[nX,nJ,07] := round(aList5B[nX,nJ,07]+(aList5B[nX,nJ,07] * (aList[oList:nAt,26]/100)),0)
+					aList5B[nX,nJ,08] := aList5B[nX,nJ,07]
+					aList5B[nX,nJ,10] := aList5B[nX,nJ,07] * aList5B[nX,nJ,09]
+				EndIf
+			Next nJ
+		EndIf
+	Next nX 
+EndIf 
 
 If !Empty(MV_PAR02)
 	cPoCli  := 'PO Cliente: '+ALLTRIM(MV_PAR02)
@@ -2193,6 +2223,11 @@ If len(aItens) > 0
 								RecLock("Z08", .F.)
 								Z08->Z08_FATURA := 'S'
 								Z08->Z08_PEDIDO := SC5->C5_NUM
+								
+								If lDesvio
+									Z08->Z08_QTDLID := aList5b[nCont,nJ,07]
+								EndIf
+
 								Z08->Z08_CONSUM := aList5b[nCont,nJ,08]
 								Z08->Z08_VLRFAT := aList5b[nCont,nJ,10]
 								Z08->Z08_NOTA	:= aDadNF[1]
@@ -2283,6 +2318,14 @@ If len(aItens) > 0
 
 		EndIF 
 	Else 
+		For nX := 1 to len(aDesvio)
+			aList5B[aDesvio[nX,01],aDesvio[nX,02],07] := aDesvio[nX,03]
+			aList5B[aDesvio[nX,01],aDesvio[nX,02],08] := aDesvio[nX,04]
+			aList5B[aDesvio[nX,01],aDesvio[nX,02],10] := aDesvio[nX,05]
+		Next nX 
+
+		aList[oList:nAt,20] := nBkpDes
+
 		Return 
 	EndIf 
 EndIf
@@ -3365,7 +3408,7 @@ If aRet[7] == "2"
 	cQuery += " AND F2_SERIE LIKE 'L%'"
 EndIf 
 
-cQuery += " GROUP BY F2_DOC,A1_NOME,A1_NREDUZ,F2_COND,F2_CLIENTE,F2_LOJA,F2_FILIAL,F2_SERIE,C5_XTPPED,A1_EMAIL,Z08_DATA,Z08_XDTANT,Z08_URLFAT"
+cQuery += " GROUP BY F2_DOC,A1_NOME,A1_NREDUZ,F2_COND,F2_CLIENTE,F2_LOJA,F2_FILIAL,F2_SERIE,C5_XTPPED,A1_EMAIL,Z08_XDTATU,Z08_XDTANT,Z08_URLFAT"
 
 If Select("TRB") > 0
 	dbSelectArea("TRB")
