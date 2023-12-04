@@ -12,6 +12,9 @@ If nConfirma == 1 .And. nOpcao == 3
     If MsgYesNo("Deseja imprimir etiqueta para os produtos da nota?")
         U_JESTR002(1)
     EndIf 
+
+    //Impressão do boletim de faturamento
+    U_JESTR003()
 EndIf 
 /*
 
