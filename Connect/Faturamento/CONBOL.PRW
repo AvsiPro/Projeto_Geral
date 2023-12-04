@@ -271,10 +271,16 @@ If DBSEEK(xFilial("SE1")+Avkey(MV_PAR01,"E1_PREFIXO")+Avkey(MV_PAR02,"E1_NUM")) 
 
 		IF CB_RN_NN[4] > 0
 			DbSelectArea("SEE")
-			RecLock("SEE",.f.)
-			SEE->EE_FAXATU :=StrZero(CB_RN_NN[4],10)
+
+			If CB_RN_NN[4] > Val(SEE->EE_FAXATU)
+				RecLock("SEE",.f.)
+				SEE->EE_FAXATU :=StrZero(CB_RN_NN[4],10)
 			
-			SEE->(DbUnlock())
+				SEE->(DbUnlock())
+			Else 
+				MsgAlert("Problema na atualização do nosso numero, não será gerado o boleto para evitar erro de numeração no banco")
+				Return Nil
+			EndIf 
 		EndIf 
 		
 		DbSelectArea("SE1")

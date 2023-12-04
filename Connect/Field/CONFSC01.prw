@@ -1343,7 +1343,7 @@ else
 EndIf 
 
 If len(aEmail) < 1
-	Aadd(aEmail,{.F.,'','','',''})
+	Aadd(aEmail,{.F.,'','','','',''})
 EndIf
 
 Asort(aEmail,,,{|x,y| x[2] < y[2]})
@@ -2816,7 +2816,7 @@ For nCont := 1 to len(aEmail)
 			MV_PAR03 := aEmail[nCont,05] //CTOD('01/10/2023')
 
 			If CTIP == "F" .AND. Empty(aEmail[nCont,15])
-				U_CONFSR02(,.T.,aEmail[nCont,08],2,'C:\BOLETOS\',cCnpjj,aEmail[nCont,07])
+				U_CONFSR02(,.T.,aEmail[nCont,08],2,'C:\BOLETOS\',cCnpjj,aEmail[nCont,07],cNota)
 			EndIf 
 
 			MV_PAR01 := cSeri 
@@ -2842,9 +2842,9 @@ For nCont := 1 to len(aEmail)
 			CPYT2S('C:\BOLETOS\'+cCnpjj+'\'+cNfEmail+'.xml','\SPOOL\')
 			
 			If CTIP == "F"
-				CPYT2S('C:\BOLETOS\'+cCnpjj+'\'+"extrato_leitura_"+dtos(ddatabase)+".pdf",'\SPOOL\')
+				CPYT2S('C:\BOLETOS\'+cCnpjj+'\'+"extrato_leitura_"+cNota+dtos(ddatabase)+".pdf",'\SPOOL\')
 
-				cFile4 := '\SPOOL\extrato_leitura_'+dtos(ddatabase)+'.pdf'
+				cFile4 := '\SPOOL\extrato_leitura_'+cNota+dtos(ddatabase)+'.pdf'
 			EndIf 
 		Else
 		

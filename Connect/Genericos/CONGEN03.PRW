@@ -195,7 +195,12 @@ User Function CONGEN03(cNumNF,cSerNF,cPathNF,cCNPJNF,cFilNf)
 		cCli1 := aAux[nCont,11]
 		cCnpj := Transform(val(aAux[nCont,9]), "@E 99,999,999/9999-99")
 		cPeriodo := If(aAux[nCont,14] <> "G","Locação de máquina referente mês " + SubStr(aAux[nCont,6],5,2) + "/" + SubStr(aAux[nCont,6],3,2),"")
-		cPonto := aAux[nCont,13]
+		
+		If "DOSE COMPLE" $ Alltrim(aAux[nCont,13])
+			cPonto := cvaltochar(round(aAux[nCont,04]/aAux[nCont,03],0)) + " - "+aAux[nCont,13]
+		Else
+			cPonto := aAux[nCont,13]
+		EndIf 
 
 		cCGC := aSM0Data2[ASCAN(aSM0Data2,{|X| X[1] == "M0_CGC"}),02]
 		cEmitente := SM0->M0_NOMECOM + " " + Transform(cCGC, "@R 99.999.999/9999-99")
@@ -234,7 +239,12 @@ User Function CONGEN03(cNumNF,cSerNF,cPathNF,cCNPJNF,cFilNf)
 		oPrinter:SayBitmap(031,013,cLogoD,040,040)
 
 		oPrinter:Box( 25, 5, 25, 590, "-9" )
-		oPrinter:Say( 55, 125,"FATURA " + cNum + If(aAux[nCont,14] <> "G"," - LOCAÇÃO DE " + Upper(cMes)," - FRETE "), oF20TFF )
+
+		If aAux[nCont,14] == "F"
+			oPrinter:Say( 55, 125,"NOTA DE DÉBITO" , oF20TFF )
+		else
+			oPrinter:Say( 55, 125,"FATURA " + cNum + If(aAux[nCont,14] <> "G"," - LOCAÇÃO DE " + Upper(cMes)," - FRETE "), oF20TFF )
+		EndIf 
 		oPrinter:Say( 35, 510,"NÚMERO", oF10FFF,, rgb(102, 102, 102)/*Cor*/ )
 		oPrinter:Say( 55, 530,cNum, oF20TFF )
 		oPrinter:Box( 75, 5, 75, 590, "-9" )

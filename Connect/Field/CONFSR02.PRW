@@ -14,7 +14,7 @@
     @since 16/12/2022
     @version 1
     /*/
-User Function CONFSR02(cXTitle, xFatur, xPedido,nOpc,cPasta,ccnpj,ccontr)
+User Function CONFSR02(cXTitle, xFatur, xPedido,nOpc,cPasta,ccnpj,ccontr,cNota)
 
 	Local aCombo := {"1=ExtraTo de Leitura", "2=Demonstrativo de Consumo", "3=Todos" }
 	Local aPergs := {}
@@ -35,6 +35,7 @@ User Function CONFSR02(cXTitle, xFatur, xPedido,nOpc,cPasta,ccnpj,ccontr)
 	Default xPedido  := ''
 	Default nOpc := 0
 	Default ccont := "" 
+	Default cNota := ""
 
 	nOpca	  := nOpc
 	lFatur 	  := xFatur
@@ -53,11 +54,11 @@ User Function CONFSR02(cXTitle, xFatur, xPedido,nOpc,cPasta,ccnpj,ccontr)
 		EndIf
 
 		If MV_PAR01 == "1" .OR. nOpc == 1
-			ExtLeitura('',nOpc)
+			ExtLeitura('',nOpc,cNota)
 		ElseIf MV_PAR01 == "2" .OR. nOpc == 2
 			DemonsCon()
 		ElseIf MV_PAR01 == "3" .OR. nOpc == 3
-			ExtLeitura('',nOpc)
+			ExtLeitura('',nOpc,cNota)
 			DemonsCon()
 		EndIf
 	else
@@ -74,12 +75,12 @@ User Function CONFSR02(cXTitle, xFatur, xPedido,nOpc,cPasta,ccnpj,ccontr)
             EndIf
         EndIf
 
-		ExtLeitura(cPasta,nOpc)
+		ExtLeitura(cPasta,nOpc,cNota)
 	EndIf
 
 Return
 
-Static Function ExtLeitura(cCaminho,nOpc)
+Static Function ExtLeitura(cCaminho,nOpc,cNota)
 
 	Local lAdjustToLegacy  := .F.
 	Local lDisableSetup    := .T.
@@ -107,7 +108,7 @@ Static Function ExtLeitura(cCaminho,nOpc)
 	Local oF15TFF          := TFont():New('Arial' /*Fonte*/,,15 /*Tamanho*/,,.T. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
 	Local oF25TFF          := TFont():New('Arial' /*Fonte*/,,25 /*Tamanho*/,,.T. /*NegriTo*/,,,,,.F. /*Sublinhado*/,.F. /*Italico*/ )
 	
-	Private oPrinter := FWMSPrinter():New( "extrato_leitura_"+dtos(ddatabase)+".pdf",IMP_PDF,lAdjustToLegacy,"",lDisableSetup,,,,,,,.f., )
+	Private oPrinter := FWMSPrinter():New( "extrato_leitura_"+cNota+dtos(ddatabase)+".pdf",IMP_PDF,lAdjustToLegacy,"",lDisableSetup,,,,,,,.f., )
 
 	oPrinter:cPathPDF := If(!Empty(cCaminho),cCaminho,"C:\temp\")
 
