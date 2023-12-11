@@ -212,8 +212,17 @@ If ParamBox(aPergs, "Informe o código do produto a ser incluído nesta cotação",a
     If lPermitir
         MsgAlert("Produto incluído na cotação com sucesso!!!","PE_MT150ROT")
         DbSelectArea("SC8")
-    EndIf 
-    
+        
+        MV_PAR01 := 2
+        MV_PAR02 := 2
+        MV_PAR03 := 2
+        MV_PAR04 := 1
+        MV_PAR05 := 1
+        MV_PAR06 := 1
+        MV_PAR07 := 2
+        
+    EndIf                   
+                            
 EndIf
 
 RestArea(aArea)

@@ -25,7 +25,7 @@ DbSelectArea("SC1")
 DbSetOrder(1)
 If DbSeek(xFilial("SC1")+cNumSc)
     While !EOF() .AND. SC1->C1_FILIAL == xFilial("SC1") .And. SC1->C1_NUM == cNumSc 
-        Aadd(aItenSc1,{SC1->C1_NUM,SC1->C1_ITEM,SC1->C1_XTIPCOT})
+        Aadd(aItenSc1,{SC1->C1_NUM,SC1->C1_ITEM,SC1->C1_XTIPCOT,SC1->C1_QUANT})
         If Empty(SC1->C1_PEDIDO)
             Reclock("SC1",.F.)
             SC1->C1_PEDIDO := 'XXX'
@@ -47,6 +47,27 @@ While !EOF() .And. SC7->C7_FILIAL == xFilial("SC7") .And. SC7->C7_NUM == cPedido
     If nPos > 0
         Reclock("SC7",.F.)
         SC7->C7_ZTPCOM := aItenSc1[nPos,03] //SC1->C1_XTIPCOT
+
+        If SC7->C7_QTDSOL == 0 .AND. aItenSc1[nPos,04] > 0
+            SC7->C7_QTDSOL := SC7->C7_QUANT
+        EndIf 
+
+        If Empty(SC7->C7_DESCRI)
+            SC7->C7_DESCRI := Posicione("SB1",1,xFilial("SB1")+SC7->C7_PRODUTO,"B1_DESC")
+        EndIf 
+
+        If Empty(SC7->C7_UM)
+            SC7->C7_UM := Posicione("SB1",1,xFilial("SB1")+SC7->C7_PRODUTO,"B1_UM")
+        EndIf 
+
+        If Empty(SC7->C7_CONTA)
+            SC7->C7_CONTA := Posicione("SB1",1,xFilial("SB1")+SC7->C7_PRODUTO,"B1_CONTA")
+        EndIf 
+
+        If Empty(SC7->C7_LOCAL)
+            SC7->C7_LOCAL := Posicione("SB1",1,xFilial("SB1")+SC7->C7_PRODUTO,"B1_LOCPAD")
+        EndIf 
+
         SC7->(MSUNLOCK())
     EndIf 
     Dbskip()

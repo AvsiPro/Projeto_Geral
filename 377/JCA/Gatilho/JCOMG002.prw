@@ -60,12 +60,16 @@ Return
 /*/
 Static Function gerafilho(cMarca,cDescM,cCodigo,cGrupo)
 
+Local aArea  := GetArea()
 Local nCont  := 1
 Local cTabela:= "SB1"
 Local aHoBrw1:= {}
 Local aAuxX3 := {}
 Local cNewCd := ""
 Local cCpoNcp := SuperGetMv("TI_CPONTCP",.F.,"B1_EMIN/B1_ESTSEG/B1_PE/B1_TIPE/B1_LE/B1_TOLER/B1_EMAX")
+
+DbSelectArea("SB1")
+DbSetOrder(1)
 
 If DbSeek(xFilial("SB1")+cCodigo) //
 
@@ -140,5 +144,7 @@ If DbSeek(xFilial("SB1")+cCodigo) //
 else 
     MsgAlert("Código Pai inexistente")
 EndIf     
+
+RestArea(aArea)
 
 Return
