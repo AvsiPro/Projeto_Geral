@@ -15,8 +15,9 @@ Local aRet := {}
     aAdd(aRet,{'Libera por Tempo Previso'   ,'u_LIBREJ(1)'  , 0 , 2})
     aAdd(aRet,{'Rejeitar'                   ,'u_LIBREJ(2)'  , 0 , 2})
     aAdd(aRet,{'Imprimir Requisição'        ,'U_JESTR001()' , 0 , 2})
-    aAdd(aRet,{'Baixar Requisição'          ,'U_JESTM001(SCP->CP_NUM)' , 0 , 2})
+    aAdd(aRet,{'Baixar Requisição'          ,'Processa({|| U_JESTM001(SCP->CP_NUM) },"Aguarde ")' , 0 , 2})
 
+    
     //Incluir F5 na tela de solicitação ao armazem para que se possa consultar o saldo de todos os itens relacionados ao código (pai e filhos)
     SetKey(VK_F5, { || U_JESTC001(M->CP_PRODUTO) })
 

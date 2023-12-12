@@ -36,11 +36,11 @@ If len(aITEM)
 
     pergunte ('MTA185',.f.)
 
-    if MV_PAR01 = 1
+    /*if MV_PAR01 = 1
         conout ('o F12 da rotina mata185 "BAIXA POR ?" esta como "baixa por item"')
     else
         conout ('o F12 da rotina mata185 "BAIXA POR ?" esta como "baixa por Toda a pre-req"')
-    endif
+    endif*/
 
     For nX := 1 to len(aITEM)
 
@@ -74,19 +74,26 @@ If len(aITEM)
 
     dbSelectArea("SCP")
     dbSetOrder(1)
-    If SCP->(dbSeek(xFilial("SCP")+cNumSCP)) //+aITEM[nx]
-        lMSHelpAuto := .F.
-        lMsErroAuto := .F.
-        MSExecAuto({|v,x,y,z| mata185(v,x,y)},aAutoSCP[1],aAutoSD3[1],1)  // 1 = BAIXA (ROT.AUT)
+    For nX := 1 to len(aAutoSCP)
+        nPosItm := Ascan(aAutoSCP[nX],{|x| x[1] == "CP_ITEM"})
 
-        If lMsErroAuto
-            Mostraerro()
+        If SCP->(dbSeek(xFilial("SCP")+cNumSCP+aAutoSCP[nX,nPosItm,02])) //+aITEM[nx]
+            lMSHelpAuto := .F.
+            lMsErroAuto := .F.
+            MSExecAuto({|v,x,y,z| mata185(v,x,y)},aAutoSCP[nx],aAutoSD3[nx],1)  // 1 = BAIXA (ROT.AUT)
+
+            If lMsErroAuto
+                Mostraerro()
+            EndIf
+        Else
+            Aviso("SIGAEST", "Req. nao encontrada", {" Ok "})  
         EndIf
-    Else
-        Aviso("SIGAEST", "Req. nao encontrada", {" Ok "})  
-    EndIf
+    Next nX
 
+    MsgAlert("Processo de baixa finalizado!!!")
 EndIf 
+
+
 
 RestArea(aArea)
 

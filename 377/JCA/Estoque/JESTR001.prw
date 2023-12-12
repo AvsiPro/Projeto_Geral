@@ -94,7 +94,7 @@ EndIf
 
 IF nOpcRel == 1 
 	Processa({ |lEnd| COMR01Cfg("Impressao Relação de peças")},"Imprimindo , aguarde...")
-	Processa({|lEnd| GFR01(@lEnd,wnRel,cString,nReg)},titulo)
+	Processa({ |lEnd| GFR01(@lEnd,wnRel,cString,nReg)},titulo)
 Else
 	Return .f.
 Endif
