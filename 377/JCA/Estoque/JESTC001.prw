@@ -11,7 +11,7 @@
     
 */
 
-User Function JESTC001(cProd)
+User Function JESTC001(cProd,nCham)
 
 Local cCodPai   :=  ''
 Local nOpcao    :=  0
@@ -23,6 +23,8 @@ Local nPos3     := Ascan(aSM0Data2,{|x| x[1] == "M0_NOME"})
 Private oDlg1,oGrp1,oSay1,oSay2,oSay3,oGrp2,oBtn1,oBtn2,oList
 
 Private aList := {}
+
+Default nCham := 1
 
 oFont13  := TFont():New("Arial",9,13,.T.,.T.,5,.T.,5,.T.,.F.)
 oFont16n := TFont():New("Arial",9,16,.T.,.F.,5,.T.,5,.T.,.F.)
@@ -83,7 +85,13 @@ If !Empty(cProd)
     oDlg1:Activate(,,,.T.)
 
     If nOpcao > 0
-        M->CP_PRODUTO := aList[nOpcao,01]
+        If nCham == 1
+            M->CP_PRODUTO := aList[nOpcao,01]
+        elseif nCham == 2
+            M->C1_PRODUTO := aList[nOpcao,01]    
+        ElseIf nCham == 3
+            M->D3_COD     := aList[nOpcao,01]                                                           
+        EndIf             
     EndIf 
 EndIf
 
