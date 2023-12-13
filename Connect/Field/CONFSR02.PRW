@@ -579,10 +579,10 @@ Static Function ExtLeitura(cCaminho,nOpc,cNota)
 			nTot1 := 0
 
 			For nY := 5 To Len(aPontos[nX])
-				nCon1 += aPontos[nX,nY,8]
-				nSub1 += aPontos[nX,nY,9] * aPontos[nX,nY,8]
-				nConRS1 += aPontos[nX,nY,15] * aPontos[nX,nY,8]
-				nTot1 += aPontos[nX,nY,10]
+				nCon1 += aPontos[nX,nY,7] //aPontos[nX,nY,8]
+				nSub1 += aPontos[nX,nY,9] * aPontos[nX,nY,7]    //aPontos[nX,nY,9] * aPontos[nX,nY,8]
+				nConRS1 += aPontos[nX,nY,15] * aPontos[nX,nY,7] //aPontos[nX,nY,15] * aPontos[nX,nY,8]
+				nTot1 += aPontos[nX,nY,9] * aPontos[nX,nY,7] //aPontos[nX,nY,10]
 			Next
 
 			cCon1 := cValToChar(nCon1)
@@ -622,10 +622,10 @@ Static Function ExtLeitura(cCaminho,nOpc,cNota)
 				oPrinter:Say( nLin, 50,AllTrim(aPontos[nX,nY,2]), oF10FFF )
 				oPrinter:Say( nLin, 100,AllTrim(aPontos[nX,nY,3]), oF10FFF )
 				oPrinter:Say( nLin, 280,AllTrim(aPontos[nX,nY,13]), oF10FFF )
-				oPrinter:Say( nLin, 360,cvalTochar(aPontos[nX,nY,8]), oF10FFF )
-				oPrinter:Say( nLin, 410,TransForm(aPontos[nX,nY,9]*aPontos[nX,nY,8], "@E 99,999.99"), oF10FFF ) //PEndente Subsidio
-				oPrinter:Say( nLin, 480,TransForm(aPontos[nX,nY,15]*aPontos[nX,nY,8], "@E 99,999.99"), oF10FFF ) //PEndente Consumido - subsidio
-				oPrinter:Say( nLin, 550,TransForm(aPontos[nX,nY,10], "@E 99,999.99"), oF10FFF )
+				oPrinter:Say( nLin, 360,cvalTochar(aPontos[nX,nY,7]), oF10FFF ) //aPontos[nX,nY,8]
+				oPrinter:Say( nLin, 410,TransForm(aPontos[nX,nY,9]*aPontos[nX,nY,7], "@E 99,999.99"), oF10FFF ) //PEndente Subsidio aPontos[nX,nY,9]*aPontos[nX,nY,8]
+				oPrinter:Say( nLin, 480,TransForm(aPontos[nX,nY,15]*aPontos[nX,nY,7], "@E 99,999.99"), oF10FFF ) //PEndente Consumido - subsidio aPontos[nX,nY,15]*aPontos[nX,nY,8]
+				oPrinter:Say( nLin, 550,TransForm(aPontos[nX,nY,9]*aPontos[nX,nY,7], "@E 99,999.99"), oF10FFF ) //aPontos[nX,nY,10]
 				oPrinter:Fillrect( { nLin+5, 10, nLin+5, 590 }, oBrush2, "-2")
 			Next
 
@@ -635,10 +635,10 @@ Static Function ExtLeitura(cCaminho,nOpc,cNota)
 			nTot1 := 0
 
 			For nY := 5 To Len(aPontos[nX])
-				nCon1 += aPontos[nX,nY,8]
-				nSub1 += aPontos[nX,nY,9] * aPontos[nX,nY,8]
-				nConRS1 += aPontos[nX,nY,15] * aPontos[nX,nY,8]
-				nTot1 += aPontos[nX,nY,10]
+				nCon1 += aPontos[nX,nY,7] //aPontos[nX,nY,8]
+				nSub1 += aPontos[nX,nY,9] * aPontos[nX,nY,7] //aPontos[nX,nY,8]
+				nConRS1 += aPontos[nX,nY,15] * aPontos[nX,nY,7] //aPontos[nX,nY,8]
+				nTot1 += aPontos[nX,nY,9] * aPontos[nX,nY,7] //aPontos[nX,nY,10]
 			Next
 
 			cCon1 := CValToChar(nCon1)
@@ -676,10 +676,10 @@ Static Function ExtLeitura(cCaminho,nOpc,cNota)
 				oPrinter:Say( nLin, 50,aPontos[nX,nY,2], oF10FFF )
 				oPrinter:Say( nLin, 100,aPontos[nX,nY,3], oF10FFF )
 				oPrinter:Say( nLin, 280,aPontos[nX,nY,13], oF10FFF )
-				oPrinter:Say( nLin, 360,cvalTochar(aPontos[nX,nY,8]), oF10FFF )
-				oPrinter:Say( nLin, 410,transForm(aPontos[nX,nY,9]*aPontos[nX,nY,8], "@E 99,999.99"), oF10FFF ) //PEndente Subsidio
-				oPrinter:Say( nLin, 480,transForm(aPontos[nX,nY,15]*aPontos[nX,nY,8], "@E 99,999.99"), oF10FFF ) //PEndente Consumo - subsidio
-				oPrinter:Say( nLin, 550,transForm(aPontos[nX,nY,10], "@E 99,999.99"), oF10FFF )
+				oPrinter:Say( nLin, 360,cvalTochar(aPontos[nX,nY,7]), oF10FFF ) //aPontos[nX,nY,8]
+				oPrinter:Say( nLin, 410,transForm(aPontos[nX,nY,9]*aPontos[nX,nY,7], "@E 99,999.99"), oF10FFF ) //PEndente Subsidio aPontos[nX,nY,9]*aPontos[nX,nY,8]
+				oPrinter:Say( nLin, 480,transForm(aPontos[nX,nY,15]*aPontos[nX,nY,7], "@E 99,999.99"), oF10FFF ) //PEndente Consumo - subsidioaPontos[nX,nY,15]*aPontos[nX,nY,8]
+				oPrinter:Say( nLin, 550,transForm(aPontos[nX,nY,9]*aPontos[nX,nY,7], "@E 99,999.99"), oF10FFF ) //aPontos[nX,nY,10]
 				oPrinter:Fillrect( { nLin+5, 10, nLin+5, 590 }, oBrush2, "-2")
 			Next
 		Next
