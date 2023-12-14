@@ -15,10 +15,12 @@ User Function JESTC001(cProd,nCham)
 
 Local cCodPai   :=  ''
 Local nOpcao    :=  0
-Local aSM0Data2 := FWSM0Util():GetSM0Data()
-Local nPos1     := Ascan(aSM0Data2,{|x| x[1] == "M0_CODFIL"})
-Local nPos2     := Ascan(aSM0Data2,{|x| x[1] == "M0_FILIAL"})
-Local nPos3     := Ascan(aSM0Data2,{|x| x[1] == "M0_NOME"})
+Local lFilAll   := .T.
+
+Private aSM0Data2 := FWSM0Util():GetSM0Data()
+Private nPos1     := Ascan(aSM0Data2,{|x| x[1] == "M0_CODFIL"})
+Private nPos2     := Ascan(aSM0Data2,{|x| x[1] == "M0_FILIAL"})
+Private nPos3     := Ascan(aSM0Data2,{|x| x[1] == "M0_NOME"})
 
 Private oDlg1,oGrp1,oSay1,oSay2,oSay3,oGrp2,oBtn1,oBtn2,oList
 
@@ -43,7 +45,11 @@ If !Empty(cProd)
         cCodPai := cProd
     EndIF 
     
-    BuscaSld(cCodPai)
+    If MsgYesNo("Consultar somente a filial atual?")
+        lFilAll := .F.
+    EndIf 
+
+    BuscaSld(cCodPai,lFilAll)
 
     If len(aList) < 1
         Aadd(aList,{'','','','','','','','','','','','','','','',''})
@@ -58,8 +64,8 @@ If !Empty(cProd)
         
         oGrp2      := TGroup():New( 056,004,280,708,"Saldos",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
         //oBrw1      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{064,008,276,644},,, oGrp2 ) 
-        oList    := TCBrowse():New(064,008,695,210,, {'Codigo','Armazem','Qtd Disponível','Saldo Atual','Qtd. Ped.Venda','Qtd.Empenhada','Qtd.Prevista Entrada','Qtd Empenhada S.A.','Qtd.Reservada','Qt.Ter.Ns.Pd','Qtd.Ns.Pd.Ter','Saldo Pod.3','Qtd.Emp.NF','Qtd.a Endere','Qtd.Emp.Prj.','Empen.Previ'},;
-                                                            {60,30,50,40,50,50,50,50,40,40,40,40,50,50,50,50},;
+        oList    := TCBrowse():New(064,008,695,210,, {'Filial','Codigo','Armazem','Qtd Disponível','Saldo Atual','Qtd. Ped.Venda','Qtd.Empenhada','Qtd.Prevista Entrada','Qtd Empenhada S.A.','Qtd.Reservada','Qt.Ter.Ns.Pd','Qtd.Ns.Pd.Ter','Saldo Pod.3','Qtd.Emp.NF','Qtd.a Endere','Qtd.Emp.Prj.','Empen.Previ'},;
+                                                            {50,60,30,50,40,50,50,50,50,40,40,40,40,50,50,50,50},;
                                                             oGrp1,,,,{|| FHelp(oList:nAt)},{|| /*inverte(1)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
                 oList:SetArray(aList)
                 oList:bLine := {||{ aList[oList:nAt,01],;
@@ -77,7 +83,8 @@ If !Empty(cProd)
                                     aList[oList:nAt,13],;
                                     aList[oList:nAt,14],; 
                                     aList[oList:nAt,15],; 
-                                    aList[oList:nAt,16]}}
+                                    aList[oList:nAt,16],;
+                                    aList[oList:nAt,17]}}
 
         oBtn1      := TButton():New( 284,256,"Alterar",oDlg1,{|| oDlg1:end(nOpcao:=oList:nAt)},037,012,,,,.T.,,"",,,,.F. )
         oBtn2      := TButton():New( 284,352,"Sair",oDlg1,{|| oDlg1:end(nOpcao:=0)},037,012,,,,.T.,,"",,,,.F. )
@@ -86,11 +93,11 @@ If !Empty(cProd)
 
     If nOpcao > 0
         If nCham == 1
-            M->CP_PRODUTO := aList[nOpcao,01]
+            M->CP_PRODUTO := aList[nOpcao,02]
         elseif nCham == 2
-            M->C1_PRODUTO := aList[nOpcao,01]    
+            M->C1_PRODUTO := aList[nOpcao,02]    
         ElseIf nCham == 3
-            M->D3_COD     := aList[nOpcao,01]                                                           
+            M->D3_COD     := aList[nOpcao,02]                                                           
         EndIf             
     EndIf 
 EndIf
@@ -109,19 +116,26 @@ Return
     (examples)
     @see (links_or_references)
 /*/
-Static Function BuscaSld(cCodPai)
+Static Function BuscaSld(cCodPai,lFilAll)
 
 Local aArea := GetArea()
 Local cQuery
 
-cQuery := "SELECT B2_COD,B2_LOCAL,B2_QATU,B2_QEMP,B2_QEMPN,B2_RESERVA,B2_QPEDVEN,B2_SALPEDI,"
+cQuery := "SELECT B2_FILIAL,B2_COD,B2_LOCAL,B2_QATU,B2_QEMP,B2_QEMPN,B2_RESERVA,B2_QPEDVEN,B2_SALPEDI,"
 cQuery += " B2_QTNP,B2_QNPT,B2_QTER,B2_QACLASS,B2_QEMPSA,B2_QEMPPRE,B2_QEMPPRJ"
 cQuery += " FROM "+RetSQLName("SB2")
-cQuery += " WHERE B2_FILIAL='"+xFilial("SB2")+"'" 
+cQuery += " WHERE "
+
+If lFilAll
+    cQuery += " B2_FILIAL BETWEEN ' ' AND 'ZZZ'" 
+Else 
+    cQuery += " B2_FILIAL='"+xFilial("SB2")+"'" 
+EndIf 
+
 cQuery += " AND B2_COD IN(SELECT B1_COD FROM "+RetSQLName("SB1")+" WHERE B1_FILIAL='"+xFilial("SB1")+"'
 cQuery += " AND (B1_COD='"+cCodPai+"' OR B1_XCODPAI='"+cCodPai+"'))
 cQuery += " AND D_E_L_E_T_=' '"
-cQuery += " ORDER BY B2_COD"
+cQuery += " ORDER BY B2_FILIAL,B2_COD"
 
 IF Select('TRB') > 0
     dbSelectArea('TRB')
@@ -136,7 +150,8 @@ DbSelectArea("TRB")
 
 While !EOF()
     nDisponivel := TRB->B2_QATU - TRB->B2_QEMP - TRB->B2_RESERVA - TRB->B2_QACLASS - TRB->B2_QEMPSA - TRB->B2_QEMPPRJ 
-    Aadd(aList,{TRB->B2_COD,;
+    Aadd(aList,{TRB->B2_FILIAL,;
+                TRB->B2_COD,;
                 TRB->B2_LOCAL,;
                 nDisponivel,;
                 TRB->B2_QATU,;
@@ -173,8 +188,18 @@ nLinhadescription)
 /*/
 Static Function Fhelp(nLinha)
 
+aSM0Data2 := FWSM0Util():GetSM0Data(cempant,aList[nLinha,01])
+
+nPos1     := Ascan(aSM0Data2,{|x| x[1] == "M0_CODFIL"})
+nPos2     := Ascan(aSM0Data2,{|x| x[1] == "M0_FILIAL"})
+nPos3     := Ascan(aSM0Data2,{|x| x[1] == "M0_NOME"})
+
+cNameFil := aSM0Data2[nPos1,02]+"-"+aSM0Data2[nPos2,02]+"/"+aSM0Data2[nPos3,02]
+
+oSay2:settext("")
 oSay3:settext("")
-oSay3:settext(aList[nLinha,01]+"-"+Posicione("SB1",1,xFilial("SB1")+aList[nLinha,01],"B1_DESC"))
+oSay2:settext(cNameFil)
+oSay3:settext(aList[nLinha,02]+"-"+Posicione("SB1",1,xFilial("SB1")+aList[nLinha,02],"B1_DESC"))
 
 oDlg1:refresh()
 
