@@ -368,6 +368,7 @@ Return .t.
 */
 User Function RF01BImp(lEmail)
 
+	Local aArea  := GetArea()
 	Local cRetCam := ''
 	Default lEmail := .f.
 
@@ -432,7 +433,8 @@ User Function RF01BImp(lEmail)
 		cRetCam := RF02B062(,,,, lEmail)
 	endif
 
-
+	RestArea(aArea)
+	
 Return(cRetCam)
 
 /*
@@ -2893,12 +2895,13 @@ Static Function RF02B062(xBanco,xAgencia,xConta,xSubCt, lEmail)
 				nX := nX + 1
 			EndIf
 	
-			DbSelectArea("SE1")
-			SE1->(dbSkip())
-			//IncProc()
-			nI := nI + 1
+			
 		endif
 
+		DbSelectArea("SE1")
+		SE1->(dbSkip())
+		//IncProc()
+		nI := nI + 1
 	EndDo
 
 	If !lEmail
