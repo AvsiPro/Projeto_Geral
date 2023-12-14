@@ -4,12 +4,16 @@
 Static lErro        As Logical
 Static cChaveLog    As Character
 
-/*/{Protheus.doc} JFINM014
-	@author Alexandre Venancio
-	@since 07/12/2023
+/*
+    Envio de carta de cobrança com boletos
+    MIT044 FINANCEIRO FIN014- enviar a carta de cobrança com Boleto Bancário
 
-	
-/*/
+    Doc Mit
+    https://docs.google.com/document/d/1htcTA49rCiDbOZdrZ20WHgJFGSp1QD0u/edit
+    Doc Entrega
+    
+    
+*/
 User Function JFINM014()
 
 If Select("SM0") == 0
