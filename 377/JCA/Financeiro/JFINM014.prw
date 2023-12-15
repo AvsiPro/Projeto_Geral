@@ -51,6 +51,18 @@ Static Function fWizard()
     Private oCombo1
     Private cCombo1:= aItems[1]
 	
+	Private cCliDe :=  SPACE(6)
+    Private cLojDe :=  SPACE(2)
+    Private cCliAt :=  'ZZZZZZ'
+    Private cLojAt :=  'ZZ'
+	Private dVenDe :=	 CTOD('01/01/00')
+	Private dVenAt :=	 CTOD('31/12/30')
+    Private nVlrDe :=  0
+	Private nVlrAt :=  999999999.99
+	Private cBanco := space(3)
+	Private cAgenc := space(5)
+	Private cConta := space(10)
+	Private cSubCt := space(3)
 	
     oStepWiz := FWWizardControl():New(,{600,850})//Instancia a classe FWWizardControl
 	oStepWiz:ActiveUISteps()
@@ -103,18 +115,7 @@ Return
 Static Function cria_pn0( oPanel As Object )
 
 	Local oFont As Object
-    Local cCliDe :=  SPACE(6)
-    Local cLojDe :=  SPACE(2)
-    Local cCliAt :=  'ZZZZZZ'
-    Local cLojAt :=  'ZZ'
-	Local dVenDe :=	 CTOD(' / / ')
-	Local dVenAt :=	 CTOD(' / / ')
-    Local nVlrDe :=  0
-	Local nVlrAt :=  0
-	Local cBanco := space(3)
-	Local cAgenc := space(5)
-	Local cConta := space(10)
-	Local cSubCt := space(3)
+    
 
     oFont := TFont():New(,,-25,.T.,.T.,,,,,)
 
@@ -142,6 +143,8 @@ Static Function cria_pn0( oPanel As Object )
     TSay():New(160,25,{|| "Valor ate?"},oPanel,,,,,,.T.,CLR_BLUE,)
 	oGet8     := TGet():New(160,85,{|u| If(PCount() > 0,nVlrAt := u,nVlrAt)},oPanel,60,10,PesqPict("SE1","E1_VALOR"),,,,,,,.T.,,,{|| .T.},,,,.F.,.F.,'','')
     
+	
+	
 	//TSay():New(020,245,{|| "Seleciona Filiais"},oPanel,,,,,,.T.,CLR_BLUE,)
 	//cCombo1:= aItems[1]   
     //oCombo1 := TComboBox():New(020,310,{|u|if(PCount()>0,cCombo1:=u,cCombo1)},aItems,50,20,oPanel,,{|| },,,,.T.,,,,,,,,,'cCombo1')
@@ -159,6 +162,23 @@ Static Function cria_pn0( oPanel As Object )
     TSay():New(80,245,{|| "Sub-Conta"},oPanel,,,,,,.T.,CLR_BLUE,)
 	oGet12     := TGet():New(80,310,{|u| If(PCount() > 0,cSubCt := u,cSubCt)},oPanel,40,10,PesqPict("SEE","EE_SUBCTA"),,,,,,,.T.,,,{|| .T.},,,,.F.,.F.,'','')
     
+	
+
+Return .t.
+
+
+/*/{Protheus.doc} cria_pn2
+	CriaÃ§Ã£o da segunda pÃ¡gina do Wizard.
+	Issue: TICONTIN-1534
+	@author Alexandre VenÃ¢ncio	
+	@since 07/08/2021
+/*/
+Static Function cria_pn2( oPanel As Object )
+
+	oFont := TFont():New(,,-25,.T.,.T.,,,,,)
+
+	oSay1 := TSay():New(10,15,{|| "Aguarde"},oPanel,,oFont,,,,.T.,CLR_GREEN,)
+
 	If !Empty(cSubCt)
 		MV_PAR19 := cSubCt
 	Else
@@ -177,26 +197,17 @@ Static Function cria_pn0( oPanel As Object )
 		MV_PAR21 := SUPERGETMV("TI_AGEBOL",.F.,'0005') //agencia 
 	EndIf 
 	
-	If !Empty(cSubCt)
-		MV_PAR22 := cSubCt
+	If !Empty(cConta)
+		MV_PAR22 := cConta
 	Else 
 		MV_PAR22 := SUPERGETMV("TI_CNTBOL",.F.,'139074') // conta
 	EndIf 
 
-Return .t.
+	
 
-
-/*/{Protheus.doc} cria_pn2
-	CriaÃ§Ã£o da segunda pÃ¡gina do Wizard.
-	Issue: TICONTIN-1534
-	@author Alexandre VenÃ¢ncio	
-	@since 07/08/2021
-/*/
-Static Function cria_pn2( oPanel As Object )
-
-	oFont := TFont():New(,,-25,.T.,.T.,,,,,)
-
-	U_JFINJ014a()
+	U_JFINJ014a(,,.F.)
+	
+	oSay1:settext("")
 
 	TSay():New(10,15,{|| "Envios realizados com sucesso!"},oPanel,,oFont,,,,.T.,CLR_GREEN,)
 
@@ -303,7 +314,7 @@ Return cRet
 ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
 */
 
-user function JFINJ014a(cCodEmp,cCodFil)
+user function JFINJ014a(cCodEmp,cCodFil,lAuto)
 
 	Local cQuery
 	Local cBody
@@ -321,7 +332,8 @@ user function JFINJ014a(cCodEmp,cCodFil)
 	Private cMarca  	:= GetMark()
 
 	Default cCodEmp := "01"
-	Default cCodFil := "01"
+	Default cCodFil := "00020667"
+	Default lAuto   := .T.
 
 	//Utilizando a nova classe de email para poder anexar corretamente o email ao corpo da mensagem.
 	// ************************************************************ //
@@ -355,8 +367,20 @@ user function JFINJ014a(cCodEmp,cCodFil)
 	cQuery += " FROM "+RetSQLName("SE1")+" E1"
 	cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_COD=E1_CLIENTE AND A1_LOJA=E1_LOJA AND A1.D_E_L_E_T_=''"
 	cQuery += " INNER JOIN "+RetSQLName("SED")+" ED ON ED_CODIGO=E1_NATUREZ AND ED.D_E_L_E_T_=''"
-	cQuery += " WHERE E1_VENCREA >= '"+DTOS(datavalida(dDtFour))+"' AND E1_BAIXA=' ' AND E1_PREFIXO <> 'CTR' "
-	cQuery += " AND E1.D_E_L_E_T_='' AND E1_PORTADO BETWEEN ' ' AND '999'"
+	
+	If lAuto
+		cQuery += " WHERE E1_VENCREA >= '"+DTOS(datavalida(dDtFour))+"' AND E1_BAIXA=' ' AND E1_PREFIXO <> 'CTR' "
+		cQuery += " AND E1.D_E_L_E_T_='' AND E1_PORTADO BETWEEN ' ' AND '999'"
+	Else 
+
+		cQuery += " WHERE E1_CLIENTE BETWEEN '"+cCliDe+"' AND '"+cCliAt+"'"
+		cQuery += " AND E1_LOJA BETWEEN '"+cLojDe+"' AND '"+cLojAt+"'"
+		cQuery += " AND E1_VENCREA BETWEEN '"+dtos(dVenDe)+"' AND '"+dtos(dVenAt)+"'"
+		cQuery += " AND E1_VALOR BETWEEN "+cvaltochar(nVlrDe)+" AND "+cvaltochar(nVlrAt)
+		cQuery += " AND E1_BAIXA=' ' AND E1_PREFIXO <> 'CTR' ""
+		cQuery += " AND E1.D_E_L_E_T_='' AND E1_PORTADO BETWEEN ' ' AND '999'"
+	EndIf 
+
 	cQuery += " AND E1_FILIAL='"+xFilial('SE1')+"'"
 	cQuery += " AND E1_TIPO NOT IN('RA','NCC')"
 	cQuery += " AND E1_TIPO NOT LIKE '%-%'"
@@ -386,12 +410,15 @@ user function JFINJ014a(cCodEmp,cCodFil)
 		MV_PAR04	:=	TRBLOC->E1_PARCELA
 
 		cMarca  	:= GetMark()
+		nVlrAbat := 0
 
 		lBolSeparado := .f.
 		aAreaTRBLOC := GetArea()
 		DbSelectArea("SE1")
         DbsetOrder(1)
         If Dbseek(TRBLOC->E1_FILIAL+MV_PAR01+MV_PAR02+MV_PAR03+TRBLOC->E1_TIPO) //+aChave[4])
+			nVlrAbat := SomaAbat(SE1->E1_PREFIXO,SE1->E1_NUM,SE1->E1_PARCELA,"R",1,,SE1->E1_CLIENTE,SE1->E1_LOJA)
+		
             Reclock("SE1",.F.)
             Replace E1_OK With cMarca
             MsUnLock()
@@ -407,7 +434,7 @@ user function JFINJ014a(cCodEmp,cCodFil)
 
 		RestArea(aAreaTRBLOC)
 		
-		cBody 		:=	Aviso_1(TRBLOC->E1_CODDIG,TRBLOC->A1_XBOL)
+		cBody 		:=	Aviso_1(TRBLOC->E1_CODDIG,TRBLOC->A1_XBOL,nVlrAbat)
 
 		If !'.pdf' $ cFileBol
 			cFileBol := alltrim(cFileBol)+'.pdf'
@@ -422,10 +449,10 @@ user function JFINJ014a(cCodEmp,cCodFil)
 
 		U_JGENX002(cDestino,cSubject,cBody,cNewloc,.F.)
 
-		cCorpo := TRBLOC->E1_CLIENTE+'#'+TRBLOC->E1_LOJA+'#'+TRBLOC->A1_NOME+'#'+TRBLOC->E1_PREFIXO+'#'+TRBLOC->E1_NUM+'#'+CVALTOCHAR(STOD(TRBLOC->E1_VENCREA))+'#'+Transform(TRBLOC->E1_VALOR,"@E 999,999,999.99")+'#'+TRBLOC->A1_EMAIL
+		cCorpo := TRBLOC->E1_CLIENTE+'#'+TRBLOC->E1_LOJA+'#'+TRBLOC->A1_NOME+'#'+TRBLOC->E1_PREFIXO+'#'+TRBLOC->E1_NUM+'#'+CVALTOCHAR(STOD(TRBLOC->E1_VENCREA))+'#'+Transform(TRBLOC->E1_VALOR-nVlrAbat,"@E 999,999,999.99")+'#'+TRBLOC->A1_EMAIL
 
 		FWrite(nArq,cCorpo+CRLF)
-		Aadd(aAvisFi,{TRBLOC->E1_CLIENTE,TRBLOC->E1_LOJA,TRBLOC->A1_NOME,TRBLOC->E1_PREFIXO+TRBLOC->E1_NUM,CVALTOCHAR(STOD(TRBLOC->E1_VENCREA)),Transform(TRBLOC->E1_VALOR,"@E 999,999,999.99"),TRBLOC->A1_EMAIL})
+		Aadd(aAvisFi,{TRBLOC->E1_CLIENTE,TRBLOC->E1_LOJA,TRBLOC->A1_NOME,TRBLOC->E1_PREFIXO+TRBLOC->E1_NUM,CVALTOCHAR(STOD(TRBLOC->E1_VENCREA)),Transform(TRBLOC->E1_VALOR-nVlrAbat,"@E 999,999,999.99"),TRBLOC->A1_EMAIL})
 		Aadd(aTitE1,TRBLOC->REGE1)
 		dbSelectArea("TRBLOC")
 		DbSkip()
@@ -857,7 +884,7 @@ Return
 ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
 */
 
-Static Function Aviso_1(cBoleto,cGerBol)
+Static Function Aviso_1(cBoleto,cGerBol,nVlrAbat)
 
 	Local aArea	:=	GetArea()
 
@@ -874,7 +901,7 @@ Static Function Aviso_1(cBoleto,cGerBol)
 	cHtml += "  <tr bgcolor='#d4e6f6'>"
 	cHtml += "    <td >Cedente:</td><td><b>"+Alltrim(SM0->M0_NOMECOM)+"</b></td></tr>"
 	cHtml += "    <tr bgcolor='#5592bb'><td>Sacado:</td><td><b>"+Alltrim(TRBLOC->A1_NOME)+"</b> CÓDIGO "+TRBLOC->E1_CLIENTE+TRBLOC->E1_LOJA+" CNPJ "+Transform(TRBLOC->A1_CGC,"@R 99.999.999/9999-99")+"</td></tr>"
-	cHtml += "    <tr bgcolor='#d4e6f6'><td>Valor:</td><td><b>R$ "+cvaltochar(Transform(TRBLOC->E1_VALOR,"@E 999,999,999.99"))+"</b></td></tr>"
+	cHtml += "    <tr bgcolor='#d4e6f6'><td>Valor:</td><td><b>R$ "+cvaltochar(Transform(TRBLOC->E1_VALOR-nVlrAbat,"@E 999,999,999.99"))+"</b></td></tr>"
 	cHtml += "    <tr bgcolor='#d4e6f6'><td>Vencimento:</td><td><b>"+cvaltochar(Stod(TRBLOC->E1_VENCREA))+"</b></td></tr>"
 	cHtml += "    <tr bgcolor='#d4e6f6'><td>Referência:</td><td><b>"+Alltrim(TRBLOC->ED_DESCRIC)+"</b></td></tr>"
 	cHtml += "</table><br><br><br>"
@@ -907,7 +934,7 @@ Static Function Aviso_1(cBoleto,cGerBol)
 
 		cHtml += "<br><br>"
 	else
-		cHtml += " <tr>"
+		/*cHtml += " <tr>"
 		cHtml += "  <td>Para agilizar o processo, estamos incluindo os dados bancários abaixo:</td>"
 		cHtml += " </tr>"
 		cHtml += " <tr>"
@@ -918,7 +945,7 @@ Static Function Aviso_1(cBoleto,cGerBol)
 		cHtml += " </tr>"
 		cHtml += " <tr>"
 		cHtml += "  <td>CC. 53663-5</td>"
-		cHtml += " </tr>"
+		cHtml += " </tr>"*/
 		cHtml += " <tr>"
 		cHtml += "  <td>Razão Social: "+Alltrim(SM0->M0_NOMECOM)+"</td>"
 		cHtml += " </tr>"
