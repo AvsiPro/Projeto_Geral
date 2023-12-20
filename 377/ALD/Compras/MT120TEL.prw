@@ -8,31 +8,30 @@ User Function MT120TEL()
     Local nRecPC    := PARAMIXB[5]
     Local aStatusP  := {}
     Public cXObsAux := ""
-    Public cOpcao
-    
-    //;;;;;;;                                  
-    aAdd(aStatusP , "1=Padrao")
-    aAdd(aStatusP , "2=Emergencial")
-    aAdd(aStatusP , "3=Teste")
-    aAdd(aStatusP , "4=Prova de Conceito")
-    aAdd(aStatusP , "5=Regularização")
-    aAdd(aStatusP , "6=VTR")
-    aAdd(aStatusP , "7=Contratação Direta")
+    Public cOpcAD
+                                     
+    aAdd(aStatusP , "1=Sim")
+    aAdd(aStatusP , "2=Não")
 
-    //cOpcao := aStatusP[1]
+    //cOpcAD := aStatusP[1]
     //Define o conteúdo para os campos
     SC7->(DbGoTo(nRecPC))
     If nOpcx == 3
-        cOpcao := CriaVar("C7_ZTPCOM",.F.)
+        cOpcAD := CriaVar("C7_XAD",.F.)
+        
     Else
-        cOpcao := SC7->C7_ZTPCOM
+        cOpcAD := SC7->C7_XAD
     EndIf
+
+    If Empty(cOpcAD)
+        cOpcAD := '2'
+    EndIf 
  
     //Criando na janela o campo OBS
-    @ 062, aPosGet[1,08] - 012 SAY Alltrim(RetTitle("C7_ZTPCOM")) OF oDlg PIXEL SIZE 050,006
+    @ 062, aPosGet[1,08] - 012 SAY Alltrim(RetTitle("C7_XAD")) OF oDlg PIXEL SIZE 050,006
     
     
-    @ 061, aPosGet[1,09] MSCOMBOBOX oEdit1 VAR cOpcao ITEMS aStatusP SIZE 140, 013 OF oDlg PIXEL COLORS 0, 16777215
+    @ 061, aPosGet[1,09] MSCOMBOBOX oEdit1 VAR cOpcAD ITEMS aStatusP SIZE 060, 012 OF oDlg PIXEL COLORS 0, 16777215
  
    
  
@@ -49,7 +48,7 @@ User Function MTA120G2()
     Local aArea := GetArea()
  
     //Atualiza a descrição, com a variável pública criada no ponto de entrada MT120TEL
-    SC7->C7_ZTPCOM := cXObsAux
+    SC7->C7_XAD := cOpcAD
  
     RestArea(aArea)
 Return
