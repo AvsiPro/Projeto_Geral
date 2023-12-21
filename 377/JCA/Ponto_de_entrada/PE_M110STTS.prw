@@ -26,6 +26,7 @@ Local nPosDesc  :=  Ascan(aHeader,{|x| Alltrim(x[2]) == "C1_DESCRI"})
 Local nPosQtd   :=  Ascan(aHeader,{|x| Alltrim(x[2]) == "C1_QUANT"})
 Local nPosVnt   :=  Ascan(aHeader,{|x| Alltrim(x[2]) == "C1_VUNIT"})
 Local nPosCC    :=  Ascan(aHeader,{|x| Alltrim(x[2]) == "C1_CC"})
+Local nPosQO    :=  Ascan(aHeader,{|x| Alltrim(x[2]) == "C1_QTDORIG"})
 
 Local nCont     :=  1
 Local nX        :=  1   
@@ -33,7 +34,7 @@ Local nZ        :=  1
 Local cFiEntr   :=  If(cvaltochar(nOpt) $ '1/2',CFILENT,'')
 
 
-If cvaltochar(nOpt) $ '1/2' .And. !lCopia
+If cvaltochar(nOpt) == '1'  .And. !lCopia // cvaltochar(nOpt) $ '1/2' .And. !lCopia
     For nCont := 1 to len(aCols)
         If empty(Posicione("SB1",1,xFilial("SB1")+aCols[nCont,nPosProd],"B1_XCODPAI"))
             aAux1 := U__SearchSon(aCols[nCont,nPosProd])
@@ -50,6 +51,8 @@ If cvaltochar(nOpt) $ '1/2' .And. !lCopia
                                 Aadd(aAux2,aAux1[nX,02])
                             ElseIf nZ == nPosItem
                                 Aadd(aAux2,"    ")
+                            ElseIf nZ == nPosQO
+                                Aadd(aAux2,aCols[nCont,nPosQtd])
                             Else 
                                 Aadd(aAux2,aCols[nCont,nZ])
                             EndIF

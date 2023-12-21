@@ -430,7 +430,7 @@ Do While !EOF()
                         
 	If Alltrim(SA6->A6_COD)=="237" .AND. AllTRim(SA6->A6_NUMCON)=="3677"
 		//BANCO BRADESCO CORRESPONDENTE REDASSET
-		aDadosBanco[8]:="RED S.A – CNPJ 67.915.785/0001-01"
+		aDadosBanco[8]:="RED S.A - CNPJ 67.915.785/0001-01"
 		aDadosBanco[9]:="Av. Cidade Jardim 400 -14º and. São Paulo/SP"
 		_lBcoCorrespondente := .T.
 	EndIf  
@@ -587,7 +587,7 @@ Do While !EOF()
    FErase('\spool\boleto.html')
 
    If oPrint:SaveAsHTML('\spool\boleto.html')
-      If MsgYesNo("Deseja enviar por e-mail?", "Boleto Laser")
+      /*If MsgYesNo("Deseja enviar por e-mail?", "Boleto Laser")
          //cFrom := "fiscal1@intercoffee.com.br" //"oficina@intercoffee.com.br" //
          cTo := rTrim( SA1->A1_EMAIL )
          cSubject := "Emissão de Boleto Laser - " + rTrim( aDadosTit[1] )
@@ -604,7 +604,7 @@ Do While !EOF()
 
 	    	DispEmail(cTo,cSubject,cBody,cAttach)
 
-      EndIf
+      EndIf*/
    EndIf
 Return Nil
 
@@ -733,6 +733,12 @@ ElseIf aDadosBanco[1] == "237"
 ElseIf aDadosBanco[1] == "422"                                              
 	oPrint:SayBitMap (750,100,"\Images\safra.bmp",500,120)
 	oPrint:SayBitMap (1870,100,"\Images\safra.bmp",500,120)
+ElseIf aDadosBanco[1] == "756"                                              
+	oPrint:SayBitMap (750,100,"\Images\sicoob.bmp",200,120)
+	oPrint:SayBitMap (1870,100,"\Images\sicoob.bmp",200,120)
+ElseIf aDadosBanco[1] == "748"                                              
+	oPrint:SayBitMap (750,100,"\Images\sicredi.bmp",200,120)
+	oPrint:SayBitMap (1870,100,"\Images\sicredi.bmp",200,120)
 ElseIf aDadosBanco[1] == "084"                                              
 	oPrint:SayBitMap (750,100,"\Images\prime.bmp",500,120)
 	oPrint:SayBitMap (1870,100,"\Images\prime.bmp",500,120)
@@ -1633,7 +1639,7 @@ Elseif Substr(cBanco,1,3) == "422"  // Banco Safra --- Ajustado nosso número com
 	//cCpoLivre := "7"+StrZero(Val(cAgencia),4) + StrZero(Val(cConta),10) + cDacCC + cNNum + "2"
 	cCpoLivre := "7"+StrZero(Val(cAgencia),4) + StrZero(Val(cConta),10) + cNNum + "2"
 
-Elseif Substr(cBanco,1,3) == "237" // Banco Bradesco    -- CARTEIRA + SEQUENCIAL COM 11 POSIÇÕES
+Elseif Substr(cBanco,1,3) $ "237/748/756" // Banco Bradesco    -- CARTEIRA + SEQUENCIAL COM 11 POSIÇÕES
 
 	//Nosso Numero sem digito
 	if empty(SE1->E1_NUMBCO)
