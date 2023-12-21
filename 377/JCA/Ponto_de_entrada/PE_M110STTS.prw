@@ -102,6 +102,25 @@ If cvaltochar(nOpt) == '1'  .And. !lCopia // cvaltochar(nOpt) $ '1/2' .And. !lCo
     
 EndIf
 
+If cvaltochar(nOpt) == '2'
+    
+    For nCont := 1 to len(aCols)
+        If empty(Posicione("SB1",1,xFilial("SB1")+aCols[nCont,nPosProd],"B1_XCODPAI")) .And. aCols[nCont,len(aHeader)+1]
+            For nX := nCont+1 to len(aCols)
+                IF Alltrim(aCols[nCont,nPosProd]) == Alltrim(Posicione("SB1",1,xFilial("SB1")+aCols[nX,nPosProd],"B1_XCODPAI"))
+                    DbSelectArea("SC1")
+                    DbSetOrder(1)
+                    If Dbseek(xFilial("SC1")+cNumSol+aCols[nX,nPosItem])
+                        Reclock("SC1",.F.)
+                        SC1->(DbDelete())
+                        SC1->(Msunlock())
+                    EndIf 
+                EndIf 
+            Next nX
+        ENDIF
+    Next nCont
+EndIf 
+
 Return Nil
 
 /*/{Protheus.doc} _SearchSon

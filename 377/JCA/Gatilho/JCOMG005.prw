@@ -26,7 +26,6 @@ If Altera
     //Solicitado pelo Caio em 20/12 para permitir incluir produtos filhos na solicitação quando o pai nao estiver.
     If (!lPrdPai .And. nPaiCols > 0) .or. lPrdPai
 
-    //Else 
         If lQtdAlt .AND. !lPrdPai
             MsgAlert("Somente pode ser alterada a quantidade do produto pai","JCOMG005")
             aCols[n,nPosQtd] := aCols[n,nPosQtO]
