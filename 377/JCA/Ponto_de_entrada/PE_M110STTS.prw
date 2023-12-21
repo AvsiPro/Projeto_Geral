@@ -103,7 +103,7 @@ If cvaltochar(nOpt) == '1'  .And. !lCopia // cvaltochar(nOpt) $ '1/2' .And. !lCo
 EndIf
 
 If cvaltochar(nOpt) == '2'
-    
+    //Solicitado pelo Caio em 20/12/23 para quando excluir o produto pai na solicitação, excluir os filhos tambem.
     For nCont := 1 to len(aCols)
         If empty(Posicione("SB1",1,xFilial("SB1")+aCols[nCont,nPosProd],"B1_XCODPAI")) .And. aCols[nCont,len(aHeader)+1]
             For nX := nCont+1 to len(aCols)
