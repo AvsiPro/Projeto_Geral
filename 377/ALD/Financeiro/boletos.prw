@@ -1293,7 +1293,8 @@ Return(D)
 
 static Function Modulo11(cData,cBanc)
 
-Local L, D, P := 0     
+Local L, D, P := 0
+Local cCnst    
 
 cData:=alltrim(cData)                    
 
@@ -1404,6 +1405,25 @@ ElseIf cBanc == "237"
    Else
 	  D := AllTrim(Str(D))         
    End           
+ElseIf cBanc == '756'
+	cCnst := '319731973197319731973'
+	L := Len(cdata) 
+   	D := 0
+   	While L > 0 
+      	D := D + (Val(SubStr(cData, L, 1)) * Val(SubStr(cCnst, L, 1)))
+      	L := L - 1
+   	End
+
+	D := 11 - (mod(D,11))  
+   
+   /*If (D == 10 .Or. D == 11) 
+      D := 1
+   End
+   If (D == 1 .Or. D == 0)
+      D := 0
+   End*/
+   D := AllTrim(Str(D))
+
 ElseIf cBanc == "389" //Mercantil
    L := Len(cdata)
    D := 0
@@ -1527,7 +1547,7 @@ Else
       P := P + 1
       D := D + (Val(SubStr(cData, L, 1)) * P)
       If P = 9 
-         P := 1
+         P := 2
       End
       L := L - 1
    End
@@ -1639,7 +1659,32 @@ Elseif Substr(cBanco,1,3) == "422"  // Banco Safra --- Ajustado nosso número com
 	//cCpoLivre := "7"+StrZero(Val(cAgencia),4) + StrZero(Val(cConta),10) + cDacCC + cNNum + "2"
 	cCpoLivre := "7"+StrZero(Val(cAgencia),4) + StrZero(Val(cConta),10) + cNNum + "2"
 
-Elseif Substr(cBanco,1,3) $ "237/748/756" // Banco Bradesco    -- CARTEIRA + SEQUENCIAL COM 11 POSIÇÕES
+ElseIf Substr(cBanco,1,3) $ '756'
+	//Nosso Numero sem digito
+	if empty(SE1->E1_NUMBCO)
+		pNumero := val(SEE->EE_FAXATU) + 1		                          		
+	
+		cNNumSDig := strzero(pNumero,7)
+
+				
+	else
+	             
+		cNNumSDig := alltrim(SE1->E1_NUMBCO)
+		
+	endif    
+
+	cCarteira := alltrim(cCarteira)
+
+	//Nosso Numero sem digito
+	cNumbco	:= cNNumSDig 
+	cCoop 	:= strzero(val(strtran(_cAgCompleta,"-")),4)
+	cNumCli := strzero(val(cconvenio),10)
+
+	cNossoNum := cCarteira + '/' + cNumbco + '-' + Modulo11(cCoop+cNumCli+cNNumSDig,SubStr(cBanco,1,3))	
+
+	cCpoLivre := substr(cCarteira,1,1) + cCoop + substr(cCarteira,2,2) + StrZero(Val(cNumCli),7) + strtran(substr(cNossoNum,5),"-") + strzero(If(val(_cParcela)<1,1,val(_cParcela)),3)
+
+Elseif Substr(cBanco,1,3) $ "237/748" // Banco Bradesco    -- CARTEIRA + SEQUENCIAL COM 11 POSIÇÕES
 
 	//Nosso Numero sem digito
 	if empty(SE1->E1_NUMBCO)
@@ -1860,10 +1905,10 @@ Endif
 cCBSemDig := cBanco + cFatVenc + blvalorfinal + cCpoLivre         
 
 //Codigo de Barras Completo
-If substr(cBanco,1,3) <> '084'
+If !substr(cBanco,1,3) $ '084/756'
 	cCodBarra := cBanco + Modulo11(cCBSemDig,substr(cBanco,1,3)) + cFatVenc + blvalorfinal + cCpoLivre      
 Else
-	cCodBarra := cBanco + Modulo11(cCBSemDig,'999') + cFatVenc + blvalorfinal + cCpoLivre      
+	cCodBarra := cBanco + Modulo11(cCBSemDig,If(substr(cBanco,1,3)=='756','237','999')) + cFatVenc + blvalorfinal + cCpoLivre      
 EndIf
 //Digito Verificador do Primeiro Campo                  
 cPrCpo := cBanco + SubStr(cCodBarra,20,5)
