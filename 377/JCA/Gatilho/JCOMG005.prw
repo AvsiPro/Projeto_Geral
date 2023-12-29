@@ -32,9 +32,11 @@ If Altera
             M->C1_QUANT      := aCols[n,nPosQtO]
             nRet             := aCols[n,nPosQtO]
         Else 
+            aCols[n,nPosQtO] := aCols[n,nPosQtd]
             For nCont := 1 to len(aCols)
                 If Alltrim(Posicione("SB1",1,xFilial("SB1")+aCols[nCont,nPosPrd],"B1_XCODPAI")) == alltrim(aCols[n,nPosPrd])
                     aCols[nCont,nPosQtd] := aCols[n,nPosQtd]
+                    aCols[nCont,nPosQtO] := aCols[n,nPosQtd]
                 EndIf 
             Next nCont
         EndIf
