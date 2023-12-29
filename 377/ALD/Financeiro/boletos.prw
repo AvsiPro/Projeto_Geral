@@ -426,7 +426,8 @@ Do While !EOF()
                        Iif(SA6->A6_COD $ "479/389/033","",SA6->A6_DVCTA)  ,; //5-Dígito da conta corrente
 			           alltrim(SEE->EE_CODCART) ,;   //6-Carteira
 			            "",;
-                        "",""}                //8-Reservado para o banco correspondente
+                        "",;
+						""}                //8-Reservado para o banco correspondente
                         
 	If Alltrim(SA6->A6_COD)=="237" .AND. AllTRim(SA6->A6_NUMCON)=="3677"
 		//BANCO BRADESCO CORRESPONDENTE REDASSET
@@ -809,6 +810,8 @@ ElseIf aDadosBanco[1] == "399"   //SE HSBC
 	oPrint:Say  (450,100,aDadosBanco[3]+'-'+aDadosBanco[4]+Iif(!Empty(aDadosBanco[5]),"-"+aDadosBanco[5],""),oFont10)
 ElseIf aDadosBanco[1] == "422"   //SE SAFRA 
 	oPrint:Say  (450,100,aDadosBanco[3]+' / '+aDadosBanco[4],oFont10)	//+Iif(!Empty(aDadosBanco[5]),"-"+aDadosBanco[5],"")
+ElseIF aDadosBanco[1] == "756"
+	oPrint:Say  (450,100,aDadosBanco[3]+' / '+SuperGetMv("TI_CDCLSIC",.F.,"183735-4"),oFont10)	//+Iif(!Empty(aDadosBanco[5]),"-"+aDadosBanco[5],"")
 Else
 	oPrint:Say  (450,100,aDadosBanco[3]+"/"+aDadosBanco[4]+Iif(!Empty(aDadosBanco[5]),"-"+aDadosBanco[5],""),oFont10)
 Endif	
@@ -929,6 +932,8 @@ ElseIf aDadosBanco[1] == "399"   //SE HSBC
 	oPrint:Say  (1010,nLbco,aDadosBanco[3]+'-'+aDadosBanco[4]+Iif(!Empty(aDadosBanco[5]),"-"+aDadosBanco[5],""),oFont10)
 ElseIf aDadosBanco[1] == "422"   //SE SAFRA 
 	oPrint:Say  (1010,nLbco,aDadosBanco[3]+' / '+aDadosBanco[4],oFont10)	//+Iif(!Empty(aDadosBanco[5]),"-"+aDadosBanco[5],"")	
+ElseIF aDadosBanco[1] == "756"
+	oPrint:Say  (1010,nLbco,aDadosBanco[3]+' / '+SuperGetMv("TI_CDCLSIC",.F.,"183735-4"),oFont10)	//+Iif(!Empty(aDadosBanco[5]),"-"+aDadosBanco[5],"")
 Else
 	oPrint:Say  (1010,nLbco,AllTrim(aDadosBanco[3]+"/"+aDadosBanco[4]+Iif(!Empty(aDadosBanco[5]),"-"+aDadosBanco[5],"")),oFont10)
 Endif	
@@ -1112,6 +1117,8 @@ ElseIf aDadosBanco[1] == "399"   //SE HSBC
 	oPrint:Say  (2130,nLbco,aDadosBanco[3]+'-'+aDadosBanco[4]+Iif(!Empty(aDadosBanco[5]),"-"+aDadosBanco[5],""),oFont10)
 ElseIf aDadosBanco[1] == "422"   //SE SAFRA 
 	oPrint:Say  (2130,nLbco,aDadosBanco[3]+' / '+aDadosBanco[4],oFont10)	 //+Iif(!Empty(aDadosBanco[5]),"-"+aDadosBanco[5],"")	
+ElseIF aDadosBanco[1] == "756"
+	oPrint:Say  (2130,nLbco,aDadosBanco[3]+' / '+SuperGetMv("TI_CDCLSIC",.F.,"183735-4"),oFont10)	//+Iif(!Empty(aDadosBanco[5]),"-"+aDadosBanco[5],"")
 Else
 	oPrint:Say  (2130,nLbco,AllTrim(aDadosBanco[3]+"/"+aDadosBanco[4]+Iif(!Empty(aDadosBanco[5]),"-"+aDadosBanco[5],"")),oFont10)
 Endif	
@@ -1684,7 +1691,39 @@ ElseIf Substr(cBanco,1,3) $ '756'
 
 	cCpoLivre := substr(cCarteira,1,1) + cCoop + substr(cCarteira,2,2) + StrZero(Val(cNumCli),7) + strtran(substr(cNossoNum,5),"-") + strzero(If(val(_cParcela)<1,1,val(_cParcela)),3)
 
-Elseif Substr(cBanco,1,3) $ "237/748" // Banco Bradesco    -- CARTEIRA + SEQUENCIAL COM 11 POSIÇÕES
+ElseIf Substr(cBanco,1,3) == "748"
+	//Nosso Numero sem digito
+	if empty(SE1->E1_NUMBCO)
+	
+
+		pNumero := val(SEE->EE_FAXATU) + 1		                          		
+	
+		cNNumSDig := strzero(pNumero,5)
+
+				
+	else
+	             
+		cNNumSDig := alltrim(SE1->E1_NUMBCO)
+		
+	endif             
+	
+	cCarteira := substr(cvaltochar(year(ddatabase)),3)//alltrim(cCarteira)
+
+	//Nosso Numero sem digito
+	cNumbco	:= If(len(cNNumSDig)==5,'2','')+cNNumSDig 		                 	
+
+	//Nosso Numero
+
+	cNNum := cCarteira + '/' + cNumbco + '-' + Modulo11(cCarteira+cNNumSDig,SubStr(cBanco,1,3))	 
+	
+	//Nosso Numero para impressao
+
+	cNossoNum := cCarteira + '/' + cNumbco + '-' + Modulo11(cCarteira+cNNumSDig,SubStr(cBanco,1,3))	
+
+	cCpoLivre := '11' + strtran(strtran(cNossoNum,"/"),"-") +cAgencia + '00' + StrZero(Val(cConta),5) +'1' + '0' 
+	cCpoLivre := cCpoLivre + Modulo11(cCpoLivre,SubStr(cBanco,1,3))
+	
+Elseif Substr(cBanco,1,3) == "237" // Banco Bradesco    -- CARTEIRA + SEQUENCIAL COM 11 POSIÇÕES
 
 	//Nosso Numero sem digito
 	if empty(SE1->E1_NUMBCO)
@@ -1719,7 +1758,7 @@ Elseif Substr(cBanco,1,3) $ "237/748" // Banco Bradesco    -- CARTEIRA + SEQUENC
 
 	cCpoLivre := cAgencia + cCarteira + cNNumSDig + StrZero(Val(cConta),7) + "0"   
 
-	Elseif Substr(cBanco,1,3) == "084" // Banco Bradesco    -- CARTEIRA + SEQUENCIAL COM 11 POSIÇÕES
+Elseif Substr(cBanco,1,3) == "084" // Banco Bradesco    -- CARTEIRA + SEQUENCIAL COM 11 POSIÇÕES
 
 	//Nosso Numero sem digito
 	if empty(SE1->E1_NUMBCO)

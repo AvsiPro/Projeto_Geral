@@ -34,9 +34,10 @@ Local nZ        :=  1
 Local cFiEntr   :=  If(cvaltochar(nOpt) $ '1/2',CFILENT,'')
 
 
-If cvaltochar(nOpt) == '1'  .And. !lCopia // cvaltochar(nOpt) $ '1/2' .And. !lCopia
+//If cvaltochar(nOpt) == '1'  .And. !lCopia //
+If cvaltochar(nOpt) $ '1/2' .And. !lCopia
     For nCont := 1 to len(aCols)
-        If empty(Posicione("SB1",1,xFilial("SB1")+aCols[nCont,nPosProd],"B1_XCODPAI"))
+        If empty(Posicione("SB1",1,xFilial("SB1")+aCols[nCont,nPosProd],"B1_XCODPAI")) .And. aCols[nCont,len(aHeader)] == 0
             aAux1 := U__SearchSon(aCols[nCont,nPosProd])
             If len(aAux1) > 0
                 For nX := 1 to len(aAux1)
@@ -71,7 +72,7 @@ If cvaltochar(nOpt) == '1'  .And. !lCopia // cvaltochar(nOpt) $ '1/2' .And. !lCo
     For nCont := 1 to len(aCols)
         If Empty(aCols[nCont,nPosItem])
 
-            aCols[nCont,nPosItem] := strzero(nCont,4)
+            aCols[nCont,nPosItem] := proxitm(cFilant,cNumSol)
 
             aBlock := xBloqCC(aCols[nCont,nPosCC])
 
@@ -248,3 +249,40 @@ Next nP
 RestArea(aArea)
 
 Return
+
+/*/{Protheus.doc} proxitm
+    (long_description)
+    @type  Static Function
+    @author user
+    @since 22/12/2023
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function proxitm(cFilant,cNumsol)
+
+Local aArea := GetArea()
+Local cRet  := ''
+Local cQuery 
+
+cQuery := "SELECT MAX(C1_ITEM)+1 AS PROX FROM "+RetSQLName("SC1")
+cQuery += " WHERE C1_FILIAL='"+cFilant+"' AND C1_NUM='"+cNumsol+"' AND D_E_L_E_T_=' '"
+
+IF Select('TRB') > 0
+    dbSelectArea('TRB')
+    dbCloseArea()
+ENDIF
+
+MemoWrite("MT110GRV.SQL",cQuery)
+DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
+
+DbSelectArea("TRB")
+
+cRet := strzero(TRB->PROX,4)
+
+RestArea(aArea)
+
+Return(cRet)
