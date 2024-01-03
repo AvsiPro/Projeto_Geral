@@ -95,7 +95,7 @@ WsMethod POST WsReceive RECEIVE WsService JWSRA001
 
             If cTipOper == "1"
                 For nCont := 1 to len(aObrig1)
-                    lOk := JsonObject:hasProperty(aObrig1[nCont])
+                    lOk := oBody:hasProperty(aObrig1[nCont])
                     If !lOk
                         cCode 	 := "#400"
                         cMessage += "#erro_cliente "
@@ -103,14 +103,23 @@ WsMethod POST WsReceive RECEIVE WsService JWSRA001
                     EndIf 
                 Next nCont
             ElseIf cTipOper == "2"
-                For nCont := 1 to len(aObrig1)
-                    lOk := JsonObject:hasProperty(aObrig1[nCont])
+                For nCont := 1 to len(aObrig2)
+                    lOk := oBody:hasProperty(aObrig2[nCont])
                     If !lOk
                         cCode 	 := "#400"
                         cMessage += "#erro_cliente "
-                        cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"campo_obrigatorio" : "'+"Campo nao informado "+aObrig1[nCont]+'"'
+                        cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"campo_obrigatorio" : "'+"Campo nao informado "+aObrig2[nCont]+'"'
                     EndIf
                 Next nCont
+            ElseIf cTipOper == "3"
+                For nCont := 1 to len(aObrig3)
+                    lOk := oBody:hasProperty(aObrig3[nCont])
+                    If !lOk
+                        cCode 	 := "#400"
+                        cMessage += "#erro_cliente "
+                        cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"campo_obrigatorio" : "'+"Campo nao informado "+aObrig3[nCont]+'"'
+                    EndIf
+                Next nCont    
             Endif 
 
             lTitImp := oBody:GetJsonValue("Impostos", @aTitImp,  @keyType)
