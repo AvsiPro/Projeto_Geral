@@ -561,6 +561,8 @@ Do While !EOF()
 		  ElseIf SA6->A6_COD == "237"
 		  		SE1->E1_NUMBCO := strtran(SUBSTR(CB_RN_NN[3],4,13),"-")
 	      		//SE1->E1_X_NOSSO:= strtran(SUBSTR(CB_RN_NN[3],4,13),"-")
+		  ElseIf SA6->A6_COD == "748"
+		  		SE1->E1_NUMBCO := strtran(strtran(CB_RN_NN[3],"-"),"/")
 		  Else		
 		  		SE1->E1_NUMBCO := cNumbco   
 		  		//SE1->E1_X_NOSSO:= cNumbco   
@@ -1545,7 +1547,24 @@ ElseIf cBanc == "084"  //UNIPRIME
    If (D == 10 .Or. D == 11)
       D := 1
    End
-   D := AllTrim(Str(D))   
+   D := AllTrim(Str(D))  
+ElseIf cBanc == '748'
+   L := Len(cdata)
+   D := 0
+   P := 1
+   While L > 0 
+      P := P + 1
+      D := D + (Val(SubStr(cData, L, 1)) * P)
+      If P = 9 
+         P := 1
+      End
+      L := L - 1
+   End
+   D := 11 - (mod(D,11))
+   If (D == 10 .Or. D == 11)
+      D := 0
+   End
+   D := AllTrim(Str(D))  
 Else
    L := Len(cdata)
    D := 0
@@ -1714,13 +1733,15 @@ ElseIf Substr(cBanco,1,3) == "748"
 
 	//Nosso Numero
 
-	cNNum := cCarteira + '/' + cNumbco + '-' + Modulo11(cCarteira+cNNumSDig,SubStr(cBanco,1,3))	 
+	cNNum := cCarteira + '/' + cNumbco + '-' + Modulo11(Alltrim(SA6->A6_AGENCIA)+'22'+Alltrim(SA6->A6_NUMCON)+cCarteira+cNumbco,SubStr(cBanco,1,3))
+	//Modulo11(cCarteira+cNNumSDig,SubStr(cBanco,1,3))	 
 	
 	//Nosso Numero para impressao
 
-	cNossoNum := cCarteira + '/' + cNumbco + '-' + Modulo11(cCarteira+cNNumSDig,SubStr(cBanco,1,3))	
+	cNossoNum := cCarteira + '/' + cNumbco + '-' + Modulo11(Alltrim(SA6->A6_AGENCIA)+'22'+Alltrim(SA6->A6_NUMCON)+cCarteira+cNumbco,SubStr(cBanco,1,3))
+	//Modulo11(cCarteira+cNNumSDig,SubStr(cBanco,1,3))	
 
-	cCpoLivre := '11' + strtran(strtran(cNossoNum,"/"),"-") +cAgencia + '00' + StrZero(Val(cConta),5) +'1' + '0' 
+	cCpoLivre := '11' + strtran(strtran(cNossoNum,"/"),"-") + Alltrim(SA6->A6_AGENCIA) + '22' + StrZero(Val(Alltrim(SA6->A6_NUMCON)),5) +'1' + '0' 
 	cCpoLivre := cCpoLivre + Modulo11(cCpoLivre,SubStr(cBanco,1,3))
 	
 Elseif Substr(cBanco,1,3) == "237" // Banco Bradesco    -- CARTEIRA + SEQUENCIAL COM 11 POSIÇÕES
@@ -1978,6 +1999,8 @@ cLinDig += "  " + SubStr(cCodBarra,6,4)+SubStr(cCodBarra,10,10)  // fator de ven
 
 If substr(cbanco,1,3) == "422"
 	cNossoNum := substr(cNossoNum,1,9)
+ElseIF substr(cbanco,1,3) == "756"
+	cNossoNum := strtran(substr(cNossoNum,5),"-")
 ENDIF
 
 Return({cCodBarra,cLinDig,cNossoNum})
