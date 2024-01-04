@@ -28,6 +28,8 @@ USER FUNCTION JMULT001()
     oBrowse:AddLegend( "ZPD->ZPD_STATUS = '2'", "GREEN" ,   "Liberado" )
 
     oBrowse:AddLegend( "ZPD->ZPD_STATUS = '3'", "RED"   ,   "Bloqueado" )
+
+    oBrowse:AddLegend( "ZPD->ZPD_STATUS = '4'", "BROWN" ,   "Titulo Gerado" )
      
     //Filtrando
     //oBrowse:SetFilterDefault("ZPD->ZPD_CODIGO >= '000000' .And. ZPD->ZPD_CODIGO <= 'ZZZZZZ'")
@@ -137,6 +139,8 @@ USER FUNCTION ZPDLeg()
     AADD(aLegenda,{"BR_LARANJA" ,           "Aguardando Liberação"  })
     AADD(aLegenda,{"BR_VERDE"   ,           "Liberado"              })
     AADD(aLegenda,{"BR_VERMELHO",           "Rejeitado"             })
+    AADD(aLegenda,{"BR_MARROM"  ,           "Titulos Gerado"        })
+    
      
     BrwLegenda(cTitulo, "Status", aLegenda)
 RETURN
@@ -343,6 +347,8 @@ Return
     /*/
 User Function xJMult02
 
+Local aParamBox	:= {}
+
 Private aList   := {}
 Private oList 
 Private oOk   	:= LoadBitmap(GetResources(),'br_verde')       //Controla se o pedido foi alterado ou nao no grid.
@@ -367,6 +373,8 @@ Else
 
     If ParamBox(aParamBox,"Registros",/*aRet*/,/*bOk*/,/*aButtons*/,.T.,,,,FUNNAME(),.T.,.T.)
         cCombo := MV_PAR01 
+    Else 
+        Return
     EndIf 
 
     aList := Busca(cCombo)
