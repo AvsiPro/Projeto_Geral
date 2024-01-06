@@ -50,7 +50,7 @@ STATIC FUNCTION MenuDef()
     ADD OPTION aRot TITLE 'Visualizar'          ACTION 'VIEWDEF.JMULT001' OPERATION MODEL_OPERATION_VIEW   ACCESS 0 //OPERATION 1
     ADD OPTION aRot TITLE 'Legenda'             ACTION 'U_ZPDLeg'         OPERATION 6                      ACCESS 0 //OPERATION X
     ADD OPTION aRot TITLE 'Negociação'          ACTION 'U_xJMult01'       OPERATION MODEL_OPERATION_INSERT ACCESS 0 //OPERATION 3
-    ADD OPTION aRot TITLE 'Gerar Movimentação'  ACTION 'VIEWDEF.JMULT001' OPERATION MODEL_OPERATION_UPDATE ACCESS 0 //OPERATION 4
+    ADD OPTION aRot TITLE 'Gerar Movimentação'  ACTION 'U_xJMult03'       OPERATION MODEL_OPERATION_UPDATE ACCESS 0 //OPERATION 4
     ADD OPTION aRot TITLE 'Aprovações'          ACTION 'U_xJMult02'       OPERATION MODEL_OPERATION_UPDATE ACCESS 0 //OPERATION 5
     ADD OPTION aRot TITLE 'Excluir'             ACTION 'VIEWDEF.JMULT001' OPERATION MODEL_OPERATION_DELETE ACCESS 0 //OPERATION 6
  
@@ -487,23 +487,27 @@ Return(aRet)
     (examples)
     @see (links_or_references)
 /*/
-Static Function inverte(nOpc)
+Static Function inverte(nOpc,nCham)
 
 Local nX := 0
 
+Default nCham := 0
+
 If nOpc == 1
-    If Empty(aList[oList:nAt,10])
+    If Empty(aList[oList:nAt,10]) .or. (nCham == 1 .And. Empty(aList[oList:nAt,18]))
         If aList[oList:nAt,01]
             aList[oList:nAt,01] := .F.
         Else 
             aList[oList:nAt,01] := .T.
         EndIf
     Else 
-        If aList[oList:nAt,10] == "A"
-            MsgAlert("Liberação já executada para item")
-        Else 
-            MsgAlert("Rejeição já executada para item")
-        EndIf 
+        If nCham <> 1
+            If aList[oList:nAt,10] == "A"
+                MsgAlert("Liberação já executada para item")
+            Else 
+                MsgAlert("Rejeição já executada para item")
+            EndIf 
+        EndIf
     EndIf
 Else 
     For nX := 1 to len(aList)
@@ -553,6 +557,260 @@ For nX := 1 to len(aList)
         aList[nX,01] := .F.
     EndIf 
 Next nX 
+
+MsgAlert("Processo finalizado")
+
+oList:refresh()
+oDlg1:refresh()
+
+RestArea(aArea)
+
+Return
+
+
+/*/{Protheus.doc} Gerar movimentações de descontos
+    @type  Function
+    @author user
+    @since 04/01/2024
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+    /*/
+User Function xJMult03
+
+Local aArea     := GetArea()
+Local cQuery    
+Local nCont     :=  0
+Local aTipos    := {{'M','Multa'},{'S','Sinistro'}}
+Local aVinculo  := {{'1','RH'},{'2','Contas a Pagar'},{'3','Contas a Receber'}}
+Local nPos1
+Local nPos2 
+
+Private aList   :=  {}
+Private oList 
+Private oOk   	:= LoadBitmap(GetResources(),'br_verde')       //Controla se o pedido foi alterado ou nao no grid.
+Private oNo   	:= LoadBitmap(GetResources(),'br_vermelho')  
+Private oMb   	:= LoadBitmap(GetResources(),'br_laranja')  
+
+
+SetPrvt("oDlg1","oGrp1","oBrw1","oBtn1","oBtn2")
+
+If Empty(FunName())
+    RpcSetType(3)
+    RPCSetEnv("01","00020087")
+EndIf
+
+cQuery := "SELECT ZPD_FILIAL,ZPD_CODIGO,ZPD_TIPO,ZPD_VINCUL,ZPD_TABELA,ZPD_VERBA,ZPD_VALOR,ZPD_PARCEL,A1_LOJA,A2_LOJA,"
+cQuery += " ZPD_VALOR/ZPD_PARCEL AS PARCELAS,ZPD_DTINIC,ZPD_RESPON,RA_NOME,RA_CIC,A2_COD,A1_COD,ZPD.R_E_C_N_O_ AS RECZPD"
+cQuery += "  FROM "+RetSQLName("ZPD")+" ZPD"
+cQuery += "  INNER JOIN "+RetSQLName("SRA")+" RA ON RA_FILIAL=ZPD_FILIAL AND RA_MAT=ZPD_RESPON AND RA.D_E_L_E_T_=' '"
+cQuery += "  LEFT JOIN "+RetSQLName("SA2")+" A2 ON A2_FILIAL='"+xFilial("SA2")+"' AND A2_CGC=RA_CIC AND A2.D_E_L_E_T_=' '"
+cQuery += "  LEFT JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_CGC=RA_CIC AND A1.D_E_L_E_T_=' '"
+cQuery += "  WHERE ZPD.D_E_L_E_T_=' '"
+cQuery += "  AND ZPD_FILIAL BETWEEN ' ' AND 'ZZ'"
+cQuery += "  AND ZPD_STATUS='2'"
+
+
+IF Select('TRB') > 0
+    dbSelectArea('TRB')
+    dbCloseArea()
+ENDIF
+
+MemoWrite("TIINCP01.SQL",cQuery)
+DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
+
+DbSelectArea("TRB")
+
+While !EOF()
+    For nCont := 1 to TRB->ZPD_PARCEL
+        nPos1 := Ascan(aTipos,{|x| x[1] == Alltrim(TRB->ZPD_TIPO)})
+        nPos2 := Ascan(aVinculo,{|x| x[1] == Alltrim(TRB->ZPD_VINCUL)})
+
+        Aadd(aList,{ .t.,;
+                    TRB->ZPD_FILIAL,;
+                    TRB->ZPD_CODIGO,;
+                    If(nPos1>0,aTipos[nPos1,02],TRB->ZPD_TIPO),;
+                    TRB->RA_NOME,;
+                    TRB->ZPD_VALOR,;
+                    nCont,;
+                    TRB->PARCELAS,;
+                    If(nCont>1,stod(TRB->ZPD_DTINIC)+((nCont-1)*30),stod(TRB->ZPD_DTINIC)),;
+                    If(nPos2>0,aVinculo[nPos2,02],TRB->ZPD_VINCUL),;
+                    TRB->ZPD_TABELA,;
+                    TRB->ZPD_VERBA,;
+                    TRB->ZPD_RESPON,;
+                    TRB->RA_CIC,;
+                    TRB->A2_COD,;
+                    TRB->A1_COD,;
+                    TRB->RECZPD,;
+                    '',;
+                    TRB->A2_LOJA,;
+                    TRB->A1_LOJA})
+    Next nCont
+    Dbskip()
+EndDo 
+
+IF len(aList) > 0
+
+    oDlg1      := MSDialog():New( 092,232,661,1637,"Integração dos Titulos",,,.F.,,,,,,.T.,,,.T. )
+
+        oGrp1      := TGroup():New( 004,004,256,692,"Titulos",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
+        //oBrw1      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{012,008,252,688},,, oGrp1 ) 
+        oList    := TCBrowse():New(012,008,670,240,, {'','Filial','Código','Tipo','Nome','Valor Total','Parcela','Valor Parcelas','Data Inicio','Gerar Titulo em'},;
+                                                        {10,50,50,50,100,50,50,50,50,100},;
+                                                        oGrp1,,,,{|| /*FHelp(oList:nAt)*/},{|| inverte(1,1)},, ,,,  ,,.F.,,.T.,,.F.,,,)
+        oList:SetArray(aList)
+        oList:bLine := {||{ If( aList[oList:nAt,01],oOk,If(Empty(aList[oList:nAt,18]),oNo,oMb)),;
+                                aList[oList:nAt,02],; 
+                                aList[oList:nAt,03],;
+                                aList[oList:nAt,04],; 
+                                aList[oList:nAt,05],;
+                                Transform(aList[oList:nAt,06],"@E 999,999,999.99"),; 
+                                aList[oList:nAt,07],;
+                                Transform(aList[oList:nAt,08],"@E 999,999,999.99"),;
+                                aList[oList:nAt,09],;
+                                aList[oList:nAt,10]}}
+
+        oBtn1      := TButton():New( 260,228,"Gerar",oDlg1,{|| Processa({|| Gerartitulos()},"Aguarde")},037,012,,,,.T.,,"",,,,.F. )
+        oBtn2      := TButton():New( 260,364,"Sair",oDlg1,{||oDlg1:end()},037,012,,,,.T.,,"",,,,.F. )
+
+    oDlg1:Activate(,,,.T.)
+EndIf 
+
+RestArea(aArea)
+
+Return
+
+/*/{Protheus.doc} nomeStaticFunction
+    (long_description)
+    @type  Static Function
+    @author user
+    @since 04/01/2024
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function Gerartitulos()
+
+Local aArea     := GetArea()
+Local nCont     := 0
+Local aVetSE1   := {}
+Local aVetSE2   := {}
+Local cCliente  := SuperGetMV("TI_XCLIPAD",.F.,"000001")
+Local cLoja     := SuperGetMV("TI_XLOJPAD",.F.,"01")
+Local cNaturSE1 := SuperGetMV("TI_XNATSE1",.F.,"109008")
+Local cFornece  := SuperGetMV("TI_XFORPAD",.F.,"006794")
+Local cLojaF    := SuperGetMV("TI_XLFOPAD",.F.,"01")
+Local cNaturSE2 := SuperGetMV("TI_XNATSE2",.F.,"207013")
+Local cPrefixo  := SuperGetMV("TI_XPRFPAD",.F.,"ACO")
+
+Private lMsErroAuto := .F.
+
+For nCont := 1 to len(aList)
+    If aList[nCont,01]
+        If aList[nCont,11] == "SE1"
+            //titulo a receber
+            aVetSE1 := {}
+            cHist := "Acordo "+aList[nCont,03]+" - ref. "+aList[nCont,04]
+
+            cCliente := If(!Empty(aList[nCont,16]),aList[nCont,16],cCliente)
+            cLoja := If(!Empty(aList[nCont,20]),aList[nCont,20],cLoja)
+            cNomCli := Posicione("SA1",1,xFilial("SA1")+cCliente+cLoja,"A1_NOME")
+
+            aAdd(aVetSE1, {"E1_FILIAL"  , aList[nCont,02]       ,   Nil})
+            aAdd(aVetSE1, {"E1_NUM"     , aList[nCont,03]       ,   Nil})
+            aAdd(aVetSE1, {"E1_PREFIXO" , cPrefixo              ,   Nil})
+            aAdd(aVetSE1, {"E1_PARCELA" , cvaltochar(aList[nCont,07])     ,   Nil})
+            aAdd(aVetSE1, {"E1_TIPO"    , 'FT'                  ,   Nil})
+            aAdd(aVetSE1, {"E1_CLIENTE" , cCliente              ,   Nil})
+            aAdd(aVetSE1, {"E1_LOJA"    , cLoja                 ,   Nil})
+            aAdd(aVetSE1, {"E1_NOMCLI"  , cNomCli               ,   Nil})
+            aAdd(aVetSE1, {"E1_NATUREZ" , cNaturSE1             ,   Nil})
+            aAdd(aVetSE1, {"E1_EMISSAO" , dDataBase             ,   Nil})
+            aAdd(aVetSE1, {"E1_VENCTO"  , aList[nCont,09]       ,   Nil})
+            aAdd(aVetSE1, {"E1_VENCREA" , Datavalida(aList[nCont,09]) , Nil})
+            aAdd(aVetSE1, {"E1_VALOR"   , aList[nCont,08]       ,   Nil})
+            aAdd(aVetSE1, {"E1_HIST"    , cHist                 ,   Nil})
+            aAdd(aVetSE1, {"E1_MOEDA"   , 1                     ,   Nil})
+
+            lMsErroAuto := .F.
+            MSExecAuto({|x,y| FINA040(x,y)}, aVetSE1, 3)
+            
+            //Se houve erro, mostra o erro ao usuário e desarma a transação
+            If lMsErroAuto
+                Mostraerro()
+            Else 
+                aList[nCont,18] := cvaltochar(SE1->(Recno()))
+                aList[nCont,01] := .F.
+                DbSelectArea("ZPD")
+                DbGoto(aList[nCont,17])
+                Reclock("ZPD",.F.)
+                ZPD->ZPD_RECDST := If(!Empty(Alltrim(ZPD->ZPD_RECDST)),Alltrim(ZPD->ZPD_RECDST)+","+aList[nCont,18],aList[nCont,18])
+                ZPD->ZPD_STATUS := '4'
+                ZPD->ZPD_DTGERT := ddatabase
+                ZPD->ZPD_HORAGT := cvaltochar(time())
+                ZPD->ZPD_USUGER := cusername
+                ZPD->(Msunlock())
+            EndIf 
+        ElseIf aList[nCont,11] == "SE2"
+            //titulo a receber
+            aVetSE2 := {}
+            cHist := "Acordo "+aList[nCont,03]+" - ref. "+aList[nCont,04]
+
+            cFornece := If(!Empty(aList[nCont,15]),aList[nCont,15],cFornece)
+            cLojaF := If(!Empty(aList[nCont,19]),aList[nCont,19],cLojaF)
+            //cNomCli := Posicione("SA1",1,xFilial("SA1")+cCliente+cLoja,"A1_NOME")
+
+            aAdd(aVetSE2, {"E2_FILIAL"  , aList[nCont,02]       ,   Nil})
+            aAdd(aVetSE2, {"E2_NUM"     , aList[nCont,03]       ,   Nil})
+            aAdd(aVetSE2, {"E2_PREFIXO" , cPrefixo              ,   Nil})
+            aAdd(aVetSE2, {"E2_PARCELA" , cvaltochar(aList[nCont,07])     ,   Nil})
+            aAdd(aVetSE2, {"E2_TIPO"    , 'FT'                  ,   Nil})
+            aAdd(aVetSE2, {"E2_FORNECE" , cFornece              ,   Nil})
+            aAdd(aVetSE2, {"E2_LOJA"    , cLojaF                ,   Nil})
+            //aAdd(aVetSE2, {"E2_NOMCLI"  , cNomCli               ,   Nil})
+            aAdd(aVetSE2, {"E2_NATUREZ" , cNaturSE2             ,   Nil})
+            aAdd(aVetSE2, {"E2_EMISSAO" , dDataBase             ,   Nil})
+            aAdd(aVetSE2, {"E2_VENCTO"  , aList[nCont,09]       ,   Nil})
+            aAdd(aVetSE2, {"E2_VENCREA" , Datavalida(aList[nCont,09]) , Nil})
+            aAdd(aVetSE2, {"E2_VALOR"   , aList[nCont,08]       ,   Nil})
+            aAdd(aVetSE2, {"E2_HIST"    , cHist                 ,   Nil})
+            aAdd(aVetSE2, {"E2_MOEDA"   , 1                     ,   Nil})
+
+            lMsErroAuto := .F.
+            MSExecAuto({|x,y| FINA050(x,y)}, aVetSE2, 3)
+            
+            //Se houve erro, mostra o erro ao usuário e desarma a transação
+            If lMsErroAuto
+                Mostraerro()
+            Else 
+                aList[nCont,18] := cvaltochar(SE2->(Recno()))
+                aList[nCont,01] := .F.
+                DbSelectArea("ZPD")
+                DbGoto(aList[nCont,17])
+                Reclock("ZPD",.F.)
+                ZPD->ZPD_RECDST := If(!Empty(Alltrim(ZPD->ZPD_RECDST)),Alltrim(ZPD->ZPD_RECDST)+","+aList[nCont,18],aList[nCont,18])
+                ZPD->ZPD_STATUS := '4'
+                ZPD->ZPD_DTGERT := ddatabase
+                ZPD->ZPD_HORAGT := cvaltochar(time())
+                ZPD->ZPD_USUGER := cusername
+                ZPD->(Msunlock())
+            EndIf
+        ElseIf aList[nCont,11] == "SRC"
+
+        EndIf 
+
+        
+    endIf 
+Next nCont 
+
+MsgAlert("Processo finalizado")
 
 oList:refresh()
 oDlg1:refresh()
