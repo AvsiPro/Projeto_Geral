@@ -15,18 +15,18 @@
     
 */
 
-User Function JWSRA001()
+User Function JWSRA010()
 
 Return
 
-WsRestFul JWSRA001 DESCRIPTION "API REST - Evento Cadastro de Titulos" 
+WsRestFul JWSRA010 DESCRIPTION "API REST - Evento Cadastro de Titulos" 
 	
-	WsMethod POST Description "API REST - Evento Cadastro de Titulos - METODO POST "  WsSyntax "JWSRA001"
+	WsMethod POST Description "API REST - Evento Cadastro de Titulos - METODO POST "  WsSyntax "JWSRA010"
 
 End WsRestFul
 
 
-WsMethod POST WsReceive RECEIVE WsService JWSRA001
+WsMethod POST WsReceive RECEIVE WsService JWSRA010
 
     Local cFilMov       As Character
     Local cTipOper      As Character
