@@ -81,8 +81,7 @@ WsMethod POST WsReceive RECEIVE WsService JWSRA010
 	Else
 
         RpcSetType(3)
-        //RPCSetEnv('01','00020087')
-        RPCSetEnv('00','00001000100')
+        RPCSetEnv('01','00020087')
         
         If lRet
             oBody  := JsonObject():New()
@@ -391,7 +390,7 @@ WsMethod POST WsReceive RECEIVE WsService JWSRA010
                 If !Dbseek(Avkey(cFilMov,"E1_FILIAL")+Avkey(cPrefixo,"E1_PREFIXO")+Avkey(cTitulo,"E1_NUM")+Avkey(cParcela,"E1_PARCELA")+Avkey(cTipo,"E1_TIPO"))
                     cCode 	 := "#400"
                     cMessage += "#titulo "
-                    cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"titulo" : "'+"Este titulo ja se encontra na base de dados"+'"'"
+                    cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"titulo" : "'+"Este titulo não se encontra na base de dados"+'"'"
                     lRet		:= .F.
                 EndIf
 
@@ -423,7 +422,7 @@ WsMethod POST WsReceive RECEIVE WsService JWSRA010
                 If !Dbseek(Avkey(cFilMov,"E1_FILIAL")+Avkey(cPrefixo,"E1_PREFIXO")+Avkey(cTitulo,"E1_NUM")+Avkey(cParcela,"E1_PARCELA")+Avkey(cTipo,"E1_TIPO"))
                     cCode 	 := "#400"
                     cMessage += "#titulo "
-                    cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"titulo" : "'+"Este titulo ja se encontra na base de dados"+'"'"
+                    cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"titulo" : "'+"Este titulo nao se encontra na base de dados"+'"'"
                     lRet		:= .F.
                 EndIf
 
