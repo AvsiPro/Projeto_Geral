@@ -77,7 +77,7 @@ cQuery += " TQF_NREDUZ,TQF_BAIRRO,TQF_ESTADO,TQN_DTABAS,TQN_HRABAS,TQN_QUANT,TQN
 cQuery += " FROM "+RetSQLName("TQN")+" TQN"
 cQuery += " INNER JOIN "+RetSQLName("TQF")+" TQF ON TQF_FILIAL=TQN_FILIAL AND TQF_CODIGO=TQN_POSTO AND TQF_TIPPOS='1' AND TQF.D_E_L_E_T_=' '"
 cQuery += " INNER JOIN "+RetSQLName("ST9")+" ST9 ON T9_FILIAL='"+xFilial("ST9")+"' AND T9_CODBEM=TQN_FROTA AND ST9.D_E_L_E_T_=' '"
-cQuery += " WHERE TQN_POSTO = '315062'"
+cQuery += " WHERE TQN.D_E_L_E_T_=' ' " //TQN_POSTO = '315062'"
 
 
 IF Select('TRB') > 0
@@ -148,7 +148,7 @@ Return
 Static Function Buscae()
 
 Local cQuery := ""
-Local cCodAb := SuperGetMv("TI_ABASTER",.F.,"000004")
+Local cCodAb := SuperGetMv("TI_ABASTER",.F.,"000003")
 
 
 cQuery := "SELECT TTH_FILIAL,TTH_TANQUE,TTH_CODCOM,TTH_BOMBA,TTH_DTABAS,TTH_HRABAS,TTH_NUMSEQ,"
@@ -255,7 +255,7 @@ If len(aList1) < 1
 EndIF 
 
 If len(aList2) < 1
-    Aadd(aList2,{'','','','','','','','','','','','','','','','','','','',''})
+    Aadd(aList2,{'','','','','','','','','','','',0,'','','','','','','',''})
 EndIf 
 
 oDlg1      := MSDialog():New( 149,172,739,1412,"Conciliação de Abastecimentos",,,.F.,,,,,,.T.,,,.T. )
