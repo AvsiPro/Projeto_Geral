@@ -87,7 +87,7 @@ If nPosic == 2
     Next nX 
 
     nMark := nMark-1
-    
+
     Aeval(aList1,{|x| nSmTot += x[2]})
 
     lEditCell(aList1,oList1,"@E 999,999,999.99",2)
@@ -96,11 +96,11 @@ If nPosic == 2
 
     nDividir := (nSmTot - aList1[nLinha,02]) / nMark //nItens
 
-    nSldPrc := (100 - aList1[nLinha,3]) / nMark //nItens
+    nSldPrc := round((100 - aList1[nLinha,3]) / nMark,2) //nItens
 
     For nX := 1 to len(aList1)
         If nX <> nLinha
-            aList1[nX,02] := nSmTot * (nSldPrc / 100)  
+            aList1[nX,02] := round(nSmTot * (nSldPrc / 100),2)  
             aList1[nX,03] := nSldPrc
         ENDIF
     Next nX 
@@ -108,7 +108,7 @@ If nPosic == 2
     Aeval(aList1,{|x| nSmGer += If(x[3]>0,x[3],0)})
     
     For nX := 1 to len(aList1)
-        If aList1[nX,03] == 0
+        If aList1[nX,03] == 0 .And. aList1[nX,05]
             lParZr := .T.
             EXIT
         EndIf 
@@ -139,11 +139,11 @@ ElseIf nPosic == 3
 
     nDividir := (nSmTot - aList1[nLinha,02]) / nMark //nItens
 
-    nSldPrc := (100 - aList1[nLinha,3]) / nMark //nItens
+    nSldPrc := round((100 - aList1[nLinha,3]) / nMark,2) //nItens
 
     For nX := 1 to len(aList1)
         If nX <> nLinha .And. aList1[nX,05]
-            aList1[nX,02] := nSmTot * (nSldPrc / 100)  
+            aList1[nX,02] := round(nSmTot * (nSldPrc / 100),2)  
             aList1[nX,03] := nSldPrc
         ENDIF
     Next nX 
@@ -151,7 +151,7 @@ ElseIf nPosic == 3
     Aeval(aList1,{|x| nSmGer += If(x[3]>0,x[3],0)})
     
     For nX := 1 to len(aList1)
-        If aList1[nX,03] == 0
+        If aList1[nX,03] == 0 .And. aList1[nX,05]
             lParZr := .T.
             EXIT
         EndIf 
