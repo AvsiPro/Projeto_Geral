@@ -412,11 +412,11 @@ WsMethod POST WsReceive RECEIVE WsService JWSRA010
                             &("SE1->"+aVetSE1[nCont,01]) := aVetSE1[nCont,02]
                         Next nCont
 
-                        If lBaixaTt
+                        /*If lBaixaTt
                             SE1->E1_BAIXA := SE1->E1_VENCREA
-                        Else 
+                        Else */
                             SE1->E1_SALDO := SE1->E1_VALOR 
-                        EndIF 
+                        //EndIF 
 
                         SE1->(Msunlock())
 

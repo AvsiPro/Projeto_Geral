@@ -5,7 +5,7 @@ User Function MNTA2317()
 Local lRet := .T. 
 Local cEstNew   := SuperGetMV("TI_ESTNEW",.F.,"61") //Estoque de pneu novo no campo status
 Local nNrEixos  := TQ0->TQ0_EIXOS
-Local cEstepe   := Ac[ascan(AC,{|x| Alltrim(x[3]) == "EST" }),3]
+Local cEstepe   := '' //Ac[ascan(AC,{|x| Alltrim(x[3]) == "EST" }),3]
 
 
 /*

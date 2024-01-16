@@ -72,17 +72,31 @@ Local nItens := len(aList1)-1
 Local nX 
 Local nSmGer := 0
 Local lParZr := .F.
+Local nMark  := 0
+Local nSomaPc := 0
+Local nPos1  := Ascan(aHeader,{|x| Alltrim(x[2]) == "C7_TOTAL"})
+
+
+Aeval(aCols,{|x| nSomaPc += x[nPos1] })
 
 If nPosic == 2  
+    For nX := 1 to len(aList1)
+        If aList1[nX,05]
+            nMark++
+        EndIf 
+    Next nX 
+
+    nMark := nMark-1
+    
     Aeval(aList1,{|x| nSmTot += x[2]})
 
     lEditCell(aList1,oList1,"@E 999,999,999.99",2)
 
     aList1[nLinha,03] := (aList1[nLinha,02]/nSmTot)*100
 
-    nDividir := (nSmTot - aList1[nLinha,02]) / nItens
+    nDividir := (nSmTot - aList1[nLinha,02]) / nMark //nItens
 
-    nSldPrc := (100 - aList1[nLinha,3]) / nItens
+    nSldPrc := (100 - aList1[nLinha,3]) / nMark //nItens
 
     For nX := 1 to len(aList1)
         If nX <> nLinha
@@ -108,18 +122,27 @@ If nPosic == 2
     EndIf 
 
 ElseIf nPosic == 3  
+
+    For nX := 1 to len(aList1)
+        If aList1[nX,05]
+            nMark++
+        EndIf 
+    Next nX 
+
+    nMark := nMark-1
+
     Aeval(aList1,{|x| nSmTot += x[2]})
 
     lEditCell(aList1,oList1,"@E 999",3)
 
     aList1[nLinha,02] := round(nSmTot * (aList1[nLinha,03] /100),2)
 
-    nDividir := (nSmTot - aList1[nLinha,02]) / nItens
+    nDividir := (nSmTot - aList1[nLinha,02]) / nMark //nItens
 
-    nSldPrc := (100 - aList1[nLinha,3]) / nItens
+    nSldPrc := (100 - aList1[nLinha,3]) / nMark //nItens
 
     For nX := 1 to len(aList1)
-        If nX <> nLinha
+        If nX <> nLinha .And. aList1[nX,05]
             aList1[nX,02] := nSmTot * (nSldPrc / 100)  
             aList1[nX,03] := nSldPrc
         ENDIF
@@ -142,11 +165,31 @@ ElseIf nPosic == 3
     EndIf 
     
 ElseIf nPosic == 5
+    Aeval(aList1,{|x| nSmTot += x[2]})
+
     If aList1[nLinha,5]
         aList1[nLinha,5] := .F.
     Else 
         aList1[nLinha,5] := .T.
     EndIf 
+
+    For nX := 1 to len(aList1)
+        If aList1[nX,05]
+            nMark++
+        Else 
+            aList1[nX,02] := 0
+            aList1[nX,03] := 0
+        EndIf 
+    Next nX 
+
+    nPercNew := round(100 / nMark,2)
+
+    For nX := 1 to len(aList1)
+        If aList1[nX,05]
+            aList1[nX,02] := nSomaPc * (nPercNew / 100)  
+            aList1[nX,03] := nPercNew
+        EndIF 
+    Next nX 
 EndIf 
 
 oList1:refresh()

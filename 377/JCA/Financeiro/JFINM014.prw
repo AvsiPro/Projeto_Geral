@@ -1,5 +1,8 @@
 #INCLUDE 'TOTVS.CH'
 #INCLUDE 'FWMVCDEF.CH'
+#include "topconn.ch"
+#INCLUDE "RPTDEF.CH"  
+#INCLUDE "FWPrintSetup.ch"
 
 Static lErro        As Logical
 Static cChaveLog    As Character
@@ -63,6 +66,7 @@ Static Function fWizard()
 	Private cAgenc := space(5)
 	Private cConta := space(10)
 	Private cSubCt := space(3)
+	Private cMailT := space(50)
 	
     oStepWiz := FWWizardControl():New(,{600,850})//Instancia a classe FWWizardControl
 	oStepWiz:ActiveUISteps()
@@ -162,7 +166,9 @@ Static Function cria_pn0( oPanel As Object )
     TSay():New(80,245,{|| "Sub-Conta"},oPanel,,,,,,.T.,CLR_BLUE,)
 	oGet12     := TGet():New(80,310,{|u| If(PCount() > 0,cSubCt := u,cSubCt)},oPanel,40,10,PesqPict("SEE","EE_SUBCTA"),,,,,,,.T.,,,{|| .T.},,,,.F.,.F.,'','')
     
-	
+	TSay():New(100,245,{|| "Email Teste"},oPanel,,,,,,.T.,CLR_BLUE,)
+	oGet13     := TGet():New(100,310,{|u| If(PCount() > 0,cMailT := u,cMailT)},oPanel,40,10,PesqPict("SA1","A1_EMAIL"),,,,,,,.T.,,,{|| .T.},,,,.F.,.F.,'','')
+    
 
 Return .t.
 
@@ -331,6 +337,29 @@ user function JFINJ014a(cCodEmp,cCodFil,lAuto)
 
 	Private cMarca  	:= GetMark()
 
+
+	Private oPrint
+	PRIVATE nSalto      := 50
+	PRIVATE lFirstPage  := .T.
+	Private oBrush  	:= TBrush():NEW("",CLR_HGRAY)          
+	Private oBrushG  	:= TBrush():NEW("",CLR_YELLOW)          
+	Private oPen		:= TPen():New(0,5,CLR_BLACK)
+	PRIVATE oCouNew08	:= TFont():New("Courier New"	,08,08,,.F.,,,,.T.,.F.)
+	PRIVATE oCouNew08N	:= TFont():New("Courier New"	,08,08,,.T.,,,,.F.,.F.)		// Negrito //oCouNew09N
+	PRIVATE oCouNew09N	:= TFont():New("Courier New"	,09,09,,.T.,,,,.F.,.F.)		// Negrito //oCouNew09N
+	PRIVATE oCouNew10N	:= TFont():New("Courier New"	,10,10,,.T.,,,,.F.,.F.)		// Negrito
+	PRIVATE oCouNew12N	:= TFont():New("Courier New"	,12,12,,.T.,,,,.F.,.F.)		// Negrito
+	PRIVATE oCouNew11N	:= TFont():New("Courier New"	,11,11,,.T.,,,,.F.,.F.)		// Negrito
+	PRIVATE oCouNew11 	:= TFont():New("Courier New"	,11,11,,.F.,,,,.T.,.F.)                 
+	PRIVATE oArial08N	:= TFont():New("Arial"			,08,08,,.T.,,,,.F.,.F.)		// Negrito
+	PRIVATE oArial09N	:= TFont():New("Arial"			,09,09,,.T.,,,,.F.,.F.)		// Negrito
+	PRIVATE oArial10N	:= TFont():New("Arial"			,10,10,,.T.,,,,.F.,.F.)		// Negrito
+	PRIVATE oArial11N	:= TFont():New("Arial"			,11,11,,.T.,,,,.F.,.F.)		// Negrito
+	PRIVATE oArial12N	:= TFont():New("Arial"			,12,12,,.T.,,,,.F.,.F.)		// Negrito
+	PRIVATE oArial14N	:= TFont():New("Arial"			,14,14,,.T.,,,,.F.,.F.)		// Negrito
+	PRIVATE oCouNew12S	:= TFont():New("Courier New",12,12,,.T.,,,,.F.,.F.)		// SubLinhado
+
+
 	Default cCodEmp := "01"
 	Default cCodFil := "00020667"
 	Default lAuto   := .T.
@@ -361,7 +390,12 @@ user function JFINJ014a(cCodEmp,cCodFil,lAuto)
 
 	dDtFour := datavalida(dDataBase+3,.T.)
 
-	cQuery := "SELECT E1_FILIAL,E1_PREFIXO,E1_NUM,E1_TIPO,E1_NATUREZ,ED_DESCRIC,E1_FILORIG,"
+	
+	li       := 5000
+
+	_pdfenvio()
+
+	cQuery := "SELECT E1_FILIAL,E1_PREFIXO,E1_NUM,E1_TIPO,E1_NATUREZ,ED_DESCRIC,E1_FILORIG,E1_EMISSAO,"
 	cQuery += " E1_CLIENTE,E1_LOJA,A1_NOME,E1_VENCREA,E1_VALOR,A1_EMAIL,E1_PARCELA,A1_CGC,"
 	cQuery += " E1_PORTADO,E1.R_E_C_N_O_ AS REGE1,E1_NUMBCO,E1_CODBAR,E1_CODDIG,'S' AS A1_XBOL"
 	cQuery += " FROM "+RetSQLName("SE1")+" E1"
@@ -393,6 +427,10 @@ user function JFINJ014a(cCodEmp,cCodFil,lAuto)
 
 	dbUseArea(.T.,"TOPCONN",TCGENQRY(,,cQuery),"TRBLOC",.F.,.T.)
 	dbSelectArea("TRBLOC")
+		
+	Count To nReg
+
+	TRBLOC->(dbGoTop())
 
 	nArq:= fCreate(cNomeArq)
 
@@ -402,8 +440,33 @@ user function JFINJ014a(cCodEmp,cCodFil,lAuto)
 	FWrite(nArq, '*************************************************************************************************************'+CRLF)
 
 	While !EOF()
+
+		If li > 1900 //.Or. cCotacao <> CADTMP->CP_NUM
+			If Li <> 5000
+				oPrint:EndPage()
+			Endif		
+		
+			//nPg++
+			ImpCabec()                                                                     
+		Endif
+
+		oPrint:Say(li,0040,Alltrim(TRBLOC->E1_PREFIXO),oArial09N)
+
+		oPrint:Say(li,0200,Alltrim(TRBLOC->E1_NUM),oArial09N)
+		oPrint:Say(li,0400,Alltrim(TRBLOC->E1_PARCELA),oArial09N)
+		oPrint:Say(li,0600,cvaltochar(TRBLOC->A1_NOME),oArial09N)
+		
+		oPrint:Say(li,1350,cvaltochar(STOD(TRBLOC->E1_EMISSAO)),oArial09N)
+		oPrint:Say(li,1500,cvaltochar(STOD(TRBLOC->E1_VENCREA)),oArial09N)
+		
+		oPrint:Say(li,1650,Transform(TRBLOC->E1_VALOR,"@E 999,999,999.99"),oArial09N)
+		oPrint:Say(li,1900,Alltrim(TRBLOC->A1_EMAIL),oArial09N)
+
+
+		li+=50
+
 		cDestino 	:=	Alltrim(TRBLOC->A1_EMAIL)
-		cDestino 	:=	"alexandre.venancio@avsipro.com.br" 
+		cDestino 	:=	If(!empty(cMailT),cMailT,"") //"alexandre.venancio@avsipro.com.br" 
 		MV_PAR01	:=	TRBLOC->E1_PREFIXO
 		MV_PAR02	:=	TRBLOC->E1_NUM
 		MV_PAR03	:=	TRBLOC->E1_PARCELA
@@ -463,11 +526,110 @@ user function JFINJ014a(cCodEmp,cCodFil,lAuto)
 
 	cBody := AvisFin(cSubject,{})
 
-	cDestino := "alexandre.venancio@avsipro.com.br"
+	oPrint:EndPage()
+	oPrint:Preview() 
+	
+	cDestino := If(!empty(cMailT),cMailT,"") //"alexandre.venancio@avsipro.com.br"
 
 	U_JGENX002(cDestino,cSubject+" "+cvaltochar(ddatabase),cBody,'',.F.)
 
 Return
+
+/*/{Protheus.doc} nomeStaticFunction
+	(long_description)
+	@type  Static Function
+	@author user
+	@since 15/01/2024
+	@version version
+	@param param_name, param_type, param_descr
+	@return return_var, return_type, return_description
+	@example
+	(examples)
+	@see (links_or_references)
+/*/
+Static Function _pdfenvio()
+
+Local cFilename := 'avisos_enviados_'+dtos(ddatabase)+strtran(cvaltochar(time()),":")
+
+lAdjustToLegacy := .T.   //.F.
+lDisableSetup  := .T.
+
+oPrint := FWMSPrinter():New(cFilename, IMP_PDF, lAdjustToLegacy, , lDisableSetup)
+oPrint:SetResolution(78)
+//oPrint:SetLandsCape()
+oPrint:SetPortrait()
+oPrint:SetPaperSize(DMPAPER_A4) 
+oPrint:SetMargin(10,10,10,10) // nEsquerda, nSuperior, nDireita, nInferior 
+oPrint:cPathPDF := "C:\TEMP\" // Caso seja utilizada impress„o em IMP_PDF 
+cDiretorio := oPrint:cPathPDF
+
+Return
+
+/*/
+‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±⁄ƒƒƒƒƒƒƒƒƒƒ¬ƒƒƒƒƒƒƒƒƒƒ¬ƒƒƒƒƒƒƒ¬ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒ¬ƒƒƒƒƒƒ¬ƒƒƒƒƒƒƒƒƒƒø±±
+±±≥FunáÖo    ≥ ImpCabec ≥ Autor ≥ Alexandre Venancio         ≥ Data ≥     ≥±±
+±±√ƒƒƒƒƒƒƒƒƒƒ≈ƒƒƒƒƒƒƒƒƒƒ¡ƒƒƒƒƒƒƒ¡ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒ¡ƒƒƒƒƒƒ¡ƒƒƒƒƒƒƒƒƒƒ¥±±
+±±≥DescriáÖo ≥ Imprime o Cabecalho                                        ≥±±
+±±√ƒƒƒƒƒƒƒƒƒƒ≈ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒ¥±±
+±±≥Sintaxe   ≥ ImpCabec(Void)                                             ≥±±
+±±√ƒƒƒƒƒƒƒƒƒƒ≈ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒ¥±±
+±±≥ Uso      ≥ MatR110                                                    ≥±±
+±±¿ƒƒƒƒƒƒƒƒƒƒ¡ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒŸ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂ
+/*/
+Static Function ImpCabec()
+
+
+oPrint:StartPage() 		// Inicia uma nova pagina
+oPrint:Box(000,0030,3100,2540 )  //LINHA/COLUNA/ALTURA/LARGURA
+
+oPrint:Say(050,0040,OemToAnsi("Empresa :"),oArial11N)
+oPrint:Say(050,0280,OemToAnsi(SM0->M0_CODIGO+" "+SM0->M0_NOMECOM ),oArial11N)
+oPrint:Say(100,0040,OemToAnsi("Filial  :"),oArial11N)
+oPrint:Say(100,0280,OemToAnsi( + SM0->M0_CODFIL+" "+SM0->M0_FILIAL),oArial11N)
+
+oPrint:Say(150,0030,Replicate("-",211),oCouNew08)
+
+oPrint:Say(190,1050,OemToAnsi("RelatÛrio de Titulos enviados para cobranÁa"),oArial14N)  
+
+oPrint:Say(290,0040,OemToAnsi("Cliente de/ate"),oArial11N)
+oPrint:Say(290,0300,OemToAnsi(cCliDe+" a "+cCliAt ),oArial11N)
+
+oPrint:Say(290,0900,OemToAnsi("Vencto de/ate"),oArial11N)
+oPrint:Say(290,1100,OemToAnsi(cvaltochar(dVenDe)+"  a  "+cvaltochar(dVenAt) ),oArial11N)
+
+oPrint:Say(290,1900,OemToAnsi("Valor de/ate"),oArial11N)
+oPrint:Say(290,2100,OemToAnsi(Transform(nVlrDe,"@E 999,999.99")+" a "+Transform(nVlrAt,"@E 999,999.99") ),oArial11N)
+
+oPrint:Say(350,0040,OemToAnsi("Banco :"),oArial11N)
+oPrint:Say(350,0300,OemToAnsi(MV_PAR20 ),oArial11N)
+
+oPrint:Say(350,0900,OemToAnsi("AgÍncia :"),oArial11N)
+oPrint:Say(350,1100,OemToAnsi(MV_PAR21 ),oArial11N)
+
+oPrint:Say(350,1900,OemToAnsi("Conta :"),oArial11N)
+oPrint:Say(350,2100,OemToAnsi(MV_PAR22 ),oArial11N)
+
+
+oPrint:Say(0400,0030,Replicate("-",211),oCouNew08)
+
+oPrint:Say(480,0040,OemToAnsi("Prefixo"),oArial10N)
+oPrint:Say(480,0200,OemToAnsi("Titulo"),oArial10N)
+oPrint:Say(480,0400,OemToAnsi("Parcela"),oArial10N)
+oPrint:Say(480,0600,OemToAnsi("Cliente"),oArial10N)
+oPrint:Say(480,1350,OemToAnsi("Emiss„o"),oArial10N)
+oPrint:Say(480,1500,OemToAnsi("Vencto"),oArial10N)
+oPrint:Say(480,1650,OemToAnsi("Valor"),oArial10N)
+oPrint:Say(480,1900,OemToAnsi("Email-cadastrado"),oArial10N)
+
+oPrint:Say(0530,0030,Replicate("-",211),oCouNew08)
+
+li := 600
+
+Return 
 
 /*
 ‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹
