@@ -13,7 +13,7 @@
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
 ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
 */
-User Function xMTR90x()
+User Function JESTR005()
 Local oReport
 
 oReport:= ReportDef()
@@ -180,8 +180,9 @@ oSection3 :SetReadOnly()
 //TRCell():New(oSection3, "dDtMov"   , " ", STR0036+CRLF+STR0037, /*Picture*/, nTamData      , /*lPixel*/, /*{|| code-block de impressao }*/)
 TRCell():New(oSection3, "cLocal"   , " ", STR0069             , "@!"       , /*Tamanho*/   , /*lPixel*/, /*{|| code-block de impressao }*/)
 TRCell():New(oSection3, "cProduto"   , " ", , /*Picture*/,       , /*lPixel*/, /*{|| code-block de impressao }*/)
-TRCell():New(oSection3, "cTES"     , " ", STR0038             , "@!"       , /*Tamanho*/   , /*lPixel*/, /*{|| code-block de impressao }*/)
-TRCell():New(oSection3, "cCF"      , " ", STR0039             , "@!"       , cTamD1CF      , /*lPixel*/, /*{|| code-block de impressao }*/)
+//TRCell():New(oSection3, "cTES"     , " ", STR0038             , "@!"       , /*Tamanho*/   , /*lPixel*/, /*{|| code-block de impressao }*/)
+//TRCell():New(oSection3, "cCF"      , " ", STR0039             , "@!"       , cTamD1CF      , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection3, "B1_DESC" , "SB1", /*Titulo*/                                    , /*Picture*/, 30         , /*lPixel*/, /*{|| code-block de impressao }*/)
 TRCell():New(oSection3, "cDoc"     , " ", STR0040+CRLF+STR0041, "@!"       , /*Tamanho*/   , /*lPixel*/, /*{|| code-block de impressao }*/)
 TRCell():New(oSection3, "cTraco1"  , " ", "|"+CRLF+"|"        , /*Picture*/, 1             , /*lPixel*/, {|| "|" })
 TRCell():New(oSection3, "nENTQtd"  , " ", STR0042+CRLF+STR0043, cPicD1Qt   , cTamD1Qt      , /*lPixel*/, /*{|| code-block de impressao }*/)
@@ -1170,10 +1171,11 @@ If !Empty(aFilsCalc)
 					EndIf
 					If lFirst .And. !lContinua .And. lTransEnd
 						//oSection3:Cell("dDtMov"):SetValue(STOD(DTDIGIT))
-						oSection3:Cell("cTES"):SetValue(TES)
+						//oSection3:Cell("cTES"):SetValue(TES)
 						oSection3:Cell("cLocal"):SetValue(ARMLOC)
 						oSection3:Cell("cProduto"):SetValue((cAliasTOP)->(PRODUTO))
-						If ( cPaisLoc=="BRA" )
+						oSection3:Cell("B1_DESC"):SetValue((cAliasTOP)->(B1_DESC))
+						/*If ( cPaisLoc=="BRA" )
 							oSection3:Cell("cCF"):Show()
 							oSection3:Cell("cCF"):SetValue(CF)
 							If	lInverteMov
@@ -1184,7 +1186,7 @@ If !Empty(aFilsCalc)
 						Else
 							oSection3:Cell("cCF"):Hide()
 							oSection3:Cell("cCF"):SetValue("   ")
-						EndIf
+						EndIf*/
 						If mv_par09 $ "Ss"
 							oSection3:Cell("cDoc"):SetValue(SEQUENCIA)
 						Else
