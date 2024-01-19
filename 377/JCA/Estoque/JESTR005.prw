@@ -172,10 +172,10 @@ TRCell():New(oSection2		,'NNR_DESCRI'	,"NNR",STR0058		,/*Picture*/	,/*Tamanho*/,
 //³ Definicao da Sessao 3 - Movimentos                           ³
 //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
 oSection3 := TRSection():New(oSection2,STR0061,{"SD1","SD2","SD3"}) //"Movimentação dos Produtos"
-oSection3 :SetHeaderPage()
-oSection3 :SetTotalInLine(.F.)
-oSection3 :SetTotalText(STR0021) //"T O T A I S  :"
-oSection3 :SetReadOnly()
+//oSection3 :SetHeaderPage()
+//oSection3 :SetTotalInLine(.F.)
+//oSection3 :SetTotalText(STR0021) //"T O T A I S  :"
+//oSection3 :SetReadOnly()
 
 //TRCell():New(oSection3, "dDtMov"   , " ", STR0036+CRLF+STR0037, /*Picture*/, nTamData      , /*lPixel*/, /*{|| code-block de impressao }*/)
 TRCell():New(oSection3, "cLocal"   , " ", STR0069             , "@!"       , /*Tamanho*/   , /*lPixel*/, /*{|| code-block de impressao }*/)
@@ -321,6 +321,8 @@ Local nFils     := 0
 Local lLoop		:= .F.
 Local cDadosProd    := SuperGetMV("MV_ARQPROD",.F.,"SB1")
 Local cSimbMoed := ''
+Local aSldDia   := {}
+Local nSldDia	:=	0
 
 Private bBloco   := { |nV,nX| Trim(nV)+IIf(Valtype(nX)='C',"",Str(nX,1)) }
 
@@ -1052,6 +1054,8 @@ If !Empty(aFilsCalc)
 
 				MR900ImpS1(@aSalAtu,cAliasTop,.T.,lVEIC,lCusFil,lCusEmp,oSection1,oSection2,oReport,aFils)
 
+				Aadd(aSldDia,{cLocalAnt,'',cProdAnt,(cAliasTop)->B1_DESC,'',aSalAtu[1],0,0,0})
+
 				oSection3:Init()
 				While !oReport:Cancel() .And. !(cAliasTop)->(Eof()) .And. (cAliasTop)->PRODUTO = cProdAnt .And. If(lCusFil .Or. lCusEmp .Or. lLocProc,.T.,IIf(alltrim((cAliasTop)->ARQ) <> 'SB1',alltrim((cAliasTop)->ARMAZEM)==cLocalAnt,.T.))
 					oReport:IncMeter()
@@ -1107,57 +1111,39 @@ If !Empty(aFilsCalc)
 								Else
 									lContinua := .T.
 									If lFirst
-										//oSection3:Cell("dDtMov"):SetValue(STOD(aDadosTran[6]))
+									/*
 										oSection3:Cell("cTES"):SetValue(aDadosTran[1])
 										oSection3:Cell("cLocal"):SetValue(aDadosTran[15])
-										oSection3:Cell("cProduto"):SetValue((cAliasTOP)->(PRODUTO))
-										If ( cPaisLoc=="BRA" )
-											oSection3:Cell("cCF"):Show()
-											If	lInverteMov
-												oSection3:Cell("cCF"):SetValue(Substr(aDadosTran[7],1,3)+"*")
-											Else
-												oSection3:Cell("cCF"):SetValue(aDadosTran[7])
-											EndIf
-										Else
-											oSection3:Cell("cCF"):Hide()
-											oSection3:Cell("cCF"):SetValue("   ")
-										EndIf
-										If mv_par09 $ "Ss"
-											oSection3:Cell("cDoc"):SetValue(aDadosTran[8])
-										Else
-											oSection3:Cell("cDoc"):SetValue(aDadosTran[9])
-										Endif
+										oSection3:Cell("cProduto"):SetValue(cProdAnt)
+									*/
 									EndIf
 									If aDadosTran[1] <= "500"
 										oSection3:Cell("nENTQtd"):Show()
 										oSection3:Cell("nENTCus"):Show()
 										oSection3:Cell("nCusMov"):Show()
-
-										oSection3:Cell("nENTQtd"):SetValue(aDadosTran[2])
-										oSection3:Cell("nENTCus"):SetValue(aDadosTran[3])
-										oSection3:Cell("nCusMov"):SetValue(aDadosTran[3] / aDadosTran[2])
-
-										oSection3:Cell("nSAIQtd"):Hide()
+									//	oSection3:Cell("nENTQtd"):SetValue(aDadosTran[2])
+									/*	oSection3:Cell("nSAIQtd"):Hide()
 										oSection3:Cell("nSAICus"):Hide()
 										oSection3:Cell("nSAIQtd"):SetValue(0)
-										oSection3:Cell("nSAICus"):SetValue(0)
+									*/	
+										aSldDia[len(aSldDia),07] += aDadosTran[2]
 
 										aSalAtu[1] += aDadosTran[2]
 										aSalAtu[mv_par10+1] += aDadosTran[3]
 										aSalAtu[7] += aDadosTran[4]
 									Else
+										/*
 										oSection3:Cell("nENTQtd"):Hide()
 										oSection3:Cell("nENTCus"):Hide()
 										oSection3:Cell("nENTQtd"):SetValue(0)
-										oSection3:Cell("nENTCus"):SetValue(0)
-
+										*/
 										oSection3:Cell("nCusMov"):Show()
 										oSection3:Cell("nSAIQtd"):Show()
 										oSection3:Cell("nSAICus"):Show()
 
-										oSection3:Cell("nCusMov"):SetValue(aDadosTran[3] / aDadosTran[2])
-										oSection3:Cell("nSAIQtd"):SetValue(aDadosTran[2])
-										oSection3:Cell("nSAICus"):SetValue(aDadosTran[3])
+										//oSection3:Cell("nSAIQtd"):SetValue(aDadosTran[2])
+										
+										aSldDia[len(aSldDia),08] += aDadosTran[2]
 
 										aSalAtu[1] -= aDadosTran[2]
 										aSalAtu[mv_par10+1] -= aDadosTran[3]
@@ -1169,84 +1155,56 @@ If !Empty(aFilsCalc)
 							EndIf
 						EndIf
 					EndIf
+					/*
 					If lFirst .And. !lContinua .And. lTransEnd
-						//oSection3:Cell("dDtMov"):SetValue(STOD(DTDIGIT))
-						//oSection3:Cell("cTES"):SetValue(TES)
+						
 						oSection3:Cell("cLocal"):SetValue(ARMLOC)
-						oSection3:Cell("cProduto"):SetValue((cAliasTOP)->(PRODUTO))
+						oSection3:Cell("cProduto"):SetValue(cProdAnt)
 						oSection3:Cell("B1_DESC"):SetValue((cAliasTOP)->(B1_DESC))
-						/*If ( cPaisLoc=="BRA" )
-							oSection3:Cell("cCF"):Show()
-							oSection3:Cell("cCF"):SetValue(CF)
-							If	lInverteMov
-								oSection3:Cell("cCF"):SetValue(Substr(CF,1,3)+"*")
-							Else
-								oSection3:Cell("cCF"):SetValue(CF)
-							EndIf
-						Else
-							oSection3:Cell("cCF"):Hide()
-							oSection3:Cell("cCF"):SetValue("   ")
-						EndIf*/
-						If mv_par09 $ "Ss"
-							oSection3:Cell("cDoc"):SetValue(SEQUENCIA)
-						Else
-							oSection3:Cell("cDoc"):SetValue(DOCUMENTO)
-						Endif
+						
 					EndIf
-
+					*/
 					Do Case
 						Case Alltrim((cAliasTop)->ARQ) == "SD1" .And. !lContinua .And. lTransEnd
 							lDev:=MTR900Dev("SD1",cAliasTop)
 							If (cAliasTOP)->TES <= "500" .And. !lDev
-								If (cAliasTOP)->TIPONF != "C"
-									oSection3:Cell("nCusMov"):SetValue((cAliasTOP)->CUSTO / (cAliasTOP)->QUANTIDADE)
-									oSection3:Cell("nCusMov"):Show()
-								Else
-									oSection3:Cell("nCusMov"):SetValue(0)
-									oSection3:Cell("nCusMov"):Hide()
-								EndIf
-
+								
 								oSection3:Cell("nENTQtd"):Show()
 								oSection3:Cell("nENTCus"):Show()
 
-								oSection3:Cell("nENTQtd"):SetValue((cAliasTOP)->QUANTIDADE)
-								oSection3:Cell("nENTCus"):SetValue((cAliasTOP)->CUSTO)
-
+								/*oSection3:Cell("nENTQtd"):SetValue((cAliasTOP)->QUANTIDADE)
+						
 								oSection3:Cell("nSAIQtd"):Hide()
 								oSection3:Cell("nSAICus"):Hide()
 								oSection3:Cell("nSAIQtd"):SetValue(0)
-								oSection3:Cell("nSAICus"):SetValue(0)
+								*/
+								
+								aSldDia[len(aSldDia),07] +=  (cAliasTOP)->QUANTIDADE
 
 								aSalAtu[1] += (cAliasTOP)->QUANTIDADE
 								aSalAtu[mv_par10+1] += (cAliasTOP)->CUSTO
 								aSalAtu[7] += (cAliasTOP)->QUANT2UM
 							Else
-								If (cAliasTOP)->TIPONF != "C"
-									oSection3:Cell("nCusMov"):SetValue((cAliasTOP)->CUSTO / (cAliasTOP)->QUANTIDADE)
-									oSection3:Cell("nCusMov"):Show()
-								Else
-									oSection3:Cell("nCusMov"):SetValue(0)
-									oSection3:Cell("nCusMov"):Hide()
-								EndIf
-
+								/*
 								oSection3:Cell("nENTQtd"):Hide()
 								oSection3:Cell("nENTCus"):Hide()
 								oSection3:Cell("nENTQtd"):SetValue(0)
-								oSection3:Cell("nENTCus"):SetValue(0)
-
+								*/
 								oSection3:Cell("nSAIQtd"):Show()
 								oSection3:Cell("nSAICus"):Show()
 
 								If lDev
-									oSection3:Cell("nSAIQtd"):SetValue((cAliasTOP)->QUANTIDADE * -1)
-									oSection3:Cell("nSAICus"):SetValue((cAliasTOP)->CUSTO * -1)
+								//	oSection3:Cell("nSAIQtd"):SetValue((cAliasTOP)->QUANTIDADE * -1)
+						
+									aSldDia[len(aSldDia),07] +=  (cAliasTOP)->QUANTIDADE
 
 									aSalAtu[1] += (cAliasTOP)->QUANTIDADE
 									aSalAtu[mv_par10+1] += (cAliasTOP)->CUSTO
 									aSalAtu[7] += (cAliasTOP)->QUANT2UM
 								Else
-									oSection3:Cell("nSAIQtd"):SetValue((cAliasTOP)->QUANTIDADE)
-									oSection3:Cell("nSAICus"):SetValue((cAliasTOP)->CUSTO)
+								//	oSection3:Cell("nSAIQtd"):SetValue((cAliasTOP)->QUANTIDADE)
+						
+									aSldDia[len(aSldDia),08] +=  (cAliasTOP)->QUANTIDADE
 
 									aSalAtu[1] 			-= (cAliasTOP)->QUANTIDADE
 									aSalAtu[mv_par10+1]	-= (cAliasTOP)->CUSTO
@@ -1260,8 +1218,9 @@ If !Empty(aFilsCalc)
 									oSection3:Cell("nENTQtd"):Show()
 									oSection3:Cell("nENTCus"):Show()
 
-									oSection3:Cell("nENTQtd"):SetValue((cAliasTOP)->QUANTIDADE * -1)
-									oSection3:Cell("nENTCus"):SetValue((cAliasTOP)->CUSTO * -1)
+									//oSection3:Cell("nENTQtd"):SetValue((cAliasTOP)->QUANTIDADE * -1)
+						
+									aSldDia[len(aSldDia),07] +=  (cAliasTOP)->QUANTIDADE
 
 									aSalAtu[1] 			-= (cAliasTOP)->QUANTIDADE
 									aSalAtu[mv_par10+1]	-= (cAliasTOP)->CUSTO
@@ -1270,44 +1229,31 @@ If !Empty(aFilsCalc)
 									oSection3:Cell("nENTQtd"):Show()
 									oSection3:Cell("nENTCus"):Show()
 
-									oSection3:Cell("nENTQtd"):SetValue((cAliasTOP)->QUANTIDADE)
-									oSection3:Cell("nENTCus"):SetValue((cAliasTOP)->CUSTO)
+									//oSection3:Cell("nENTQtd"):SetValue((cAliasTOP)->QUANTIDADE)
+						
+									aSldDia[len(aSldDia),08] +=  (cAliasTOP)->QUANTIDADE
 
 									aSalAtu[1]			+= (cAliasTOP)->QUANTIDADE
 									aSalAtu[mv_par10+1]	+= (cAliasTOP)->CUSTO
 									aSalAtu[7]			+= (cAliasTOP)->QUANT2UM
 								EndIf
-
-								If (cAliasTOP)->TIPONF != "C"
-									oSection3:Cell("nCusMov"):SetValue((cAliasTOP)->CUSTO / (cAliasTOP)->QUANTIDADE)
-									oSection3:Cell("nCusMov"):Show()
-								Else
-									oSection3:Cell("nCusMov"):SetValue(0)
-									oSection3:Cell("nCusMov"):Hide()
-								EndIf
+								/*
 								oSection3:Cell("nSAIQtd"):Hide()
 								oSection3:Cell("nSAICus"):Hide()
 								oSection3:Cell("nSAIQtd"):SetValue(0)
-								oSection3:Cell("nSAICus"):SetValue(0)
+								*/
 							Else
-								If (cAliasTOP)->TIPONF != "C"
-									oSection3:Cell("nCusMov"):SetValue((cAliasTOP)->CUSTO / (cAliasTOP)->QUANTIDADE)
-									oSection3:Cell("nCusMov"):Show()
-								Else
-									oSection3:Cell("nCusMov"):SetValue(0)
-									oSection3:Cell("nCusMov"):Hide()
-								EndIf
-
+								/*
 								oSection3:Cell("nENTQtd"):Hide()
 								oSection3:Cell("nENTCus"):Hide()
 								oSection3:Cell("nENTQtd"):SetValue(0)
-								oSection3:Cell("nENTCus"):SetValue(0)
-
+								*/
 								oSection3:Cell("nSAIQtd"):Show()
 								oSection3:Cell("nSAICus"):Show()
 
-								oSection3:Cell("nSAIQtd"):SetValue((cAliasTOP)->QUANTIDADE)
-								oSection3:Cell("nSAICus"):SetValue((cAliasTOP)->CUSTO)
+								//oSection3:Cell("nSAIQtd"):SetValue((cAliasTOP)->QUANTIDADE)
+						
+								aSldDia[len(aSldDia),07] +=  (cAliasTOP)->QUANTIDADE
 
 								aSalAtu[1]			-= (cAliasTOP)->QUANTIDADE
 								aSalAtu[mv_par10+1]	-= (cAliasTOP)->CUSTO
@@ -1320,32 +1266,25 @@ If !Empty(aFilsCalc)
 									oSection3:Cell("nENTQtd"):Show()
 									oSection3:Cell("nENTCus"):Show()
 									oSection3:Cell("nCusMov"):Show()
-
-									oSection3:Cell("nENTQtd"):SetValue((cAliasTOP)->QUANTIDADE)
-									oSection3:Cell("nENTCus"):SetValue((cAliasTOP)->CUSTO)
-									oSection3:Cell("nCusMov"):SetValue((cAliasTOP)->CUSTO / (cAliasTOP)->QUANTIDADE)
-
+									/*oSection3:Cell("nENTCus"):SetValue((cAliasTOP)->CUSTO)
 									oSection3:Cell("nSAIQtd"):Hide()
 									oSection3:Cell("nSAICus"):Hide()
 									oSection3:Cell("nSAIQtd"):SetValue(0)
-									oSection3:Cell("nSAICus"):SetValue(0)
+									*/
+									aSldDia[len(aSldDia),08] +=  (cAliasTOP)->QUANTIDADE
 
 									aSalAtu[1]			+= (cAliasTOP)->QUANTIDADE
 									aSalAtu[mv_par10+1]	+= (cAliasTOP)->CUSTO
 									aSalAtu[7]			+= (cAliasTOP)->QUANT2UM
 								Else
-									oSection3:Cell("nENTQtd"):Hide()
-									oSection3:Cell("nENTCus"):Hide()
-									oSection3:Cell("nENTQtd"):SetValue(0)
-									oSection3:Cell("nENTCus"):SetValue(0)
-
+									//oSection3:Cell("nENTQtd"):Hide()
+									//oSection3:Cell("nENTCus"):Hide()
 									oSection3:Cell("nCusMov"):Show()
 									oSection3:Cell("nSAIQtd"):Show()
 									oSection3:Cell("nSAICus"):Show()
-
-									oSection3:Cell("nCusMov"):SetValue((cAliasTOP)->CUSTO / (cAliasTOP)->QUANTIDADE)
-									oSection3:Cell("nSAIQtd"):SetValue((cAliasTOP)->QUANTIDADE)
-									oSection3:Cell("nSAICus"):SetValue((cAliasTOP)->CUSTO)
+									//oSection3:Cell("nSAIQtd"):SetValue((cAliasTOP)->QUANTIDADE)
+						
+									aSldDia[len(aSldDia),07] +=  (cAliasTOP)->QUANTIDADE
 
 									aSalAtu[1]			-= (cAliasTOP)->QUANTIDADE
 									aSalAtu[mv_par10+1]	-= (cAliasTOP)->CUSTO
@@ -1359,32 +1298,25 @@ If !Empty(aFilsCalc)
 									oSection3:Cell("nENTQtd"):Show()
 									oSection3:Cell("nENTCus"):Show()
 									oSection3:Cell("nCusMov"):Show()
-
-									oSection3:Cell("nENTQtd"):SetValue((cAliasTOP)->QUANTIDADE)
-									oSection3:Cell("nENTCus"):SetValue((cAliasTOP)->CUSTO)
-									oSection3:Cell("nCusMov"):SetValue((cAliasTOP)->CUSTO / (cAliasTOP)->QUANTIDADE)
-
+									/*oSection3:Cell("nENTQtd"):SetValue((cAliasTOP)->QUANTIDADE)
 									oSection3:Cell("nSAIQtd"):Hide()
 									oSection3:Cell("nSAICus"):Hide()
 									oSection3:Cell("nSAIQtd"):SetValue(0)
-									oSection3:Cell("nSAICus"):SetValue(0)
+									*/
+									aSldDia[len(aSldDia),07] +=  (cAliasTOP)->QUANTIDADE
 
 									aSalAtu[1]			+= (cAliasTOP)->QUANTIDADE
 									aSalAtu[mv_par10+1]	+= (cAliasTOP)->CUSTO
 									aSalAtu[7]			+= (cAliasTOP)->QUANT2UM
 								Else
-									oSection3:Cell("nENTQtd"):Hide()
-									oSection3:Cell("nENTCus"):Hide()
-									oSection3:Cell("nENTQtd"):SetValue(0)
-									oSection3:Cell("nENTCus"):SetValue(0)
-
+									//oSection3:Cell("nENTQtd"):Hide()
+									//oSection3:Cell("nENTCus"):Hide()
 									oSection3:Cell("nCusMov"):Show()
 									oSection3:Cell("nSAIQtd"):Show()
 									oSection3:Cell("nSAICus"):Show()
+									//oSection3:Cell("nSAIQtd"):SetValue((cAliasTOP)->QUANTIDADE)
 
-									oSection3:Cell("nCusMov"):SetValue((cAliasTOP)->CUSTO / (cAliasTOP)->QUANTIDADE)
-									oSection3:Cell("nSAIQtd"):SetValue((cAliasTOP)->QUANTIDADE)
-									oSection3:Cell("nSAICus"):SetValue((cAliasTOP)->CUSTO)
+									aSldDia[len(aSldDia),08] +=  (cAliasTOP)->QUANTIDADE
 
 									aSalAtu[1]			-= (cAliasTOP)->QUANTIDADE
 									aSalAtu[mv_par10+1]	-= (cAliasTOP)->CUSTO
@@ -1395,58 +1327,12 @@ If !Empty(aFilsCalc)
 								EndIf
 							EndIf
 					EndCase
-					If lFirst  .And. lTransEnd
-						oSection3:Cell("nSALDQtd"):SetValue(aSalAtu[1])
-						oSection3:Cell("nSALDCus"):SetValue(aSalAtu[mv_par10+1])
-					EndIf
-					Do Case
-						Case Alltrim((cAliasTop)->ARQ) == "SD3" .And. !lContinua  .And. lTransEnd
-							If Empty((cAliasTOP)->OP) .And. Empty((cAliasTOP)->PROJETO)
-								oSection3:Cell("cCCPVPJOP"):SetValue('CC'+(cAliasTOP)->CC)
-							ElseIf !Empty((cAliasTOP)->PROJETO)
-								oSection3:Cell("cCCPVPJOP"):SetValue('PJ'+(cAliasTOP)->PROJETO)
-							ElseIf !Empty((cAliasTOP)->OP)
-								cIdent := fIdentOS( (cAliasTOP)->OP, lFuncMnt )
-								oSection3:Cell("cCCPVPJOP"):SetValue( cIdent )
-							EndIf
-						Case Alltrim((cAliasTop)->ARQ) == "SD1" .And. !lContinua .And. lTransEnd
-							cTipoNf := 'F-'
-							SD1->(dbGoTo((cAliasTop)->NRECNO))
-							SD2->(dbSetOrder(3))
-							If SD2->(dbSeek(xFilial("SD2")+SD1->D1_NFORI+SD1->D1_SERIORI+SD1->D1_FORNECE+SD1->D1_LOJA))
-								If SD2->D2_TIPO <> 'B'
-									cTipoNf := 'C-'
-								EndIf
-							EndIf
-							oSection3:Cell("cCCPVPJOP"):SetValue(cTipoNf+(cAliasTOP)->FORNECEDOR)
-						Case Alltrim((cAliasTop)->ARQ) == "SD2" .And. !lContinua .And. lTransEnd
-							//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-							//³N - QNC: 002117                                                       ³
-							//³Corrigida a ultima coluna do relatorio onde apresentava nas notas     ³
-							//³de saida o número do pedido de compra , ao invés de apresentar        ³
-							//³o codigo do cliente quando o D2_TIPO="N",                             ³
-							//³quando D2_TIPO="B" mostrar o codigo do fornecedor.                    ³
-							//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-							If ((cAliasTop)->TIPONF) $ "B|D"
-								oSection3:Cell("cCCPVPJOP"):SetValue('F-'+(cAliasTop)->FORNECEDOR)
-							Else
-								oSection3:Cell("cCCPVPJOP"):SetValue('C-'+(cAliasTop)->FORNECEDOR)
-							EndIf
-							Case lContinua .And. aDadosTran[14] == "SD3" .And. lTransEnd
-							If Empty(aDadosTran[11]) .And. Empty(aDadosTran[12])
-								oSection3:Cell("cCCPVPJOP"):SetValue('CC'+aDadosTran[13])
-							ElseIf !Empty(aDadosTran[12])
-								oSection3:Cell("cCCPVPJOP"):SetValue('PJ'+aDadosTran[12])
-							ElseIf !Empty(aDadosTran[11])
-								cIdent := fIdentOS( aDadosTran[11], lFuncMnt )
-								oSection3:Cell("cCCPVPJOP"):SetValue( cIdent )
-							EndIf
-					EndCase
+					
 
 					// Tratamento para impressao em formato tabela quanto o produto nao tiver movimentacao
 					If lFormTab .And. Iif(len(aDadosTran) >13, Alltrim(aDadosTran[14]) == "SB1",Alltrim((cAliasTop)->ARQ) == "SB1")
 						//oSection3:Cell("dDtMov"):SetValue(STOD(""))
-						oSection3:Cell("cLocal"):SetValue("")
+						/*oSection3:Cell("cLocal"):SetValue("")
 						oSection3:Cell("cTES"):SetValue("")
 						oSection3:Cell("cProduto"):SetValue("")
 						oSection3:Cell("cCF"):SetValue("")
@@ -1459,11 +1345,11 @@ If !Empty(aFilsCalc)
 						oSection3:Cell("nSALDQtd"):SetValue(0)
 						oSection3:Cell("nSALDCus"):SetValue(0)
 						oSection3:Cell("cCCPVPJOP"):SetValue("")
-						oSection3:PrintLine()
+						oSection3:PrintLine()*/
 					EndIf
 
 					If lFirst .And. lTransEnd
-						oSection3:PrintLine()
+						//oSection3:PrintLine()
 					Endif
 					aDadosTran := {}
 					lTransEnd := .T.
@@ -1475,29 +1361,32 @@ If !Empty(aFilsCalc)
 					EndIf
 				EndDo
 
-				If lFirst
-					oReport:PrintText(STR0022+TransForm(aSalAtu[7],cPicB2Qt2),,oSection3:Cell('nSAICus'):ColPos()) //"QTD. NA SEGUNDA UM: "
-				Else
-					If !MTR900IsMNT()
-						oReport:PrintText(STR0023)	//"NAO HOUVE MOVIMENTACAO PARA ESTE PRODUTO"
-						oReport:ThinLine()
-						lImpSMov := .T.
-					Else
-						aProdsMNT := aClone(NGProdMNT())
-						If aScan(aProdsMNT, {|x| AllTrim(x) == AllTrim(SB1->B1_COD) }) == 0
-							oReport:PrintText(STR0023)	//"NAO HOUVE MOVIMENTACAO PARA ESTE PRODUTO"
-							oReport:ThinLine()
-							lImpSMov := .T.
-						EndIf
-					EndIf
-				EndIf
-
 				oSection1:Finish()
 				oSection2:Finish()
 				If !lImpSMov .Or. (lFormTab .And. Alltrim((cAliasTop)->ARQ) == "SB1")
 					oSection3:Finish()
 				Endif
 			EndDo
+
+			//aqui imprime 
+			//aSldDia
+			For nSldDia := 1 to len(aSldDia)
+				oSection3:Cell("cLocal"):SetValue(aSldDia[nSldDia,01])
+				//oSection3:Cell("cTES"):SetValue("")
+				oSection3:Cell("cProduto"):SetValue(aSldDia[nSldDia,03])
+				//oSection3:Cell("cCF"):SetValue("")
+				oSection3:Cell("cDoc"):SetValue("")
+				oSection3:Cell("nENTQtd"):SetValue(aSldDia[nSldDia,07])
+				oSection3:Cell("nENTCus"):SetValue(0)
+				oSection3:Cell("nCusMov"):SetValue(0)
+				oSection3:Cell("nSAIQtd"):SetValue(aSldDia[nSldDia,08])
+				oSection3:Cell("nSAICus"):SetValue(0)
+				oSection3:Cell("nSALDQtd"):SetValue(aSldDia[nSldDia,06])
+				oSection3:Cell("nSALDCus"):SetValue(0)
+				oSection3:Cell("cCCPVPJOP"):SetValue("")
+				oSection3:PrintLine()
+			Next nSldDia
+
 			dbSelectArea(cAliasTop)
 
 			If lCusEmp
@@ -1768,8 +1657,8 @@ Endif
 dbSelectArea("SB2")
 MsSeek(xFilial("SB2")+(cAliasTop)->PRODUTO+If(lCusFil .Or. lCusEmp,"",mv_par08))
 
-oSection1:PrintLine()
-oSection2:PrintLine()
+//oSection1:PrintLine()
+//oSection2:PrintLine()
 
 RestArea(aArea)
 
