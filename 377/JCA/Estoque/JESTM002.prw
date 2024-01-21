@@ -92,10 +92,10 @@ oDlg1      := MSDialog():New( 092,232,809,1666,"Inventário Rotativo",,,.F.,,,,,,
         // Adiciona itens no Menu
         oTMenuIte1 := TMenuItem():New(oDlg1,"Novo",,,,{|| _novoinv()},,,,,,,,,.T.)
         oTMenuIte2 := TMenuItem():New(oDlg1,"Digitar Cotagens",,,,{|| Processa({||_buscainv(),"Aguarde"})} ,,,,,,,,,.T.)
-        oTMenuIte3 := TMenuItem():New(oDlg1,"Gravar",,,,{|| oDlg1:end(nOpcao:=1)} ,,,,,,,,,.T.)
-        oTMenuIte4 := TMenuItem():New(oDlg1,"Impressões",,,,{|| Processa({||imprexc(),"Aguarde"}) } ,,,,,,,,,.T.)
-        oTMenuIte5 := TMenuItem():New(oDlg1,"Liberar",,,,{|| /*Processa({|| GeraPv(0),"Aguarde"})*/} ,,,,,,,,,.T.)
-        oTMenuIte6 := TMenuItem():New(oDlg1,"Processar",,,,{|| /*Processa({|| GeraPv(0),"Aguarde"})*/} ,,,,,,,,,.T.)
+        oTMenuIte3 := TMenuItem():New(oDlg1,"Impressões",,,,{|| Processa({||imprexc(),"Aguarde"}) } ,,,,,,,,,.T.)
+        oTMenuIte4 := TMenuItem():New(oDlg1,"Importar Contagens",,,,{|| Processa({|| validPla(),"Aguarde"})} ,,,,,,,,,.T.)
+        oTMenuIte5 := TMenuItem():New(oDlg1,"Gravar",,,,{|| Processa({||GravCont(),"Aguarde"}) } ,,,,,,,,,.T.)
+        oTMenuIte6 := TMenuItem():New(oDlg1,"Processar",,,,{|| Processa({|| gerarB7(),"Aguarde"})} ,,,,,,,,,.T.)
         oTMenuIte0 := TMenuItem():New(oDlg1,"Sair",,,,{|| oDlg1:end(nOpcao:=0)} ,,,,,,,,,.T.)
 
 
@@ -123,15 +123,7 @@ oDlg1      := MSDialog():New( 092,232,809,1666,"Inventário Rotativo",,,.F.,,,,,,
 oDlg1:Activate(,,,.T.)
 
 If nOpcao == 1
-    If len(aList1) > 0 
-        For nCont := 1 to len(aList1)
-            If aList1[nCont,1]
-                Processa({||GravPrInv(nCont)}, "Aguarde")
-            EndIf 
-        Next nCont 
-
-        MsgAlert("Gravação finalizada")
-    EndIf   
+       
 EndIf 
 
 
@@ -156,28 +148,35 @@ Static Function editped(nLinha,nOpc)
 Local nCont := 1
 Local nPosCol := oList1:nColPos
 
+If aList1[nLinha,17] == 'F'
+    Return 
+EndIf 
+
 IF nPosCol < 3
-    If nOpc == 1
-        If !Empty(aList1[nLinha,04])
-            If aList1[nLinha,01] 
-                aList1[nLinha,01] := .F.
-            Else 
-                aList1[nLinha,01] := .T.
-            EndIf
-        endIf 
-    Else 
-        If !Empty(aList1[nCont,04])
-            For nCont := 1 to len(aList1)
-                If aList1[nCont,01]
-                    aList1[nCont,01] := .F.
+    If nContag <> 4
+        If nOpc == 1
+            If !Empty(aList1[nLinha,04])
+                If aList1[nLinha,01] 
+                    aList1[nLinha,01] := .F.
                 Else 
-                    aList1[nCont,01] := .T.
-                EndIF 
-            Next nCont 
+                    aList1[nLinha,01] := .T.
+                EndIf
+            endIf 
+        Else 
+            If !Empty(aList1[nCont,04])
+                For nCont := 1 to len(aList1)
+                    If aList1[nCont,01]
+                        aList1[nCont,01] := .F.
+                    Else 
+                        aList1[nCont,01] := .T.
+                    EndIF 
+                Next nCont 
+            EndIf 
         EndIf 
     EndIf 
 Else 
     //If nPosCol >= 12 .And. nPosCol <= 14
+    If nContag <> 4
         If aList1[oList1:nAt,01]
             lEditCell(aList1,oList1,"@E 9999999",If(nContag==1,12,If(nContag==2,13,14)))
 
@@ -190,12 +189,44 @@ Else
                 aList1[oList1:nAt,15] := aList1[oList1:nAt,14] - aList1[oList1:nAt,11]
             EndIf  
         EndIf 
-    //EndIf
+    EndIf
 EndIf 
 
 oList1:refresh()
 oDlg1:refresh()
 
+Return
+
+/*/{Protheus.doc} GravCont
+    (long_description)
+    @type  Static Function
+    @author user
+    @since 21/01/2024
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function GravCont()
+
+Local nCont 
+
+If nContag == 4 .Or. aList1[oList1:nAt,17] == "F"
+    Return 
+endIf 
+
+If len(aList1) > 0 
+    For nCont := 1 to len(aList1)
+        If aList1[nCont,1]
+            Processa({||GravPrInv(nCont)}, "Aguarde")
+        EndIf 
+    Next nCont 
+
+    MsgAlert("Gravação finalizada")
+EndIf
+    
 Return
 
 /*/{Protheus.doc} estorncnt()
@@ -217,6 +248,10 @@ Local aPergs := {}
 Local aRet   := {}
 Local nCont  := 0
 Local nAux   := 0
+
+If aList1[oList1:nAt,17] == "F"
+    Return 
+EndIf 
 
 aAdd(aPergs ,{2,"Contagem"	,"", {"1=Estornar a ultima","2=Estornar todas"},90,'',.T.})
 
@@ -291,6 +326,7 @@ Return
     @see (links_or_references)
 /*/
 Static Function imprexc()
+
 Local aArea  := GetArea()
 Local aPergs := {}
 Local aRet   := {}
@@ -330,7 +366,7 @@ If ParamBox(aPergs ,"Filtrar por",@aRet)
 
         Processa({|| GeraPlan()},"Aguarde")
     Else 
-
+        Processa({|| GeraConf()},"Aguarde")
     EndIf 
 
 EndIf 
@@ -416,7 +452,7 @@ Local aPergs := {}
 Local aRet   := {}
 
 aAdd(aPergs ,{1,"Código:"	,space(TamSx3("ZPE_CODIGO")[1]),"@!",".T.","ZPE",".T.",70,.F.})
-aAdd(aPergs ,{2,"Contagem"	,"", {"1=Contagem 1","2=Contagem 2","3=Contagem 3"},50,'',.T.})
+aAdd(aPergs ,{2,"Contagem"	,"", {"1=Contagem 1","2=Contagem 2","3=Contagem 3","4=Conferência"},50,'',.T.})
 
 //aAdd(aPergs ,{1,"Data"      ,dDtDe   ,"",".T.","",".T.",80,.F.})
 
@@ -918,7 +954,7 @@ DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
 DbSelectArea("TRB") 
 
 While !EOF()
-    If val(TRB->ZPE_STATUS)+1 <> nContag .And. val(TRB->ZPE_STATUS) <> 3
+    If val(TRB->ZPE_STATUS)+1 <> nContag .And. val(TRB->ZPE_STATUS) <> 3 .And. nContag <> 4
         MsgAlert("Número da digitação informada é inválido, a contagem para este inventário atual é a numero "+cvaltochar(val(TRB->ZPE_STATUS)+1))
         exit
     EndIf 
@@ -998,6 +1034,10 @@ Static Function GravPrInv(nLinha)
 
 Local aArea := GetArea()
 
+If aList1[nLinha,17] == 'F'
+    Return 
+EndIf 
+
 DbSelectArea("ZPE")
 
 If lNewInv
@@ -1041,7 +1081,7 @@ RestArea(aArea)
 Return
 
 
-/*/{Protheus.doc} GravPrInv
+/*/{Protheus.doc} GeraPlan
 description)
     @type  Static Function
     @author user
@@ -1096,6 +1136,449 @@ oExcelApp:WorkBooks:Open(cDir +cArqXls)     //Abre uma planilha
 oExcelApp:SetVisible(.T.)        
 oExcelApp:Destroy()
 
-	
-    
+	    
 Return(cDir+cArqXls)
+
+/*/{Protheus.doc} GeraConf
+    Gera relatório de conferência de inventário.
+    @type  Static Function
+    @author user
+    @since 21/01/2024
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function GeraConf()
+
+Local oReport
+
+Private nTamCod    := 500
+
+IF Select('TRB') > 0
+    dbSelectArea('TRB')
+    dbCloseArea()
+ENDIF
+
+oReport:= ReportDef()
+oReport:PrintDialog()
+
+return
+/*/{Protheus.doc} GeraConf
+    Gera relatório de conferência de inventário.
+    @type  Static Function
+    @author user
+    @since 21/01/2024
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static function ReportDef()
+
+Local oReport
+Local oSection1
+Local cPicD1Qt     := PesqPict("SD1","D1_QUANT" ,18)
+Local cTamD1Qt     := TamSX3( 'D1_QUANT' )[1]
+Local cPicD1Cust   := PesqPict("SD1","D1_CUSTO",18)
+Local cTamD1Cust   := TamSX3( 'D1_CUSTO' )[1]
+Local cPicD2Qt     := PesqPict("SD2","D2_QUANT" ,18)
+Local cTamD2Qt     := TamSX3( 'D2_QUANT' )[1]
+Local cPicB2Cust   := PesqPict("SB2","B2_CM1",18)
+Local cTamB2Cust   := TamSX3( 'B2_CM1' )[1]
+
+
+oReport:= TReport():New("JESTM002","Conferência","", {|oReport| ReportPrint(oReport)},"Conferência de Inventário")
+oReport:SetLandscape()
+oReport:SetTotalInLine(.F.)  
+
+oSection0 := TRSection():New(oReport,'Conferência',{"SD1","SD2","SD3"}) //"Movimentação dos Produtos"
+oSection0 :SetTotalInLine(.F.)
+oSection0 :SetReadOnly()
+oSection0 :SetLineStyle()
+
+TRCell():New(oSection0, "cLocal"    	, " ", 'Local'             	, "@!"       , 2   , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection0, "cPrateleira"   , " ", 'Prateleira'			, /*Picture*/, 2      , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection0, "cProduto"   	, " ", 'Material'			, /*Picture*/, 6    , /*lPixel*/, )
+TRCell():New(oSection0, "cDescric" 		,"SB1",'Descrição'          , /*Picture*/, 25         , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection0, "cMarca"   		, " ", 'Marca'              , "@!"       , 10   , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection0, "cCodOri"  		, " ", 'Código'+CRLF+'Original'	, /*Picture*/, 10             , /*lPixel*/, )
+TRCell():New(oSection0, "nENTQtd"  		, " ", 'Qtde'+CRLF+'Inicial', cPicD1Qt   , 5      , /*lPixel*/, /*{|| code-block de impressao }*/)
+//TRCell():New(oSection0, "cTraco2"  		, " ", "|"+CRLF+"|"        , /*Picture*/, 1             , /*lPixel*/, {|| "|" })
+TRCell():New(oSection0, "nENTCus"  		, " ", 'Qtde'+CRLF+'Entradas', cPicD1Cust , 5    , /*lPixel*/, /*{|| code-block de impressao }*/)
+//TRCell():New(oSection0, "cTraco3"  		, " ", "|"+CRLF+"|"        , /*Picture*/, 1             , /*lPixel*/, {|| "|" })
+TRCell():New(oSection0, "nSAIQtd"  		, " ", 'Qtde'+CRLF+'Saídas', cPicB2Cust , 5    , /*lPixel*/, /*{|| code-block de impressao }*/)
+//TRCell():New(oSection0, "cTraco4"  		, " ", "|"+CRLF+"|"        , /*Picture*/, 1             , /*lPixel*/, {|| "|" })
+TRCell():New(oSection0, "nSALDQtd" 		, " ", 'Qtde'+CRLF+'Atual' , cPicD2Qt   , 5      , /*lPixel*/, /*{|| code-block de impressao }*/)
+
+TRCell():New(oSection0, "nCont1" 		, " ", 'Cont.1' , cPicD2Qt   , 5      , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection0, "nCont2" 		, " ", 'Cont.2' , cPicD2Qt   , 5      , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection0, "nCont3" 		, " ", 'Cont.3' , cPicD2Qt   , 5      , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection0, "nDiverg" 		, " ", 'Divergencia', cPicD2Qt   , 5      , /*lPixel*/, /*{|| code-block de impressao }*/)
+
+oSection1 := TRSection():New(oSection0,'Conferência',{"SD1","SD2","SD3"}) //"Movimentação dos Produtos"
+oSection1 :SetTotalInLine(.F.)
+oSection1 :SetReadOnly()
+oSection1 :SetLineStyle()
+
+//TRCell():New(oSection1, "cTraco5"  		, " ", ""        			, /*Picture*/, 1             , /*lPixel*/, )
+//TRCell():New(oSection1, "cTraco5"  		, " ", ""        			, /*Picture*/, 1             , /*lPixel*/, )
+//TRCell():New(oSection1, "cTraco5"  		, " ", ""        			, /*Picture*/, 1             , /*lPixel*/, )
+//TRCell():New(oSection1, "cTraco5"  		, " ", ""        			, /*Picture*/, 1             , /*lPixel*/, )
+//TRCell():New(oSection1, "cTraco5"  		, " ", ""        			, /*Picture*/, 1             , /*lPixel*/, )
+//TRCell():New(oSection1, "cTraco2"  		, " ", "|"+CRLF+"|"        , /*Picture*/, 1             , /*lPixel*/, {|| "|" })
+//TRCell():New(oSection1, "cTraco3"  		, " ", "|"+CRLF+"|"        , /*Picture*/, 1             , /*lPixel*/, {|| "|" })
+//TRCell():New(oSection1, "cTraco4"  		, " ", "|"+CRLF+"|"        , /*Picture*/, 1             , /*lPixel*/, {|| "|" })
+
+TRCell():New(oSection1, "cLocal"    	, " ", ''       	, "@!"       , 5   , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection1, "cPrateleira"   , " ", ''			, /*Picture*/, 10      , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection1, "cProduto"   	, " ", ''			, /*Picture*/, 15    , /*lPixel*/, )
+TRCell():New(oSection1, "cDescric" 		,"SB1",''           , /*Picture*/, 35         , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection1, "cMarca"   		, " ", ''           , "@!"       , 15   , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection1, "cCodOri"  		, " ", ''	        , /*Picture*/, 17             , /*lPixel*/, )
+TRCell():New(oSection1, "nENTQtd"  		, " ", ''           , cPicD2Qt   , 11      , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection1, "nENTCus"  		, " ", ''           , cPicD2Qt   , 11    , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection1, "nSAIQtd"  		, " ", ''           , cPicD2Qt   , 11    , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection1, "nSALDQtd" 		, " ", ''           , cPicD2Qt   , 11      , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection1, "nCont1" 		, " ", ''           , cPicD2Qt   , 11      , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection1, "nCont2" 		, " ", ''           , cPicD2Qt   , 11      , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection1, "nCont3" 		, " ", ''           , cPicD2Qt   , 11      , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection1, "nDiverg" 		, " ", ''           , cPicD2Qt   , 11      , /*lPixel*/, /*{|| code-block de impressao }*/)
+
+oSection1:SetNoFilter("SD1")
+oSection1:SetNoFilter("SD2")
+oSection1:SetNoFilter("SD3")
+
+Return(oReport)
+/*/{Protheus.doc} GeraConf
+    Gera relatório de conferência de inventário.
+    @type  Static Function
+    @author user
+    @since 21/01/2024
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+static function ReportPrint(oReport)
+
+Local nSldDia
+
+Local oSection0 := oReport:Section(1)
+Local oSection1 := oReport:Section(1):Section(1)
+
+
+oSection0:Init()
+oSection1:Init()
+
+oSection0:PrintLine()
+
+For nSldDia := 1 to len(aList1)
+    oSection1:Cell("cLocal"):SetValue(aList1[nSldDia,02])
+    oSection1:Cell("cPrateleira"):SetValue(Avkey(aList1[nSldDia,03],"B1_COD")) 
+    oSection1:Cell("cProduto"):SetValue(aList1[nSldDia,04])
+    oSection1:Cell("cDescric"):SetValue(aList1[nSldDia,05])
+    oSection1:Cell("cMarca"):SetValue(aList1[nSldDia,06])
+    oSection1:Cell("cCodOri"):SetValue(aList1[nSldDia,07])
+    oSection1:Cell("nENTQtd"):SetValue(aList1[nSldDia,08])
+    oSection1:Cell("nENTCus"):SetValue(aList1[nSldDia,09])
+    oSection1:Cell("nSAIQtd"):SetValue(aList1[nSldDia,10])
+    oSection1:Cell("nSALDQtd"):SetValue(aList1[nSldDia,11])
+    oSection1:Cell("nCont1"):SetValue(aList1[nSldDia,12])
+    oSection1:Cell("nCont2"):SetValue(aList1[nSldDia,13])
+    oSection1:Cell("nCont3"):SetValue(aList1[nSldDia,14])
+    oSection1:Cell("nDiverg"):SetValue(aList1[nSldDia,15])
+
+    oSection1:PrintLine()
+Next
+
+//oReport:EndPage()
+
+Return 
+
+/*/{Protheus.doc} nomeStaticFunction
+    (long_description)
+    @type  Static Function
+    @author user
+    @since 08/09/2023
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function validPla()
+
+Local cArqAux 
+Local aAux      :=  {}
+Local aRet      :=  {}
+Local nCont     :=  0
+Local nTamLin   :=  0
+Local aPergs    := {}
+Local aRetP     := {}
+Local nY        :=  0
+Local lOk       := .T.
+
+If nContag == 4 
+    Return 
+Endif 
+
+nContag   :=  0
+
+cArqAux := cGetFile( '*.csv|*.csv',; //[ cMascara], 
+                         'Selecao de Arquivos',;                  //[ cTitulo], 
+                         0,;                                      //[ nMascpadrao], 
+                         'C:\',;                            //[ cDirinicial], 
+                         .F.,;                                    //[ lSalvar], 
+                         GETF_LOCALHARD  + GETF_NETWORKDRIVE,;    //[ nOpcoes], 
+                         .T.)   
+                                                           //[ lArvore] 
+oFile := FwFileReader():New(cArqAux)
+
+If (oFile:Open())
+
+    If Empty(cCodInv)
+        aAdd(aPergs ,{1,"Código do inventário:"	,space(TamSx3("ZPE_CODIGO")[1]),"@!",".T.","ZPE",".T.",70,.F.})
+
+        If ParamBox(aPergs ,"Filtrar por",@aRetP)    
+        
+            cCodInv := aRetP[1]
+            
+            DbSelectArea("ZPE")
+            dbSetOrder(1)
+            If !Dbseek(xFilial("ZPE")+cCodInv)
+                MsgAlert("Inventário inexistente, verifique!!!")
+                Return 
+            endIf 
+
+        EndIf 
+    endIf 
+
+    aAux := oFile:GetAllLines()
+     
+    For nCont := 1 to len(aAux)
+        Aadd(aRet,Separa(aAux[nCont],";"))
+        If nCont == 1
+            nTamLin := len(aRet[1])
+        Else 
+            If len(aRet[len(aRet)]) <> nTamLin
+                aRet := {}
+                Return
+            EndIf
+        EndIf
+    Next nCont
+
+    nY := Ascan(aret,{|x| x[1] == "Local"})
+
+    DBSelectArea("ZPE")
+    dbSetOrder(2)
+    For nCont := nY+1 to len(aRet)
+        If !Dbseek(xFilial("ZPE")+cCodInv+aRet[nCont,03])
+            MsgAlert("Erro na linha "+cvaltochar(nCont)+" - Produto não se encontra no inventário")
+            lOk := .F.
+            exit 
+        EndIf 
+        
+    Next nCont
+    
+    If lOk 
+        DBSelectArea("ZPE")
+        dbSetOrder(2)
+        For nCont := nY+1 to len(aRet)
+            If Dbseek(xFilial("ZPE")+cCodInv+aRet[nCont,03])
+                nContag := 0
+
+                Reclock("ZPE",.F.) 
+                ZPE->ZPE_CONTA1 := val(aRet[nCont,07])
+                ZPE->ZPE_CONTA2 := val(aRet[nCont,08])
+                ZPE->ZPE_CONTA3 := val(aRet[nCont,09])
+                
+                If !Empty(aRet[nCont,07])
+                    ZPE->ZPE_DTCNT1 := ddatabase
+                    ZPE->ZPE_HRCNT1 := cvaltochar(time())
+                    nContag++
+                EndIF 
+
+                If !Empty(aRet[nCont,08])
+                    ZPE->ZPE_DTCNT2 := ddatabase
+                    ZPE->ZPE_HRCNT2 := cvaltochar(time())
+                    nContag++
+                EndIF 
+
+                If !Empty(aRet[nCont,09])
+                    ZPE->ZPE_DTCNT3 := ddatabase
+                    ZPE->ZPE_HRCNT3 := cvaltochar(time())
+                    nContag++
+                EndIF 
+
+                ZPE->ZPE_STATUS := cvaltochar(nContag)
+
+                ZPE->(Msunlock())
+            EndIf
+
+            nPosL1 := Ascan(aList1,{|x| Alltrim(x[4]) == Alltrim(aRet[nCont,03])})
+
+            IF nPosL1 > 0
+                aList1[nPosL1,12] := val(aRet[nCont,07])
+                aList1[nPosL1,13] := val(aRet[nCont,08])
+                aList1[nPosL1,14] := val(aRet[nCont,09])
+                aList1[nPosL1,15] := If(nContag==1,val(aRet[nCont,07]),If(nContag==2,val(aRet[nCont,08]),val(aRet[nCont,09]))) - aList1[nPosL1,11]
+            EndIf 
+
+        Next nCont 
+    EndIF 
+    
+    oList1:refresh()
+    oDlg1:refresh()
+    
+Else 
+    MsgAlert("Não foi possível abrir o arquivo selecionado!!!")
+EndIf 
+
+Return(aRet)
+
+/*/{Protheus.doc} gerarB7
+    (long_description)
+    @type  Static Function
+    @author user
+    @since 21/01/2024
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function gerarB7()
+
+Local aArea := GetArea()
+Local lOk   := .T.
+Local nCont 
+
+PRIVATE lMsErroAuto := .F.
+
+For nCont := 1 to len(aList1)
+    If val(aList1[nCont,17]) < 3 .or. aList1[nCont,17] == 'F'
+        lOk := .F.
+        exit 
+    EndIf 
+Next nCont 
+
+If !lOk 
+    MsgAlert("Para processar o inventário, todos os itens devem conter a 3 contagens.")
+    return
+Else
+    Begin Transaction
+    For nCont := 1 to len(aList1)
+        DbSelectArea("SB1")
+        DbSetOrder(1)
+        If DbSeek(xFilial("SB1")+aList1[nCont,04])  
+        
+            DbSelectArea("SB2")
+            DbSetOrder(1)
+            If !DbSeek(xFilial("SB2")+Avkey(Alltrim(aList1[nCont,04]),"B2_COD")+Avkey(aList1[nCont,02],"B2_LOCAL"))
+                CriaSB2(aList1[nCont,04],aList1[nCont,02])
+            EndIf
+
+            aVetor := {;
+                    {"B7_FILIAL" 	,xFilial("SB7")		        ,Nil},;
+                    {"B7_COD"		,aList1[nCont,04]			,Nil},;
+                    {"B7_DOC"		,cCodInv			        ,Nil},;
+                    {"B7_QUANT"		,aList1[nCont,14]   		,Nil},;
+                    {"B7_LOCAL"		,aList1[nCont,02]		    ,Nil},;
+                    {"B7_CONTAGE"	,aList1[nCont,17]		    ,Nil},;
+                    {"B7_ESCOLHA"	,'S'            		    ,Nil},;
+                    {"B7_DATA"		,DDATABASE			        ,Nil} }
+
+            lMsErroAuto	:=	.F.
+        
+            MSExecAuto({|x,y| mata270(x,y)},aVetor,.F.,3)
+            
+            If lMsErroAuto
+                MostraErro()
+                DisarmTransaction()
+                lOk := .F.
+                exit 
+            Endif		
+            
+        EndIF	
+    Next nCont 
+    
+    End Transaction
+
+    If lOk 
+        lOk := procinvt()
+
+        If lOk 
+            For nCont := 1 to len(aList1)
+                aList1[nCont,17] := 'F'
+                DbSelectArea("ZPE")
+                DbGoto(aList1[nCont,16])
+                Reclock("ZPE",.F.)
+                ZPE->ZPE_STATUS := 'F'
+                ZPE->ZPE_DATAB7 := ddatabase
+                ZPE->ZPE_HORAB7 := cvaltochar(time())
+                ZPE->(Msunlock())
+            Next nCont 
+        EndIf 
+
+    EndIf 
+EndIf 
+
+RestArea(aarea)
+
+
+Return
+
+
+/*/{Protheus.doc} nomeStaticFunction
+    (long_description)
+    @type  Static Function
+    @author user
+    @since 21/01/2024
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function procinvt()
+    
+Local lOk      := .T.
+Private lMsErroAuto := .F.
+
+
+DbSelectArea("SB7")
+DbSetOrder(3)
+
+If !SB7->(MsSeek(xFilial("SB7")+cCodInv))
+    lOk := .F.  
+    ConOut(OemToAnsi("Cadastrar inventário: "+cCodInv))
+EndIf
+
+If lOk
+    SB7->(MsSeek(xFilial("SB7")+cCodInv))
+
+    While !EOF() .And. alltrim(SB7->B7_DOC) == alltrim(cCodInv)
+        MSExecAuto({|x,y,z| mata340(x,y,z)}, .T., cCodInv, .T.)               
+        
+        If lMsErroAuto
+            lOk := .F.
+            MostraErro()        
+        EndIf    
+
+        dBSKIP()
+    EndDo    
+    
+        
+ENDIF
+
+Return(lOk)
