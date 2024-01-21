@@ -177,44 +177,46 @@ oSection3 := TRSection():New(oSection2,STR0061,{"SD1","SD2","SD3"}) //"Movimenta
 //oSection3 :SetTotalText(STR0021) //"T O T A I S  :"
 //oSection3 :SetReadOnly()
 
-//TRCell():New(oSection3, "dDtMov"   , " ", STR0036+CRLF+STR0037, /*Picture*/, nTamData      , /*lPixel*/, /*{|| code-block de impressao }*/)
-TRCell():New(oSection3, "cLocal"   , " ", STR0069             , "@!"       , /*Tamanho*/   , /*lPixel*/, /*{|| code-block de impressao }*/)
-TRCell():New(oSection3, "cProduto"   , " ", , /*Picture*/,       , /*lPixel*/, /*{|| code-block de impressao }*/)
-//TRCell():New(oSection3, "cTES"     , " ", STR0038             , "@!"       , /*Tamanho*/   , /*lPixel*/, /*{|| code-block de impressao }*/)
-//TRCell():New(oSection3, "cCF"      , " ", STR0039             , "@!"       , cTamD1CF      , /*lPixel*/, /*{|| code-block de impressao }*/)
-TRCell():New(oSection3, "B1_DESC" , "SB1", /*Titulo*/                                    , /*Picture*/, 30         , /*lPixel*/, /*{|| code-block de impressao }*/)
-TRCell():New(oSection3, "cDoc"     , " ", STR0040+CRLF+STR0041, "@!"       , /*Tamanho*/   , /*lPixel*/, /*{|| code-block de impressao }*/)
-TRCell():New(oSection3, "cTraco1"  , " ", "|"+CRLF+"|"        , /*Picture*/, 1             , /*lPixel*/, {|| "|" })
-TRCell():New(oSection3, "nENTQtd"  , " ", STR0042+CRLF+STR0043, cPicD1Qt   , cTamD1Qt      , /*lPixel*/, /*{|| code-block de impressao }*/)
-TRCell():New(oSection3, "cTraco2"  , " ", "|"+CRLF+"|"        , /*Picture*/, 1             , /*lPixel*/, {|| "|" })
-TRCell():New(oSection3, "nENTCus"  , " ", STR0042+CRLF+STR0044, cPicD1Cust , cTamD1Cust    , /*lPixel*/, /*{|| code-block de impressao }*/)
-TRCell():New(oSection3, "cTraco3"  , " ", "|"+CRLF+"|"        , /*Picture*/, 1             , /*lPixel*/, {|| "|" })
-TRCell():New(oSection3, "nCusMov"  , " ", STR0045+CRLF+STR0046, cPicB2Cust , cTamB2Cust    , /*lPixel*/, /*{|| code-block de impressao }*/)
-TRCell():New(oSection3, "cTraco4"  , " ", "|"+CRLF+"|"        , /*Picture*/, 1             , /*lPixel*/, {|| "|" })
-TRCell():New(oSection3, "nSAIQtd"  , " ", STR0047+CRLF+STR0043, cPicD2Qt   , cTamD2Qt      , /*lPixel*/, /*{|| code-block de impressao }*/)
-TRCell():New(oSection3, "cTraco5"  , " ", "|"+CRLF+"|"        , /*Picture*/, 1             , /*lPixel*/, {|| "|" })
-TRCell():New(oSection3, "nSAICus"  , " ", STR0047+CRLF+STR0044, cPicD2Cust , cTamD2Cust    , /*lPixel*/, /*{|| code-block de impressao }*/)
-TRCell():New(oSection3, "cTraco6"  , " ", "|"+CRLF+"|"        , /*Picture*/, 1             , /*lPixel*/, {|| "|" })
-TRCell():New(oSection3, "nSALDQtd" , " ", STR0048+CRLF+STR0043, cPicB2Qt   , cTamB2Qt      , /*lPixel*/, /*{|| code-block de impressao }*/)
-TRCell():New(oSection3, "cTraco7"  , " ", "|"+CRLF+"|"        , /*Picture*/, 1             , /*lPixel*/, {|| "|" })
-TRCell():New(oSection3, "nSALDCus" , " ", STR0048+CRLF+STR0049, cPicB2Tot  , cTamB2Tot     , /*lPixel*/, /*{|| code-block de impressao }*/)
-TRCell():New(oSection3, "cTraco8"  , " ", "|"+CRLF+"|"        , /*Picture*/, 1             , /*lPixel*/, {|| "|" })
-TRCell():New(oSection3, "cCCPVPJOP", " ", STR0050+CRLF+STR0051, "@!"       , cTamCCPVPJOP+2, /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection3, "cLocal"    	, " ", 'Local'             	, "@!"       , /*Tamanho*/   , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection3, "cPrateleira"   , " ", 'Prateleira'			, /*Picture*/,       , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection3, "cProduto"   	, " ", 'Material'			, /*Picture*/, 25    , /*lPixel*/, )
+TRCell():New(oSection3, "cDescric" 		,"SB1",'Descrição'          , /*Picture*/, 40         , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection3, "cDoc"     		, " ", 'Código'+CRLF+'Original', "@!"       , 30   , /*lPixel*/, /*{|| code-block de impressao }*/)
+//TRCell():New(oSection3, "cTraco1"  		, " ", "|"+CRLF+"|"        , /*Picture*/, 1             , /*lPixel*/, {|| "|" })
+TRCell():New(oSection3, "cTraco5"  		, " ", ""        			, /*Picture*/, 1             , /*lPixel*/, )
+TRCell():New(oSection3, "cTraco5"  		, " ", ""        			, /*Picture*/, 1             , /*lPixel*/, )
+TRCell():New(oSection3, "cTraco5"  		, " ", ""        			, /*Picture*/, 1             , /*lPixel*/, )
+TRCell():New(oSection3, "cTraco5"  		, " ", ""        			, /*Picture*/, 1             , /*lPixel*/, )
+TRCell():New(oSection3, "cTraco5"  		, " ", ""        			, /*Picture*/, 1             , /*lPixel*/, )
+TRCell():New(oSection3, "cTraco5"  		, " ", ""        			, /*Picture*/, 1             , /*lPixel*/, )
+TRCell():New(oSection3, "nENTQtd"  		, " ", 'Qtde'+CRLF+'Inicial', cPicD1Qt   , cTamD1Qt      , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection3, "cTraco2"  		, " ", "|"+CRLF+"|"        , /*Picture*/, 1             , /*lPixel*/, {|| "|" })
+TRCell():New(oSection3, "nENTCus"  		, " ", 'Qtde'+CRLF+'Entradas', cPicD1Cust , cTamD1Cust    , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection3, "cTraco3"  		, " ", "|"+CRLF+"|"        , /*Picture*/, 1             , /*lPixel*/, {|| "|" })
+TRCell():New(oSection3, "nSAIQtd"  		, " ", 'Qtde'+CRLF+'Saídas', cPicB2Cust , cTamB2Cust    , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection3, "cTraco4"  		, " ", "|"+CRLF+"|"        , /*Picture*/, 1             , /*lPixel*/, {|| "|" })
+TRCell():New(oSection3, "nSALDQtd" 		, " ", 'Qtde'+CRLF+'Atual' , cPicD2Qt   , cTamD2Qt      , /*lPixel*/, /*{|| code-block de impressao }*/)
+//TRCell():New(oSection3, "nSAICus"  		, " ", STR0047+CRLF+STR0044, cPicD2Cust , cTamD2Cust    , /*lPixel*/, /*{|| code-block de impressao }*/)
+//TRCell():New(oSection3, "cTraco6"  		, " ", "|"+CRLF+"|"        , /*Picture*/, 1             , /*lPixel*/, {|| "|" })
+//TRCell():New(oSection3, "nSALDQtd" 		, " ", STR0048+CRLF+STR0043, cPicB2Qt   , cTamB2Qt      , /*lPixel*/, /*{|| code-block de impressao }*/)
+//TRCell():New(oSection3, "cTraco7"  		, " ", "|"+CRLF+"|"        , /*Picture*/, 1             , /*lPixel*/, {|| "|" })
+//TRCell():New(oSection3, "nSALDCus" 		, " ", STR0048+CRLF+STR0049, cPicB2Tot  , cTamB2Tot     , /*lPixel*/, /*{|| code-block de impressao }*/)
+
 
 // Definir o formato de valores negativos (para o caso de devolucoes)
 oSection3:Cell("nENTQtd"):SetNegative("PARENTHESES")
-oSection3:Cell("nENTCus"):SetNegative("PARENTHESES")
+//oSection3:Cell("nENTCus"):SetNegative("PARENTHESES")
 oSection3:Cell("nSAIQtd"):SetNegative("PARENTHESES")
-oSection3:Cell("nSAICus"):SetNegative("PARENTHESES")
+//oSection3:Cell("nSAICus"):SetNegative("PARENTHESES")
 
 TRFunction():New(oSection3:Cell("nENTQtd")	,NIL,"SUM"		,/*oBreak*/,"",cPicD1Qt		,{|| oSection3:Cell("nENTQtd"):GetValue(.T.) },.T.,.F.)
-TRFunction():New(oSection3:Cell("nENTCus")	,NIL,"SUM"		,/*oBreak*/,"",cPicD1Cust	,{|| oSection3:Cell("nENTCus"):GetValue(.T.) },.T.,.F.)
+//TRFunction():New(oSection3:Cell("nENTCus")	,NIL,"SUM"		,/*oBreak*/,"",cPicD1Cust	,{|| oSection3:Cell("nENTCus"):GetValue(.T.) },.T.,.F.)
 
 TRFunction():New(oSection3:Cell("nSAIQtd")	,NIL,"SUM"		,/*oBreak*/,"",cPicD2Qt		,{|| oSection3:Cell("nSAIQtd"):GetValue(.T.) },.T.,.F.)
-TRFunction():New(oSection3:Cell("nSAICus")	,NIL,"SUM"		,/*oBreak*/,"",cPicD2Cust	,{|| oSection3:Cell("nSAICus"):GetValue(.T.) },.T.,.F.)
+//TRFunction():New(oSection3:Cell("nSAICus")	,NIL,"SUM"		,/*oBreak*/,"",cPicD2Cust	,{|| oSection3:Cell("nSAICus"):GetValue(.T.) },.T.,.F.)
 
 TRFunction():New(oSection3:Cell("nSALDQtd"),NIL,"ONPRINT"	,/*oBreak*/,"",cPicB2Qt		,{|| oSection3:Cell("nSALDQtd"):GetValue(.T.) },.T.,.F.)
-TRFunction():New(oSection3:Cell("nSALDCus"),NIL,"ONPRINT"	,/*oBreak*/,"",cPicB2Tot	,{|| oSection3:Cell("nSALDCus"):GetValue(.T.) },.T.,.F.)
+//TRFunction():New(oSection3:Cell("nSALDCus"),NIL,"ONPRINT"	,/*oBreak*/,"",cPicB2Tot	,{|| oSection3:Cell("nSALDCus"):GetValue(.T.) },.T.,.F.)
 
 oSection3:SetNoFilter("SD1")
 oSection3:SetNoFilter("SD2")
@@ -403,10 +405,7 @@ If !Empty(aFilsCalc)
 				oSection1:Cell("B1_GRUPO"	):Disable()
 			EndIf
 
-			If mv_par09 $ "Ss"
-				oSection3:Cell("cDoc"):SetTitle(STR0052+CRLF+STR0041) //"SEQUENCIA"
-			EndIf
-
+			
 			dbSelectArea("SD1")   // Itens de Entrada
 			nTotRegs += LastRec()
 
@@ -1046,15 +1045,18 @@ If !Empty(aFilsCalc)
 					dbSkip()
 					loop
 				Endif 
+
 				dbSelectArea(cAliasTop)
 				cProdAnt  := (cAliasTop)->PRODUTO
 				cLocalAnt := alltrim(SB2->B2_LOCAL)
-
+				cDescric  := Posicione("SB1",1,xFilial("SB1")+cProdAnt,"B1_DESC")
 				lFirst:=.F.
 
 				MR900ImpS1(@aSalAtu,cAliasTop,.T.,lVEIC,lCusFil,lCusEmp,oSection1,oSection2,oReport,aFils)
 
-				Aadd(aSldDia,{cLocalAnt,'',cProdAnt,(cAliasTop)->B1_DESC,'',aSalAtu[1],0,0,0})
+				If Ascan(aSldDia,{|x| x[1]+x[3] == cLocalAnt+cProdAnt}) == 0
+					Aadd(aSldDia,{cLocalAnt,'',cProdAnt,cDescric,'',aSalAtu[1],0,0,0})
+				EndIf 
 
 				oSection3:Init()
 				While !oReport:Cancel() .And. !(cAliasTop)->(Eof()) .And. (cAliasTop)->PRODUTO = cProdAnt .And. If(lCusFil .Or. lCusEmp .Or. lLocProc,.T.,IIf(alltrim((cAliasTop)->ARQ) <> 'SB1',alltrim((cAliasTop)->ARMAZEM)==cLocalAnt,.T.))
@@ -1110,39 +1112,19 @@ If !Empty(aFilsCalc)
 									Loop
 								Else
 									lContinua := .T.
-									If lFirst
-									/*
-										oSection3:Cell("cTES"):SetValue(aDadosTran[1])
-										oSection3:Cell("cLocal"):SetValue(aDadosTran[15])
-										oSection3:Cell("cProduto"):SetValue(cProdAnt)
-									*/
-									EndIf
+									
 									If aDadosTran[1] <= "500"
 										oSection3:Cell("nENTQtd"):Show()
 										oSection3:Cell("nENTCus"):Show()
-										oSection3:Cell("nCusMov"):Show()
-									//	oSection3:Cell("nENTQtd"):SetValue(aDadosTran[2])
-									/*	oSection3:Cell("nSAIQtd"):Hide()
-										oSection3:Cell("nSAICus"):Hide()
-										oSection3:Cell("nSAIQtd"):SetValue(0)
-									*/	
 										aSldDia[len(aSldDia),07] += aDadosTran[2]
 
 										aSalAtu[1] += aDadosTran[2]
 										aSalAtu[mv_par10+1] += aDadosTran[3]
 										aSalAtu[7] += aDadosTran[4]
 									Else
-										/*
-										oSection3:Cell("nENTQtd"):Hide()
-										oSection3:Cell("nENTCus"):Hide()
-										oSection3:Cell("nENTQtd"):SetValue(0)
-										*/
-										oSection3:Cell("nCusMov"):Show()
 										oSection3:Cell("nSAIQtd"):Show()
 										oSection3:Cell("nSAICus"):Show()
 
-										//oSection3:Cell("nSAIQtd"):SetValue(aDadosTran[2])
-										
 										aSldDia[len(aSldDia),08] += aDadosTran[2]
 
 										aSalAtu[1] -= aDadosTran[2]
@@ -1155,15 +1137,7 @@ If !Empty(aFilsCalc)
 							EndIf
 						EndIf
 					EndIf
-					/*
-					If lFirst .And. !lContinua .And. lTransEnd
-						
-						oSection3:Cell("cLocal"):SetValue(ARMLOC)
-						oSection3:Cell("cProduto"):SetValue(cProdAnt)
-						oSection3:Cell("B1_DESC"):SetValue((cAliasTOP)->(B1_DESC))
-						
-					EndIf
-					*/
+					
 					Do Case
 						Case Alltrim((cAliasTop)->ARQ) == "SD1" .And. !lContinua .And. lTransEnd
 							lDev:=MTR900Dev("SD1",cAliasTop)
@@ -1172,29 +1146,16 @@ If !Empty(aFilsCalc)
 								oSection3:Cell("nENTQtd"):Show()
 								oSection3:Cell("nENTCus"):Show()
 
-								/*oSection3:Cell("nENTQtd"):SetValue((cAliasTOP)->QUANTIDADE)
-						
-								oSection3:Cell("nSAIQtd"):Hide()
-								oSection3:Cell("nSAICus"):Hide()
-								oSection3:Cell("nSAIQtd"):SetValue(0)
-								*/
-								
 								aSldDia[len(aSldDia),07] +=  (cAliasTOP)->QUANTIDADE
 
 								aSalAtu[1] += (cAliasTOP)->QUANTIDADE
 								aSalAtu[mv_par10+1] += (cAliasTOP)->CUSTO
 								aSalAtu[7] += (cAliasTOP)->QUANT2UM
 							Else
-								/*
-								oSection3:Cell("nENTQtd"):Hide()
-								oSection3:Cell("nENTCus"):Hide()
-								oSection3:Cell("nENTQtd"):SetValue(0)
-								*/
 								oSection3:Cell("nSAIQtd"):Show()
 								oSection3:Cell("nSAICus"):Show()
 
 								If lDev
-								//	oSection3:Cell("nSAIQtd"):SetValue((cAliasTOP)->QUANTIDADE * -1)
 						
 									aSldDia[len(aSldDia),07] +=  (cAliasTOP)->QUANTIDADE
 
@@ -1202,7 +1163,6 @@ If !Empty(aFilsCalc)
 									aSalAtu[mv_par10+1] += (cAliasTOP)->CUSTO
 									aSalAtu[7] += (cAliasTOP)->QUANT2UM
 								Else
-								//	oSection3:Cell("nSAIQtd"):SetValue((cAliasTOP)->QUANTIDADE)
 						
 									aSldDia[len(aSldDia),08] +=  (cAliasTOP)->QUANTIDADE
 
@@ -1218,8 +1178,6 @@ If !Empty(aFilsCalc)
 									oSection3:Cell("nENTQtd"):Show()
 									oSection3:Cell("nENTCus"):Show()
 
-									//oSection3:Cell("nENTQtd"):SetValue((cAliasTOP)->QUANTIDADE * -1)
-						
 									aSldDia[len(aSldDia),07] +=  (cAliasTOP)->QUANTIDADE
 
 									aSalAtu[1] 			-= (cAliasTOP)->QUANTIDADE
@@ -1229,30 +1187,16 @@ If !Empty(aFilsCalc)
 									oSection3:Cell("nENTQtd"):Show()
 									oSection3:Cell("nENTCus"):Show()
 
-									//oSection3:Cell("nENTQtd"):SetValue((cAliasTOP)->QUANTIDADE)
-						
 									aSldDia[len(aSldDia),08] +=  (cAliasTOP)->QUANTIDADE
 
 									aSalAtu[1]			+= (cAliasTOP)->QUANTIDADE
 									aSalAtu[mv_par10+1]	+= (cAliasTOP)->CUSTO
 									aSalAtu[7]			+= (cAliasTOP)->QUANT2UM
 								EndIf
-								/*
-								oSection3:Cell("nSAIQtd"):Hide()
-								oSection3:Cell("nSAICus"):Hide()
-								oSection3:Cell("nSAIQtd"):SetValue(0)
-								*/
 							Else
-								/*
-								oSection3:Cell("nENTQtd"):Hide()
-								oSection3:Cell("nENTCus"):Hide()
-								oSection3:Cell("nENTQtd"):SetValue(0)
-								*/
 								oSection3:Cell("nSAIQtd"):Show()
 								oSection3:Cell("nSAICus"):Show()
 
-								//oSection3:Cell("nSAIQtd"):SetValue((cAliasTOP)->QUANTIDADE)
-						
 								aSldDia[len(aSldDia),07] +=  (cAliasTOP)->QUANTIDADE
 
 								aSalAtu[1]			-= (cAliasTOP)->QUANTIDADE
@@ -1265,24 +1209,14 @@ If !Empty(aFilsCalc)
 								If (cAliasTOP)->TES > "500"
 									oSection3:Cell("nENTQtd"):Show()
 									oSection3:Cell("nENTCus"):Show()
-									oSection3:Cell("nCusMov"):Show()
-									/*oSection3:Cell("nENTCus"):SetValue((cAliasTOP)->CUSTO)
-									oSection3:Cell("nSAIQtd"):Hide()
-									oSection3:Cell("nSAICus"):Hide()
-									oSection3:Cell("nSAIQtd"):SetValue(0)
-									*/
 									aSldDia[len(aSldDia),08] +=  (cAliasTOP)->QUANTIDADE
 
 									aSalAtu[1]			+= (cAliasTOP)->QUANTIDADE
 									aSalAtu[mv_par10+1]	+= (cAliasTOP)->CUSTO
 									aSalAtu[7]			+= (cAliasTOP)->QUANT2UM
 								Else
-									//oSection3:Cell("nENTQtd"):Hide()
-									//oSection3:Cell("nENTCus"):Hide()
-									oSection3:Cell("nCusMov"):Show()
 									oSection3:Cell("nSAIQtd"):Show()
 									oSection3:Cell("nSAICus"):Show()
-									//oSection3:Cell("nSAIQtd"):SetValue((cAliasTOP)->QUANTIDADE)
 						
 									aSldDia[len(aSldDia),07] +=  (cAliasTOP)->QUANTIDADE
 
@@ -1297,25 +1231,14 @@ If !Empty(aFilsCalc)
 								If (cAliasTOP)->TES <= "500"
 									oSection3:Cell("nENTQtd"):Show()
 									oSection3:Cell("nENTCus"):Show()
-									oSection3:Cell("nCusMov"):Show()
-									/*oSection3:Cell("nENTQtd"):SetValue((cAliasTOP)->QUANTIDADE)
-									oSection3:Cell("nSAIQtd"):Hide()
-									oSection3:Cell("nSAICus"):Hide()
-									oSection3:Cell("nSAIQtd"):SetValue(0)
-									*/
 									aSldDia[len(aSldDia),07] +=  (cAliasTOP)->QUANTIDADE
 
 									aSalAtu[1]			+= (cAliasTOP)->QUANTIDADE
 									aSalAtu[mv_par10+1]	+= (cAliasTOP)->CUSTO
 									aSalAtu[7]			+= (cAliasTOP)->QUANT2UM
 								Else
-									//oSection3:Cell("nENTQtd"):Hide()
-									//oSection3:Cell("nENTCus"):Hide()
-									oSection3:Cell("nCusMov"):Show()
 									oSection3:Cell("nSAIQtd"):Show()
-									oSection3:Cell("nSAICus"):Show()
-									//oSection3:Cell("nSAIQtd"):SetValue((cAliasTOP)->QUANTIDADE)
-
+					
 									aSldDia[len(aSldDia),08] +=  (cAliasTOP)->QUANTIDADE
 
 									aSalAtu[1]			-= (cAliasTOP)->QUANTIDADE
@@ -1348,9 +1271,6 @@ If !Empty(aFilsCalc)
 						oSection3:PrintLine()*/
 					EndIf
 
-					If lFirst .And. lTransEnd
-						//oSection3:PrintLine()
-					Endif
 					aDadosTran := {}
 					lTransEnd := .T.
 
@@ -1372,18 +1292,13 @@ If !Empty(aFilsCalc)
 			//aSldDia
 			For nSldDia := 1 to len(aSldDia)
 				oSection3:Cell("cLocal"):SetValue(aSldDia[nSldDia,01])
-				//oSection3:Cell("cTES"):SetValue("")
 				oSection3:Cell("cProduto"):SetValue(aSldDia[nSldDia,03])
-				//oSection3:Cell("cCF"):SetValue("")
+				oSection3:Cell("cDescric"):SetValue(aSldDia[nSldDia,04])
 				oSection3:Cell("cDoc"):SetValue("")
-				oSection3:Cell("nENTQtd"):SetValue(aSldDia[nSldDia,07])
-				oSection3:Cell("nENTCus"):SetValue(0)
-				oSection3:Cell("nCusMov"):SetValue(0)
+				oSection3:Cell("nENTQtd"):SetValue(aSldDia[nSldDia,06])
+				oSection3:Cell("nENTCus"):SetValue(aSldDia[nSldDia,07])
 				oSection3:Cell("nSAIQtd"):SetValue(aSldDia[nSldDia,08])
-				oSection3:Cell("nSAICus"):SetValue(0)
-				oSection3:Cell("nSALDQtd"):SetValue(aSldDia[nSldDia,06])
-				oSection3:Cell("nSALDCus"):SetValue(0)
-				oSection3:Cell("cCCPVPJOP"):SetValue("")
+				oSection3:Cell("nSALDQtd"):SetValue(aSldDia[nSldDia,06] + aSldDia[nSldDia,07] - aSldDia[nSldDia,08])
 				oSection3:PrintLine()
 			Next nSldDia
 
