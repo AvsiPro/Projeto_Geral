@@ -151,7 +151,7 @@ cQuery += " AND D_E_L_E_T_=' '"
 
 TCQUERY cQuery NEW ALIAS "CADTMP"
 
-//TcSetField('CADTMP','D2_EMISSAO','D')
+ //TcSetField('CADTMP','D2_EMISSAO','D')
 
 Count To nReg
 
