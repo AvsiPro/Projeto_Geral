@@ -3,7 +3,7 @@
 #INCLUDE 'FWMVCDef.ch'
  
 //VariÃ¡veis EstÃ¡ticas
-STATIC cTitulo    :=    "Cadastro de Tipo Connect"
+STATIC cTitulo    := "Multas / Sinistros"
  
 USER FUNCTION JMULT001()
 
@@ -47,12 +47,13 @@ STATIC FUNCTION MenuDef()
     LOCAL aRot    :=    {}
      
     //Adicionando opÃ§Ãµes
-    ADD OPTION aRot TITLE 'Visualizar'          ACTION 'VIEWDEF.JMULT001' OPERATION MODEL_OPERATION_VIEW   ACCESS 0 //OPERATION 1
+    ADD OPTION aRot TITLE 'Visualizar'          ACTION 'U_xJMult01(0)'    OPERATION MODEL_OPERATION_VIEW   ACCESS 0 //OPERATION 1
     ADD OPTION aRot TITLE 'Legenda'             ACTION 'U_ZPDLeg'         OPERATION 6                      ACCESS 0 //OPERATION X
-    ADD OPTION aRot TITLE 'Negociação'          ACTION 'U_xJMult01'       OPERATION MODEL_OPERATION_INSERT ACCESS 0 //OPERATION 3
+    ADD OPTION aRot TITLE 'Negociação'          ACTION 'U_xJMult01(1)'    OPERATION MODEL_OPERATION_INSERT ACCESS 0 //OPERATION 3
     ADD OPTION aRot TITLE 'Gerar Movimentação'  ACTION 'U_xJMult03'       OPERATION MODEL_OPERATION_UPDATE ACCESS 0 //OPERATION 4
     ADD OPTION aRot TITLE 'Aprovações'          ACTION 'U_xJMult02'       OPERATION MODEL_OPERATION_UPDATE ACCESS 0 //OPERATION 5
     ADD OPTION aRot TITLE 'Excluir'             ACTION 'VIEWDEF.JMULT001' OPERATION MODEL_OPERATION_DELETE ACCESS 0 //OPERATION 6
+    ADD OPTION aRot TITLE 'Sinistro'            ACTION 'U_JMULT002()'     OPERATION MODEL_OPERATION_DELETE ACCESS 0 //OPERATION 6
  
 RETURN aRot
 
@@ -157,7 +158,7 @@ RETURN
     (examples)
     @see (links_or_references)
     /*/
-User Function xJMult01
+User Function xJMult01(nOperac)
 
 Local nOpc := 0
 
@@ -182,8 +183,20 @@ If Empty(FunName())
     RPCSetEnv("01","00020087")
 EndIf
 
-
-cCodigo := GetSXENum("ZPD","ZPD_CODIGO")
+If nOperac == 1
+    cCodigo := GetSXENum("ZPD","ZPD_CODIGO")
+else 
+    cCodigo := ZPD->ZPD_CODIGO
+    cTipoOc := ZPD->ZPD_TIPO
+    cVinculo:= ZPD->ZPD_VINCUL
+    cVerba  := ZPD->ZPD_VERBA
+    nVlrMul := ZPD->ZPD_MULTA
+    nVlrNeg := ZPD->ZPD_VALOR
+    nQtdPar := ZPD->ZPD_PARCEL
+    cCodRes := ZPD->ZPD_RESPON
+    dIniPgt := ZPD->ZPD_DTINIC
+    cNome   := Posicione("SRA",1,xFilial("SRA")+cCodRes,"RA_NOME")
+EndIf 
 
 oDlg1      := MSDialog():New( 092,232,694,1556,"Negociação",,,.F.,,,,,,.T.,,,.T. )
 
@@ -221,11 +234,24 @@ oGrp1      := TGroup():New( 016,020,236,624,"",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F.
 
     oSay3      := TSay():New( 108,168,{||"Nome"},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
     oGet2      := TGet():New( 108,204,{|u| If(Pcount()>0,cNome:=u,cNome)},oGrp1,396,008,'',,CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"","",,)
-    oGet2:Disable()
-        
+    oGet2:Disable()    
     
     oBtn1      := TButton():New( 252,220,"Salvar",oDlg1,{||oDlg1:end(nOpc:=1)},037,012,,,,.T.,,"",,,,.F. )
     oBtn2      := TButton():New( 252,360,"Sair",oDlg1,{||oDlg1:end(nOpc:=0)},037,012,,,,.T.,,"",,,,.F. )
+
+    If nOperac == 0
+        oCBox1:disable()
+        oCBox2:disable()
+        oGet3:disable()
+        oGet4:disable()
+        oGet5:disable()
+        oGet6:disable()
+        oGet7:disable()
+
+        If cTipoOc == "S"
+            oBtn3      := TButton():New( 252,290,"Vis. Sinistro",oDlg1,{|| U_JMULT002(ZPD->ZPD_CODZPF)},037,012,,,,.T.,,"",,,,.F. )
+        EndIf 
+    EndIf 
 
     oBtn1:disable()
 
