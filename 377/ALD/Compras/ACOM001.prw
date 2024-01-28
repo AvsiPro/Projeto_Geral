@@ -114,12 +114,13 @@ If nPosic == 2
         EndIf 
     Next nX 
 
-    If nSmGer <> 100 .Or. lParZr
+    /*If nSmGer <> 100 .Or. lParZr
         MsgAlert("Soma total não bate ou alguma parcela ficou zerada, favor conferir")
         oBtn1:disable()
     Else 
         oBtn1:enable()
-    EndIf 
+    EndIf */
+    oBtn1:enable()
 
 ElseIf nPosic == 3  
 
@@ -157,12 +158,14 @@ ElseIf nPosic == 3
         EndIf 
     Next nX
 
-    If nSmGer <> 100 .Or. lParZr
+    /*If nSmGer <> 100 .Or. lParZr
         MsgAlert("Soma total não bate ou alguma parcela ficou zerada, favor conferir")
         oBtn1:disable()
     Else 
         oBtn1:enable()
-    EndIf 
+    EndIf */
+
+    oBtn1:enable()
     
 ElseIf nPosic == 5
     Aeval(aList1,{|x| nSmTot += x[2]})
