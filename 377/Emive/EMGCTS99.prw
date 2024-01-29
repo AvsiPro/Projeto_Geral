@@ -40,6 +40,9 @@ EndIf
 
 nHandle 		:= fcreate('\spool\'+Alltrim(cTip)+'_'+dtos(ddatabase)+cvaltochar(strtran(time(),":"))+'.xml' , FO_READWRITE + FO_SHARED )
 
+ProcLogIni( {},"EMGCTS99" )
+
+ProcLogAtu("INICIO", "SE1 - Criação de pagamentos recorrentes ")
 
 cServer		:= SuperGetMv("ES_URLGT" 	,.F.,"https://apisandbox.cieloecommerce.cielo.com.br")
 cResource 	:= SuperGetMv("ES_ERPSKU" 	,.F.,"/1/sales")
@@ -68,7 +71,7 @@ If len(aLista) > 0
         oRestClient:SetPostParams(cConteudo)
 
         IF oRestClient:Post(aHeader)
-            
+            aAux := {}
             cResult := oRestClient:GetResult()
             oJsonRes:FromJson(cResult)
             
@@ -83,25 +86,68 @@ If len(aLista) > 0
             ReturnCode -	Código de retorno da Adquirência.	Texto	32	Texto alfanumérico
             ReturnMessage -	Mensagem de retorno da Adquirência.	Texto	512	Texto alfanumérico
             */
+
+            /*
+                Status
+                0	NotFinished	Todos	Aguardando atualização de status.
+                1	Authorized	Todos	Pagamento apto a ser capturado ou definido como pago.
+                2	PaymentConfirmed	Todos	Pagamento confirmado e finalizado.
+                3	Denied	Cartões de crédito e débito (transferência eletrônica) e e-wallets.	Pagamento negado por Autorizador.
+                10	Voided	Todos, exceto boleto	Pagamento cancelado.
+                11	Refunded	Cartões de crédito e débito e e-wallets.	Pagamento cancelado após 23h59 do dia de autorização.
+                12	Pending	Cartões de crédito e débito (transferência eletrônica), e-wallets e pix.	Aguardando retorno da instituição financeira.
+                13	Aborted	Todos	Pagamento cancelado por falha no processamento ou por ação do Antifraude.
+                20	Scheduled	Cartão de crédito e e-wallets.	Recorrência agendada.
+            */
             oJsonAux := oJsonRes:GetJsonObject('Payment')
-            Aadd(aAux,{ oJsonAux["ProofOfSale"] ,;
-                        oJsonAux["Tid"],;
-                        oJsonAux["AuthorizationCode"],;
-                        oJsonAux["SoftDescriptor"],;
-                        oJsonAux["PaymentId"],;
-                        oJsonAux["ECI"],;
-                        oJsonAux["Status"],;
-                        oJsonAux["ReturnCode"],;
-                        oJsonAux["ReturnMessage"]})
+            Aadd(aAux,{ oJsonAux["ProofOfSale"] ,;              //01
+                        oJsonAux["Tid"],;                       //02
+                        oJsonAux["AuthorizationCode"],;         //03
+                        oJsonAux["SoftDescriptor"],;            //04
+                        oJsonAux["PaymentId"],;                 //05
+                        oJsonAux["ECI"],;                       //06
+                        oJsonAux["Status"],;                    //07
+                        oJsonAux["ReturnCode"],;                //08
+                        oJsonAux["ReturnMessage"]})             //09
+            
+            DbSelectArea("SE1")
+            Dbgoto(aLista[nCont])
+
+            ProcLogAtu("MENSAGEM", 'Prefixo/Titulo/Parcela/Tipo '+SE1->E1_PREFIXO+SE1->E1_NUM+SE1->E1_PARCELA+SE1->E1_TIPO)
+
+            If CVALTOCHAR(aAux[1,7]) $ '1/2' 
+                SE1->(RecLock("SE1",.F.))
+                SE1->E1_NSUTEF := aAux[1,1]
+                SE1->(MsUnLock()) 
+                cResult := "Transação autorizada nsu - "+aAux[1,1]
+            ElseIf aAux[1,7] == 3 
+                cResult := "Transação negada pelo autorizador"
+                //FwLogMsg("INFO",,"",FunName(),"","01",OemToAnsi("Transação negada pelo autorizador"),0,0,{})            
+                SE1->(RecLock("SE1",.F.))
+                SE1->E1_ZNVEZES += 1
+                SE1->(MsUnLock())
+            EndIf 
         Else
             cResult := oRestClient:GetLastError()
+            //FwLogMsg("INFO",,"",FunName(),"","01",OemToAnsi("Erro na integração"),0,0,{})
+            
+            DbSelectArea("SE1")
+            Dbgoto(aLista[nCont])
+
+			SE1->(RecLock("SE1",.F.))
+			SE1->E1_ZNVEZES += 1
+			SE1->(MsUnLock())
+
         EndIf  
+
+        ProcLogAtu("MENSAGEM", cResult)
 
         FWrite(nHandle,cResult,10000)
 
     Next nCont
 
     
+    ProcLogAtu("FIM")
     
 
 EndIf 
@@ -124,14 +170,15 @@ Return
 /*/
 Static Function Busca()
 
-Local aArea := GetArea()
+Local aArea     := GetArea()
 Local cQuery 
+Local cTipoPg   := Supergetmv("ES_TIPPAG",.F.,"CC")
 
 cQuery := "SELECT E1.R_E_C_N_O_ AS RECSE1 "
 cQuery += " FROM "+RetSQLName("SE1")+" E1"
 cQuery += " WHERE D_E_L_E_T_ =' ' AND E1_SALDO > 0 "
-cQuery += " AND E1_ZTPPAG = 'CC' "
-cQuery += " AND E1_FILIAL BETWEEN ' ' AND 'ZZZ'"
+cQuery += " AND E1_ZTPPAG IN('"+Alltrim(cTipoPg)+"') AND E1_NSUTEF=' '"
+cQuery += " AND E1_FILIAL BETWEEN ' ' AND 'ZZZ' AND E1_ZNVEZES<6"
 
 IF Select('TRB') > 0
     dbSelectArea('TRB')
