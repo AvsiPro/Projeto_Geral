@@ -37,7 +37,9 @@ WsMethod POST WsReceive RECEIVE WsService JWSRA011
     Local cBanco        As Character
     Local cAgencia      As Character
     Local cConta        As Character
-    
+    Local cTitulo       As Character
+    Local cPrefixo      As Character
+    Local cParcela      As Character
     Local cCliente      As Character
     Local cLoja         As Character
     Local cHist         As Character
@@ -45,7 +47,9 @@ WsMethod POST WsReceive RECEIVE WsService JWSRA011
     Local dEmissao      As Date 
     Local dVencto       As Date 
     Local dVenctoReal   As Date 
-    
+    Local cTipo         As Character
+    Local cMovimento    As Character
+
 	Local cCode	     := "#200"
 	Local cMessage	 := ''
     Local cResult    := ''
@@ -56,20 +60,17 @@ WsMethod POST WsReceive RECEIVE WsService JWSRA011
     Local cJson      := ::GetContent()
     Local oParser
     Local aTitImp    := {}
-    Local aAuxImp    := {}
     Local keyType    := ""
     Local lTitSE5    := .F.
     Local nCont      := 0   
     Local nX         := 0
-    Local cTitPai    := ''
-    Local lBaixaTt   := .F.
     
     Local aObrig1    := {'Filial','Data_Movimento','Moeda','Valor','Natureza','Banco','Agencia','Conta'}
     //Local aObrig2    := {'Filial','Prefixo','Titulo','Parcela','Tipo'}
     //Local aObrig3    := {'Filial','Prefixo','Titulo','Parcela','Tipo'}
 
     Private lMsErroAuto := .F.
-    Private aVetSE1     := {}
+    Private aVetSE5     := {}
 
 	oBody  := JsonObject():New()
 
@@ -101,6 +102,7 @@ WsMethod POST WsReceive RECEIVE WsService JWSRA011
             For nCont := 1 to len(aTitImp)
                 cFilMov     := aTitImp[nCont]:getJsonText("Filial")
                 dDataMov	:= aTitImp[nCont]:getJsonText("Data_Movimento")
+                cMovimento	:= aTitImp[nCont]:getJsonText("Movimento")
                 cMoeda      := aTitImp[nCont]:getJsonText("Moeda")
                 cNatureza   := aTitImp[nCont]:getJsonText("Natureza")
                 nValor      := aTitImp[nCont]:getJsonText("Valor")
@@ -109,6 +111,10 @@ WsMethod POST WsReceive RECEIVE WsService JWSRA011
                 cConta      := aTitImp[nCont]:getJsonText("Conta")
                 cCliente    := aTitImp[nCont]:getJsonText("Cliente")
                 cLoja       := aTitImp[nCont]:getJsonText("Loja")
+                cTipo       := aTitImp[nCont]:getJsonText("Tipo")
+                cTitulo     := aTitImp[nCont]:getJsonText("Titulo")
+                cParcela    := aTitImp[nCont]:getJsonText("Parcela")
+                cPrefixo    := aTitImp[nCont]:getJsonText("Prefixo")
                 cHist       := aTitImp[nCont]:getJsonText("Historico")
 
                 
@@ -123,14 +129,14 @@ WsMethod POST WsReceive RECEIVE WsService JWSRA011
                 
 
                 If cTipOper == "1"
-                    For nCont := 1 to len(aObrig1)
-                        lOk := aTitImp[nCont]:hasProperty(aObrig1[nCont])
+                    For nX := 1 to len(aObrig1)
+                        lOk := aTitImp[nCont]:hasProperty(aObrig1[nX])
                         If !lOk
                             cCode 	 := "#400"
                             cMessage += "#erro_cliente "
-                            cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"campo_obrigatorio" : "'+"Campo nao informado "+aObrig1[nCont]+'"'
+                            cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"campo_obrigatorio" : "'+"Campo nao informado "+aObrig1[nX]+'"'
                         EndIf 
-                    Next nCont
+                    Next nX
                 /*ElseIf cTipOper == "2"
                     For nCont := 1 to len(aObrig2)
                         lOk := oBody:hasProperty(aObrig2[nCont])
@@ -175,47 +181,26 @@ WsMethod POST WsReceive RECEIVE WsService JWSRA011
                         lRet	:= .F.
                     EndIf
 
-                    DbSelectArea("SX5")
-                    DbSetOrder(1)
-                    If !Dbseek(xFilial("SX5")+"05"+Avkey(cTipo,"X5_CHAVE"))
-                        cCode 	 := "#400"
-                        cMessage += "#tipo_titulo "
-                        cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"tipo" : "'+"Tipo de titulo Inexistente ou nao informada"+'"'"
-                        lRet		:= .F.
-                    EndIf 
+                    If !Empty(cTipo)
+                        DbSelectArea("SX5")
+                        DbSetOrder(1)
+                        If !Dbseek(xFilial("SX5")+"05"+Avkey(cTipo,"X5_CHAVE"))
+                            cCode 	 := "#400"
+                            cMessage += "#tipo_titulo "
+                            cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"tipo" : "'+"Tipo de titulo Inexistente ou nao informada"+'"'"
+                            lRet		:= .F.
+                        EndIf 
+                    Endif 
                     
-                    If empty(ctod(dEmissao))
+                    If empty(ctod(dDataMov))
                         cCode 	 := "#400"
                         cMessage += "#erro_data_emissao "
                         cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"emissao" : "'+"Data de Emissao invalida"+'"'"
                         lRet		:= .F.
                     EndIf 
 
-                    If empty(ctod(dVencto))
-                        cCode 	 := "#400"
-                        cMessage += "#erro_data_vencto "
-                        cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"vencimento" : "'+"Data de Vencimento invalida"+'"'"
-                        lRet		:= .F.
-                    EndIf
-
-                    If empty(ctod(dEmissao))
-                        cCode 	 := "#400"
-                        cMessage += "#erro_data_vencto_real "
-                        cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"vencimento_real" : "'+"Data de Vencimento Real invalida"+'"'"
-                        lRet		:= .F.
-                    EndIf
-
-                    dDtEm := datavalida(ctod(dEmissao))
-                    dDtVc := datavalida(ctod(dVencto))
-                    dDtVr := datavalida(ctod(dVenctoReal))
-                    
-                    If dDtVc < dDtEm .or. dDtVr < dDtEm .or. dDtVr < dDtVc
-                        cCode 	 := "#400"
-                        cMessage += "#erro_vencto_x_emissao "
-                        cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"vencimento_x_emissao" : "'+"Data de Vencimento menor que a data de emissao ou Vencimento real menor que o Vencimento"+'"'"
-                        lRet		:= .F.
-                    EndIf 
-
+                    dDtEm := datavalida(ctod(dDataMov))
+                                        
                     If val(nValor) <= 0
                         cCode 	 := "#400"
                         cMessage += "#erro_valor "
@@ -224,50 +209,62 @@ WsMethod POST WsReceive RECEIVE WsService JWSRA011
                     EndIf
                 EndIf
 
-                aVetSE1 := {}
-
-                aAdd(aVetSE1, {"E1_FILIAL",  cFilMov,  Nil})
-                aAdd(aVetSE1, {"E1_NUM",     cMoeda,           Nil})
-                aAdd(aVetSE1, {"E1_PREFIXO", Avkey(dDataMov,"E1_PREFIXO"),          Nil})
-                aAdd(aVetSE1, {"E1_PARCELA", Avkey(cParcela,"E1_PARCELA"),          Nil})
-                aAdd(aVetSE1, {"E1_TIPO",    Avkey(cTipo,"E1_TIPO")      ,          Nil})
+                aVetSE5 := {}
+                //cMovimento
+                aAdd(aVetSE5, {"E5_FILIAL"  , cFilMov                     ,  Nil})
+                aAdd(aVetSE5, {"E5_MOEDA"   , cMoeda                      ,  Nil})
+                aAdd(aVetSE5, {"E5_DATA"    , ctod(dDataMov)              ,  Nil})
+                aAdd(aVetSE5, {"E5_VALOR"   , val(nValor)                 ,  Nil})
+                aAdd(aVetSE5, {"E5_NATUREZ" , cNatureza                   ,  Nil})
+                aAdd(aVetSE5, {"E5_BANCO"   , cBanco                      ,  Nil})
+                aAdd(aVetSE5, {"E5_AGENCIA" , cAgencia                    ,  Nil})
+                aAdd(aVetSE5, {"E5_CONTA"   , cConta                      ,  Nil})
                 
-                aAdd(aVetSE1, {"E1_CLIENTE", cCliente,          Nil})
-                aAdd(aVetSE1, {"E1_LOJA",    cLoja,             Nil})
-
-                If cTipOper <> '3'
-                    aAdd(aVetSE1, {"E1_NOMCLI",  cNomCli,           Nil})
+                
                     
-                    aAdd(aVetSE1, {"E1_NATUREZ", cNatureza,         Nil})
-                    
-                    aAdd(aVetSE1, {"E1_EMISSAO", CTOD(dEmissao),    Nil})
-                    aAdd(aVetSE1, {"E1_VENCTO",  CTOD(dVencto),     Nil})
-                    aAdd(aVetSE1, {"E1_VENCREA", CTOD(dVenctoReal), Nil})
-                    aAdd(aVetSE1, {"E1_VALOR",   VAL(nValor),       Nil})
-                    aAdd(aVetSE1, {"E1_HIST",    cHist,             Nil})
-                    aAdd(aVetSE1, {"E1_MOEDA",   1,                 Nil})
+                aAdd(aVetSE5, {"E5_CLIFOR"  , cCliente                    ,  Nil})
+                aAdd(aVetSE5, {"E5_LOJA"    , cLoja                       ,  Nil})
+                aAdd(aVetSE5, {"E5_HISTOR"  , cHist                       ,  Nil})
+                aAdd(aVetSE5, {"E5_BENEF"   , cNomCli                     ,  Nil})
+                aadd(aVetSE5, {"E5_CCUSTO"  , '101100313'                 ,  NIL})
+                AADD(aVetSE5, {"E5_ITEMD"   , '0303'                      ,  NIL})  
+                AADD(aVetSE5, {"E5_CLVLDB"  , 'C1801'                     ,  NIL})      
+                
+                If !Empty(cParcela)
+                    aAdd(aVetSE5, {"E5_PARCELA" , Avkey(cParcela,"E5_PARCELA"),  Nil})
                 EndIf 
 
+                If !Empty(cTipo)
+                    aAdd(aVetSE5, {"E5_TIPO"    , Avkey(cTipo,"E5_TIPO")      ,  Nil})
+                Endif 
                 
+                If !Empty(cPrefixo)
+                    aAdd(aVetSE5, {"E5_PREFIXO" , Avkey(cPrefixo,"E5_PREFIXO"),  Nil})
+                EndIf 
 
+                If !Empty(cTitulo)
+                    aAdd(aVetSE5, {"E5_NUMERO"  , Avkey(cTitulo,"E5_NUMERO")    ,  Nil})
+                EndIf 
+                
                 If cTipOper == "1"
                 
-                    DbSelectArea("SE1")
+                    /*DbSelectArea("SE1")
                     DbSetOrder(1)
                     If Dbseek(Avkey(cFilMov,"E1_FILIAL")+Avkey(dDataMov,"E1_PREFIXO")+Avkey(cMoeda,"E1_NUM")+Avkey(cParcela,"E1_PARCELA")+Avkey(cTipo,"E1_TIPO"))
                         cCode 	 := "#400"
                         cMessage += "#titulo "
                         cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"titulo" : "'+"Este titulo ja se encontra na base de dados"+'"'"
                         lRet		:= .F.
-                    EndIf 
+                    EndIf */
 
                     If lRet
                         //Inicia o controle de transação
-                        Begin Transaction
+                        //Begin Transaction
                         //Chama a rotina automática
                         lMsErroAuto := .F.
-                        MSExecAuto({|x,y| FINA040(x,y)}, aVetSE1, 3)
+                        MSExecAuto({|x,y,z| FINA100(x,y,z)},0, aVetSE5, 4)
                         
+
                         //Se houve erro, mostra o erro ao usuário e desarma a transação
                         If lMsErroAuto
                             cCode 	 := "#400"
@@ -281,87 +278,8 @@ WsMethod POST WsReceive RECEIVE WsService JWSRA011
                         EndIf    
 
                         //Finaliza a transação
-                        End Transaction
+                        //End Transaction
 
-                        //Titulo de imposto
-                        If lTitSE5 .And. len(aAuxImp) > 0 .And. lBaixaTt
-                            For nCont := 1 to len(aAuxImp)
-                                For nX := 1 to len(aAuxImp[nCont])
-                                    nPosAux := Ascan(aVetSE1,{|x| x[1] == aAuxImp[nCont,nX,01] })
-                                    If nPosAux > 0
-                                        aVetSE1[nPosAux,02] := aAuxImp[nCont,nX,02]
-                                    EndIf
-                                Next nX
-                            Next nCont
-
-                            aAdd(aVetSE1, {"E1_TITPAI",cTitPai,Nil})
-                            
-                            DbSelectArea("SE1")
-                            Reclock("SE1",.T.)
-
-                            SE1->E1_FILIAL := CFILANT
-
-                            For nCont := 1 to len(aVetSE1)
-                                &("SE1->"+aVetSE1[nCont,01]) := aVetSE1[nCont,02]
-                            Next nCont
-
-                            /*If lBaixaTt
-                                SE1->E1_BAIXA := SE1->E1_VENCREA
-                            Else */
-                                SE1->E1_SALDO := SE1->E1_VALOR 
-                            //EndIF 
-
-                            SE1->(Msunlock())
-
-                            cMessage  += "sucesso "
-                            cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"sucesso" : "'+"Titulo de imposto gerado com sucesso!!!"+'"'"
-                            cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"recno" : "'+"Recno nr. "+cvaltochar(Recno())+'"'"
-                        
-                        Else
-                            
-                            
-                            For nCont := 1 to len(aAuxImp)
-
-                                nPos1 := Ascan(aAuxImp[nCont],{|x| x[1] == "E2_PREFIXO"})
-                                nPos2 := Ascan(aAuxImp[nCont],{|x| x[1] == "E2_TIPO"})
-                                nPos3 := Ascan(aAuxImp[nCont],{|x| x[1] == "E2_FORNECE"})
-                                nPos4 := Ascan(aAuxImp[nCont],{|x| x[1] == "E2_LOJA"})
-                                nPos5 := Ascan(aAuxImp[nCont],{|x| x[1] == "E2_VALOR"})
-
-                                aVetSE2 := {}
-                            //aAuxImp
-                            
-                                aAdd(aVetSE2, {"E2_FILIAL"  , cFilMov                   ,   Nil})
-                                aAdd(aVetSE2, {"E2_NUM"     , cMoeda                   ,   Nil})
-                                aAdd(aVetSE2, {"E2_PREFIXO" , aAuxImp[nCont,nPos1,02]   ,   Nil})
-                                aAdd(aVetSE2, {"E2_PARCELA" , cParcela                  ,   Nil})
-                                aAdd(aVetSE2, {"E2_TIPO"    , aAuxImp[nCont,nPos2,02]   ,   Nil})
-                                aAdd(aVetSE2, {"E2_FORNECE" , aAuxImp[nCont,nPos3,02]   ,   Nil})
-                                aAdd(aVetSE2, {"E2_LOJA"    , aAuxImp[nCont,nPos4,02]   ,   Nil})
-                                aAdd(aVetSE2, {"E2_NATUREZ" , aAuxImp[nCont,nPos1,02]   ,   Nil})
-                                aAdd(aVetSE2, {"E2_EMISSAO" , dDataBase                 ,   Nil})
-                                aAdd(aVetSE2, {"E2_VENCTO"  , CTOD(dVencto)             ,   Nil})
-                                aAdd(aVetSE2, {"E2_VENCREA" , CTOD(dVenctoReal)         ,   Nil})
-                                aAdd(aVetSE2, {"E2_VALOR"   , aAuxImp[nCont,nPos5,02]   ,   Nil})
-                                aAdd(aVetSE2, {"E2_MOEDA"   , 1                         ,   Nil})
-
-                                lMsErroAuto := .F.
-
-                                MSExecAuto({|x,y| FINA050(x,y)}, aVetSE2, 3)
-                                                            
-                                If lMsErroAuto
-                                    cCode 	 := "#400"
-                                    cMessage  := "falha "
-                                    cResultAux := GetErro()
-                                    DisarmTransaction()
-                                else
-                                    cMessage  += "sucesso "
-                                    cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"sucesso" : "'+"Titulo de imposto a pagar gerado com sucesso!!!"+'"'"
-                                    cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"recno" : "'+"Recno nr. "+cvaltochar(Recno())+'"'"
-                                EndIf    
-    
-                            Next nCont 
-                        EndIf 
                             
                     EndIf 
                 ElseIf cTipOper == "2"
@@ -379,7 +297,7 @@ WsMethod POST WsReceive RECEIVE WsService JWSRA011
                         Begin Transaction
                         //Chama a rotina automática
                         lMsErroAuto := .F.
-                        MSExecAuto({|x,y| FINA040(x,y)}, aVetSE1, 4)
+                        MSExecAuto({|x,y| FINA100(x,y)}, aVetSE5, 4)
                         
                         //Se houve erro, mostra o erro ao usuário e desarma a transação
                         If lMsErroAuto
@@ -413,7 +331,7 @@ WsMethod POST WsReceive RECEIVE WsService JWSRA011
                         Begin Transaction
                         //Chama a rotina automática
                         lMsErroAuto := .F.
-                        MSExecAuto({|x,y| FINA040(x,y)}, aVetSE1, 5)
+                        MSExecAuto({|x,y| FINA100(x,y)}, aVetSE5, 5)
                         
                         //Se houve erro, mostra o erro ao usuário e desarma a transação
                         If lMsErroAuto
