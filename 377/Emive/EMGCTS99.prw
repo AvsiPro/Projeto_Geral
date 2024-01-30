@@ -62,6 +62,7 @@ If len(aLista) > 0
         Aadd(aHeader, "MerchantKey:"+AllTrim(cPassAut) )
 
         //criar o token para os testes
+        //Quando o campo da CN9 estiver com os tokens preenchidos, buscar de lá
         cToken := createToken(cServer,aHeader)
         //Json do titulo a ser cobrado
         cConteudo := _jsonEnvio(cToken,aLista[nCont])
@@ -115,21 +116,23 @@ If len(aLista) > 0
 
             ProcLogAtu("MENSAGEM", 'Prefixo/Titulo/Parcela/Tipo '+SE1->E1_PREFIXO+SE1->E1_NUM+SE1->E1_PARCELA+SE1->E1_TIPO)
 
+            SE1->(RecLock("SE1",.F.))
+                
             If CVALTOCHAR(aAux[1,7]) $ '1/2' 
-                SE1->(RecLock("SE1",.F.))
                 SE1->E1_NSUTEF := aAux[1,1]
-                SE1->(MsUnLock()) 
                 cResult := "Transação autorizada nsu - "+aAux[1,1]
             ElseIf aAux[1,7] == 3 
                 cResult := "Transação negada pelo autorizador"
-                //FwLogMsg("INFO",,"",FunName(),"","01",OemToAnsi("Transação negada pelo autorizador"),0,0,{})            
-                SE1->(RecLock("SE1",.F.))
                 SE1->E1_ZNVEZES += 1
-                SE1->(MsUnLock())
-            EndIf 
+            EndIf
+
+            SE1->E1_ZRETADQ := aAux[8]
+            SE1->E1_ZDESADQ := aAux[9]
+
+            SE1->(MsUnLock()) 
+                 
         Else
             cResult := oRestClient:GetLastError()
-            //FwLogMsg("INFO",,"",FunName(),"","01",OemToAnsi("Erro na integração"),0,0,{})
             
             DbSelectArea("SE1")
             Dbgoto(aLista[nCont])
@@ -172,13 +175,17 @@ Static Function Busca()
 
 Local aArea     := GetArea()
 Local cQuery 
-Local cTipoPg   := Supergetmv("ES_TIPPAG",.F.,"CC")
+Local cTipoPg   := Supergetmv("ES_TIPPAG",.F.,"CC")  //Separar por /
+Local cQtdVez   := Supergetmv("ES_QTDTEN",.F.,"6")   //Tipo Caracter
 
 cQuery := "SELECT E1.R_E_C_N_O_ AS RECSE1 "
 cQuery += " FROM "+RetSQLName("SE1")+" E1"
 cQuery += " WHERE D_E_L_E_T_ =' ' AND E1_SALDO > 0 "
-cQuery += " AND E1_ZTPPAG IN('"+Alltrim(cTipoPg)+"') AND E1_NSUTEF=' '"
-cQuery += " AND E1_FILIAL BETWEEN ' ' AND 'ZZZ' AND E1_ZNVEZES<6"
+cQuery += " AND E1_ZTPPAG IN('"+strtran(Alltrim(cTipoPg),"/","','")+"') AND E1_NSUTEF=' '"
+cQuery += " AND E1_FILIAL BETWEEN ' ' AND 'ZZZ' AND E1_ZNVEZES<'"+ALLTRIM(cQtdVez)+"'"
+
+//este tratamento de data, colocar somente quando for para a produção, ou terá que ficar alterando a data dos titulos na base de teste.
+cQuery += " AND E1_VENCREA BETWEEN '"+dtos(ddatabase-(val(cQtdVez)+1))+"' and '"+dtos(ddatabase)+"'"
 
 IF Select('TRB') > 0
     dbSelectArea('TRB')

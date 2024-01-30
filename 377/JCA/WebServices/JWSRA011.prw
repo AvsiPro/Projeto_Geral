@@ -44,11 +44,9 @@ WsMethod POST WsReceive RECEIVE WsService JWSRA011
     Local cLoja         As Character
     Local cHist         As Character
     Local cNomCli       As Character
-    Local dEmissao      As Date 
-    Local dVencto       As Date 
-    Local dVenctoReal   As Date 
     Local cTipo         As Character
     Local cMovimento    As Character
+    Local nRecEnv       As Numeric
 
 	Local cCode	     := "#200"
 	Local cMessage	 := ''
@@ -66,8 +64,8 @@ WsMethod POST WsReceive RECEIVE WsService JWSRA011
     Local nX         := 0
     
     Local aObrig1    := {'Filial','Data_Movimento','Moeda','Valor','Natureza','Banco','Agencia','Conta'}
-    //Local aObrig2    := {'Filial','Prefixo','Titulo','Parcela','Tipo'}
-    //Local aObrig3    := {'Filial','Prefixo','Titulo','Parcela','Tipo'}
+    Local aObrig2    := {'Recno'}
+    Local aObrig3    := {'Recno'}
 
     Private lMsErroAuto := .F.
     Private aVetSE5     := {}
@@ -81,8 +79,8 @@ WsMethod POST WsReceive RECEIVE WsService JWSRA011
 	Else
 
         RpcSetType(3)
-        //RPCSetEnv('01','00020087')
-        RPCSetEnv('00','00001000100')
+        RPCSetEnv('01','00020087')
+        //RPCSetEnv('00','00001000100')
         
         If lRet
             oBody  := JsonObject():New()
@@ -116,7 +114,7 @@ WsMethod POST WsReceive RECEIVE WsService JWSRA011
                 cParcela    := aTitImp[nCont]:getJsonText("Parcela")
                 cPrefixo    := aTitImp[nCont]:getJsonText("Prefixo")
                 cHist       := aTitImp[nCont]:getJsonText("Historico")
-
+                nRecEnv     := aTitImp[nCont]:getJsonText("Recno")
                 
                 If len(cCliente) > 6
                     DbSelectArea("SA1")
@@ -137,24 +135,24 @@ WsMethod POST WsReceive RECEIVE WsService JWSRA011
                             cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"campo_obrigatorio" : "'+"Campo nao informado "+aObrig1[nX]+'"'
                         EndIf 
                     Next nX
-                /*ElseIf cTipOper == "2"
-                    For nCont := 1 to len(aObrig2)
-                        lOk := oBody:hasProperty(aObrig2[nCont])
+                ElseIf cTipOper == "2"
+                    For nX := 1 to len(aObrig2)
+                        lOk := aTitImp[nCont]:hasProperty(aObrig2[nX])
                         If !lOk
                             cCode 	 := "#400"
                             cMessage += "#erro_cliente "
-                            cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"campo_obrigatorio" : "'+"Campo nao informado "+aObrig2[nCont]+'"'
+                            cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"campo_obrigatorio" : "'+"Campo nao informado "+aObrig2[nX]+'"'
                         EndIf
-                    Next nCont
+                    Next nX
                 ElseIf cTipOper == "3"
-                    For nCont := 1 to len(aObrig3)
-                        lOk := oBody:hasProperty(aObrig3[nCont])
+                    For nX := 1 to len(aObrig3)
+                        lOk := aTitImp[nCont]:hasProperty(aObrig3[nX])
                         If !lOk
                             cCode 	 := "#400"
                             cMessage += "#erro_cliente "
-                            cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"campo_obrigatorio" : "'+"Campo nao informado "+aObrig3[nCont]+'"'
+                            cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"campo_obrigatorio" : "'+"Campo nao informado "+aObrig3[nX]+'"'
                         EndIf
-                    Next nCont */   
+                    Next nX    
                 Endif 
 
                 cFilant := cFilMov
@@ -207,6 +205,13 @@ WsMethod POST WsReceive RECEIVE WsService JWSRA011
                         cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"valor" : "'+"Valor informado invalido"+'"'"
                         lRet		:= .F.
                     EndIf
+                Else 
+                    If val(nRecEnv) <= 0
+                        cCode 	 := "#400"
+                        cMessage += "#erro_renoc "
+                        cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"recno" : "'+"Nao foi informado o Recno da transacao"+'"'"
+                        lRet		:= .F.
+                    EndIf  
                 EndIf
 
                 aVetSE5 := {}
@@ -220,29 +225,35 @@ WsMethod POST WsReceive RECEIVE WsService JWSRA011
                 aAdd(aVetSE5, {"E5_AGENCIA" , cAgencia                    ,  Nil})
                 aAdd(aVetSE5, {"E5_CONTA"   , cConta                      ,  Nil})
                 
+                If !Empty(cCliente) .And. cCliente <> 'null'                    
+                    aAdd(aVetSE5, {"E5_CLIFOR"  , cCliente                    ,  Nil})
+                ENDIF
+
+                If !Empty(cLoja) .And. cLoja <> 'null'
+                    aAdd(aVetSE5, {"E5_LOJA"    , cLoja                       ,  Nil})
+                EndIf 
+
+                If !Empty(cHist) .And. cHist <> 'null'
+                    aAdd(aVetSE5, {"E5_HISTOR"  , cHist                       ,  Nil})
+                EndIf 
+
+                If !Empty(cNomCli) .And. cNomCli <> 'null'
+                    aAdd(aVetSE5, {"E5_BENEF"   , cNomCli                     ,  Nil})
+                EndIf 
                 
-                    
-                aAdd(aVetSE5, {"E5_CLIFOR"  , cCliente                    ,  Nil})
-                aAdd(aVetSE5, {"E5_LOJA"    , cLoja                       ,  Nil})
-                aAdd(aVetSE5, {"E5_HISTOR"  , cHist                       ,  Nil})
-                aAdd(aVetSE5, {"E5_BENEF"   , cNomCli                     ,  Nil})
-                aadd(aVetSE5, {"E5_CCUSTO"  , '101100313'                 ,  NIL})
-                AADD(aVetSE5, {"E5_ITEMD"   , '0303'                      ,  NIL})  
-                AADD(aVetSE5, {"E5_CLVLDB"  , 'C1801'                     ,  NIL})      
-                
-                If !Empty(cParcela)
+                If !Empty(cParcela) .And. cParcela <> 'null'
                     aAdd(aVetSE5, {"E5_PARCELA" , Avkey(cParcela,"E5_PARCELA"),  Nil})
                 EndIf 
 
-                If !Empty(cTipo)
+                If !Empty(cTipo) .And. cTipo <> 'null'
                     aAdd(aVetSE5, {"E5_TIPO"    , Avkey(cTipo,"E5_TIPO")      ,  Nil})
                 Endif 
                 
-                If !Empty(cPrefixo)
+                If !Empty(cPrefixo) .And. cPrefixo <> 'null'
                     aAdd(aVetSE5, {"E5_PREFIXO" , Avkey(cPrefixo,"E5_PREFIXO"),  Nil})
                 EndIf 
 
-                If !Empty(cTitulo)
+                If !Empty(cTitulo) .And. cTitulo <> 'null'
                     aAdd(aVetSE5, {"E5_NUMERO"  , Avkey(cTitulo,"E5_NUMERO")    ,  Nil})
                 EndIf 
                 
@@ -259,7 +270,7 @@ WsMethod POST WsReceive RECEIVE WsService JWSRA011
 
                     If lRet
                         //Inicia o controle de transação
-                        //Begin Transaction
+                        Begin Transaction
                         //Chama a rotina automática
                         lMsErroAuto := .F.
                         MSExecAuto({|x,y,z| FINA100(x,y,z)},0, aVetSE5, 4)
@@ -273,31 +284,52 @@ WsMethod POST WsReceive RECEIVE WsService JWSRA011
                             DisarmTransaction()
                         else
                             cMessage  += "sucesso "
-                            cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"sucesso" : "'+"Titulo gerado com sucesso!!!"+'"'"
-                            cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"recno" : "'+"Recno nr. "+cvaltochar(Recno())+'"'"
+                            cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"'+cvaltochar(nCont)+'.sucesso" : "'+"Titulo gerado com sucesso!!!"+'"'"
+                            cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"'+cvaltochar(nCont)+'.recno" : "'+"Recno nr. "+cvaltochar(SE5->(Recno()))+'"'"
                         EndIf    
 
                         //Finaliza a transação
-                        //End Transaction
+                        End Transaction
 
                             
                     EndIf 
                 ElseIf cTipOper == "2"
-                    DbSelectArea("SE1")
-                    DbSetOrder(1)
+                    DbSelectArea("SE5")
+                    DbGoto(val(nRecEnv))
+                    If SE5->(Recno()) <> val(nRecEnv)
+                        cCode 	 := "#400"
+                        cMessage += "#recno "
+                        cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"recno" : "'+"Recno não encontrado"+'"'"
+                        lRet		:= .F.
+                    EndIf
+
+                    /*DbSetOrder(1)
                     If !Dbseek(Avkey(cFilMov,"E1_FILIAL")+Avkey(dDataMov,"E1_PREFIXO")+Avkey(cMoeda,"E1_NUM")+Avkey(cParcela,"E1_PARCELA")+Avkey(cTipo,"E1_TIPO"))
                         cCode 	 := "#400"
                         cMessage += "#titulo "
                         cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"titulo" : "'+"Este titulo não se encontra na base de dados"+'"'"
                         lRet		:= .F.
-                    EndIf
+                    EndIf*/
 
                     If lRet
+                        DbGoto(val(nRecEnv))
+                        Reclock("SE5",.F.)
+                        For nX := 1 to len(aVetSE5)
+                            &("SE5->"+aVetSE5[nX,01]) := aVetSE5[nX,02]
+                        Next nX 
+
+                        SE5->(Msunlock())
+
+                        cMessage  += "sucesso "
+                        cResultAux += '"sucesso" : "'+"Titulo alterado com sucesso!!!"+'"'"
+                        cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"recno" : "'+"Recno nr. "+cvaltochar(Recno())+'"'"
+                    
+                        /*
                         //Inicia o controle de transação
                         Begin Transaction
                         //Chama a rotina automática
                         lMsErroAuto := .F.
-                        MSExecAuto({|x,y| FINA100(x,y)}, aVetSE5, 4)
+                        MSExecAuto({|x,y,z| FINA100(x,y,z)}, 0, aVetSE5, 4)
                         
                         //Se houve erro, mostra o erro ao usuário e desarma a transação
                         If lMsErroAuto
@@ -312,26 +344,35 @@ WsMethod POST WsReceive RECEIVE WsService JWSRA011
                         EndIf    
 
                         //Finaliza a transação
-                        End Transaction
+                        End Transaction*/
                     EndIf
                 ElseIf cTipOper == "3"
-                    DbSelectArea("SE1")
-                    DbSetOrder(1)
-                    If !Dbseek(Avkey(cFilMov,"E1_FILIAL")+Avkey(dDataMov,"E1_PREFIXO")+Avkey(cMoeda,"E1_NUM")+Avkey(cParcela,"E1_PARCELA")+Avkey(cTipo,"E1_TIPO"))
+
+                    DbSelectArea("SE5")
+                    DbGoto(val(nRecEnv))
+
+                    If SE5->(Recno()) <> val(nRecEnv)
                         cCode 	 := "#400"
-                        cMessage += "#titulo "
-                        cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"titulo" : "'+"Este titulo nao se encontra na base de dados"+'"'"
+                        cMessage += "#recno "
+                        cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"recno" : "'+"Recno não encontrado"+'"'"
                         lRet		:= .F.
                     EndIf
 
                     If lRet
-                        Dbseek(Avkey(cFilMov,"E1_FILIAL")+Avkey(dDataMov,"E1_PREFIXO")+Avkey(cMoeda,"E1_NUM")+Avkey(cParcela,"E1_PARCELA")+Avkey(cTipo,"E1_TIPO"))
+                        DbGoto(val(nRecEnv))
+                        Reclock("SE5",.F.)
+                        DbDelete()
+                        SE5->(Msunlock())
+                        cMessage  += "sucesso "
+                        cResultAux += '"sucesso" : "'+"Titulo excluido com sucesso!!!"+'"'"
+                        cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"recno" : "'+"Recno nr. "+cvaltochar(nRecEnv)+'"'"
                         
-                        //Inicia o controle de transação
+                        /*
+                        //Feito via Reclock, na documentação do Caio diz para excluir e se usar com execauto a rotina cancela o lançamento.
                         Begin Transaction
                         //Chama a rotina automática
                         lMsErroAuto := .F.
-                        MSExecAuto({|x,y| FINA100(x,y)}, aVetSE5, 5)
+                        MSExecAuto({|x,y,z| FINA100(x,y,z)}, 0, aVetSE5, 5)
                         
                         //Se houve erro, mostra o erro ao usuário e desarma a transação
                         If lMsErroAuto
@@ -341,12 +382,12 @@ WsMethod POST WsReceive RECEIVE WsService JWSRA011
                             DisarmTransaction()
                         else
                             cMessage  += "sucesso "
-                            cResultAux += '"sucesso" : "'+"Titulo alterado com sucesso!!!"+'"'"
-                            cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"recno" : "'+"Recno nr. "+cvaltochar(Recno())+'"'"
+                            cResultAux += '"sucesso" : "'+"Titulo excluido com sucesso!!!"+'"'"
+                            cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"recno" : "'+"Recno nr. "+cvaltochar(SE5->(Recno()))+'"'"
                         EndIf    
 
                         //Finaliza a transação
-                        End Transaction
+                        End Transaction*/
                     EndIf
                 EndIf 
             Next nCont
