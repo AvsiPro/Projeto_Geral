@@ -28,6 +28,10 @@ Local nCont
 Local cUserAut      :=  ''
 Local cPassAut      :=  ''
 Local aAux          :=  {}
+Local lBaixa        :=  .T.
+Local cBanco        :=  ''
+Local cAgencia      :=  ''
+Local cConta        :=  ''
 
 Private aLista      :=  {}
 
@@ -35,7 +39,7 @@ Default cPayord		:=	''
 
 If Select("SM0") == 0
     RpcSetType(3)
-    RPCSetEnv("01","0101")
+    RPCSetEnv("01","02001")
 EndIf
 
 nHandle 		:= fcreate('\spool\'+Alltrim(cTip)+'_'+dtos(ddatabase)+cvaltochar(strtran(time(),":"))+'.xml' , FO_READWRITE + FO_SHARED )
@@ -63,9 +67,9 @@ If len(aLista) > 0
 
         //criar o token para os testes
         //Quando o campo da CN9 estiver com os tokens preenchidos, buscar de lá
-        cToken := createToken(cServer,aHeader)
+        cToken := aLista[nCont,02] //createToken(cServer,aHeader)
         //Json do titulo a ser cobrado
-        cConteudo := _jsonEnvio(cToken,aLista[nCont])
+        cConteudo := _jsonEnvio(cToken,aLista[nCont,01],aLista[nCont,04],aLista[nCont,05])
 
         oRestClient:setPath(cResource)
 
@@ -112,30 +116,74 @@ If len(aLista) > 0
                         oJsonAux["ReturnMessage"]})             //09
             
             DbSelectArea("SE1")
-            Dbgoto(aLista[nCont])
+            Dbgoto(aLista[nCont,01])
 
             ProcLogAtu("MENSAGEM", 'Prefixo/Titulo/Parcela/Tipo '+SE1->E1_PREFIXO+SE1->E1_NUM+SE1->E1_PARCELA+SE1->E1_TIPO)
 
             SE1->(RecLock("SE1",.F.))
-                
+            
+            lBaixa := .F.
+
             If CVALTOCHAR(aAux[1,7]) $ '1/2' 
                 SE1->E1_NSUTEF := aAux[1,1]
                 cResult := "Transação autorizada nsu - "+aAux[1,1]
+                lBaixa := .T.
             ElseIf aAux[1,7] == 3 
                 cResult := "Transação negada pelo autorizador"
                 SE1->E1_ZNVEZES += 1
             EndIf
 
-            SE1->E1_ZRETADQ := aAux[8]
-            SE1->E1_ZDESADQ := aAux[9]
-
+            SE1->E1_ZRETADQ := aAux[1,8]
+            SE1->E1_ZDESADQ := aAux[1,9]
+        
             SE1->(MsUnLock()) 
-                 
+
+            If lBaixa 
+                DbSelectArea("SE1")
+                Dbgoto(aLista[nCont,01])
+
+                cBanco := Alltrim(Supergetmv("ES_BANCO",.F.,"341"))
+                cAgencia := Alltrim(Supergetmv("ES_AGENCIA",.F.,"7766"))
+                cConta := Alltrim(Supergetmv("ES_CONTA",.F.,"66554433"))
+
+                DbSelectArea("SA6")
+                DbSetOrder(1)
+                Dbseek(xFilial("SA6")+Avkey(cBanco,"A6_COD")+Avkey(cAgencia,"A6_AGENCIA")+Avkey(cConta,"A6_NUMCON") )
+
+                aBaixa := { {"E1_FILIAL"   ,SE1->E1_FILIAL                          ,Nil    },;
+                            {"E1_PREFIXO"  ,SE1->E1_PREFIXO                         ,Nil    },;
+                            {"E1_NUM"      ,SE1->E1_NUM                             ,Nil    },;
+                            {"E1_TIPO"     ,SE1->E1_TIPO                            ,Nil    },;
+                            {"E1_PARCELA"  ,SE1->E1_PARCELA                         ,Nil    },;
+                            {"AUTMOTBX"    ,"NOR"                                   ,Nil    },;
+                            {"AUTBANCO"    ,Avkey(cBanco,"A6_COD")                  ,Nil    },;
+                            {"AUTAGENCIA"  ,Avkey(cAgencia,"A6_AGENCIA")            ,Nil    },;
+                            {"AUTCONTA"    ,Avkey(cConta,"A6_NUMCON")               ,Nil    },;
+                            {"AUTDTBAIXA"  ,ddatabase                               ,Nil    },;
+                            {"AUTDTCREDITO",ddatabase                               ,Nil    },;
+                            {"AUTHIST"     ,"COBRANCA RECORRENTE"                   ,Nil    },;
+                            {"AUTJUROS"    ,0                                       ,Nil,.T.},;
+                            {"AUTDESCONT"  ,0                                       ,Nil,.T.},;
+                            {"AUTVALREC"   ,SE1->E1_SALDO                           ,Nil    }}
+
+                lMsErroAuto := .F.
+
+                MSExecAuto({|x,y| Fina070(x,y)},aBaixa,3)                  
+
+                If lMsErroAuto
+                    cMensagem := GetErro()
+                else
+                    cMensagem := "Baixa realizada com sucesso"
+                EndIf
+
+                ProcLogAtu("MENSAGEM", cMensagem)
+
+            EndIf 
         Else
             cResult := oRestClient:GetLastError()
             
             DbSelectArea("SE1")
-            Dbgoto(aLista[nCont])
+            Dbgoto(aLista[nCont,01])
 
 			SE1->(RecLock("SE1",.F.))
 			SE1->E1_ZNVEZES += 1
@@ -175,9 +223,10 @@ Static Function Busca()
 
 Local aArea     := GetArea()
 Local cQuery 
-Local cTipoPg   := Supergetmv("ES_TIPPAG",.F.,"CC")  //Separar por /
+//Local cTipoPg   := Supergetmv("ES_TIPPAG",.F.,"CC")  //Separar por /
 Local cQtdVez   := Supergetmv("ES_QTDTEN",.F.,"6")   //Tipo Caracter
 
+/*
 cQuery := "SELECT E1.R_E_C_N_O_ AS RECSE1 "
 cQuery += " FROM "+RetSQLName("SE1")+" E1"
 cQuery += " WHERE D_E_L_E_T_ =' ' AND E1_SALDO > 0 "
@@ -186,6 +235,46 @@ cQuery += " AND E1_FILIAL BETWEEN ' ' AND 'ZZZ' AND E1_ZNVEZES<'"+ALLTRIM(cQtdVe
 
 //este tratamento de data, colocar somente quando for para a produção, ou terá que ficar alterando a data dos titulos na base de teste.
 cQuery += " AND E1_VENCREA BETWEEN '"+dtos(ddatabase-(val(cQtdVez)+1))+"' and '"+dtos(ddatabase)+"'"
+*/
+
+/*
+SELECT CNA_FILIAL,CNA_CONTRA,CNA_NUMERO,CNA_CRONOG,CNA_CLIENT,CNA_LOJACL,CN9_ZTOKEN,CNF_COMPET,CNF_VLPREV,CNF_VLREAL,CNF_DTREAL,CNF_DTVENC,CNF_NUMERO,CNF_PARCEL,E1_NUM,E1_PARCELA,E1_VALOR,E1.R_E_C_N_O_ AS RECNOSE1
+FROM CNA010 CNA
+INNER JOIN CN9010 CN9 ON CN9_FILIAL=CNA_FILIAL AND CN9_NUMERO=CNA_CONTRA AND CN9_SITUAC = '05' AND CN9_ESPCTR = '2' AND CN9_REVATU = ' ' AND CN9.D_E_L_E_T_=' ' AND CN9_ZTOKEN<>' '
+INNER JOIN CNF010 CNF ON CNF_FILIAL=CNA_FILIAL AND CNF_CONTRA=CNA_CONTRA AND CNF_NUMPLA=CNA_NUMERO AND CNF.D_E_L_E_T_=' ' AND CNF_DTREAL BETWEEN '20240201' AND '20240201'
+INNER JOIN SE1010 E1 ON E1_FILIAL=CNA_FILIAL AND E1_CLIENTE=CNA_CLIENT AND E1_LOJA=CNA_LOJACL AND E1_MDCONTR=CNA_CONTRA AND E1_MDCRON=CNF_NUMERO AND E1_MDPLANI=CNA_NUMERO AND E1.D_E_L_E_T_=' '
+AND E1_EMISSAO BETWEEN '20240201' AND '20240201'
+WHERE CNA_FILIAL='02001'
+AND CNA.D_E_L_E_T_=' '*/
+
+/*
+cQuery := "SELECT CN9_ZTOKEN,E1.R_E_C_N_O_ AS RECSE1,CN9_ZDTVCA,CN9_ZDIGCA,CN9_ZBANCA"
+cQuery += " FROM "+RetSQLName("CNA")+" CNA"
+cQuery += " INNER JOIN "+RetSQLName("CN9")+" CN9 ON CN9_FILIAL=CNA_FILIAL AND CN9_NUMERO=CNA_CONTRA AND CN9_SITUAC = '05' AND CN9_ESPCTR = '2' AND CN9_REVATU = ' ' AND CN9.D_E_L_E_T_=' ' AND CN9_ZTOKEN<>' '"
+cQuery += " INNER JOIN "+RetSQLName("CNF")+" CNF ON CNF_FILIAL=CNA_FILIAL AND CNF_CONTRA=CNA_CONTRA AND CNF_NUMPLA=CNA_NUMERO AND CNF.D_E_L_E_T_=' '"
+cQuery += "     AND CNF_DTREAL BETWEEN '"+dtos(ddatabase-(val(cQtdVez)+1))+"' and '"+dtos(ddatabase)+"'"
+cQuery += " INNER JOIN "+RetSQLName("SE1")+" E1 ON E1_FILIAL=CNA_FILIAL AND E1_CLIENTE=CNA_CLIENT AND E1_LOJA=CNA_LOJACL AND E1_MDCONTR=CNA_CONTRA AND E1_MDCRON=CNF_NUMERO AND E1_MDPLANI=CNA_NUMERO AND E1.D_E_L_E_T_=' '"
+cQuery += "   AND E1_EMISSAO BETWEEN '"+dtos(ddatabase-(val(cQtdVez)+1))+"' and '"+dtos(ddatabase)+"'"
+cQuery += "   AND E1_ZNVEZES<'"+ALLTRIM(cQtdVez)+"' AND E1_NSUTEF=' '"
+cQuery += " WHERE CNA_FILIAL BETWEEN ' ' AND 'ZZZ'"
+cQuery += " AND CNA.D_E_L_E_T_=' '"
+*/
+
+cQuery := "SELECT CN9_ZTOKEN,E1.R_E_C_N_O_ AS RECSE1,CN9_ZDTVCA,CN9_ZDIGCA,CN9_ZBANCA" 
+cQuery += " FROM "+RetSQLName("CND")+" CND"
+cQuery += " INNER JOIN "+RetSQLName("CN9")+" CN9 ON CN9_FILIAL=CND_FILIAL "
+cQuery += "       AND CN9_NUMERO=CND_CONTRA "
+cQuery += "       AND CN9_SITUAC = '05' AND CN9_ESPCTR = '2' "
+cQuery += "       AND CN9_REVATU = ' ' AND CN9.D_E_L_E_T_=' ' "
+cQuery += "       AND CN9_ZTOKEN<>' ' AND CN9_REVISA=CND_REVISA"
+cQuery += " INNER JOIN "+RetSQLName("CNA")+" CNA ON CNA_FILIAL=CND_FILIAL AND CNA_CONTRA=CN9_NUMERO AND CNA_REVISA=CN9_REVISA"
+cQuery += " INNER JOIN "+RetSQLName("SC5")+" C5 ON C5_FILIAL=CND_FILIAL AND C5_MDCONTR=CND_CONTRA AND CND_NUMMED=C5_MDNUMED AND C5.D_E_L_E_T_=' '"
+cQuery += " INNER JOIN "+RetSQLName("SE1")+" E1 ON E1_FILIAL=CND_FILIAL "
+cQuery += "       AND E1_CLIENTE=CNA_CLIENT AND E1_LOJA=CNA_LOJACL "
+cQuery += "       AND E1.D_E_L_E_T_=' ' "
+cQuery += "       AND E1_EMISSAO BETWEEN '"+dtos(ddatabase-(val(cQtdVez)+1))+"' and '"+dtos(ddatabase)+"'" 
+cQuery += "       AND E1_ZNVEZES<'6' AND E1_NSUTEF=' ' "
+cQuery += "       AND E1_PEDIDO=C5_NUM AND E1_NUM=C5_NOTA AND E1_PREFIXO=C5_SERIE"
 
 IF Select('TRB') > 0
     dbSelectArea('TRB')
@@ -198,7 +287,11 @@ DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
 DbSelectArea("TRB") 
 
 While !EOF()
-    Aadd(aLista,TRB->RECSE1)
+    Aadd(aLista,{TRB->RECSE1,;
+                TRB->CN9_ZTOKEN,;
+                TRB->CN9_ZDTVCA,;
+                TRB->CN9_ZDIGCA,;
+                TRB->CN9_ZBANCA})
     Dbskip()
 EndDo 
 
@@ -263,7 +356,7 @@ Return(cRet)
     (examples)
     @see (links_or_references)
 /*/
-Static Function _jsonEnvio(cToken,nRecE1)
+Static Function _jsonEnvio(cToken,nRecE1,cDigCt,cBande)
 
 Local aArea := GetArea()
 Local cRet  := ''
@@ -283,8 +376,8 @@ cRet += '    "Installments": 1,'
 cRet += '    "SoftDescriptor": "123456789ABCD",' // - TEXTO QUE IRÁ APARECER NA FATURA DO CLIENTE
 cRet += '    "CreditCard": {'
 cRet += '      "CardToken": "'+cToken+'",'
-cRet += '      "SecurityCode": "262",'  //Onde ficará isso?
-cRet += '      "Brand": "Visa"'         //Onde ficará isso?
+cRet += '      "SecurityCode": "262",'  //cDigCt
+cRet += '      "Brand": "Visa"'         //cBande
 cRet += '    }'
 cRet += '  }'
 cRet += '}'
@@ -292,3 +385,31 @@ cRet += '}'
 RestArea(aArea)
 
 Return(cRet)
+
+
+/*/{Protheus.doc} nomeStaticFunction
+    (long_description)
+    @type  Static Function
+    @author user
+    @since 24/11/2023
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function GetErro()
+
+Local cPath	:= GetSrvProfString("Startpath","")
+Local cArq	:= "Erro_Rot_Auto_"+Dtos(dDataBase)+"_"+StrTran(Time(),":","_")+Alltrim(Str(ThreadID()))+".txt"
+Local cRet	:= ""
+
+MostraErro( cPath , cArq )
+
+cRet := StrTran(MemoRead(  cPath + '\' + cArq ),Chr(13) + Chr(10)," ")
+cRet := StrTran(cRet, '"', "'")
+
+fErase(cArq)
+
+Return cRet

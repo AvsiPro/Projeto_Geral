@@ -80,18 +80,21 @@ Local nPos1  := Ascan(aHeader,{|x| Alltrim(x[2]) == "C7_TOTAL"})
 Aeval(aCols,{|x| nSomaPc += x[nPos1] })
 
 If nPosic == 2  
-    For nX := 1 to len(aList1)
+    /*For nX := 1 to len(aList1)
         If aList1[nX,05]
             nMark++
         EndIf 
     Next nX 
 
-    nMark := nMark-1
+    nMark := nMark-1*/
 
-    Aeval(aList1,{|x| nSmTot += x[2]})
+    //Aeval(aList1,{|x| nSmTot += x[2]})
 
     lEditCell(aList1,oList1,"@E 999,999,999.99",2)
 
+    aList1[nLinha,03] := (aList1[nLinha,02]/nSomaPc)*100
+
+    /*
     aList1[nLinha,03] := (aList1[nLinha,02]/nSmTot)*100
 
     nDividir := (nSmTot - aList1[nLinha,02]) / nMark //nItens
@@ -124,7 +127,7 @@ If nPosic == 2
 
 ElseIf nPosic == 3  
 
-    For nX := 1 to len(aList1)
+    /*For nX := 1 to len(aList1)
         If aList1[nX,05]
             nMark++
         EndIf 
@@ -132,11 +135,13 @@ ElseIf nPosic == 3
 
     nMark := nMark-1
 
-    Aeval(aList1,{|x| nSmTot += x[2]})
+    Aeval(aList1,{|x| nSmTot += x[2]})*/
 
     lEditCell(aList1,oList1,"@E 999",3)
 
-    aList1[nLinha,02] := round(nSmTot * (aList1[nLinha,03] /100),2)
+    aList1[nLinha,02] := round(nSomaPc * (aList1[nLinha,03] /100),2)
+
+    /*aList1[nLinha,02] := round(nSmTot * (aList1[nLinha,03] /100),2)
 
     nDividir := (nSmTot - aList1[nLinha,02]) / nMark //nItens
 
