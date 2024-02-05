@@ -242,7 +242,7 @@ WSMETHOD POST WSSERVICE EMAPI016
 		EndIf
 
 		//calculo de multa e juros
-		nDias := CtoD(oJson["Titulo"][1]["Nova data de Vencimento"])-SE1->E1_VENCTO
+		nDias := CtoD(oJson["Titulo"][1]["Nova data de Vencimento"])-SE1->E1_VENCREA //SE1->E1_VENCTO
 		_nMulta	:= nValor * (_nMulta/100)
 		_nJuros	:= (nValor * ((_nJuros/100)/30)) * nDias
 
@@ -266,6 +266,9 @@ WSMETHOD POST WSSERVICE EMAPI016
 		cNumero := Padl(AllTrim(Str(Val(AllTrim((cAliasB)->E1_NUM))+1)),9,"0")
 		(cAliasB)->(DbCloseArea())
 		*/
+
+		CFILANT := cFil
+		
 		aTit := {}
 		aAdd(aTit, { "E1_FILIAL"	, cFil 				, Nil})		//FWxFilial("SE1")
 		aAdd(aTit, { "E1_NUM"		, cNumero			, Nil})
