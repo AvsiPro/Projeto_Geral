@@ -216,16 +216,21 @@ While CADTMP->(!Eof())
 		Exit
 	Endif
 
-	oPrint:Say(li,0040,Alltrim(CADTMP->ZPC_CODIGO)+' - '+CADTMP->B1_DESC,oArial09N)
-
-    oPrint:Say(li,1100,Alltrim(CADTMP->ZPC_REQUIS),oArial09N)
-    oPrint:Say(li,1260,Alltrim(CADTMP->ZPC_LOCAL),oArial09N)
-    oPrint:Say(li,1410,cvaltochar(stod(CADTMP->ZPC_DATA)),oArial09N)
-    oPrint:Say(li,1585,cvaltochar(CADTMP->ZPC_QUANT),oArial09N)
-    oPrint:Say(li,1735,Alltrim(CADTMP->ZPC_PREFIX),oArial09N)
-    oPrint:Say(li,1880,Alltrim(CADTMP->RA_NOME),oArial09N)
-    oPrint:Say(li,2340,If(CADTMP->ZPC_STATUS=="1","Sim","Não"),oArial09N)
+	oPrint:Say(li,0055,Alltrim(CADTMP->ZPC_CODIGO),oArial09N)
+	oPrint:Say(li,0290,Alltrim(CADTMP->B1_DESC),oArial09N)
+	oPrint:Say(li,0990,Alltrim(CADTMP->ZPC_REQUIS),oArial09N)
+    oPrint:Say(li,1200,cvaltochar(CADTMP->ZPC_QUANT),oArial09N)
+    //material planejado
+	oPrint:Say(li,1320,cvaltochar("Sim"),oArial09N)
+    oPrint:Say(li,1500,'123456',oArial09N)
+    oPrint:Say(li,1710,'123456',oArial09N)
+    oPrint:Say(li,1970,cvaltochar(stod(CADTMP->ZPC_DATA)),oArial09N)
+    oPrint:Say(li,2160,Alltrim(CADTMP->ZPC_PREFIX),oArial09N)
+    oPrint:Say(li,2330,'Veiculo Retido',oArial09N)
     
+	li+=20
+
+	oPrint:Say(li,0030,Replicate("-",211),oCouNew08)
 
 	li+=50
 
@@ -258,19 +263,108 @@ Return
 /*/
 Static Function ImpCabec()
 
+Local cBitmap      := '\system\lgrl01.bmp'
+Local cBitLogo	   := '\system\logo_1001.bmp'
 
 oPrint:StartPage() 		// Inicia uma nova pagina
 oPrint:Box(000,0030,3100,2540 )  //LINHA/COLUNA/ALTURA/LARGURA
 
+oBrush1 := TBrush():New( , CLR_HGRAY)
+
+oPrint:Fillrect( {000, 030, 150, 2540 }, oBrush1, "-2")
+
+oPrint:SayBitMap(045,0070,cBitLogo,0080,0080)
+oPrint:Say(070,1050,OemToAnsi("Relatório de Venda Perdida"),oArial14N)  
+oPrint:SayBitMap(045,2400,cBitmap,0080,0080)
+
+oPrint:Fillrect( {160, 030, 200, 1200 }, oBrush1, "-2")
+oPrint:Box(200,0030,300,1200 )
+oPrint:line(250,0030,250,1195 )
+oPrint:line(200,0535,300,535 )
+
+oPrint:Say(190,0510,OemToAnsi("FILIAL"),oArial14N)
+oPrint:Say(230,0035,OemToAnsi(SM0->M0_CODIGO+" "+SM0->M0_NOMECOM ),oArial10N)
+oPrint:Say(230,0540,OemToAnsi("CNPJ: "+Transform(SM0->M0_CGC,"@R 99.999.999/9999-99") ),oArial10N)
+oPrint:Say(280,0035,OemToAnsi( SM0->M0_FILIAL),oArial10N)
+oPrint:Say(280,0540,OemToAnsi( SM0->M0_ENDENT),oArial10N)
+
+
+oPrint:Fillrect( {160, 1210, 230, 2535 }, oBrush1, "-2")
+oPrint:Box(225,1210,300,2535 )
+oPrint:line(160,1370,300,1370 ,2)
+oPrint:line(160,1530,300,1530 ,2)
+oPrint:line(160,1690,300,1690 ,2)
+oPrint:line(160,1850,300,1850 ,2)
+oPrint:line(160,2010,300,2010 ,2)
+oPrint:line(160,2170,300,2170 ,2)
+oPrint:line(160,2330,300,2330 ,2)
+
+oPrint:Say(190,1220,OemToAnsi("Prefixo de"),oArial10N)
+oPrint:Say(190,1380,OemToAnsi("Prefixo Até"),oArial10N)
+oPrint:Say(190,1540,OemToAnsi("Solicit. De"),oArial10N)
+oPrint:Say(190,1700,OemToAnsi("Solicit. Até"),oArial10N)
+oPrint:Say(190,1860,OemToAnsi("Data De"),oArial10N)
+oPrint:Say(190,2020,OemToAnsi("Data Até"),oArial10N)
+oPrint:Say(190,2180,OemToAnsi("Código De"),oArial10N)
+oPrint:Say(190,2340,OemToAnsi("Código Até"),oArial10N)
+
+
+oPrint:Say(265,1230,OemToAnsi(MV_PAR07),oArial11N)
+oPrint:Say(265,1390,OemToAnsi(MV_PAR08),oArial11N)
+oPrint:Say(265,1550,OemToAnsi(MV_PAR09),oArial11N)
+oPrint:Say(265,1700,OemToAnsi(MV_PAR10),oArial11N)
+oPrint:Say(265,1870,OemToAnsi(cvaltochar(MV_PAR03)),oArial11N)
+oPrint:Say(265,2030,OemToAnsi(cvaltochar(MV_PAR04)),oArial11N)
+oPrint:Say(265,2190,OemToAnsi(MV_PAR11),oArial11N)
+oPrint:Say(265,2350,OemToAnsi(MV_PAR12),oArial11N)
+
+oPrint:Fillrect( {330, 030, 400, 2540 }, oBrush1, "-2")
+
+oPrint:Say(360,0055,OemToAnsi("Código do"),oArial10N)
+oPrint:Say(390,0055,OemToAnsi("Produto"),oArial10N)
+oPrint:line(330,280,3100,280 )
+
+oPrint:Say(360,0300,OemToAnsi("Descrição Produto"),oArial10N)
+oPrint:line(330,970,3100,970 )
+
+oPrint:Say(360,0980,OemToAnsi("Requisição"),oArial10N)
+oPrint:line(330,1150,3100,1150 )
+
+oPrint:Say(360,1160,OemToAnsi("Qtd"),oArial10N)
+oPrint:line(330,1290,3100,1290 )
+
+oPrint:Say(360,1300,OemToAnsi("Material"),oArial10N)
+oPrint:Say(390,1300,OemToAnsi("Planejado"),oArial10N)
+oPrint:line(330,1470,3100,1470 )
+
+oPrint:Say(360,1480,OemToAnsi("Matricula"),oArial10N)
+oPrint:Say(390,1480,OemToAnsi("Almoxarife"),oArial10N)
+oPrint:line(330,1690,3100,1690 )
+
+oPrint:Say(360,1700,OemToAnsi("Matricula"),oArial10N)
+oPrint:Say(390,1700,OemToAnsi("Requisitante"),oArial10N)
+oPrint:line(330,1950,3100,1950 )
+
+oPrint:Say(360,1960,OemToAnsi("Data do"),oArial10N)
+oPrint:Say(390,1960,OemToAnsi("Registro"),oArial10N)
+oPrint:line(330,2140,3100,2140 )
+
+oPrint:Say(360,2150,OemToAnsi("Prefixo"),oArial10N)
+oPrint:line(330,2310,3100,2310 )
+
+oPrint:Say(360,2320,OemToAnsi("Tipo"),oArial10N)
+
+/*+" a "+
 oPrint:Say(050,0040,OemToAnsi("Empresa :"),oArial11N)
 oPrint:Say(050,0280,OemToAnsi(SM0->M0_CODIGO+" "+SM0->M0_NOMECOM ),oArial11N)
 oPrint:Say(100,0040,OemToAnsi("Filial  :"),oArial11N)
 oPrint:Say(100,0280,OemToAnsi( + SM0->M0_CODFIL+" "+SM0->M0_FILIAL),oArial11N)
+*/
+//oPrint:Say(150,0030,Replicate("-",211),oCouNew08)
 
-oPrint:Say(150,0030,Replicate("-",211),oCouNew08)
+//oPrint:Say(190,1050,OemToAnsi("Relatório de Venda Perdida"),oArial14N)  
 
-oPrint:Say(190,1050,OemToAnsi("Relatório de Venda Perdida"),oArial14N)  
-
+/*
 oPrint:Say(290,0040,OemToAnsi("Empresa/Filial :"),oArial11N)
 oPrint:Say(290,0300,OemToAnsi(MV_PAR01+" a "+MV_PAR02 ),oArial11N)
 
@@ -289,21 +383,14 @@ oPrint:Say(350,1100,OemToAnsi(MV_PAR09+"  a  "+MV_PAR10 ),oArial11N)
 oPrint:Say(350,1900,OemToAnsi("Requisição :"),oArial11N)
 oPrint:Say(350,2100,OemToAnsi(MV_PAR11+" a "+MV_PAR12 ),oArial11N)
 
+*/
+//oPrint:Say(0400,0030,Replicate("-",211),oCouNew08)
 
-oPrint:Say(0400,0030,Replicate("-",211),oCouNew08)
 
-oPrint:Say(480,0040,OemToAnsi("Material"),oArial10N)
-oPrint:Say(480,1100,OemToAnsi("Requis."),oArial10N)
-oPrint:Say(480,1260,OemToAnsi("Almox."),oArial10N)
-oPrint:Say(480,1410,OemToAnsi("Data"),oArial10N)
-oPrint:Say(480,1580,OemToAnsi("Qtde"),oArial10N)
-oPrint:Say(480,1735,OemToAnsi("Prefixo"),oArial10N)
-oPrint:Say(480,1880,OemToAnsi("Usuário"),oArial10N)
-oPrint:Say(480,2340,OemToAnsi("Parado"),oArial10N)
 
-oPrint:Say(0530,0030,Replicate("-",211),oCouNew08)
+//oPrint:Say(0530,0030,Replicate("-",211),oCouNew08)
 
-li := 600
+li := 480
 
 Return 
 /*/

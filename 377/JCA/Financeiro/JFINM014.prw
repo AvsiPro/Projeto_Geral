@@ -1054,6 +1054,14 @@ Static Function Aviso_1(cBoleto,cGerBol,nVlrAbat)
 	cHtml += "<body>"
 
 	cHtml += "<table width='1078' border='0'>"
+	cHtml += "  <tr>"
+	cHtml += "    	<td>Caro cliente,</td></tr>"
+	cHtml += "  <tr>"
+	cHtml += "		<td>Estamos com a(s) fatura(s) abaixo listadas em aberto no nosso sistema, aguardando pagamento.</td>"
+	cHtml += "  </tr><br>"
+
+
+	cHtml += "<table width='1078' border='0'>"
 	cHtml += "  <tr bgcolor='#33FFFF'>"
 	cHtml += "    <td align='center'><b>Aviso de vencimento / NOTA  Nº "+TRBLOC->E1_NUM+" Prefixo "+TRBLOC->E1_PREFIXO+" "+cvaltochar(STOD(TRBLOC->E1_VENCREA))+"</b></td>"
 	cHtml += "  </tr>"
@@ -1068,6 +1076,7 @@ Static Function Aviso_1(cBoleto,cGerBol,nVlrAbat)
 	cHtml += "    <tr bgcolor='#d4e6f6'><td>Referência:</td><td><b>"+Alltrim(TRBLOC->ED_DESCRIC)+"</b></td></tr>"
 	cHtml += "</table><br><br><br>"
 
+/*
 	cHtml += "<table width='1078' border='0'>"
 	cHtml += "  <tr>"
 	cHtml += "    <td>Prezado (a), Cliente<br>"
@@ -1096,18 +1105,7 @@ Static Function Aviso_1(cBoleto,cGerBol,nVlrAbat)
 
 		cHtml += "<br><br>"
 	else
-		/*cHtml += " <tr>"
-		cHtml += "  <td>Para agilizar o processo, estamos incluindo os dados bancários abaixo:</td>"
-		cHtml += " </tr>"
-		cHtml += " <tr>"
-		cHtml += "  <td>Itau Unibanco</td>"
-		cHtml += " </tr>"
-		cHtml += " <tr>"
-		cHtml += "  <td>Ag. 0048</td>"
-		cHtml += " </tr>"
-		cHtml += " <tr>"
-		cHtml += "  <td>CC. 53663-5</td>"
-		cHtml += " </tr>"*/
+		
 		cHtml += " <tr>"
 		cHtml += "  <td>Razão Social: "+Alltrim(SM0->M0_NOMECOM)+"</td>"
 		cHtml += " </tr>"
@@ -1115,7 +1113,11 @@ Static Function Aviso_1(cBoleto,cGerBol,nVlrAbat)
 		cHtml += "  <td>CNPJ: "+Transform(SM0->M0_CGC,"@R 99.999.999/9999-99")+"</td>"	
 		cHtml += " </tr>"
 	EndIf
+*/
 
+	cHtml += "	Caso o pagamento já tenha ocorrido, favor desconsiderar essa comunicação.<br>"
+	cHtml += "  Permanecemos à disposição. Obrigado!"
+	
 	cHtml += "  <tr>"
 	cHtml += "    <td><p><strong>"+Alltrim(SM0->M0_NOMECOM)+"</strong><br />"
 	cHtml += "      Departamento Financeiro<br />"
