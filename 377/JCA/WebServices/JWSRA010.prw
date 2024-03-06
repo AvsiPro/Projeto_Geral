@@ -323,8 +323,8 @@ WsMethod POST WsReceive RECEIVE WsService JWSRA010
 
             aVetSE1 := {}
 
-            aAdd(aVetSE1, {"E1_FILIAL",  cFilMov,  Nil})
-            aAdd(aVetSE1, {"E1_NUM",     cTitulo,           Nil})
+            aAdd(aVetSE1, {"E1_FILIAL",  cFilMov                     ,  Nil})
+            aAdd(aVetSE1, {"E1_NUM",     Avkey(cTitulo,"E1_NUM")     ,          Nil})
             aAdd(aVetSE1, {"E1_PREFIXO", Avkey(cPrefixo,"E1_PREFIXO"),          Nil})
             aAdd(aVetSE1, {"E1_PARCELA", Avkey(cParcela,"E1_PARCELA"),          Nil})
             aAdd(aVetSE1, {"E1_TIPO",    Avkey(cTipo,"E1_TIPO")      ,          Nil})
