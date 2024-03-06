@@ -53,6 +53,10 @@ cResource 	:= SuperGetMv("ES_ERPSKU" 	,.F.,"/1/sales")
 cUserAut	:= SuperGetMv("ES_USERGT" 	,.F.,"52fe20ab-c8d8-4682-bb40-8c1c3afcbb58")
 cPassAut	:= SuperGetMv("ES_PASSGT" 	,.F.,"OPRMJLNXRRVVRZWXDKZXGMJVNRAIRRTAPSZRXWCC")
 
+AAdd(aHeader, "Content-Type: application/json")
+Aadd(aHeader, "MerchantId:"+AllTrim(cUserAut) )
+Aadd(aHeader, "MerchantKey:"+AllTrim(cPassAut) )
+
 //Busca titulos a serem cobrados
 Busca()
 
@@ -60,10 +64,6 @@ If len(aLista) > 0
     For nCont := 1 to len(aLista)
         oRestClient 	:= FWRest():New(cServer)
         oJsonRes 	    := JsonObject():new() 
-
-        AAdd(aHeader, "Content-Type: application/json")
-        Aadd(aHeader, "MerchantId:"+AllTrim(cUserAut) )
-        Aadd(aHeader, "MerchantKey:"+AllTrim(cPassAut) )
 
         //criar o token para os testes
         //Quando o campo da CN9 estiver com os tokens preenchidos, buscar de lá
@@ -260,6 +260,9 @@ cQuery += " WHERE CNA_FILIAL BETWEEN ' ' AND 'ZZZ'"
 cQuery += " AND CNA.D_E_L_E_T_=' '"
 */
 
+/*
+    alterado em 04/03/2024 para a proxima query, pois o contrato gera venda assistida
+
 cQuery := "SELECT CN9_ZTOKEN,E1.R_E_C_N_O_ AS RECSE1,CN9_ZDTVCA,CN9_ZDIGCA,CN9_ZBANCA" 
 cQuery += " FROM "+RetSQLName("CND")+" CND"
 cQuery += " INNER JOIN "+RetSQLName("CN9")+" CN9 ON CN9_FILIAL=CND_FILIAL "
@@ -275,6 +278,18 @@ cQuery += "       AND E1.D_E_L_E_T_=' ' "
 cQuery += "       AND E1_EMISSAO BETWEEN '"+dtos(ddatabase-(val(cQtdVez)+1))+"' and '"+dtos(ddatabase)+"'" 
 cQuery += "       AND E1_ZNVEZES<'6' AND E1_NSUTEF=' ' "
 cQuery += "       AND E1_PEDIDO=C5_NUM AND E1_NUM=C5_NOTA AND E1_PREFIXO=C5_SERIE"
+*/
+
+cQuery := "SELECT CN9_ZTOKEN,SE1.R_E_C_N_O_ AS RECSE1,CN9_ZDTVCA,CN9_ZDIGCA,CN9_ZBANCA" 
+cQuery += " FROM "+RetSQLName("SE1")+" SE1"
+cQuery += " INNER JOIN "+RetSQLName("SL4")+" SL4 ON SL4.D_E_L_E_T_ <> '*' AND L4_FILIAL = E1_FILIAL AND SUBSTRING(L4_OBS,5,9) = E1_NUM"
+cQuery += " INNER JOIN "+RetSQLName("SL1")+" SL1 ON SL1.D_E_L_E_T_ <> '*' AND L4_FILIAL = L1_FILIAL AND L4_NUM = L1_NUM AND L1_FORMPG='CC'"
+cQuery += " INNER JOIN "+RetSQLName("CN9")+" CN9 ON CN9.D_E_L_E_T_ <> '*' AND L1_FILIAL = CN9_FILIAL AND L1_ZCONTRA = CN9_NUMERO AND L1_ZREVISA = CN9_REVISA AND CN9_ZTOKEN<>' '"
+cQuery += " WHERE SE1.D_E_L_E_T_ <> '*'"
+cQuery += "       AND E1_EMISSAO BETWEEN '"+dtos(ddatabase-(val(cQtdVez)+1))+"' and '"+dtos(ddatabase)+"'" 
+cQuery += "       AND E1_ZNVEZES<'6' AND E1_NSUTEF=' ' "
+cQuery += "       AND E1_PREFIXO = 'PED' AND E1_TIPO='CC'"
+cQuery += "       AND E1_FILIAL BETWEEN ' ' AND 'ZZZ' "
 
 IF Select('TRB') > 0
     dbSelectArea('TRB')
