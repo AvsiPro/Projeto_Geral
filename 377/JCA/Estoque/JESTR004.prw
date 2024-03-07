@@ -68,6 +68,8 @@ If Select("SM0") == 0
     RPCSetEnv("01","00020087")
 EndIf
 
+chkfile("ZPC")
+
 If Funname() == "MNTA420" .OR. Funname() <> "MATA105"
 	AjustaSx1(cPerg)
 	Pergunte(cPerg,.f.)
@@ -155,6 +157,7 @@ Return Nil
 */
 Static Function GFR01(lEnd,WnRel,cString,nReg)
 
+Local aAux := {}
 nPg		  := 0
 
 mv_par02 := 'zzz'
@@ -165,7 +168,8 @@ mv_par08 := 'zzz'
 mv_par10 := 'zzz'
 mv_par12 := 'zzz'
 
-cQuery := "SELECT ZPC_FILIAL,ZPC_REQUIS,ZPC_CODIGO,B1_DESC,ZPC_LOCAL,ZPC_QUANT,ZPC_DATA,ZPC_PREFIX,ZPC_SOLICI,RA_NOME,ZPC_STATUS,ZPC_ITEM"
+cQuery := "SELECT ZPC_FILIAL,ZPC_REQUIS,ZPC_CODIGO,B1_DESC,B1_EMIN,ZPC_LOCAL,ZPC_QUANT,"
+cQuery += " ZPC_DATA,ZPC_PREFIX,ZPC_SOLICI,RA_NOME,ZPC_STATUS,ZPC_ITEM,ZPC_TIPO,ZPC_ALMOXA"
 cQuery += " FROM "+RetSQLName("ZPC")+" ZPC"
 cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD=ZPC_CODIGO AND B1.D_E_L_E_T_=' '"
 cQuery += " LEFT JOIN "+RetSQLName("SRA")+" RA ON RA_FILIAL=ZPC_FILIAL AND RA_MAT=ZPC_SOLICI AND RA.D_E_L_E_T_=' '"
@@ -196,6 +200,9 @@ nVlrTot  := 0
 
 ProcRegua(nReg,"Aguarde a Impressao")
 
+cOpcoes := GetSx3Cache( "ZPC_TIPO" ,"X3_CBOX"	)
+aAux := Separa(cOpcoes,";")
+   
 While CADTMP->(!Eof())
 	IncProc()
 	//旼컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴커
@@ -221,12 +228,12 @@ While CADTMP->(!Eof())
 	oPrint:Say(li,0990,Alltrim(CADTMP->ZPC_REQUIS),oArial09N)
     oPrint:Say(li,1200,cvaltochar(CADTMP->ZPC_QUANT),oArial09N)
     //material planejado
-	oPrint:Say(li,1320,cvaltochar("Sim"),oArial09N)
-    oPrint:Say(li,1500,'123456',oArial09N)
-    oPrint:Say(li,1710,'123456',oArial09N)
+	oPrint:Say(li,1320,If(CADTMP->B1_EMIN>0,"SIM","N홒"),oArial09N)
+    oPrint:Say(li,1500,CADTMP->ZPC_ALMOXA,oArial09N)
+    oPrint:Say(li,1710,CADTMP->ZPC_SOLICI,oArial09N)
     oPrint:Say(li,1970,cvaltochar(stod(CADTMP->ZPC_DATA)),oArial09N)
     oPrint:Say(li,2160,Alltrim(CADTMP->ZPC_PREFIX),oArial09N)
-    oPrint:Say(li,2330,'Veiculo Retido',oArial09N)
+	oPrint:Say(li,2330,substr(aAux[val(CADTMP->ZPC_TIPO)],3),oArial09N)
     
 	li+=20
 

@@ -14,6 +14,8 @@ User Function JESTR002(nOpc)
 		RPCSetEnv("01","00020087")
 	EndIf
 
+	TelaPar()
+	
 	If nOpc == 1	
 		nPosPrd  := Ascan(aHeader,{|x| Alltrim(x[2]) == "D1_COD"})
 		nPosQtd  := Ascan(aHeader,{|x| Alltrim(x[2]) == "D1_QUANT"})
@@ -193,3 +195,146 @@ Static Function ValidPerg()
 		lRet := .T.
 	EndIf
 Return lRet
+
+
+/*/{Protheus.doc} nomeStaticFunction
+	(long_description)
+	@type  Static Function
+	@author user
+	@since 07/03/2024
+	@version version
+	@param param_name, param_type, param_descr
+	@return return_var, return_type, return_description
+	@example
+	(examples)
+	@see (links_or_references)
+/*/
+Static Function TelaPar()
+
+Local nOpcao := 0
+
+Private cPar01 := space(TamSX3("NNR_CODIGO")[1])
+Private cPar02 := space(TamSX3("NNR_CODIGO")[1])
+Private cPar03 := space(TamSX3("B1_COD")[1])
+Private cPar04 := space(TamSX3("B1_COD")[1])
+Private cPar05 := space(TamSX3("BE_LOCALIZ")[1])
+Private cPar06 := space(TamSX3("BE_LOCALIZ")[1])
+Private aSimNao := {'1=Sim','2=Nao'}
+Private cPar07 := aSimNao[1]
+Private cPar08 := space(TamSX3("F1_DOC")[1])
+Private cPar09 := space(TamSX3("A2_COD")[1])
+Private cPar10 := space(TamSX3("A2_LOJA")[1])
+Private aTipImp := {'1=Produto','2=Prateleira'}
+Private cPar11 := aTipImp[1]
+Private aLocImp := {'1=PDF Creator','2=Impressora'}
+Private cPar12 := aLocImp[1]
+
+Private oDlg1,oSay1,oSay2,oSay3,oSay4,oSay5,oSay6,oSay7,oSay8,oSay9,oSay10,oSay11
+Private oGet1,oGet2,oGet3,oGet4,oGet5,oGet6,oCBox1,oGet7,oGet8,oGet9,oCBox2,oCBox3
+Private oBtn1,oBtn2
+Private aList := {}
+Private oList 
+
+Aadd(aList,{'','','',''})
+
+oDlg1      := MSDialog():New( 186,980,914,1624,"Etiqueta de Produto",,,.F.,,,,,,.T.,,,.T. )
+
+	oSay1      := TSay():New( 012,044,{||"Armazém de ?"},oDlg1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,036,008)
+	oGet1      := TGet():New( 012,132,{|u| If(Pcount()>0,cPar01:=u,cPar01)},oDlg1,060,008,'',,CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"NNR","",,)
+	
+	oSay2      := TSay():New( 033,044,{||"Armazém Ate ?"},oDlg1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,039,008)
+	oGet2      := TGet():New( 032,132,{|u| If(Pcount()>0,cPar02:=u,cPar02)},oDlg1,060,008,'',,CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"NNR","",,)
+	
+	oSay3      := TSay():New( 052,044,{||"Produto de ?"},oDlg1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,042,008)
+	oGet3      := TGet():New( 052,132,{|u| If(Pcount()>0,cPar03:=u,cPar03)},oDlg1,060,008,'',,CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"SB1","",,)
+	
+	oSay4      := TSay():New( 073,044,{||"Produto Ate ?"},oDlg1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,042,008)
+	oGet4      := TGet():New( 072,132,{|u| If(Pcount()>0,cPar04:=u,cPar04)},oDlg1,060,008,'',,CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"SB1","",,)
+	
+	oSay5      := TSay():New( 093,044,{||"Endereço de ?"},oDlg1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,039,008)
+	oGet5      := TGet():New( 092,132,{|u| If(Pcount()>0,cPar05:=u,cPar05)},oDlg1,060,008,'',,CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"SBE","",,)
+	
+	oSay6      := TSay():New( 112,044,{||"Endereço Ate ?"},oDlg1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,039,008)
+	oGet6      := TGet():New( 112,132,{|u| If(Pcount()>0,cPar06:=u,cPar06)},oDlg1,060,008,'',,CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"SBE","",,)
+	
+	oSay7      := TSay():New( 133,044,{||"Deseja utilizar NF ?"},oDlg1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,056,008)
+	oCBox1     := TComboBox():New( 132,132,{|u| If(Pcount()>0,cPar07:=u,cPar07)},aSimNao,072,010,oDlg1,,{|| Usanf(cPar07)},,CLR_BLACK,CLR_WHITE,.T.,,"",,,,,,, )
+	
+	oSay8      := TSay():New( 152,044,{||"Nota Fiscal ?"},oDlg1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,042,008)
+	oGet7      := TGet():New( 152,132,{|u| If(Pcount()>0,cPar08:=u,cPar08)},oDlg1,060,008,'',,CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"SF1","",,)
+	
+	oSay9      := TSay():New( 172,044,{||"Cód. Fornecedor"},oDlg1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,048,008)
+	oGet8      := TGet():New( 172,132,{|u| If(Pcount()>0,cPar09:=u,cPar09)},oDlg1,060,008,'',,CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"SA2","",,)
+	
+	oSay10     := TSay():New( 193,044,{||"Loja"},oDlg1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
+	oGet9      := TGet():New( 192,132,{|u| If(Pcount()>0,cPar10:=u,cPar10)},oDlg1,060,008,'',,CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"","",,)
+	
+	oSay11     := TSay():New( 213,044,{||"Tipo Etiqueta ?"},oDlg1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,044,008)
+	oCBox2     := TComboBox():New( 212,132,{|u| If(Pcount()>0,cPar11:=u,cPar11)},aTipImp,072,010,oDlg1,,,,CLR_BLACK,CLR_WHITE,.T.,,"",,,,,,, )
+	
+	oSay12     := TSay():New( 232,044,{||"Imprimir em ?"},oDlg1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
+	oCBox3     := TComboBox():New( 232,132,{|u| If(Pcount()>0,cPar12:=u,cPar12)},aLocImp,072,010,oDlg1,,,,CLR_BLACK,CLR_WHITE,.T.,,"",,,,,,, )
+	
+	oGrp1      := TGroup():New( 248,024,336,300,"Itens NF",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
+	
+		//oBrw1      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{256,028,332,296},,, oGrp1 ) 
+		oList    := TCBrowse():New(256,028,268,075,, {'Código','Descrição','Qtd NF','Qtd Etiquetas'},;
+                                                        {50,90,40,40},;
+                                                        oGrp1,,,,{|| /*FHelp(oList:nAt)*/},{|| /*inverte(1)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
+        oList:SetArray(aList)
+		oList:bLine := {||{ aList[oList:nAt,01],; 
+							aList[oList:nAt,02],;
+							aList[oList:nAt,03],; 
+							aList[oList:nAt,04]}}
+	oGrp1:disable()
+	oList:disable()
+
+	oBtn1      := TButton():New( 341,092,"Ok",oDlg1,{|| oDlg1:end(nOpcao:=1)},037,008,,,,.T.,,"",,,,.F. )
+	oBtn2      := TButton():New( 341,169,"Cancelar",oDlg1,{|| oDlg1:end(nOpcao:=0)},037,008,,,,.T.,,"",,,,.F. )
+
+oDlg1:Activate(,,,.T.)
+
+If nOpcao == 1
+
+EndIf 
+
+Return
+
+/*/{Protheus.doc} Usanf(cPar07)
+	(long_description)
+	@type  Static Function
+	@author user
+	@since 07/03/2024
+	@version version
+	@param param_name, param_type, param_descr
+	@return return_var, return_type, return_description
+	@example
+	(examples)
+	@see (links_or_references)
+/*/
+Static Function Usanf(cPar07)
+
+Local aArea := GetArea()
+
+If cPar07 == "2"
+	oSay8:settext("")
+	oSay8:settext("Quantidade")
+	oGet7      := TGet():New( 152,132,{|u| If(Pcount()>0,cPar08:=u,cPar08)},oDlg1,060,008,'',,CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"","",,)
+	oGet8:disable()
+	oGet9:disable()
+Else 
+	oSay8:settext("")
+	oSay8:settext("Nota Fiscal")
+	oGet7      := TGet():New( 152,132,{|u| If(Pcount()>0,cPar08:=u,cPar08)},oDlg1,060,008,'',,CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"SF1","",,)
+	oGet8:enable()
+	oGet9:enable()
+EndIf 
+
+oGet7:refresh()
+oGet8:refresh()
+oGet9:refresh()
+oDlg1:refresh()
+
+RestArea(aArea)
+
+Return

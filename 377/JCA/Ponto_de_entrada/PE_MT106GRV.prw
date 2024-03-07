@@ -71,6 +71,8 @@ If !lSldFil
     ZPC->ZPC_STATUS := '1'
     ZPC->ZPC_ITEM   := SCP->CP_ITEM
     ZPC->ZPC_LOCAL  := SCP->CP_LOCAL
+    ZPC->ZPC_ALMOXA := SCP->CP_CODSOLI
+    ZPC->ZPC_TIPO   := SCP->CP_XTIPO
     ZPC->(Msunlock())
 EndIf 
 
