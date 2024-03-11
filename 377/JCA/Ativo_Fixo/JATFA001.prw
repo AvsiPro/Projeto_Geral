@@ -228,6 +228,12 @@ If nOpcao == 1
     lOk := ExistCPO("SNG", cGrupo)
     If !lOk .And. !Empty(cGrupo)
         MsgAlert("Grupo inexistente")
+    Else 
+        SNG->(Dbseek(xFilial("SNG")+cGrupo))
+        cConta1 := SNG->NG_CCONTAB
+        cCusto1 := SNG->NG_CUSTBEM 
+        cConta2 := SNG->NG_CDEPREC  
+        cCusto2 := SNG->NG_CCDESP  
     EndIf 
     oSay7:settext("")
     oSay7:settext(Posicione("SNG",1,xFilial("SNG")+cGrupo,"NG_DESCRIC"))

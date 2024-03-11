@@ -42,13 +42,12 @@ Local cQuery
 Private aItens   := {}
 Private aCabec := {}
 
-cQuery := "SELECT N3_CCONTAB AS CONTA,N1_DESCRIC,N1_CBASE,N1_XPLACA,N1_XPREF,N1_XCHASSI,N1_CHAPA,A2_NOME,N1_AQUISIC,N1_ITEM,N3_VORIG1,N3_TXDEPR1,N3_VRCACM1,N3_VRDMES1,N3_VRDACM1"
+cQuery := "SELECT N3_CCONTAB AS CONTA,N1_DESCRIC,N1_CBASE,N1_XPLACA,N1_XPREF,N1_XCHASSI,"
+cQuery += " N1_CHAPA,A2_NOME,N1_AQUISIC,N1_ITEM,N3_VORIG1,N3_TXDEPR1,N3_VRCACM1,N3_VRDMES1,N3_VRDACM1"
 cQuery += " FROM "+RetSQLName("SN1")+" N1"
 cQuery += " INNER JOIN "+RetSQLName("SN3")+" N3 ON N3_FILIAL=N1_FILIAL AND N3_CBASE=N1_CBASE AND N3_ITEM=N1_ITEM AND N3.D_E_L_E_T_=' '"
 cQuery += " LEFT JOIN " + RetSQLName("SA2") + " AS A2 ON A2_COD=N1_FORNEC AND A2_LOJA=N1_LOJA  " 
 cQuery += " WHERE N1_FILIAL='"+xFilial("SN1")+"'"
-
-
 
 IF Select('TRB') > 0
     dbSelectArea('TRB')
@@ -61,20 +60,20 @@ DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
 DbSelectArea("TRB")  
 
 Aadd(aCabec,{"CONTA",;
-            "N1_DESCRIC",;
-            "N1_CBASE",;
-            "N1_XPLACA",;
-            "N1_XPREF",;
-            "N1_XCHASSI",;
-            "N1_CHAPA",;
-            "A2_NOME",;
-            "N1_AQUISIC",;
-            "N1_ITEM",;
-            "N3_VORIG1",;
-            "N3_TXDEPR1",;
-            "N3_VRCACM1",;
-            "N3_VRDMES1",;
-            "N3_VRDACM1"})
+            "DESCRICAO",;
+            "Cod. Bem",;
+            "Placa",;
+            "Prefixo Onibus",;
+            "Chassis",;
+            "Num. Plaqueta",;
+            "Fornecedor",;
+            "Data Aquisicao",;
+            "Item",;
+            "Valor Original M1",;
+            "Taxa Depreciação",;
+            "Corr Acum M1",;
+            "Depr Mes M1",;
+            "Depr.Acum M1"})
             
 While !EOF()
     Aadd(aItens,{TRB->CONTA,;
