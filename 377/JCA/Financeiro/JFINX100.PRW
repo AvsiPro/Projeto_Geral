@@ -371,6 +371,7 @@ User Function RF01BImp(lEmail)
 	Local aArea  := GetArea()
 	Local cRetCam := ''
 	Default lEmail := .f.
+	
 
 	lProblema := .F.
 	lExec := .T.
@@ -417,9 +418,9 @@ User Function RF01BImp(lEmail)
 			cNumTit := AllTrim(SE1->(E1_PREFIXO+E1_NUM+E1_PARCELA))
 			
 			if !lEmail
-				lProblema := U_RF01B062(,,,, lEmail,cNumTit)
+				lProblema := U_RF01B062(,,,, lEmail)
 			else
-				lProblema := FWMsgRun(, {|| U_RF01B062(,,,, lEmail,cNumTit) }, "Aguarde...", "Gerando o boleto para ser enviado no e-mail do cliente...")
+				lProblema := FWMsgRun(, {|| U_RF01B062(,,,, lEmail) }, "Aguarde...", "Gerando o boleto para ser enviado no e-mail do cliente...")
 			endif
 			
 			if lProblema
@@ -497,7 +498,7 @@ User Function RF01B062(xBanco,xAgencia,xConta,xSubCt, lEmail)
 
 	Local cDir			:= Alltrim(GetTempPath()) //Busca Pasta temporaria do Usuario
 	Local cPath 		:= Replace( cDir, "\\", "\" )
-	Local cRutaSmr 		:=  Alltrim(GetTempPath()) 
+	Local cRutaSmr 		:= Alltrim(GetTempPath()) 
 	Local cPDFNom		:= "BOLETO_"+Dtos(MSDate())+StrTran(Time(),":","")
 	Local oPrint
 	Local nX 			:= 0
