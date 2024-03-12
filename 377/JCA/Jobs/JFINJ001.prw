@@ -114,6 +114,11 @@ Local cTamSring := GetSrvProfString("maxStringSize", "1000000")
 Local nTamLinha := Val(cTamSring)
 Local cBuffer   := ""
 Local cEncode64 := ""
+
+Local cFile := ""// VALORES RETORNADOS NA LEITURA
+Local oFile //:= FwFileReader():New("/NR5.pdf") // CAMINHO ABAIXO DO ROOTPATH
+
+
 Private cMarca  := GetMark()
 
 /*E1_FILIAL,E1_PREFIXO,E1_NUM,E1_PARCELA,E1_TIPO,
@@ -153,13 +158,19 @@ If !'.pdf' $ cFileBol
     cFileBol := alltrim(cFileBol)+'.pdf'
 EndIf 
 
+oFile := FwFileReader():New(cFileBol) // CAMINHO ABAIXO DO ROOTPATH
+oFile:Open()
+cFile := oFile:FullRead() // EFETUA A LEITURA DO ARQUIVO
+
+cEncode64 := Encode64(cFile)
+/*
 nHdlImp := FOpen(cFileBol,0)
 nBytes  := FREAD(nHdlImp, cBuffer, nTamLinha)
 
 cEncode64 := Encode64(cBuffer)
 
 fClose(nHdlImp)
-
+*/
 RestArea(aArea)
 
 Return(cEncode64)
@@ -183,7 +194,6 @@ Local nCont
 Local oEnvio    := JsonObject():New()
 Local cApiDest  := SuperGetMV("TI_APIDES",.F.,"")
 Local cEndPnt   := SuperGetMV("TI_ENDPNT",.F.,"")
-
 
 /*E1_FILIAL,E1_PREFIXO,E1_NUM,E1_PARCELA,E1_TIPO,
 E1_NUMBCO,E1_IDCNAB,E1_ZIMPBOL,E1_CODBAR,E1_CLIENTE,;

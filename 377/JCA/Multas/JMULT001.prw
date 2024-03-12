@@ -393,7 +393,7 @@ If Empty(FunName())
 EndIf
 
 If !Alltrim(cusername) $ cAprova
-    MsgAlrt("Usuário sem permissão para realizar aprovações")
+    MsgAlert("Usuário sem permissão para realizar aprovações")
 Else 
     aAdd(aParamBox,{02,"Tipo de Aprovação"              ,cCombo     ,aCombo             ,80,""   ,.F.})
 

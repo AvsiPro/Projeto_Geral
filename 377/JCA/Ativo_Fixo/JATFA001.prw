@@ -41,7 +41,7 @@ SetPrvt("oSay10","oSay11","oGet1","oGet2","oGet3","oGet4","oGet5","oGet6","oBtn1
 
 If Empty(FunName())
     RpcSetType(3)
-    RPCSetEnv("01","00020087")
+    RPCSetEnv("01","00060228") //00020087
 EndIf
 
 aAdd(aParamBox,{01,"Filial"		  			,cFilNF		,""					,"","SM0"	,"", 60,.F.})	// MV_PAR01
