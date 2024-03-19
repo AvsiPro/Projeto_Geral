@@ -34,7 +34,7 @@ Return
 /*/{Protheus.doc} fWizard
 	CriaÃ§Ã£o do Wizard.
 	Issue: TICONTIN-1534
-	@author Alexandre VenÃ¢ncio	
+	@author Alexandre Venancio	
 	@since 07/08/2021
 /*/
 Static Function fWizard()
@@ -67,6 +67,9 @@ Static Function fWizard()
 	Private cConta := space(10)
 	Private cSubCt := space(3)
 	Private cMailT := space(50)
+	Private cCrtMd := space(6)
+	Private aTiEnv := {'Sim','Não'}
+	Private cTipEn := aTiEnv[2]
 	
     oStepWiz := FWWizardControl():New(,{600,850})//Instancia a classe FWWizardControl
 	oStepWiz:ActiveUISteps()
@@ -113,7 +116,7 @@ Return
 /*/{Protheus.doc} cria_pn1
 	CriaÃ§Ã£o da primeira pÃ¡gina do Wizard.
 	Issue: TICONTIN-1534
-	@author Alexandre VenÃ¢ncio	
+	@author Alexandre Venancio	
 	@since 07/08/2021
 /*/
 Static Function cria_pn0( oPanel As Object )
@@ -148,12 +151,6 @@ Static Function cria_pn0( oPanel As Object )
 	oGet8     := TGet():New(160,85,{|u| If(PCount() > 0,nVlrAt := u,nVlrAt)},oPanel,60,10,PesqPict("SE1","E1_VALOR"),,,,,,,.T.,,,{|| .T.},,,,.F.,.F.,'','')
     
 	
-	
-	//TSay():New(020,245,{|| "Seleciona Filiais"},oPanel,,,,,,.T.,CLR_BLUE,)
-	//cCombo1:= aItems[1]   
-    //oCombo1 := TComboBox():New(020,310,{|u|if(PCount()>0,cCombo1:=u,cCombo1)},aItems,50,20,oPanel,,{|| },,,,.T.,,,,,,,,,'cCombo1')
-	//FwListBranches()
-
 	TSay():New(20,245,{|| "Banco"},oPanel,,,,,,.T.,CLR_BLUE,)
     oGet9     := TGet():New(20,310,{|u| If(PCount() > 0,cBanco := u,cBanco)},oPanel,60,10,PesqPict("SA6","A6_COD"),,,,,,,.T.,,,{|| .T.},,,,.F.,.F.,'SA6','')
     
@@ -169,14 +166,19 @@ Static Function cria_pn0( oPanel As Object )
 	TSay():New(100,245,{|| "Email Teste"},oPanel,,,,,,.T.,CLR_BLUE,)
 	oGet13     := TGet():New(100,310,{|u| If(PCount() > 0,cMailT := u,cMailT)},oPanel,40,10,PesqPict("SA1","A1_EMAIL"),,,,,,,.T.,,,{|| .T.},,,,.F.,.F.,'','')
     
-
+	TSay():New(120,245,{|| "Carta modelo"},oPanel,,,,,,.T.,CLR_BLUE,)
+	oGet13     := TGet():New(120,310,{|u| If(PCount() > 0,cCrtMd := u,cCrtMd)},oPanel,40,10,PesqPict("SA1","A1_EMAIL"),,,,,,,.T.,,,{|| .T.},,,,.F.,.F.,'FWP','')
+    
+	TSay():New(140,245,{|| "Titulos sem boleto"},oPanel,,,,,,.T.,CLR_BLUE,)
+	oCombo2 := TComboBox():New(140,310,{|u|if(PCount()>0,cTipEn:=u,cTipEn)},aTiEnv,50,20,oPanel,,{|| },,,,.T.,,,,,,,,,'cTipEn')
+	
 Return .t.
 
 
 /*/{Protheus.doc} cria_pn2
 	CriaÃ§Ã£o da segunda pÃ¡gina do Wizard.
 	Issue: TICONTIN-1534
-	@author Alexandre VenÃ¢ncio	
+	@author Alexandre Venancio	
 	@since 07/08/2021
 /*/
 Static Function cria_pn2( oPanel As Object )
@@ -224,7 +226,7 @@ Return .t.
 /*/{Protheus.doc} cria_pn4
 	VisualizaÃ§Ã£o do log de processamento.
     Issue: TICONTIN-1534
-	@author Alexandre VenÃ¢ncio	
+	@author Alexandre Venancio	
 	@since 24/04/2021
 /*/
 Static Function cria_pn4( oPanel As Object )
@@ -256,7 +258,7 @@ Return
 /*/{Protheus.doc} fGravaLog
 	GravaÃ§Ã£o do log de processamento.
     Issue: TICONTIN-1534
-	@author Alexandre VenÃ¢ncio	
+	@author Alexandre Venancio	
 	@since 24/04/2021
 /*/
 Static Function fGravaLog(cMsg, cDetalhe, lOk)
@@ -384,6 +386,11 @@ user function JFINJ014a(cCodEmp,cCodFil,lAuto)
 		RPCSetEnv("01","0101")
 	EndIf
 
+	Private aSM0Data2 := FWSM0Util():GetSM0Data()
+	Private nPos1     := Ascan(aSM0Data2,{|x| x[1] == "M0_CODFIL"})
+	Private nPos2     := Ascan(aSM0Data2,{|x| x[1] == "M0_FILIAL"})
+	Private nPos3     := Ascan(aSM0Data2,{|x| x[1] == "M0_NOME"})
+
 	cNomeArq := 'c:\temp\_avisos\'+dtos(ddatabase)+'.txt'
 
 	Aadd(aArquivos,{"\system\LGRL01.png",'Content-ID: <ID_LGRL01,png>'})
@@ -392,6 +399,14 @@ user function JFINJ014a(cCodEmp,cCodFil,lAuto)
 
 	
 	li       := 5000
+
+	DbSelectArea("FWP")
+	DbSetORder(1)
+	Dbseek(xFilial("FWP")+cCrtMd)
+	
+	If !Empty(FWP->FWP_TXTASS)
+		cSubject := Alltrim(FWP->FWP_TXTASS)
+	EndIf 
 
 	_pdfenvio()
 
@@ -441,12 +456,11 @@ user function JFINJ014a(cCodEmp,cCodFil,lAuto)
 
 	While !EOF()
 
-		If li > 1900 //.Or. cCotacao <> CADTMP->CP_NUM
+		If li > 1900 
 			If Li <> 5000
 				oPrint:EndPage()
 			Endif		
 		
-			//nPg++
 			ImpCabec()                                                                     
 		Endif
 
@@ -487,26 +501,39 @@ user function JFINJ014a(cCodEmp,cCodFil,lAuto)
             MsUnLock()
         EndIf
 		
-		cFileBol := U_RF01BImp(.f.)
+		If Upper(cTipEn) == "SIM"
+			cFileBol := U_RF01BImp(.f.)
+			cMsg := 'Arquivo gerado'
+			lOk := .T.
+		Else 
+			cMsg = 'Nao enviar boleto'
+			lOk := .T.
+		EndIf 
 
-		cMsg := 'Arquivo gerado'
-		cDetalhe := cFileBol
-		lOk := .T.
-
+		aSM0Data2 := FWSM0Util():GetSM0Data(cEmpAnt,TRBLOC->E1_FILIAL)
+		cDetalhe := Alltrim(aSM0Data2[nPos2,02])
+		cDetalhe += "|"+SE1->E1_CLIENTE+"|"+SE1->E1_LOJA+"|"+Alltrim(TRBLOC->A1_NOME)
+		cDetalhe += "|"+SE1->E1_PREFIXO+"|"+SE1->E1_NUM+"|"+SE1->E1_PARCELA
+		cDetalhe += "|"+cvaltochar(STOD(TRBLOC->E1_VENCREA))+"|"+Transform(TRBLOC->E1_VALOR,"@E 999,999,999.99")
+		
 		fGravaLog(cMsg, cDetalhe, lOk)
 
 		RestArea(aAreaTRBLOC)
 		
 		cBody 		:=	Aviso_1(TRBLOC->E1_CODDIG,TRBLOC->A1_XBOL,nVlrAbat)
 
-		If !'.pdf' $ cFileBol
-			cFileBol := alltrim(cFileBol)+'.pdf'
+		If Upper(cTipEn) == "SIM"
+			If !'.pdf' $ cFileBol
+				cFileBol := alltrim(cFileBol)+'.pdf'
+			EndIf 
+
+			cpyt2s(alltrim(cFileBol),'\spool\')
+			aAux := separa(cFileBol,"\")
+
+			cNewloc := '\spool\'+aaux[len(aaux)]
+		Else 
+			cNewloc := ''
 		EndIf 
-
-		cpyt2s(alltrim(cFileBol),'\spool\')
-		aAux := separa(cFileBol,"\")
-
-		cNewloc := '\spool\'+aaux[len(aaux)]
 
 		aArquivos 	:=  {}
 
@@ -797,7 +824,6 @@ User Function CONJOB4b(cCodEmp,cCodFil)
 	IF len(aAvisFi) > 0
 		cBody := AvisFin(cSubject,aCumula)
 		cDestino := "alexandre.venancio@avsipro.com.br"
-		//U_robmail(cRemete,cDestino,cSubject+" "+cvaltochar(ddatabase),cBody,{},.T.)
 		U_EnviarEmail(cDestino,cSubject+" "+cvaltochar(ddatabase),cBody,"",.f.)
 	EndIf
 
@@ -853,7 +879,6 @@ User Function CONJOB4b(cCodEmp,cCodFil)
 			cCliente := TRBLOC->E1_CLIENTE+TRBLOC->E1_LOJA
 			If Len(aTitCli) > 0
 				cBody := Cobranca2()
-				//U_robmail(cRemete,cDestino,cSubject,cBody,aArquivos,.T.)
 				U_EnviarEmail(cDestino,cSubject,cBody,"\system\LGRL01.PNG",.f.)
 				aTitCli := {}
 
@@ -904,7 +929,6 @@ User Function CONJOB4b(cCodEmp,cCodFil)
 
 	If len(aTitCli) > 0
 		cBody := Cobranca2()
-		//U_robmail(cRemete,cDestino,cSubject,cBody,aArquivos,.T.)
 		U_EnviarEmail(cDestino,cSubject,cBody,"\system\LGRL01.PNG",.f.)
 		aTitCli := {}
 	EndIf
@@ -915,7 +939,6 @@ User Function CONJOB4b(cCodEmp,cCodFil)
 	IF len(aAvisFi) > 0
 		cBody := AvisFin(cSubject,aCumula)
 		cDestino := "alexandre.venancio@avsipro.com.br"
-		//U_robmail(cRemete,cDestino,cSubject+" "+cvaltochar(ddatabase),cBody,{},.T.)
 		U_EnviarEmail(cDestino,cSubject+" "+cvaltochar(ddatabase),cBody,"",.f.)
 	EndIf
 
@@ -964,7 +987,6 @@ User Function CONJOB4b(cCodEmp,cCodFil)
 			cCliente := TRBLOC->E1_CLIENTE+TRBLOC->E1_LOJA
 			If Len(aTitCli) > 0
 				cBody := Cobranca3()
-				//U_robmail(cRemete,cDestino,cSubject,cBody,aArquivos,.T.)
 				U_EnviarEmail(cDestino,cSubject,cBody,"\system\LGRL01.PNG",.f.)
 				aTitCli := {}
 				cDestino := Alltrim(TRBLOC->A1_EMAIL) //
@@ -1011,7 +1033,6 @@ User Function CONJOB4b(cCodEmp,cCodFil)
 
 	If len(aTitCli) > 0
 		cBody := Cobranca3()
-		//U_robmail(cRemete,cDestino,cSubject,cBody,aArquivos,.T.)
 		U_EnviarEmail(cDestino,cSubject,cBody,"\system\LGRL01.PNG",.f.)
 		aTitCli := {}
 	EndIf
@@ -1023,7 +1044,6 @@ User Function CONJOB4b(cCodEmp,cCodFil)
 		cBody := AvisFin(cSubject,aCumula)
 
 		cDestino := "alexandre.venancio@avsipro.com.br"
-		//U_robmail(cRemete,cDestino,cSubject+" "+cvaltochar(ddatabase),cBody,{},.T.)
 		U_EnviarEmail(cDestino,cSubject+" "+cvaltochar(ddatabase),cBody,"",.f.)
 	EndIf
 
@@ -1052,78 +1072,65 @@ Static Function Aviso_1(cBoleto,cGerBol,nVlrAbat)
 
 	cHtml := "<html>"
 	cHtml += "<body>"
-
-	cHtml += "<table width='1078' border='0'>"
-	cHtml += "  <tr>"
-	cHtml += "    	<td>Caro cliente,</td></tr>"
-	cHtml += "  <tr>"
-	cHtml += "		<td>Estamos com a(s) fatura(s) abaixo listadas em aberto no nosso sistema, aguardando pagamento.</td>"
-	cHtml += "  </tr><br>"
-
-
-	cHtml += "<table width='1078' border='0'>"
-	cHtml += "  <tr bgcolor='#33FFFF'>"
-	cHtml += "    <td align='center'><b>Aviso de vencimento / NOTA  Nº "+TRBLOC->E1_NUM+" Prefixo "+TRBLOC->E1_PREFIXO+" "+cvaltochar(STOD(TRBLOC->E1_VENCREA))+"</b></td>"
-	cHtml += "  </tr>"
-	cHtml += "</table><br><br><br>"
-
-	cHtml += "<table width='1078' border='0'>"
-	cHtml += "  <tr bgcolor='#d4e6f6'>"
-	cHtml += "    <td >Cedente:</td><td><b>"+Alltrim(SM0->M0_NOMECOM)+"</b></td></tr>"
-	cHtml += "    <tr bgcolor='#5592bb'><td>Sacado:</td><td><b>"+Alltrim(TRBLOC->A1_NOME)+"</b> CÓDIGO "+TRBLOC->E1_CLIENTE+TRBLOC->E1_LOJA+" CNPJ "+Transform(TRBLOC->A1_CGC,"@R 99.999.999/9999-99")+"</td></tr>"
-	cHtml += "    <tr bgcolor='#d4e6f6'><td>Valor:</td><td><b>R$ "+cvaltochar(Transform(TRBLOC->E1_VALOR-nVlrAbat,"@E 999,999,999.99"))+"</b></td></tr>"
-	cHtml += "    <tr bgcolor='#d4e6f6'><td>Vencimento:</td><td><b>"+cvaltochar(Stod(TRBLOC->E1_VENCREA))+"</b></td></tr>"
-	cHtml += "    <tr bgcolor='#d4e6f6'><td>Referência:</td><td><b>"+Alltrim(TRBLOC->ED_DESCRIC)+"</b></td></tr>"
-	cHtml += "</table><br><br><br>"
-
-/*
-	cHtml += "<table width='1078' border='0'>"
-	cHtml += "  <tr>"
-	cHtml += "    <td>Prezado (a), Cliente<br>"
-	cHtml += Alltrim(TRBLOC->A1_NOME)+" Cnpj "+Transform(TRBLOC->A1_CGC,'@R 99.999.999/9999-99')+"<br>"
-	cHtml += "Lembramos do vencimento de sua nota fiscal para o dia ( "+cvaltochar(stod(TRBLOC->E1_VENCREA))+" ) "+IF(!Empty(cBoleto),", se encontra em anexo.","")+"<br>"
-	cHtml += "Essa é uma mensagem automática, caso já tenha efetuado o pagamento, por favor desconsiderar o e-mail</td>"
-	cHtml += "  </tr><br>"
-
-	If !Empty(cBoleto)
-
-		cLinhaD := 	substr(cBoleto,1,5)+'.'+;
-					substr(cBoleto,6,5)+' '+;
-					substr(cBoleto,11,5)+'.'+;
-					substr(cBoleto,16,6)+' '+;
-					substr(cBoleto,22,5)+'.'+;
-					substr(cBoleto,27,6)+'  '+;
-					substr(cBoleto,33,1)+'  '+;
-					substr(cBoleto,34);
-
-		cHtml += " <tr>"
-		cHtml += "    <td>Para agilizar o processo, estamos incluindo a linha digitável do boleto.</td>"
-		cHtml += " </tr>"
-		cHtml += " <tr>"
-		cHtml += " <td><b>"+cLinhaD+"</b></td>"
-		cHtml += " </tr>"
-
-		cHtml += "<br><br>"
-	else
-		
-		cHtml += " <tr>"
-		cHtml += "  <td>Razão Social: "+Alltrim(SM0->M0_NOMECOM)+"</td>"
-		cHtml += " </tr>"
-		cHtml += " <tr>"
-		cHtml += "  <td>CNPJ: "+Transform(SM0->M0_CGC,"@R 99.999.999/9999-99")+"</td>"	
-		cHtml += " </tr>"
-	EndIf
-*/
-
-	cHtml += "	Caso o pagamento já tenha ocorrido, favor desconsiderar essa comunicação.<br>"
-	cHtml += "  Permanecemos à disposição. Obrigado!"
 	
+	If Empty(cCrtMd)
+		cHtml += "<table width='1078' border='0'>"
+		cHtml += "  <tr>"
+		cHtml += "    	<td>Caro cliente,</td></tr>"
+		cHtml += "  <tr>"
+		cHtml += "		<td>Estamos com a(s) fatura(s) abaixo listadas em aberto no nosso sistema, aguardando pagamento.</td>"
+		cHtml += "  </tr><br>"
+
+
+		cHtml += "<table width='1078' border='0'>"
+		cHtml += "  <tr bgcolor='#33FFFF'>"
+		cHtml += "    <td align='center'><b>Aviso de vencimento / NOTA  Nº "+TRBLOC->E1_NUM+" Prefixo "+TRBLOC->E1_PREFIXO+" "+cvaltochar(STOD(TRBLOC->E1_VENCREA))+"</b></td>"
+		cHtml += "  </tr>"
+		cHtml += "</table><br><br><br>"
+
+		cHtml += "<table width='1078' border='0'>"
+		cHtml += "  <tr bgcolor='#d4e6f6'>"
+		cHtml += "    <td >Cedente:</td><td><b>"+Alltrim(SM0->M0_NOMECOM)+"</b></td></tr>"
+		cHtml += "    <tr bgcolor='#5592bb'><td>Sacado:</td><td><b>"+Alltrim(TRBLOC->A1_NOME)+"</b> CÓDIGO "+TRBLOC->E1_CLIENTE+TRBLOC->E1_LOJA+" CNPJ "+Transform(TRBLOC->A1_CGC,"@R 99.999.999/9999-99")+"</td></tr>"
+		cHtml += "    <tr bgcolor='#d4e6f6'><td>Valor:</td><td><b>R$ "+cvaltochar(Transform(TRBLOC->E1_VALOR-nVlrAbat,"@E 999,999,999.99"))+"</b></td></tr>"
+		cHtml += "    <tr bgcolor='#d4e6f6'><td>Vencimento:</td><td><b>"+cvaltochar(Stod(TRBLOC->E1_VENCREA))+"</b></td></tr>"
+		cHtml += "    <tr bgcolor='#d4e6f6'><td>Referência:</td><td><b>"+Alltrim(TRBLOC->ED_DESCRIC)+"</b></td></tr>"
+		cHtml += "</table><br><br><br>"
+
+		cHtml += "	Caso o pagamento já tenha ocorrido, favor desconsiderar essa comunicação.<br>"
+		cHtml += "  Permanecemos à disposição. Obrigado!"
+	Else 
+		cHtml += "<table width='1078' border='0'>"
+		cHtml += "  <tr>"
+		cHtml += "    	<td>"+AllTrim(FWP->FWP_TXTSAU)+"</td></tr>"
+		cHtml += "  <tr>"
+		cHtml += "		<td>"+AllTrim(FWP->FWP_TXTCRT)+"</td>"
+		cHtml += "  </tr><br>"
+
+		cHtml += "<table width='1078' border='0'>"
+		cHtml += "  <tr bgcolor='#33FFFF'>"
+		cHtml += "    <td align='center'><b>Aviso de vencimento / NOTA  Nº "+TRBLOC->E1_NUM+" Prefixo "+TRBLOC->E1_PREFIXO+"</b></td>"
+		cHtml += "  </tr>"
+		cHtml += "</table><br><br><br>"
+
+		cHtml += "<table width='1078' border='0'>"
+		cHtml += "  <tr bgcolor='#d4e6f6'>"
+		cHtml += "    <td >Cedente:</td><td><b>"+Alltrim(SM0->M0_NOMECOM)+"</b></td></tr>"
+		cHtml += "    <tr bgcolor='#5592bb'><td>Sacado:</td><td><b>"+Alltrim(TRBLOC->A1_NOME)+"</b> CÓDIGO "+TRBLOC->E1_CLIENTE+TRBLOC->E1_LOJA+" CNPJ "+Transform(TRBLOC->A1_CGC,"@R 99.999.999/9999-99")+"</td></tr>"
+		cHtml += "    <tr bgcolor='#d4e6f6'><td>Valor:</td><td><b>R$ "+cvaltochar(Transform(TRBLOC->E1_VALOR-nVlrAbat,"@E 999,999,999.99"))+"</b></td></tr>"
+		cHtml += "    <tr bgcolor='#d4e6f6'><td>Vencimento:</td><td><b>"+cvaltochar(Stod(TRBLOC->E1_VENCREA))+"</b></td></tr>"
+		cHtml += "    <tr bgcolor='#d4e6f6'><td>Referência:</td><td><b>"+Alltrim(TRBLOC->ED_DESCRIC)+"</b></td></tr>"
+		cHtml += "</table><br><br><br>"
+
+		cHtml += FWP->FWP_TXTCON
+	EndIf 	
+
 	cHtml += "  <tr>"
 	cHtml += "    <td><p><strong>"+Alltrim(SM0->M0_NOMECOM)+"</strong><br />"
 	cHtml += "      Departamento Financeiro<br />"
 	cHtml += "      "+Alltrim(SM0->M0_ENDENT)+" "+Alltrim(SM0->M0_CIDENT)+" - "+SM0->M0_ESTENT+"<br />"
 	cHtml += "  <strong>T</strong>el 55 (11) "+SM0->M0_TEL+"  <br />" 
-	cHtml += "  <strong>E-mail</strong><strong> </strong><a href='mailto:financeiro@.com.br'>financeiro@jca.com.br</a><u> </u></p></td>"
+	cHtml += "  <strong>E-mail</strong><strong> </strong><a href='mailto:financeiro@jca.com.br'>financeiro@jca.com.br</a><u> </u></p></td>"
 	cHtml += "  </tr>"
 	cHtml += "</table>"
 

@@ -17,6 +17,11 @@ Local aRet   := {}
 Local dDtDe  := ctod(' / / ')
 Local dDtAt  := ctod(' / / ')
 
+If Select("SM0") == 0
+    RpcSetType(3)
+    RPCSetEnv("01","00020087")
+EndIf
+
 aAdd(aPergs ,{1,"Data de "      ,dDtDe   ,"",".T.","",".T.",80,.F.})
 aAdd(aPergs ,{1,"Data Ate"      ,dDtAt   ,"",".T.","",".T.",80,.F.})
 
@@ -44,7 +49,8 @@ Return
 Static Function Busca(dDtDe,dDtAt)
 
 Local cQuery 
-Local aAux   := {}
+Local aAux      := {}
+Local aQuebra   := {}
 Private aHeader := {}
 
 cQuery := "SELECT CV8_FILIAL,CV8_DATA,CV8_HORA,CV8_USER,CV8_MSG,CV8_PROC,CV8_SBPROC,CV8_IDMOV,"
@@ -67,27 +73,43 @@ DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
 DbSelectArea("TRB") 
 
 While !EOF()
+    aQuebra := separa(TRB->OBS,"|")
+
     Aadd(aAux,{TRB->CV8_FILIAL,;
-                TRB->CV8_DATA,;
+                If(len(aQuebra)>0,aQuebra[1],""),;
+                If(len(aQuebra)>1,aQuebra[2],""),;
+                If(len(aQuebra)>2,aQuebra[3],""),;
+                If(len(aQuebra)>3,aQuebra[4],""),;
+                If(len(aQuebra)>4,aQuebra[5],""),;
+                If(len(aQuebra)>5,aQuebra[6],""),;
+                If(len(aQuebra)>6,aQuebra[7],""),;
+                If(len(aQuebra)>7,aQuebra[8],""),;
+                If(len(aQuebra)>8,aQuebra[9],""),;
+                cvaltochar(stod(TRB->CV8_DATA)),;
                 TRB->CV8_HORA,;
                 TRB->CV8_USER,;
                 TRB->CV8_MSG,;
                 TRB->CV8_PROC,;
-                TRB->CV8_SBPROC,;
-                TRB->CV8_IDMOV,;
                 TRB->OBS})
     DbSkip()
 Enddo
 
 If len(aAux) > 0
-    Aadd(aHeader,{  'CV8_FILIAL',;
-                    'CV8_DATA',;
-                    'CV8_HORA',;
-                    'CV8_USER',;
-                    'CV8_MSG',;
-                    'CV8_PROC',;
-                    'CV8_SBPROC',;
-                    'CV8_IDMOV',;
+    Aadd(aHeader,{  'Filial',;
+                    'Nome Empresa',;
+                    'Codigo',;
+                    'Loja',;
+                    'Nome',;
+                    'Prefixo',;
+                    'Titulo',;
+                    'Parcela',;
+                    'Vencimento',;
+                    'Valor',;
+                    'Data',;
+                    'Hora',;
+                    'Usuario',;
+                    'Status',;
+                    'Processamento',;
                     'OBS'})
     
     GeraPlan(aAux)
