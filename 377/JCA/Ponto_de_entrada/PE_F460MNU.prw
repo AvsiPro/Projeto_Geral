@@ -63,7 +63,7 @@ If MsgYesNo("Deseja enviar somente a selecionada?")
     cProc := FO0->FO0_PROCES
     cVers := FO0->FO0_VERSAO
     cNuml := FO0->FO0_NUMLIQ
-    cCli  := FO0->FO0_CLIENT
+    cCli  := FO0->FO0_CLIENT+FO0->FO0_LOJA+Posicione("SA1",1,xFilial("SA1")+FO0->FO0_CLIENT+FO0->FO0_LOJA,"A1_CGC")
     cNome := Posicione("SA1",1,xFilial("SA1")+FO0->FO0_CLIENT+FO0->FO0_LOJA,"A1_NOME")
     cEmail:= Posicione("SA1",1,xFilial("SA1")+FO0->FO0_CLIENT+FO0->FO0_LOJA,"A1_EMAIL")
 
@@ -78,9 +78,10 @@ If MsgYesNo("Deseja enviar somente a selecionada?")
         While !EOF() .AND. SE1->E1_FILIAL == cFil .AND. SE1->E1_NUMLIQ == FO0->FO0_NUMLIQ
             cTit := SE1->E1_PREFIXO+'/'+SE1->E1_NUM+'/'+SE1->E1_PARCELA
             dDtv := dtos(SE1->E1_VENCREA) 
+            dDtE := dtos(SE1->E1_EMISSAO) 
             nSld := SE1->E1_SALDO
             nVlr := SE1->E1_VALOR 
-            Aadd(aNovos,{cTit,dDtv,nSld,nVlr})
+            Aadd(aNovos,{cTit,dDtv,nSld,nVlr,dDtE})
             Dbskip()
         ENDDO
     EndIf 
@@ -119,7 +120,7 @@ Else
 
         cQuery := "SELECT DISTINCT FO0.FO0_FILIAL,FO0.FO0_PROCES,"
         cQuery += " FO0.FO0_VERSAO,FO0.FO0_NUMLIQ,"
-        cQuery += " SA1.A1_COD,SA1.A1_NOME,SA1.A1_EMAIL,"
+        cQuery += " SA1.A1_COD,SA1.A1_NOME,SA1.A1_EMAIL,SA1.A1_LOJA,SA1.A1_CGC,SE1.E1_EMISSAO,"
         cQuery += " SE1.E1_PREFIXO+'/'+SE1.E1_NUM+'/'+SE1.E1_PARCELA AS TIT,SE1.E1_VENCREA,SE1.E1_SALDO,SE1.E1_VALOR" 
         cQuery += " FROM "+RetSQLName("FO0")+" FO0"
         cQuery += " INNER JOIN "+RetSQLName("SA1")+" SA1 ON A1_FILIAL='"+xFilial("SA1")+"'" 
@@ -149,7 +150,8 @@ Else
                 Aadd(aNovos,{TRB->TIT,;
                             TRB->E1_VENCREA,;
                             TRB->E1_SALDO,;
-                            TRB->E1_VALOR})
+                            TRB->E1_VALOR,;
+                            TRB->E1_EMISSAO})
                 lNew := .T.
             EndIf 
 
@@ -159,7 +161,7 @@ Else
                             TRB->FO0_PROCES,;
                             TRB->FO0_VERSAO,;
                             TRB->FO0_NUMLIQ,;
-                            TRB->A1_COD,;
+                            TRB->A1_COD+TRB->A1_LOJA+TRB->A1_CGC,;
                             TRB->A1_NOME,;
                             TRB->A1_EMAIL,;
                             aNovos})
@@ -184,7 +186,7 @@ If len(aAux) > 0
 
         cQuery := "SELECT 	FO1.FO1_FILIAL ,
         cQuery += " 		SE1.E1_PREFIXO+'/'+SE1.E1_NUM+'/'+SE1.E1_PARCELA+'/'+SE1.E1_TIPO TIT,
-        cQuery += " 		SE1.E1_NOMCLI,SE1.E1_NATUREZ,SE1.E1_VENCTO,SE1.E1_VENCREA,"
+        cQuery += " 		SE1.E1_NOMCLI,SE1.E1_NATUREZ,SE1.E1_VENCTO,SE1.E1_VENCREA,SE1.E1_EMISSAO,"
         cQuery += " 		FO1.FO1_SALDO,FO1.FO1_TXMUL,FO1.FO1_VLMUL,FO1.FO1_TXJUR,"
         cQuery += " 		FO1.FO1_VLJUR,FO1.FO1_VLDIA,FO1.FO1_ACRESC,FO1.FO1_DECRES,FO1.FO1_DESCON,"
         cQuery += " 		FO1.FO1_VLABT,FO1.FO1_VACESS,FO1.FO1_TOTAL"
@@ -209,7 +211,7 @@ If len(aAux) > 0
         DbSelectArea("TRB")  
 
         WHILE !EOF()
-            Aadd(aItens[len(aItens)],{TRB->TIT,TRB->E1_VENCREA,TRB->FO1_SALDO,TRB->FO1_TOTAL})    
+            Aadd(aItens[len(aItens)],{TRB->TIT,TRB->E1_VENCREA,TRB->FO1_SALDO,TRB->FO1_TOTAL,TRB->E1_EMISSAO})    
             Dbskip()
         EndDo 
 
@@ -283,8 +285,11 @@ If len(aItens[1]) >= 8
         oHtml := TWFHtml():New( cArqHTML )
 
         //oHTML:ValByName("E1_TIT",aItens[nCont,8])
-        //oHTML:ValByName("E1_EMISSAO",aItens[nCont,12])
+        oHTML:ValByName("E1_EMISSAO",stod(aItens[nCont,8,1,5]))
         oHTML:ValByName("A1_NOME",aItens[nCont,6])
+        oHTML:ValByName("A1_CODIGO",substr(aItens[nCont,5],1,6))
+        oHTML:ValByName("A1_CGC",Transform(substr(aItens[nCont,5],9),"@R 99.999.999/9999-99"))
+        oHTML:ValByName("A1_LOJA",substr(aItens[nCont,5],7,2))
         
         cItens := xGermail(aItens[nCont,8],1)
         oHTML:ValByName("linhasnovo",cItens)
@@ -292,6 +297,16 @@ If len(aItens[1]) >= 8
         cItens := xGermail(aItens[nCont],2)
         oHTML:ValByName("linhasliq",cItens)
         //cMail := 'alexandre.venancio@avsipro.com.br' // pode ser obtido de um parâmetro
+        aSM0Data2 := FWSM0Util():GetSM0Data(cEmpAnt,aItens[1,1])
+		cDetalhe := Alltrim(aSM0Data2[3,02])
+        cSubject := 'FATURAS '+substr(aItens[1,8,1,1],4,9)+' | '+cDetalhe
+        
+        cAssina := Alltrim(aSM0Data2[3,02])+"<br>"
+        cAssina += 'Departamento Financeiro <br>'
+        cAssina += Alltrim(aSM0Data2[14,02])+"<br>"
+        cAssina += 'Tel '+Alltrim(aSM0Data2[6,02])+"<br>"
+        cAssina += "financeiro@jca.com.br<br>"
+        oHTML:ValByName("assinatura",cAssina)
 
         cFileName    := CriaTrab(NIL,.F.) + ".htm"
         cFileName    := cPathHTML + "\" + cFileName 
@@ -305,7 +320,7 @@ If len(aItens[1]) >= 8
         //EMAIL aItens[nCont,7]
         cEmailTst := SUPERGETMV( "TI_EMAILTST", .F., "alexandre.venancio@avsipro.com.br" )
         //cEmailTst := 'alexandre.venancio@avsipro.com.br'
-        U_JGENX002(cEmailTst,'Titulos aglutinados JCA',cMensagem,cNewloc,.F.)
+        U_JGENX002(cEmailTst,cSubject,cMensagem,cNewloc,.F.)
         //U_JGENX2z('',cEmailTst,'Titulos aglutinados JCA',cMensagem,aAttach,lConfirm,cCC,cBCC)
     Next nCont 
 EndIf
@@ -348,7 +363,7 @@ For nCont1 := If(nOpc==1,1,9) to len(aArray)
         aAuxCmp := FWSX3Util():GetFieldStruct( FwCutOff(aArray2[nX]) )
         cConteudo := ''
         If aAuxCmp[2] == "N"
-            cConteudo := Transform(aArray[nCont1,nX],"@R 999,999,999.99")
+            cConteudo := Transform(aArray[nCont1,nX],"@E 999,999,999.99")
         ElseIf aAuxCmp[2] == "D"
             cConteudo := cvaltochar(stod(aArray[nCont1,nX]))
         Else 
