@@ -1,0 +1,1593 @@
+#INCLUDE "TBICONN.CH" 
+#INCLUDE "MATA040.CH"
+#INCLUDE "PROTHEUS.CH"
+#INCLUDE "FWEVENTVIEWCONSTS.CH"                            
+#INCLUDE "FWADAPTEREAI.CH" 
+#INCLUDE "FWMVCDEF.CH"     
+#INCLUDE "XMLXFUN.CH"    
+
+Static lIntegra 	:= SuperGetMv("MV_LJGRINT",.F.,.F.)  	//Verifica se a integracao esta habilitada
+Static oIntegra 	:= Nil 								//Objeto do tipo LJCADAPXMLENVSA3
+Static lAmbOffLn 	:= SuperGetMv("MV_LJOFFLN", Nil, .F.)			//Identifica se o ambiente esta operando em offline
+Static oProcessOff 	:= Nil											//Objeto do tipo LJCProcessoOffLine
+
+/*/
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Fun‡…o    ³ MATA040  ³ Autor ³ Claudinei M. Benzi    ³ Data ³ 23/04/92 ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descri‡…o ³ Programa de atualizacao de Vendedores                      ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³ Uso      ³ Generico                                                   ³±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+/*/
+Function MATA040(aAuto,nOpcAuto)
+
+//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+//³ Define o cabecalho da tela de atualizacoes                   ³
+//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+Private cCadastro		:= OemtoAnsi(STR0006)  //"Atualiza‡„o de Vendedores"
+Private xAuto			:= aAuto
+Private aRotina 		:= MenuDef()
+ 					
+//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+//³ Ponto de entrada utilizado para inserir novas opcoes no array aRotina  ³
+//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+If ExistBlock("MTA040MNU")
+	ExecBlock("MTA040MNU",.F.,.F.)
+EndIf
+
+If aAuto==Nil    
+	//-------------------------
+	// Browse de Vendedores. 
+	//-------------------------
+	BrowseDef( /*oMBrowse*/ )
+Else
+	MBrowseAuto(nOpcAuto,Aclone(aAuto),"SA3")
+EndIf						
+Return(.T.)
+
+//------------------------------------------------------------------------------
+/*/{Protheus.doc} BrowseDef
+
+Browse de Vendedores.
+
+@sample	BrowseDef( oMBrowse )
+
+@param		oMBrowse	, Objeto	, Browse criado pelo Widget da Area de Trabalho.
+		
+@return	oMBrowse	, Objeto	, Retorna o objeto FWMBrowse.
+
+@author	Anderson Silva
+@since		05/12/2015
+@version	P12
+/*/
+//------------------------------------------------------------------------------
+Static Function BrowseDef( oMBrowse )
+		
+Local cFiltro 	:= ""						
+Local lMA040BRW	:= ExistBlock("MA040BRW")	 
+Local oTableAtt := Nil
+Local lWidget	:= .F.
+
+Default oMBrowse  := Nil
+
+If Empty( oMBrowse )
+	oMBrowse := FWMBrowse():New()
+	oMBrowse:SetAlias("SA3")	
+Else
+	lWidget := .T.
+EndIf		
+
+oMBrowse:SetCanSaveArea(.T.) 
+
+//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+//³ Verifica a existencia de Filtros na mBrowse                  ³
+//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+If lMa040Brw
+	cFiltro := ExecBlock("MA040BRW",.F.,.F.)
+	If ValType( cFiltro ) == "C" .And. !Empty( cFiltro )
+		oMBrowse:SetFilterDefault( cFiltro )
+	EndIf
+EndIf	
+
+oMBrowse:SetDescription( cCadastro )
+oMBrowse:SetTotalDefault('A3_FILIAL','COUNT',STR0046) //'Total de Registros'
+
+If !lWidget 
+	oTableAtt 	:= TableAttDef()
+	oMBrowse:SetAttach( .T. )
+	oMBrowse:SetViewsDefault(oTableAtt:aViews)	
+	oMBrowse:SetChartsDefault(oTableAtt:aCharts)	
+	//Se não for SIGACRM inibe a exibição do gráfico
+	If nModulo <> 73
+		oMBrowse:SetOpenChart( .F. )
+	EndIf
+	oMBrowse:Activate()	
+EndIf
+
+Return Nil
+
+//------------------------------------------------------------------------------
+/*/	{Protheus.doc} TableAttDef
+
+Cria as visões e gráficos.
+
+@sample	TableAttDef()
+
+@param		Nenhum
+
+@return	ExpO - Objetos com as Visoes e Gráficos.
+
+@author	Cristiane Nishizaka
+@since		28/04/2014
+@version	12
+/*/
+//------------------------------------------------------------------------------
+
+Static Function TableAttDef()
+
+Local oTableAtt 	:= FWTableAtt():New()
+// Visões
+Local oDSAtivos 	:= Nil // Vendedores Ativos
+Local oDSInativ		:= Nil // Vendedores Inativos
+// Gráficos
+Local oDSPorUnNg	:= Nil // Colunas: Vendedores Por Unidade de Negócio
+Local oDSPorEqVd 	:= Nil // Colunas: Colunas: Vendedores Por Equipe de Venda
+Local oDSPorEsta 	:= Nil // Colunas: Colunas: Vendedores Por Estado
+Local oDSPorRegi 	:= Nil // Pizza: Vendedores Por Cargo
+
+oTableAtt:SetAlias("SA3")
+
+// Vendedores Ativos
+oDSAtivos := FWDSView():New()
+oDSAtivos:SetName(STR0047) //"Vendedores Ativos"
+oDSAtivos:SetID("DSAtivos") 
+oDSAtivos:SetOrder(1) // A3_FILIAL+A3_COD 
+oDSAtivos:SetCollumns({	"A3_COD","A3_NOME"	,"A3_NREDUZ"	,"A3_END"		,"A3_BAIRRO",;
+							"A3_MUN","A3_EST"		,"A3_CEP"		,"A3_DDDTEL"	,"A3_TEL",;
+							"A3_CGC","A3_EMAIL"	,"A3_CODUSR"	,"A3_SUPER"	,"A3_GEREN" })
+oDSAtivos:SetPublic( .T. )
+oDSAtivos:AddFilter(STR0047, "A3_MSBLQL == '2'") //"Vendedores Ativos"
+
+oTableAtt:AddView(oDSAtivos)
+
+// Vendedores Inativos
+oDSInativ := FWDSView():New()
+oDSInativ:SetName(STR0048) //"Vendedores Inativos"
+oDSInativ:SetID("DSInativ") 
+oDSInativ:SetOrder(1) // A3_FILIAL+A3_COD 
+oDSInativ:SetCollumns({ "A3_COD","A3_NOME"	,"A3_NREDUZ"	,"A3_END"		,"A3_BAIRRO",;
+							"A3_MUN","A3_EST"		,"A3_CEP"		,"A3_DDDTEL"	,"A3_TEL",;
+							"A3_CGC","A3_EMAIL"	,"A3_CODUSR"	,"A3_SUPER"	,"A3_GEREN" })
+oDSInativ:SetPublic( .T. )
+oDSInativ:AddFilter(STR0048, "A3_MSBLQL == '1'") //"Vendedores Inativos"
+
+oTableAtt:AddView(oDSInativ)
+
+// GRAFICOS
+// Colunas: Vendedores Por Unidade de Negócio
+oDSPorUnNg := FWDSChart():New()	
+oDSPorUnNg:SetName(STR0049) //"Vendedores Por Unidade de Negócio"
+oDSPorUnNg:SetTitle(STR0049) //"Vendedores Por Unidade de Negócio"
+oDSPorUnNg:SetID("DSPorUnNg") 
+oDSPorUnNg:SetType("BARCOMPCHART")
+oDSPorUnNg:SetSeries({ {"SA3", "A3_COD", "COUNT"} })
+oDSPorUnNg:SetCategory( { {"SA3", "A3_UNIDAD"} } )
+oDSPorUnNg:SetPublic( .T. )
+oDSPorUnNg:SetLegend( CONTROL_ALIGN_BOTTOM ) //Inferior
+oDSPorUnNg:SetTitleAlign( CONTROL_ALIGN_CENTER ) 
+
+oTableAtt:AddChart(oDSPorUnNg)
+
+// Colunas: Vendedores Por Equipe de Venda 
+oDSPorEqVd := FWDSChart():New()	
+oDSPorEqVd:SetName(STR0050) //"Vendedores Por Equipe de Venda"
+oDSPorEqVd:SetTitle(STR0050) //"Vendedores Por Equipe de Venda"
+oDSPorEqVd:SetID("DSPorEqVd") 
+oDSPorEqVd:SetType("BARCOMPCHART")
+oDSPorEqVd:SetSeries({ {"SA3", "A3_COD", "COUNT"} })
+oDSPorEqVd:SetCategory( { {"SA3", "A3_GRPREP"} } )
+oDSPorEqVd:SetPublic( .T. )
+oDSPorEqVd:SetLegend( CONTROL_ALIGN_BOTTOM ) //Inferior
+oDSPorEqVd:SetTitleAlign( CONTROL_ALIGN_CENTER ) 
+
+oTableAtt:AddChart(oDSPorEqVd)
+
+// Colunas: Vendedores Por Estado
+oDSPorEsta := FWDSChart():New()	
+oDSPorEsta:SetName(STR0051) //"Vendedores Por Estado"
+oDSPorEsta:SetTitle(STR0051) //"Vendedores Por Estado"
+oDSPorEsta:SetID("DSPorEsta") 
+oDSPorEsta:SetType("BARCOMPCHART")
+oDSPorEsta:SetSeries({ {"SA3", "A3_COD", "COUNT"} })
+oDSPorEsta:SetCategory( { {"SA3", "A3_EST"} } )
+oDSPorEsta:SetPublic( .T. )
+oDSPorEsta:SetLegend( CONTROL_ALIGN_BOTTOM ) //Inferior
+oDSPorEsta:SetTitleAlign( CONTROL_ALIGN_CENTER ) 
+
+oTableAtt:AddChart(oDSPorEsta)
+
+// Pizza: Vendedores Por Cargo
+oDSPorRegi := FWDSChart():New()	
+oDSPorRegi:SetName(STR0052) //"Vendedores Por Cargo"
+oDSPorRegi:SetTitle(STR0052) //"Vendedores Por Cargo"
+oDSPorRegi:SetID("DSPorRegi") 
+oDSPorRegi:SetType("PIECHART")
+oDSPorRegi:SetSeries({ {"SA3", "A3_COD", "COUNT"} })
+oDSPorRegi:SetCategory( { {"SA3", "A3_CARGO"} } )
+oDSPorRegi:SetPublic( .T. )
+oDSPorRegi:SetLegend( CONTROL_ALIGN_BOTTOM ) //Inferior
+oDSPorRegi:SetTitleAlign( CONTROL_ALIGN_CENTER ) 
+
+oTableAtt:AddChart(oDSPorRegi)
+
+Return(oTableAtt)
+
+/*/
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄ-----ÂÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Fun‡ao    |A040Visualiza |Autor³ Conrado Quiles Gomes³ Data | 28/12/09 ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄ-----ÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descri‡…o ³ Programa que chama a rotina AxVisual para                  ³±±
+±±³			 | visualizacao de vendedores                       		  ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Sintaxe   ³ A040Inclui(cAlias,nReg,nOpc,aAcho,cFunc,aCpos)             ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Parametros³ cAlias - Tabela         									  |±±
+±±³          ³ nReg   - Record Number  									  |±±
+±±³          ³ nOpc   - Tipo de Operacao								  |±±
+±±³          ³ aAcho  - Vetor com os campos que serao exibidos			  |±±
+±±³          ³ cFunc  - Carrega variaveis utilizadas pelo enchoice		  |±±
+±±³          ³ aCpos  - Vetor com os campos que serao editados			  |±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³ Uso      ³ MATA040                                                    ³±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+/*/
+Function A040Visualiza(cAlias,nReg,nOpc,aAcho,cFunc,aCpos)
+	Local aButtons	:= Ma040But(2)		           
+	AxVisual(cAlias,nReg,nOpc,/*aAcho*/	,/*nColMens*/	,/*cMensagem*/	,/*cFunc*/	,aButtons,/*lMaximized*/)
+Return
+
+
+/*/
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Fun‡ao    |A040Inclui| Autor ³ Conrado Quiles Gomes  ³ Data | 28/12/09 ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descri‡…o ³ Programa que chama a rotina AxInclui para                  ³±±
+±±³			 | inclusao de vendedores                       		      ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Sintaxe   ³ A040Inclui(cAlias,nReg,nOpc,aAcho,cFunc,aCpos)             ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Parametros³ cAlias - Tabela         									  |±±
+±±³          ³ nReg   - Record Number  									  |±±
+±±³          ³ nOpc   - Tipo de Operacao								  |±±
+±±³          ³ aAcho  - Vetor com os campos que serao exibidos			  |±±
+±±³          ³ cFunc  - Carrega variaveis utilizadas pelo enchoice		  |±±
+±±³          ³ aCpos  - Vetor com os campos que serao editados			  |±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³ Uso      ³ MATA040                                                    ³±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+/*/
+Function A040Inclui( cAlias, nReg, nOpc, aAcho, cFunc, aCpos )
+
+Local aArea 	:= Nil
+Local aAreaAO3	:= Nil
+Local aButtons	:= Ma040But(3)
+Local aParam	:= Ma040Par()		
+Local nOpcx		:= 0
+Local aExecAuto	:= {}
+Local lIntSynt 	:= SuperGetMV("MV_LJSYNT",,"0") == "1"				// Informa se a integracao Synthesis esta ativa
+Local lMA040VLD := ExistBlock("MA040VLD")		
+Local lRet		:= .T.
+
+If lMA040VLD
+	lRet := ExecBlock("MA040VLD",.F.,.F.,nOpc)
+	If (ValType(lRet) <> "L") .Or. !lRet
+		Return
+	EndIf
+EndIf
+
+nOpcx := AxInclui( cAlias, nReg, nOpc, aAcho, cFunc, aCpos, "A040TudoOk()", /*lF3*/, /*cTransact*/, aButtons, aParam, xAuto )
+
+//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+//³ Inserindo vendedor como usuário do CRM caso ainda ñ esteja cadastrado
+//³ M_SER006 - CRM039 - 27/03/2014
+//³ Thiago Tavares
+//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ	
+If nOpcx == 1 .And. !( Empty( SA3->A3_CODUSR ) )
+
+	aArea    := GetArea()
+	aAreaAO3 := AO3->( GetArea() )
+	
+	DbSelectArea( "AO3" )		// Usuarios do CRM
+	DbSetOrder( 1 )				// AO3_FILIAL + AO3_CODUSR
+	
+	aExecAuto	:= {{ "AO3_FILIAL", xFilial( "AO3" ), Nil }, ;
+				    { "AO3_CODUSR", SA3->A3_CODUSR,   Nil }, ;
+				    { "AO3_VEND",   SA3->A3_COD,      Nil }, ;
+				    { "AO3_CARGO", SA3->A3_CARGO } }
+
+	//Não irá gerar mais o registro na AO3, se o usuário não estiver acessando pelo módulo do CRM
+	//e após também após a data limite de 01/03/2022
+	If AO3->( DbSeek( xFilial( "AO3" ) + SA3->A3_CODUSR ) )
+		CRMA210( aExecAuto, 4 )			// alterando
+	ElseIf (nModulo == 73 .Or. DtoS(Date()) < "20220301")
+		CRMA210( aExecAuto, 3 )			// incluindo
+	EndIf
+	
+	RestArea( aAreaAO3 )
+	RestArea( aArea )
+	
+EndIf
+	
+//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+//³ Aciona integração via mensagem única          				³
+//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ	
+If ( FindFunction( 'GETROTINTEG' ) ) .And. ( nOpcx == 1 )
+	FWIntegDef( 'MATA040', , , , 'MATA040' )
+EndIf
+
+//Quando integracao Synthesis deixa o codigo do vendedor igual ao codigo do caixa
+If lIntSynt .AND. lLOJA745 .AND. !Empty(SA3->A3_COD) .AND. SA3->A3_COD <> "000001"			
+	SA3->( RecLock("SA3", .F.) )
+	SA3->A3_COD := cCodCx
+	SA3->( MsUnLock() )	
+	MsgAlert(STR0054+cCodCx)
+EndIf
+
+Return
+
+/*/
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Fun‡ao    |A040Altera| Autor ³ Leandro Nogueira      ³ Data | 28/12/09 ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descri‡…o ³ Programa que chama a rotin AxAltera para                   ³±±
+±±³			 | alteracao de vendedores                       		      ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Sintaxe   ³ A040Altera(cAlias,nReg,nOpc,aAcho,cFunc,aCpos)             ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Parametros³ cAlias - Tabela         									  |±±
+±±³          ³ nReg   - Record Number  									  |±±
+±±³          ³ nOpc   - Tipo de Operacao								  |±±
+±±³          ³ aAcho  - Vetor com os campos que serao exibidos			  |±±
+±±³          ³ aCpos  - Vetor com os campos que serao editados			  |±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³ Uso      ³ MATA040                                                    ³±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+/*/
+
+Function A040Altera( cAlias, nReg, nOpc, aAcho, aCpos )
+
+Local aArea 	:= Nil
+Local aAreaAO3	:= Nil
+Local aButtons	:= Ma040But(4)
+Local aParam	:= Ma040Par()			
+Local nOpcx		:= 0
+Local aExecAuto	:= {}
+Local lMA040VLD := ExistBlock("MA040VLD")
+Local lRet		:= .T.
+
+If lMA040VLD
+	lRet := ExecBlock("MA040VLD",.F.,.F.,nOpc)
+	If (ValType(lRet) <> "L") .Or. !lRet
+		Return
+	EndIf
+EndIf
+
+nOpcx := AxAltera( cAlias, nReg, nOpc, aAcho, aCpos, /*nColMens*/, /*cMensagem*/, "A040TudoOk()", /*cTransact*/, /*cFunc*/, aButtons, aParam, xAuto )	
+
+//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+//³ Inserindo vendedor como usuário do CRM caso ainda ñ esteja cadastrado
+//³ M_SER006 - CRM039 - 27/03/2014
+//³ Thiago Tavares
+//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ	
+If nOpcx == 1 .And. !( Empty( SA3->A3_CODUSR ) )
+
+	aArea    := GetArea()
+	aAreaAO3 := AO3->( GetArea() )
+	
+	DbSelectArea( "AO3" )	// Usuários do CRM
+	DbSetOrder( 1 )    		// AO3_FILIAL + AO3_CODUSR 
+	
+	aExecAuto	:= {{ "AO3_FILIAL", xFilial( "AO3" ), Nil }, ;
+				    { "AO3_CODUSR", SA3->A3_CODUSR,   Nil }, ;
+				    { "AO3_VEND",   SA3->A3_COD,      Nil }, ;
+				    { "AO3_CARGO", SA3->A3_CARGO } }
+	
+	//Não irá gerar mais o registro na AO3, se o usuário não estiver acessando pelo módulo do CRM
+	//e após também após a data limite de 01/03/2022	
+	If AO3->( DbSeek( xFilial( "AO3" ) + SA3->A3_CODUSR ) )
+		CRMA210( aExecAuto, 4 )			// alterando
+	ElseIf (nModulo == 73 .Or. DtoS(Date()) < "20220301")
+		CRMA210( aExecAuto, 3 )			// incluindo
+	EndIf
+		
+	RestArea( aAreaAO3 )
+	RestArea( aArea )
+	
+EndIf
+	
+//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+//³ Aciona integração via mensagem única          				³
+//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ	
+If ( FindFunction( 'GETROTINTEG' ) ) .And. ( nOpcx == 1 )
+		FWIntegDef( 'MATA040', , , , 'MATA040' )
+EndIf
+			
+Return          
+
+/*/
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Fun‡ao    |A040Exclui³ Autor ³ Leandro Nogueira      ³ Data | 28/12/09 ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descri‡…o ³ Programa que chama a rotin AxDeleta para                   ³±±
+±±³			 | exclusao de vendedores                       		      ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Sintaxe   ³A040Exclui()                                                ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Parametros³ ExpN1                									  |±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³ Uso      ³ MATA040                                                    ³±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+/*/
+Function A040Exclui( cAlias, nReg, nOpc, aAcho, cFunc, aCpos )
+
+Local aButtons	:= Ma040But(5)
+Local aParam	:= Ma040Par()
+Local nOpcx		:= 0
+Local lContinua	:= .T.
+Local cFil		:= xFilial("SU5")
+Local lRet		:= .T.
+Local lDefTop	:= FindFunction("IFDEFTOPCTB") .And. IfDefTopCTB()
+Local lMA040VLD := ExistBlock("MA040VLD")
+
+If lMA040VLD
+	lRet := ExecBlock("MA040VLD",.F.,.F.,nOpc)
+	If (ValType(lRet) <> "L") .Or. !lRet
+		Return
+	EndIf
+EndIf
+
+dbSelectArea("SUA")
+dbSetOrder(3)	//UA_FILIAL+UA_VEND+DTOS(UA_EMISSAO)+UA_NUM
+
+If SUA->( dbSeek( xFilial("SUA") + SA3->A3_COD ) )
+	Aviso( STR0011, STR0033,; //"Atencao !"###"Este vendedor não pode ser excluido pois possui atendimento Televendas relacionado !"
+	{ STR0013 }, 2 ) //Ok
+	lContinua := .F.
+EndIf
+
+If lContinua
+	If lDefTop
+		If M040Contac(SA3->A3_COD)
+			Aviso( STR0011, STR0057,; //"Atencao !"###"Este vendedor não pode ser excluido, pois está relacionada com um ou mais contatos !"
+			{ STR0013 }, 2 ) //Ok
+			lContinua := .F.
+		EndIf
+
+		//Valida Vendedor do Portal
+		If lContinua .And. M040Portal(SA3->A3_COD)
+			Aviso( STR0011, STR0058,; //"Atencao !"###"Este vendedor não pode ser excluido, pois está relacionada com um ou mais usuários de portal!"
+			{ STR0013 }, 2 ) //Ok
+			lContinua := .F.
+		EndIf
+
+	Else
+		dbSelectArea("SU5") 
+		dbSeek(cFil)
+		Do While !EOF() .and. SU5->U5_FILIAL == cFil
+			If SU5->U5_CODSA3 == SA3->A3_COD
+				Aviso( STR0011, STR0057,; //"Atencao !"###"Este vendedor não pode ser excluido, pois está relacionada com um ou mais contatos !"
+				{ STR0013 }, 2 ) //Ok
+				lContinua := .F.
+			EndIf
+		dbSkip()			
+		Enddo		
+	EndIf
+EndIf
+
+If lContinua
+	
+	//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+	//³ Chama rotina para verificar se existe vinculo do vendedor no cadastro de Metas de Vendas ³
+	//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+	If MA40VerMeta()
+		
+		nOpcx := AxDeleta( cAlias, nReg, nOpc, /*cTransact*/, aCpos, aButtons, aParam, xAuto )
+		
+		//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+		//³ Aciona integração via mensagem única          				³
+		//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+		If ( FindFunction( 'GETROTINTEG' ) ) .And. ( nOpcx == 2 )
+				FWIntegDef( 'MATA040', , , , 'MATA040' )
+		EndIf
+		
+	EndIf
+	
+EndIf  
+
+//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+//³ Exclusao de Anotações    ³
+//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ		                                                                        
+If nModulo == 73
+	CRMA090Del( "SA3", SA3->( Recno() ) )
+EndIf
+
+Return
+
+
+/*/
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Fun‡ao    |Ma040Par  ³ Autor ³ Conrado Quiles Gomes  ³ Data | 28/12/09 ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descri‡…o ³ Programa de Inclusao de Validacoes                         ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Sintaxe   ³ Ma040Par()                                                 ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Parametros³ ExpN1                									  |±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³ Uso      ³ MATA040                                                    ³±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+/*/
+Function Ma040Par()
+	Local aParam :=	{	{|nOpc| IIf(nOpc==4	.And.	ExistBlock("MA040AAL"),ExecBlock("MA040AAL",.F.,.F.),.F.)},;
+	{|nOpc| lValid := .T., IIf(nOpc==5,(lValid := fCanDelSA3()),.T.),Ma040Int(nOpc), lValid },;
+	{|nOpc| IIf(nOpc==5 .And. ExistBlock("MT040DEL"),ExecBlock("MT040DEL",.F.,.F.),.F.)},;
+	{|nOpc| IIf(nOpc==4	.And. ExistBlock("MA040DAL"),ExecBlock("MA040DAL",.F.,.F.,nOpcA),.F.), Ma40IntFim(nOpc),;
+			IIf(nOpc==3	.And. ExistBlock("MA040DIN"),ExecBlock("MA040DIN",.F.,.F.),.F.)} }
+Return aParam
+
+/*/
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Fun‡ao    ³Ma040But  ³ Autor ³ Kleber Dias Gomes     ³ Data | 30/12/04 ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descri‡…o ³ Programa de Inclusao de botoes de usuario                  ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Sintaxe   ³ Ma040But(ExpN1)                                            ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Parametros³ ExpN1 = 	1 = Pesquisa  									  |±±
+±±³			 |			2 = Visualizar 									  |±±
+±±³			 |			3 = Incluir 									  |±±
+±±³			 |			4 = Alterar 									  |±±
+±±³			 |			5 = Excluir 									  |±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³ Uso      ³ MATA040                                                    ³±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+/*/
+Function Ma040But(nOpc)
+Local aUsrBut 	:= {}
+Local aButtons 	:= {}
+
+Default nOpc 	:= 2
+
+If nModulo == 73
+	If nOpc == 2 .Or. nOpc == 4
+		aAdd( aButtons,{ "", { || CRMA090( 'SA3', SA3->( Recno() ) ) }, STR0044, STR0044 } )//"Anotações"
+	EndIf
+EndIf
+
+If !nOpc == 3 .And. !__lPyme
+	G3H->(DbSetOrder(2)) // G3H_FILIAL+G3H_CODVEN
+	G3H->(DbSeek(xFilial("G3H") + SA3->A3_COD))
+	                                                                                                                                           
+	If nOpc	== 4
+		aAdd( aButtons,{ "", { || FWExecView(STR0054,'TURA007',MODEL_OPERATION_UPDATE,, { || .T. } )  }, STR0055, STR0055 } )//'Cadastro de Agentes de Viagem',"Agente"
+	Elseif nOpc == 2 
+		aAdd( aButtons,{ "", { || FWExecView(STR0054,'TURA007',MODEL_OPERATION_VIEW  ,, { || .T. } )  }, STR0055, STR0055 } )//'Cadastro de Agentes de Viagem',"Agente"					
+	Endif
+		
+Endif 
+
+If ExistBlock( "MA040BUT" )
+	If Valtype( aUsrBut := Execblock( "MA040BUT", .F., .F. ) ) == "A"
+		Default aButtons := {}
+		AEval( aUsrBut, { |x| AAdd( aButtons, x ) } ) 
+	EndIf
+EndIf
+
+Return aButtons
+
+/*/
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Fun‡…o    ³A040Aliq  ³ Autor ³ Claudinei M. Benzi    ³ Data ³ 23/04/92 ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descri‡…o ³ Faz com que a soma dos porcentuais seja 100                ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Sintaxe   ³ ExpL1 := A040Aliq(ExpC1)                                   ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Parametros³ ExpL1 = Retornado pela funcao                              ³±±
+±±³          ³ ExpC1 = Letra que identifica o campo a ser atualizado      ³±±
+±±³          ³     B = A3_ALBAIXA                                         ³±±
+±±³          ³     E = A3_ALEMISS                                         ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³ Uso      ³ MATA040                                                    ³±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+/*/
+FUNCTION A040Aliq(cQual)
+LOCAL nComis := &(ReadVar()),cCampo,nEndereco,nEnd1,nEnd2
+
+If nComis < 0 .Or. nComis > 100
+	Help(" ",1,"A040ALIQ")
+	Return .F.
+EndIf
+If cQual ==  "B"
+	cCampo := "A3_ALBAIXA"
+Else
+	cCampo := "A3_ALEMISS"
+EndIf
+m->&(cCampo) := 100 - nComis
+nEndereco := Ascan(aGets,{ |x| Subs(x,9,10) == cCampo } )
+If nEndereco  >  0
+	nEnd1 := Val(Subs(aGets[nEndereco],1,2))
+	nEnd2 := Val(Subs(aGets[nEndereco],3,1))*2
+	aTela[nEnd1][nEnd2] := Str(m->&(cCampo),3)
+EndIf
+Return .T.
+
+/*/
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Funcao    ³fCanDelSA3³ Autor ³Eduardo Riera          ³ Data ³29.06.2000³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descri‡…o ³Verifica se eh possivel a exclusao de um vendedor.          ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Retorno   ³ExpL1: .T. se o vendedor posicionado pode ser deletado      ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Parametros³Nenhum                                                      ³±±
+±±³          ³                                                            ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³   DATA   ³ Programador   ³Manutencao Efetuada                         ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³04/10/2006³Conrado Q.     ³-BOPS: 105702: Adaptacoes para a chamada    ³±±
+±±³          ³               ³dessa funcao tambem pelo TMKA090 (Cadastro  ³±±
+±±³          ³               ³de operadores) alem da adicao de STR.       ³±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+/*/
+Function fCanDelSA3()
+
+Local aArea 		:= GetArea()
+Local cAliasSA1 	:= ""
+Local cAliasCNU 	:= ""
+Local cAliasPLS 	:= ""
+Local cCpoVend  	:= "0"
+Local cQuery    	:= ""
+Local lRetorno		:= .T.
+Local cAliasADK 	:= ""
+Local cAliasADG 	:= ""
+Local cAliasSF2 	:= "" 
+Local cQueryVend	:= ""
+Local aSM0CodFil  	:= {}
+Local aFiliais    	:= {}
+Local nBusca      	:= 0
+Local nRecnoSM0   	:= SM0->(RecNo())
+Local nX        	:= 0
+Local cAliasSC5 	:= ""
+
+// Preenche um array com as filiais
+DbSelectArea("SM0")
+DbGoTop()
+Do While ! Eof()
+	If SM0->M0_CODIGO == cEmpAnt
+		Aadd(aSM0CodFil, FWGETCODFILIAL)
+	Endif
+	dbSkip()
+End
+DbGoto(nRecnoSM0)
+
+DbSelectArea("SE3")
+DbSetOrder(2)
+
+If ( MsSeek(xFilial("SE3")+SA3->A3_COD) )
+	Help(" ",1,"NODELETA")
+	lRetorno := .F.
+EndIf  
+
+//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+//³ Verifica se existe Contrato de Parceira para este vendedor.   ³
+//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+If lRetorno 
+	DbSelectArea("ADA")
+	DbSetOrder(1)
+	aFiliais := If(! Empty(xFilial("ADA")) .AND. Empty(xFilial("SA3")), aClone(aSM0CodFil), {xFilial("ADA")})
+	For nBusca := 1 to Len(aFiliais)
+		If ADA->(DbSeek(aFiliais[nBusca]))
+			While ADA->(!Eof()) .AND. ADA->ADA_FILIAL == aFiliais[nBusca]
+				If	(( SA3->A3_COD == ADA->ADA_VEND1 ) .OR. ( SA3->A3_COD == ADA->ADA_VEND2 ) .OR.;
+					 ( SA3->A3_COD == ADA->ADA_VEND3 ) .OR. ( SA3->A3_COD == ADA->ADA_VEND4 ) .OR.;
+					 ( SA3->A3_COD == ADA->ADA_VEND5 ))
+					lRetorno := .F.
+					Aviso(STR0011,STR0053,{STR0013},2) //"Atencao!"###"Este vendedor não poderá ser excluído pois há Contrato de Parceria relacionado."###"Ok"		 
+					Exit
+				EndIf
+				ADA->(DbSkip())
+			End 
+		EndIf
+		If !lRetorno  
+			Exit
+		EndIf
+	Next nBusca
+EndIf                            
+
+//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+//³ Verifica se existe Verba de Vendas  para este vendedor    ³
+//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+If lRetorno 
+	DbSelectArea("ACK")
+	DbSetOrder(3)
+	
+	aFiliais := If(! Empty(xFilial("ACK")) .and. Empty(xFilial("SA3")), aClone(aSM0CodFil), {xFilial("ACK")})
+	For nBusca := 1 to Len(aFiliais)
+		If dbSeek(aFiliais[nBusca]+SA3->A3_COD)
+			Aviso(STR0011,STR0037,{STR0013},2) //"Atencao!"###"Este vendedor não poderá ser excluído pois há Verba de Vendas relacionado."###"Ok"
+			MsUnLock()
+			lRetorno := .F.
+		EndIf
+	Next 
+EndIf
+
+//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+//³ Verifica se o vendedor esta na estrutura de vendas           ³
+//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+If lRetorno 
+	If !Empty( SA3->A3_GRPREP )
+		If Alltrim(FunName())=="TMKA090"
+			Aviso( STR0011, STR0025,; //"Atencao !"###"Este operador nao pode ser excluido pois o vendedor associado esta inserido na estrutura de vendas !"
+						 { STR0013 }, 2 ) 		 //"Ok"
+		Else
+			Aviso( STR0011, STR0012,; //"Atencao !"###"Este vendedor nao pode ser excluido pois esta inserido na estrutura de vendas !"
+						 { STR0013 }, 2 ) 		 //"Ok"
+		EndIf
+		lRetorno := .F.
+   EndIf 
+EndIf 
+//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+//³ Verifica se existem oportunidades para o vendedor            ³
+//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+If lRetorno 
+	AD1->( dbSetOrder( 2 ) ) 
+	If AD1->( dbSeek( xFilial( "AD1" ) + SA3->A3_COD ) ) 
+		If Alltrim(FunName())=="TMKA090"
+			Aviso( STR0011, STR0026, { STR0013 }, 2 ) 		 //"Ok" //"Este operador nao pode ser excluido pois o vendedor associado tem oportunidades de venda!"
+		Else
+			Aviso( STR0011, STR0016, { STR0013 }, 2 ) 		 //"Ok" //"Este vendedor nao pode ser excluido pois existem oportunidades de venda para o mesmo !"
+		Endif
+		lRetorno := .F.
+   EndIf 
+EndIf 
+//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+//³ Verifica se existem time de vendas na oportunidade de vendas para o vendedor     ³
+//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+If lRetorno 
+	AD2->(dbSetOrder(2))
+	If AD2->(dbSeek(xFilial("AD2")+SA3->A3_COD))
+		lRetorno := .F.
+		Aviso( STR0011, STR0041,{ STR0013 }, 2)  //"Atencao !"###"Este vendedor não pode ser excluído, pois está associado ao time de vendas, na oportunidade de vendas !"
+	EndIf
+EndIf	
+//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+//³ Verifica se existem apontamentos para o vendedor             ³
+//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+If lRetorno 
+	AD5->( dbSetOrder( 1 ) ) 
+	If AD5->( dbSeek( xFilial( "AD5" ) + SA3->A3_COD ) ) 
+		If Alltrim(FunName())=="TMKA090"
+			Aviso( STR0011, STR0027,; //"Atencao !"###"Este operador nao pode ser excluido pois o vendedor associado tem apontamentos de contato / visita !"
+						 { STR0013 }, 2 ) 		 //"Ok"
+		Else
+			Aviso( STR0011, STR0014,; //"Atencao !"###"Este vendedor nao pode ser excluido pois existem apontamentos de contato / visita para o mesmo !"
+						 { STR0013 }, 2 ) 		 //"Ok"
+		EndIf
+		lRetorno := .F.
+   EndIf 
+EndIf 
+//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+//³ Verifica se existem agendamentos para o vendedor             ³
+//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+If lRetorno 
+	AD7->( dbSetOrder( 1 ) ) 
+	If AD7->( dbSeek( xFilial( "AD7" ) + SA3->A3_COD ) ) 
+		If Alltrim(FunName())=="TMKA090"
+			Aviso( STR0011, STR0028,; //"Atencao !"###"Este operador nao pode ser excluido pois o vendedor associado tem agendamentos !"
+						 { STR0013 }, 2 ) 		 //"Ok"
+		Else
+			Aviso( STR0011, STR0015,; //"Atencao !"###"Este vendedor nao pode ser excluido pois existem agendamentos para o memso !"
+						 { STR0013 }, 2 ) 		 //"Ok"
+		EndIf
+		lRetorno := .F.
+   EndIf 
+EndIf 
+//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+//³ Verifica se existem pedidos de venda para o vendedor         ³
+//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+If lRetorno     
+     
+		If TcSrvType() <> "AS/400"
+		
+			cAliasSC5 := "QRYSC5"
+			
+			//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+			//³ Verifica quantos vendedores possam existir por pedido        ³
+			//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+			For nX := 1 to Fa440CntVen()	
+
+				//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+				//³ Incrementa o numero para concatenar com o campo              ³
+				//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+				cCpoVend := Soma1(cCpoVend,1)
+				
+				If SC5->(FieldPos("C5_VEND"+cCpoVend)) > 0
+			
+					cQuery := "SELECT COUNT(*) PEDVEND FROM " + RetSqlName("SC5") + " SC5 "
+					cQuery += " WHERE "                      
+					cQuery += "C5_FILIAL = '"+xFilial("SC5")+"' AND "
+					cQuery += "C5_VEND"+cCpoVend+" = '"+ SA3->A3_COD+ "' AND "
+					cQuery += "SC5.D_E_L_E_T_ = ' '"
+					
+					cQuery := ChangeQuery(cQuery)
+    	
+					dbUseArea(.T.,"TOPCONN",TcGenQry(,,cQuery),cAliasSC5,.T.,.T.)
+
+					//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+					//³ Verifica se retornou algum pedido para o vendedor            ³
+					//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+					If (cAliasSC5)->PEDVEND <> 0
+						If Alltrim(FunName())=="TMKA090"
+							Aviso( STR0011, STR0029, { STR0013 }, 2 ) 		 //"Ok"	//"Este operador nao pode ser excluido pois o vendedor associado tem pedidos de venda !" // "Ok"
+						Else	
+							Aviso( STR0011, STR0017, { STR0013 }, 2 ) 		 //"Ok"	//"Este vendedor nao pode ser excluido pois existem pedidos de venda para o mesmo" // "Ok"
+						EndIf
+						lRetorno := .F.
+						
+						dbSelectArea(cAliasSC5)
+						dbCloseArea()
+						dbSelectArea("SA3")
+						
+						Exit
+					Else
+						dbSelectArea(cAliasSC5)
+						dbCloseArea()
+						dbSelectArea("SA3")
+					Endif	
+					
+				Else    
+				
+					Exit	
+					
+				Endif	
+				
+			Next	
+				
+		Else
+
+			dbSelectArea("SC5")
+			dbSetOrder(1)              
+			If MsSeek(xFilial("SC5"))
+				While !Eof() .And. SC5->C5_FILIAL == xFilial("SC5") .And. lRetorno
+				
+					cCpoVend := "0"
+				
+					For nX := 1 to Fa440CntVen()
+					
+						cCpoVend := Soma1(cCpoVend,1)
+
+						If SC5->(FieldGet(FieldPos("C5_VEND"+cCpoVend))) == SA3->A3_COD
+							If Alltrim(FunName())=="TMKA090"
+	    						Aviso( STR0011, STR0030, { STR0013 }, 2 ) //"Atencao !" //"Este operador nao pode ser excluido pois o vendedor associado tem pedidos de venda !" //"Ok"
+	    					Else	                                      
+	    						Aviso( STR0011, STR0017, { STR0013 }, 2 ) //"Atencao !" //"Este vendedor nao pode ser excluido pois existem pedidos de venda para o mesmo" //"Ok"
+	    					EndIf	
+							lRetorno := .F.
+								
+							Exit
+								
+						Endif	
+							
+					Next		
+						
+				    dbSelectArea("SC5")
+				    dbSkip()
+				EndDo
+			Endif					
+												
+
+		EndIf
+		
+Endif
+If lRetorno
+	DA5->(dbSetOrder(2))
+	If DA5->(MsSeek(xFilial("DA5")+SA3->A3_COD))
+		If Alltrim(FunName())=="TMKA090"
+			Aviso( STR0011, STR0031, { STR0013 }, 2 ) //"Atencao !" //"Este operador nao pode ser excluido pois o vendedor associado tem seu ajudante relacionado a outros cadastros !" //"Ok"
+		Else
+	       	Help(" ",1,"NODELETA") //Nao e possivel excluir o ajudante pois o mesmo encontras-se relacionado a outros cadastro ### INCLUIR ATUSX
+       	EndIf
+		lRetorno := .F.				
+	Endif
+Endif	
+//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+//³ Verifica se existe cliente para este vendedor             ³
+//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+If lRetorno
+	
+	cAliasSA1 := GetNextAlias()
+	cQuery    := ""
+		
+	cQuery += "SELECT COUNT(*) QTDBASE FROM " + RetSqlName( "SA1" ) + " "
+	cQuery += "WHERE "
+	cQuery += "A1_FILIAL='" + xFilial( "SA1" ) + "' AND "
+	cQuery += "A1_VEND='"   + SA3->A3_COD      + "' AND "
+	cQuery += "D_E_L_E_T_=' '"
+
+	cQuery := ChangeQuery( cQuery )
+	dbUseArea(.T.,"TOPCONN",TcGenQry(,,cQuery),cAliasSA1,.F.,.T. )
+
+	If (cAliasSA1)->QTDBASE > 0
+		If Alltrim(FunName())=="TMKA090"
+			Aviso( STR0011, STR0032, { STR0013 }, 2 ) //"Atencao !" //"Este operador nao pode ser excluido pois o vendedor associado tem clientes relacionados !" //"Ok"
+		Else
+			Help(" ",1,"NODELETA")
+		EndIf
+		lRetorno := .F.
+	Endif
+
+	dbSelectArea(cAliasSA1)
+	dbCloseArea()
+		
+EndIf
+//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+//³ Verifica se existem contratos - Gestao de Contratos          ³
+//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+If lRetorno 
+	cQuery := "SELECT COUNT(*) QTDBASE FROM " + RetSqlName( "CNU" ) + " "
+	cQuery += "WHERE "
+	cQuery += "CNU_FILIAL='" + xFilial( "CNU" ) + "' AND "
+	cQuery += "CNU_CODVD ='" + SA3->A3_COD      + "' AND "
+	cQuery += "D_E_L_E_T_=' '"
+
+	cQuery    := ChangeQuery( cQuery )
+	cAliasCNU := GetNextAlias()
+	dbUseArea(.T.,"TOPCONN",TcGenQry(,,cQuery),cAliasCNU,.F.,.T. )
+
+	If (cAliasCNU)->QTDBASE > 0
+		Help(" ",1,"MATA040CNT")
+		lRetorno := .F.
+   	EndIf 
+   
+	dbSelectArea(cAliasCNU)
+	dbCloseArea()
+EndIf 
+
+If lRetorno
+
+	If GetNewPar("MV_PLSATIV",.F.)	
+		cQuery := "SELECT COUNT(*) QTDVEN FROM ( "
+		cQuery += "SELECT BXM_CODVEN FROM "+RetSqlName("BXM")+" "
+		cQuery += "WHERE BXM_FILIAL = '"+xFilial("BXM")+"' AND BXM_CODVEN = '"+SA3->A3_COD+"' "
+		cQuery += "AND D_E_L_E_T_ = ' ' " 
+		cQuery += "UNION SELECT BXN_CODVEN FROM "+RetSqlName("BXN")+" "
+		cQuery += "WHERE BXN_FILIAL = '"+xFilial("BXN")+"' AND	BXN_CODVEN = '"+SA3->A3_COD+"' "
+		cQuery += "AND D_E_L_E_T_ = ' ' "
+		cQuery += "UNION SELECT BXJ_CODVEN FROM "+RetSqlName("BXJ")+" "
+		cQuery += "WHERE BXJ_FILIAL = '"+xFilial("BXJ")+"' AND BXJ_CODVEN = '"+SA3->A3_COD+"' "
+		cQuery += "AND D_E_L_E_T_ = ' ' "
+		cQuery += "UNION SELECT BQC_CODVEN FROM "+RetSqlName("BQC")+" "
+		cQuery += "WHERE BQC_FILIAL = '"+xFilial("BQC")+"' AND	BQC_CODVEN = '"+SA3->A3_COD+"' "
+		cQuery += "AND D_E_L_E_T_ = ' ' "
+		cQuery += "UNION SELECT BA1_CODVEN FROM "+RetSqlName("BA1")+" "
+		cQuery += "WHERE BA1_FILIAL = '"+xFilial("BA1")+"' AND	"
+		cQuery += "(BA1_CODVEN = '"+SA3->A3_COD+"' OR BA1_CODVE2 = '"+SA3->A3_COD+"') AND D_E_L_E_T_ = ' ' "
+		cQuery += "UNION SELECT BA3_CODVEN FROM "+RetSqlName("BA3")+" "
+		cQuery += "WHERE BA3_FILIAL = '"+xFilial("BA3")+"' AND	"
+		cQuery += "(BA3_CODVEN = '"+SA3->A3_COD+"' OR BA3_CODVE2 = '"+SA3->A3_COD+"') AND D_E_L_E_T_ = ' ' ) TEMP" 
+		
+		cQuery    := ChangeQuery( cQuery )
+		cAliasPLS := GetNextAlias()
+		dbUseArea(.T.,"TOPCONN",TcGenQry(,,cQuery),cAliasPLS,.F.,.T. )
+
+		If (cAliasPLS)->QTDVEN > 0
+			Help(" ",1,"NODELETA")
+			lRetorno := .F.
+	   	EndIf 
+   
+		dbSelectArea(cAliasPLS)
+		dbCloseArea()		
+	EndIf
+   
+EndIf
+
+//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+//³ Verifica se o vendedor consta em alguma Unidade de Negócio.  ³
+//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+If lRetorno 
+	cQuery := "SELECT COUNT(*) QTDBASE FROM " + RetSqlName("ADK") + " "
+	cQuery += "WHERE "
+	cQuery += "ADK_FILIAL = '" + xFilial("ADK") + "' AND "
+	cQuery += "ADK_RESP = '"   + SA3->A3_COD    + "' AND "
+	cQuery += "D_E_L_E_T_ = ' '"
+
+	cQuery    := ChangeQuery(cQuery)
+	cAliasADK := GetNextAlias()
+	dbUseArea(.T.,"TOPCONN",TcGenQry(,,cQuery),cAliasADK,.F.,.T.)
+
+	If (cAliasADK)->QTDBASE > 0
+		Help(" ",1,"NODELETA",,STR0038,2,0)	//"Este vendedor esta sendo utilizado pela rotina de Cadastro de Unidades de Negócio."
+		lRetorno := .F.
+   	EndIf 
+   
+	dbSelectArea(cAliasADK)
+	dbCloseArea()
+EndIf 
+
+If lRetorno
+	cAliasADG := GetNextAlias()
+	cQuery    := ""
+
+	cQuery += " SELECT COUNT(*) TOT_VEND "
+	cQuery +=  " FROM " + RetSqlName( "ADG" )
+	cQuery +=  " WHERE ADG_FILIAL='" + xFilial( "ADG" ) + "'"
+	cQuery +=        " AND ADG_CODVEN = '" + SA3->A3_COD + "'"
+	cQuery +=        " AND D_E_L_E_T_ = ' '"
+
+	cQuery := ChangeQuery( cQuery )
+	dbUseArea(.T.,"TOPCONN",TcGenQry(,,cQuery),cAliasADG,.F.,.T. )
+
+	If (cAliasADG)->TOT_VEND > 0			  
+	  Help(" ",1,"NODELETA",,STR0039,2,0)
+	  lRetorno := .F.
+	Endif
+	(cAliasADG)->(DbCloseArea()) 
+EndIf	
+
+If lRetorno .And. cPaisLoc <> "BRA"
+	cCpoVend := "0"
+	For nX := 1 to Fa440CntVen()	
+		cCpoVend := Soma1(cCpoVend,1)
+		cQueryVend += "F2_VEND"+cCpoVend+"='"+SA3->A3_COD+"' OR " 		 
+	Next nX
+	cQueryVend := SUBSTR(cQueryVend,1,Len(cQueryVend)-3)		
+	cAliasSF2 := GetNextAlias()
+	cQuery := "SELECT COUNT(*) QTD_VEND "
+	cQuery += "FROM " + RetSqlName("SF2")+ " SF2 "
+	cQuery += "WHERE "
+	cQuery += "F2_FILIAL='"+xFilial("SF2")+"' AND "
+	cQuery += "("+cQueryVend+") AND "
+	cQuery += "SF2.D_E_L_E_T_=' '"
+	
+	cQuery := ChangeQuery(cQuery)
+	dBUseArea(.T.,"TOPCONN",TCGENQRY(,,cQuery),cAliasSF2,.F.,.T.)	
+	
+	If (cAliasSF2)->QTD_VEND > 0
+	  Help(" ",1,"NODELETA",,STR0040,2,0) //"Este vendedor esta sendo utilizado por uma tabela - Documenos de saída e nao podera ser excluido."  
+	  lRetorno := .F.				
+	Endif     	
+	(cAliasSF2)->(DbCloseArea()) 
+EndIf
+
+If lRetorno
+	aAreaAux := SA3->(GetArea())
+	SA3->(DBSetOrder(5)) // A3_FILIAL + A3_SUPER
+	If SA3->( dbSeek( xFilial("SA3") + SA3->A3_COD ) )
+		Help(" ",1,"NODELETA",,STR0045,2,0)	//"Este vendedor não poderá ser excluido, pois é o supervisor de outro vendedor."
+		lRetorno := .F.
+	EndIf
+	RestArea(aAreaAux)
+EndIf
+
+// Valida se existe agente de viagem relacionado.
+// Elias Silva - 24/03
+If lRetorno
+	DbSelectArea("G3H")
+	G3H->(DbSetOrder(2)) // 
+	If G3H->(DbSeek(xFilial("G3H") + SA3->A3_COD))
+		Help(" ",1,"NODELETA",,STR0056,2,0)	//"Este vendedor não poderá ser excluido, pois existe agente de viagem relacionado."
+		lRetorno := .F.
+	Endif
+Endif
+		
+//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+//³ Validacao complementar do usuario                         ³
+//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+If lRetorno .And. ExistBlock("MT040VDE")
+ 	lRetorno := ExecBlock("MT040VDE",.F.,.F.)
+EndIf
+RestArea(aArea)
+Return(lRetorno)
+
+/*/
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Fun‡…o    ³A040Help  ³ Autor ³ Mauricio Pequim Jr    ³ Data ³ 11.05.03 ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descri‡…o ³Emite aviso sobre os problemas referentes a alteracao do    ³±±
+±±³          ³percentual de comissao na baixa ou na emissao p/ vendedores ³±±
+±±³          ³que possuam comissao em aberto.                             ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Sintaxe   ³ Void A040Help()                                            ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³ Uso      ³ MATA040                                                    ³±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+/*/
+Function A040Help()
+Local lRet := .T.
+If ALTERA 
+	If !IW_MsgBox(STR0018 ,STR0019 ,"YESNO") //"A alteracao dos pencentuais de comissao pode gerar pagamentos indevidos se o vendedor possuir comissoes em aberto. Caso seja necessario alterar, nao utilise o recalculo de comissoes ate que as comissoes anteriores sejam pagas.            Deseja realmente alterar?"###"Alteracao de Percentuais"
+		lRet := .F.
+	Endif					
+Endif
+Return lRet
+
+/*/
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Fun‡„o    ³MyMata040 ³ Autor ³ Eduardo Riera         ³ Data ³10.09.2003 ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³          ³Rotina de teste da rotina automatica do programa MATA0400    ³±±
+±±³          ³                                                             ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Parametros³Nenhum                                                       ³±±
+±±³          ³                                                             ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Retorno   ³Nenhum                                                       ³±±
+±±³          ³                                                             ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descri‡„o ³Esta rotina tem como objetivo efetuar testes na rotina de    ³±±
+±±³          ³cadastro de vendedor                                         ³±±
+±±³          ³                                                             ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Uso       ³ Materiais                                                   ³±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+/*/
+Function MyMata040()
+
+Local aCabec    := {}
+Local cVendedor := ""
+PRIVATE lMsErroAuto := .F.
+//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+//| Abertura do ambiente                                         |
+//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+ConOut(Repl("-",80))
+ConOut(PadC("Teste de Inclusao de Vendedor",80))
+PREPARE ENVIRONMENT EMPRESA "99" FILIAL "01" MODULO "FAT"
+ConOut("Inicio: "+Time())
+//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+//| Verifica o ultimo vendedor                                   |
+//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+dbSelectArea("SA3")
+dbSetOrder(1)
+MsSeek(xFilial("SA3")+"zzzzzz",.T.)
+dbSkip(-1)
+cVendedor := Soma1(SA3->A3_COD)
+//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+//| Teste de Inclusao                                            |
+//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+aCabec := {}
+aadd(aCabec,{"A3_COD"   ,cVendedor,})
+aadd(aCabec,{"A3_NOME" ,"(Inclusao)Rotina automatica:"+cVendedor,})
+MATA040(aCabec)
+If !lMsErroAuto
+	ConOut("Incluido com sucesso! "+cVendedor)	
+Else
+	ConOut("Erro na inclusao!")
+EndIf
+ConOut("Fim  : "+Time())
+//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+//| Teste de Alteracao                                           |
+//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+aCabec := {}
+aadd(aCabec,{"A3_COD"   ,cVendedor,})
+aadd(aCabec,{"A3_NOME" ,"(Alteracao)Rotina automatica:"+cVendedor,})
+MATA040(aCabec,4)
+If !lMsErroAuto
+	ConOut("Alteracao com sucesso! "+cVendedor)	
+Else
+	ConOut("Erro na alteracao!")
+EndIf
+ConOut("Fim  : "+Time())
+//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+//| Teste de exclusao                                            |
+//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+aCabec := {}
+aadd(aCabec,{"A3_COD"   ,cVendedor,})
+MATA040(aCabec,5)
+If !lMsErroAuto
+	ConOut("Exclusao com sucesso! "+cVendedor)	
+Else
+	ConOut("Erro na exclusao!")
+EndIf
+ConOut("Fim  : "+Time())
+RESET ENVIRONMENT
+Return(.T.)
+
+/*
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Fun‡ao    ³A040TudoOk³ Autor ³Kleber Dias Gomes      ³ Data ³ 23/03/06 ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descri‡…o ³ Programa que faz consistencias apos a digitacao da tela    ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³ Uso      ³ MATA040                                                    ³±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+*/
+Function A040TudoOk()
+
+Local lRet := .T.
+
+If (!Empty(M->A3_FORNECE) .And. Empty(M->A3_LOJA)) .Or.;
+	(Empty(M->A3_FORNECE) .And. !Empty(M->A3_LOJA))
+	Help(" ",1,"REGNOIS",,AllTrim(RetTitle("A3_FORNECE"))+": "+M->A3_FORNECE+"/"+AllTrim(RetTitle("A3_LOJA"))+": "+M->A3_LOJA,3,0)
+	lRet := .F.
+EndIf 
+//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+//³ Ponto de Entrada 		  ³
+//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+If lRet .And. ExistBlock("MA040TOK")
+	lRet := ExecBlock("MA040TOK")
+EndIf
+
+Return lRet
+
+/*
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Funcao    ³Ma040Int  ³ Autor ³ Vendas CRM			³ Data ³ 31/03/08 ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descricao ³ Responsavel em gerar os dados da integracao  			  ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Uso       ³ Cadastro de Vendedores                                     ³±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+*/
+Static Function Ma040Int(nOpc)
+
+Local lRetorno	:= .T.					//Retorno da funcao
+Local cChave 	:= ""                  	//Chave do indice 1 do vendedor
+  
+If lIntegra .AND. nOpc == 5
+	
+	//Instancia o objeto LJCADAPXMLENVSA3
+	oIntegra :=	LJCADAPXMLENVSA3():New()
+	 
+	//Prepara a chave
+	cChave 	:= xFilial("SA3")+ SA3->A3_COD 
+
+	//Processa os dados da integracao		
+    oIntegra:Inserir("SA3", cChave, "1", CVALTOCHAR(nOpc))
+	//Gera XML integracao
+	oIntegra:Gerar()
+	
+EndIf
+	
+
+If lAmbOffLn .AND. nOpc == 5
+	//Prepara a chave
+	cChave 	:= xFilial("SA3")+ SA3->A3_COD 
+		
+ 	oProcessOff := LJCProcessoOffLine():New("025")
+						
+	oProcessOff:Inserir("SA3", cChave, 1, "DELETE")	
+
+EndIf
+
+Return lRetorno
+
+/*
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Funcao    ³Ma40IntFim³ Autor ³ Vendas CRM			³ Data ³ 31/03/08 ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descricao ³ Responsavel em finalizar a integracao  			 		  ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Uso       ³ Cadastro de Vendedores                                     ³±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+*/
+Static Function Ma40IntFim(nOpc)
+	
+Local cChave 	:= ""                  	//Chave do indice 1 do vendedor
+Local cTipo		:= ""					// tipo de transacao
+
+If lIntegra .AND. oIntegra <> Nil .AND. nOpc == 5 
+	
+	//Finaliza - Envia EAI		
+    oIntegra:Finalizar()
+	
+ElseIf lIntegra
+	
+	If nOpc == 3 .OR. nOpc == 4
+		
+		//Instancia o objeto LJCADAPXMLENVSA3
+		oIntegra :=	LJCADAPXMLENVSA3():New()
+				 
+		//Prepara a chave
+		cChave 	:= xFilial("SA3")+ SA3->A3_COD 
+		
+		//Processa os dados da integracao		
+	    oIntegra:Inserir("SA3", cChave, "1", CVALTOCHAR(nOpc))
+		//Gera XML integracao
+		oIntegra:Gerar()
+		//Finaliza - Envia EAI		
+    	oIntegra:Finalizar()
+	
+	EndIf
+
+EndIf
+
+If lAmbOffLn .AND. oProcessOff <> Nil .AND. nOpc == 5 
+	
+	//Processa os dados 
+	SET DELETED OFF
+	oProcessOff:Processar()	
+	SET DELETED ON
+
+ElseIf lAmbOffLn
+	
+	If nOpc == 3 .OR. nOpc == 4
+		
+		//Prepara a chave
+		cChave 	:= xFilial("SA3")+ SA3->A3_COD 
+		
+		oProcessOff := LJCProcessoOffLine():New("025")
+		
+		//Determina o tipo de operacao 
+		If nOpc == 3
+			cTipo := "INSERT"
+		ElseIf nOpc == 4
+			cTipo := "UPDATE"
+		EndIf		
+				
+		oProcessOff:Inserir("SA3", cChave, 1, cTipo)	
+
+		//Processa os dados 
+		oProcessOff:Processar()	
+
+	EndIf
+
+EndIf
+ 
+Return Nil
+
+/*
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Fun‡ao    ³MA40VerMeta ³ Autor ³ Marco Aurelio - Mano    ³ Data ³26/10/11  ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descri‡ao ³Verifica se existe vinculo do vendedor com o cadastro de metas  ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Sintaxe   ³MA40VerMeta()                                                   ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Parametros³                                                                ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Uso       ³MATA040                                                         ³±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+*/             
+Static Function MA40VerMeta()
+Local cAliasTRB := GetNextAlias()	// Nome do arquivo temporario
+Local cQuery    := ""				// Auxiliar para execucao de query
+Local aArea     := GetArea()		// Salva area atual para posterior restauracao
+Local lRet      := .T.				// Conteudo de retorno
+
+//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+//³Query para pesquisar o vendedor na tabela de Metas de Vendas(SCT) ³
+//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+cQuery := "SELECT CT_VEND "
+
+//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+//³Tabela base do filtro ³
+//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+cQuery += "FROM "  
+cQuery += RetSqlName("SCT")+" SCT "	
+
+//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+//³Condicoes de filtro ³
+//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+cQuery += "WHERE "
+cQuery += "CT_FILIAL = '"+ xFilial("SCT")+"' AND "
+cQuery += "CT_VEND   = '"+ SA3->A3_COD   +"' AND "
+cQuery += "SCT.D_E_L_E_T_  = ' '"
+
+cQuery := ChangeQuery(cQuery)
+
+DbUseArea(.T.,'TOPCONN',TCGENQRY(,,cQuery),cAliasTRB,.T.,.T.)
+
+If !(cAliasTRB)->(Eof())
+
+	Aviso(STR0011,STR0034,{STR0013}) //"Atencao !"###"Exclusao nao permitida deste vendedor, pois existe vinculo do mesmo no cadastro de Metas de Vendas."
+	lRet := .F.
+	
+EndIf
+
+(cAliasTRB)->(DbCloseArea())
+
+RestArea(aArea)
+
+Return(lRet)
+
+/*
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÉÍÍÍÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍ»±±
+±±º Funcao   ³ IntegDef º Autor ³ Danilo Dias        º Data ³ 22/03/2012  º±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±º Desc.    ³ Funcao de integracao com o adapter EAI para envio e        º±±
+±±º          ³ recebimento do cadastro de vendedores (SA3) utilizando     º±±
+±±º          ³ o conceito de mensagem unica.                              º±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±º Uso      ³ MATA040                                                    º±±
+±±ÈÍÍÍÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+*/
+Static Function IntegDef( cXML, nTypeTrans, cTypeMsg, cVersion, cTransaction, lJSon )
+
+Local aRet 		:= {}
+Default	lJSon 	:= .F.
+
+If lJSon .And. FindFunction( "MATI040O" )
+	aRet := MATI040O( cXML, nTypeTrans, cTypeMsg )
+Else
+	aRet := MATI040( cXML, nTypeTrans, cTypeMsg, cVersion )
+Endif
+
+Return aRet 
+
+//---------------------------------------------------------------------------------------------------------------
+/*/{Protheus.doc} A040VALSUP
+
+Funcao que  verifica os subordinados do vendedor que está sendo alterado, caso nao haja nenhum 
+deixa indisponivel a opcoes 2  do campo ModTRF da tabela de Vendedores.
+
+opcao 2 = 'Tranferencia por solicitacao'
+ 
+@sample   A040VALSUP(cOpcao)
+
+@param		ExpC - Opcao escolhida
+
+@return	ExpL - Verdadeiro / Falso
+
+@author	Victor Bitencourt
+@since		07/10/2013
+@version	11.90
+/*/
+//---------------------------------------------------------------------------------------------------------------
+Function A040ValSup(cOpcao)
+
+Local lRetorno := .T.
+
+If M->A3_NIVEL == 1 .AND. cOpcao == "2" 
+   Help( " ", 1, "A040ValSup" ) 
+   lRetorno := .F. 
+EndIf
+
+Return(lRetorno)
+
+//-------------------------------------------------------------------
+/*/{Protheus.doc} MenuDef()
+Definicao do Menu
+@author Leonardo Quintania
+@since 10/01/2014
+@version 1.0
+@return aRotina (vetor com botoes da EnchoiceBar)
+/*/
+//-------------------------------------------------------------------
+Static Function MenuDef()
+Private aRotina	:= {}
+
+aAdd(aRotina,{ STR0001,"AxPesqui"     , 0 , 1})  //"Pesquisar"
+aAdd(aRotina,{ STR0002,"A040Visualiza", 0 , 2})  //"Visualizar"
+aAdd(aRotina,{ STR0003,"A040Inclui"   , 0 , 3})  //"Incluir"
+aAdd(aRotina,{ STR0004,"A040Altera"   , 0 , 4})  //"Alterar"
+aAdd(aRotina,{ STR0005,"A040Exclui"   , 0 , 5})  //"Excluir" 
+
+aRotina:= CRMXINCROT("SA3",aRotina)
+
+Return aRotina
+
+//-------------------------------------------------------------------
+/*/{Protheus.doc} M040Contac
+Componete que realiza a pesquisa na tabela SU5 buscando relacionamento
+entre vendedor x contato 
+@param  cSalesRep, String, Código do Vendedor
+@author Squad CRM/Faturamento
+@since 12/05/2018
+@version 1.0
+@return lRet , Bool, Existe relacionamento
+/*/
+//-------------------------------------------------------------------
+Static Function M040Contac(cSalesRep)
+	Local cAliasCont := GetNextAlias()
+	Local aMyArea	 := GetArea()
+	Local cQuery     := ''
+	Local lRet		 := .F.
+	
+	Default cSalesRep	:= ''
+	
+	cQuery := "SELECT COUNT(*) TOTCONT"
+	cQuery += "  FROM " + RetSQLName( "SU5" )
+	cQuery += " WHERE U5_FILIAL = '"  + xFilial('SU5') + "'"
+	cQuery += "   AND U5_CODSA3 = '" + cSalesRep + "'"
+	cQuery += "   AND D_E_L_E_T_ = ' ' "
+	
+	cQuery := ChangeQuery( cQuery )
+	
+	dbUseArea( .T.,"TOPCONN",TcGenQry(,,cQuery),cAliasCont )
+	lRet := !EOF() .And. !BOF() .And. ( cAliasCont )->TOTCONT > 0
+	( cAliasCont )->( DbCloseArea() )
+	RestArea(aMyArea)
+	Asize(aMyArea,0)
+Return lRet
+
+//-------------------------------------------------------------------
+/*/{Protheus.doc} M040Portal
+Componete que realiza a pesquisa na tabela AI3 buscando relacionamento
+entre vendedor x usuário Portal do Vendedor 
+@param  cSalesRep, String, Código do Vendedor
+@author Squad CRM/Faturamento
+@since 12/05/2018
+@version 1.0
+@return lRet , Bool, Existe relacionamento
+/*/
+//-------------------------------------------------------------------
+Static Function M040Portal(cSalesRep)
+	Local cAliasPort := GetNextAlias()
+	Local cQuery     := ''
+	Local lRet		 := .F.
+	Local aMyArea	 := GetArea()
+
+	Default cSalesRep	:= ''
+
+	cQuery := "SELECT COUNT(*) TOTCONT"
+	cQuery += "  FROM " + RetSQLName( "AI3" )
+	cQuery += " WHERE AI3_FILIAL = '"  + xFilial('AI3') + "'"
+	cQuery += "   AND AI3_VEND = '" + cSalesRep + "'"
+	cQuery += "   AND D_E_L_E_T_ = ' ' "
+	
+	cQuery := ChangeQuery( cQuery )
+	
+	dbUseArea( .T.,"TOPCONN",TcGenQry(,,cQuery),cAliasPort )
+	lRet := !EOF() .And. !BOF() .And. ( cAliasPort )->TOTCONT > 0
+	( cAliasPort )->( DbCloseArea() )
+	RestArea(aMyArea)
+	Asize(aMyArea,0)
+Return lRet

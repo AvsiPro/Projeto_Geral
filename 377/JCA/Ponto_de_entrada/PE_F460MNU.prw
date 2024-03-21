@@ -317,11 +317,10 @@ If len(aItens[1]) >= 8
         cMensagem    := StrTran(cRet,chr(10),"")
         cMensagem    := OemtoAnsi(cMensagem)
         
-        //EMAIL aItens[nCont,7]
         cEmailTst := SUPERGETMV( "TI_EMAILTST", .F., "alexandre.venancio@avsipro.com.br" )
         //cEmailTst := 'alexandre.venancio@avsipro.com.br'
         U_JGENX002(cEmailTst,cSubject,cMensagem,cNewloc,.F.)
-        //U_JGENX2z('',cEmailTst,'Titulos aglutinados JCA',cMensagem,aAttach,lConfirm,cCC,cBCC)
+
     Next nCont 
 EndIf
 

@@ -12,12 +12,16 @@ aAdd(aPergs ,{1,"Cotação de:"	,space(TamSx3("C8_NUM")[1]),"@!",".T.","SC8",".T."
 aAdd(aPergs ,{1,"Cotação Até:"	,padr('zz',TamSx3("C8_NUM")[1]),"@!",".T.","SC8",".T.",70,.F.})
 aAdd(aPergs ,{1,"Data de"	    ,dDatad ,"@!",".T.","",".T.",60,.F.})
 aAdd(aPergs ,{1,"Data Até"	    ,dDataa ,"@!",".T.","",".T.",60,.F.})
+aAdd(aPergs ,{1,"Filial de:"	,space(TamSx3("C8_FILIAL")[1]),"@!",".T.","SM0",".T.",70,.F.})
+aAdd(aPergs ,{1,"Filial Até:"	,padr('zz',TamSx3("C8_FILIAL")[1]),"@!",".T.","SM0",".T.",70,.F.})
 
 If ParamBox(aPergs ,"Filtrar por",@aRet)    
     MV_PAR01 := aRet[1]
     MV_PAR02 := aRet[2]
     MV_PAR03 := dtos(aRet[3])
     MV_PAR04 := dtos(aRet[4])
+    MV_PAR05 := aRet[5]
+    MV_PAR06 := aRet[6]
 
     Processa({|| gerar()},"Aguarde")
 
@@ -45,10 +49,10 @@ Local cQuery
 Private aItens   := {}
 Private aCabec := {}
 
-cQuery := "SELECT ZL_DOCTO,ZL_ITEM,ZL_USUARIO,ZL_DATA,ZL_HORA,ZL_OBS,"
-cQuery += "ZL_QTD,ZL_VALOR,ZL_TOTAL,ZL_QTDANT,ZL_VLRANT,ZL_TOTLANT"
+cQuery := "SELECT ZL_DOCTO,ZL_ITEM,ZL_USUARIO,ZL_DATA,ZL_HORA,ZL_OBS,ZL_FILIAL,"
+cQuery += "ZL_QTD,ZL_VALOR,ZL_TOTAL,ZL_QTDANT,ZL_VLRANT,ZL_TOTLANT,ZL_CLIENTE,ZL_LOJA"
 cQuery += " FROM "+RetSQLName("SZL")
-cQuery += " WHERE ZL_FILIAL='"+xFilial("SZL")+"'"
+cQuery += " WHERE ZL_FILIAL BETWEEN '"+MV_PAR05+"' AND '"+MV_PAR06+"'"
 cQuery += " AND ZL_DOCTO BETWEEN '"+MV_PAR01+"' AND '"+MV_PAR02+"'"
 cQuery += " AND ZL_DATA BETWEEN '"+MV_PAR03+"' AND '"+MV_PAR04+"'"
 cQuery += " AND D_E_L_E_T_=' '"
@@ -63,22 +67,34 @@ DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
 
 DbSelectArea("TRB")  
 
-Aadd(aCabec,{"ZL_DOCTO",;
-            "ZL_ITEM",;
-            "ZL_USUARIO",;
-            "ZL_DATA",;
-            "ZL_HORA",;
-            "ZL_OBS",;
-            "ZL_QTD",;
-            "ZL_VALOR",;
-            "ZL_TOTAL",;
-            "ZL_QTDANT",;
-            "ZL_VLRANT",;
-            "ZL_TOTLANT"})
+Aadd(aCabec,{"COTACAO",;
+            "ITEM",;
+            "PRODUTO",;
+            "DESCRICAO",;
+            "CODIGO_FORNECEDOR",;
+            "NOME_FORNECEDOR",;
+            "USUARIO",;
+            "DATA",;
+            "HORA",;
+            "OBSERVACAO",;
+            "QTD_ATUAL",;
+            "VALOR_ATUAL",;
+            "TOTAL_ATUAL",;
+            "QTD_ANTERIOR",;
+            "VLR_ANTERIOR",;
+            "TOTAL_ANTERIOR"})
             
 While !EOF()
+    
+    cProd := Posicione("SC8",1,TRB->ZL_FILIAL+Avkey(Alltrim(TRB->ZL_DOCTO),"C8_NUM")+TRB->ZL_CLIENTE+TRB->ZL_LOJA+Avkey(TRB->ZL_ITEM,"C8_ITEM"),"C8_PRODUTO")
+    cDesc := Posicione("SB1",1,xFilial("SB1")+cProd,"B1_DESC")
+
     Aadd(aItens,{TRB->ZL_DOCTO,;
                 TRB->ZL_ITEM,;
+                cProd,;
+                cDesc,;
+                TRB->ZL_CLIENTE+TRB->ZL_LOJA,;
+                Posicione("SA2",1,xFilial("SA2")+TRB->ZL_CLIENTE+TRB->ZL_LOJA,"A2_NOME"),;
                 TRB->ZL_USUARIO,;
                 TRB->ZL_DATA,;
                 TRB->ZL_HORA,;

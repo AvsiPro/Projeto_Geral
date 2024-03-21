@@ -177,6 +177,7 @@ cQuery := "SELECT C8_FORNOME,C8_NUM,C8_ITEM,C8_PRODUTO,B1_DESC,C8_QUANT,C8_PRECO
 cQuery += " FROM "+RetSQLName("SC8")+" C8"
 cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_COD=C8_PRODUTO AND B1.D_E_L_E_T_=' '"
 cQuery += " WHERE C8.D_E_L_E_T_=' ' AND C8_NUM='"+SC8->C8_NUM+"'"
+cQuery += " AND C8_FILIAL='"+SC8->C8_FILIAL+"'"
 
 IF Select('TRB') > 0
     dbSelectArea('TRB')
