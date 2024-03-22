@@ -424,6 +424,8 @@ If XmlChildEx( oXml:_CTEPROC:_CTE:_INFCTE:_EMIT, "_CNPJ" ) != Nil
     cCNPJ_FIL := oxml:_CTEPROC:_CTE:_INFCTE:_EMIT:_CNPJ:TEXT 
 EndIF 
 
+
+
 aFils 	:=	{}
 aSm0 := FWLoadSM0()
 nPos := Ascan(aSM0,{|x| Alltrim(x[18]) == Alltrim(cCNPJ_FIL )})			
@@ -433,12 +435,17 @@ cFilorig := aSm0[nPos,02] //SM0->M0_CODFIL
 cNatOp	:= PadR(oXml:_cteProc:_cte:_Infcte:_IDE:_NATOP:Text,45," ")
 
 //Busca pelo cnpj do remetente 
+
+If XmlChildEx( oXml:_CTEPROC:_CTE:_INFCTE:_IDE, "_TOMA4" ) <> NIL
+    cCNPJ_FOR := oXml:_CTEPROC:_CTE:_INFCTE:_IDE:_TOMA4:_CNPJ:TEXT
+EndIf 
+/*
 If XmlChildEx( oXml:_CTEPROC:_CTE:_INFCTE:_REM, "_CNPJ" ) != Nil
     cCNPJ_FOR := oxml:_CTEPROC:_CTE:_INFCTE:_REM:_CNPJ:TEXT 
 ElseIf XmlChildEx( oXml:_CTEPROC:_CTE:_INFCTE:_REM, "_CPF" ) != Nil
     cCNPJ_FOR := oxml:_CTEPROC:_CTE:_INFCTE:_REM:_CPF:TEXT 
 EnDIf 
-
+*/
 
 DBSelectArea("SA1")
 DBSetOrder(3)
@@ -500,16 +507,7 @@ If XmlChildEx( oXml:_CTEPROC:_CTE:_INFCTE:_INFCTENORM:_INFDOC, "_INFNFE" ) != Ni
 		aItemNF 	:= {} //BuscNFT(cChvNFS,'')
 		
 	EndIF
-Else
-                                   
-	cNfs	:=	space(150)
-	aAdd(aPergs ,{1,"Numero das NFs?"			,cNfs   ,'',"","","",120,.F.})
 
-	If !ParamBox(aPergs ,"Filtro",aRet)
-		Return	
-	Else
-		aItemNF := {} //BuscNFT('',aRet[1])
-	EndIf
 EndIf
 
 nFrete := 0
