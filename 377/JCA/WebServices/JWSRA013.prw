@@ -33,7 +33,6 @@ WsMethod POST WSSERVICE JWSRA013
     Local cPathXml  :=  ''
     Local cTipo     :=  ''
     Local cDoc      :=  ''
-    Local aAux      :=  .F.
     Local nLinha 
     Local cError    :=  ''
     Local nCont
@@ -46,8 +45,8 @@ WsMethod POST WSSERVICE JWSRA013
 
     RpcClearEnv()
     RpcSetType(3)
-    //RPCSetEnv('01','00020087')
-    RPCSetEnv('T1','D MG 01')
+    RPCSetEnv('01','00020087')
+    //RPCSetEnv('T1','D MG 01')
 
 	::SetContentType("application/json")
 
@@ -58,6 +57,8 @@ WsMethod POST WSSERVICE JWSRA013
         cTipo      := oBody:getJsonText("tipo")
         cDoc       := oBody:getJsonText("fatura")
         
+        oCampo['DADOS']   := {}
+                    
         For nCont := 1 to len(oBody['itens'])
             cXmlRec    := oBody['itens'][nCont]:getJsonText("xml")
             cPathXml   := oBody['itens'][nCont]:getJsonText("pathxml")
@@ -74,24 +75,16 @@ WsMethod POST WSSERVICE JWSRA013
 
                 oXml := XmlParser( cXmlRec, "_", @cError, @cWarning )
                 
-                /*If alltrim(upper(cTipo)) == "NFE"
-                    XMLent(oXml)
-                Else*/ 
-                    lgerou := XMLCTE(oXml)
-                //EndIf 
-
-                DbSelectArea("SA1")
-                DbSetOrder(3)
-                If Dbseek(xFilial("SA1")+cXmlRec)
-                    
-                    oCampo['DADOS']   := {}
+                lgerou := XMLCTE(oXml)
+                
+                If lgerou    
                         
                     nLinha := 1
 
-                    If len(aAux) < 1
+                    //If len(aAux) < 1
                         AADD( oCampo['DADOS'], JsonObject():New() )
                         oCampo['DADOS'][nLinha]["INADIMPLENTE"] := .F.
-                    Else 
+                    //Else 
 
                         /*For nCont := 1 to len(aAux)
                             AADD( oCampo['DADOS'], JsonObject():New() )
@@ -106,7 +99,7 @@ WsMethod POST WSSERVICE JWSRA013
                             oCampo['DADOS'][nLinha]["TITULOS"][1]["VALOR"] := aAux[nCont,05]
                             nLinha++
                         Next nCont */
-                    EndIf 
+                    //EndIf 
                     
                     ::SetResponse(FWJsonSerialize(oCampo, .F., .F., .T.))
                 else
@@ -229,10 +222,11 @@ If XmlChildEx( oXml:_CTEPROC:_CTE:_INFCTE:_EMIT, "_CNPJ" ) != Nil
 EndIF 
 
 aSm0 := FWLoadSM0()
-nPos := Ascan(aSM0,{|x| Alltrim(x[18]) == Alltrim(cCNPJ_FIL )})			
-nPos := 1
+nPos := Ascan(aSM0,{|x| Alltrim(x[18]) == Alltrim(cCNPJ_FIL)})			
+//nPos := 1
 cFilorig := aSm0[nPos,02] //SM0->M0_CODFIL
-cEstFil  := Alltrim(aSm0[nPos,04])
+cEstFil  := Alltrim(aSm0[nPos,02])
+CFILANT  := cEstFil 
 
 cNatOp	:= PadR(oXml:_cteProc:_cte:_Infcte:_IDE:_NATOP:Text,45," ")
 
@@ -345,6 +339,39 @@ Return cRet
 Static Function BuscaTes(cEstFil,cCfopFrt,cEstIni,cEstFim,cCstCte,cMunIni,cMunFim,cEstTom)
 
 Local cRet := '501'
+Local lIntEst := cEstIni == cEstFim //Operação interestadual
+//Local lIntMun := cMunIni == cMunFim //Operação intermunicipal
+Local cQuery 
+
+cQuery := "SELECT ZPG_TES "
+cQuery += " FROM "+RetSQLName("ZPG")
+cQuery += " WHERE ZPG_FILIAL='"+xFilial("ZPG")+"'"
+cQuery += " AND ZPG_CFOP='"+cCfopFrt+"'"
+cQuery += " AND ZPG_ESTFIL='"+cEstFil+"'"
+cQuery += " AND ZPG_ESTTOM IN('*','"+cEstTom+"')"
+cQuery += " AND ZPG_CSTOPE='"+cCstCte+"'"
+
+If lIntEst
+    cQuery += " AND ZPG_TIPOOP='1'"
+Else 
+    cQuery += " AND ZPG_TIPOOP='2'"
+EndIf 
+
+IF Select('TRB') > 0
+    dbSelectArea('TRB')
+    dbCloseArea()
+ENDIF
+
+MemoWrite("JFISM001.SQL",cQuery)
+DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
+
+DbSelectArea("TRB")  
+
+If !Empty(TRB->ZPG_TES)
+    cRet := TRB->ZPG_TES 
+Else 
+    cRet := '501'
+EndIf 
 
 Return(cRet)
 
@@ -366,7 +393,8 @@ Local aCabec    := {}
 Local aItensT   := {}   
 Local aLinha    := {}
 Local lRet      := .T.
-Local cProdCTe  :=  SuperGetMv("TI_PRODCTE",.F.,"000000000000000000000000000061")
+//Local cProdCTe  :=  SuperGetMv("TI_PRODCTE",.F.,"000000000000000000000000000061")
+Local cProdCTe  :=  SuperGetMv("TI_PRODCTE",.F.,"S0500001")
 
 aadd(aCabec,{"F2_FILIAL"    ,cFilorig   })
 aadd(aCabec,{"F2_TIPO"      ,"N"        })
@@ -378,7 +406,7 @@ aadd(aCabec,{"F2_CLIENTE"   ,cCodCli    })
 aadd(aCabec,{"F2_TIPOCLI"   ,cTipoCli   })
 aadd(aCabec,{"F2_LOJA"      ,cLjFornec  })
 aadd(aCabec,{"F2_ESPECIE"   ,cEspecie   })
-aadd(aCabec,{"F2_COND"      ,"004"      })
+aadd(aCabec,{"F2_COND"      ,"001"      })
 aadd(aCabec,{"F2_VALBRUT"   ,nTotalMerc })
 aadd(aCabec,{"F2_VALFAT"    ,nTotalMerc })      
 aadd(aCabec,{"F2_HORA"      ,cHrEmissao })
