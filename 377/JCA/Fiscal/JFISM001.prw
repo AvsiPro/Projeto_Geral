@@ -124,7 +124,7 @@ oGrp2      := TGroup():New( 096,004,332,336,"Operação Interestadual",oDlg1,CLR_B
     //oBrw1      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{124,008,324,292},,, oGrp2 ) 
     oList1    := TCBrowse():New(124,008,320,200,, {'','Operação','CST','CFOP','Descricao','TES','Finalidade'},;
                                         {10,25,25,30,30,30,70},;
-                                        oGrp1,,,,{|| /*FHelp(oList1:nAt)*/},{|| /*editped(oList1:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
+                                        oGrp1,,,,{|| /*FHelp(oList1:nAt)*/},{|| editped(oList1:nAt,1)},, ,,,  ,,.F.,,.T.,,.F.,,,)
     oList1:SetArray(aList1)
     oList1:bLine := {||{if(aList1[oList1:nAt,01],oOk,oNo),; 
                         aList1[oList1:nAt,02],;
@@ -152,7 +152,7 @@ oGrp3      := TGroup():New( 096,364,332,696,"Operação Intermunicipal",oDlg1,CLR_
     
     oList2    := TCBrowse():New(124,368,320,200,, {'','Operação','CST','CFOP','Descricao','TES','Finalidade'},;
                                         {10,25,25,30,30,30,70},;
-                                        oGrp2,,,,{|| /*FHelp(oList1:nAt)*/},{|| /*editped(oList1:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
+                                        oGrp2,,,,{|| /*FHelp(oList1:nAt)*/},{|| editped(oList2:nAt,2)},, ,,,  ,,.F.,,.T.,,.F.,,,)
     oList2:SetArray(aList2)
     oList2:bLine := {||{If(aList2[oList2:nAt,01],oOk,oNo),; 
                         aList2[oList2:nAt,02],;
@@ -197,15 +197,16 @@ If nOpcao == 1
         For nCont := 1 to len(aList1)
             If aList1[nCont,01]
                 DbSelectArea("ZPG")
-                If aList1[nCont,08] == 0
+                If aList1[nCont,09] == 0
                     Reclock("ZPG",.T.)
                 else
+                    DbGoto(aList1[nCont,09])
                     Reclock("ZPG",.F.)
                 EndIf 
 
                 ZPG->ZPG_CODIGO := cCodigo
-                ZPG->ZPG_ESTFIL := cEstFil
-                ZPG->ZPG_ESTTOM := cEstTom
+                ZPG->ZPG_ESTFIL := If(upper(cEstFil)=="TODOS",'*',cEstFil)
+                ZPG->ZPG_ESTTOM := If(upper(cEstTom)=="TODOS",'*',cEstTom)
                 ZPG->ZPG_OPERAC := aList1[nCont,02]
                 ZPG->ZPG_CSTOPE := aList1[nCont,03]
                 ZPG->ZPG_CFOP   := aList1[nCont,04]
@@ -213,21 +214,29 @@ If nOpcao == 1
                 ZPG->ZPG_TIPOOP := aList1[nCont,08]
 
                 ZPG->(Msunlock())
+            Else 
+                If aList1[nCont,09] > 0
+                    Dbgoto(aList1[nCont,09])
+                    Reclock("ZPG",.F.)
+                    Dbdelete()
+                    ZPG->(Msunlock())
+                EndIf 
             EndIf 
         Next nCont
 
         For nCont := 1 to len(aList2)
             If aList2[nCont,01]
                 DbSelectArea("ZPG")
-                If aList2[nCont,08] == 0
+                If aList2[nCont,09]  == 0
                     Reclock("ZPG",.T.)
                 else
+                    Dbgoto(aList2[nCont,09])
                     Reclock("ZPG",.F.)
                 EndIf
 
                 ZPG->ZPG_CODIGO := cCodigo
-                ZPG->ZPG_ESTFIL := cEstFil
-                ZPG->ZPG_ESTTOM := cEstTom
+                ZPG->ZPG_ESTFIL := If(upper(cEstFil)=="TODOS",'*',cEstFil)
+                ZPG->ZPG_ESTTOM := If(upper(cEstTom)=="TODOS",'*',cEstTom)
                 ZPG->ZPG_OPERAC := aList2[nCont,02]
                 ZPG->ZPG_CSTOPE := aList2[nCont,03]
                 ZPG->ZPG_CFOP   := aList2[nCont,04]
@@ -235,6 +244,13 @@ If nOpcao == 1
                 ZPG->ZPG_TIPOOP := aList2[nCont,08]
 
                 ZPG->(Msunlock())
+            Else 
+                If aList2[nCont,09] > 0
+                    Dbgoto(aList2[nCont,09])
+                    Reclock("ZPG",.F.)
+                    Dbdelete()
+                    ZPG->(Msunlock())
+                EndIf 
             EndIf 
         Next nCont
     EndIf 
@@ -260,6 +276,9 @@ Local cQuery
 Local cGrupo  := ''
 Local cEstFil := ''
 Local cEstTom := ''
+
+aList1 := {}
+aList2 := {}
 
 If Empty(nGrupo)
     MsgAlert("Grupo de empresas não preenchido")
@@ -296,8 +315,8 @@ DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
 DbSelectArea("TRB")  
 
 While !EOF()
-    cFinalid := Posicione("SF4",1,xFilial("SF4")+ZPG_TES,"F4_FINALID")
-    cDescCF  := Posicione("SX5",1,xFilial("SX5")+'13'+TRB->ZPG_CFOP,"X5_DESCRI")
+    cFinalid := alltrim(Posicione("SF4",1,xFilial("SF4")+ZPG_TES,"F4_FINALID"))
+    cDescCF  := alltrim(Posicione("SX5",1,xFilial("SX5")+'13'+TRB->ZPG_CFOP,"X5_DESCRI"))
 
     If TRB->ZPG_TIPOOP == '1'
         Aadd(aList1,{.T.,;
@@ -322,6 +341,32 @@ While !EOF()
     EndIF 
     Dbskip()
 EndDo 
+
+If len(aList1) < 1
+    Aadd(aList1,{.F.,'','','','','','','',0})
+EndIf 
+
+If len(aList2) < 1
+    Aadd(aList2,{.F.,'','','','','','','',0})
+EndIf 
+
+oList1:SetArray(aList1)
+oList1:bLine := {||{if(aList1[oList1:nAt,01],oOk,oNo),; 
+                    aList1[oList1:nAt,02],;
+                    aList1[oList1:nAt,03],;
+                    aList1[oList1:nAt,04],;
+                    aList1[oList1:nAt,05],;
+                    aList1[oList1:nAt,06],;
+                    aList1[oList1:nAt,07]}}
+
+oList2:SetArray(aList2)
+oList2:bLine := {||{If(aList2[oList2:nAt,01],oOk,oNo),; 
+                    aList2[oList2:nAt,02],;
+                    aList2[oList2:nAt,03],;
+                    aList2[oList2:nAt,04],;
+                    aList2[oList2:nAt,05],;
+                    aList2[oList2:nAt,06],;
+                    aList2[oList2:nAt,07]}}
 
 oBtn1:enable()
 oBtn2:enable()
@@ -477,3 +522,38 @@ EndIf
 RestArea(aArea)
 
 Return(lRet)
+
+/*/{Protheus.doc} editped
+    (long_description)
+    @type  Static Function
+    @author user
+    @since 25/03/2024
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function editped(nLinha,nOpc)
+
+
+If nOpc == 1
+    If aList1[nLinha,01]
+        aList1[nLinha,01] := .F.
+    Else 
+        aList1[nLinha,01] := .T.
+    EndIf 
+Else 
+    If aList2[nLinha,01]
+        aList2[nLinha,01] := .F.
+    Else 
+        aList2[nLinha,01] := .T.
+    EndIf 
+EndIf 
+
+oList1:refresh()
+oList2:refresh()
+oDlg1:refresh()
+
+Return

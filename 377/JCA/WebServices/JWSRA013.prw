@@ -40,7 +40,8 @@ WsMethod POST WSSERVICE JWSRA013
     Local oResponse     := JsonObject():New()
     Local oCampo        := JsonObject():New()
     Local lGerou        := .T.
-    
+    Local cErrorN       :=  ''
+    Local cNota         :=  ''
     Private cNfExst     :=  ''
 
     RpcClearEnv()
@@ -58,7 +59,9 @@ WsMethod POST WSSERVICE JWSRA013
         cDoc       := oBody:getJsonText("fatura")
         
         oCampo['DADOS']   := {}
-                    
+
+        nLinha := 1
+
         For nCont := 1 to len(oBody['itens'])
             cXmlRec    := oBody['itens'][nCont]:getJsonText("xml")
             cPathXml   := oBody['itens'][nCont]:getJsonText("pathxml")
@@ -75,39 +78,24 @@ WsMethod POST WSSERVICE JWSRA013
 
                 oXml := XmlParser( cXmlRec, "_", @cError, @cWarning )
                 
-                lgerou := XMLCTE(oXml)
+                lgerou := XMLCTE(oXml,@cErrorN,@cNota)
                 
                 If lgerou    
-                        
-                    nLinha := 1
-
-                    //If len(aAux) < 1
-                        AADD( oCampo['DADOS'], JsonObject():New() )
-                        oCampo['DADOS'][nLinha]["INADIMPLENTE"] := .F.
-                    //Else 
-
-                        /*For nCont := 1 to len(aAux)
-                            AADD( oCampo['DADOS'], JsonObject():New() )
-                            oCampo['DADOS'][nLinha]["INADIMPLENTE"] := .T.
-                            oCampo['DADOS'][nLinha]["TITULOS"] := {}
-                            AADD( oCampo['DADOS'][nLinha]["TITULOS"], JsonObject():New() )
-                            // E1_NUM,E1_PREFIXO,E1_PARCELA,E1_VENCREA,E1_VALOR
-                            oCampo['DADOS'][nLinha]["TITULOS"][1]["TITULO"] := aAux[nCont,01]
-                            oCampo['DADOS'][nLinha]["TITULOS"][1]["PREFIXO"] := aAux[nCont,02]
-                            oCampo['DADOS'][nLinha]["TITULOS"][1]["PARCELA"] := aAux[nCont,03]
-                            oCampo['DADOS'][nLinha]["TITULOS"][1]["VENCIMENTO"] := cvaltochar(aAux[nCont,04])
-                            oCampo['DADOS'][nLinha]["TITULOS"][1]["VALOR"] := aAux[nCont,05]
-                            nLinha++
-                        Next nCont */
-                    //EndIf 
                     
-                    ::SetResponse(FWJsonSerialize(oCampo, .F., .F., .T.))
+                    AADD( oCampo['DADOS'], JsonObject():New() )
+                    oCampo['DADOS'][nLinha]["Status"] := .T.
+                    oCampo['DADOS'][nLinha]["Nota"]   := cNota
+                    
+                    nLinha++
+                    
                 else
-                    lRet		:= .F.
-                    oResponse['code'] := "#400"
-                    oResponse['status'] := 500
-                    oResponse['message'] := '#erro_cnpj'
-                    oResponse['detailedMessage'] := 'CNPJ não encontrado na base'
+                    AADD( oCampo['DADOS'], JsonObject():New() )
+                    oCampo['DADOS'][nLinha]["Status"] := .F.
+                    oCampo['DADOS'][nLinha]["Nota"]   := cNota
+                    oCampo['DADOS'][nLinha]["Motivo"] := cErrorN
+
+                    nLinha++
+                    
                 EndIf 
                 
             EndIf 
@@ -115,6 +103,8 @@ WsMethod POST WSSERVICE JWSRA013
         
     EndIf
 	
+    ::SetResponse(FWJsonSerialize(oCampo, .F., .F., .T.))
+
     If !lRet
         ::SetResponse(FWJsonSerialize(oResponse, .F., .F., .T.))
     EndIf
@@ -175,7 +165,7 @@ Return cWord
     (examples)
     @see (links_or_references)
 /*/
-Static Function XMLCTE(oXml)
+Static Function XMLCTE(oXml,cErroLg,cNotaG)
 
 Local lRet          := .t.
 Local nCont         := 0
@@ -247,14 +237,16 @@ Endif
 
 cNum	:= PadL(Alltrim(oXml:_CTEPROC:_CTE:_INFCTE:_IDE:_NCT:TEXT),9,"0") //Nro da Nota
 cSerie	:= PadR(oXml:_CTEProc:_CTE:_InfCTE:_IDE:_Serie:Text,3," ")
+cNotaG  := cNum
 
-// ************ Verifica se já existe essa NF na base de dados aqui ***************
+// ************ Verifica se já existe essa NF na base de dados ***************
 // filial doc serie cliente loja
 DbSelectArea("SF2")
 DbSetOrder(1)
 If Dbseek(cFilorig+cNum+cSerie+cCodCli+cLjFornec)
     cNfExst := cNum
-    //Return(.F.)
+    cErroLg := 'CTe já lançado'
+    Return(.F.)
 EndIf 
 
 cDtEmissao	:= oXml:_CTEPROC:_CTE:_INFCTE:_IDE:_dhEmi:Text
