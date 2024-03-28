@@ -9,17 +9,19 @@ Local nCont,nX,nJ
 Local nSoma     :=  0
 
 For nCont := 1 to len(aRet[1])
-    nSoma := 0
-    For nX := 2 to len(aRet[1,nCont])
-        For nJ := 1 to len(aRet[1,nCont,nX])
-            If aRet[1,nCont,nX,nJ,1]
-                nSoma += aRet[1,nCont,nX,nJ,4]
-            EndIf
-        Next nJ
-    Next nX
+    If len(aRet[1,nCont,1]) > 6
+        nSoma := 0
+        For nX := 2 to len(aRet[1,nCont])
+            For nJ := 1 to len(aRet[1,nCont,nX])
+                If aRet[1,nCont,nX,nJ,1]
+                    nSoma += aRet[1,nCont,nX,nJ,4]
+                EndIf
+            Next nJ
+        Next nX
 
-    aRet[1,nCont,1,7] := nSoma
-    CalcImp(SC8->C8_NUM,1,aRet[1,nCont,1,1],aRet[1,nCont,1,2])
+        aRet[1,nCont,1,7] := nSoma
+        CalcImp(SC8->C8_NUM,1,aRet[1,nCont,1,1],aRet[1,nCont,1,2])
+    EndIf 
 Next nCont 
 
 Return aRet

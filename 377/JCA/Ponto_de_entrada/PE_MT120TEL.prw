@@ -47,9 +47,11 @@ Return
   
 User Function MTA120G2()
     Local aArea := GetArea()
- 
+    
+    If !"CNTA" $ Funname()
     //Atualiza a descrição, com a variável pública criada no ponto de entrada MT120TEL
-    SC7->C7_ZTPCOM := cXObsAux
- 
+        SC7->C7_ZTPCOM := cXObsAux
+    EndIf 
+
     RestArea(aArea)
 Return
