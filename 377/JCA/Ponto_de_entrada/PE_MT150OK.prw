@@ -109,6 +109,22 @@ If nOpcx == 3 .and. lGravar
         
         
     Next nCont
+ElseIf nOpcx == 5   
+    cNumSol := SC1->C1_NUM
+    cFilSol := SC1->C1_FILIAL
+
+    DbSelectArea("SC1")
+    DbGotop()
+    DBSetOrder(1)
+    Dbseek(cFilSol+cNumSol)
+    While !EOF() .AND. SC1->C1_FILIAL == cFilSol .and. SC1->C1_NUM == cNumSol
+        If Alltrim(SC1->C1_COTACAO) == 'XXX'
+            Reclock("SC1",.F.)
+            SC1->C1_COTACAO := ''
+            SC1->(Msunlock())
+        EndIf 
+        Dbskip()
+    EndDo 
 EndIF 
 
 Return lRet

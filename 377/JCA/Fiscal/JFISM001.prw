@@ -64,7 +64,7 @@ If Select("SM0") == 0
 EndIf
 
 aSm0 := FWLoadSM0()
-
+//DEIXAR SOMENTE A EMPRESA GRUPO 0008  
 For nCont := 1 to len(aSm0)
     If Ascan(aGrupos,{|x| x == aSM0[nCont,03]+'-'+aSm0[nCont,17]}) == 0 
         Aadd(aGrupos,aSM0[nCont,03]+'-'+aSm0[nCont,17])
@@ -391,17 +391,19 @@ Static Function vldcpo(cTabela,cConteudo)
 Local aArea := GetArea()
 Local lRet  := .T.
 
-If cTabela == "SF4"
-    DbselectArea("SF4")
-    DbSetOrder(1)
-    If !Dbseek(xFilial("SF4")+cConteudo)
-        lRet := .F.
-    EndIf 
-Else 
-    DbSelectArea("SX5")
-    DbSetOrder(1)
-    If !Dbseek(xFilial("SX5")+cTabela+cConteudo)
-        lRet := .F.
+If !Empty(cConteudo)
+    If cTabela == "SF4"
+        DbselectArea("SF4")
+        DbSetOrder(1)
+        If !Dbseek(xFilial("SF4")+cConteudo)
+            lRet := .F.
+        EndIf 
+    Else 
+        DbSelectArea("SX5")
+        DbSetOrder(1)
+        If !Dbseek(xFilial("SX5")+cTabela+cConteudo)
+            lRet := .F.
+        EndIf 
     EndIf 
 EndIf 
 

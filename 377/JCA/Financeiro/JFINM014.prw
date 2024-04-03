@@ -69,7 +69,7 @@ Static Function fWizard()
 	Private cMailT := space(50)
 	Private cCrtMd := space(6)
 	Private aTiEnv := {'Sim','Não'}
-	Private cTipEn := aTiEnv[2]
+	//Private cTipEn := aTiEnv[2]
 	
     oStepWiz := FWWizardControl():New(,{600,850})//Instancia a classe FWWizardControl
 	oStepWiz:ActiveUISteps()
@@ -169,8 +169,8 @@ Static Function cria_pn0( oPanel As Object )
 	TSay():New(120,245,{|| "Carta modelo"},oPanel,,,,,,.T.,CLR_BLUE,)
 	oGet13     := TGet():New(120,310,{|u| If(PCount() > 0,cCrtMd := u,cCrtMd)},oPanel,40,10,PesqPict("SA1","A1_EMAIL"),,,,,,,.T.,,,{|| .T.},,,,.F.,.F.,'FWP','')
     
-	TSay():New(140,245,{|| "Titulos sem boleto"},oPanel,,,,,,.T.,CLR_BLUE,)
-	oCombo2 := TComboBox():New(140,310,{|u|if(PCount()>0,cTipEn:=u,cTipEn)},aTiEnv,50,20,oPanel,,{|| },,,,.T.,,,,,,,,,'cTipEn')
+	//TSay():New(140,245,{|| "Titulos sem boleto"},oPanel,,,,,,.T.,CLR_BLUE,)
+	//oCombo2 := TComboBox():New(140,310,{|u|if(PCount()>0,cTipEn:=u,cTipEn)},aTiEnv,50,20,oPanel,,{|| },,,,.T.,,,,,,,,,'cTipEn')
 	
 Return .t.
 
@@ -501,7 +501,7 @@ user function JFINJ014a(cCodEmp,cCodFil,lAuto)
             MsUnLock()
         EndIf
 		
-		If Upper(cTipEn) == "SIM"
+		If !Empty(TRBLOC->E1_NUMBCO) //Upper(cTipEn) == "SIM"
 			cFileBol := U_RF01BImp(.f.)
 			cMsg := 'Arquivo gerado'
 			lOk := .T.
@@ -522,7 +522,7 @@ user function JFINJ014a(cCodEmp,cCodFil,lAuto)
 		
 		cBody 		:=	Aviso_1(TRBLOC->E1_CODDIG,TRBLOC->A1_XBOL,nVlrAbat)
 
-		If Upper(cTipEn) == "SIM"
+		If !Empty(TRBLOC->E1_NUMBCO) //Upper(cTipEn) == "SIM"
 			If !'.pdf' $ cFileBol
 				cFileBol := alltrim(cFileBol)+'.pdf'
 			EndIf 

@@ -233,7 +233,10 @@ While CADTMP->(!Eof())
     oPrint:Say(li,1710,CADTMP->ZPC_SOLICI,oArial09N)
     oPrint:Say(li,1970,cvaltochar(stod(CADTMP->ZPC_DATA)),oArial09N)
     oPrint:Say(li,2160,Alltrim(CADTMP->ZPC_PREFIX),oArial09N)
-	oPrint:Say(li,2330,substr(aAux[val(CADTMP->ZPC_TIPO)],3),oArial09N)
+
+	If len(aAux) > 0
+		oPrint:Say(li,2330,substr(aAux[val(CADTMP->ZPC_TIPO)],3),oArial09N)
+	EndIf 
     
 	li+=20
 

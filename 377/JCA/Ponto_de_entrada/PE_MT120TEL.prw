@@ -7,17 +7,21 @@ User Function MT120TEL()
     Local nOpcx     := PARAMIXB[4]
     Local nRecPC    := PARAMIXB[5]
     Local aStatusP  := {}
+    Private aCombo   := RetSX3Box(GetSX3Cache("C1_XTIPCOT", "X3_CBOX"),,,1)
+
     Public cXObsAux := ""
     Public cOpcao
-    
-    //;;;;;;;                                  
+
+    Aeval(aCombo,{|x| Aadd(aStatusP,x[1]) })
+    //;;;;;;;
+    /*                                  
     aAdd(aStatusP , "1=Padrao")
     aAdd(aStatusP , "2=Emergencial")
-    aAdd(aStatusP , "3=Teste")
-    aAdd(aStatusP , "4=Prova de Conceito")
+    aAdd(aStatusP , "3=Estrategico")
+    aAdd(aStatusP , "4=Planejado")
     aAdd(aStatusP , "5=Regularização")
-    aAdd(aStatusP , "6=VTR")
-    aAdd(aStatusP , "7=Contratação Direta")
+    aAdd(aStatusP , "6=VTR")*/
+    //aAdd(aStatusP , "7=Contratação Direta")
 
     //cOpcao := aStatusP[1]
     //Define o conteúdo para os campos
