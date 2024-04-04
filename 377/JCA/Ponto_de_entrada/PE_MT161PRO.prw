@@ -3,11 +3,13 @@
 
 User Function MT161PRO()
 
-Local aPropostas := PARAMIXB[1]
-Local aRet := aPropostas
+Local aPropostas    := PARAMIXB[1]
+Local aRet          := aPropostas
 Local nCont,nX,nJ
-Local nSoma     :=  0
+Local nSoma         :=  0
+Local aProdPai      := {}
 
+//Soma dos itens vencedores para atualizar o cabeçalho com itens de medalha
 For nCont := 1 to len(aRet[1])
     If len(aRet[1,nCont,1]) > 6
         nSoma := 0
@@ -23,6 +25,32 @@ For nCont := 1 to len(aRet[1])
         CalcImp(SC8->C8_NUM,1,aRet[1,nCont,1,1],aRet[1,nCont,1,2])
     EndIf 
 Next nCont 
+
+//Soma para itens derrotados que o fornecedor não tenha nenhum item com medalha
+For nCont := 1 to len(aRet[1])
+    If len(aRet[1,nCont,1]) > 6
+        nSoma := 0
+        If aRet[1,nCont,1,7] == 0
+            For nX := 2 to len(aRet[1,nCont])
+                For nJ := 1 to len(aRet[1,nCont,nX])
+                    nPosP := Ascan(aProdPai,{|x| alltrim(x[1]) == substr(aRet[1,nCont,nX,nJ,3],1,8)})
+                    If nPosP > 0
+                        If aProdPai[nPosP,02] > aRet[1,nCont,nX,nJ,4]
+                            aProdPai[nPosP,02] := aRet[1,nCont,nX,nJ,4]
+                        EndIf 
+                    Else    
+                        Aadd(aProdPai,{substr(aRet[1,nCont,nX,nJ,3],1,8),aRet[1,nCont,nX,nJ,4]})
+                    EndIf 
+                Next nJ
+            Next nX
+
+            Aeval(aProdPai,{|x| nSoma+= x[2]})
+            //    nSoma += aRet[1,nCont,nX,nJ,4]
+            aRet[1,nCont,1,7] := nSoma
+            CalcImp(SC8->C8_NUM,1,aRet[1,nCont,1,1],aRet[1,nCont,1,2])
+        EndIf 
+    EndIf 
+Next nCont
 
 Return aRet
 

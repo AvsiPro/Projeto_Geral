@@ -64,12 +64,16 @@ If Select("SM0") == 0
 EndIf
 
 aSm0 := FWLoadSM0()
-//DEIXAR SOMENTE A EMPRESA GRUPO 0008  
-For nCont := 1 to len(aSm0)
+//DEIXAR SOMENTE A EMPRESA GRUPO 0008  - SOLICITADO TANIA 03/04/24
+/*For nCont := 1 to len(aSm0)
     If Ascan(aGrupos,{|x| x == aSM0[nCont,03]+'-'+aSm0[nCont,17]}) == 0 
         Aadd(aGrupos,aSM0[nCont,03]+'-'+aSm0[nCont,17])
     EndIf 
-Next nCont
+Next nCont*/
+nPosE8 := Ascan(aSM0,{|x| x[3] == '0008'})
+If nPosE8 > 0
+    Aadd(aGrupos,aSM0[nPosE8,03]+'-'+aSm0[nPosE8,17])
+EndIf 
 
 DbSelectArea("SX5")
 DbSetOrder(1)
@@ -165,8 +169,8 @@ oGrp3      := TGroup():New( 096,364,332,696,"Operação Intermunicipal",oDlg1,CLR_
     oBtn2      := TButton():New( 106,612,"Incluir",oGrp3,{|| AdicInt(2)},033,012,,,,.T.,,"",,,,.F. )
     oBtn2:disable()
 
-    oBtn4      := TButton():New( 340,224,"Salvar",oDlg1,{|| oDlg1:end(nOpcao := 1)},037,012,,,,.T.,,"",,,,.F. )
-    oBtn5      := TButton():New( 340,440,"Sair",oDlg1,{|| oDlg1:end(nOpcao := 0)},037,012,,,,.T.,,"",,,,.F. )
+    oBtn4      := TButton():New( 333,224,"Salvar",oDlg1,{|| oDlg1:end(nOpcao := 1)},037,012,,,,.T.,,"",,,,.F. )
+    oBtn5      := TButton():New( 333,440,"Sair",oDlg1,{|| oDlg1:end(nOpcao := 0)},037,012,,,,.T.,,"",,,,.F. )
 
 oDlg1:Activate(,,,.T.)
 
@@ -323,9 +327,9 @@ While !EOF()
                      TRB->ZPG_OPERAC,;
                      TRB->ZPG_CSTOPE,;
                      TRB->ZPG_CFOP,;
-                     cFinalid,;
-                     TRB->ZPG_TES,;
                      cDescCF,;
+                     TRB->ZPG_TES,;
+                     cFinalid,;
                      TRB->ZPG_TIPOOP,;
                      TRB->RECZPG})
     Else 
@@ -333,9 +337,9 @@ While !EOF()
                      TRB->ZPG_OPERAC,;
                      TRB->ZPG_CSTOPE,;
                      TRB->ZPG_CFOP,;
-                     cFinalid,;
-                     TRB->ZPG_TES,;
                      cDescCF,;
+                     TRB->ZPG_TES,;
+                     cFinalid,;
                      TRB->ZPG_TIPOOP,;
                      TRB->RECZPG})
     EndIF 
@@ -427,6 +431,7 @@ Static Function AdicInt(nOpc)
 
 Local aArea := GetArea()
 Local lRet  := .T.
+Local nPosS := 0
 
 If cvaltochar(nGrupo) == '0'
     MsgAlert("Não foi informado o grupo de empresas")
@@ -449,6 +454,11 @@ If nOpc == 1
     If Empty(cTESInt)
         lRet := .F.
     EndIf 
+    nPosS := Ascan(aList1,{|x| x[2]+x[3]+x[4] == cOperInt+cCstInt+cCFOPIn})
+    If nPosS > 0
+        lRet := .F.
+        MsgAlert("Combinação já cadastrada")
+    EndIf 
 Else 
     If Empty(cOperLoc)
         lRet := .F.
@@ -464,6 +474,12 @@ Else
 
     If Empty(cTESLoc)
         lRet := .F.
+    EndIf 
+
+    nPosS := Ascan(aList2,{|x| Alltrim(x[2]+x[3]+x[4]) == alltrim(cOperLoc+cCSTLoc+cCFOPLo)})
+    If nPosS > 0
+        lRet := .F.
+        MsgAlert("Combinação já cadastrada")
     EndIf 
 EndIf 
 

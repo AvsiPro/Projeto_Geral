@@ -40,8 +40,8 @@ WsMethod POST WSSERVICE JWSRA013
     Local oResponse     := JsonObject():New()
     Local oCampo        := JsonObject():New()
     Local lGerou        := .T.
-    Local cErrorN       :=  ''
     Local cNota         :=  ''
+    Private cErrorN     :=  ''
     Private cNfExst     :=  ''
 
     RpcClearEnv()
@@ -78,7 +78,8 @@ WsMethod POST WSSERVICE JWSRA013
 
                 oXml := XmlParser( cXmlRec, "_", @cError, @cWarning )
                 
-                lgerou := XMLCTE(oXml,@cErrorN,@cNota)
+                cErrorN := ''
+                lgerou := XMLCTE(oXml,@cNota)
                 
                 If lgerou    
                     
@@ -165,7 +166,7 @@ Return cWord
     (examples)
     @see (links_or_references)
 /*/
-Static Function XMLCTE(oXml,cErroLg,cNotaG)
+Static Function XMLCTE(oXml,cNotaG)
 
 Local lRet          := .t.
 Local nCont         := 0
@@ -195,7 +196,8 @@ Private cEstFil     := ''
 Private cEstTom     := ''
 
 If ValType(oXml) != "O"
-     Return()
+    cErrorN := 'xml nao pode ser convertido em objeto'
+    Return(.f.)
 Endif
 
 cVersaoCTE := oXML:_CTEProc:_versao:TEXT  
@@ -204,7 +206,8 @@ cChave_Nfe := SubStr(oxml:_CTEPROC:_CTE:_INFCTE:_ID:TEXT,4)
 
 If Empty(cChave_Nfe)
 	//MsgAlert("A chave de acesso não foi informada!","XMLCTE")
-	Return
+    cErrorN := 'Chave de acesso do CTe não informada'
+	Return(.f.)
 EndIf     
 
 If XmlChildEx( oXml:_CTEPROC:_CTE:_INFCTE:_EMIT, "_CNPJ" ) != Nil
@@ -215,8 +218,8 @@ aSm0 := FWLoadSM0()
 nPos := Ascan(aSM0,{|x| Alltrim(x[18]) == Alltrim(cCNPJ_FIL)})			
 //nPos := 1
 cFilorig := aSm0[nPos,02] //SM0->M0_CODFIL
-cEstFil  := Alltrim(aSm0[nPos,02])
-CFILANT  := cEstFil 
+cEstFil  := Alltrim(aSm0[nPos,04])
+//CFILANT  := cEstFil 
 
 cNatOp	:= PadR(oXml:_cteProc:_cte:_Infcte:_IDE:_NATOP:Text,45," ")
 
@@ -225,6 +228,14 @@ cNatOp	:= PadR(oXml:_cteProc:_cte:_Infcte:_IDE:_NATOP:Text,45," ")
 If XmlChildEx( oXml:_CTEPROC:_CTE:_INFCTE:_IDE, "_TOMA4" ) <> NIL
     cCNPJ_TOM := oXml:_CTEPROC:_CTE:_INFCTE:_IDE:_TOMA4:_CNPJ:TEXT
     cEstTom   := UPPER(oXml:_CTEPROC:_CTE:_INFCTE:_IDE:_TOMA4:_ENDERTOMA:_UF:TEXT)
+ElseIF XmlChildEx( oXml:_CTEPROC:_CTE:_INFCTE, "_REM" ) <> NIL 
+    If XmlChildEx( oXml:_CTEPROC:_CTE:_INFCTE:_REM, "_CNPJ" ) <> NIL
+        cCNPJ_TOM := oXml:_CTEPROC:_CTE:_INFCTE:_REM:_CNPJ:TEXT 
+    Elseif XmlChildEx( oXml:_CTEPROC:_CTE:_INFCTE:_REM, "_CPF" ) <> NIL
+        cCNPJ_TOM := oXml:_CTEPROC:_CTE:_INFCTE:_REM:_CPF:TEXT 
+    EndIf 
+
+    cEstTom   := UPPER(oXml:_CTEPROC:_CTE:_INFCTE:_REM:_ENDERREME:_UF:TEXT)
 EndIf 
 
 DBSelectArea("SA1")
@@ -245,7 +256,7 @@ DbSelectArea("SF2")
 DbSetOrder(1)
 If Dbseek(cFilorig+cNum+cSerie+cCodCli+cLjFornec)
     cNfExst := cNum
-    cErroLg := 'CTe já lançado'
+    cErrorN := 'CTe já lançado'
     Return(.F.)
 EndIf 
 
@@ -286,6 +297,7 @@ If !Empty(cEstIni) .And. !Empty(cEstFim) .And. !Empty(cCstCte)
 EndIf 
 
 lRet := GerarCte()
+
 
 Return(lRet)
 
@@ -343,7 +355,7 @@ cQuery += " AND ZPG_ESTFIL='"+cEstFil+"'"
 cQuery += " AND ZPG_ESTTOM IN('*','"+cEstTom+"')"
 cQuery += " AND ZPG_CSTOPE='"+cCstCte+"'"
 
-If lIntEst
+If !lIntEst
     cQuery += " AND ZPG_TIPOOP='1'"
 Else 
     cQuery += " AND ZPG_TIPOOP='2'"
@@ -420,7 +432,20 @@ lMsErroAuto := .F.
 MSExecAuto({|x,y,z| mata920(x,y,z)},aCabec,aItensT,3) 
 
 If lMsErroAuto 
+    cErrorN := GetErro()
     lRet := .F.
 EndIf 
 
 Return(lRet)
+
+
+user function xvldws13
+
+If Select("SM0") == 0
+    RpcSetType(3)
+    RPCSetEnv("01","00020087")
+EndIf
+
+BuscaTes('MG','6357','MG','RJ','00','3151206','3303500','MG')
+
+Return

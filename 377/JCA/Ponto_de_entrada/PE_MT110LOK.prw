@@ -16,6 +16,7 @@ Local nPosItem   := aScan(aHeader,{|x| AllTrim(x[2]) == 'C1_ITEM'})
 Local nPosTpCt   := aScan(aHeader,{|x| AllTrim(x[2]) == 'C1_XTIPCOT'})
 Local nPosQtd    := aScan(aHeader,{|x| AllTrim(x[2]) == 'C1_QUANT'})
 Local nPosQtO    := aScan(aHeader,{|x| AllTrim(x[2]) == 'C1_QTDORIG'})
+Local nPosCC     := aScan(aHeader,{|x| Alltrim(x[2]) == 'C1_CC'})
 Local lValido    := .T.
 Local lPrdPai    := Empty(Posicione("SB1",1,xFilial("SB1")+aCols[n,nPosPrd],"B1_XCODPAI"))
 Local nCont      := 1
@@ -48,6 +49,10 @@ If nPosTpCt > 0
                 aCols[nCont][nPosTpCt] := cvaltochar(nEditS)
             EndIf 
             
+            If Empty(aCols[nCont][nPosCC])
+                aCols[nCont][nPosCC] := cJCACC
+            EndIf 
+
             If lPrdPai .And. lQtdAlt
                 If Alltrim(Posicione("SB1",1,xFilial("SB1")+aCols[nCont,nPosPrd],"B1_XCODPAI")) == alltrim(aCols[n,nPosPrd])
                     aCols[nCont,nPosQtd] := aCols[n,nPosQtd]
