@@ -26,7 +26,7 @@ User Function JFINJ001(xEmp, xFi, lJob)
     aItens := Busca()
 
     If len(aItens) > 0
-        For nCont := 1 to len(aItens)
+        For nCont := 1 to 1 //len(aItens)
             aItens[nCont,14] := GerBol(aItens[nCont])
         Next nCont
 
@@ -53,7 +53,7 @@ Local aArea := GetArea()
 Local cQuery 
 Local aRet  := {}
 
-cQuery := "SELECT E1_FILIAL,E1_PREFIXO,E1_NUM,E1_PARCELA,E1_TIPO,E1_NUMBCO,A1_CGC,E1_EMISSAO,E1_VENCREA,"
+cQuery := "SELECT TOP 1 E1_FILIAL,E1_PREFIXO,E1_NUM,E1_PARCELA,E1_TIPO,E1_NUMBCO,A1_CGC,E1_EMISSAO,E1_VENCREA,"
 cQuery += " E1_IDCNAB,E1_ZIMPBOL,E1_CODBAR,E1_CLIENTE,E1_LOJA,E1.R_E_C_N_O_ AS RECNOE1 "
 cQuery += " FROM "+RetSQLName("SE1")+" E1"
 cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_COD=E1_CLIENTE AND A1_LOJA=E1_LOJA AND A1.D_E_L_E_T_=' '"
@@ -192,8 +192,9 @@ Static Function EnvJson(aItens)
 Local aArea     := GetArea()
 Local nCont 
 Local oEnvio    := JsonObject():New()
-Local cApiDest  := SuperGetMV("TI_APIDES",.F.,"")
-Local cEndPnt   := SuperGetMV("TI_ENDPNT",.F.,"")
+Local cApiDest  := SuperGetMV("TI_APIDES",.F.,"https://api.track3r.com.br")
+Local cEndPnt   := SuperGetMV("TI_ENDPNT",.F.,"/v2/api/totvs-protheus/recebe-boleto-fatura")
+Local cToken    := SuperGetMV("TI_TOKTRK",.F.,'0D901F83-1739-41E3-995B-7303EF0BB19A')
 
 /*E1_FILIAL,E1_PREFIXO,E1_NUM,E1_PARCELA,E1_TIPO,
 E1_NUMBCO,E1_IDCNAB,E1_ZIMPBOL,E1_CODBAR,E1_CLIENTE,;
@@ -215,7 +216,7 @@ For nCont := 1 to len(aItens)
 
     cRet := oEnvio:toJson()
     
-    ApiEnv04(cApiDest,cEndPnt,cRet)
+    ApiEnv04(cApiDest,cEndPnt,cRet,cToken)
 
 Next nCont 
 
@@ -236,7 +237,7 @@ Return
     (examples)
     @see (links_or_references)
 /*/
-Static Function ApiEnv04(cUrlDest,cPathDest,cJson)
+Static Function ApiEnv04(cUrlDest,cPathDest,cJson,cToken)
 
 Local oRest 
 Local oJson     :=  ""
@@ -245,6 +246,9 @@ Local cRetorno  :=  ""
 Local lRet      :=  .T.
 Local cUrlInt	:=	Alltrim(cUrlDest) 
 Local cPath     :=  Alltrim(cPathDest)
+
+Aadd(aHeader,'Content-Type: application/json')
+Aadd(aHeader,'Token: '+cToken) 
 
 oRest := FWRest():New(cUrlInt)
 

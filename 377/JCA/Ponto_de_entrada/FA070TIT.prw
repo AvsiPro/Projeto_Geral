@@ -11,7 +11,7 @@ User function FA070TIT()
     Private aItemsFI2   := {}
 
     IF cInst == "1" .And. !EMPTY(SE1->E1_IDCNAB) .And. !EMPTY(SE1->E1_NUMBOR)
-        If  MSGYESNO("Titulo se encontra em cobrança bancária. Deseja gerar instrução de cobranaça? ")
+        If  MSGYESNO("Titulo se encontra em cobrança bancária. Deseja gerar instrução de cobrança? ")
             DbselectArea("FI2")
             DbSetOrder(1)//FI2_FILIAL+FI2_CARTEI+FI2_NUMBOR+FI2_PREFIX+FI2_TITULO+FI2_PARCEL+FI2_TIPO+FI2_CODCLI+FI2_LOJCLI+FI2_OCORR+FI2_GERADO
             If !Dbseek(xFilial("FI5")+SE1->E1_SITUACA+SE1->E1_NUMBOR+SE1->E1_PREFIXO+SE1->E1_NUM+SE1->E1_PARCELA+SE1->E1_TIPO+SE1->E1_CLIENTE+SE1->E1_LOJA+"02"+"2")
@@ -46,10 +46,11 @@ Return .T.
 /*/
 Static Function EnvTrck()
 
-Local aArea  := GetArea()
-Local oEnvio := JsonObject():New()
-Local cApiDest := SuperGetMV("TI_APIDES",.F.,"")
-Local cEndPnt := SuperGetMV("TI_ENDPNT",.F.,"")
+Local aArea     := GetArea()
+Local oEnvio    := JsonObject():New()
+Local cApiDest  := SuperGetMV("TI_APIDES",.F.,"https://api.track3r.com.br")
+Local cEndPnt   := SuperGetMV("TI_ENDPNT",.F.,"/v2/api/totvs-protheus/confirma-pagamento-fatura")
+Local cToken    := SuperGetMV("TI_TOKTRK",.F.,'0D901F83-1739-41E3-995B-7303EF0BB19A')
 
 oEnvio['filial']    := SE1->E1_FILIAL 
 oEnvio['prefixo']   := SE1->E1_PREFIXO
@@ -68,7 +69,7 @@ oEnvio['motivo_baixa'] := cMotBx
 
 cRet := oEnvio:toJson()
 
-ApiEnv04(cApiDest,cEndPnt,cRet)
+ApiEnv04(cApiDest,cEndPnt,cRet,cToken)
 
 RestArea(aArea)
 
@@ -86,7 +87,7 @@ Return
     (examples)
     @see (links_or_references)
 /*/
-Static Function ApiEnv04(cUrlDest,cPathDest,cJson)
+Static Function ApiEnv04(cUrlDest,cPathDest,cJson,cToken)
 
 Local oRest 
 Local oJson     :=  ""
@@ -95,6 +96,9 @@ Local cRetorno  :=  ""
 Local lRet      :=  .T.
 Local cUrlInt	:=	Alltrim(cUrlDest) 
 Local cPath     :=  Alltrim(cPathDest)
+
+Aadd(aHeader,'Content-Type: application/json')
+Aadd(aHeader,'Token: '+cToken) 
 
 oRest := FWRest():New(cUrlInt)
 

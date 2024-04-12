@@ -628,40 +628,66 @@ Local aAreaTL   :=  {}
 Local lNegar    :=  .F.
 Local nTam      := len(aList1)
 
-For nX := 1 to len(aList1)
-    If aList1[nX,01]
-        DbSelectArea("STL")
-        DbSetOrder(1)
-        If Dbseek(aList1[nX,02]+aList1[nX,07])
-            While !EOF() .And. STL->TL_FILIAL == aList1[nX,02] .AND. STL->TL_ORDEM == aList1[nX,07]
-                aAreaTL := GetArea()
-                DbSelectArea("SCP")
-                DbSetOrder(1)
-                If Dbseek(aList1[nX,02]+STL->TL_NUMSA+STL->TL_ITEMSA)
-                    If SCP->CP_PREREQU == "S"
-                        lNegar := .T.
-                        exit
+If MsgNoYes("Deseja remover todos?")
+    For nX := 1 to len(aList1)
+        If aList1[nX,01]
+            DbSelectArea("STL")
+            DbSetOrder(1)
+            If Dbseek(aList1[nX,02]+aList1[nX,07])
+                While !EOF() .And. STL->TL_FILIAL == aList1[nX,02] .AND. STL->TL_ORDEM == aList1[nX,07]
+                    aAreaTL := GetArea()
+                    DbSelectArea("SCP")
+                    DbSetOrder(1)
+                    If Dbseek(aList1[nX,02]+STL->TL_NUMSA+STL->TL_ITEMSA)
+                        If SCP->CP_PREREQU == "S"
+                            lNegar := .T.
+                            exit
+                        EndIf
                     EndIf
+                    RestArea(aAreaTL)
+                    DbSkip()
+                EndDo
+            EndIf
+            
+            If !lNegar
+                aList1[nX,02] := strtran(aList1[nX,02],"0","X")
+            EndIf
+        EndIf 
+    Next nX 
+Else 
+    DbSelectArea("STL")
+    DbSetOrder(1)
+    If Dbseek(aList1[oList1:nAt,02]+aList1[oList1:nAt,07])
+        While !EOF() .And. STL->TL_FILIAL == aList1[oList1:nAt,02] .AND. STL->TL_ORDEM == aList1[oList1:nAt,07]
+            aAreaTL := GetArea()
+            DbSelectArea("SCP")
+            DbSetOrder(1)
+            If Dbseek(aList1[oList1:nAt,02]+STL->TL_NUMSA+STL->TL_ITEMSA)
+                If SCP->CP_PREREQU == "S"
+                    lNegar := .T.
+                    exit
                 EndIf
-                RestArea(aAreaTL)
-                DbSkip()
-            EndDo
-        EndIf
-        
-        If !lNegar
-            aList1[nX,02] := strtran(aList1[nX,02],"0","X")
-        EndIf
-    EndIf 
-Next nX 
+            EndIf
+            RestArea(aAreaTL)
+            DbSkip()
+        EndDo
+    EndIf
+    
+    If !lNegar
+        aList1[oList1:nAt,02] := strtran(aList1[oList1:nAt,02],"0","X")
+    EndIf
+endIf 
 
 nX := 1
 
-While nTam <= len(aList1)
+While nTam >= nX .and. len(aList1) >= nX
     If "X" $ aList1[nX,02]
         Adel(aList1,nX)
         Asize(aList1,len(aList1)-1)
+    Else  
+        nX++
     ENDIF
-    nX++
+    
 ENDDO
 
 If len(aList1) < 1
@@ -703,9 +729,7 @@ Static Function veiculos()
 
 Local aArea     := GetArea()
 Local nOpc      :=  0
-
-
-
+Local nX 
 Local cQuery 
 Private lCheck     :=   .F.
 PRIVATE aVeiculos :=  {}
@@ -713,9 +737,14 @@ PRIVATE aVeiculos :=  {}
 PRIVATE oOk        :=    LoadBitmap(GetResources(),'br_verde')  //Controla se o pedido foi alterado ou nao no grid.
 PRIVATE oNo        :=    LoadBitmap(GetResources(),'br_vermelho')
 Private nPrimMrk   :=   1
-Private oDlg1,oGrp1,oBtn1,oBtn2,oList1
+Private oDlg1v,oGrp1v,oBtn1v,oBtn2v,oList1v
 
-cQuery := "SELECT T9_CODBEM,T9_NOME,T9_PLACA,T9_ZFILORI FROM "+RetSQLName("ST9")
+If Empty(aList1[1,2])
+    aList1 := {}
+EndIf 
+
+cQuery := "SELECT T9_CODBEM,T9_NOME,T9_PLACA,T9_ZFILORI,T9_ANOMOD,T9_CHASSI"
+cQuery += " FROM "+RetSQLName("ST9")
 cQuery += " WHERE T9_FILIAL='"+xFilial("ST9")+"' AND T9_CATBEM='4' AND D_E_L_E_T_=' '"
 
 IF Select('TRB') > 0
@@ -733,34 +762,70 @@ While !EOF()
                     TRB->T9_CODBEM,;
                     TRB->T9_NOME,;
                     TRB->T9_PLACA,;
-                    TRB->T9_ZFILORI})
+                    TRB->T9_ZFILORI,;
+                    TRB->T9_ANOMOD,;
+                    TRB->T9_CHASSI})
     Dbskip()
 ENDDO
 
 If len(aVeiculos) > 0
-    oDlg1      := MSDialog():New( 092,232,557,863,"Veiculos",,,.F.,,,,,,.T.,,,.T. )
-        oGrp1      := TGroup():New( 012,016,192,294,"Selecione",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
-        //oBrw1      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{024,024,184,236},,, oGrp1 ) 
-        oList1 	   := TCBrowse():New(024,024,260,165,, {'','Veículo','Descricao','Placa','Filial Veiculo'},;
+    oDlg1v      := MSDialog():New( 092,232,557,863,"Veiculos",,,.F.,,,,,,.T.,,,.T. )
+        oGrp1v      := TGroup():New( 012,016,192,294,"Selecione",oDlg1v,CLR_BLACK,CLR_WHITE,.T.,.F. )
+        //oBrw1      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{024,024,184,236},,, oGrp1v ) 
+        oList1v 	   := TCBrowse():New(024,024,260,165,, {'','Veículo','Descricao','Placa','Filial Veiculo'},;
                                     {20,50,70,50,50},;
-									oGrp1,,,,{|| /*FHelp(oList:nAt)*/},{|| editcol2(oList1:nAt)},,,,,,,.F.,,.T.,,.F.,,,)
-        oList1:SetArray(aVeiculos)
-        oList1:bLine := {||{ IF(aVeiculos[oList1:nAt,01],oOk,oNo),;
-                                aVeiculos[oList1:nAt,02],; 
-                                aVeiculos[oList1:nAt,03],;
-                                aVeiculos[oList1:nAt,04],; 
-                                aVeiculos[oList1:nAt,05]}}
+									oGrp1v,,,,{|| /*FHelp(oList:nAt)*/},{|| editcol2(oList1v:nAt)},,,,,,,.F.,,.T.,,.F.,,,)
+        oList1v:SetArray(aVeiculos)
+        oList1v:bLine := {||{ IF(aVeiculos[oList1v:nAt,01],oOk,oNo),;
+                                aVeiculos[oList1v:nAt,02],; 
+                                aVeiculos[oList1v:nAt,03],;
+                                aVeiculos[oList1v:nAt,04],; 
+                                aVeiculos[oList1v:nAt,05]}}
 
-        oCBox1     := TCheckBox():New( 200,016,"Marcar varios",{|u| If(Pcount()>0,lCheck:=u,lCheck)},oDlg1,048,008,,{|| variaslin(oList1:nAt) },,,CLR_BLACK,CLR_WHITE,,.T.,"",, )
+        oCBox1     := TCheckBox():New( 200,016,"Marcar varios",{|u| If(Pcount()>0,lCheck:=u,lCheck)},oDlg1v,048,008,,{|| variaslin(oList1v:nAt) },,,CLR_BLACK,CLR_WHITE,,.T.,"",, )
         //oCheck1 := TCheckBox():New(046,005,'Mais de um atendente?',{|u|if(PCount()>0,lSegAtend:=u,lSegAtend) },oGrp,100,210,,{|| VldAtend() },,,,,,.T.,,,)
 	
-        oBtn1      := TButton():New( 200,080,"Confirmar",oDlg1,{|x| oDlg1:end(nOpc:=1)},037,012,,,,.T.,,"",,,,.F. )
-        oBtn2      := TButton():New( 200,160,"Cancelar",oDlg1,{|x| oDlg1:end(nOpc:=0)},037,012,,,,.T.,,"",,,,.F. )
+        oBtn1v      := TButton():New( 200,080,"Confirmar",oDlg1v,{|x| oDlg1v:end(nOpc:=1)},037,012,,,,.T.,,"",,,,.F. )
+        oBtn2v      := TButton():New( 200,160,"Cancelar",oDlg1v,{|x| oDlg1v:end(nOpc:=0)},037,012,,,,.T.,,"",,,,.F. )
 
-    oDlg1:Activate(,,,.T.)
+    oDlg1v:Activate(,,,.T.)
 else
     MsgAlert("Não há veículos para atrelar")
 Endif 
+
+If nOpc == 1
+    For nX := 1 to len(aVeiculos)
+        If aVeiculos[nX,01]
+            Aadd(aList1,{.T.,;
+                        aVeiculos[nX,05],;
+                        aVeiculos[nX,02],;
+                        aVeiculos[nX,04],;
+                        aVeiculos[nX,06],;
+                        aVeiculos[nX,07],;
+                        '',;
+                        '',;
+                        '',;
+                        0})
+        endIf 
+    Next nX 
+
+    If len(aList1) < 1
+        Aadd(aList1,{.F.,'','','','','','','','',0})
+    EndIf 
+
+    oList1:SetArray(aList1)
+    oList1:bLine := {||{IF(aList1[oList1:nAt,01],oOk,oNo),; 
+                        aList1[oList1:nAt,02],;
+                        aList1[oList1:nAt,03],;
+                        aList1[oList1:nAt,04],;
+                        aList1[oList1:nAt,05],;
+                        aList1[oList1:nAt,06],;
+                        aList1[oList1:nAt,07],;
+                        aList1[oList1:nAt,08],;
+                        aList1[oList1:nAt,09]}}
+    oList1:refresh()
+    oDlg1:refresh()
+EndIf 
 
 RestArea(aArea)
 
@@ -797,8 +862,8 @@ Else
     endif
 EndIf 
 
-oList1:refresh()
-oDlg1:refresh()
+oList1V:refresh()
+oDlg1V:refresh()
 
 Return
 

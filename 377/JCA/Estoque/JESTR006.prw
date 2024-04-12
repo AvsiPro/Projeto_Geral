@@ -81,13 +81,13 @@ If ( nLastKey==27 )
 	Set Filter to     
 	Return
 Endif
-SetDefault(aReturn,cString)
+/*SetDefault(aReturn,cString)
 If ( nLastKey==27 )
 	dbSelectArea(cString)
 	dbSetOrder(1)
 	Set Filter to
 	Return
-Endif
+Endif*/
 RptStatus({|lEnd| ImpDet(@lEnd,wnRel,cString,nomeprog,Titulo)},Titulo)
 Return(.T.)
 
@@ -209,7 +209,7 @@ Do While ! Eof() .And. SM0->M0_CODIGO == cEmpAnt
 
 	cQuery := "SELECT SD2.D2_FILIAL,SD2.D2_EMISSAO,SD2.D2_DOC,"+ IIF(SerieNfId("SD2",3,"D2_SERIE")<>"D2_SERIE","SD2."+SerieNfId("SD2",3,"D2_SERIE")+","," ")
 	cQuery += "SD2.D2_SERIE,SD2.D2_COD,SD2.D2_TES,SD2.D2_CF,SD2.D2_UM,"
-	cQuery += "SD2.D2_QUANT,SD2.D2_TOTAL,SD2.D2_CUSTO1,SD2.D2_TIPO,SD2.D2_CLIENTE,SD2.D2_LOJA"
+	cQuery += "SD2.D2_QUANT,SD2.D2_TOTAL,SD2.D2_CUSTO1,SD2.D2_TIPO,SD2.D2_CLIENTE,SD2.D2_LOJA,SD2.D2_LOCAL"
 	//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
 	//³Esta rotina foi escrita para adicionar no select os campos         ³
 	//³usados no filtro do usuario quando houver, a rotina acrecenta      ³
@@ -448,6 +448,11 @@ Do While ! Eof() .And. SM0->M0_CODIGO == cEmpAnt
 								aTotais[3]+=(cAliasSD2)->D2_CUSTO1;aTotaisGer[3]+=(cAliasSD2)->D2_CUSTO1
 							EndIf
 						EndIf
+
+						cPrat := Posicione("SBZ",1,(cAliasSD2)->D2_FILIAL+Substr((cAliasSD2)->D2_COD,1,15),"BZ_XLOCALI")
+						Aadd(aAuxExc,(cAliasSD2)->D2_LOCAL)
+						Aadd(aAuxExc,cPrat)
+
 						li++
 						cbCont++
 					EndIf
@@ -717,7 +722,9 @@ Aadd(aHeader,{  'Filial_Origem',;
 				'Data_Emissao',;
 				'Filial_Destino',;
 				'Descricao_Destino',;
-				'Data_Digitação'})
+				'Data_Digitação',;
+				'Armazem Origem',;
+				'Prateleira Origem'})
 
 cDir := cGetFile(, OemToAnsi("Selecione o diretório de destino"), 0, "C:\", .T., GETF_LOCALHARD+GETF_NETWORKDRIVE+GETF_RETDIRECTORY, .F., .F.) 
 

@@ -169,8 +169,9 @@ mv_par10 := 'zzz'
 mv_par12 := 'zzz'
 
 cQuery := "SELECT ZPC_FILIAL,ZPC_REQUIS,ZPC_CODIGO,B1_DESC,B1_EMIN,ZPC_LOCAL,ZPC_QUANT,"
-cQuery += " ZPC_DATA,ZPC_PREFIX,ZPC_SOLICI,RA_NOME,ZPC_STATUS,ZPC_ITEM,ZPC_TIPO,ZPC_ALMOXA"
+cQuery += " ZPC_DATA,ZPC_PREFIX,ZPC_SOLICI,RA_NOME,ZPC_STATUS,ZPC_ITEM,ZPC_TIPO,ZPC_ALMOXA,CP_OP"
 cQuery += " FROM "+RetSQLName("ZPC")+" ZPC"
+cQuery += " INNER JOIN "+RetSQLName("SCP")+" CP ON CP_FILIAL=ZPC_FILIAL AND CP_NUM=ZPC_REQUIS AND CP.D_E_L_E_T_=' '"
 cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD=ZPC_CODIGO AND B1.D_E_L_E_T_=' '"
 cQuery += " LEFT JOIN "+RetSQLName("SRA")+" RA ON RA_FILIAL=ZPC_FILIAL AND RA_MAT=ZPC_SOLICI AND RA.D_E_L_E_T_=' '"
 cQuery += " WHERE ZPC_FILIAL BETWEEN '"+MV_PAR01+"' AND '"+MV_PAR02+"'"
@@ -223,8 +224,9 @@ While CADTMP->(!Eof())
 		Exit
 	Endif
 
+	cPrefixo := Posicione("STJ",1,CADTMP->ZPC_FILIAL+substr(CADTMP->CP_OP,1,6),"TJ_CODBEM")
 	oPrint:Say(li,0055,Alltrim(CADTMP->ZPC_CODIGO),oArial09N)
-	oPrint:Say(li,0290,Alltrim(CADTMP->B1_DESC),oArial09N)
+	oPrint:Say(li,0290,substr(CADTMP->B1_DESC,1,48),oArial09N)
 	oPrint:Say(li,0990,Alltrim(CADTMP->ZPC_REQUIS),oArial09N)
     oPrint:Say(li,1200,cvaltochar(CADTMP->ZPC_QUANT),oArial09N)
     //material planejado
@@ -232,9 +234,9 @@ While CADTMP->(!Eof())
     oPrint:Say(li,1500,CADTMP->ZPC_ALMOXA,oArial09N)
     oPrint:Say(li,1710,CADTMP->ZPC_SOLICI,oArial09N)
     oPrint:Say(li,1970,cvaltochar(stod(CADTMP->ZPC_DATA)),oArial09N)
-    oPrint:Say(li,2160,Alltrim(CADTMP->ZPC_PREFIX),oArial09N)
+    oPrint:Say(li,2160,Alltrim(cPrefixo),oArial09N)
 
-	If len(aAux) > 0
+	If len(aAux) > 0 .And. !Empty(CADTMP->ZPC_TIPO)
 		oPrint:Say(li,2330,substr(aAux[val(CADTMP->ZPC_TIPO)],3),oArial09N)
 	EndIf 
     
@@ -323,7 +325,7 @@ oPrint:Say(265,1230,OemToAnsi(MV_PAR07),oArial11N)
 oPrint:Say(265,1390,OemToAnsi(MV_PAR08),oArial11N)
 oPrint:Say(265,1550,OemToAnsi(MV_PAR09),oArial11N)
 oPrint:Say(265,1700,OemToAnsi(MV_PAR10),oArial11N)
-oPrint:Say(265,1870,OemToAnsi(cvaltochar(MV_PAR03)),oArial11N)
+oPrint:Say(265,1868,OemToAnsi(cvaltochar(MV_PAR03)),oArial11N)
 oPrint:Say(265,2030,OemToAnsi(cvaltochar(MV_PAR04)),oArial11N)
 oPrint:Say(265,2190,OemToAnsi(MV_PAR11),oArial11N)
 oPrint:Say(265,2350,OemToAnsi(MV_PAR12),oArial11N)

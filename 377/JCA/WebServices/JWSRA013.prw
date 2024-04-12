@@ -42,6 +42,7 @@ WsMethod POST WSSERVICE JWSRA013
     Local lGerou        := .T.
     Local cNota         :=  ''
     Private cErrorN     :=  ''
+    Private cCombina    :=  ''
     Private cNfExst     :=  ''
 
     RpcClearEnv()
@@ -78,7 +79,26 @@ WsMethod POST WSSERVICE JWSRA013
 
                 oXml := XmlParser( cXmlRec, "_", @cError, @cWarning )
                 
+                If ValType(oXml) != "O"
+                    cPath := substr(cPathXml,at('cte',cPathXml)-1)
+                    //cPathXml := 'https://tmstransportador.blob.core.windows.net'
+                    //cPath    := '/cte/254/2024/04/03/5761/autorizado/35240410992167003660570010004288841015537085.xml'
+                    cPathXml := substr(cPathXml,1,at('cte',cPathXml)-2)
+                    oRestxml := FWRest():New(cPathXml)
+                    oRestxml:setpath(cPath)
+                            
+                    aHeader :=  {}
+                    
+                    If oRestxml:Get(aHeader)         
+                        cXmlRec := oRestxml:cresult
+
+                        oXml := XmlParser( cXmlRec, "_", @cError, @cWarning )
+
+                    EndIf 
+                EndIf 
+
                 cErrorN := ''
+                cCombina:= ''
                 lgerou := XMLCTE(oXml,@cNota)
                 
                 If lgerou    
@@ -86,9 +106,9 @@ WsMethod POST WSSERVICE JWSRA013
                     AADD( oCampo['DADOS'], JsonObject():New() )
                     oCampo['DADOS'][nLinha]["Status"] := .T.
                     oCampo['DADOS'][nLinha]["Nota"]   := cNota
-                    
+                    oCampo['DADOS'][nLinha]["Motivo"] := cCombina
                     nLinha++
-                    
+                
                 else
                     AADD( oCampo['DADOS'], JsonObject():New() )
                     oCampo['DADOS'][nLinha]["Status"] := .F.
@@ -218,8 +238,23 @@ aSm0 := FWLoadSM0()
 nPos := Ascan(aSM0,{|x| Alltrim(x[18]) == Alltrim(cCNPJ_FIL)})			
 //nPos := 1
 cFilorig := aSm0[nPos,02] //SM0->M0_CODFIL
-cEstFil  := Alltrim(aSm0[nPos,04])
-//CFILANT  := cEstFil 
+cfilant := cFilorig
+//cEstFil  := Alltrim(aSm0[nPos,04])
+/*If Empty(cEstFil)
+    If cfilant <> cFilorig
+        CFILANT  := cFilorig
+        RpcClearEnv()
+        RpcSetType(3)
+        RPCSetEnv('01','00020087')
+    EndIF 
+ENDIF  */
+
+If XmlChildEx( oXml:_CTEPROC:_CTE:_INFCTE:_EMIT, "_ENDEREMIT" ) != Nil
+    cEstFil := UPPER(oxml:_CTEPROC:_CTE:_INFCTE:_EMIT:_ENDEREMIT:_UF:TEXT )
+EndIF 
+
+
+
 
 cNatOp	:= PadR(oXml:_cteProc:_cte:_Infcte:_IDE:_NATOP:Text,45," ")
 
@@ -293,7 +328,7 @@ For nCont := 1 to len(aCSTTipo)
 Next nCont
 
 If !Empty(cEstIni) .And. !Empty(cEstFim) .And. !Empty(cCstCte)
-    cTesCTe := BuscaTes(cEstFil,cCfopFrt,cEstIni,cEstFim,cCstCte,cMunIni,cMunFim,cEstTom)
+    cTesCTe := BuscaTes(cEstFil,cCfopFrt,cEstIni,cEstFim,cCstCte,cMunIni,cMunFim,cEstTom,cFilorig,nTotalMerc)
 EndIf 
 
 lRet := GerarCte()
@@ -340,12 +375,15 @@ Return cRet
     (examples)
     @see (links_or_references)
 /*/
-Static Function BuscaTes(cEstFil,cCfopFrt,cEstIni,cEstFim,cCstCte,cMunIni,cMunFim,cEstTom)
+Static Function BuscaTes(cEstFil,cCfopFrt,cEstIni,cEstFim,cCstCte,cMunIni,cMunFim,cEstTom,cFilorig,nTotalMerc)
 
 Local cRet := '501'
 Local lIntEst := cEstIni == cEstFim //Operação interestadual
 //Local lIntMun := cMunIni == cMunFim //Operação intermunicipal
 Local cQuery 
+
+cCombina := 'Filial - '+cFilorig+' / Est Fil - '+cEstFil+' / CFOP - '+cCfopFrt+' / Est Ini - '+cEstIni+' / Est Fim - '+cEstFim
+cCombina += ' / CST - '+cCstCte+' / cMunIni - '+cMunIni+' / cMunFim - '+cMunFim+' / Est Tom '+cEstTom + ' / Valor - '+cvaltochar(nTotalMerc)
 
 cQuery := "SELECT ZPG_TES "
 cQuery += " FROM "+RetSQLName("ZPG")
@@ -373,8 +411,10 @@ DbSelectArea("TRB")
 
 If !Empty(TRB->ZPG_TES)
     cRet := TRB->ZPG_TES 
+    cCombina += ' / TES - '+TRB->ZPG_TES 
 Else 
     cRet := '501'
+    cCombina += ' / TES - Nao encontrada combinação' 
 EndIf 
 
 Return(cRet)
@@ -445,6 +485,13 @@ If Select("SM0") == 0
     RpcSetType(3)
     RPCSetEnv("01","00020087")
 EndIf
+
+aSm0 := FWLoadSM0()
+nPos := Ascan(aSM0,{|x| Alltrim(x[18]) == Alltrim(cCNPJ_FIL)})			
+//nPos := 1
+cFilorig := aSm0[nPos,02] //SM0->M0_CODFIL
+cEstFil  := Alltrim(aSm0[nPos,04])
+CFILANT  := cFilorig 
 
 BuscaTes('MG','6357','MG','RJ','00','3151206','3303500','MG')
 

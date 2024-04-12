@@ -22,7 +22,7 @@ For nX := 1 To Len(aPropostas)
             //C8_FILIAL+C8_NUM+C8_FORNECE+C8_LOJA+C8_ITEM+C8_NUMPRO
             If Len(aPropostas[nX][nY][1]) > 0
 
-                cConteudo := CalcImp(SC8->C8_NUM,1,aPropostas[1,nY,1,1],aPropostas[1,nY,1,2],aPropostas[1,nY,1,3])
+                cConteudo := CalcImp(SC8->C8_NUM,1,aPropostas[1,nY,1,1],aPropostas[1,nY,1,2],aPropostas[1,nY,1,3],aPropostas[nX][nY][2][nz][2])
                 AADD(aPropostas[nX][nY][2][nZ],cConteudo )
                 
             Else
@@ -60,7 +60,7 @@ Return aRetorno
     (examples)
     @see (links_or_references)
 /*/
-Static Function CalcImp(cNumPed,nTipo,cFornec,cLoja,cNomFor)
+Static Function CalcImp(cNumPed,nTipo,cFornec,cLoja,cNomFor,cItem)
 
 Local aArea     := GetArea()
 Local aAreaC5   := SF1->(GetArea())
@@ -108,6 +108,9 @@ If nTipo == 1
     Else 
         cQryIte += "    AND C8_FORNOME = '"+cNomFor+"' "
     EndIf 
+
+    cQryIte += "  AND C8_ITEM='"+cItem+"'"
+
     cQryIte += "    AND SC8.D_E_L_E_T_ = ' ' "
     cQryIte += " ORDER BY "
     cQryIte += "    C8_ITEM "
@@ -201,7 +204,8 @@ If nTipo == 1
                     0)                                     // 16-RecNo do SF4
             
         nValSOL := MaFisRet(nLinha, "IT_VALSOL") 
-        nValCMP += MaFisRet(nLinha, "IT_VALCMP")  //difal
+        nValCMP := MaFisRet(nLinha, "IT_VALCMP")  //difal
+        nTotItem := MaFisRet(1,"IT_TOTAL")
         nLinha++
         QRY_ITE->(DbSkip())
     EndDo
@@ -219,7 +223,7 @@ If nTipo == 1
 EndIf
     
 //Atualiza o retorno
-nValPed := nTotNF + nTotIPI + nTotFrete + nTotISS + nValCMP
+nValPed := nTotItem + nValCMP + nValSOL//nTotNF + nTotIPI + nTotFrete + nTotISS + nValCMP
 
 If lCriaFor 
     DbSelectArea("SA2")

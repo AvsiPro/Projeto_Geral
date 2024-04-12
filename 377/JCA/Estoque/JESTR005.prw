@@ -1050,12 +1050,14 @@ If !Empty(aFilsCalc)
 				cProdAnt  := (cAliasTop)->PRODUTO
 				cLocalAnt := alltrim(SB2->B2_LOCAL)
 				cDescric  := Posicione("SB1",1,xFilial("SB1")+cProdAnt,"B1_DESC")
+				cFabric   := Posicione("SB1",1,xFilial("SB1")+cProdAnt,"B1_FABRIC")
 				lFirst:=.F.
+				cPratel   := Posicione("SBZ",1,SB2->B2_FILIAL+(cAliasTop)->PRODUTO,"BZ_XLOCALI")
 
 				MR900ImpS1(@aSalAtu,cAliasTop,.T.,lVEIC,lCusFil,lCusEmp,oSection1,oSection2,oReport,aFils)
 
 				If Ascan(aSldDia,{|x| x[1]+x[3] == cLocalAnt+cProdAnt}) == 0
-					Aadd(aSldDia,{cLocalAnt,'',cProdAnt,cDescric,'',aSalAtu[1],0,0,0})
+					Aadd(aSldDia,{cLocalAnt,cPratel,cProdAnt,cDescric,cFabric,aSalAtu[1],0,0,0})
 				EndIf 
 
 				oSection3:Init()
@@ -1292,9 +1294,10 @@ If !Empty(aFilsCalc)
 			//aSldDia
 			For nSldDia := 1 to len(aSldDia)
 				oSection3:Cell("cLocal"):SetValue(aSldDia[nSldDia,01])
+				oSection3:Cell("cPrateleira"):SetValue(aSldDia[nSldDia,02])
 				oSection3:Cell("cProduto"):SetValue(aSldDia[nSldDia,03])
 				oSection3:Cell("cDescric"):SetValue(aSldDia[nSldDia,04])
-				oSection3:Cell("cDoc"):SetValue("")
+				oSection3:Cell("cDoc"):SetValue(aSldDia[nSldDia,05])
 				oSection3:Cell("nENTQtd"):SetValue(aSldDia[nSldDia,06])
 				oSection3:Cell("nENTCus"):SetValue(aSldDia[nSldDia,07])
 				oSection3:Cell("nSAIQtd"):SetValue(aSldDia[nSldDia,08])

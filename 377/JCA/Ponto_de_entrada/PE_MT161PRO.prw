@@ -15,17 +15,31 @@ For nCont := 1 to len(aRet[1])
         nSoma := 0
         For nX := 2 to len(aRet[1,nCont])
             For nJ := 1 to len(aRet[1,nCont,nX])
-                If aRet[1,nCont,nX,nJ,1]
+                /*If aRet[1,nCont,nX,nJ,1]
                     nSoma += aRet[1,nCont,nX,nJ,4]
-                EndIf
+                EndIf*/
+                 nPosP := Ascan(aProdPai,{|x| alltrim(x[1]) == substr(aRet[1,nCont,nX,nJ,3],1,8)})
+                If nPosP > 0
+                    If aProdPai[nPosP,02] > aRet[1,nCont,nX,nJ,4]
+                        aProdPai[nPosP,02] := aRet[1,nCont,nX,nJ,4]
+                    Else 
+                        aRet[1,nCont,nX,nJ,1] := .F.
+                    EndIf 
+                Else    
+                    Aadd(aProdPai,{substr(aRet[1,nCont,nX,nJ,3],1,8),aRet[1,nCont,nX,nJ,4]})
+                EndIf 
             Next nJ
         Next nX
+
+       
+        Aeval(aProdPai,{|x| nSoma+= x[2]})
 
         aRet[1,nCont,1,7] := nSoma
         CalcImp(SC8->C8_NUM,1,aRet[1,nCont,1,1],aRet[1,nCont,1,2])
     EndIf 
 Next nCont 
 
+aProdPai := {}
 //Soma para itens derrotados que o fornecedor não tenha nenhum item com medalha
 For nCont := 1 to len(aRet[1])
     If len(aRet[1,nCont,1]) > 6

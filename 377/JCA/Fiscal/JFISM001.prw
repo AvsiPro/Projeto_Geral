@@ -60,7 +60,8 @@ SetPrvt("oBrw2","oGet6","oGet7","oGet8","oGet9","oBtn2","oBtn4","oBtn5")
 
 If Select("SM0") == 0
     RpcSetType(3)
-    RPCSetEnv("01","00020087")
+    //RPCSetEnv("01","00020087")
+    RPCSetEnv("T1","D MG 01")
 EndIf
 
 aSm0 := FWLoadSM0()
@@ -85,9 +86,10 @@ While !EOF() .And. SX5->X5_TABELA == '12'
 EndDo 
 
 Aadd(aEstados,'Todos')
+Aadd(aEstados,'Todos Exceto Est.Filial')
 
-nEstado := len(aEstados)
-nEstado2 := len(aEstados)
+nEstado := len(aEstados)-1
+nEstado2 := len(aEstados)-1
 
 Aadd(aList1,{.F.,'','','','','','','',0})
 Aadd(aList2,{.F.,'','','','','','','',0})

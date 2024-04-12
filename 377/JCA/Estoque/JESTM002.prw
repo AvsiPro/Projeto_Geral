@@ -66,8 +66,8 @@ oDlg1      := MSDialog():New( 092,232,809,1666,"Inventário Rotativo",,,.F.,,,,,,
         //oBrw1      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{052,012,324,700},,, oGrp2 ) 
         oList1    := TCBrowse():New(052,012,685,270,, {'','Local','Prateleira','Material','Descrição','Marca','Cod.Original',;
                                                     'Qtd Inicial','Qtd Entrada','Qtd Saida','Qtd Atual',;
-                                                    'Contagem 1','Contagem 2','Contagem 3','Divergência'},;
-                                        {10,20,30,45,80,30,35,30,30,30,30,30,30,30,30},;
+                                                    'Contagem 1','Contagem 2','Contagem 3','Divergência','Diverg. Valor','% Diverg.'},;
+                                        {10,20,30,45,80,30,35,30,30,30,30,30,30,30,30,30,30},;
                                         oGrp1,,,,{|| /*FHelp(oList1:nAt)*/},{|| editped(oList1:nAt,1)},, ,,,  ,,.F.,,.T.,,.F.,,,)
         oList1:SetArray(aList1)
         oList1:bLine := {||{iF(aList1[oList1:nAt,01],oOk,oNo),; 
@@ -84,7 +84,9 @@ oDlg1      := MSDialog():New( 092,232,809,1666,"Inventário Rotativo",,,.F.,,,,,,
                             aList1[oList1:nAt,12],;
                             aList1[oList1:nAt,13],;
                             aList1[oList1:nAt,14],;
-                            aList1[oList1:nAt,15]}}
+                            aList1[oList1:nAt,15],;
+                            aList1[oList1:nAt,18],;
+                            aList1[oList1:nAt,19]}}
 
         //oBtn1      := TButton():New( 332,664,"oBtn1",oDlg1,{||oDlg1:end()},037,012,,,,.T.,,"",,,,.F. )
         //Botões diversos
@@ -565,6 +567,7 @@ BeginSql Alias cAliasTop
             SB1.B1_DESC,      		//-- 06 DESCR
             SB1.B1_POSIPI, 		//-- 07
             SB1.B1_ZMARCA,
+            SB1.B1_FABRIC,
             D1_SEQCALC SEQCALC,    //-- 08
             D1_DTDIGIT DTDIGIT,		//-- 09 DTDIGIT
             D1_TES TES,			//-- 10 TES
@@ -607,6 +610,7 @@ BeginSql Alias cAliasTop
             SB1.B1_DESC,
             SB1.B1_POSIPI,
             SB1.B1_ZMARCA,
+            SB1.B1_FABRIC,
             D2_SEQCALC,
             D2_EMISSAO,
             D2_TES,
@@ -648,6 +652,7 @@ BeginSql Alias cAliasTop
                 SB1.B1_DESC,
                 SB1.B1_POSIPI,
                 SB1.B1_ZMARCA,
+                SB1.B1_FABRIC,
                 D3_SEQCALC,
                 D3_EMISSAO,
                 D3_TM,
@@ -698,14 +703,14 @@ While !(cAliasTop)->(Eof())
 
     If nPosic1 == 0
         MR900ImpS1(@aSalAtu,cAliasTop,.T.)
-        
+        cPrat := Posicione("SBZ",1,xFilial("SBZ")+(cAliasTop)->PRODUTO,"BZ_XLOCALI")
         Aadd(aList1,{ .T.,;
                     (cAliasTop)->ARMAZEM,;
-                    '',;
+                    cPrat,;
                     (cAliasTop)->PRODUTO,;
                     (cAliasTop)->B1_DESC,;
                     alltrim(Posicione("ZPM",1,xFilial("ZPM")+(cAliasTop)->B1_ZMARCA,"ZPM_DESC")),;
-                    'CODIGO_ORIGINAL',;
+                    (cAliasTop)->B1_FABRIC,;
                     aSalAtu[1],;
                     nQtd1,;
                     nQtd2,;
@@ -715,7 +720,9 @@ While !(cAliasTop)->(Eof())
                     0,;
                     0,;
                     0,;
-                    ''})
+                    '',;
+                    0,;
+                    0})
     Else 
         aList1[nPosic1,09] += nQtd1
         aList1[nPosic1,10] += nQtd2
@@ -750,13 +757,15 @@ If !lSoMov
 
     While !EOF()
         If ascan(aList1,{|x| x[4] == TRB->B1_COD}) == 0
+            cPrat := Posicione("SBZ",1,xFilial("SBZ")+(cAliasTop)->PRODUTO,"BZ_XLOCALI")
+        
             Aadd(aList1,{ .T.,;
                             cLocIn,;
-                            '',;
+                            cPrat,;
                             TRB->B1_COD,;
                             TRB->B1_DESC,;
                             alltrim(TRB->ZPM_DESC),;
-                            'CODIGO_ORIGINAL',;
+                            TRB->B1_FABRIC,;
                             0,;
                             0,;
                             0,;
@@ -766,7 +775,9 @@ If !lSoMov
                             0,;
                             0,;
                             0,;
-                            ''})
+                            '',;
+                            0,;
+                            0})
         endif
         Dbskip()
     EndDo 
@@ -802,7 +813,9 @@ oList1:bLine := {||{iF(aList1[oList1:nAt,01],oOk,oNo),;
                     aList1[oList1:nAt,12],;
                     aList1[oList1:nAt,13],;
                     aList1[oList1:nAt,14],;
-                    aList1[oList1:nAt,15]}}
+                    aList1[oList1:nAt,15],;
+                    aList1[oList1:nAt,18],;
+                    aList1[oList1:nAt,19]}}
 
 oList1:refresh()
 oDlg1:refresh()
@@ -935,7 +948,7 @@ Local cCodUsr := ''
 
 aList1 := {}
 
-cQuery := "SELECT ZPE.R_E_C_N_O_ AS RECZPE,B1_ZMARCA,ZPM_DESC,B1_DESC,ZPE.* "
+cQuery := "SELECT ZPE.R_E_C_N_O_ AS RECZPE,B1_ZMARCA,ZPM_DESC,B1_DESC,B1_FABRIC,ZPE.* "
 cQuery += " FROM "+RetSqlName("ZPE")+" ZPE "
 cQuery += " INNER JOIN "+RetSqlName("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD=ZPE_PRODUT AND B1.D_E_L_E_T_=' '"
 cQuery += " LEFT JOIN "+RetSqlName("ZPM")+" ZPM ON ZPM_FILIAL='"+xFilial("ZPM")+"' AND ZPM_COD=B1_ZMARCA AND ZPM.D_E_L_E_T_=' '"
@@ -960,14 +973,17 @@ While !EOF()
     EndIf 
 
     cCodUsr := TRB->ZPE_CODUSU
+    cPrat := Posicione("SBZ",1,xFilial("SBZ")+TRB->ZPE_PRODUT,"BZ_XLOCALI")
+
+    cVlrCm := Posicione("SB2",1,xFilial("SB2")+TRB->ZPE_PRODUT+TRB->ZPE_LOCAL,"B2_CM1")
 
     Aadd(aList1,{   .T.,;
                     TRB->ZPE_LOCAL,;
-                    TRB->ZPE_PRATEL,;
+                    cPrat,;
                     TRB->ZPE_PRODUT,;
                     TRB->B1_DESC,;
                     TRB->ZPM_DESC,;
-                    'CODIGO_ORIGINAL',;
+                    TRB->B1_FABRIC,;
                     TRB->ZPE_SLDINI,;
                     TRB->ZPE_QTDENT,;
                     TRB->ZPE_QTDSAI,;
@@ -977,7 +993,9 @@ While !EOF()
                     TRB->ZPE_CONTA3,;
                     TRB->ZPE_RESULT,;
                     TRB->RECZPE,;
-                    TRB->ZPE_STATUS})
+                    TRB->ZPE_STATUS,;
+                    cVlrCm*TRB->ZPE_RESULT,;
+                    If(nContag>3,3,(TRB->ZPE_RESULT * &('TRB->ZPE_CONTA'+cvaltochar(nContag)))/100)})
     Dbskip()
 EndDo 
 
@@ -1007,7 +1025,9 @@ oList1:bLine := {||{iF(aList1[oList1:nAt,01],oOk,oNo),;
                     aList1[oList1:nAt,12],;
                     aList1[oList1:nAt,13],;
                     aList1[oList1:nAt,14],;
-                    aList1[oList1:nAt,15]}}
+                    aList1[oList1:nAt,15],;
+                    Transform(aList1[oList1:nAt,18],"@E 999,999.99"),;
+                    aList1[oList1:nAt,19]}}
 
 oList1:refresh()
 oDlg1:refresh()

@@ -316,6 +316,10 @@ Static Function ReportPrint(oReport)
 	Local nFils     := 0
 	LOCAL aProdPai := {}
     Local cBkpCPai  :=  ''
+	
+	Private aAuxPrt	:=	{}
+	Private aPrintT	:=	{}
+
 	PRIVATE nOrdPai := nOrdem
 	Private bBloco   := { |nV,nX| Trim(nV)+IIf(Valtype(nX)='C',"",Str(nX,1)) }
 
@@ -931,6 +935,8 @@ Static Function ReportPrint(oReport)
 
 				TcSetField(cAliasTop,DTDIGIT ,"D", TamSx3("D1_DTDIGIT")[1], TamSx3("D1_DTDIGIT")[2] )
 
+                dbSelectArea(cAliasTop)
+
 				While !oReport:Cancel() .And. !(cAliasTop)->(Eof())
 
 					If oReport:Cancel()
@@ -938,10 +944,6 @@ Static Function ReportPrint(oReport)
 					EndIf
 
 					oReport:IncMeter()
-
-					//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-					//³Executa filtro de usuario - SB1					 ³
-					//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
 
 					If !Empty(cFilUsrSB1)
 						DbSelectArea("SB1")
@@ -957,7 +959,8 @@ Static Function ReportPrint(oReport)
                     //Produto pai
                     IF LEN(ALLTRIM((cAliasTop)->PRODUTO)) > 8
                         CPRODPAI := Posicione("SB1",1,xFilial("SB1")+(cAliasTop)->PRODUTO,"B1_XCODPAI")
-                        If Ascan(aProdPai,{|x| Alltrim(x[1]) == Alltrim(CPRODPAI)}) == 0 .And. !Empty(CPRODPAI)
+                        //aRetPai := pesqpai(CPRODPAI)
+						If Ascan(aProdPai,{|x| Alltrim(x[1]) == Alltrim(CPRODPAI)}) == 0 .And. !Empty(CPRODPAI)
                             If len(aProdPai) > 0 .And. cBkpCPai <> Alltrim(CPRODPAI) 
                                 iF  !aProdPai[len(aProdPai),05]
                                     totPai(aProdPai,oSection1,oSection3,oReport)
@@ -974,10 +977,6 @@ Static Function ReportPrint(oReport)
 
                         cBkpCPai := ALLTRIM((cAliasTop)->PRODUTO)
                     EndIf 
-
-                    //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-                    //³Executa filtro de usuario - SB2					 ³
-                    //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
 
                     If !Empty(cFilUsrSB2)
                         DbSelectArea("SB2")
@@ -1015,6 +1014,8 @@ Static Function ReportPrint(oReport)
                         oReport:IncMeter()
                         lContinua := .F.
                         lImpSMov  := .F.
+						aAuxPrt   := {}
+
                         If Alltrim((cAliasTop)->ARQ) $ "SD1/SD2"
                             lFirst:=.T.
                         ElseIf Alltrim((cAliasTop)->ARQ) == "SD3"
@@ -1061,23 +1062,42 @@ Static Function ReportPrint(oReport)
                                             oSection3:Cell("dDtMov"):SetValue(STOD(aDadosTran[6]))
                                             oSection3:Cell("cTES"):SetValue(aDadosTran[1])
                                             oSection3:Cell("cLocal"):SetValue(aDadosTran[15])
+
+											Aadd(aAuxPrt,STOD(aDadosTran[6]))
+											Aadd(aAuxPrt,aDadosTran[1])
+											Aadd(aAuxPrt,aDadosTran[15])
+											
+
                                             If ( cPaisLoc=="BRA" )
                                                 oSection3:Cell("cCF"):Show()
                                                 If	lInverteMov
                                                     oSection3:Cell("cCF"):SetValue(Substr(aDadosTran[7],1,3)+"*")
+
+													Aadd(aAuxPrt,Substr(aDadosTran[7],1,3)+"*")
                                                 Else
                                                     oSection3:Cell("cCF"):SetValue(aDadosTran[7])
+
+													Aadd(aAuxPrt,aDadosTran[7])
                                                 EndIf
                                             Else
                                                 oSection3:Cell("cCF"):Hide()
                                                 oSection3:Cell("cCF"):SetValue("   ")
+
+												Aadd(aAuxPrt,"   ")
                                             EndIf
                                             If mv_par09 $ "Ss"
                                                 oSection3:Cell("cDoc"):SetValue(aDadosTran[8])
+
+												Aadd(aAuxPrt,aDadosTran[8])
                                             Else
                                                 oSection3:Cell("cDoc"):SetValue(aDadosTran[9])
+
+												Aadd(aAuxPrt,aDadosTran[9])
                                             Endif
                                         EndIf
+
+
+
                                         If aDadosTran[1] <= "500"
                                             oSection3:Cell("nENTQtd"):Show()
                                             oSection3:Cell("nENTCus"):Show()
@@ -1092,6 +1112,11 @@ Static Function ReportPrint(oReport)
                                             oSection3:Cell("nSAIQtd"):SetValue(0)
                                             oSection3:Cell("nSAICus"):SetValue(0)
 
+											Aadd(aAuxPrt,aDadosTran[2])
+											Aadd(aAuxPrt,aDadosTran[3])
+											Aadd(aAuxPrt,aDadosTran[3] / aDadosTran[2])
+											Aadd(aAuxPrt,0)
+											Aadd(aAuxPrt,0)
 
                                             
                                             nPosPai := Ascan(aProdPai,{|x| alltrim(x[1]) == substr((cAliasTOP)->PRODUTO,1,8)})
@@ -1117,6 +1142,13 @@ Static Function ReportPrint(oReport)
                                             oSection3:Cell("nSAIQtd"):SetValue(aDadosTran[2])
                                             oSection3:Cell("nSAICus"):SetValue(aDadosTran[3])
 
+
+											Aadd(aAuxPrt,0)
+											Aadd(aAuxPrt,0)
+											Aadd(aAuxPrt,aDadosTran[3] / aDadosTran[2])
+											Aadd(aAuxPrt,aDadosTran[2])
+											Aadd(aAuxPrt,aDadosTran[3])
+
                                             nPosPai := Ascan(aProdPai,{|x| alltrim(x[1]) == substr((cAliasTOP)->PRODUTO,1,8)})
                                             
                                             If nPosPai > 0
@@ -1139,22 +1171,40 @@ Static Function ReportPrint(oReport)
                             oSection3:Cell("dDtMov"):SetValue(STOD(DTDIGIT))
                             oSection3:Cell("cTES"):SetValue(TES)
                             oSection3:Cell("cLocal"):SetValue(ARMLOC)
+
+							Aadd(aAuxPrt,STOD(DTDIGIT))
+							Aadd(aAuxPrt,TES)
+							Aadd(aAuxPrt,ARMLOC)
+
                             If ( cPaisLoc=="BRA" )
                                 oSection3:Cell("cCF"):Show()
                                 oSection3:Cell("cCF"):SetValue(CF)
+								
+								Aadd(aAuxPrt,CF)
+
                                 If	lInverteMov
                                     oSection3:Cell("cCF"):SetValue(Substr(CF,1,3)+"*")
+
+									Aadd(aAuxPrt,Substr(CF,1,3)+"*")
                                 Else
                                     oSection3:Cell("cCF"):SetValue(CF)
+
+									Aadd(aAuxPrt,CF)
                                 EndIf
                             Else
                                 oSection3:Cell("cCF"):Hide()
                                 oSection3:Cell("cCF"):SetValue("   ")
+								Aadd(aAuxPrt," ")
                             EndIf
                             If mv_par09 $ "Ss"
                                 oSection3:Cell("cDoc"):SetValue(SEQUENCIA)
+								
+								Aadd(aAuxPrt,SEQUENCIA)
+
                             Else
                                 oSection3:Cell("cDoc"):SetValue(DOCUMENTO)
+
+								Aadd(aAuxPrt,DOCUMENTO)
                             Endif
                         EndIf
 
@@ -1164,9 +1214,15 @@ Static Function ReportPrint(oReport)
                             If (cAliasTOP)->TES <= "500" .And. !lDev
                                 If (cAliasTOP)->TIPONF != "C"
                                     oSection3:Cell("nCusMov"):SetValue((cAliasTOP)->CUSTO / (cAliasTOP)->QUANTIDADE)
+
+									Aadd(aAuxPrt,(cAliasTOP)->CUSTO / (cAliasTOP)->QUANTIDADE)
+
                                     oSection3:Cell("nCusMov"):Show()
                                 Else
                                     oSection3:Cell("nCusMov"):SetValue(0)
+									
+									Aadd(aAuxPrt,0)
+
                                     oSection3:Cell("nCusMov"):Hide()
                                 EndIf
 
@@ -1176,10 +1232,17 @@ Static Function ReportPrint(oReport)
                                 oSection3:Cell("nENTQtd"):SetValue((cAliasTOP)->QUANTIDADE)
                                 oSection3:Cell("nENTCus"):SetValue((cAliasTOP)->CUSTO)
 
+								Aadd(aAuxPrt,(cAliasTOP)->QUANTIDADE)
+								Aadd(aAuxPrt,(cAliasTOP)->CUSTO)
+
                                 oSection3:Cell("nSAIQtd"):Hide()
                                 oSection3:Cell("nSAICus"):Hide()
                                 oSection3:Cell("nSAIQtd"):SetValue(0)
                                 oSection3:Cell("nSAICus"):SetValue(0)
+
+								Aadd(aAuxPrt,0)
+								Aadd(aAuxPrt,0)
+
 
                                 nPosPai := Ascan(aProdPai,{|x| alltrim(x[1]) == substr((cAliasTOP)->PRODUTO,1,8)})
                                             
@@ -1194,9 +1257,15 @@ Static Function ReportPrint(oReport)
                             Else
                                 If (cAliasTOP)->TIPONF != "C"
                                     oSection3:Cell("nCusMov"):SetValue((cAliasTOP)->CUSTO / (cAliasTOP)->QUANTIDADE)
+
+									Aadd(aAuxPrt,(cAliasTOP)->CUSTO / (cAliasTOP)->QUANTIDADE)
+
                                     oSection3:Cell("nCusMov"):Show()
                                 Else
                                     oSection3:Cell("nCusMov"):SetValue(0)
+
+									Aadd(aAuxPrt,0)
+
                                     oSection3:Cell("nCusMov"):Hide()
                                 EndIf
 
@@ -1205,12 +1274,18 @@ Static Function ReportPrint(oReport)
                                 oSection3:Cell("nENTQtd"):SetValue(0)
                                 oSection3:Cell("nENTCus"):SetValue(0)
 
+								Aadd(aAuxPrt,0)
+								Aadd(aAuxPrt,0)
+								
                                 oSection3:Cell("nSAIQtd"):Show()
                                 oSection3:Cell("nSAICus"):Show()
 
                                 If lDev
                                     oSection3:Cell("nSAIQtd"):SetValue((cAliasTOP)->QUANTIDADE * -1)
                                     oSection3:Cell("nSAICus"):SetValue((cAliasTOP)->CUSTO * -1)
+
+									Aadd(aAuxPrt,(cAliasTOP)->QUANTIDADE * -1)
+									Aadd(aAuxPrt,(cAliasTOP)->CUSTO * -1)
 
                                     nPosPai := Ascan(aProdPai,{|x| alltrim(x[1]) == substr((cAliasTOP)->PRODUTO,1,8)})
                                     
@@ -1225,6 +1300,9 @@ Static Function ReportPrint(oReport)
                                 Else
                                     oSection3:Cell("nSAIQtd"):SetValue((cAliasTOP)->QUANTIDADE)
                                     oSection3:Cell("nSAICus"):SetValue((cAliasTOP)->CUSTO)
+
+									Aadd(aAuxPrt,(cAliasTOP)->QUANTIDADE)
+									Aadd(aAuxPrt,(cAliasTOP)->CUSTO)
 
                                     nPosPai := Ascan(aProdPai,{|x| alltrim(x[1]) == substr((cAliasTOP)->PRODUTO,1,8)})
                                     
@@ -1247,6 +1325,9 @@ Static Function ReportPrint(oReport)
                                     oSection3:Cell("nENTQtd"):SetValue((cAliasTOP)->QUANTIDADE * -1)
                                     oSection3:Cell("nENTCus"):SetValue((cAliasTOP)->CUSTO * -1)
 
+									Aadd(aAuxPrt,(cAliasTOP)->QUANTIDADE * -1)
+									Aadd(aAuxPrt,(cAliasTOP)->CUSTO * -1)
+
                                     nPosPai := Ascan(aProdPai,{|x| alltrim(x[1]) == substr((cAliasTOP)->PRODUTO,1,8)})
                                     
                                     If nPosPai > 0
@@ -1263,6 +1344,9 @@ Static Function ReportPrint(oReport)
                                     oSection3:Cell("nENTQtd"):SetValue((cAliasTOP)->QUANTIDADE)
                                     oSection3:Cell("nENTCus"):SetValue((cAliasTOP)->CUSTO)
 
+									Aadd(aAuxPrt,(cAliasTOP)->QUANTIDADE)
+									Aadd(aAuxPrt,(cAliasTOP)->CUSTO)
+
                                     nPosPai := Ascan(aProdPai,{|x| alltrim(x[1]) == substr((cAliasTOP)->PRODUTO,1,8)})
                                     
                                     If nPosPai > 0
@@ -1276,21 +1360,37 @@ Static Function ReportPrint(oReport)
 
                                 If (cAliasTOP)->TIPONF != "C"
                                     oSection3:Cell("nCusMov"):SetValue((cAliasTOP)->CUSTO / (cAliasTOP)->QUANTIDADE)
+
+									Aadd(aAuxPrt,(cAliasTOP)->CUSTO / (cAliasTOP)->QUANTIDADE)
+
                                     oSection3:Cell("nCusMov"):Show()
                                 Else
                                     oSection3:Cell("nCusMov"):SetValue(0)
+									
+									Aadd(aAuxPrt,0)
+
                                     oSection3:Cell("nCusMov"):Hide()
                                 EndIf
                                 oSection3:Cell("nSAIQtd"):Hide()
                                 oSection3:Cell("nSAICus"):Hide()
                                 oSection3:Cell("nSAIQtd"):SetValue(0)
                                 oSection3:Cell("nSAICus"):SetValue(0)
+
+								Aadd(aAuxPrt,0)
+								Aadd(aAuxPrt,0)
+
                             Else
                                 If (cAliasTOP)->TIPONF != "C"
                                     oSection3:Cell("nCusMov"):SetValue((cAliasTOP)->CUSTO / (cAliasTOP)->QUANTIDADE)
+
+									Aadd(aAuxPrt,(cAliasTOP)->CUSTO / (cAliasTOP)->QUANTIDADE)
+
                                     oSection3:Cell("nCusMov"):Show()
                                 Else
                                     oSection3:Cell("nCusMov"):SetValue(0)
+
+									Aadd(aAuxPrt,0)
+
                                     oSection3:Cell("nCusMov"):Hide()
                                 EndIf
 
@@ -1299,11 +1399,18 @@ Static Function ReportPrint(oReport)
                                 oSection3:Cell("nENTQtd"):SetValue(0)
                                 oSection3:Cell("nENTCus"):SetValue(0)
 
+								Aadd(aAuxPrt,0)
+								Aadd(aAuxPrt,0)
+								
                                 oSection3:Cell("nSAIQtd"):Show()
                                 oSection3:Cell("nSAICus"):Show()
 
                                 oSection3:Cell("nSAIQtd"):SetValue((cAliasTOP)->QUANTIDADE)
                                 oSection3:Cell("nSAICus"):SetValue((cAliasTOP)->CUSTO)
+
+								Aadd(aAuxPrt,(cAliasTOP)->QUANTIDADE)
+								Aadd(aAuxPrt,(cAliasTOP)->CUSTO)
+
 
                                 nPosPai := Ascan(aProdPai,{|x| alltrim(x[1]) == substr((cAliasTOP)->PRODUTO,1,8)})
                                     
@@ -1327,10 +1434,17 @@ Static Function ReportPrint(oReport)
                                     oSection3:Cell("nENTCus"):SetValue((cAliasTOP)->CUSTO)
                                     oSection3:Cell("nCusMov"):SetValue((cAliasTOP)->CUSTO / (cAliasTOP)->QUANTIDADE)
 
+									Aadd(aAuxPrt,(cAliasTOP)->QUANTIDADE)
+									Aadd(aAuxPrt,(cAliasTOP)->CUSTO)
+									Aadd(aAuxPrt,(cAliasTOP)->CUSTO / (cAliasTOP)->QUANTIDADE)
+
                                     oSection3:Cell("nSAIQtd"):Hide()
                                     oSection3:Cell("nSAICus"):Hide()
                                     oSection3:Cell("nSAIQtd"):SetValue(0)
                                     oSection3:Cell("nSAICus"):SetValue(0)
+
+									Aadd(aAuxPrt,0)
+									Aadd(aAuxPrt,0)
 
                                     nPosPai := Ascan(aProdPai,{|x| alltrim(x[1]) == substr((cAliasTOP)->PRODUTO,1,8)})
                                     
@@ -1347,6 +1461,9 @@ Static Function ReportPrint(oReport)
                                     oSection3:Cell("nENTQtd"):SetValue(0)
                                     oSection3:Cell("nENTCus"):SetValue(0)
 
+									Aadd(aAuxPrt,0)
+									Aadd(aAuxPrt,0)
+
                                     oSection3:Cell("nCusMov"):Show()
                                     oSection3:Cell("nSAIQtd"):Show()
                                     oSection3:Cell("nSAICus"):Show()
@@ -1354,6 +1471,10 @@ Static Function ReportPrint(oReport)
                                     oSection3:Cell("nCusMov"):SetValue((cAliasTOP)->CUSTO / (cAliasTOP)->QUANTIDADE)
                                     oSection3:Cell("nSAIQtd"):SetValue((cAliasTOP)->QUANTIDADE)
                                     oSection3:Cell("nSAICus"):SetValue((cAliasTOP)->CUSTO)
+
+									Aadd(aAuxPrt,(cAliasTOP)->CUSTO / (cAliasTOP)->QUANTIDADE)
+									Aadd(aAuxPrt,(cAliasTOP)->QUANTIDADE)
+									Aadd(aAuxPrt,(cAliasTOP)->CUSTO)
 
                                     nPosPai := Ascan(aProdPai,{|x| alltrim(x[1]) == substr((cAliasTOP)->PRODUTO,1,8)})
                                         
@@ -1378,10 +1499,17 @@ Static Function ReportPrint(oReport)
                                     oSection3:Cell("nENTCus"):SetValue((cAliasTOP)->CUSTO)
                                     oSection3:Cell("nCusMov"):SetValue((cAliasTOP)->CUSTO / (cAliasTOP)->QUANTIDADE)
 
+									Aadd(aAuxPrt,(cAliasTOP)->QUANTIDADE)
+									Aadd(aAuxPrt,(cAliasTOP)->CUSTO)
+									Aadd(aAuxPrt,(cAliasTOP)->CUSTO / (cAliasTOP)->QUANTIDADE)
+
                                     oSection3:Cell("nSAIQtd"):Hide()
                                     oSection3:Cell("nSAICus"):Hide()
                                     oSection3:Cell("nSAIQtd"):SetValue(0)
                                     oSection3:Cell("nSAICus"):SetValue(0)
+
+									Aadd(aAuxPrt,0)
+									Aadd(aAuxPrt,0)
 
                                     nPosPai := Ascan(aProdPai,{|x| alltrim(x[1]) == substr((cAliasTOP)->PRODUTO,1,8)})
                                     
@@ -1398,6 +1526,9 @@ Static Function ReportPrint(oReport)
                                     oSection3:Cell("nENTQtd"):SetValue(0)
                                     oSection3:Cell("nENTCus"):SetValue(0)
 
+									Aadd(aAuxPrt,0)
+									Aadd(aAuxPrt,0)
+
                                     oSection3:Cell("nCusMov"):Show()
                                     oSection3:Cell("nSAIQtd"):Show()
                                     oSection3:Cell("nSAICus"):Show()
@@ -1405,6 +1536,10 @@ Static Function ReportPrint(oReport)
                                     oSection3:Cell("nCusMov"):SetValue((cAliasTOP)->CUSTO / (cAliasTOP)->QUANTIDADE)
                                     oSection3:Cell("nSAIQtd"):SetValue((cAliasTOP)->QUANTIDADE)
                                     oSection3:Cell("nSAICus"):SetValue((cAliasTOP)->CUSTO)
+
+									Aadd(aAuxPrt,(cAliasTOP)->CUSTO / (cAliasTOP)->QUANTIDADE)
+									Aadd(aAuxPrt,(cAliasTOP)->QUANTIDADE)
+									Aadd(aAuxPrt,(cAliasTOP)->CUSTO)
 
                                     nPosPai := Ascan(aProdPai,{|x| alltrim(x[1]) == substr((cAliasTOP)->PRODUTO,1,8)})
                                         
@@ -1424,16 +1559,27 @@ Static Function ReportPrint(oReport)
                         If lFirst  .And. lTransEnd
                             oSection3:Cell("nSALDQtd"):SetValue(aSalAtu[1])
                             oSection3:Cell("nSALDCus"):SetValue(aSalAtu[mv_par10+1])
+
+							Aadd(aAuxPrt,aSalAtu[1])
+							Aadd(aAuxPrt,aSalAtu[mv_par10+1])
+
                         EndIf
                         Do Case
                         Case Alltrim((cAliasTop)->ARQ) == "SD3" .And. !lContinua  .And. lTransEnd
                             If Empty((cAliasTOP)->OP) .And. Empty((cAliasTOP)->PROJETO)
                                 oSection3:Cell("cCCPVPJOP"):SetValue('CC'+(cAliasTOP)->CC)
+
+								Aadd(aAuxPrt,'CC'+(cAliasTOP)->CC)
                             ElseIf !Empty((cAliasTOP)->PROJETO)
                                 oSection3:Cell("cCCPVPJOP"):SetValue('PJ'+(cAliasTOP)->PROJETO)
+
+								Aadd(aAuxPrt,'PJ'+(cAliasTOP)->PROJETO)
+
                             ElseIf !Empty((cAliasTOP)->OP)
                                 cIdent := fIdentOS( (cAliasTOP)->OP, lFuncMnt )
                                 oSection3:Cell("cCCPVPJOP"):SetValue( cIdent )
+
+								Aadd(aAuxPrt,cIdent)
                             EndIf
                         Case Alltrim((cAliasTop)->ARQ) == "SD1" .And. !lContinua .And. lTransEnd
                             cTipoNf := 'F-'
@@ -1445,22 +1591,39 @@ Static Function ReportPrint(oReport)
                                 EndIf
                             EndIf
                             oSection3:Cell("cCCPVPJOP"):SetValue(cTipoNf+(cAliasTOP)->FORNECEDOR)
+
+							Aadd(aAuxPrt,cTipoNf+(cAliasTOP)->FORNECEDOR)
+
                         Case Alltrim((cAliasTop)->ARQ) == "SD2" .And. !lContinua .And. lTransEnd
                     
                             If ((cAliasTop)->TIPONF) $ "B|D"
                                 oSection3:Cell("cCCPVPJOP"):SetValue('F-'+(cAliasTop)->FORNECEDOR)
+
+								Aadd(aAuxPrt,'F-'+(cAliasTop)->FORNECEDOR)
+
                             Else
                                 oSection3:Cell("cCCPVPJOP"):SetValue('C-'+(cAliasTop)->FORNECEDOR)
+
+								Aadd(aAuxPrt,'C-'+(cAliasTop)->FORNECEDOR)
+
                             EndIf
                     
                         Case lContinua .And. aDadosTran[14] == "SD3" .And. lTransEnd
                             If Empty(aDadosTran[11]) .And. Empty(aDadosTran[12])
                                 oSection3:Cell("cCCPVPJOP"):SetValue('CC'+aDadosTran[13])
+
+								Aadd(aAuxPrt,'CC'+aDadosTran[13])
+
                             ElseIf !Empty(aDadosTran[12])
                                 oSection3:Cell("cCCPVPJOP"):SetValue('PJ'+aDadosTran[12])
+
+								Aadd(aAuxPrt,'PJ'+aDadosTran[12])
+
                             ElseIf !Empty(aDadosTran[11])
                                 cIdent := fIdentOS( aDadosTran[11], lFuncMnt )
                                 oSection3:Cell("cCCPVPJOP"):SetValue( cIdent )
+
+								Aadd(aAuxPrt,cIdent)
                             EndIf
                         EndCase
 
@@ -1479,11 +1642,30 @@ Static Function ReportPrint(oReport)
                             oSection3:Cell("nSALDQtd"):SetValue(0)
                             oSection3:Cell("nSALDCus"):SetValue(0)
                             oSection3:Cell("cCCPVPJOP"):SetValue("")
+
+							Aadd(aAuxPrt,STOD(""))
+							Aadd(aAuxPrt,"")
+							Aadd(aAuxPrt,"")
+							Aadd(aAuxPrt,"")
+							Aadd(aAuxPrt,"")
+							Aadd(aAuxPrt,0)
+							Aadd(aAuxPrt,0)
+							Aadd(aAuxPrt,0)
+							Aadd(aAuxPrt,0)
+							Aadd(aAuxPrt,0)
+							Aadd(aAuxPrt,0)
+							Aadd(aAuxPrt,0)
+							Aadd(aAuxPrt,"")
                             oSection3:PrintLine()
+
+							Aadd(aPrintT,aAuxPrt)
+							aAuxPrt := {}
                         EndIf
 
                         If lFirst .And. lTransEnd
                             oSection3:PrintLine()
+							Aadd(aPrintT,aAuxPrt)
+							aAuxPrt := {}
                         Endif
                         aDadosTran := {}
                         lTransEnd := .T.
@@ -1773,6 +1955,13 @@ Static Function MR900ImpS1(aSalAtu,cAliasTop,lQuery,lVEIC,lCusFil,lCusEmp,oSecti
 	oSection1:Cell("nVlrSal" ):SetValue(aSalAtu[mv_par10+1])
 	oSection1:Cell("cProduto"):SetValue((cAliasTop)->PRODUTO)
 	oSection1:Cell("cTipo"	 ):SetValue((cAliasTop)->TIPO	)
+
+	Aadd(aAuxPrt,nCusMed)
+	Aadd(aAuxPrt,aSalAtu[1])
+	Aadd(aAuxPrt,aSalAtu[mv_par10+1])
+	Aadd(aAuxPrt,(cAliasTop)->PRODUTO)
+	Aadd(aAuxPrt,(cAliasTop)->TIPO)
+
 	If lVEIC
 		oSection2:Cell("cProduto"):SetValue((cAliasTop)->PRODUTO)
 		oSection2:Cell("cTipo"	 ):SetValue((cAliasTop)->TIPO	)
@@ -1781,9 +1970,12 @@ Static Function MR900ImpS1(aSalAtu,cAliasTop,lQuery,lVEIC,lCusFil,lCusEmp,oSecti
 	dbSelectArea("SB2")
 	MsSeek(xFilial("SB2")+(cAliasTop)->PRODUTO+If(lCusFil .Or. lCusEmp,"",mv_par08))
 
-	oSection1:PrintLine()
-	//oSection2:PrintLine()
+	Aadd(aPrintT,aAuxPrt)
 
+	aAuxPrt := {}
+
+	oSection1:PrintLine()
+	
 	RestArea(aArea)
 
 RETURN
@@ -1900,27 +2092,21 @@ STATIC FUNCTION pesqpai(CPRODPAI)
 	EndIf
 	cSelPAID1 += " CUSTO,"
 	cSelPAID1 += "%"
-	//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-	//³Complemento do SELECT da tabela SB1 para MV_VEICULO                     ³
-	//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+	
 	cSelpaiVe := "%"
 	cSelpaiVe += ","
 	If lVEIC
 		cSelpaiVe += "SB1.B1_CODITE B1_CODITE,"
 	EndIf
 	cSelpaiVe += "%"
-	//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-	//³Complemento do Where da tabela SD1                                      ³
-	//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+	
 	cWhpaiD1 := "%"
 	cWhpaiD1 += "AND"
 	If !(lCusFil .Or. lCusEmp)
 		cWhpaiD1 += " D1_LOCAL = '" + mv_par08 + "' AND"
 	EndIf
 	cWhpaiD1 += "%"
-	//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-	//³Complemento do Where da tabela SD1 (Tratamento Filial)                  ³
-	//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+	
 	If lCusEmp
 		cWhpaiD1C := "%"
 		If FWModeAccess("SD1") == "E" .AND. FWModeAccess("SF4") == "E"
@@ -1946,9 +2132,7 @@ STATIC FUNCTION pesqpai(CPRODPAI)
 		cWhpaiD1C += " SF4.F4_FILIAL = '" + xFilial("SF4") + "' AND"
 		cWhpaiD1C += "%"
 	EndIf
-	//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-	//³Complemento do SELECT da tabela SD2                                     ³
-	//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+	
 	If lCusRep .And. mv_par17==2
 		cSelPAID2 := "% D2_CUSRP"
 		cSelPAID2 += Str(mv_par10,1,0) // Coloca a Moeda do Custo
@@ -1958,18 +2142,14 @@ STATIC FUNCTION pesqpai(CPRODPAI)
 	EndIf
 	cSelPAID2 += " CUSTO,"
 	cSelPAID2 += "%"
-	//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-	//³Complemento do Where da tabela SD1                                      ³
-	//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+	
 	cWhpaiD2 := "%"
 	cWhpaiD2 += "AND"
 	If !(lCusFil .Or. lCusEmp)
 		cWhpaiD2 += " D2_LOCAL = '" + mv_par08 + "' AND"
 	EndIf
 	cWhpaiD2 += "%"
-	//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-	//³Complemento do Where da tabela SD2 (Tratamento Filial)                  ³
-	//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+	
 	If lCusEmp
 		cWhpaiD2C := "%"
 		If FWModeAccess("SD2") == "E" .AND. FWModeAccess("SF4") == "E"
@@ -1995,9 +2175,7 @@ STATIC FUNCTION pesqpai(CPRODPAI)
 		cWhpaiD2C += " SF4.F4_FILIAL = '" + xFilial("SF4") + "' AND"
 		cWhpaiD2C += "%"
 	EndIf
-	//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-	//³Complemento do SELECT da tabelas SD3                                    ³
-	//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
 	If lCusRep .And. mv_par17==2
 		cSelPAID3 := "% D3_CUSRP"
 		cSelPAID3 += Str(mv_par10,1,0) // Coloca a Moeda do Custo
@@ -2007,9 +2185,7 @@ STATIC FUNCTION pesqpai(CPRODPAI)
 	EndIf
 	cSelPAID3 +=	" CUSTO,"
 	cSelPAID3 += "%"
-	//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-	//³Complemento do WHERE da tabela SD3                                      ³
-	//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+	
 	cWhpaiD3 := "%"
 	If SuperGetMV('MV_D3ESTOR', .F., 'N') == 'N'
 		cWhpaiD3 += " D3_ESTORNO <> 'S' AND"
@@ -2034,9 +2210,7 @@ STATIC FUNCTION pesqpai(CPRODPAI)
 	cWhpaiD3 += " SB1.B1_GRUPO >= '"+mv_par14+"' AND SB1.B1_GRUPO <= '"+mv_par15+"' AND SB1.B1_COD <> '"+cProdimp+"' AND "
 	cWhpaiD3 += " SB1.D_E_L_E_T_=' ' AND"
 	cWhpaiD3 += "%"
-	//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-	//³Complemento do Where da tabela SD3 (Tratamento Filial)                  ³
-	//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
 	If lCusEmp
 		cWhpaiD3C := "%"
 		For nFils := 1 to len(aFils)
@@ -2054,9 +2228,7 @@ STATIC FUNCTION pesqpai(CPRODPAI)
 		cWhpaiD3C += " D3_FILIAL ='" + xFilial("SD3")  + "' AND "
 		cWhpaiD3C += "%"
 	EndIf
-	//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-	//³Complemento do WHERE da tabela SB1 para todos os selects                ³
-	//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
 	cWhPaiB1A:= "%"
 	cWhPaiB1B:= "%"
 	cWhPaiB1C:= "%"
@@ -2097,10 +2269,7 @@ STATIC FUNCTION pesqpai(CPRODPAI)
 	cWhPaiB1B+= "%"
 	cWhPaiB1C+= "%"
 	cWhPaiB1D+= "%"
-	//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-	//³ So inclui as condicoes a seguir qdo lista produtos sem ³
-	//³ movimento                                              ³
-	//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
 	cQuerPAD1 := " FROM "
 	cQuerPAD1 += RetSqlName("SB1") + " SB1"
 	cQuerPAD1 += (", " + RetSqlName("SD1")+ " SD1 ")
@@ -2397,25 +2566,18 @@ STATIC FUNCTION pesqpai(CPRODPAI)
 
 	While !(cAliasPAI)->(Eof())
 
-		//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-		//³ Se nao encontrar no arquivo de saldos ,nao lista ³
-		//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
 		dbSelectArea("SB2") //cPProd cPTipo cPUm cPGrupo cPdesc cPPos dPDigit cPTes
 		If !dbSeek(xFilial("SB2")+(cAliasPAI)->PRODUTO+If(lCusFil .Or. lCusEmp,"",mv_par08))
 			dbSelectArea(cAliasPAI)
 			dbSkip()
 			Loop
 		EndIf
-		//ENDIF
-		//lPai := .f.
 
 		dbSelectArea(cAliasPAI)
 		cProdAnt  := (cAliasPAI)->PRODUTO
 		cLocalAnt := alltrim(SB2->B2_LOCAL)
 
 		lFirst:=.F.
-
-		//MR900ImpS1(@aSalAtuPAI,cAliasPAI,.T.,lVEIC,lCusFil,lCusEmp,oSection1,oSection2,oReport)
 
 		While !(cAliasPAI)->(Eof()) .And. (cAliaspai)->PRODUTO = cProdAnt .And. If(lCusFil .Or. lCusEmp .Or. lLocProc,.T.,IIf(alltrim((cAliasPAI)->ARQ) <> 'SB1',alltrim((cAliasPAI)->ARMAZEM)==cLocalAnt,.T.))
 			lContinua := .F.
@@ -2424,10 +2586,7 @@ STATIC FUNCTION pesqpai(CPRODPAI)
 				lFirst:=.T.
 			ElseIf Alltrim((cAliasPAI)->ARQ) == "SD3"
 				lFirst:=.T.
-				//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-				//³ Quando movimento ref apropr. indireta, so considera os         ³
-				//³ movimentos com destino ao almoxarifado de apropriacao indireta.³
-				//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
 				lInverteMov:=.F.
 				If alltrim((cAliasPAI)->ARMAZEM) != cLocalAnt .Or. lCusFil .Or. lCusEmp
 					If !(Substr((cAliasPAI)->CF,3,1) == "3")
@@ -2439,10 +2598,7 @@ STATIC FUNCTION pesqpai(CPRODPAI)
 						lInverteMov:=.T.
 					EndIf
 				EndIf
-				//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-				//³ Caso seja uma transferencia de localizacao verifica se lista   ³
-				//³ o movimento ou nao                                             ³
-				//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
 				If mv_par13 == 2 .And. Substr((cAliasPAI)->CF,3,1) == "4"
 
 					lTransEnd := .T.
@@ -2469,61 +2625,9 @@ STATIC FUNCTION pesqpai(CPRODPAI)
 							Loop
 						Else
 							lContinua := .T.
-							If lFirst
-								//oSection3:Cell("dDtMov"):SetValue(STOD(aDadosTran[6]))
-								//oSection3:Cell("cTES"):SetValue(aDadosTran[1])
-								//oSection3:Cell("cLocal"):SetValue(aDadosTran[15])
-								If ( cPaisLoc=="BRA" )
-									//	oSection3:Cell("cCF"):Show()
-									If	lInverteMov
-										//		oSection3:Cell("cCF"):SetValue(Substr(aDadosTran[7],1,3)+"*")
-									Else
-										//		oSection3:Cell("cCF"):SetValue(aDadosTran[7])
-									EndIf
-								Else
-									//	oSection3:Cell("cCF"):Hide()
-									//	oSection3:Cell("cCF"):SetValue("   ")
-								EndIf
-								If mv_par09 $ "Ss"
-									//	oSection3:Cell("cDoc"):SetValue(aDadosTran[8])
-								Else
-									//	oSection3:Cell("cDoc"):SetValue(aDadosTran[9])
-								Endif
-							EndIf
 							If aDadosTran[1] <= "500"
-								//	oSection3:Cell("nENTQtd"):Show()
-								//	oSection3:Cell("nENTCus"):Show()
-								//	oSection3:Cell("nCusMov"):Show()
-
-								//	oSection3:Cell("nENTQtd"):SetValue(aDadosTran[2])
-								//	oSection3:Cell("nENTCus"):SetValue(aDadosTran[3])
-								//	oSection3:Cell("nCusMov"):SetValue(aDadosTran[3] / aDadosTran[2])
-
-//							oSection3:Cell("nSAIQtd"):Hide()
-//							oSection3:Cell("nSAICus"):Hide()
-//							oSection3:Cell("nSAIQtd"):SetValue(0)
-//							oSection3:Cell("nSAICus"):SetValue(0)
-
-//							aSalAtu[1] += aDadosTran[2]
-//							aSalAtu[mv_par10+1] += aDadosTran[3]
-//							aSalAtu[7] += aDadosTran[4]
 							Else
 								oSection3:Cell("nENTQtd"):Hide()
-//							oSection3:Cell("nENTCus"):Hide()
-///							oSection3:Cell("nENTQtd"):SetValue(0)
-//						oSection3:Cell("nENTCus"):SetValue(0)
-//
-//							oSection3:Cell("nCusMov"):Show()
-//							oSection3:Cell("nSAIQtd"):Show()
-//							oSection3:Cell("nSAICus"):Show()
-//
-//							oSection3:Cell("nCusMov"):SetValue(aDadosTran[3] / aDadosTran[2])
-//							oSection3:Cell("nSAIQtd"):SetValue(aDadosTran[2])
-//							oSection3:Cell("nSAICus"):SetValue(aDadosTran[3])
-
-//							aSalAtu[1] -= aDadosTran[2]
-//							aSalAtu[mv_par10+1] -= aDadosTran[3]
-//							aSalAtu[7] -= aDadosTran[4]
 							EndIf
 
 							lTransEnd := .T.
@@ -2543,9 +2647,6 @@ STATIC FUNCTION pesqpai(CPRODPAI)
 					nQuantPai 				+= (cAliasPAI)->QUANTIDADE
 					nCusPai	  				+= (cAliasPAI)->CUSTO
 
-//						aSalAtuPai[1] 			+= (cAliasPAI)->QUANTIDADE
-//						aSalAtuPAI[mv_par10+1] 	+= (cAliasPAI)->CUSTO
-//						aSalAtuPAI[7] 			+= (cAliasPAI)->QUANT2UM
 				Else
 					If (cAliasPAI)->TIPONF != "C"
 						nCustoPai 			+= (cAliasPAI)->CUSTO / (cAliasPAI)->QUANTIDADE
@@ -2555,16 +2656,10 @@ STATIC FUNCTION pesqpai(CPRODPAI)
 						nQuantPai 			+= ((cAliasPAI)->QUANTIDADE * -1)
 						nCusPai  			+= ((cAliasPAI)->CUSTO * -1)
 
-//							aSalAtuPAI[1] 			+= (cAliasPAI)->QUANTIDADE
-//							aSalAtuPAI[mv_par10+1] 	+= (cAliasPAI)->CUSTO
-//							aSalAtuPAI[7] 			+= (cAliasPAI)->QUANT2UM
 					Else
 						nQuantPai				+= (cAliasPAI)->QUANTIDADE
 						nCusPAI					+= (cAliasPAI)->CUSTO
 
-//							aSalAtuPAI[1] 			-= (cAliasPAI)->QUANTIDADE
-//							aSalAtuPAI[mv_par10+1]	-= (cAliasPAI)->CUSTO
-//							aSalAtuPAI[7]			-= (cAliasPAI)->QUANT2UM
 					EndIf
 				EndIf
 			Case Alltrim((cAliasPAI)->ARQ) = "SD2" .And. !lContinua .And. lTransEnd
@@ -2574,16 +2669,8 @@ STATIC FUNCTION pesqpai(CPRODPAI)
 						nQuantPAI 				+= ((cAliasPAI)->QUANTIDADE * -1)
 						nCusPAI					+= ((cAliasPAI)->CUSTO * -1)
 
-//							aSalAtuPAI[1] 			-= (cAliasPAI)->QUANTIDADE
-//							aSalAtuPAI[mv_par10+1]	-= (cAliasPAI)->CUSTO
-//							aSalAtuPAI[7]			-= (cAliasPAI)->QUANT2UM
 					Else
 						nQuantPAI				+= ((cAliasPAI)->QUANTIDADE)
-//							oSection3:Cell("nENTCus"):SetValue((cAliasPAI)->CUSTO)
-
-//							aSalAtu[1]			+= (cAliasPAI)->QUANTIDADE
-//							aSalAtu[mv_par10+1]	+= (cAliasPAI)->CUSTO
-//							aSalAtu[7]			+= (cAliasPAI)->QUANT2UM
 					EndIf
 
 					If (cAliasPAI)->TIPONF != "C"
@@ -2596,9 +2683,6 @@ STATIC FUNCTION pesqpai(CPRODPAI)
 					nQuantPAI		+= ((cAliasPAI)->QUANTIDADE)
 					nCusPAI			+= ((cAliasPAI)->CUSTO)
 
-//						aSalAtuPAI[1]			-= (cAliasPAI)->QUANTIDADE
-//						aSalAtuPAI[mv_par10+1]	-= (cAliasPAI)->CUSTO
-//						aSalAtuPAI[7]			-= (cAliasPAI)->QUANT2UM
 				EndIf
 			Case Alltrim((cAliasPAI)->ARQ) == "SD3" .And. !lContinua  .And. lTransEnd
 				lDev := .F.
@@ -2608,18 +2692,12 @@ STATIC FUNCTION pesqpai(CPRODPAI)
 						nCusPAI				+=	((cAliasPAI)->CUSTO)
 						nCustoPAI			+=	((cAliasPAI)->CUSTO / (cAliasPAI)->QUANTIDADE)
 
-//							aSalAtuPAI[1]			+= (cAliasPAI)->QUANTIDADE
-//							aSalAtuPAI[mv_par10+1]	+= (cAliasPAI)->CUSTO
-//							aSalAtuPAI[7]			+= (cAliasPAI)->QUANT2UM
 					Else
 
 						nCustoPAI					+= ((cAliasPAI)->CUSTO / (cAliasPAI)->QUANTIDADE)
 						nQuantPAI					+= ((cAliasPAI)->QUANTIDADE)
 						nCusPAI						+= ((cAliasPAI)->CUSTO)
 
-//							aSalAtuPAI[1]			-= (cAliasPAI)->QUANTIDADE
-//							aSalAtuPAI[mv_par10+1]	-= (cAliasPAI)->CUSTO
-//							aSalAtuPAI[7]			-= (cAliasPAI)->QUANT2UM
 					EndIf
 					If lCusFil .Or. lCusEmp
 						lPriApropri:=.F.
@@ -2630,17 +2708,11 @@ STATIC FUNCTION pesqpai(CPRODPAI)
 						nCusPAI					+= ((cAliasPAI)->CUSTO)
 						nCustoPAI				+= ((cAliasPAI)->CUSTO / (cAliasPAI)->QUANTIDADE)
 
-//							aSalAtuPAI[1]			+= (cAliasPAI)->QUANTIDADE
-//							aSalAtuPAI[mv_par10+1]	+= (cAliasPAI)->CUSTO
-//							aSalAtuPAI[7]			+= (cAliasPAI)->QUANT2UM
 					Else
 						nCustoPAI				+= ((cAliasPAI)->CUSTO / (cAliasPAI)->QUANTIDADE)
 						nQuantPAI				+= ((cAliasPAI)->QUANTIDADE)
 						nCusPAI					+= ((cAliasPAI)->CUSTO)
 
-//							aSalAtuPAI[1]			-= (cAliasPAI)->QUANTIDADE
-//							aSalAtuPAI[mv_par10+1]	-= (cAliasPAI)->CUSTO
-//							aSalAtuPAI[7]			-= (cAliasPAI)->QUANT2UM
 					EndIf
 					If lCusFil .Or. lCusEmp
 						lPriApropri:=.T.
