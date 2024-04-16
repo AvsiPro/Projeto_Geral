@@ -53,7 +53,8 @@ return
 static function fProcess(aZ04_Atual,aZ05AtivosPreCadastro)
 
 	local nQtdRegsToInteg := len(aZ05AtivosPreCadastro) //fGetQdtRegsToInt(@aZ05AtivosPreCadastro) // alteracao solicitado WANDER 25/10/2023
-	local nI			  := 0	
+	local nI			  := 0
+	local nX 		 	  := 0	
 	local nTotalDebito	  := 0
 	local nTotalCredito	  := 0
 	local cDataini		  := dTos(MV_PAR01)
@@ -63,6 +64,9 @@ static function fProcess(aZ04_Atual,aZ05AtivosPreCadastro)
 	local cITINVE		  := ""
 	local cCLINVE         := ""
 	local cCTINVE         := ""
+	local nQtdCrd 		  := 0
+	local nQtdDeb 		  := 0
+	Private cRecCt2		  := ''
 	
 	ProcRegua(nQtdRegsToInteg)
 
@@ -75,13 +79,17 @@ static function fProcess(aZ04_Atual,aZ05AtivosPreCadastro)
 		lMsErroAuto         := .F.
 		lMsHelpAuto			:= .T.
 
-		if fExistCombinacoesToCt2(cDataini, cDataFim, aZ05AtivosPreCadastro[nI])
-		
-			nTotalDebito 		:= fGetTotalDebito(cDataini, cDataFim, aZ05AtivosPreCadastro[nI])
-			nTotalCredito		:= fGetTotalCredito(cDataini, cDataFim, aZ05AtivosPreCadastro[nI])
-			nValor		 		:= nTotalDebito - nTotalCredito
+		if fExistCombinacoesToCt2(cDataini, cDataFim, aZ05AtivosPreCadastro[nI], @nQtdDeb, @nQtdCrd)
+
+			For nX := 1 to nQtdDeb
+
+				nTotalDebito 		:= fGetTotalDebito(cDataini, cDataFim, aZ05AtivosPreCadastro[nI])
+				nTotalCredito		:= fGetTotalCredito(cDataini, cDataFim, aZ05AtivosPreCadastro[nI])
+				nValor		 		:= nTotalDebito - nTotalCredito
+				
+				fSaveToATFA012(aZ04_Atual,nValor, aZ05AtivosPreCadastro[nI], nI, cDataini, cDataFim)	
 			
-			fSaveToATFA012(aZ04_Atual,nValor, aZ05AtivosPreCadastro[nI], nI, cDataini, cDataFim)	
+			Next nX 
 
 		else
 
@@ -406,6 +414,7 @@ static function fGetTotalDebito(cDataini, cDataFim, aZ05AtivosPreCadastro)
 
 	if (cAlias)->(!eof())
 		nTotalDebito := (cAlias)->TOTAL	
+		cRecCt2 += cvaltochar((cAlias)->REGCT2) + '/'
 	endIf
 
 	(cAlias)->(dbCloseArea())	
@@ -425,6 +434,7 @@ static function fGetTotalCredito(cDataini, cDataFim, aZ05AtivosPreCadastro)
 
 	if (cAlias)->(!eof())
 		nTotalCredit := (cAlias)->TOTAL	
+		cRecCt2 += cvaltochar((cAlias)->REGCT2) + '/'
 	endIf
 
 	(cAlias)->(dbCloseArea())	
@@ -441,6 +451,8 @@ static function fGet3QueryCT2(nTipo, aZ05AtivosPreCadastro, cDataini, cDataFim)
 	local cCLINVE				:= ""
 	local cCTINVE				:= ""
 	local cQuery 				:= ""
+	local aRecnos				:= separa(cRecCt2,'/')
+	local nX 					:= 0
 
 	if len(aZ05AtivosPreCadastro) > 0
 
@@ -449,7 +461,9 @@ static function fGet3QueryCT2(nTipo, aZ05AtivosPreCadastro, cDataini, cDataFim)
 		cCLINVE := aZ05AtivosPreCadastro[5]
 		cCTINVE := aZ05AtivosPreCadastro[6]	//-20230221
 
-		cQuery := " SELECT SUM(CT2.CT2_VALOR) TOTAL FROM " + 	retSqlName("CT2") + " CT2 "  + CRLF
+		//cQuery := " SELECT SUM(CT2.CT2_VALOR) TOTAL FROM " + 	retSqlName("CT2") + " CT2 "  + CRLF
+		cQuery := " SELECT CT2.CT2_VALOR TOTAL, CT2.R_E_C_N_O_ AS REGCT2 "
+		cQuery += "  FROM " + 	retSqlName("CT2") + " CT2 "  + CRLF
 		cQuery += " WHERE 1 = 1 "  								 	 				 		 + CRLF
 		cQuery += "    AND CT2.CT2_FILIAL = '"+fwxFilial("CT2")+"' "						 + CRLF
 
@@ -468,6 +482,9 @@ static function fGet3QueryCT2(nTipo, aZ05AtivosPreCadastro, cDataini, cDataFim)
 			EndIf 
 			cQuery += "    AND CT2_DC IN ('3','1')"	 					 					 + CRLF			
 
+			cQuery += "    AND SUBSTRING(CT2.CT2_CCD,1,4)   = '1631' " 					 		 + CRLF			
+			cQuery += "    AND SUBSTRING(CT2.CT2_DEBITO,1,1)   = '4' " 					 		 + CRLF			
+
 		elseIf nTipo == CREDITO
 			iF !Empty(cCCINVE)
 				cQuery += "    AND CT2.CT2_CCC   = '"+cCCINVE+"' "	 			 				 + CRLF
@@ -482,6 +499,10 @@ static function fGet3QueryCT2(nTipo, aZ05AtivosPreCadastro, cDataini, cDataFim)
 				cQuery += "    AND CT2_CREDIT    = '"+cCTINVE+"' "	 			 				 + CRLF
 			EndIf 
 			cQuery += "    AND CT2_DC IN ('3','2') "	 				 					 + CRLF		
+
+			cQuery += "    AND SUBSTRING(CT2.CT2_CCC,1,4)   = '1631' " 					 		 + CRLF			
+			cQuery += "    AND SUBSTRING(CT2.CT2_CREDITO,1,1)   = '4' " 					 		 + CRLF			
+
 		endIf
 
 		cQuery += "    AND CT2.CT2_TPSALD = '1' "											 + CRLF
@@ -489,6 +510,18 @@ static function fGet3QueryCT2(nTipo, aZ05AtivosPreCadastro, cDataini, cDataFim)
 		cQuery += "    AND CT2.CT2_ROTINA NOT LIKE '%ATF%'"	  								 + CRLF
 		cQuery += "    AND CT2_DATA BETWEEN '" + cDataini + "' AND '" + cDataFim + "' "		 + CRLF
 		cQuery += "    AND CT2.D_E_L_E_T_ = ' ' "	 										 + CRLF
+
+		If len(aRecnos) > 0
+			cQuery += " AND CT2.R_E_C_N_O_ NOT IN ('"
+			cVirg := ""
+
+			For nX := 1 to len(aRecnos)
+				cQuery += cVirg + aRecnos[nX]
+				cVirg := "','"
+			Next nX 
+
+			cQuery += " ')"
+		EndIf 
 
 	endIf
 
@@ -745,7 +778,7 @@ return
 /**
 * Verifica se existe combinações na CT2 qua ainda não esteja integradas
 **/
-static function fExistCombinacoesToCt2(cDataini, cDataFim, aZ05AtivosPreCadastro)
+static function fExistCombinacoesToCt2(cDataini, cDataFim, aZ05AtivosPreCadastro, nQtdDeb, nQtdCrd)
 
 	local cQueryDeb 		:= fGet2QueryCT2Comb(DEBITO	, aZ05AtivosPreCadastro, cDataini, cDataFim)
 	local cQueryCred		:= fGet2QueryCT2Comb(CREDITO	, aZ05AtivosPreCadastro, cDataini, cDataFim)
@@ -757,7 +790,8 @@ static function fExistCombinacoesToCt2(cDataini, cDataFim, aZ05AtivosPreCadastro
 	TCQUERY cQueryDeb NEW ALIAS (cAlias)	
 
 	if (cAlias)->(!eof())
-		nQtdRegsDeb := (cAlias)->QTD_REGS	
+		nQtdRegsDeb := (cAlias)->QTD_REGS
+		nQtdDeb := 	(cAlias)->QTD_REGS
 	endIf
 
 	(cAlias)->(dbCloseArea())	
@@ -766,6 +800,7 @@ static function fExistCombinacoesToCt2(cDataini, cDataFim, aZ05AtivosPreCadastro
 
 	if (cAlias)->(!eof())
 		nQtdRegsCred := (cAlias)->QTD_REGS	
+		nQtdCrd := (cAlias)->QTD_REGS
 	endIf
 
 	(cAlias)->(dbCloseArea())	
