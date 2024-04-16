@@ -94,7 +94,7 @@ If Altera
             EndIf 
         EndIf 
 
-        MSGALERT("TESTE",'')
+        //MSGALERT("TESTE",'')
 
     EndIF 
 EndIf 
