@@ -124,7 +124,7 @@ Local cQuery
 cQuery := "SELECT B1_COD,B1.R_E_C_N_O_ AS REGB1"
 cQuery += " FROM "+RetSQLName("SB1")+" B1"
 cQuery += " WHERE B1_FILIAL='"+xFilial("SB1")+"'"
-cQuery += " AND B1_XCODPAI='"+cCodigo+"'"
+cQuery += " AND B1_XCODPAI='"+cCodigo+"' AND B1_XCODPAI<>' '"
 cQuery += " AND D_E_L_E_T_=' '"
 
 
