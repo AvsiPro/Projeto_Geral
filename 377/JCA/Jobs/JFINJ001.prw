@@ -15,7 +15,7 @@ User Function JFINJ001(xEmp, xFi, lJob)
     Local nCont 
 
     Default xEmp := '01'
-    Default xFil := '00020087'
+    Default xFil := '00080230'
     Default lJob := .F.
 
     If Empty(FunName())
@@ -26,7 +26,7 @@ User Function JFINJ001(xEmp, xFi, lJob)
     aItens := Busca()
 
     If len(aItens) > 0
-        For nCont := 1 to 1 //len(aItens)
+        For nCont := 1 to len(aItens)
             aItens[nCont,14] := GerBol(aItens[nCont])
         Next nCont
 
@@ -60,6 +60,7 @@ cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"
 cQuery += " WHERE E1_FILIAL BETWEEN ' ' AND 'ZZZ'"
 cQuery += " AND E1_VENCREA>='"+dtos(dDatabase)+"' AND E1_BAIXA=' '"
 cQuery += " AND E1_NUMBCO<>' '"
+CqUERY += " AND E1_NUM='130050   '"
 
 IF Select('TRB') > 0
     dbSelectArea('TRB')
@@ -110,20 +111,13 @@ Return(aRet)
 Static Function GerBol(aAux)
 
 Local aArea     := GetArea()
-Local cTamSring := GetSrvProfString("maxStringSize", "1000000")
-Local nTamLinha := Val(cTamSring)
-Local cBuffer   := ""
 Local cEncode64 := ""
 
 Local cFile := ""// VALORES RETORNADOS NA LEITURA
 Local oFile //:= FwFileReader():New("/NR5.pdf") // CAMINHO ABAIXO DO ROOTPATH
 
-
 Private cMarca  := GetMark()
 
-/*E1_FILIAL,E1_PREFIXO,E1_NUM,E1_PARCELA,E1_TIPO,
-E1_NUMBCO,E1_IDCNAB,E1_ZIMPBOL,E1_CODBAR,E1_CLIENTE,;
-E1_LOJA,RECNOE1,A1_CGC*/
 DbSelectArea("SE1")
 DbsetOrder(1)
 If Dbseek(Avkey(aAux[1],"E1_FILIAL")+Avkey(aAux[2],"E1_PREFIXO")+Avkey(aAux[3],"E1_NUM")+Avkey(aAux[4],"E1_PARCELA")+Avkey(aAux[5],"E1_TIPO"))
@@ -132,9 +126,9 @@ If Dbseek(Avkey(aAux[1],"E1_FILIAL")+Avkey(aAux[2],"E1_PREFIXO")+Avkey(aAux[3],"
     MsUnLock()
 EndIf
 
-MV_PAR20      :=  SE1->E1_PORTADO
+MV_PAR20    :=  SE1->E1_PORTADO
 MV_PAR21    :=  SE1->E1_AGEDEP  
-MV_PAR22      :=  SE1->E1_CONTA
+MV_PAR22    :=  SE1->E1_CONTA
 
 DbSelectArea("SEE")
 DbSetOrder(1)
@@ -163,14 +157,7 @@ oFile:Open()
 cFile := oFile:FullRead() // EFETUA A LEITURA DO ARQUIVO
 
 cEncode64 := Encode64(cFile)
-/*
-nHdlImp := FOpen(cFileBol,0)
-nBytes  := FREAD(nHdlImp, cBuffer, nTamLinha)
 
-cEncode64 := Encode64(cBuffer)
-
-fClose(nHdlImp)
-*/
 RestArea(aArea)
 
 Return(cEncode64)
@@ -192,13 +179,10 @@ Static Function EnvJson(aItens)
 Local aArea     := GetArea()
 Local nCont 
 Local oEnvio    := JsonObject():New()
-Local cApiDest  := SuperGetMV("TI_APIDES",.F.,"https://api.track3r.com.br")
-Local cEndPnt   := SuperGetMV("TI_ENDPNT",.F.,"/v2/api/totvs-protheus/recebe-boleto-fatura")
+Local cApiDest  := SuperGetMV("TI_APIDES",.F.,"https://buslog.track3r.com.br")
+Local cEndPnt   := SuperGetMV("TI_ENDPNT",.F.,"/api/totvs-protheus/recebe-boleto-fatura")
 Local cToken    := SuperGetMV("TI_TOKTRK",.F.,'0D901F83-1739-41E3-995B-7303EF0BB19A')
 
-/*E1_FILIAL,E1_PREFIXO,E1_NUM,E1_PARCELA,E1_TIPO,
-E1_NUMBCO,E1_IDCNAB,E1_ZIMPBOL,E1_CODBAR,E1_CLIENTE,;
-E1_LOJA,RECNOE1,A1_CGC*/
 
 For nCont := 1 to len(aItens)
     oEnvio['filial']        := aItens[nCont,01]

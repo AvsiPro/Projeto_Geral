@@ -48,8 +48,8 @@ Static Function EnvTrck()
 
 Local aArea     := GetArea()
 Local oEnvio    := JsonObject():New()
-Local cApiDest  := SuperGetMV("TI_APIDES",.F.,"https://api.track3r.com.br")
-Local cEndPnt   := SuperGetMV("TI_ENDPNT",.F.,"/v2/api/totvs-protheus/confirma-pagamento-fatura")
+Local cApiDest  := SuperGetMV("TI_APIDES",.F.,"https://buslog.track3r.com.br")
+Local cEndPnt   := SuperGetMV("TI_ENDPNT",.F.,"/api/totvs-protheus/confirma-pagamento-fatura")
 Local cToken    := SuperGetMV("TI_TOKTRK",.F.,'0D901F83-1739-41E3-995B-7303EF0BB19A')
 
 oEnvio['filial']    := SE1->E1_FILIAL 

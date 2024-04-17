@@ -45,9 +45,9 @@ Pergunte("MTA106",.F.)
 
 lMarkB     := .F.
 lDtNec     := (MV_PAR01 == 1)
-BFiltro    := {||.t.}
+BFiltro    := {||U_xJCom3j(SCP->CP_PRODUTO,SCP->CP_LOCAL,SCP->CP_QUANT,SCP->CP_NUM,SCP->CP_ITEM,SCP->CP_XTIPO)}
 lConsSPed  := (MV_PAR02 == 1)
-lGeraSC1   := (MV_PAR03 == 1)   // nao gerar solicitacao de compra
+lGeraSC1   := .F. //(MV_PAR03 == 1)   // nao gerar solicitacao de compra
 lAmzSA     := (MV_PAR04 == 1)
 cSldAmzIni := MV_PAR05
 cSldAmzFim := MV_PAR06
@@ -114,6 +114,55 @@ Next n1Cnt
 */
 
 Return
+
+/*/{Protheus.doc} xJCom3j
+    (long_description)
+    @type  Static Function
+    @author user
+    @since 16/04/2024
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+User Function xJCom3j(cCodigo,cLocal,nQtd,cNum,cItem,cTipo)
+
+Local aArea := GetArea()
+Local lRet  := .T.
+
+If Empty(cTipo)
+
+    DbSelectArea("SB2")
+    DbSetOrder(1)
+    If Dbseek(xfilial("SB2")+cCodigo+cLocal)
+        nSaldo := SaldoSB2()
+
+        If nQtd > nSaldo 
+            lRet := .F.
+        EndIf 
+    Else 
+        lRet := .F.
+    endIf 
+
+    If !lRet 
+        DbSelectArea("SCP")
+        DbSetOrder(2)
+        If Dbseek(xFilial("SCP")+cCodigo+cNum+cItem)
+            Reclock("SCP",.F.)
+            SCP->CP_XTIPO := '.'
+            SCP->(Msunlock())
+            lRet := .T.
+        EndIf 
+    EndIf 
+EndIf 
+
+
+RestArea(aArea)
+
+Return(lRet)
+
 /*/{Protheus.doc} xGermail
     (long_description)
     @type  Static Function
