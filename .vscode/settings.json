@@ -2,5 +2,6 @@
     "totvsLanguageServer.welcomePage": false,
     "git.ignoreLimitWarning": true,
     "totvsLanguageServer.askCompileResult": false,
-    "advpl.debug_multiThread": true
+    "advpl.debug_multiThread": true,
+    "totvsLanguageServer.editor.linter.includes": "C:\\Adm\\include"
 }
