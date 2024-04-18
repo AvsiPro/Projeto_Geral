@@ -3,5 +3,9 @@
     "git.ignoreLimitWarning": true,
     "totvsLanguageServer.askCompileResult": false,
     "advpl.debug_multiThread": true,
+<<<<<<< HEAD
     "totvsLanguageServer.editor.linter.includes": "C:\\Adm\\include"
+=======
+    "totvsLanguageServer.editor.linter.includes": "C:\\desenv\\includes"
+>>>>>>> 5ce01cfa1cb5a19e79eff3419fccb2e6ec899951
 }
