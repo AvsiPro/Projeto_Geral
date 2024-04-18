@@ -22,6 +22,7 @@ Local aLinhasSD3    := {}
 Local aAutoSCP      := {}
 Local aAutoSD3      := {}
 Local cD3TM         := '501'
+Local aAux2         := {}
 
 DbSelectArea("SCP")
 DbSetOrder(1)
@@ -80,6 +81,31 @@ If len(aITEM)
         If SCP->(dbSeek(xFilial("SCP")+cNumSCP+aAutoSCP[nX,nPosItm,02])) //+aITEM[nx]
             lMSHelpAuto := .F.
             lMsErroAuto := .F.
+            MV_PAR01 := 1
+            MV_PAR02 := 2
+            MV_PAR03 := 'N'
+
+            nSaldo := 0
+            DbSelectArea("SB2")
+            DbSetOrder(1)
+            If Dbseek(xFilial("SB2")+SCP->CP_PRODUTO+SCP->CP_LOCAL)
+                nSaldo := SaldoSB2()
+                aAux2  := {}
+
+                If nSaldo < SCP->CP_QUANT
+                    Aadd(aAux2,{ SCP->CP_PRODUTO,;
+                        Posicione("SB1",1,xFilial("SB1")+SCP->CP_PRODUTO,"B1_DESC"),;
+                        SCP->CP_QUANT,;
+                        (nSaldo - SCP->CP_QUANT) * (-1),;
+                        "",;
+                        "",;
+                        SCP->(Recno())})
+                    
+                    U_JGENX006(aAux2)
+
+                EndIf 
+            EndIf 
+
             MSExecAuto({|v,x,y,z| mata185(v,x,y)},aAutoSCP[nx],aAutoSD3[nx],1)  // 1 = BAIXA (ROT.AUT)
 
             If lMsErroAuto

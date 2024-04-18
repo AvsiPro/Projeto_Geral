@@ -19,6 +19,7 @@ Local cGrupo := SB1->B1_GRUPO
 Local aAuxX3    :=  {}
 Local aAuxBZ    :=  {}
 Local nCont 
+Local nZ 
 
 Private cMarca  := space(4)
 Private cCodFab := space(15)
@@ -40,39 +41,45 @@ Else
         If !Dbseek(xFilial("SB1")+Alltrim(cCodigo)+Alltrim(cMarca))
             Processa({|| gerafilho(cMarca,cDescM,cCodigo,cGrupo,cCodFab)},"Aguarde!!!")
 
-            DbSelectArea("SBZ")
-            DbSetOrDer(1)
-            If Dbseek(xfilial("SBZ")+cCodigo)
-                aAuxX3    := FWSX3Util():GetAllFields( 'SBZ' , .F. )
-                aAuxBZ    := {}
-                For nCont := 1 to len(aAuxX3)
-                    Aadd(aAuxBZ,{aAuxX3[nCont],&('SBZ->'+aAuxX3[nCont])})
-                Next nCont 
+            aFilSBZ := BuscaFBZ(cCodigo)
 
-                
+            For nZ := 1 to len(aFilSBZ)
 
-            Endif 
+                aAuxX3 := {}
+                aAuxBZ := {}
 
-            If len(aAuxBZ) > 0
                 DbSelectArea("SBZ")
-                Dbgotop()
                 DbSetOrDer(1)
-                If !Dbseek(xFilial("SBZ")+alltrim(cCodigo)+cMarca)
-                    Reclock("SBZ",.T.)
-                else
-                    Reclock("SBZ",.F.)
-                EnDIf 
+                If Dbseek(aFilSBZ[nZ]+cCodigo)
+                    aAuxX3    := FWSX3Util():GetAllFields( 'SBZ' , .F. )
+                    aAuxBZ    := {}
+                    For nCont := 1 to len(aAuxX3)
+                        Aadd(aAuxBZ,{aAuxX3[nCont],&('SBZ->'+aAuxX3[nCont])})
+                    Next nCont 
 
-                For nCont := 1 to len(aAuxBZ)
-                    If Alltrim(aAuxBZ[nCont,01]) == "BZ_COD"
-                        &('SBZ->'+aAuxBZ[nCont,01]) := alltrim(aAuxBZ[nCont,02])+cMarca
+                Endif 
+
+                If len(aAuxBZ) > 0
+                    DbSelectArea("SBZ")
+                    Dbgotop()
+                    DbSetOrDer(1)
+                    If !Dbseek(aFilSBZ[nZ]+alltrim(cCodigo)+cMarca)
+                        Reclock("SBZ",.T.)
                     else
-                        &('SBZ->'+aAuxBZ[nCont,01]) := aAuxBZ[nCont,02]
-                    EndIf 
-                Next nCont 
+                        Reclock("SBZ",.F.)
+                    EnDIf 
 
-                SBZ->(Msunlock())
-            endIf 
+                    For nCont := 1 to len(aAuxBZ)
+                        If Alltrim(aAuxBZ[nCont,01]) == "BZ_COD"
+                            &('SBZ->'+aAuxBZ[nCont,01]) := alltrim(aAuxBZ[nCont,02])+cMarca
+                        else
+                            &('SBZ->'+aAuxBZ[nCont,01]) := aAuxBZ[nCont,02]
+                        EndIf 
+                    Next nCont 
+
+                    SBZ->(Msunlock())
+                endIf 
+            Next nZ 
 
             DbSelectArea("SB1")
             DbSetOrder(1)
@@ -81,23 +88,13 @@ Else
             MsgAlert("Produto já existe com a marca selecionada.")
         Endif
     EndIF 
-/*
-    If ParamBox(aPergs, "Informe o código da Marca a ser gerada para o produto")
-        cMarca := MV_PAR01
-        cDescM := Alltrim(Posicione("ZPM",1,xFilial("ZPM")+cMarca,"ZPM_DESC"))
-        If !Dbseek(xFilial("SB1")+Alltrim(cCodigo)+Alltrim(cMarca))
-            Processa({|| gerafilho(cMarca,cDescM,cCodigo,cGrupo,cCodFab)},"Aguarde!!!")
-        else
-            MsgAlert("Produto já existe com a marca selecionada.")
-        Endif 
-    ENDIF
-    */
+
 ENDIF
 
 Return
 
 /*/{Protheus.doc} nomeStaticFunction
-    (long_description)
+    Tela para o usuario informar o codigo da marca e codigo do fabricante do produto filho
     @type  Static Function
     @author user
     @since 15/04/2024
@@ -150,7 +147,7 @@ EndIf
 Return(lRet)
 
 /*/{Protheus.doc} nomeStaticFunction
-    (long_description)
+    Valida se a marca informada e valida
     @type  Static Function
     @author user
     @since 15/04/2024
@@ -181,7 +178,7 @@ endIF
 Return(lRet)
 
 /*/{Protheus.doc} nomeStaticFunction
-    (long_description)
+    Gera o produto filho 
     @type  Static Function
     @author user
     @since 18/09/2023
@@ -208,7 +205,6 @@ DbSetOrder(1)
 
 If DbSeek(xFilial("SB1")+cCodigo) //
 
-    //aAuxX3 := FWSX3Util():GetAllFields( cTabela , .F. )
     aAuxX3 := FWSX3Util():GetListFieldsStruct( cTabela , .F. )
 
     For nCont := 1 to len(aAuxX3)
@@ -291,3 +287,46 @@ EndIf
 RestArea(aArea)
 
 Return
+
+
+/*/{Protheus.doc} BuscaFBZ(cBkpSb1)
+    Busca filiais em que o produto existe para atualizar os filhos
+    @type  Static Function
+    @author user
+    @since date
+    @version version
+    @param param, param_type, param_descr
+    @return return, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+    /*/
+Static Function BuscaFBZ(cCodigo)
+
+Local aArea := GetArea()
+Local aRet  := {}
+Local cQuery 
+
+cQuery := "SELECT BZ_FILIAL"
+cQuery += " FROM "+RetSQLName("SBZ")+" BZ"
+cQuery += " WHERE BZ_COD='"+cCodigo+"'"
+cQuery += " AND D_E_L_E_T_=' '"
+
+
+If Select("TRB") > 0
+	TRB->( dbCloseArea() )
+EndIf             
+
+DbUseArea(.T.,"TOPCONN",TcGenQry(,,cQuery),'TRB',.F.,.T.)  
+
+dbSelectArea("TRB")
+
+While !EOF()
+    Aadd(aRet,TRB->BZ_FILIAL)
+
+    Dbskip()
+EndDo 
+
+RestArea(aArea)
+
+Return(aRet)
