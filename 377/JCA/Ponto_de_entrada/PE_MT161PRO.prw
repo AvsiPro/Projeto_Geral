@@ -9,25 +9,30 @@ Local nCont,nX,nJ
 Local nSoma         :=  0
 Local aProdPai      := {}
 
+For nCont := 1 to len(aRet[1])
+    aRet[1,nCont,1,7] := 0
+Next nCont 
+
 //Soma dos itens vencedores para atualizar o cabeçalho com itens de medalha
 For nCont := 1 to len(aRet[1])
     If len(aRet[1,nCont,1]) > 6
         nSoma := 0
+        aProdPai := {}
         For nX := 2 to len(aRet[1,nCont])
             For nJ := 1 to len(aRet[1,nCont,nX])
-                /*If aRet[1,nCont,nX,nJ,1]
-                    nSoma += aRet[1,nCont,nX,nJ,4]
-                EndIf*/
-                 nPosP := Ascan(aProdPai,{|x| alltrim(x[1]) == substr(aRet[1,nCont,nX,nJ,3],1,8)})
-                If nPosP > 0
-                    If aProdPai[nPosP,02] > aRet[1,nCont,nX,nJ,4]
-                        aProdPai[nPosP,02] := aRet[1,nCont,nX,nJ,4]
-                    Else 
-                        aRet[1,nCont,nX,nJ,1] := .F.
+                If aRet[1,nCont,nX,nJ,1]
+                //    nSoma += aRet[1,nCont,nX,nJ,4]
+                    nPosP := Ascan(aProdPai,{|x| alltrim(x[1]) == substr(aRet[1,nCont,nX,nJ,3],1,8)})
+                    If nPosP > 0
+                        If aProdPai[nPosP,02] > aRet[1,nCont,nX,nJ,18] //4
+                            aProdPai[nPosP,02] := aRet[1,nCont,nX,nJ,18] //4
+                        Else 
+                            aRet[1,nCont,nX,nJ,1] := .F.
+                        EndIf 
+                    Else    
+                        Aadd(aProdPai,{substr(aRet[1,nCont,nX,nJ,3],1,8),aRet[1,nCont,nX,nJ,18]}) //4
                     EndIf 
-                Else    
-                    Aadd(aProdPai,{substr(aRet[1,nCont,nX,nJ,3],1,8),aRet[1,nCont,nX,nJ,4]})
-                EndIf 
+                EndIf
             Next nJ
         Next nX
 
@@ -35,7 +40,7 @@ For nCont := 1 to len(aRet[1])
         Aeval(aProdPai,{|x| nSoma+= x[2]})
 
         aRet[1,nCont,1,7] := nSoma
-        CalcImp(SC8->C8_NUM,1,aRet[1,nCont,1,1],aRet[1,nCont,1,2])
+        //CalcImp(SC8->C8_NUM,1,aRet[1,nCont,1,1],aRet[1,nCont,1,2])
     EndIf 
 Next nCont 
 
@@ -47,21 +52,23 @@ For nCont := 1 to len(aRet[1])
         If aRet[1,nCont,1,7] == 0
             For nX := 2 to len(aRet[1,nCont])
                 For nJ := 1 to len(aRet[1,nCont,nX])
-                    nPosP := Ascan(aProdPai,{|x| alltrim(x[1]) == substr(aRet[1,nCont,nX,nJ,3],1,8)})
-                    If nPosP > 0
-                        If aProdPai[nPosP,02] > aRet[1,nCont,nX,nJ,4]
-                            aProdPai[nPosP,02] := aRet[1,nCont,nX,nJ,4]
+                    If !aRet[1,nCont,nX,nJ,1]
+                        nPosP := Ascan(aProdPai,{|x| alltrim(x[1]) == substr(aRet[1,nCont,nX,nJ,3],1,8)})
+                        If nPosP > 0
+                            If aProdPai[nPosP,02] > aRet[1,nCont,nX,nJ,18] //4
+                                aProdPai[nPosP,02] := aRet[1,nCont,nX,nJ,18] //4
+                            EndIf 
+                        Else    
+                            Aadd(aProdPai,{substr(aRet[1,nCont,nX,nJ,3],1,8),aRet[1,nCont,nX,nJ,18],.F.}) //4
                         EndIf 
-                    Else    
-                        Aadd(aProdPai,{substr(aRet[1,nCont,nX,nJ,3],1,8),aRet[1,nCont,nX,nJ,4]})
                     EndIf 
                 Next nJ
             Next nX
 
-            Aeval(aProdPai,{|x| nSoma+= x[2]})
+            Aeval(aProdPai,{|x| nSoma+= If(!x[3],x[2],0)})
             //    nSoma += aRet[1,nCont,nX,nJ,4]
             aRet[1,nCont,1,7] := nSoma
-            CalcImp(SC8->C8_NUM,1,aRet[1,nCont,1,1],aRet[1,nCont,1,2])
+            //CalcImp(SC8->C8_NUM,1,aRet[1,nCont,1,1],aRet[1,nCont,1,2])
         EndIf 
     EndIf 
 Next nCont

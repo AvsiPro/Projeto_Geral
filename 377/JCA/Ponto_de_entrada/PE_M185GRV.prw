@@ -1,4 +1,11 @@
 #INCLUDE 'PROTHEUS.CH'
+/*
+    Ponto de entrada na baixa de requisição ao armazém
+    Localização: Function A185Gera(Gera requisicoes.) e A185GeraAut(Gera as requisicoes usando o Movimentos Modelo 2).
+
+    Em que ponto: E chamado apos a gravação de todos os dados, inclusive apos gerar a requisição no arquivo de movimentos internos (SD3).
+
+*/
 User Function M185GRV() 
 Local lRet := .T.    
 Local aAux1 := aDadosCQ

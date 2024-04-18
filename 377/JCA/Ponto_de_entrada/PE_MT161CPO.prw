@@ -13,7 +13,9 @@ Local nY         := 0
 Local nZ         := 0
 Local nCount     := 0
 Local aAreaSC8   := SC8->(GetArea())
- 
+
+Private nLinha   := 1
+
 For nX := 1 To Len(aPropostas)
     For nY := 1 To Len(aPropostas[nX])
         For nZ := 1 To Len(aPropostas[nX][nY][2])
@@ -24,7 +26,7 @@ For nX := 1 To Len(aPropostas)
 
                 cConteudo := CalcImp(SC8->C8_NUM,1,aPropostas[1,nY,1,1],aPropostas[1,nY,1,2],aPropostas[1,nY,1,3],aPropostas[nX][nY][2][nz][2])
                 AADD(aPropostas[nX][nY][2][nZ],cConteudo )
-                
+                nLinha++
             Else
                 AADD(aPropostas[nX][nY][2][nZ],0)
             EndIf
@@ -68,7 +70,6 @@ Local aAreaB1   := SD1->(GetArea())
 Local aAreaC6   := SB1->(GetArea())
 Local cQryIte   := ""
 Local nValPed   := 0
-Local nNritem   := 0
 Local cCodFor   :=  ''
 Local cLojFor   :=  ''
 Local nValCMP   := 0
@@ -115,15 +116,15 @@ If nTipo == 1
     cQryIte += " ORDER BY "
     cQryIte += "    C8_ITEM "
     
-    cQryIte := ChangeQuery(cQryIte)
+    //cQryIte := ChangeQuery(cQryIte)
     
-    TCQuery cQryIte New Alias "QRY_ITE"
+    //TCQuery cQryIte New Alias "QRY_ITE"
         
     DbSelectArea('SC8')
 
     IF !Empty(cFornec)
         SC8->(DbSetOrder(1))
-        SC8->(DbSeek(FWxFilial('SC8') + cNumPed))
+        SC8->(DbSeek(FWxFilial('SC8') + cNumPed + cFornec + cLoja + cItem))
     Else 
         SC8->(DbSetOrder(8))
         SC8->(DbSeek(FWxFilial('SC8') + cNumPed + cFornec + cLoja + cNomFor))
@@ -170,33 +171,33 @@ If nTipo == 1
         "MATA103")                                    // 10-Nome da rotina que esta utilizando a funcao
         
     //Pega o total de itens
-    QRY_ITE->(DbGoTop())
+    /*QRY_ITE->(DbGoTop())
     While ! QRY_ITE->(EoF())
         nNritem++
         QRY_ITE->(DbSkip())
-    EndDo
+    EndDo*/
         
     //Preenchendo o valor total
-    QRY_ITE->(DbGoTop())
+    //QRY_ITE->(DbGoTop())
     nTotIPI := 0
-    nLinha := 1
+    //nLinha := val(SC8->C8_ITEM)
 
-    While ! QRY_ITE->(EoF())
+    /*While ! QRY_ITE->(EoF())
         //Pega os tratamentos de impostos
         SB1->(DbSeek(FWxFilial("SB1")+QRY_ITE->C8_PRODUTO))
         //SC8->(DbSeek(FWxFilial("SC8")+cNumPed+QRY_ITE->C8_ITEM))
             
         MaFisAdd(   QRY_ITE->C8_PRODUTO,;                     // 1-Codigo do Produto                 ( Obrigatorio )
-                    /*SC8->C8_TES*/ '001',;                         // 2-Codigo do TES                     ( Opcional )
+                    / * SC8->C8_TES* / '001',;                         // 2-Codigo do TES                     ( Opcional )
                     QRY_ITE->C8_QUANT,;                      // 3-Quantidade                     ( Obrigatorio )
                     QRY_ITE->C8_PRECO,;                      // 4-Preco Unitario                 ( Obrigatorio )
                     QRY_ITE->C8_VLDESC,;                    // 5 desconto
-                    /*SC8->C6_NFORI*/'',;                     // 6-Numero da NF Original             ( Devolucao/Benef )
-                    /*SC8->C6_SERIORI*/'',;                    // 7-Serie da NF Original             ( Devolucao/Benef )
+                    /*SC8->C6_NFORI* /'',;                     // 6-Numero da NF Original             ( Devolucao/Benef )
+                    /*SC8->C6_SERIORI* /'',;                    // 7-Serie da NF Original             ( Devolucao/Benef )
                     0,;                                    // 8-RecNo da NF Original no arq SD1/SD2
-                    QRY_ITE->C8_VALFRE /*/nNritem*/,;                // 9-Valor do Frete do Item         ( Opcional )
-                    QRY_ITE->C8_DESPESA /*/nNritem*/,;            // 10-Valor da Despesa do item         ( Opcional )
-                    QRY_ITE->C8_SEGURO /*/nNritem*/,;            // 11-Valor do Seguro do item         ( Opcional )
+                    QRY_ITE->C8_VALFRE /* /nNritem* /,;                // 9-Valor do Frete do Item         ( Opcional )
+                    QRY_ITE->C8_DESPESA /* /nNritem* /,;            // 10-Valor da Despesa do item         ( Opcional )
+                    QRY_ITE->C8_SEGURO /* /nNritem* /,;            // 11-Valor do Seguro do item         ( Opcional )
                     0,;                                    // 12-Valor do Frete Autonomo         ( Opcional )
                     QRY_ITE->C8_TOTAL,;                     // 13-Valor da Mercadoria             ( Obrigatorio )
                     0,;                                    // 14-Valor da Embalagem             ( Opcional )
@@ -208,22 +209,58 @@ If nTipo == 1
         nTotItem := MaFisRet(1,"IT_TOTAL")
         nLinha++
         QRY_ITE->(DbSkip())
-    EndDo
+    EndDo*/
+
+    MaFisAdd(   SC8->C8_PRODUTO,;                     // 1-Codigo do Produto                 ( Obrigatorio )
+                    /*SC8->C8_TES*/ '001',;                         // 2-Codigo do TES                     ( Opcional )
+                    SC8->C8_QUANT,;                      // 3-Quantidade                     ( Obrigatorio )
+                    SC8->C8_PRECO,;                      // 4-Preco Unitario                 ( Obrigatorio )
+                    SC8->C8_VLDESC,;                    // 5 desconto
+                    /*SC8->C6_NFORI*/'',;                     // 6-Numero da NF Original             ( Devolucao/Benef )
+                    /*SC8->C6_SERIORI*/'',;                    // 7-Serie da NF Original             ( Devolucao/Benef )
+                    0,;                                    // 8-RecNo da NF Original no arq SD1/SD2
+                    SC8->C8_VALFRE /*/nNritem*/,;                // 9-Valor do Frete do Item         ( Opcional )
+                    SC8->C8_DESPESA /*/nNritem*/,;            // 10-Valor da Despesa do item         ( Opcional )
+                    SC8->C8_SEGURO /*/nNritem*/,;            // 11-Valor do Seguro do item         ( Opcional )
+                    0,;                                    // 12-Valor do Frete Autonomo         ( Opcional )
+                    SC8->C8_TOTAL,;                     // 13-Valor da Mercadoria             ( Obrigatorio )
+                    0,;                                    // 14-Valor da Embalagem             ( Opcional )
+                    0,;                                     // 15-RecNo do SB1
+                    0)                                     // 16-RecNo do SF4
+            
+        nValSOL := MaFisRet(nLinha, "IT_VALSOL") 
+        nValCMP := MaFisRet(nLinha, "IT_VALCMP")  //difal
+        nTotItem := MaFisRet(nLinha,"IT_TOTAL")
+        
+        nValICM := MaFisRet(nLinha, "IT_VALICM") 
+        nValSOL := MaFisRet(nLinha, "IT_VALSOL") 
+        nValCMP := MaFisRet(nLinha, "IT_VALCMP") 
+        nValIPI := MaFisRet(nLinha, "IT_VALIPI") 
+        nValISS := MaFisRet(nLinha, "IT_VALISS") 
+        nValIRR := MaFisRet(nLinha, "IT_VALIRR") 
+        nValINSS := MaFisRet(nLinha, "IT_VALINS") 
+        nVlCofins := MaFisRet(nLinha, "IT_VALCOF") 
+        nValCSL := MaFisRet(nLinha, "IT_VALCSL") 
+        nValPIS := MaFisRet(nLinha, "IT_VALPIS") 
+        nValPS2 := MaFisRet(nLinha, "IT_VALPS2") 
+        nValFec := MaFisRet(nLinha, "IT_VALFECP")
+        nValICC := MaFisRet(nLinha, "IT_ALIQCMP")
+        nValCF2 := MaFisRet(nLinha, "IT_VALCF2")
         
     //Pegando totais
-    nTotIPI   := MaFisRet(,'NF_VALIPI')
+    /*nTotIPI   := MaFisRet(,'NF_VALIPI')
     nTotICM   := MaFisRet(,'NF_VALICM')
     nTotNF    := MaFisRet(,'NF_TOTAL')
     nTotFrete := MaFisRet(,'NF_FRETE')
     nTotISS   := MaFisRet(,'NF_VALISS')
         
     QRY_ITE->(DbCloseArea())
-    MaFisEnd()
+    MaFisEnd()*/
 
 EndIf
     
 //Atualiza o retorno
-nValPed := nTotItem + nValCMP + nValSOL//nTotNF + nTotIPI + nTotFrete + nTotISS + nValCMP
+nValPed := nTotItem + nValCMP + nValSOL + nValFec + SC8->C8_ICMSCOM  //Colocado o C8 porque o IT_VALCMP não estava retornando corretamente
 
 If lCriaFor 
     DbSelectArea("SA2")

@@ -1,3 +1,18 @@
+#INCLUDE 'PROTHEUS.CH'
+
+/*
+    PE Para validar alteração do cadastro de produtos
+    Utilizado para validar na alteração de modo a não permitir que produtos filhos
+    sejam alterados e para que ao atualizar algum dado do pai replique para os filhos
+    seja SB1, SB5 ou SBZ
+
+    DOC MIT
+    
+    DOC ENTREGA
+    
+    
+*/
+
 User Function A010TOK()
 
 Local aArea         :=  GetArea()

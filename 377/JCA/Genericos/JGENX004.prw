@@ -2,7 +2,7 @@
 #include "topconn.ch"
 
 /*/{Protheus.doc} User Function nomeFunction
-    (long_description)
+    somente para teste da função matxfun para utilizar na rotina de difal da cotação de compras.
     @type  Function
     @author user
     @since 20/03/2024

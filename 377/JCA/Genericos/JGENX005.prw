@@ -1,5 +1,16 @@
 #INCLUDE 'PROTHEUS.CH'
+/*
+    Função para validar quais campos foram alterados na tabela solicitada
 
+    Utilizada para validar os campos alterados a principio no cadastro de produtos (SB1.SB5.SBZ)
+    Para que esta alteração possa ser replicada para os produtos filhos deste produto, caso existam.
+    
+    DOC MIT
+    
+    DOC ENTREGA
+    
+    
+*/
 User Function JGENX005(cTabela,nOpc)
 
 Local aArea1	:=	GetArea()
