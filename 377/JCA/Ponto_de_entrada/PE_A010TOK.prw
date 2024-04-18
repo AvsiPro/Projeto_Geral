@@ -79,38 +79,6 @@ If Altera
             EndIf 
         EndIf 
 
-        aAlterados := {}
-            
-        DbSelectArea("SBZ")
-        DbSetOrder(1)
-        If DbSeek(xFilial("SBZ")+cBkpSb1)
-            aAlterados := U_JGENX005('SBZ',3)
-
-            If len(aFilhos) > 0 .And. len(aAlterados) > 0
-                DbSelectArea("SBZ")
-                For nX := 1 to len(aFilhos)
-                    If DbSeek(xFilial("SBZ")+aFilhos[nX,01])
-                        Reclock("SBZ",.F.)
-                    Else 
-                        Reclock("SBZ",.T.)
-                    EndIf 
-
-                    For nCont := 1 to len(aAlterados) 
-                        
-                        If Alltrim(aAlterados[nCont,01]) == "BZ_COD"
-                            &('SBZ->'+aAlterados[nCont,01]) := aFilhos[nX,01]
-                        Else
-                            &('SBZ->'+aAlterados[nCont,01]) := aAlterados[nCont,02]
-                        EndIf 
-                    Next nCont
-
-                    SBZ->(Msunlock())
-                Next nX 
-            EndIf 
-        EndIf 
-
-        //MSGALERT("TESTE",'')
-
     EndIF 
 EndIf 
 
@@ -119,7 +87,7 @@ RestArea(aArea)
 Return (lExecuta)
 
 /*/{Protheus.doc} nomeStaticFunction
-    (long_description)
+    Busca os produtos filhos deste cadastro que esta sendo atualizado
     @type  Static Function
     @author user
     @since date
@@ -160,3 +128,5 @@ EndDo
 RestArea(aArea)
 
 Return(aRet)
+
+
