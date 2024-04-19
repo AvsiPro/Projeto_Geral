@@ -15,6 +15,6 @@ User Function MA103OPC()
 
 Local aRet := {}
 
-aAdd(aRet,{'Boletim de Faturamento', 'U_JESTR003()', 0, 5})
+aAdd(aRet,{'Boletim de Entrada', 'U_JESTR003()', 0, 5})
 
 Return aRet
