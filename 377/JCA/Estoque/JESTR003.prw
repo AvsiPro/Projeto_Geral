@@ -160,11 +160,12 @@ Local nPg		  := 0
 Local cPedidos    := ''
 Local cBarra      := ''
 
-cQuery := "SELECT F1.*,D1.*,B1_DESC"
+cQuery := "SELECT F1.*,D1.*,B1_DESC,BZ_XLOCALI"
 cQuery += " FROM "+RetSQLName("SF1")+" F1"
 cQuery += " INNER JOIN "+RetSQLName("SD1")+" D1 ON D1_FILIAL=F1_FILIAL AND D1_DOC=F1_DOC AND D1_SERIE=F1_SERIE"
 cQuery += " AND D1_FORNECE=F1_FORNECE AND D1.D_E_L_E_T_=' '"
 cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD=D1_COD AND B1.D_E_L_E_T_=' '"
+cQuery += " LEFT JOIN "+RetSQLName("SBZ")+" BZ ON BZ_FILIAL='"+xFilial("SBZ")+"' AND BZ_COD=B1_COD AND BZ.D_E_L_E_T_=' '"
 cQuery += " WHERE F1_FILIAL='"+xFilial("SF1")+"'"
 
 If lBrowse
@@ -224,8 +225,8 @@ While CADTMP->(!Eof())
 
     //For nP := 1 to 19 19 itens são possiveis na mesma pagina
         oPrint:Say(li,050,OemToAnsi(Alltrim(CADTMP->D1_COD)+"-"+Alltrim(CADTMP->B1_DESC)),oCouNew10)
-        oPrint:Say(li,890,OemToAnsi("LOCALIZACAO"),oCouNew10)
-        oPrint:Say(li,1290,OemToAnsi("PREFIXO"),oCouNew10)
+        oPrint:Say(li,890,OemToAnsi(Alltrim(CADTMP->BZ_XLOCALI)),oCouNew10)
+        oPrint:Say(li,1290,OemToAnsi("-"),oCouNew10)  //solicitado em 19/04
         oPrint:Say(li,1590,OemToAnsi(cvaltochar(CADTMP->D1_QUANT)),oCouNew10)
         oPrint:Say(li,1790,OemToAnsi(Transform(CADTMP->D1_VUNIT,"@E 999,999,999.99")),oCouNew10)
         oPrint:Say(li,2190,OemToAnsi(Transform(CADTMP->D1_TOTAL,"@E 999,999,999.99")),oCouNew10)
