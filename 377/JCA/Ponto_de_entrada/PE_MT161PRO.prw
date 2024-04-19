@@ -43,13 +43,13 @@ For nW := 1 to len(aRet)
 
                         nPosP := Ascan(aProdPai,{|x| alltrim(x[1]) == substr(aRet[nW,nCont,nX,nJ,3],1,8)})
                         If nPosP > 0
-                            If aProdPai[nPosP,02] > aRet[nW,nCont,nX,nJ,18] //4
-                                aProdPai[nPosP,02] := aRet[nW,nCont,nX,nJ,18] //4
+                            If aProdPai[nPosP,02] > aRet[nW,nCont,nX,nJ,4] //18
+                                aProdPai[nPosP,02] := aRet[nW,nCont,nX,nJ,4] //18
                             Else 
                                 aRet[nW,nCont,nX,nJ,1] := .F.
                             EndIf 
                         Else    
-                            Aadd(aProdPai,{substr(aRet[nW,nCont,nX,nJ,3],1,8),aRet[nW,nCont,nX,nJ,18]}) //4
+                            Aadd(aProdPai,{substr(aRet[nW,nCont,nX,nJ,3],1,8),aRet[nW,nCont,nX,nJ,4]}) //18
                         EndIf 
                     EndIf
                 Next nJ
@@ -75,11 +75,11 @@ For nW := 1 to len(aRet)
                         If !aRet[nW,nCont,nX,nJ,1]
                             nPosP := Ascan(aProdPai,{|x| alltrim(x[1]) == substr(aRet[nW,nCont,nX,nJ,3],1,8)})
                             If nPosP > 0
-                                If aProdPai[nPosP,02] > aRet[nW,nCont,nX,nJ,18] //4
-                                    aProdPai[nPosP,02] := aRet[nW,nCont,nX,nJ,18] //4
+                                If aProdPai[nPosP,02] > aRet[nW,nCont,nX,nJ,4] //18
+                                    aProdPai[nPosP,02] := aRet[nW,nCont,nX,nJ,4] //18
                                 EndIf 
                             Else    
-                                Aadd(aProdPai,{substr(aRet[nW,nCont,nX,nJ,3],1,8),aRet[nW,nCont,nX,nJ,18],.F.}) //4
+                                Aadd(aProdPai,{substr(aRet[nW,nCont,nX,nJ,3],1,8),aRet[nW,nCont,nX,nJ,4],.F.}) //18
                             EndIf 
                         EndIf 
                     Next nJ
