@@ -1,5 +1,10 @@
 #INCLUDE 'PROTHEUS.CH'
-
+/*--------------------------------------------------------------------------------------------------------------*
+ | P.E.:  MT120TEL                                                                                              |
+ | Desc:  Ponto de Entrada para gravar informações no pedido de compra a cada item (usado junto com MTA120G2)   |
+ | Link:  http://tdn.totvs.com/pages/releaseview.action?pageId=6085572                                          |
+ *--------------------------------------------------------------------------------------------------------------*/
+  
 User Function MT120TEL()
     Local aArea     := GetArea()
     Local oDlg      := PARAMIXB[1] 

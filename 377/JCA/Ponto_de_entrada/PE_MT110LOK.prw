@@ -32,10 +32,6 @@ If !lPrdPai
             nPosTpCt := 0
             MsgAlert("Não é permitido alterar a quantidade dos produtos filhos","PE_MT110LOK")
         EndIf 
-    /*Else 
-        lValido := .F.
-        nPosTpCt := 0
-        MsgAlert("Produto pai não encontrado na solicitação de compra","PE_MT110LOK")*/
     EndIf 
 
 EndIf 

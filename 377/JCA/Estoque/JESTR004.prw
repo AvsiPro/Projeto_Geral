@@ -366,42 +366,6 @@ oPrint:line(330,2310,3100,2310 )
 
 oPrint:Say(360,2320,OemToAnsi("Tipo"),oArial10N)
 
-/*+" a "+
-oPrint:Say(050,0040,OemToAnsi("Empresa :"),oArial11N)
-oPrint:Say(050,0280,OemToAnsi(SM0->M0_CODIGO+" "+SM0->M0_NOMECOM ),oArial11N)
-oPrint:Say(100,0040,OemToAnsi("Filial  :"),oArial11N)
-oPrint:Say(100,0280,OemToAnsi( + SM0->M0_CODFIL+" "+SM0->M0_FILIAL),oArial11N)
-*/
-//oPrint:Say(150,0030,Replicate("-",211),oCouNew08)
-
-//oPrint:Say(190,1050,OemToAnsi("Relatório de Venda Perdida"),oArial14N)  
-
-/*
-oPrint:Say(290,0040,OemToAnsi("Empresa/Filial :"),oArial11N)
-oPrint:Say(290,0300,OemToAnsi(MV_PAR01+" a "+MV_PAR02 ),oArial11N)
-
-oPrint:Say(290,0900,OemToAnsi("Periodo :"),oArial11N)
-oPrint:Say(290,1100,OemToAnsi(cvaltochar(MV_PAR03)+"  a  "+cvaltochar(MV_PAR04) ),oArial11N)
-
-oPrint:Say(290,1900,OemToAnsi("Material :"),oArial11N)
-oPrint:Say(290,2100,OemToAnsi(MV_PAR05+" a "+MV_PAR06 ),oArial11N)
-
-oPrint:Say(350,0040,OemToAnsi("Prefixo :"),oArial11N)
-oPrint:Say(350,0300,OemToAnsi(MV_PAR07+" a "+MV_PAR08 ),oArial11N)
-
-oPrint:Say(350,0900,OemToAnsi("Solicitante :"),oArial11N)
-oPrint:Say(350,1100,OemToAnsi(MV_PAR09+"  a  "+MV_PAR10 ),oArial11N)
-
-oPrint:Say(350,1900,OemToAnsi("Requisição :"),oArial11N)
-oPrint:Say(350,2100,OemToAnsi(MV_PAR11+" a "+MV_PAR12 ),oArial11N)
-
-*/
-//oPrint:Say(0400,0030,Replicate("-",211),oCouNew08)
-
-
-
-//oPrint:Say(0530,0030,Replicate("-",211),oCouNew08)
-
 li := 480
 
 Return 
