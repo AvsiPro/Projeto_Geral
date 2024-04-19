@@ -67,6 +67,9 @@ static function fProcess(aZ04_Atual,aZ05AtivosPreCadastro)
 	local nQtdCrd 		  := 0
 	local nQtdDeb 		  := 0
 	Private cRecCt2		  := ''
+	Private dDtMovC		
+	Private cHistor	 	  := ''
+	Private cCusto 		  := ''
 	
 	ProcRegua(nQtdRegsToInteg)
 
@@ -415,6 +418,9 @@ static function fGetTotalDebito(cDataini, cDataFim, aZ05AtivosPreCadastro)
 	if (cAlias)->(!eof())
 		nTotalDebito := (cAlias)->TOTAL	
 		cRecCt2 += cvaltochar((cAlias)->REGCT2) + '/'
+		dDtMovC := stod((cAlias)->DATAMOV)
+		cHistor := Alltrim((cAlias)->HISTORICO)
+		cCusto  := (cAlias)->CCUSTO
 	endIf
 
 	(cAlias)->(dbCloseArea())	
@@ -435,6 +441,12 @@ static function fGetTotalCredito(cDataini, cDataFim, aZ05AtivosPreCadastro)
 	if (cAlias)->(!eof())
 		nTotalCredit := (cAlias)->TOTAL	
 		cRecCt2 += cvaltochar((cAlias)->REGCT2) + '/'
+		dDtMovC := stod((cAlias)->DATAMOV)
+		cHistor := Alltrim((cAlias)->HISTORICO)
+
+		If Empty(cCusto)
+			cCusto  := (cAlias)->CCUSTO
+		EndIf 
 	endIf
 
 	(cAlias)->(dbCloseArea())	
@@ -462,7 +474,15 @@ static function fGet3QueryCT2(nTipo, aZ05AtivosPreCadastro, cDataini, cDataFim)
 		cCTINVE := aZ05AtivosPreCadastro[6]	//-20230221
 
 		//cQuery := " SELECT SUM(CT2.CT2_VALOR) TOTAL FROM " + 	retSqlName("CT2") + " CT2 "  + CRLF
-		cQuery := " SELECT CT2.CT2_VALOR TOTAL, CT2.R_E_C_N_O_ AS REGCT2 "
+		cQuery := " SELECT CT2.CT2_VALOR TOTAL, CT2.R_E_C_N_O_ AS REGCT2, CT2.CT2_DATA AS DATAMOV, "
+		cQuery += " CT2.CT2_HIST AS HISTORICO "
+
+		if nTipo == DEBITO
+			cQuery += ", CT2.CT2_CCD AS CCUSTO "
+		Else 
+			cQuery += ", CT2.CT2_CCC AS CCUSTO "
+		EndIf 
+
 		cQuery += "  FROM " + 	retSqlName("CT2") + " CT2 "  + CRLF
 		cQuery += " WHERE 1 = 1 "  								 	 				 		 + CRLF
 		cQuery += "    AND CT2.CT2_FILIAL = '"+fwxFilial("CT2")+"' "						 + CRLF
@@ -501,7 +521,7 @@ static function fGet3QueryCT2(nTipo, aZ05AtivosPreCadastro, cDataini, cDataFim)
 			cQuery += "    AND CT2_DC IN ('3','2') "	 				 					 + CRLF		
 
 			cQuery += "    AND SUBSTRING(CT2.CT2_CCC,1,4)   = '1631' " 					 		 + CRLF			
-			cQuery += "    AND SUBSTRING(CT2.CT2_CREDITO,1,1)   = '4' " 					 		 + CRLF			
+			cQuery += "    AND SUBSTRING(CT2.CT2_CREDIT,1,1)   = '4' " 					 		 + CRLF			
 
 		endIf
 
@@ -932,12 +952,12 @@ static function fPopulaModelMaster(oModel, aZ04_Atual, aZ05AtivosPreCadastro, nV
 	cDescPreCad			:= allTrim(aZ04_Atual[4]) 
 	cITEM				:= getMaxItemN1(cCBASE)	
 	nQUANTD				:= 1		
-
+ 
 	oModel:SetValue( "SN1MASTER",  "N1_FILIAL", fwxFilial("SN1"))
 	oModel:SetValue( "SN1MASTER",  "N1_GRUPO", cGrupo			)
 	oModel:SetValue( "SN1MASTER",  "N1_CBASE", cCBASE			)
 	oModel:SetValue( "SN1MASTER",  "N1_ITEM", cITEM				)
-	oModel:SetValue( "SN1MASTER",  "N1_AQUISIC", dDataBase		)
+	oModel:SetValue( "SN1MASTER",  "N1_AQUISIC", dDtMovC		)   //dDataBase
 	oModel:SetValue( "SN1MASTER",  "N1_QUANTD", 1				)
 	oModel:SetValue( "SN1MASTER",  "N1_DESCRIC", cDescPreCad	)
 	oModel:SetValue( "SN1MASTER",  "N1_PATRIM", cPatrim			)
@@ -1013,6 +1033,25 @@ static function fPopula1ModelDetails(oModel, aZ04_Atual, aZ05AtivosPreCadastro, 
 			else		
 				oModel:LoadValue("SN3DETAIL",  "N3_VORIG1", nValor)
 			EndIf	
+			
+			If oModel:CanSetValue("SN3DETAIL", "N3_DINDEPR")
+				oModel:SetValue( "SN3DETAIL",  "N3_DINDEPR", dDtMovC)
+			else		
+				oModel:LoadValue("SN3DETAIL",  "N3_DINDEPR", dDtMovC)
+			EndIf
+
+			If oModel:CanSetValue("SN3DETAIL", "N3_HISTOR")
+				oModel:SetValue( "SN3DETAIL",  "N3_HISTOR", cHistor)
+			else		
+				oModel:LoadValue("SN3DETAIL",  "N3_HISTOR", cHistor)
+			EndIf
+
+			If oModel:CanSetValue("SN3DETAIL", "N3_CCUSTO")
+				oModel:SetValue( "SN3DETAIL",  "N3_CCUSTO", cCusto)
+			else		
+				oModel:LoadValue("SN3DETAIL",  "N3_CCUSTO", cCusto)
+			EndIf
+			
 
 			If oModel:CanSetValue("SN3DETAIL", "N3_ZZDESCR")
 				oModel:SetValue( "SN3DETAIL",  "N3_ZZDESCR", cDescriFull)
