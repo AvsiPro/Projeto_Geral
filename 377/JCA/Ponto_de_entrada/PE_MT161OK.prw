@@ -1,4 +1,16 @@
 #INCLUDE "PROTHEUS.CH"
+/*
+    Ponto de entrada
+    Validação dos itens vencedores da cotação sendo aprovada para gerar o pedido de compra
+
+    
+    Doc Mit
+    
+    Doc Validação entrega
+    
+    
+    
+*/
 
 User Function MT161OK()
 
@@ -14,6 +26,7 @@ Local aAux      := {}
 Local aAux2     := {}
 Local aDados    := {}
 Local lCotOk    := .t. //valc1qtd(SC8->C8_NUM)
+Local cNumSC8   := SC8->C8_NUM
 Local aItensV   := {}
 
 If lCotOk
@@ -48,10 +61,12 @@ If lCotOk
             If Valtype(aDados[nCont1,nCont2]) == "A"
                 //For nCont3 := 1 to len(aDados[nCont1][nCont2])
                     If aDados[nCont1,nCont2,1]
+                        nQtdC8 := Posicione("SC8",3,xFilial("SC8")+cNumSC8+aDados[nCont1,nCont2,3]+aDados[nCont1,1]+aDados[nCont1,2],"C8_QUANT")
                         Aadd(aItensV,{  aDados[nCont1,nCont2,3],;
                                         aDados[nCont1,nCont2,4],;
                                         aDados[nCont1,nCont2,13],;
-                                        round(aDados[nCont1,nCont2,4] / aDados[nCont1,nCont2,13],0)})
+                                        nQtdC8})
+                                        //round(aDados[nCont1,nCont2,4] / aDados[nCont1,nCont2,13],0)})
                     EndIf 
                 //Next nCont3
             EndIf 
@@ -154,7 +169,8 @@ RestArea(aArea)
 Return
 
 /*/{Protheus.doc} nomeStaticFunction
-    (long_description)
+    Valida as quantidades e valores dos itens com a cotação
+    para não permitir mais que um item filho no pedido, trazer somente o de menor valor
     @type  Static Function
     @author user
     @since 03/10/2023
@@ -215,9 +231,9 @@ For nCont := 1 to len(aItensV)
         nPos2 := Ascan(aAux,{|x| alltrim(x[1]) == alltrim(aItem[nPos,02])})
 
         If nPos2 == 0
-            Aadd(aAux,{aItem[nPos,02],aItem[nPos,3],round(aItensV[nCont,02] / aItensV[nCont,03],0),nSoma}) //round(aItensV[nCont,04],2)})
+            Aadd(aAux,{aItem[nPos,02],aItem[nPos,3],aItensV[nCont,04],nSoma})  //round(aItensV[nCont,02] / aItensV[nCont,03],0)
         Else 
-            aAux[nPos2,3] += round(aItensV[nCont,02] / aItensV[nCont,03],0)
+            aAux[nPos2,3] += aItensV[nCont,04] //round(aItensV[nCont,02] / aItensV[nCont,03],0)
             //aAux[nPos2,4] += round(aItensV[nCont,04],2)
         EndIf
     EndIf 

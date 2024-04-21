@@ -5,11 +5,11 @@
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
 ±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
-±±³Programa  ³JESTR006   ³ Autor ³ Rodrigo de A Sartorio ³ Data ³ 29.01.06 ³±±
+±±³Programa  ³JESTR006   ³ Autor ³ 377					³ Data ³          ³±±
 ±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
-±±³Descri‡…o ³ Relacao de transferencias entre filiais                    ³±±
+±±³Descri‡…o ³ Relacao de transferencias entre filiais em Excel           ³±±
 ±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
-±±³Retorno   ³Nenhum                                                      ³±±
+±±³Retorno   ³                                                            ³±±
 ±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
 ±±³   DATA   ³ Programador   ³Manutencao efetuada                         ³±±
 ±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
@@ -19,9 +19,7 @@
 ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
 */
 User Function JESTR006()
-//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-//³Define Variaveis                                                        ³
-//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
 Local Titulo  := STR0001    //"Transferencias entre filiais"                                     // Titulo do Relatorio
 Local cDesc1  := STR0002    //"O relatorio ira imprimir as informacoes sobre as notas fiscais"   // Descricao 1
 Local cDesc2  := STR0003    //"de transferencia entre filiais, imprimindo informacoes sobre as"  // Descricao 2
@@ -332,53 +330,40 @@ Do While ! Eof() .And. SM0->M0_CODIGO == cEmpAnt
 							li++
 						Endif
 
-	                    // Posiciona no produto
 	                    SB1->(MsSeek(xFilial("SB1")+(cAliasSD2)->D2_COD))
-						//@ li,000 PSAY Substr(cFilAnt,1,10)
-                        Aadd(aAuxExc,Substr(cFilAnt,1,10))
-						//@ li,011 PSAY Substr(SM0->M0_FILIAL,1,15)
-                        Aadd(aAuxExc,Substr(SM0->M0_FILIAL,1,15))
-						//@ li,027 PSAY Substr((cAliasSD2)->D2_DOC,1,nTamDoc)
-                        Aadd(aAuxExc,Substr((cAliasSD2)->D2_DOC,1,nTamDoc))
+						
+						Aadd(aAuxExc,Substr(cFilAnt,1,10))
+						
+						Aadd(aAuxExc,Substr(SM0->M0_FILIAL,1,15))
+						
+						Aadd(aAuxExc,Substr((cAliasSD2)->D2_DOC,1,nTamDoc))
                         
 
 						If lTamDoc
-							//@ li,048 PSAY Substr((cAliasSD2)->&(SerieNfId("SD2",3,"D2_SERIE")),1,3)
-							//@ li,055 PSAY Substr((cAliasSD2)->D2_TES,1,3)
-							//@ li,060 PSAY Substr((cAliasSD2)->D2_CF,1,5)
-                            Aadd(aAuxExc,Substr((cAliasSD2)->&(SerieNfId("SD2",3,"D2_SERIE")),1,3))
+							
+							Aadd(aAuxExc,Substr((cAliasSD2)->&(SerieNfId("SD2",3,"D2_SERIE")),1,3))
                             Aadd(aAuxExc,Substr((cAliasSD2)->D2_TES,1,3))
                             Aadd(aAuxExc,Substr((cAliasSD2)->D2_CF,1,5))
 						Else
-							//@ li,037 PSAY Substr((cAliasSD2)->&(SerieNfId("SD2",3,"D2_SERIE")),1,3)
-							//@ li,043 PSAY Substr((cAliasSD2)->D2_TES,1,3)
-							//@ li,047 PSAY Substr((cAliasSD2)->D2_CF,1,5)
-                            Aadd(aAuxExc,Substr((cAliasSD2)->&(SerieNfId("SD2",3,"D2_SERIE")),1,3))
+							
+							Aadd(aAuxExc,Substr((cAliasSD2)->&(SerieNfId("SD2",3,"D2_SERIE")),1,3))
                             Aadd(aAuxExc,Substr((cAliasSD2)->D2_TES,1,3))
                             Aadd(aAuxExc,Substr((cAliasSD2)->D2_CF,1,5))
 							nRecnoSF4 := SF4->(Recno())
 							SF4->(Dbseek(xFilial("SF4")+(cAliasSD2)->D2_TES))
-							//@ li,053 PSAY Substr(SF4->F4_TEXTO,1,18)
-                            Aadd(aAuxExc,Substr(SF4->F4_TEXTO,1,18))
+							
+							Aadd(aAuxExc,Substr(SF4->F4_TEXTO,1,18))
 							SF4->(dbGoTo(nRecnoSF4))
 						EndIf	
 						
-						//@ li,072 PSAY Substr((cAliasSD2)->D2_COD,1,15)
-						//@ li,088 PSAY Substr(SB1->B1_DESC,1,15)
-						//@ li,104 PSAY Substr(SB1->B1_GRUPO,1,5)
-						//@ li,110 PSAY Substr((cAliasSD2)->D2_UM,1,2)
-
-                        Aadd(aAuxExc,Substr((cAliasSD2)->D2_COD,1,15))
+						Aadd(aAuxExc,Substr((cAliasSD2)->D2_COD,1,15))
                         Aadd(aAuxExc,Substr(SB1->B1_DESC,1,15))
+						Aadd(aAuxExc,Alltrim(Posicione("ZPM",1,xFilial("ZPM")+SB1->B1_ZMARCA,"ZPM_DESC")))
                         Aadd(aAuxExc,Substr(SB1->B1_GRUPO,1,5))
                         Aadd(aAuxExc,Substr((cAliasSD2)->D2_UM,1,2))
 						
 						If lTamDoc
-							//@ li,107 PSAY (cAliasSD2)->D2_QUANT Picture PesqPict("SD2","D2_QUANT",14)
-							//@ li,122 PSAY (cAliasSD2)->D2_TOTAL Picture PesqPict("SD2","D2_TOTAL",15)
-							//@ li,138 PSAY (cAliasSD2)->D2_CUSTO1 Picture PesqPict("SD2","D2_CUSTO1",15)
-							//@ li,162 PSAY (cAliasSD2)->D2_EMISSAO
-
+							
                             Aadd(aAuxExc,(cAliasSD2)->D2_QUANT)
                             Aadd(aAuxExc,(cAliasSD2)->D2_TOTAL)
                             Aadd(aAuxExc,(cAliasSD2)->D2_CUSTO1)
@@ -386,63 +371,47 @@ Do While ! Eof() .And. SM0->M0_CODIGO == cEmpAnt
 
 							// Imprime informacoes da devolucao
 							If !Empty(aRetNf[3])
-								//@ li,174 PSAY Substr(aRetNf[1],1,10)
-								//@ li,185 PSAY Substr(aRetNf[2],1,10)
-								//@ li,201 PSAY aRetNf[3]
-                                Aadd(aAuxExc,Substr(aRetNf[1],1,10))
+								
+								Aadd(aAuxExc,Substr(aRetNf[1],1,10))
                                 Aadd(aAuxExc,Substr(aRetNf[2],1,10))
                                 Aadd(aAuxExc,aRetNf[3])
 							Else
-								//@ li,174 PSAY aRetNf[1]
-								//@ li,185 PSAY Substr(aRetNf[2],1,10)
-                                Aadd(aAuxExc,aRetNf[1])
+								
+								Aadd(aAuxExc,aRetNf[1])
                                 Aadd(aAuxExc,Substr(aRetNf[2],1,10))
 
-								If !Empty(aRetNf[1]+aRetNf[2])
-									//@ li,201 PSAY STR0019 // o documento ainda nao foi classificado (pre-nota)						
-								Else
-									//@ li,186 PSAY STR0019 // o documento ainda nao foi classificado (pre-nota)
-								EndIf
-
-                                Aadd(aAuxExc,STR0019)
+								Aadd(aAuxExc,STR0019)
 
 								aTotais[1]+=(cAliasSD2)->D2_QUANT ;aTotaisGer[1]+=(cAliasSD2)->D2_QUANT
 								aTotais[2]+=(cAliasSD2)->D2_TOTAL ;aTotaisGer[2]+=(cAliasSD2)->D2_TOTAL
 								aTotais[3]+=(cAliasSD2)->D2_CUSTO1;aTotaisGer[3]+=(cAliasSD2)->D2_CUSTO1
 							EndIf
 						Else
-							//@ li,111 PSAY (cAliasSD2)->D2_QUANT Picture PesqPict("SD2","D2_QUANT",14)
-							//@ li,126 PSAY (cAliasSD2)->D2_TOTAL Picture PesqPict("SD2","D2_TOTAL",15)
-							//@ li,142 PSAY (cAliasSD2)->D2_CUSTO1 Picture PesqPict("SD2","D2_CUSTO1",15)
-							//@ li,163 PSAY (cAliasSD2)->D2_EMISSAO
-
-                            Aadd(aAuxExc,(cAliasSD2)->D2_QUANT)
+							
+							Aadd(aAuxExc,(cAliasSD2)->D2_QUANT)
                             Aadd(aAuxExc,(cAliasSD2)->D2_TOTAL)
                             Aadd(aAuxExc,(cAliasSD2)->D2_CUSTO1)
                             Aadd(aAuxExc,(cAliasSD2)->D2_EMISSAO)
 
 							// Imprime informacoes da devolucao
 							If !Empty(aRetNf[3])
-								//@ li,175 PSAY Substr(aRetNf[1],1,10)
-								//@ li,185 PSAY Substr(aRetNf[2],1,10)
-								//@ li,197 PSAY aRetNf[3]
-                                Aadd(aAuxExc,Substr(aRetNf[1],1,10))
+								
+								Aadd(aAuxExc,Substr(aRetNf[1],1,10))
                                 Aadd(aAuxExc,Substr(aRetNf[2],1,10))
                                 Aadd(aAuxExc,aRetNf[3])
 
+								Aadd(aAuxExc,Posicione("SBZ",1,aRetNf[1]+(cAliasSD2)->D2_COD,"BZ_LOCPAD"))
+								Aadd(aAuxExc,Posicione("SBZ",1,aRetNf[1]+(cAliasSD2)->D2_COD,"BZ_XLOCALI"))
+
 							Else
-								//@ li,175 PSAY aRetNf[1]
-								//@ li,185 PSAY Substr(aRetNf[2],1,10)
-                                Aadd(aAuxExc,aRetNf[1])
+								
+								Aadd(aAuxExc,aRetNf[1])
                                 Aadd(aAuxExc,Substr(aRetNf[2],1,10))
 
-								If !Empty(aRetNf[1]+aRetNf[2])
-									//@ li,197 PSAY STR0019 // o documento ainda nao foi classificado (pre-nota)						
-								Else
-									//@ li,183 PSAY STR0019 // o documento ainda nao foi classificado (pre-nota)
-								EndIf
-                                Aadd(aAuxExc,STR0019)
+								Aadd(aAuxExc,STR0019)
 
+								Aadd(aAuxExc,'')
+								Aadd(aAuxExc,'')
 								aTotais[1]+=(cAliasSD2)->D2_QUANT ;aTotaisGer[1]+=(cAliasSD2)->D2_QUANT
 								aTotais[2]+=(cAliasSD2)->D2_TOTAL ;aTotaisGer[2]+=(cAliasSD2)->D2_TOTAL
 								aTotais[3]+=(cAliasSD2)->D2_CUSTO1;aTotaisGer[3]+=(cAliasSD2)->D2_CUSTO1
@@ -466,23 +435,7 @@ Do While ! Eof() .And. SM0->M0_CODIGO == cEmpAnt
 			dbSelectArea(cAliasSD2)
 			dbSkip()
 		EndDo
-		// Imprime total caso tenha quantidade em transito
-        /*
-		If mv_par12 == 1 .And. (QtdComp(aTotais[1],.T.) > QtdComp(0,.T.))
-			@ li,000 PSAY cTexto 
-			If lTamDoc
-				@ li,106 PSAY aTotais[1] Picture PesqPict("SD2","D2_QUANT",14)
-				@ li,121 PSAY aTotais[2] Picture PesqPict("SD2","D2_TOTAL",15)
-				@ li,137 PSAY aTotais[3] Picture PesqPict("SD2","D2_CUSTO1",15)		
-			Else
-				@ li,112 PSAY aTotais[1] Picture PesqPict("SD2","D2_QUANT",14)
-				@ li,127 PSAY aTotais[2] Picture PesqPict("SD2","D2_TOTAL",15)
-				@ li,143 PSAY aTotais[3] Picture PesqPict("SD2","D2_CUSTO1",15)
-			EndIf
-			aTotais:={0,0,0}      
-			li+=2
-		EndIf		
-        */
+		
 	EndDo
 	// Fecha arquivo da query
 	If lQuery
@@ -490,24 +443,7 @@ Do While ! Eof() .And. SM0->M0_CODIGO == cEmpAnt
 		dbCloseArea()
 		dbSelectArea("SD2")
 	EndIf
-	// Imprime total caso tenha quantidade em transito
-	/*
-    If QtdComp(aTotaisGer[1],.T.) > QtdComp(0,.T.)     
- 		li+=2
-		@ li,000 PSAY cTextoGer+cFilAnt
-		If lTamDoc
-			@ li,106 PSAY aTotaisGer[1] Picture PesqPict("SD2","D2_QUANT",14)
-			@ li,121 PSAY aTotaisGer[2] Picture PesqPict("SD2","D2_TOTAL",15)
-			@ li,137 PSAY aTotaisGer[3] Picture PesqPict("SD2","D2_CUSTO1",15)		
-		Else
-			@ li,112 PSAY aTotaisGer[1] Picture PesqPict("SD2","D2_QUANT",14)
-			@ li,127 PSAY aTotaisGer[2] Picture PesqPict("SD2","D2_TOTAL",15)
-			@ li,143 PSAY aTotaisGer[3] Picture PesqPict("SD2","D2_CUSTO1",15)
-		EndIf
-		aTotaisGer:={0,0,0}      
-		li+=2
-	EndIf
-    */
+	
 		
 	dbSelectArea("SM0")
 	dbSkip()
@@ -705,26 +641,29 @@ Local nX,nY
 Local aAux      :=  {}
 Local cInterno  :=  'Transf_Filiais'
 
-Aadd(aHeader,{  'Filial_Origem',;
-				'Descrição_Origem',;
-				'Documento',;
-				'Serie',;
-				'TES_Origem',;
-				'CFOP_Origem',;
-				'Desc_Oper_Origem',;
-				'Produto',;
-				'Descricao',;
-				'Grupo',;
-				'UM',;
-				'Quantidade',;
-				'Valor_Total',;
-				'Custo_Total',;
-				'Data_Emissao',;
-				'Filial_Destino',;
-				'Descricao_Destino',;
-				'Data_Digitação',;
-				'Armazem Origem',;
-				'Prateleira Origem'})
+Aadd(aHeader,{  'Filial_Origem',;				//01
+				'Descrição_Origem',;			//02
+				'Documento',;					//03
+				'Serie',;						//04
+				'TES_Origem',;					//05
+				'CFOP_Origem',;					//06
+				'Desc_Oper_Origem',;			//07
+				'Produto',;						//08
+				'Descricao',;					//09
+				'Marca',;						//10
+				'Grupo',;						//11
+				'UM',;							//12
+				'Quantidade',;					//13
+				'Valor_Total',;					//14
+				'Custo_Total',;					//15
+				'Data_Emissao',;				//16
+				'Filial_Destino',;				//17
+				'Descricao_Destino',;			//18
+				'Data_Digitação',;				//19
+				'Armazem Origem',;				//20
+				'Prateleira Origem',;			//21
+				'Armazem Destino',;				//22
+				'Prateleira Destino'})			//23
 
 cDir := cGetFile(, OemToAnsi("Selecione o diretório de destino"), 0, "C:\", .T., GETF_LOCALHARD+GETF_NETWORKDRIVE+GETF_RETDIRECTORY, .F., .F.) 
 

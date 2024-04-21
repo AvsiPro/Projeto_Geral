@@ -59,7 +59,7 @@ EndIf
 Return
 
 /*/{Protheus.doc} nomeStaticFunction
-    (long_description)
+    Ler as tabelas para exportação do arquivo
     @type  Static Function
     @author user
     @since 04/08/2022
@@ -137,6 +137,7 @@ cQuery += " FROM "+RetSQLName(cTabela)+" BZ"
 cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"'"
 cQuery += "     AND B1_COD=BZ_COD AND B1.D_E_L_E_T_=' '"
 cQuery += "     AND B1_GRUPO BETWEEN '"+MV_PAR03+"' AND '"+MV_PAR04+"'"
+cQuery += "     AND B1_XCODPAI=' '"
 cQuery += " WHERE "
 cQuery += " BZ_FILIAL BETWEEN '"+MV_PAR01+"' AND '"+MV_PAR02+"'"
 cQuery += " AND BZ_COD BETWEEN '"+MV_PAR05+"' AND '"+MV_PAR06+"'"
@@ -310,41 +311,118 @@ Local nX        :=  0
 Local nPosFil   :=  Ascan(aCabec,{|x| x == "BZ_FILIAL"})
 Local nPosCod   :=  Ascan(aCabec,{|x| x == "BZ_COD"})
 Local aAux      :=  {}
+Local nZ        :=  0
 
 DbSelectArea("SBZ")
 DbSetOrder(1)
 
-For nCont := 1 to len(aDados)
-    lRecno := Upper(aCabec[len(aDados[nCont])]) == "RECNO" .And. VAL(aDados[nCont,len(aDados[nCont])]) > 0
-    
-    If lRecno 
-        DbGoto(val(aDados[nCont,len(aDados[nCont])]))
-        If Alltrim(&("SBZ->"+aCabec[nPosFil])+&("SBZ->"+aCabec[nPosCod])) == aDados[nCont,nPosFil]+aDados[nCont,nPosCod]
-            Reclock("SBZ",.F.)
-        ELSE
-            Reclock("SBZ",.T.)
-        ENDIF
-    Else 
-        If DbSeek(aDados[nCont,nPosFil]+aDados[nCont,nPosCod])
-            Reclock("SBZ",.F.)
+If nPosCod > 0 .And. nPosFil > 0
+    For nCont := 1 to len(aDados)
+        lRecno := Upper(aCabec[len(aDados[nCont])]) == "RECNO" .And. VAL(aDados[nCont,len(aDados[nCont])]) > 0
+        
+        If lRecno 
+            DbGoto(val(aDados[nCont,len(aDados[nCont])]))
+            If Alltrim(&("SBZ->"+aCabec[nPosFil])+&("SBZ->"+aCabec[nPosCod])) == aDados[nCont,nPosFil]+aDados[nCont,nPosCod]
+                Reclock("SBZ",.F.)
+            ELSE
+                Reclock("SBZ",.T.)
+            ENDIF
         Else 
-            Reclock("SBZ",.T.)
+            If DbSeek(aDados[nCont,nPosFil]+aDados[nCont,nPosCod])
+                Reclock("SBZ",.F.)
+            Else 
+                Reclock("SBZ",.T.)
+            EndIf
         EndIf
-    EndIf
 
-    //-1 porque o ultimo campo é o recno
-    For nX := 1 to len(aCabec)-1
-        aAux := FWSX3Util():GetFieldStruct( aCabec[nX] )
-        If aAux[2] == "N"
-            SBZ->(&(aCabec[nX])) := val(aDados[nCont,nX])
-        ElseIf aAux[2] == "D"
-            SBZ->(&(aCabec[nX])) := stod(aDados[nCont,nX])
-        ELSE
-            SBZ->(&(aCabec[nX])) := aDados[nCont,nX]
-        ENDIf
-    Next nX 
+        //-1 porque o ultimo campo é o recno
+        For nX := 1 to len(aCabec)-1
+            aAux := FWSX3Util():GetFieldStruct( aCabec[nX] )
+            If aAux[2] == "N"
+                SBZ->(&(aCabec[nX])) := val(aDados[nCont,nX])
+            ElseIf aAux[2] == "D"
+                SBZ->(&(aCabec[nX])) := stod(aDados[nCont,nX])
+            ELSE
+                SBZ->(&(aCabec[nX])) := aDados[nCont,nX]
+            ENDIf
+        Next nX 
 
-    SBZ->(Msunlock())
-Next nCont 
+        SBZ->(Msunlock())
+
+        aFilhos := BuscaFilhos(aDados[nCont,nPosCod])
+
+        For nZ := 1 to len(aFilhos)
+            If DbSeek(aDados[nCont,nPosFil]+aFilhos[nZ])
+                Reclock("SBZ",.F.)
+            Else 
+                Reclock("SBZ",.T.)
+            EndIf
+
+            For nX := 1 to len(aCabec)-1
+                aAux := FWSX3Util():GetFieldStruct( aCabec[nX] )
+                If aAux[2] == "N"
+                    SBZ->(&(aCabec[nX])) := val(aDados[nCont,nX])
+                ElseIf aAux[2] == "D"
+                    SBZ->(&(aCabec[nX])) := stod(aDados[nCont,nX])
+                ELSE
+                    If nX == nPosCod
+                        SBZ->(&(aCabec[nX])) := aFilhos[nZ]
+                    Else 
+                        SBZ->(&(aCabec[nX])) := aDados[nCont,nX]
+                    EndIf 
+                ENDIf
+            Next nX 
+
+            SBZ->(Msunlock())
+        Next nZ 
+
+    Next nCont  
+Else 
+    MsgAlert("Não foram encontrados os campos Filial e codigo do produto na planilha")
+EndIf 
 
 Return
+
+
+/*/{Protheus.doc} nomeStaticFunction
+    Busca os produtos filhos deste cadastro que esta sendo atualizado
+    @type  Static Function
+    @author user
+    @since date
+    @version version
+    @param param, param_type, param_descr
+    @return return, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+    /*/
+Static function Buscafilhos(cCodigo)
+
+Local aArea := GetArea()
+Local aRet  := {}
+Local cQuery 
+
+cQuery := "SELECT B1_COD"
+cQuery += " FROM "+RetSQLName("SB1")+" B1"
+cQuery += " WHERE B1_FILIAL='"+xFilial("SB1")+"'"
+cQuery += " AND B1_XCODPAI='"+cCodigo+"' AND B1_XCODPAI<>' '"
+cQuery += " AND D_E_L_E_T_=' '"
+
+
+If Select("TRB") > 0
+	TRB->( dbCloseArea() )
+EndIf             
+
+DbUseArea(.T.,"TOPCONN",TcGenQry(,,cQuery),'TRB',.F.,.T.)  
+
+dbSelectArea("TRB")
+
+While !EOF()
+    Aadd(aRet,TRB->B1_COD)
+
+    Dbskip()
+EndDo 
+
+RestArea(aArea)
+
+Return(aRet)

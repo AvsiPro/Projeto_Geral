@@ -2,11 +2,18 @@
 #INCLUDE "FWPrintSetup.ch"
 #INCLUDE "protheus.ch"
 #Include 'TopConn.ch'
-
+/*
+    Rotina para impressão de etiquetas
+    35-MIT 44_ESTOQUE_EST017 - Criar programa para impressão de etiqueta
+    
+    DOC MIT
+    
+	DOC Entrega
+    https://docs.google.com/document/d/1jefVMEpeQ6nl4ghy2sUK1D65O5tv92yc/edit
+    
+*/
 User Function JESTR002(nOpc)
 
-	//Local lFinal	:= .T.
-	Local nCont 
 	Default nOpc := 0
 
 	If Select("SM0") == 0
@@ -15,185 +22,9 @@ User Function JESTR002(nOpc)
 	EndIf
 
 	TelaPar()
-	/*
-	If nOpc == 1	
-		nPosPrd  := Ascan(aHeader,{|x| Alltrim(x[2]) == "D1_COD"})
-		nPosQtd  := Ascan(aHeader,{|x| Alltrim(x[2]) == "D1_QUANT"})
-
-		For nCont := 1 to len(aCols)
-			
-			MV_PAR01 := aCols[nCont,nPosPrd]
-			MV_PAR02 := aCols[nCont,nPosPrd]
-			MV_PAR03 := aCols[nCont,nPosQtd]
-			MV_PAR04 := "1"
-			MV_PAR05 := 'PDFCreator'
-			MV_PAR06 := SPACE(9)
-			MV_PAR07 := ctod(' / / ')
-			ImpEtiq()
-		Next nCont
-
-	Else 
-		If ValidPerg()
-			MsAguarde({|| ImpEtiq() },"Impressão de etiqueta","Aguarde...")
-		EndIf
-	EndIf*/
+	
 Return
  
-Static Function ImpEtiq()
-
-	Local cQuery	:= ""
-	Local cProdDe	:= MV_PAR01
-	Local cProdAte	:= MV_PAR02
-	Local nQuant	:= MV_PAR03
-	Local cImpress  := Alltrim(MV_PAR05) //pego o nome da impressora
-	Local cTipo     := Alltrim(MV_PAR04)
-	Local oFont08	:= TFont():New('Arial',06,06,,.F.,,,,.T.,.F.,.F.)
-	Local oFont10	:= TFont():New('Arial',10,10,,.F.,,,,.T.,.F.,.F.)
-	Local cNota  	:= MV_PAR06
-	Local dData 	:= MV_PAR07
-	//Local oFont16	:= TFont():New('Arial',16,16,,.F.,,,,.T.,.F.,.F.)
-	//Local oFont16N	:= TFont():New('Arial',16,16,,.T.,,,,.T.,.F.,.F.)
- 
-	Local lAdjustToLegacy 	:= .F.
-	Local lDisableSetup  	:= .T.
-    Local nR 
-
-	Local nLin		:= 0
-	Local nCol		:= 0
-	Local nLinC		:= 0
-	Local nColC		:= 0
-	Local nWidth	:= 0
-	Local nHeigth   := 0
-	Local lBanner	:= .T.		//Se imprime a linha com o código embaixo da barra. Default .T.
-	Local nPFWidth	:= 0
-	Local nPFHeigth	:= 0
-	Local lCmtr2Pix	:= .T.		//Utiliza o método Cmtr2Pix() do objeto Printer.Default .T.
- 
-	Private oPrinter := FWMSPrinter():New("produto"+Alltrim(__cUserID)+".etq",IMP_PDF,lAdjustToLegacy,"C:\TEMP\",lDisableSetup,,,Alltrim(cImpress) /*parametro que recebe a impressora*/)
-	
-	//Para saber mais sobre o componente FWMSPrinter acesse http://tdn.totvs.com/display/public/mp/FWMsPrinter
- 
-	cQuery := "SELECT B1_COD AS CODIGO,B1_DESC AS DESCRI,B1_CODBAR AS CODBAR,ZPM_DESC AS MARCA,B1_UM AS UM"
-    cQuery += " FROM "+RetSQLName("SB1")+" B1"
-    cQuery += " LEFT JOIN "+RetSQLName("ZPM")+" ZPM ON ZPM_FILIAL=B1_FILIAL AND ZPM_COD=B1_ZMARCA AND ZPM.D_E_L_E_T_=' '"
-    cQuery += " WHERE B1_FILIAL='"+xFilial("SB1")+"'"
-
-    cQuery += " AND B1_COD BETWEEN '"+cProdDe+"' AND '"+cProdAte+"'"
- 
-	TcQuery cQuery New Alias "QRYTMP"
-	QRYTMP->(DbGoTop())
- 
-	oPrinter:SetMargin(001,001,001,001)
- 
-	While QRYTMP->(!Eof())
-		For nR := 1 to nQuant
-			nLin := 20
-			nCol := 12
- 
-			//MsProcTxt("Imprimindo "+alltrim(QRYTMP->CODIGO) + " - " + alltrim(QRYTMP->DESC)+"...")
- 
-			oPrinter:StartPage()
- 
-			//oPrinter:SayBitmap(nLin,nCol,cLogo,100,030)
-			If cTipo == "1"
-            	oPrinter:Box(10,5,100,160)
-			else
-				oPrinter:Box(10,5,080,160)
-			EndIf
-			//nLin+= 45
-			//oPrinter:Say(nLin,nCol,"Produto",oFont16)
- 
-			nLinC		:= 3.10		//Linha que será impresso o Código de Barra
-			nColC		:= 4.3		//Coluna que será impresso o Código de Barra
-			nWidth	 	:= 0.0484	//Numero do Tamanho da barra. Default 0.025 limite de largura da etiqueta é 0.0164
-			nHeigth   	:= 0.8		//Numero da Altura da barra. Default 1.5 --- limite de altura é 0.3
-			lBanner		:= .T.		//Se imprime a linha com o código embaixo da barra. Default .T.
-			nPFWidth	:= 0.8		//Número do índice de ajuste da largura da fonte. Default 1
-			nPFHeigth	:= 0.9		//Número do índice de ajuste da altura da fonte. Default 1
-			lCmtr2Pix	:= .T.		//Utiliza o método Cmtr2Pix() do objeto Printer.Default .T.
- 
-			//nLin+= 10
-            oPrinter:Say(nLin,nCol,alltrim(QRYTMP->CODIGO) ,oFont10)
-            nLin+= 10
-
-			If len(alltrim(QRYTMP->DESCRI)) > 30
-				oPrinter:Say(nLin-1,nCol,substr(QRYTMP->DESCRI,1,30) ,oFont08)
-				
-				oPrinter:Say(nLin+5,nCol,substr(QRYTMP->DESCRI,31) ,oFont08)
-			Else 
-            	oPrinter:Say(nLin,nCol,alltrim(QRYTMP->DESCRI) ,oFont10) 
-			EndIf
-            
-            //nLinC += 1
-			oPrinter:FWMSBAR("CODE128" , nLinC , nColC, alltrim(QRYTMP->CODIGO), oPrinter,/*lCheck*/,/*Color*/,/*lHorz*/, nWidth, nHeigth,.F.,/*cFont*/,/*cMode*/,.F./*lPrint*/,nPFWidth,nPFHeigth,lCmtr2Pix)
-            
-			oPrinter:Say(nLin+20,nCol-5,alltrim(QRYTMP->CODIGO) ,oFont08)
-            
-			If cTipo == "1"
-				nLin+= 45
-				oPrinter:Say(nLin,nCol,alltrim(QRYTMP->MARCA) ,oFont10)
-				oPrinter:Say(nLin,nCol+100,"UM:"+alltrim(QRYTMP->UM) ,oFont10)
-
-				nLin+= 10
-				oPrinter:Say(nLin,nCol,"NF: "+cNota ,oFont10)
-				nLin+= 10
-				oPrinter:Say(nLin,nCol,"DATA: "+cvaltochar(dData)  ,oFont10)
-            EndIf
-			
-			oPrinter:EndPage()
-		Next
-		QRYTMP->(DbSkip())
-	EndDo
-
-    //oPrinter:Preview()
-	oPrinter:Print()
-      
-
-	QRYTMP->(DbCloseArea())
- 
-Return
- 
-/*Montagem da tela de perguntas*/
-Static Function ValidPerg()
-	Local aParamBox	:= {}
-	Local lRet 		:= .F.
-	Local aOpcoes	:= {}
-	Local cProdDe	:= ""
-	Local cProdAte	:= ""
-	Local cNota 	:= space(9)
-	Local dDataNF	:= CTOD(' / / ')
-	Local aTipos	:= {"1=Produto","2=Prateleira"}
-	
-	If Empty(getMV("ZZ_IMPRESS")) //se o parametro estiver vazio, ja o defino com a impressora PDFCreator 
-		aOpcoes := {"PDFCreator"}
-	Else
-		aOpcoes := Separa(getMV("ZZ_IMPRESS"),";")
-	Endif
- 
-	cProdDe := space(TamSX3("B1_COD")[1])
-	cProdAte:= REPLICATE("Z",TAMSX3("B1_COD")[1])
- 
-	aAdd(aParamBox,{01,"Produto de"	  			,cProdDe 	,""					,"","SB1"	,"", 60,.F.})	// MV_PAR01
-	aAdd(aParamBox,{01,"Produto ate"	   		,cProdAte	,""					,"","SB1"	,"", 60,.T.})	// MV_PAR02
-	aAdd(aParamBox,{01,"Quantidade Etiqueta"	,1			,"@E 9999"			,"",""		,"", 60,.F.})	// MV_PAR03
-	aadd(aParamBox,{02,"Tipo Etiqueta"			,Space(50)	,aTipos				,100,".T."	,.T.,".T."})	// MV_PAR04
- 	aadd(aParamBox,{02,"Imprimir em"			,Space(50)	,aOpcoes			,100,".T."	,.T.,".T."})	// MV_PAR04
-
-	aAdd(aParamBox,{01,"Nota"		  			,cNota 		,""					,"","SF1"	,"", 60,.F.})	// MV_PAR01
-	aAdd(aParamBox,{01,"Data"		  			,dDataNF 	,""					,"",""		,"", 60,.F.})	// MV_PAR01
-	
- 
-	If ParamBox(aParamBox,"Etiqueta Produto",/*aRet*/,/*bOk*/,/*aButtons*/,.T.,,,,FUNNAME(),.T.,.T.)
- 
-		If ValType(MV_PAR04) == "N" //Algumas vezes ocorre um erro de ao invés de selecionar o conteúdo, seleciona a ordem, então verifico se é numerico, se for, eu me posiciono na impressora desejada para pegar o seu nome
-			MV_PAR04 := aOpcoes[MV_PAR04]
-		EndIf
- 
-		lRet := .T.
-	EndIf
-Return lRet
-
-
 /*/{Protheus.doc} nomeStaticFunction
 	(long_description)
 	@type  Static Function
@@ -291,9 +122,11 @@ oDlg1:Activate(,,,.T.)
 
 If nOpcao == 1
 	If cPar11 == "1"
-		EtiqtaNF(aList)
+		//EtiqtaNF(aList)
+		Etqpnf()
 	Else 
-		EtiqtaPR(aList)
+		//EtiqtaPR()
+		Etqprat()
 	EndIf 
 EndIf 
 
@@ -564,8 +397,186 @@ Static Function EtiqtaNF(aList)
       
 Return
 
+
+/*/{Protheus.doc} Etqpnf
+	Etiqueta produto (NF) vertical
+	@type  Static Function
+	@author user
+	@since 08/03/2024
+	@version version
+	@param param_name, param_type, param_descr
+	@return return_var, return_type, return_description
+	@example
+	(examples)
+	@see (links_or_references)
+/*/
+Static Function Etqpnf()
+
+	Local cImpress  := Alltrim(MV_PAR05) //pego o nome da impressora
+	Local oFont06	:= TFont():New('Arial',06,06,,.F.,,,,.T.,.F.,.F.)
+	Local oFont07	:= TFont():New('Arial',07,07,,.F.,,,,.T.,.F.,.F.)
+	Local oFont08	:= TFont():New('Arial',08,08,,.F.,,,,.T.,.F.,.F.)
+	Local oFont09	:= TFont():New('Arial',09,09,,.F.,,,,.T.,.F.,.F.)
+	Local oFont10	:= TFont():New('Arial',10,10,,.F.,,,,.T.,.F.,.F.)
+ 
+	Local lAdjustToLegacy 	:= .F.
+	Local lDisableSetup  	:= .T.
+/*
+	Local cQuery	:= ""
+	Local cProdDe	:= cPar03
+	Local cProdAte	:= cPar04
+	Local nQuant	:= val(cPar08)
+	Local cTipo     := cPar11
+	Local oFont08	:= TFont():New('Arial',06,06,,.F.,,,,.T.,.F.,.F.)
+	Local oFont10	:= TFont():New('Arial',10,10,,.F.,,,,.T.,.F.,.F.)
+	
+	Local lAdjustToLegacy 	:= .F.
+	Local lDisableSetup  	:= .T.
+    Local nR 
+*/
+	Local nLin		:= 0
+	Local nCol		:= 0
+	Local nLinC		:= 0
+	Local nR 
+	Local nCont 
+	Local nColC		:= 0
+	Local nWidth	:= 0
+	Local nHeigth   := 0
+	Local lBanner	:= .T.		//Se imprime a linha com o código embaixo da barra. Default .T.
+	Local nPFWidth	:= 0
+	Local nPFHeigth	:= 0
+	Local lCmtr2Pix	:= .T.		//Utiliza o método Cmtr2Pix() do objeto Printer.Default .T.
+ 
+	Private oPrinter := FWMSPrinter():New("produto"+Alltrim(__cUserID)+".etq",IMP_PDF,lAdjustToLegacy,"C:\TEMP\",lDisableSetup,,,Alltrim(cImpress) /*parametro que recebe a impressora*/)
+	
+	//Para saber mais sobre o componente FWMSPrinter acesse http://tdn.totvs.com/display/public/mp/FWMsPrinter
+ /*
+	cQuery := "SELECT DISTINCT B1_COD AS CODIGO,B1_DESC AS DESCRI,B1_CODBAR AS CODBAR,ZPM_DESC AS MARCA,B1_UM AS UM,"
+	cQuery += " B1_FABRIC,BZ_XLOCALI"
+    cQuery += " FROM "+RetSQLName("SB1")+" B1"
+    cQuery += " LEFT JOIN "+RetSQLName("ZPM")+" ZPM ON ZPM_FILIAL=B1_FILIAL AND ZPM_COD=B1_ZMARCA AND ZPM.D_E_L_E_T_=' '"
+	cQuery += " LEFT JOIN "+RetSQLName("SBZ")+" BZ ON BZ_FILIAL='"+xFilial("SBZ")+"' AND BZ_COD=B1_COD AND BZ.D_E_L_E_T_=' '"
+    cQuery += " WHERE B1_FILIAL='"+xFilial("SB1")+"'"
+
+    cQuery += " AND B1_COD BETWEEN '"+cProdDe+"' AND '"+cProdAte+"'"
+	
+	cQuery += " AND B1.D_E_L_E_T_=' ' "
+
+	TcQuery cQuery New Alias "QRYTMP"
+	QRYTMP->(DbGoTop())
+*/
+	oPrinter:SetLandscape()
+ 
+	oPrinter:SetMargin(001,001,001,001)
+ 
+	oPrinter:StartPage()
+	nLin := 175 //20
+	nCol := 15 //20 9
+	nLin2 := 05
+	nLin4 := 90
+
+	nLinC		:= 1.7 //2.70		//Linha que será impresso o Código de Barra
+	nColC		:= 2.70 //5.7		//Coluna que será impresso o Código de Barra
+	nWidth	 	:= 0.0164 //0.0484	//Numero do Tamanho da barra. Default 0.025 limite de largura da etiqueta é 0.0164
+	nHeigth   	:= 0.8		//Numero da Altura da barra. Default 1.5 --- limite de altura é 0.3
+	lBanner		:= .T.		//Se imprime a linha com o código embaixo da barra. Default .T.
+	nPFWidth	:= 0.02 //0.8		//Número do índice de ajuste da largura da fonte. Default 1
+	nPFHeigth	:= 0.9		//Número do índice de ajuste da altura da fonte. Default 1
+	lCmtr2Pix	:= .T.		//Utiliza o método Cmtr2Pix() do objeto Printer.Default .T.
+	
+	nPula		:= 0
+	nEtiquetas := 0
+	nColBox1   := 180
+	nColBox2   := 15
+
+	//While QRYTMP->(!Eof())
+	//	For nR := 1 to 2 //nQuant
+	For nCont := 1 to len(aList)
+		For nR := 1 to aList[nCont,04]
+			If nEtiquetas  > 9
+				oPrinter:EndPage()
+				oPrinter:StartPage()
+				nLin := 175 //20
+				nCol := 15 //20 09
+				nLin2 := 05
+				nLin4 := 90
+				nLinC		:= 1.7//2.70		//Linha que será impresso o Código de Barra
+				nColC		:= 2.7 //5.7		//Coluna que será impresso o Código de Barra
+				nWidth	 	:= 0.0164 //0.0464	//Numero do Tamanho da barra. Default 0.025 limite de largura da etiqueta é 0.0164
+				nHeigth   	:= 0.8 //0.7		//Numero da Altura da barra. Default 1.5 --- limite de altura é 0.3
+				lBanner		:= .T.		//Se imprime a linha com o código embaixo da barra. Default .T.
+				nPFWidth	:= 0.2 //0.8		//Número do índice de ajuste da largura da fonte. Default 1
+				nPFHeigth	:= 0.9		//Número do índice de ajuste da altura da fonte. Default 1
+				lCmtr2Pix	:= .T.		//Utiliza o método Cmtr2Pix() do objeto Printer.Default .T.
+				nPula		:= 0
+				nEtiquetas := 0
+			EndIf 		
+
+			//If cTipo == "1"
+            	//oPrinter:Box(10,5,100,160)
+				oPrinter:Box(nColBox1,nLin2,nColBox2,nLin4)
+			/*else
+				//oPrinter:Box(nLin2,5,nLin4,170)
+
+				//oPrinter:Box(180,nLin2,15,nLin4)
+				//				180		10	   15	   70
+				oPrinter:Box(nColBox1,nLin2,nColBox2,nLin4)*/
+			//EndIf
+ 
+            oPrinter:Say(nLin,nCol,alltrim(aList[nCont,01]) ,oFont10,,,270)
+            
+			nCol += 10
+
+			If len(alltrim(aList[nCont,02])) > 30
+				oPrinter:Say(nLin,nCol-1,substr(aList[nCont,02],1,37) ,oFont08,,,270)
+				
+				oPrinter:Say(nLin,nCol+9,substr(aList[nCont,02],38) ,oFont08,,,270)
+			Else 
+            	oPrinter:Say(nLin,nCol,alltrim(aList[nCont,02]) ,oFont10,,,270) 
+			EndIf
+            
+			if nEtiquetas > 2
+				nColC -= 0.28
+			endif
+			
+			oPrinter:FWMSBAR("CODE128" , nLinC , nColC, alltrim(aList[nCont,01]), oPrinter,/*lCheck*/,/*Color*/,.F./*lHorz*/, nWidth, nHeigth,.F.,/*cFont*/,/*cMode*/,.F./*lPrint*/,nPFWidth,nPFHeigth,lCmtr2Pix)
+			
+			nCol += 12
+			oPrinter:Say(nLin,nCol,alltrim(aList[nCont,08]) ,oFont08,,,270)
+            nCol += 10
+			oPrinter:Say(nLin,nCol,alltrim(aList[nCont,10]) ,oFont06,,,270)
+			
+			nCol += 10
+			oPrinter:Say(nLin,nCol,substr(aList[nCont,09],1,12) ,oFont07,,,270)
+			nCol += 10
+			oPrinter:Say(nLin,nCol,"NF: "+aList[nCont,05] ,oFont07,,,270)
+			oPrinter:Say(nLin-100,nCol,"UM:"+alltrim(aList[nCont,07]) ,oFont07,,,270)
+
+			nCol += 10
+			oPrinter:Say(nLin,nCol,"DATA: "+cvaltochar(stod(aList[nCont,06]))  ,oFont07,,,270)
+
+			nCol +=  28 //38 //50
+			nColC += 7.7 //2
+			nLin2 += 90
+			nLin4 += 90
+			
+			nEtiquetas++
+		
+		Next nR
+	Next nCont 
+	/*	QRYTMP->(DbSkip())
+	EndDo*/
+
+	oPrinter:EndPage()
+	oPrinter:Print()
+      
+
+	//QRYTMP->(DbCloseArea())
+ 
+Return
+
 /*/{Protheus.doc} nomeStaticFunction
-	(long_description)
+	Etiqueta Prateleira horizontal
 	@type  Static Function
 	@author user
 	@since 08/03/2024
@@ -693,6 +704,161 @@ Static Function EtiqtaPR()
 			nLin4 += 70
 			nLinC += 5.92 //+ nPula 
 			//nPula := 0.1
+			nEtiquetas++
+		
+		Next
+		QRYTMP->(DbSkip())
+	EndDo
+
+	oPrinter:EndPage()
+	oPrinter:Print()
+      
+
+	QRYTMP->(DbCloseArea())
+ 
+Return
+
+
+
+/*/{Protheus.doc} Etqprat
+	Etiqueta prateleira vertical
+	@type  Static Function
+	@author user
+	@since 08/03/2024
+	@version version
+	@param param_name, param_type, param_descr
+	@return return_var, return_type, return_description
+	@example
+	(examples)
+	@see (links_or_references)
+/*/
+Static Function Etqprat()
+
+	Local cQuery	:= ""
+	Local cProdDe	:= cPar03
+	Local cProdAte	:= cPar04
+	Local nQuant	:= val(cPar08)
+	Local cImpress  := cPar12 
+	Local cTipo     := cPar11
+	Local oFont08	:= TFont():New('Arial',06,06,,.F.,,,,.T.,.F.,.F.)
+	Local oFont10	:= TFont():New('Arial',10,10,,.F.,,,,.T.,.F.,.F.)
+	
+	Local lAdjustToLegacy 	:= .F.
+	Local lDisableSetup  	:= .T.
+    Local nR 
+
+	Local nLin		:= 0
+	Local nCol		:= 0
+	Local nLinC		:= 0
+	Local nColC		:= 0
+	Local nWidth	:= 0
+	Local nHeigth   := 0
+	Local lBanner	:= .T.		//Se imprime a linha com o código embaixo da barra. Default .T.
+	Local nPFWidth	:= 0
+	Local nPFHeigth	:= 0
+	Local lCmtr2Pix	:= .T.		//Utiliza o método Cmtr2Pix() do objeto Printer.Default .T.
+ 
+	Private oPrinter := FWMSPrinter():New("produto"+Alltrim(__cUserID)+".etq",IMP_PDF,lAdjustToLegacy,"C:\TEMP\",lDisableSetup,,,Alltrim(cImpress) /*parametro que recebe a impressora*/)
+	
+	//Para saber mais sobre o componente FWMSPrinter acesse http://tdn.totvs.com/display/public/mp/FWMsPrinter
+ 
+	cQuery := "SELECT DISTINCT B1_COD AS CODIGO,B1_DESC AS DESCRI,B1_CODBAR AS CODBAR,ZPM_DESC AS MARCA,B1_UM AS UM,"
+	cQuery += " B1_FABRIC,BZ_XLOCALI"
+    cQuery += " FROM "+RetSQLName("SB1")+" B1"
+    cQuery += " LEFT JOIN "+RetSQLName("ZPM")+" ZPM ON ZPM_FILIAL=B1_FILIAL AND ZPM_COD=B1_ZMARCA AND ZPM.D_E_L_E_T_=' '"
+	cQuery += " LEFT JOIN "+RetSQLName("SBZ")+" BZ ON BZ_FILIAL='"+xFilial("SBZ")+"' AND BZ_COD=B1_COD AND BZ.D_E_L_E_T_=' '"
+    cQuery += " WHERE B1_FILIAL='"+xFilial("SB1")+"'"
+
+    cQuery += " AND B1_COD BETWEEN '"+cProdDe+"' AND '"+cProdAte+"'"
+	
+	cQuery += " AND B1.D_E_L_E_T_=' ' "
+
+	TcQuery cQuery New Alias "QRYTMP"
+	QRYTMP->(DbGoTop())
+
+	oPrinter:SetLandscape()
+ 
+	oPrinter:SetMargin(001,001,001,001)
+ 
+	oPrinter:StartPage()
+	nLin := 175 //20
+	nCol := 15 //20 9
+	nLin2 := 05
+	nLin4 := 70
+
+	nLinC		:= 1.7 //2.70		//Linha que será impresso o Código de Barra
+	nColC		:= 2.70 //5.7		//Coluna que será impresso o Código de Barra
+	nWidth	 	:= 0.0164 //0.0484	//Numero do Tamanho da barra. Default 0.025 limite de largura da etiqueta é 0.0164
+	nHeigth   	:= 0.8		//Numero da Altura da barra. Default 1.5 --- limite de altura é 0.3
+	lBanner		:= .T.		//Se imprime a linha com o código embaixo da barra. Default .T.
+	nPFWidth	:= 0.02 //0.8		//Número do índice de ajuste da largura da fonte. Default 1
+	nPFHeigth	:= 0.9		//Número do índice de ajuste da altura da fonte. Default 1
+	lCmtr2Pix	:= .T.		//Utiliza o método Cmtr2Pix() do objeto Printer.Default .T.
+	
+	nPula		:= 0
+	nEtiquetas := 0
+	nColBox1   := 180
+	nColBox2   := 15
+
+	While QRYTMP->(!Eof())
+		For nR := 1 to nQuant
+			If nEtiquetas  > 12
+				oPrinter:EndPage()
+				oPrinter:StartPage()
+				nLin := 175 //20
+				nCol := 15 //20 09
+				nLin2 := 05
+				nLin4 := 70
+				nLinC		:= 1.7//2.70		//Linha que será impresso o Código de Barra
+				nColC		:= 2.7 //5.7		//Coluna que será impresso o Código de Barra
+				nWidth	 	:= 0.0164 //0.0464	//Numero do Tamanho da barra. Default 0.025 limite de largura da etiqueta é 0.0164
+				nHeigth   	:= 0.8 //0.7		//Numero da Altura da barra. Default 1.5 --- limite de altura é 0.3
+				lBanner		:= .T.		//Se imprime a linha com o código embaixo da barra. Default .T.
+				nPFWidth	:= 0.2 //0.8		//Número do índice de ajuste da largura da fonte. Default 1
+				nPFHeigth	:= 0.9		//Número do índice de ajuste da altura da fonte. Default 1
+				lCmtr2Pix	:= .T.		//Utiliza o método Cmtr2Pix() do objeto Printer.Default .T.
+				nPula		:= 0
+				nEtiquetas := 0
+			EndIf 		
+
+			If cTipo == "1"
+            	oPrinter:Box(10,5,100,160)
+			else
+				//oPrinter:Box(nLin2,5,nLin4,170)
+
+				//oPrinter:Box(180,nLin2,15,nLin4)
+				//				180		10	   15	   70
+				oPrinter:Box(nColBox1,nLin2,nColBox2,nLin4)
+			EndIf
+ 
+            oPrinter:Say(nLin,nCol,alltrim(QRYTMP->CODIGO) ,oFont10,,,270)
+            
+			nCol += 10
+
+			If len(alltrim(QRYTMP->DESCRI)) > 30
+				oPrinter:Say(nLin,nCol-1,substr(QRYTMP->DESCRI,1,60) ,oFont08,,,270)
+				
+				oPrinter:Say(nLin,nCol+9,substr(QRYTMP->DESCRI,61) ,oFont08,,,270)
+			Else 
+            	oPrinter:Say(nLin,nCol,alltrim(QRYTMP->DESCRI) ,oFont10,,,270) 
+			EndIf
+            
+			if nEtiquetas > 2
+				nColC += 0.28
+			endif
+			
+			oPrinter:FWMSBAR("CODE128" , nLinC , nColC, alltrim(QRYTMP->CODIGO), oPrinter,/*lCheck*/,/*Color*/,.F./*lHorz*/, nWidth, nHeigth,.F.,/*cFont*/,/*cMode*/,.F./*lPrint*/,nPFWidth,nPFHeigth,lCmtr2Pix)
+			
+			nCol += 12
+			oPrinter:Say(nLin,nCol,alltrim(QRYTMP->B1_FABRIC) ,oFont08,,,270)
+            nCol += 10
+			oPrinter:Say(nLin,nCol,alltrim(QRYTMP->BZ_XLOCALI) ,oFont08,,,270)
+			
+			nCol += 38 //50
+			nColC += 5.7 //2
+			nLin2 += 70
+			nLin4 += 70
+			
 			nEtiquetas++
 		
 		Next

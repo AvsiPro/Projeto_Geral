@@ -122,6 +122,9 @@ WsMethod POST WsReceive RECEIVE WsService JWSRA011
                     If Dbseek(xFilial("SA1")+cCliente)
                         cCliente := SA1->A1_COD 
                         cLoja    := SA1->A1_LOJA
+                    Else 
+                        cCliente := SuperGetMV("TI_CLIPAD",.F.,"999999")
+                        cLoja    := "01"
                     EndIF 
                 EndIf 
                 
