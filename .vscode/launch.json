@@ -27,7 +27,10 @@
 		},
 		{
 			"label": "SIGAMDI"
+		},
+		{
+			"label": "u_jestr002"
 		}
 	],
-	"lastProgramExecuted": "SIGAMDI"
+	"lastProgramExecuted": "u_jestr002"
 }
