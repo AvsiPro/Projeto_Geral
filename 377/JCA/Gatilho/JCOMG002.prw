@@ -259,6 +259,7 @@ If DbSeek(xFilial("SB1")+cCodigo) //
     
     If oModel:VldData()
         oModel:CommitData()
+        //Acrescentado este trecho pois o setvalue nesses campos não esta acontecendo no padrao
         Dbseek(xFilial("SB1")+cNewCd)
         Reclock("SB1",.F.)
         SB1->B1_GRUPO := cGrupo

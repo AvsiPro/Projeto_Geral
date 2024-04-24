@@ -1,5 +1,11 @@
 #Include 'Protheus.ch'
 
+/*
+    Ponto de entrada rotina de avaliação de cotações
+
+    Inclusão de novos botoes
+*/
+
 User Function MTA161BUT()
 
 Local aRotina:= PARAMIXB[1]

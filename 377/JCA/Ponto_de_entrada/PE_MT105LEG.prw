@@ -1,5 +1,12 @@
 
 #INCLUDE 'PROTHEUS.CH'
+
+/*
+    Ponto de entrada rotina de solicitação ao armazem
+
+    Inclusão de novas cores de legenda
+*/
+
 User Function MT105LEG()
 
 Local aItLeg := ParamIXB[1]

@@ -35,7 +35,7 @@ EndIf
 Return 
 
 /*/{Protheus.doc} Busca
-    (long_description)
+    Consulta log de envio
     @type  Static Function
     @author user
     @since 21/01/2024
@@ -118,7 +118,7 @@ EndIf
 Return
 
 /*/{Protheus.doc} GeraPlan
-    (long_description)
+    Gera planilha
     @type  Static Function
     @author user
     @since 21/01/2024

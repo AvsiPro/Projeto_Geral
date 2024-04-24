@@ -5,6 +5,12 @@
 #INCLUDE "topconn.ch"
 #Include 'RestFul.ch'
 
+/*
+    Job para integração com a Equals para lançamento dos movimentos bancarios por dia conciliados
+
+    Não tem MIT
+    
+*/
 User Function JFINM010
 
 Local aArea     := GetArea()

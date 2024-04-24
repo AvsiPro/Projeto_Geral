@@ -1,5 +1,15 @@
 #INCLUDE 'PROTHEUS.CH'
+/*
+    Relatório com posição Saldo Ativo Fixo 
 
+    MIT 44_Ativo_ATF001_Relatorios Ativo_
+
+    Doc Mit
+    https://docs.google.com/document/d/1pVSf-sbrHWkuva7h3IaJunWKAF6xdYhv/edit
+    
+    
+    
+*/
 User Function JATFR001()
 
 Local aArea := GetArea()
@@ -46,8 +56,9 @@ cQuery := "SELECT N3_CCONTAB AS CONTA,N1_DESCRIC,N1_CBASE,N1_XPLACA,N1_XPREF,N1_
 cQuery += " N1_CHAPA,A2_NOME,N1_AQUISIC,N1_ITEM,N3_VORIG1,N3_TXDEPR1,N3_VRCACM1,N3_VRDMES1,N3_VRDACM1"
 cQuery += " FROM "+RetSQLName("SN1")+" N1"
 cQuery += " INNER JOIN "+RetSQLName("SN3")+" N3 ON N3_FILIAL=N1_FILIAL AND N3_CBASE=N1_CBASE AND N3_ITEM=N1_ITEM AND N3.D_E_L_E_T_=' '"
-cQuery += " LEFT JOIN " + RetSQLName("SA2") + " AS A2 ON A2_COD=N1_FORNEC AND A2_LOJA=N1_LOJA  " 
+cQuery += " LEFT JOIN " + RetSQLName("SA2") + " A2 ON A2_COD=N1_FORNEC AND A2_LOJA=N1_LOJA AND A2.D_E_L_E_T_=' ' " 
 cQuery += " WHERE N1_FILIAL='"+xFilial("SN1")+"'"
+cQuery += " AND N1.D_E_L_E_T_=' '"
 
 IF Select('TRB') > 0
     dbSelectArea('TRB')
@@ -73,7 +84,8 @@ Aadd(aCabec,{"CONTA",;
             "Taxa Depreciação",;
             "Corr Acum M1",;
             "Depr Mes M1",;
-            "Depr.Acum M1"})
+            "Depr.Acum M1",;
+            "Saldo Residual"})
             
 While !EOF()
     Aadd(aItens,{TRB->CONTA,;
@@ -84,13 +96,14 @@ While !EOF()
                 TRB->N1_XCHASSI,;
                 TRB->N1_CHAPA,;
                 TRB->A2_NOME,;
-                TRB->N1_AQUISIC,;
+                stod(TRB->N1_AQUISIC),;
                 TRB->N1_ITEM,;
                 TRB->N3_VORIG1,;
                 TRB->N3_TXDEPR1,;
                 TRB->N3_VRCACM1,;
                 TRB->N3_VRDMES1,;
-                TRB->N3_VRDACM1})
+                TRB->N3_VRDACM1,;
+                TRB->N3_VORIG1-TRB->N3_VRDACM1})
     Dbskip()
 ENDDO
 
@@ -116,11 +129,17 @@ Static Function GeraPlan()
 
 Local oExcel 	:= FWMSEXCEL():New()
 Local cDir 		:= ""
-Local cArqXls 	:= "Negociacoes_"+dtos(ddatabase)+strtran(time(),":")+".xls" 
+Local cArqXls 	:= "Ativos_"+dtos(ddatabase)+strtran(time(),":")+".xls" 
 Local nX,nY 
 Local aAux      :=  {}
-//Local cGuia     :=  'Conciliação'
-Local cExterno  :=  'Negociacoes'
+
+Local aSM0Data2 :=  FWSM0Util():GetSM0Data(cempant,CFILANT)
+Local nPos1     :=  Ascan(aSM0Data2,{|x| alltrim(x[1]) == "M0_FILIAL"})
+Local nPos2     :=  Ascan(aSM0Data2,{|x| alltrim(x[1]) == "M0_NOMECOM"})
+
+Local cExterno  :=  CFILANT + ' ' + aSM0Data2[nPos1,2] + ' ' + aSM0Data2[nPos2,2] + CRLF
+
+cExterno += 'Periodo '+cvaltochar(MV_PAR03)+' e '+cvaltochar(MV_PAR04)
 
 cDir := cGetFile(, OemToAnsi("Selecione o diretório de destino"), 0, "C:\", .T., GETF_LOCALHARD+GETF_NETWORKDRIVE+GETF_RETDIRECTORY, .F., .F.) 
 
@@ -156,6 +175,7 @@ oExcelApp:WorkBooks:Open(cDir +cArqXls)     //Abre uma planilha
 oExcelApp:SetVisible(.T.)        
 oExcelApp:Destroy()
 
+MsgAlert("Relatório finalizado")
 	
     
 Return(cDir+cArqXls)

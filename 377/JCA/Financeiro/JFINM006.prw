@@ -230,6 +230,9 @@ Static Function fSeleSIF()
 
 Return
 
+/*
+	Efetiva os lançamentos
+*/
 
 static function EFETIVA()
 
@@ -369,7 +372,9 @@ Static Function ValPerg()
 
 Return Nil
 
-
+/*
+	Inverte a marcação dos titulos
+*/
 Static Function Inverte(cMarca,oMark)
 
 	Local nReg := TTRB->(Recno())

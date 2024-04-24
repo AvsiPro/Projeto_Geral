@@ -1,5 +1,9 @@
 #INCLUDE 'PROTHEUS.CH'
+/*
+    Ponto de entrada na rotina de contas a receber
+    Validação solicitada pelo Caio para não permitir incluir naturezas com mais de 6 digitos
 
+*/
 User Function FINA010
 
 LOCAL AAREA := GETAREA()

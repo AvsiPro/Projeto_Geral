@@ -1,5 +1,9 @@
 #INCLUDE 'PROTHEUS.CH'
+/*
 
+    Rotina para impressão das negociações de cotações já realizadas
+
+*/
 User Function JCOMR001()
 
 Local aArea := GetArea()

@@ -3,6 +3,13 @@
 #Include "RPTDEF.CH"
 #INCLUDE "topconn.ch"
 
+/*
+
+	Ponto de entrada FA070TIT sera executado apos a confirmacao da baixa do contas a receber.
+
+	Utilizado para enviar ao Tracker as baixas das faturas realizadas
+
+*/
 User function FA070TIT()
 
     Local cInst         := GETMV("MV_INSCOB")

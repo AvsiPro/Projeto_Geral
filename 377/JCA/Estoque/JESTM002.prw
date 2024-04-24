@@ -42,7 +42,6 @@ Static Function TelaDig()
 
 Local aArea     := GetArea()
 Local nOpcao    := 0
-Local nCont     := 0
 
 Private oDlg1,oGrp1,oSay1,oSay2,oSay3,oSay4,oGrp2,oBtn1
 Private oList1
@@ -536,7 +535,7 @@ EndIf
 cWhereD3 += " D3_LOCAL = '"+cLocIn+"' AND"
 cWhereD3 += " SB1.B1_COD >= '"+cProdDe+"' AND SB1.B1_COD <= '"+cProdAt+"' AND"
 cWhereD3 += " SB1.B1_GRUPO >= '"+cGrupDe+"' AND SB1.B1_GRUPO <= '"+cGrupAt+"' AND "
-cWhereD3 += " SB1.D_E_L_E_T_=' ' AND"
+cWhereD3 += " SB1.D_E_L_E_T_=' ' AND "
 cWhereD3 += "%"
 cWhereD3C := "%"
 cWhereD3C += " D3_FILIAL ='" + xFilial("SD3")  + "' AND "

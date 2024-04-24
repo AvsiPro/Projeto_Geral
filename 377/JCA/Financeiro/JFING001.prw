@@ -12,7 +12,7 @@
 User Function JFING001
 
 Local cCodBar := M->E2_LINDIG
-Local nVlrT   := M->E2_VALOR //M->E2_SALDO - M->E2_DECRESC - M->E2_DESCONT
+Local nVlrT   := M->E2_VALOR 
 Local nVlrCBr := 0
 Local cFatCBr := ''
 Local lRet    := .T.

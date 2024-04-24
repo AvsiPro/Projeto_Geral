@@ -1,8 +1,8 @@
 #INCLUDE 'PROTHEUS.CH'
 
-/*/{Protheus.doc} User Function nomeFunction
-    (long_description)
-    @type  Function
+/*/{Protheus.doc} Ponto de entrada
+    Incluir itens no Menu da rotina de liquidação
+    Utilizado para incluir a opção de envio do email da liquidação gerada
     @author user
     @since 26/09/2023
     @version version
@@ -317,8 +317,7 @@ If len(aItens[1]) >= 8
         cMensagem    := StrTran(cRet,chr(10),"")
         cMensagem    := OemtoAnsi(cMensagem)
         
-        cEmailTst := SUPERGETMV( "TI_EMAILTST", .F., "alexandre.venancio@avsipro.com.br" )
-        //cEmailTst := 'alexandre.venancio@avsipro.com.br'
+        cEmailTst := SUPERGETMV( "TI_EMAILTST", .F., "" ) // email de teste
         U_JGENX002(cEmailTst,cSubject,cMensagem,cNewloc,.F.)
 
     Next nCont 

@@ -1,5 +1,11 @@
 #INCLUDE 'PROTHEUS.CH'
+/*
+    Ponto de entrada na rotina de contas a pagar
+    alteração
+    Utilizado para não permitir inclusão de titulo com centro de custo vazio 
+    para contas contabeis iniciadas em 4 ou 5
 
+*/
 User Function FA050ALT
 
 Local aArea := GetArea()

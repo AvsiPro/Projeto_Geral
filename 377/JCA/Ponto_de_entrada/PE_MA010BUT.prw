@@ -1,5 +1,8 @@
 #INCLUDE 'PROTHEUS.CH'
 
+/*
+    Ponto de entrada rotina mata010 para inclusão de botões em outras ações
+*/
 User Function MA010BUT()
 
 Local aButtons := {} 
