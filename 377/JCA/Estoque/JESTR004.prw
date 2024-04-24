@@ -71,8 +71,8 @@ EndIf
 chkfile("ZPC")
 
 If Funname() == "MNTA420" .OR. Funname() <> "MATA105"
-	AjustaSx1(cPerg)
-	Pergunte(cPerg,.f.)
+	//AjustaSx1(cPerg)
+	//Pergunte(cPerg,.f.)
 
 
 	@ 096,042 TO 323,505 DIALOG oDlg TITLE OemToAnsi("Relatorio de Entrega de peças")
@@ -160,6 +160,7 @@ Static Function GFR01(lEnd,WnRel,cString,nReg)
 Local aAux := {}
 nPg		  := 0
 
+/*
 mv_par02 := 'zzz'
 mv_par03 := ctod('01/01/2000')
 mv_par04 := ctod('01/01/2100')
@@ -167,6 +168,7 @@ mv_par06 := 'zzz'
 mv_par08 := 'zzz'
 mv_par10 := 'zzz'
 mv_par12 := 'zzz'
+*/
 
 cQuery := "SELECT ZPC_FILIAL,ZPC_REQUIS,ZPC_CODIGO,B1_DESC,B1_EMIN,ZPC_LOCAL,ZPC_QUANT,"
 cQuery += " ZPC_DATA,ZPC_PREFIX,ZPC_SOLICI,RA_NOME,ZPC_STATUS,ZPC_ITEM,ZPC_TIPO,ZPC_ALMOXA,CP_OP"
@@ -325,8 +327,8 @@ oPrint:Say(265,1230,OemToAnsi(MV_PAR07),oArial11N)
 oPrint:Say(265,1390,OemToAnsi(MV_PAR08),oArial11N)
 oPrint:Say(265,1550,OemToAnsi(MV_PAR09),oArial11N)
 oPrint:Say(265,1700,OemToAnsi(MV_PAR10),oArial11N)
-oPrint:Say(265,1868,OemToAnsi(cvaltochar(MV_PAR03)),oArial11N)
-oPrint:Say(265,2030,OemToAnsi(cvaltochar(MV_PAR04)),oArial11N)
+oPrint:Say(265,1868,OemToAnsi(cvaltochar(MV_PAR03)),oCouNew08N)
+oPrint:Say(265,2030,OemToAnsi(cvaltochar(MV_PAR04)),oCouNew08N)
 oPrint:Say(265,2190,OemToAnsi(MV_PAR11),oArial11N)
 oPrint:Say(265,2350,OemToAnsi(MV_PAR12),oArial11N)
 
@@ -400,8 +402,8 @@ Local	_nx		:= 0,;
 		//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
 		//³Cria uma array, contendo todos os valores...³
 		//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-		aAdd(_aRegs,{cPerg,'01',"Filial de?","","",'mv_ch1','C', 6,0,0,'G','','mv_par01','','','','',"",""})
-		aAdd(_aRegs,{cPerg,'02',"Filial de?","","",'mv_ch2','C', 6,0,0,'G','','mv_par02','','','','',"",""})
+		aAdd(_aRegs,{cPerg,'01',"Filial de?","","",'mv_ch1','C', 8,0,0,'G','','mv_par01','','','','',"",""})
+		aAdd(_aRegs,{cPerg,'02',"Filial de?","","",'mv_ch2','C', 8,0,0,'G','','mv_par02','','','','',"",""})
 		aAdd(_aRegs,{cPerg,'03',"Emissao Inicial ?" ,"Emissao Inicial ?" ,"Emissao Inicial ?" ,'mv_ch3','D',08,0,0,'G','','mv_par03','','','','',"",""})
 		aAdd(_aRegs,{cPerg,'04',"Emissao Final? "   ,"Emissao Final? "   ,"Emissao Final? "   ,'mv_ch4','D',08,0,0,'G','','mv_par04','','','','',"",""})
 		aAdd(_aRegs,{cPerg,'05',"Material de?","","",'mv_ch5','C', 6,0,0,'G','','mv_par05','','','','',"","SB1"})

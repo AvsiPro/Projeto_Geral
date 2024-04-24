@@ -117,6 +117,7 @@ If ParamBox(aPergs, "Informe o código do produto a ser incluído nesta cotação",a
             nPosIsc := Ascan(aCampos,{|x| Alltrim(x[1]) == "C8_ITEMSC"})
             nPosId1 := Ascan(aCampos,{|x| Alltrim(x[1]) == "C8_IDENT"})
             nPosFoc := Ascan(aCampos,{|x| Alltrim(x[1]) == "C8_FORNECE"})
+            nPosLjF := Ascan(aCampos,{|x| Alltrim(x[1]) == "C8_LOJA"})
             nPosFno := Ascan(aCampos,{|x| Alltrim(x[1]) == "C8_FORNOME"})
             nPosFma := Ascan(aCampos,{|x| Alltrim(x[1]) == "C8_FORMAIL"})
 
@@ -177,6 +178,7 @@ If ParamBox(aPergs, "Informe o código do produto a ser incluído nesta cotação",a
                 _aCols[nPosFoc,02] := aForAtu[nY,01]
                 _aCols[nPosFno,02] := aForAtu[nY,02]
                 _aCols[nPosFma,02] := aForAtu[nY,03]
+                _aCols[nPosLjF,02] := aForAtu[nY,04]
 
                 _aCols2[nPosPr2,02] := aRet[1]
                 _aCols2[nPosIt2,02] := CITSC1
@@ -287,11 +289,11 @@ Local aAreaC1 := GetArea()
 Local cQuery  := ""
 Local aRet    := {}
 
-cQuery := "SELECT  C8_FORNECE,C8_FORNOME,C8_FORMAIL,COUNT(R_E_C_N_O_)"
+cQuery := "SELECT  C8_FORNECE,C8_LOJA,C8_FORNOME,C8_FORMAIL,COUNT(R_E_C_N_O_)"
 cQuery += " FROM "+RetSQLName("SC8")
 cQuery += " WHERE C8_FILIAL='"+xFilial("SC8")+"' AND C8_NUM='"+cSc8num+"'"
 cQuery += " AND D_E_L_E_T_=' ' "
-cQuery += " GROUP BY C8_FORNECE,C8_FORNOME,C8_FORMAIL,R_E_C_N_O_"
+cQuery += " GROUP BY C8_FORNECE,C8_LOJA,C8_FORNOME,C8_FORMAIL,R_E_C_N_O_"
 cQuery += " ORDER BY R_E_C_N_O_"
 
 IF Select('TRB') > 0
@@ -306,7 +308,7 @@ DbSelectArea("TRB")
 
 While !EOF()
     If Ascan(aRet,{|x| x[1] == TRB->C8_FORNECE}) == 0
-        Aadd(aRet,{TRB->C8_FORNECE,TRB->C8_FORNOME,TRB->C8_FORMAIL})
+        Aadd(aRet,{TRB->C8_FORNECE,TRB->C8_FORNOME,TRB->C8_FORMAIL,TRB->C8_LOJA})
     EndIf 
     Dbskip()
 ENDDO
