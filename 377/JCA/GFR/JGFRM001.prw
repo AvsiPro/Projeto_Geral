@@ -13,7 +13,7 @@ Private cNovoBem  := ''
 Private cMensagem := ''
 Private lOk       := .F.
 
-If !( Alltrim(SuperGetMV('FS_USUACBE', .F., '')) $ Alltrim(RetCodUsr()) )
+If !Alltrim(RetCodUsr()) $ Alltrim(SuperGetMV('FS_USUACBE', .F., ''))
     MsgStop('Usuário não tem permissão para atualizar código do bem, verifique o parâmetro FS_USUACBE')
     Return
 EndIf
