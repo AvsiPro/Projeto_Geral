@@ -105,11 +105,11 @@ oDlg1      := MSDialog():New( 092,232,695,1422,"Classificação em Lote",,,.F.,,,,
         
         oSay3      := TSay():New( 244,020,{||"Conta Contabil"},oGrp2,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,040,008)
         oGet3      := TGet():New( 244,064,{|u| If(Pcount()>0,cConta1:=u,cConta1)},oGrp2,060,008,'',{|| Libok(3)},CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"CT1","",,)
-        oSay8      := TSay():New( 259,020,{||"oSay8"},oGrp2,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,112,008)
+        oSay8      := TSay():New( 259,020,{||""},oGrp2,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,112,008)
         
         oSay4      := TSay():New( 244,144,{||"C.Custo Conta Bem"},oGrp2,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,058,008)
         oGet4      := TGet():New( 244,196,{|u| If(Pcount()>0,cCusto1:=u,cCusto1)},oGrp2,060,008,'',{|| Libok(4)},CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"CTT","",,)
-        oSay9      := TSay():New( 259,144,{||"oSay9"},oGrp2,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,116,008)
+        oSay9      := TSay():New( 259,144,{||""},oGrp2,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,116,008)
         
         oSay5      := TSay():New( 244,268,{||"Conta Desp. Depreciacao"},oGrp2,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,068,008)
         oGet5      := TGet():New( 244,340,{|u| If(Pcount()>0,cConta2:=u,cConta2)},oGrp2,060,008,'',{|| Libok(5)},CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"CT1","",,)
@@ -118,7 +118,7 @@ oDlg1      := MSDialog():New( 092,232,695,1422,"Classificação em Lote",,,.F.,,,,
         
         oSay6      := TSay():New( 244,412,{||"Centro de Custo Despesa"},oGrp2,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,064,008)
         oGet6      := TGet():New( 244,480,{|u| If(Pcount()>0,cCusto2:=u,cCusto2)},oGrp2,060,008,'',{|| Libok(6)},CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"CTT","",,)
-        oSay11     := TSay():New( 259,412,{||"oSay11"},oGrp2,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,148,008)
+        oSay11     := TSay():New( 259,412,{||""},oGrp2,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,148,008)
         
     oBtn1      := TButton():New( 276,184,"Confirmar",oDlg1,{||If(MsgYesNo("Confirma a Classificação do grupo?"),oDlg1:end(nOpc:=1),)},037,012,,,,.T.,,"",,,,.F. )
     oBtn2      := TButton():New( 276,336,"Cancelar",oDlg1,{||oDlg1:end(nOpc:=0)},037,012,,,,.T.,,"",,,,.F. )

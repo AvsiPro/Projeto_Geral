@@ -10,7 +10,7 @@
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
 ±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
-±±³Programa  ³ MULTIBOL ³ Autor ³ Microsigal ³ Data ³ 29/11/06 ³±±
+±±³Programa  ³ JFINX100 ³ Autor ³ Microsigal ³ Data ³ 29/11/06 ³±±
 ±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
 ±±³Descri‡…o ³ IMPRESSAO DO BOLETO BANCARIO COM CODIGO DE BARRAS          ³±±
 ±±³          ³ Banco Santander                                            ³±±
@@ -24,7 +24,7 @@
 ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
 /*/
 
-User Function MULTIBOL(lDanfe,lEmail,lTitulo)
+User Function JFINX100(lDanfe,lEmail,lTitulo)
 	Local 	aMV		  	:= {}
 	Local 	aParam		:= {}
 	Local 	aRet		:= {}
@@ -79,7 +79,7 @@ User Function MULTIBOL(lDanfe,lEmail,lTitulo)
 	aadd(aMV,MV_PAR21)
 	aadd(aMV,MV_PAR22)
 	
-	cPerg              := "MULTIBOL"
+	cPerg              := "JFINX100"
 	
 	dbSelectArea("AC8")
 	dbSetOrder(1)
@@ -101,7 +101,7 @@ User Function MULTIBOL(lDanfe,lEmail,lTitulo)
 	
 		VldPrg1()
 	
-		Pergunte("MULTIBOL",.F. )
+		Pergunte("JFINX100",.F. )
 		aSays 		:= {}
 		aButtons 	:= {}
 		nOpca		:= 0
@@ -109,7 +109,7 @@ User Function MULTIBOL(lDanfe,lEmail,lTitulo)
 
 		AADD(aSays,OemToAnsi( 'Rotina de Impressao de Boleto' ) ) 
 		
-		AADD(aButtons, { 5,.T.,{|| lPerg := Pergunte("MULTIBOL",.T. ) } } )
+		AADD(aButtons, { 5,.T.,{|| lPerg := Pergunte("JFINX100",.T. ) } } )
 		AADD(aButtons, { 1,.T.,{|| iif(lPerg,(nOpca:= 1, FechaBatch()),nOpca := 0) }} )
 		AADD(aButtons, { 2,.T.,{|| FechaBatch() }} )
 		
@@ -193,7 +193,7 @@ User Function MULTIBOL(lDanfe,lEmail,lTitulo)
 		// Nao imprime Se Cliente Não imprime boleto A1_BLEMAIL == 1
 		If SA1->(FieldPos("A1_BLEMAIL")) > 0
 			If SA1->A1_BLEMAIL != "1"
-				Help(" ",1,"MULTIBOL",,"Cliente da NF "+SF2->F2_DOC+" nao esta liberado para gerar boleto. Boleto nao sera impresso.",1,0)
+				Help(" ",1,"JFINX100",,"Cliente da NF "+SF2->F2_DOC+" nao esta liberado para gerar boleto. Boleto nao sera impresso.",1,0)
 				Return .f.	
 			Endif
 		Endif	
@@ -202,7 +202,7 @@ User Function MULTIBOL(lDanfe,lEmail,lTitulo)
 		// Nao imprime Se Cliente nao é privado A1_TPCLIEN == 1
 		If SA1->(FieldPos("A1_TPCLIEN")) > 0
 			If SA1->A1_TPCLIEN != "1"
-				Help(" ",1,"MULTIBOL",,"Cliente da NF "+SF2->F2_DOC+" nao e um cliente privado. Boleto nao sera impresso.",1,0)
+				Help(" ",1,"JFINX100",,"Cliente da NF "+SF2->F2_DOC+" nao e um cliente privado. Boleto nao sera impresso.",1,0)
 				Return .f.	
 			Endif
 		Endif
@@ -210,7 +210,7 @@ User Function MULTIBOL(lDanfe,lEmail,lTitulo)
 		
 		// Nao imprime Se Cond Pagamento == A Vista
 		If Alltrim(SF2->F2_COND) == "001"
-			Help(" ",1,"MULTIBOL",,"Condicao de Pagamento A VISTA. Boleto nao sera impresso.",1,0)
+			Help(" ",1,"JFINX100",,"Condicao de Pagamento A VISTA. Boleto nao sera impresso.",1,0)
 			Return .f.	
 		Endif			
 					
@@ -244,7 +244,7 @@ User Function MULTIBOL(lDanfe,lEmail,lTitulo)
 		// Nao imprime Se Cliente Não imprime boleto A1_BLEMAIL == 1
 		If SA1->(FieldPos("A1_BLEMAIL")) > 0
 			If SA1->A1_BLEMAIL != "1"
-				Help(" ",1,"MULTIBOL",,"Cliente da NF "+SE1->E1_NUM+" nao esta liberado para gerar boleto. Boleto nao sera impresso.",1,0)
+				Help(" ",1,"JFINX100",,"Cliente da NF "+SE1->E1_NUM+" nao esta liberado para gerar boleto. Boleto nao sera impresso.",1,0)
 				Return .f.	
 			Endif
 		Endif	
@@ -252,7 +252,7 @@ User Function MULTIBOL(lDanfe,lEmail,lTitulo)
 		// Nao imprime Se Cliente nao é privado A1_TPCLIEN == 1
 		If SA1->(FieldPos("A1_TPCLIEN")) > 0
 			If SA1->A1_TPCLIEN != "1"
-				Help(" ",1,"MULTIBOL",,"Cliente da NF "+SE1->E1_NUM+" nao e um cliente privado. Boleto nao sera impresso.",1,0)
+				Help(" ",1,"JFINX100",,"Cliente da NF "+SE1->E1_NUM+" nao e um cliente privado. Boleto nao sera impresso.",1,0)
 				Return .f.	
 			Endif
 		Endif				
@@ -392,7 +392,7 @@ User Function RF01BImp(lEmail)
 			// Nao imprime Se Cliente Não imprime boleto A1_BLEMAIL == 1
 			If SA1->(FieldPos("A1_BLEMAIL")) > 0
 				If SA1->A1_BLEMAIL != "1"
-					Help(" ",1,"MULTIBOL",,"Cliente da NF "+SE1->E1_NUM+" nao esta liberado para gerar boleto. Boleto nao sera impresso.",1,0)
+					Help(" ",1,"JFINX100",,"Cliente da NF "+SE1->E1_NUM+" nao esta liberado para gerar boleto. Boleto nao sera impresso.",1,0)
 					SE1->(dbSkip())
 					Loop
 				Endif
@@ -400,7 +400,7 @@ User Function RF01BImp(lEmail)
 			
 			// Nao gera boleto se não estiver o tipo no parametro
 			//If !(AllTrim(SE1->E1_TIPO) $ SuperGetMV("FS_TIPBOL",.T.,"BOL"))
-				//Help(" ",1,"MULTIBOL",,"O tipo do titulo "+SE1->E1_NUM+"-"+SE1->E1_PARCELA+" nao e aceito para emitir boleto.",1,0)
+				//Help(" ",1,"JFINX100",,"O tipo do titulo "+SE1->E1_NUM+"-"+SE1->E1_PARCELA+" nao e aceito para emitir boleto.",1,0)
 				//SE1->(dbSkip())
 				//Loop	
 			//Endif
@@ -747,8 +747,8 @@ User Function RF01B062(xBanco,xAgencia,xConta,xSubCt, lEmail)
 			cmsg3 := AllTrim(&(SEE->EE_FOREXT1))
 		EndIf
 
-		If !Empty(SEE->EE_FOREXT2)
-			cmsg4 := AllTrim(&(SEE->EE_FOREXT2))
+		If !Empty(SA1->A1_PRIOR)
+			cmsg4 := AllTrim(cValToChar(SE1->E1_HIST))
 		EndIf
 
 		aBolText     := {   cmsg1                                                   ,; //[1] TEXTO 1
@@ -911,7 +911,7 @@ User Function RF01B062(xBanco,xAgencia,xConta,xSubCt, lEmail)
 				cArqRel := cPdfNom+".PDF"
 				EnvBoleto( cDir,cArqRel,aTo)
 			Else
-				Help(" ",1,"MULTIBOL",,"Nao existe e-mail de contato cadastrado para envio.",1,0)
+				Help(" ",1,"JFINX100",,"Nao existe e-mail de contato cadastrado para envio.",1,0)
 			Endif				
 			FErase(cArqRel)	
 		Endif	
@@ -1849,26 +1849,28 @@ Static Function Impres2(oPrint,aDadosEmp,aDadosTit,aDadosBanco,aDatSacado,aBolTe
 	aValorJuros := Alltrim(Transform(SEE->EE_ZPMULTA,"@E 99,999,999.99"))
 	aValorMora 	:= Alltrim(Transform((SE1->E1_VALOR*SEE->EE_ZPJUROS)/100,"@E 99,999,999.99"))
 
-	If SE1->E1_ACRESC==0
-		//oPrint:Say  (nRow2+1090,100 ,"APOS O VENCIMENTO COBRAR MULTA DE: "+aValorAcres+"",oFont10)
-		//oPrint:Say  (nRow2+1150,100 ,"APOS O VENCIMENTO COBRAR JUROS DE: "+aValorMora+" AO DIA",oFont10)
+	If SEE->EE_ZPMULTA>0
+		oPrint:Say  (nRow2+1090,100 ,"Após o vencimento cobrar multa de: "+aValorAcres+".",oFont10)
+		oPrint:Say  (nRow2+1150,100 ,"Após o vencimento cobrar juros de: "+aValorMora+" ao dia.",oFont10)
 		//oPrint:Say  (nRow2+1200,100 ,aBolText[1],oFont10)
-		//oPrint:Say  (nRow2+1250,100 ,aBolText[2],oFont10)
-		//oPrint:Say  (nRow2+1300,100 ,aBolText[3],oFont10)
+		oPrint:Say  (nRow2+1250,100 ,aBolText[1],oFont10)
+		oPrint:Say  (nRow2+1300,100 ,aBolText[2],oFont10)
 		//oPrint:Say  (nRow2+1300,100 ,aBolText[4],oFont10)
-		oPrint:Say  (nRow2+1090,100 ,aBolText[1],oFont10)
-		oPrint:Say  (nRow2+1140,100 ,aBolText[2],oFont10)
-		oPrint:Say  (nRow2+1190,100 ,aBolText[3],oFont10)
-	else
+		//oPrint:Say  (nRow2+1090,100 ,aBolText[1],oFont10)
+		//oPrint:Say  (nRow2+1140,100 ,aBolText[2],oFont10)
+		//oPrint:Say  (nRow2+1190,100 ,aBolText[3],oFont10)
 	
-		oPrint:Say  (nRow2+1090,100 ,"APOS O VENCIMENTO COBRAR MULTA DE: "+aValorAcres+"",oFont10)
-		oPrint:Say  (nRow2+1150,100 ,"APOS O VENCIMENTO COBRAR JUROS DE: "+aValorMora+" AO DIA",oFont10)
-		oPrint:Say  (nRow2+1200,100 ,aBolText[1],oFont10)
-		oPrint:Say  (nRow2+1250,100 ,aBolText[2],oFont10)
-		oPrint:Say  (nRow2+1300,100 ,aBolText[3],oFont10)
-		//oPrint:Say  (nRow2+1300,100 ,aBolText[4],oFont10)
 	EndIf
 
+	If !Empty(SE1->E1_INSTR1)
+			
+		oPrint:Say  (nRow2+1200,100 ,"Protestar após"+" "+SE1->E1_INSTR1+" dias."  ,oFont10)
+		
+	elseif SA1->A1_TEMVIS>0
+		
+		oPrint:Say  (nRow2+1200,100 ,"Protestar após"+" "+Alltrim(Transform(SA1->A1_TEMVIS,"@E 999"))+" dias."  ,oFont10)
+		
+	EndIf
 
 	oPrint:Say  (nRow2+1050,1810,"(-)Desconto/Abatimento",oFont8)
 	oPrint:Say  (nRow2+1120,1810,"(-)Outras Deduções"    ,oFont8)
@@ -2088,24 +2090,29 @@ Static Function Impres2(oPrint,aDadosEmp,aDadosTit,aDadosBanco,aDatSacado,aBolTe
 	aValorJuros := Alltrim(Transform(SEE->EE_ZPMULTA,"@E 99,999,999.99"))
 	aValorMora := Alltrim(Transform((SE1->E1_VALOR*SEE->EE_ZPJUROS)/100,"@E 99,999,999.99"))
 
-	If SE1->E1_ACRESC==0
-		//oPrint:Say  (nRow2+2390,100 ,"APOS O VENCIMENTO COBRAR MULTA DE: "+aValorAcres+" ",oFont10)
-		//oPrint:Say  (nRow2+2450,100 ,"APOS O VENCIMENTO COBRAR JUROS DE: "+aValorMora+" AO DIA",oFont10)
+	If SEE->EE_ZPMULTA>0
+		oPrint:Say  (nRow2+2390,100 ,"Após o vencimento cobrar multa de: "+aValorAcres+".",oFont10)
+		oPrint:Say  (nRow2+2450,100 ,"Após o vencimento cobrar juros de: "+aValorMora+" ao dia.",oFont10)
 		//oPrint:Say  (nRow2+2500,100 ,aBolText[1] /*/+" "+AllTrim(Transform((aDadosTit[5]*0.02),"@E 99,999.99"))       /*/,oFont10)
-		//oPrint:Say  (nRow2+2550,100 ,aBolText[2] /*/+" "+AllTrim(Transform(((aDadosTit[5]*0.01)/30),"@E 99,999.99"))  /*/,oFont10)
-		//oPrint:Say  (nRow2+2600,100 ,aBolText[3],oFont10)
+		oPrint:Say  (nRow2+2550,100 ,aBolText[1] /*/+" "+AllTrim(Transform(((aDadosTit[5]*0.01)/30),"@E 99,999.99"))  /*/,oFont10)
+		oPrint:Say  (nRow2+2600,100 ,aBolText[2],oFont10)
 		//oPrint:Say  (nRow2+2600,100 ,aBolText[4],oFont10)
-		oPrint:Say  (nRow2+2390,100 ,aBolText[1] /*/+" "+AllTrim(Transform((aDadosTit[5]*0.02),"@E 99,999.99"))       /*/,oFont10)
-		oPrint:Say  (nRow2+2440,100 ,aBolText[2] /*/+" "+AllTrim(Transform(((aDadosTit[5]*0.01)/30),"@E 99,999.99"))  /*/,oFont10)
-		oPrint:Say  (nRow2+2490,100 ,aBolText[3],oFont10)
-	else
-		oPrint:Say  (nRow2+2390,100 ,"APOS O VENCIMENTO COBRAR MULTA DE: "+aValorAcres+" ",oFont10)
-		oPrint:Say  (nRow2+2450,100 ,"APOS O VENCIMENTO COBRAR JUROS DE: "+aValorMora+" AO DIA",oFont10)
-		oPrint:Say  (nRow2+2500,100 ,aBolText[1] /*/+" "+AllTrim(Transform((aDadosTit[5]*0.02),"@E 99,999.99"))       /*/,oFont10)
-		oPrint:Say  (nRow2+2550,100 ,aBolText[2] /*/+" "+AllTrim(Transform(((aDadosTit[5]*0.01)/30),"@E 99,999.99"))  /*/,oFont10)
-		oPrint:Say  (nRow2+2600,100 ,aBolText[3],oFont10)
-		//oPrint:Say  (nRow2+2600,100 ,aBolText[4],oFont10)
+		//oPrint:Say  (nRow2+2390,100 ,aBolText[1] /*/+" "+AllTrim(Transform((aDadosTit[5]*0.02),"@E 99,999.99"))       /*/,oFont10)
+		//oPrint:Say  (nRow2+2440,100 ,aBolText[2] /*/+" "+AllTrim(Transform(((aDadosTit[5]*0.01)/30),"@E 99,999.99"))  /*/,oFont10)
+		//oPrint:Say  (nRow2+2490,100 ,aBolText[3],oFont10)
+	
 	EndIf
+
+	If !Empty(SE1->E1_INSTR1)
+			
+		oPrint:Say  (nRow2+2500,100 ,"Protestar após"+" "+SE1->E1_INSTR1+" dias."  ,oFont10)
+		
+	elseif SA1->A1_TEMVIS>0
+		
+		oPrint:Say  (nRow2+2500,100 ,"Protestar após"+" "+Alltrim(Transform(SA1->A1_TEMVIS,"@E 999"))+" dias."  ,oFont10)
+		
+	EndIf
+
 
 	oPrint:Say  (nRow3+2340,1810,"(-)Desconto/Abatimento",oFont8)
 	oPrint:Say  (nRow3+2410,1810,"(-)Outras Deduções"    ,oFont8)
@@ -2774,8 +2781,8 @@ Static Function RF02B062(xBanco,xAgencia,xConta,xSubCt, lEmail)
 			cmsg3 := AllTrim(&(SEE->EE_FOREXT1))
 		EndIf
 
-		If !Empty(SEE->EE_FOREXT2)
-			cmsg4 := AllTrim(&(SEE->EE_FOREXT2))
+		If !Empty(SA1->A1_PRIOR)
+			cmsg4 := AllTrim(cValToChar(SE1->E1_HIST))
 		EndIf
 
 		aBolText     := {   cmsg1                                                   ,; //[1] TEXTO 1
@@ -2919,7 +2926,7 @@ Static Function RF02B062(xBanco,xAgencia,xConta,xSubCt, lEmail)
 				cArqRel := cPdfNom+".PDF"
 				EnvBoleto( cDir,cArqRel,aTo)
 			Else
-				Help(" ",1,"MULTIBOL",,"Nao existe e-mail de contato cadastrado para envio.",1,0)
+				Help(" ",1,"JFINX100",,"Nao existe e-mail de contato cadastrado para envio.",1,0)
 			Endif				
 			FErase(cArqRel)	
 		Endif	

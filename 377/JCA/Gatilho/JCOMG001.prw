@@ -28,7 +28,7 @@ EndDo
 If !lCopJca
     cQuery := "SELECT MAX(SUBSTRING(B1_COD,5,4))+1 AS SEQ"
     cQuery += " FROM "+RetSQLName("SB1")
-    cQuery += " WHERE SUBSTRING(B1_COD,1,4) ='"+M->B1_GRUPO+"'"
+    cQuery += " WHERE SUBSTRING(B1_COD,1,4) ='"+M->B1_GRUPO+"' AND D_E_L_E_T_=' '"
     cQuery += " ORDER BY 1"
 
     IF Select('TRB') > 0
@@ -41,7 +41,7 @@ If !lCopJca
 
     DbSelectArea("TRB")  
 
-    cRet := Alltrim(M->B1_GRUPO)+Strzero(TRB->SEQ,4)
+    cRet := Alltrim(M->B1_GRUPO)+Strzero(If(TRB->SEQ < 1,1,TRB->SEQ),4)
 else
     cRet := M->B1_COD
 EndIf 

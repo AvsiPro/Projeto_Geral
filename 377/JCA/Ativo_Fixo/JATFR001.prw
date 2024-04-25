@@ -48,9 +48,22 @@ Return
  
 Static Function gerar()
 
-Local cQuery 
-Private aItens   := {}
-Private aCabec := {}
+Local cQuery    :=  '' 
+Local cCntBkp   :=  ''
+Local nTot1     :=  0
+Local nTot2     :=  0
+Local nTot3     :=  0
+Local nTot4     :=  0
+Local nTot5     :=  0
+
+Local nTotG1     :=  0
+Local nTotG2     :=  0
+Local nTotG3     :=  0
+Local nTotG4     :=  0
+Local nTotG5     :=  0
+
+Private aItens  :=  {}
+Private aCabec  :=  {}
 
 cQuery := "SELECT N3_CCONTAB AS CONTA,N1_DESCRIC,N1_CBASE,N1_XPLACA,N1_XPREF,N1_XCHASSI,"
 cQuery += " N1_CHAPA,A2_NOME,N1_AQUISIC,N1_ITEM,N3_VORIG1,N3_TXDEPR1,N3_VRCACM1,N3_VRDMES1,N3_VRDACM1"
@@ -58,7 +71,7 @@ cQuery += " FROM "+RetSQLName("SN1")+" N1"
 cQuery += " INNER JOIN "+RetSQLName("SN3")+" N3 ON N3_FILIAL=N1_FILIAL AND N3_CBASE=N1_CBASE AND N3_ITEM=N1_ITEM AND N3.D_E_L_E_T_=' '"
 cQuery += " LEFT JOIN " + RetSQLName("SA2") + " A2 ON A2_COD=N1_FORNEC AND A2_LOJA=N1_LOJA AND A2.D_E_L_E_T_=' ' " 
 cQuery += " WHERE N1_FILIAL='"+xFilial("SN1")+"'"
-cQuery += " AND N1.D_E_L_E_T_=' '"
+cQuery += " AND N1.D_E_L_E_T_=' ' AND N1_BAIXA=' '"
 
 IF Select('TRB') > 0
     dbSelectArea('TRB')
@@ -86,8 +99,39 @@ Aadd(aCabec,{"CONTA",;
             "Depr Mes M1",;
             "Depr.Acum M1",;
             "Saldo Residual"})
-            
+
+
+cCntBkp := TRB->CONTA
+
 While !EOF()
+    
+    If cCntBkp <> TRB->CONTA
+        Aadd(aItens,{'Total',;
+                        '',;
+                        '',;
+                        '',;
+                        '',;
+                        '',;
+                        '',;
+                        '',;
+                        '',;
+                        '',;
+                        nTot1,;
+                        0,;
+                        nTot2,;
+                        nTot3,;
+                        nTot4,;
+                        nTot5})
+
+        cCntBkp := TRB->CONTA
+
+        nTot1 := 0
+        nTot2 := 0
+        nTot3 := 0
+        nTot4 := 0
+        nTot5 := 0
+    EndIf 
+
     Aadd(aItens,{TRB->CONTA,;
                 TRB->N1_DESCRIC,;
                 TRB->N1_CBASE,;
@@ -104,8 +148,73 @@ While !EOF()
                 TRB->N3_VRDMES1,;
                 TRB->N3_VRDACM1,;
                 TRB->N3_VORIG1-TRB->N3_VRDACM1})
+    
+    nTot1 += TRB->N3_VORIG1
+    nTot2 += TRB->N3_VRCACM1
+    nTot3 += TRB->N3_VRDMES1
+    nTot4 += TRB->N3_VRDACM1
+    nTot5 += (TRB->N3_VORIG1-TRB->N3_VRDACM1)
+    
+    nTotG1 += TRB->N3_VORIG1
+    nTotG2 += TRB->N3_VRCACM1
+    nTotG3 += TRB->N3_VRDMES1
+    nTotG4 += TRB->N3_VRDACM1
+    nTotG5 += (TRB->N3_VORIG1-TRB->N3_VRDACM1)
+
     Dbskip()
 ENDDO
+
+Aadd(aItens,{'Total',;
+                '',;
+                '',;
+                '',;
+                '',;
+                '',;
+                '',;
+                '',;
+                '',;
+                '',;
+                nTot1,;
+                0,;
+                nTot2,;
+                nTot3,;
+                nTot4,;
+                nTot5})
+
+Aadd(aItens,{'--------',;
+                '',;
+                '',;
+                '',;
+                '',;
+                '',;
+                '',;
+                '',;
+                '',;
+                '',;
+                '',;
+                '',;
+                '',;
+                '',;
+                '',;
+                ''})
+
+Aadd(aItens,{'Total Geral',;
+                '',;
+                '',;
+                '',;
+                '',;
+                '',;
+                '',;
+                '',;
+                '',;
+                '',;
+                nTotG1,;
+                0,;
+                nTotG2,;
+                nTotG3,;
+                nTotG4,;
+                nTotG5})
+
 
 GeraPlan()
 
