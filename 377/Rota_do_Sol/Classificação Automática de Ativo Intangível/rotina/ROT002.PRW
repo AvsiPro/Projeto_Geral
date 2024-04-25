@@ -148,7 +148,7 @@ static function fSaveToATFA012(aZ04_Atual, nValor, aZ05AtivosPreCadastro, nI, cD
 		else
 			aCommandsUPDCT2 := fGetSQLScriptFlagCT2(cITEM, cDataini, cDataFim, aZ05AtivosPreCadastro)
 			fExecUpdateFlagCT2(aCommandsUPDCT2)	
-			fExec1UpdateHistSN3(aZ04_Atual)
+			//fExec1UpdateHistSN3(aZ04_Atual)
 		endIf
 
 	end transaction
@@ -972,7 +972,7 @@ static function fPopula1ModelDetails(oModel, aZ04_Atual, aZ05AtivosPreCadastro, 
 	
 	local cGrupo		:= aZ04_Atual[3]
 	local cTipoIt		:= "13"
-	local cDescIt		:= "VALOR INTEGRACAO INVESTIMENTO " + cValToChar(dDataBase)
+	//local cDescIt		:= "VALOR INTEGRACAO INVESTIMENTO " + cValToChar(dDataBase)
 	local nX 			:= 0
 
 //	cCCINVE				:= aZ05AtivosPreCadastro[3] //INVESTIMENTO		
@@ -997,9 +997,9 @@ static function fPopula1ModelDetails(oModel, aZ04_Atual, aZ05AtivosPreCadastro, 
 			EndIf
 
 			If oModel:CanSetValue("SN3DETAIL", "N3_HISTOR")
-				oModel:SetValue( "SN3DETAIL",  "N3_HISTOR", cDescIt)
+				oModel:SetValue( "SN3DETAIL",  "N3_HISTOR", cHistor)
 			else		
-				oModel:LoadValue("SN3DETAIL",  "N3_HISTOR", cDescIt)
+				oModel:LoadValue("SN3DETAIL",  "N3_HISTOR", cHistor)
 			EndIf
 			oModel:SetValue( "SN3DETAIL",  "N3_CODIND", '02')
 

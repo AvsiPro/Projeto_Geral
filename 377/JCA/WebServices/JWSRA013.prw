@@ -45,10 +45,12 @@ WsMethod POST WSSERVICE JWSRA013
     Private cCombina    :=  ''
     Private cNfExst     :=  ''
 
-    RpcClearEnv()
-    RpcSetType(3)
-    RPCSetEnv('01','00020087')
-    //RPCSetEnv('T1','D MG 01')
+    If Select("SM0") == 0
+        RpcClearEnv()
+        RpcSetType(3)
+        RPCSetEnv('01','00020087')
+        //RPCSetEnv('T1','D MG 01')
+    EndIf
 
 	::SetContentType("application/json")
 
@@ -99,7 +101,7 @@ WsMethod POST WSSERVICE JWSRA013
 
                 cErrorN := ''
                 cCombina:= ''
-                lgerou := XMLCTE(oXml,@cNota)
+                lgerou := XMLCTE(oXml,@cNota,cXmlRec)
                 
                 If lgerou    
                     
@@ -186,7 +188,7 @@ Return cWord
     (examples)
     @see (links_or_references)
 /*/
-Static Function XMLCTE(oXml,cNotaG)
+Static Function XMLCTE(oXml,cNotaG,cXmlRec)
 
 Local lRet          := .t.
 Local nCont         := 0
@@ -225,8 +227,7 @@ cVersaoCTE := oXML:_CTEProc:_versao:TEXT
 cChave_Nfe := SubStr(oxml:_CTEPROC:_CTE:_INFCTE:_ID:TEXT,4)
 
 If Empty(cChave_Nfe)
-	//MsgAlert("A chave de acesso não foi informada!","XMLCTE")
-    cErrorN := 'Chave de acesso do CTe não informada'
+	cErrorN := 'Chave de acesso do CTe não informada'
 	Return(.f.)
 EndIf     
 
@@ -239,22 +240,10 @@ nPos := Ascan(aSM0,{|x| Alltrim(x[18]) == Alltrim(cCNPJ_FIL)})
 //nPos := 1
 cFilorig := aSm0[nPos,02] //SM0->M0_CODFIL
 cfilant := cFilorig
-//cEstFil  := Alltrim(aSm0[nPos,04])
-/*If Empty(cEstFil)
-    If cfilant <> cFilorig
-        CFILANT  := cFilorig
-        RpcClearEnv()
-        RpcSetType(3)
-        RPCSetEnv('01','00020087')
-    EndIF 
-ENDIF  */
 
 If XmlChildEx( oXml:_CTEPROC:_CTE:_INFCTE:_EMIT, "_ENDEREMIT" ) != Nil
     cEstFil := UPPER(oxml:_CTEPROC:_CTE:_INFCTE:_EMIT:_ENDEREMIT:_UF:TEXT )
 EndIF 
-
-
-
 
 cNatOp	:= PadR(oXml:_cteProc:_cte:_Infcte:_IDE:_NATOP:Text,45," ")
 
@@ -331,8 +320,26 @@ If !Empty(cEstIni) .And. !Empty(cEstFim) .And. !Empty(cCstCte)
     cTesCTe := BuscaTes(cEstFil,cCfopFrt,cEstIni,cEstFim,cCstCte,cMunIni,cMunFim,cEstTom,cFilorig,nTotalMerc)
 EndIf 
 
-lRet := GerarCte()
-
+If !Empty(cTesCTe)
+    lRet := GerarCte()
+Else 
+    DbSelectArea("ZPH")
+    DbSetOrder(1)
+    If !Dbseek(cFilorig+cNum+cSerie+cCodCli+cLjFornec)
+        RecLock("ZPH",.T.)
+        ZPH->ZPH_FILIAL := cFilorig
+        ZPH->ZPH_DOC    := cNum
+        ZPH->ZPH_SERIE  := cSerie
+        ZPH->ZPH_FORNEC := cCodCli
+        ZPH->ZPH_LOJA   := cLjFornec
+        ZPH->ZPH_XML    := cXmlRec
+        ZPH->ZPH_STATUS := '0'
+        ZPH->(Msunlock())
+    EndIf
+    
+    cErrorN := 'Nao encontrada combinação para tes'
+    lRet := .F.
+EndIf
 
 Return(lRet)
 
@@ -377,9 +384,8 @@ Return cRet
 /*/
 Static Function BuscaTes(cEstFil,cCfopFrt,cEstIni,cEstFim,cCstCte,cMunIni,cMunFim,cEstTom,cFilorig,nTotalMerc)
 
-Local cRet := '501'
+Local cRet := ''
 Local lIntEst := cEstIni == cEstFim //Operação interestadual
-//Local lIntMun := cMunIni == cMunFim //Operação intermunicipal
 Local cQuery 
 
 cCombina := 'Filial - '+cFilorig+' / Est Fil - '+cEstFil+' / CFOP - '+cCfopFrt+' / Est Ini - '+cEstIni+' / Est Fim - '+cEstFim
@@ -387,7 +393,7 @@ cCombina += ' / CST - '+cCstCte+' / cMunIni - '+cMunIni+' / cMunFim - '+cMunFim+
 
 cQuery := "SELECT ZPG_TES "
 cQuery += " FROM "+RetSQLName("ZPG")
-cQuery += " WHERE ZPG_FILIAL='"+xFilial("ZPG")+"'"
+cQuery += " WHERE ZPG_FILIAL='"+xFilial("ZPG")+"' AND D_E_L_E_T_=' '"
 cQuery += " AND ZPG_CFOP='"+cCfopFrt+"'"
 cQuery += " AND ZPG_ESTFIL='"+cEstFil+"'"
 cQuery += " AND ZPG_ESTTOM IN('*','"+cEstTom+"')"
@@ -412,9 +418,11 @@ DbSelectArea("TRB")
 If !Empty(TRB->ZPG_TES)
     cRet := TRB->ZPG_TES 
     cCombina += ' / TES - '+TRB->ZPG_TES 
-Else 
-    cRet := '501'
-    cCombina += ' / TES - Nao encontrada combinação' 
+//Else    
+    //solicitado em 25/04 para não colocar uma tes generica quando nao encontrar a combinação
+    //gravar em uma tabela transitoria para posterior ajuste pelo usuario
+    /*cRet := '501'
+    cCombina += ' / TES - Nao encontrada combinação' */
 EndIf 
 
 Return(cRet)
@@ -437,7 +445,6 @@ Local aCabec    := {}
 Local aItensT   := {}   
 Local aLinha    := {}
 Local lRet      := .T.
-//Local cProdCTe  :=  SuperGetMv("TI_PRODCTE",.F.,"000000000000000000000000000061")
 Local cProdCTe  :=  SuperGetMv("TI_PRODCTE",.F.,"S0500001")
 
 aadd(aCabec,{"F2_FILIAL"    ,cFilorig   })
@@ -478,7 +485,9 @@ EndIf
 
 Return(lRet)
 
-
+/*
+    funcao para validar a combinação de tes
+*/
 user function xvldws13
 
 If Select("SM0") == 0
@@ -487,12 +496,29 @@ If Select("SM0") == 0
 EndIf
 
 aSm0 := FWLoadSM0()
-nPos := Ascan(aSM0,{|x| Alltrim(x[18]) == Alltrim(cCNPJ_FIL)})			
-//nPos := 1
+//nPos := Ascan(aSM0,{|x| Alltrim(x[18]) == Alltrim(cCNPJ_FIL)})			
+nPos := 1
 cFilorig := aSm0[nPos,02] //SM0->M0_CODFIL
 cEstFil  := Alltrim(aSm0[nPos,04])
 CFILANT  := cFilorig 
-
-BuscaTes('MG','6357','MG','RJ','00','3151206','3303500','MG')
+//cEstFil,cCfopFrt,cEstIni,cEstFim,cCstCte,cMunIni,cMunFim,cEstTom,cFilorig,nTotalMerc
+BuscaTes('MG','6357','MG','RJ','00','3151206','3303500','MG',cFilorig,0)
+cNum := '12'
+cSerie:='1'
+cCodCli:='000001'
+cLjFornec := '01'
+cXmlRec := ''
+DbSelectArea("ZPH")
+DbSetOrder(1)
+If !Dbseek(cFilorig+cNum+cSerie+cCodCli+cLjFornec)
+    RecLock("ZPH",.T.)
+    ZPH->ZPH_FILIAL := cFilorig
+    ZPH->ZPH_DOCTO  := cNum
+    ZPH->ZPH_SERIE  := cSerie
+    ZPH->ZPH_FORNEC := cCodCli
+    ZPH->ZPH_LOJA   := cLjFornec
+    ZPH->ZPH_XML    := cXmlRec
+    ZPH->(Msunlock())
+EndIf
 
 Return
