@@ -248,7 +248,7 @@ Local nPos2     :=  Ascan(aSM0Data2,{|x| alltrim(x[1]) == "M0_NOMECOM"})
 
 Local cExterno  :=  CFILANT + ' ' + aSM0Data2[nPos1,2] + ' ' + aSM0Data2[nPos2,2] + CRLF
 
-cExterno += 'Periodo '+cvaltochar(MV_PAR03)+' e '+cvaltochar(MV_PAR04)
+cExterno += 'Posição de Saldo Ativo - Periodo '+cvaltochar(STOD(MV_PAR03))+' e '+cvaltochar(STOD(MV_PAR04))
 
 cDir := cGetFile(, OemToAnsi("Selecione o diretório de destino"), 0, "C:\", .T., GETF_LOCALHARD+GETF_NETWORKDRIVE+GETF_RETDIRECTORY, .F., .F.) 
 
