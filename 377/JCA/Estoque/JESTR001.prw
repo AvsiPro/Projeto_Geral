@@ -331,7 +331,7 @@ cVeic := Posicione("ST9",1,xFilial("ST9")+cBem,"T9_PLACA")
 oPrint:Say(0360,1480,Alltrim(cBem)+' - '+cVeic,oArial09N)
 
 oPrint:Say(0400,0040,"Almoxarife:",oArial09N)
-oPrint:Say(0360,0340,CADTMP->CP_SOLICIT,oArial09N)
+oPrint:Say(0400,0340,CADTMP->CP_SOLICIT,oArial09N)
 
 oPrint:Say(0450,0030,Replicate("-",299),oCouNew08)
 

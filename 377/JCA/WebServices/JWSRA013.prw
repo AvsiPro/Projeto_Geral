@@ -101,7 +101,7 @@ WsMethod POST WSSERVICE JWSRA013
 
                 cErrorN := ''
                 cCombina:= ''
-                lgerou := XMLCTE(oXml,@cNota,cXmlRec)
+                lgerou := XMLCTE(oXml,@cNota,cXmlRec,0)
                 
                 If lgerou    
                     
@@ -188,7 +188,7 @@ Return cWord
     (examples)
     @see (links_or_references)
 /*/
-Static Function XMLCTE(oXml,cNotaG,cXmlRec)
+Static Function XMLCTE(oXml,cNotaG,cXmlRec,nChama)
 
 Local lRet          := .t.
 Local nCont         := 0
@@ -216,6 +216,7 @@ Private cMunIni     := ''
 Private cMunFim     := ''
 Private cEstFil     := ''
 Private cEstTom     := ''
+Default nChama      := 0
 
 If ValType(oXml) != "O"
     cErrorN := 'xml nao pode ser convertido em objeto'
@@ -320,26 +321,34 @@ If !Empty(cEstIni) .And. !Empty(cEstFim) .And. !Empty(cCstCte)
     cTesCTe := BuscaTes(cEstFil,cCfopFrt,cEstIni,cEstFim,cCstCte,cMunIni,cMunFim,cEstTom,cFilorig,nTotalMerc)
 EndIf 
 
-If !Empty(cTesCTe)
-    lRet := GerarCte()
-Else 
-    DbSelectArea("ZPH")
-    DbSetOrder(1)
-    If !Dbseek(cFilorig+cNum+cSerie+cCodCli+cLjFornec)
-        RecLock("ZPH",.T.)
-        ZPH->ZPH_FILIAL := cFilorig
-        ZPH->ZPH_DOC    := cNum
-        ZPH->ZPH_SERIE  := cSerie
-        ZPH->ZPH_FORNEC := cCodCli
-        ZPH->ZPH_LOJA   := cLjFornec
-        ZPH->ZPH_XML    := cXmlRec
-        ZPH->ZPH_STATUS := '0'
-        ZPH->(Msunlock())
+If nChama == 0
+    If !Empty(cTesCTe)
+        lRet := GerarCte()
+    Else 
+        DbSelectArea("ZPH")
+        DbSetOrder(1)
+        If !Dbseek(cFilorig+cNum+cSerie+cCodCli+cLjFornec)
+            RecLock("ZPH",.T.)
+            ZPH->ZPH_FILIAL := cFilorig
+            ZPH->ZPH_DOC    := cNum
+            ZPH->ZPH_SERIE  := cSerie
+            ZPH->ZPH_FORNEC := cCodCli
+            ZPH->ZPH_LOJA   := cLjFornec
+            ZPH->ZPH_XML    := cXmlRec
+            ZPH->ZPH_STATUS := '0'
+            ZPH->(Msunlock())
+        EndIf
+        
+        cErrorN := 'Nao encontrada combinação para tes'
+        lRet := .F.
     EndIf
-    
-    cErrorN := 'Nao encontrada combinação para tes'
-    lRet := .F.
-EndIf
+ElseIf nChama == 1
+    lRet := {cFilorig,cEstFil,cCfopFrt,cEstIni,cEstFim,cMunIni,cMunFim,cCstCte,cEstTom,nTotalMerc,cTesCTe}
+Else 
+    If !Empty(cTesCTe)
+        lRet := GerarCte()
+    EndIf 
+EndIf 
 
 Return(lRet)
 
@@ -487,38 +496,39 @@ Return(lRet)
 
 /*
     funcao para validar a combinação de tes
+    utilizada tambem para reaproveitar o código de geração do cte
+    quando chamado pela rotina de configuração de tes para o tracker (JFISM001)
 */
-user function xvldws13
+user function xvldws13(nOpc,cXml,nTipo)
+
+Local cError := ''
+Local cWarning := ''
+Local cNota  := ''
+Local aRet  := {}
+
+Private oXml 
+Default nOpc := 0
+Default cXMl := ''
+Default nTipo := 1
 
 If Select("SM0") == 0
     RpcSetType(3)
     RPCSetEnv("01","00020087")
 EndIf
 
-aSm0 := FWLoadSM0()
-//nPos := Ascan(aSM0,{|x| Alltrim(x[18]) == Alltrim(cCNPJ_FIL)})			
-nPos := 1
-cFilorig := aSm0[nPos,02] //SM0->M0_CODFIL
-cEstFil  := Alltrim(aSm0[nPos,04])
-CFILANT  := cFilorig 
-//cEstFil,cCfopFrt,cEstIni,cEstFim,cCstCte,cMunIni,cMunFim,cEstTom,cFilorig,nTotalMerc
-BuscaTes('MG','6357','MG','RJ','00','3151206','3303500','MG',cFilorig,0)
-cNum := '12'
-cSerie:='1'
-cCodCli:='000001'
-cLjFornec := '01'
-cXmlRec := ''
-DbSelectArea("ZPH")
-DbSetOrder(1)
-If !Dbseek(cFilorig+cNum+cSerie+cCodCli+cLjFornec)
-    RecLock("ZPH",.T.)
-    ZPH->ZPH_FILIAL := cFilorig
-    ZPH->ZPH_DOCTO  := cNum
-    ZPH->ZPH_SERIE  := cSerie
-    ZPH->ZPH_FORNEC := cCodCli
-    ZPH->ZPH_LOJA   := cLjFornec
-    ZPH->ZPH_XML    := cXmlRec
-    ZPH->(Msunlock())
-EndIf
+If nOpc == 0
+    aSm0 := FWLoadSM0()
+    //nPos := Ascan(aSM0,{|x| Alltrim(x[18]) == Alltrim(cCNPJ_FIL)})			
+    nPos := 1
+    cFilorig := aSm0[nPos,02] //SM0->M0_CODFIL
+    cEstFil  := Alltrim(aSm0[nPos,04])
+    CFILANT  := cFilorig 
+    //cEstFil,cCfopFrt,cEstIni,cEstFim,cCstCte,cMunIni,cMunFim,cEstTom,cFilorig,nTotalMerc
+    BuscaTes('MG','6357','MG','RJ','00','3151206','3303500','MG',cFilorig,0)
+Else 
+    oXml := XmlParser( cXml, "_", @cError, @cWarning )
 
-Return
+    aRet := XMLCTE(oXml,@cNota,'',nTipo)
+EndIf 
+
+Return(aRet)

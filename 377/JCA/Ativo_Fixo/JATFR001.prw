@@ -73,6 +73,8 @@ cQuery += " LEFT JOIN " + RetSQLName("SA2") + " A2 ON A2_COD=N1_FORNEC AND A2_LO
 cQuery += " WHERE N1_FILIAL='"+xFilial("SN1")+"'"
 cQuery += " AND N1.D_E_L_E_T_=' ' AND N1_BAIXA=' '"
 
+cQuery += " AND N1_AQUISIC BETWEEN '"+MV_PAR03+"' AND '"+MV_PAR04+"'"
+
 IF Select('TRB') > 0
     dbSelectArea('TRB')
     dbCloseArea()
@@ -248,7 +250,7 @@ Local nPos2     :=  Ascan(aSM0Data2,{|x| alltrim(x[1]) == "M0_NOMECOM"})
 
 Local cExterno  :=  CFILANT + ' ' + aSM0Data2[nPos1,2] + ' ' + aSM0Data2[nPos2,2] + CRLF
 
-cExterno += 'Posição de Saldo Ativo - Periodo '+cvaltochar(STOD(MV_PAR03))+' e '+cvaltochar(STOD(MV_PAR04))
+cExterno += 'Posição de Saldo Ativo - Periodo '+cvaltochar(STOD(MV_PAR03))+' A '+cvaltochar(STOD(MV_PAR04))
 
 cDir := cGetFile(, OemToAnsi("Selecione o diretório de destino"), 0, "C:\", .T., GETF_LOCALHARD+GETF_NETWORKDRIVE+GETF_RETDIRECTORY, .F., .F.) 
 

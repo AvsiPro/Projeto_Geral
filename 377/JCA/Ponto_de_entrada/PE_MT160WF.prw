@@ -1,5 +1,9 @@
 #INCLUDE 'PROTHEUS.CH'
+/*
+    Ponto de entrada na finalização da analise de cotação
 
+    Utilizado para complementar da solicitação pai quando gerar o pedido para os filhos
+*/
 User function MT160WF
 
 Local aArea     := GetArea()

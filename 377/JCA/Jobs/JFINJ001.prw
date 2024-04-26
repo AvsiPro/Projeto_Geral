@@ -60,7 +60,7 @@ cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"
 cQuery += " WHERE E1_FILIAL BETWEEN ' ' AND 'ZZZ'"
 cQuery += " AND E1_VENCREA>='"+dtos(dDatabase)+"' AND E1_BAIXA=' '"
 cQuery += " AND E1_NUMBCO<>' '"
-CqUERY += " AND E1_NUM='130050   '"
+//cQUERY += " AND E1_NUM='130041'"
 
 IF Select('TRB') > 0
     dbSelectArea('TRB')

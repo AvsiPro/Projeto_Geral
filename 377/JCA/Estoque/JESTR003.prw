@@ -46,6 +46,7 @@ Private oPen		:= TPen():New(0,5,CLR_BLACK)
 PRIVATE oCouNew08	:= TFont():New("Courier New"	,08,08,,.F.,,,,.T.,.F.)
 PRIVATE oCouNew08N	:= TFont():New("Courier New"	,08,08,,.T.,,,,.F.,.F.)		// Negrito //oCouNew09N
 PRIVATE oCouNew09N	:= TFont():New("Courier New"	,09,09,,.T.,,,,.F.,.F.)		// Negrito //oCouNew09N
+PRIVATE oCouNew09	:= TFont():New("Courier New"	,09,09,,.F.,,,,.T.,.F.)		// Negrito //oCouNew09N
 PRIVATE oCouNew10N	:= TFont():New("Courier New"	,10,10,,.T.,,,,.F.,.F.)		// Negrito
 PRIVATE oCouNew10	:= TFont():New("Courier New"	,10,10,,.F.,,,,.T.,.F.)
 PRIVATE oCouNew12N	:= TFont():New("Courier New"	,12,12,,.T.,,,,.F.,.F.)		// Negrito
@@ -160,13 +161,15 @@ Local nPg		  := 0
 Local cPedidos    := ''
 Local cBarra      := ''
 
-cQuery := "SELECT F1.*,D1.*,B1_DESC,BZ_XLOCALI"
+cQuery := "SELECT DISTINCT F1.*,D1.*,B1_DESC,BZ_XLOCALI,ZPM_DESC"
 cQuery += " FROM "+RetSQLName("SF1")+" F1"
 cQuery += " INNER JOIN "+RetSQLName("SD1")+" D1 ON D1_FILIAL=F1_FILIAL AND D1_DOC=F1_DOC AND D1_SERIE=F1_SERIE"
 cQuery += " AND D1_FORNECE=F1_FORNECE AND D1.D_E_L_E_T_=' '"
 cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD=D1_COD AND B1.D_E_L_E_T_=' '"
 cQuery += " LEFT JOIN "+RetSQLName("SBZ")+" BZ ON BZ_FILIAL='"+xFilial("SBZ")+"' AND BZ_COD=B1_COD AND BZ.D_E_L_E_T_=' '"
-cQuery += " WHERE F1_FILIAL='"+xFilial("SF1")+"'"
+cQuery += " LEFT JOIN "+RetSQLName("ZPM")+" ZPM ON ZPM_FILIAL=B1_FILIAL AND ZPM_COD=B1_ZMARCA AND ZPM.D_E_L_E_T_=' '"
+
+cQuery += " WHERE F1_FILIAL='"+xFilial("SF1")+"' AND F1.D_E_L_E_T_=' '"
 
 If lBrowse
 	cQuery += " AND F1_DOC BETWEEN '"+MV_PAR01+"' AND '"+MV_PAR01+"'"
@@ -223,16 +226,21 @@ While CADTMP->(!Eof())
         cBarra := "/"
     EndIf
 
-    //For nP := 1 to 19 19 itens são possiveis na mesma pagina
-        oPrint:Say(li,050,OemToAnsi(Alltrim(CADTMP->D1_COD)+"-"+Alltrim(CADTMP->B1_DESC)),oCouNew10)
-        oPrint:Say(li,890,OemToAnsi(Alltrim(CADTMP->BZ_XLOCALI)),oCouNew10)
-        oPrint:Say(li,1290,OemToAnsi("-"),oCouNew10)  //solicitado em 19/04
-        oPrint:Say(li,1590,OemToAnsi(cvaltochar(CADTMP->D1_QUANT)),oCouNew10)
-        oPrint:Say(li,1790,OemToAnsi(Transform(CADTMP->D1_VUNIT,"@E 999,999,999.99")),oCouNew10)
-        oPrint:Say(li,2190,OemToAnsi(Transform(CADTMP->D1_TOTAL,"@E 999,999,999.99")),oCouNew10)
-        li+=050
-    //Next nP
+	If len(Alltrim(CADTMP->D1_COD)+"-"+Alltrim(CADTMP->B1_DESC)) < 60
+		oPrint:Say(li,050,OemToAnsi(Alltrim(CADTMP->D1_COD)+"-"+Alltrim(CADTMP->B1_DESC)),oCouNew09)
+	Else 
+		oPrint:Say(li,050,OemToAnsi(substr(Alltrim(CADTMP->D1_COD)+"-"+Alltrim(CADTMP->B1_DESC),1,60)),oCouNew09)
+		oPrint:Say(li+14,050,OemToAnsi(substr(Alltrim(CADTMP->D1_COD)+"-"+Alltrim(CADTMP->B1_DESC),61)),oCouNew09)
+	EndIf 
 
+	oPrint:Say(li,890,OemToAnsi(Alltrim(CADTMP->BZ_XLOCALI)),oCouNew10)
+	oPrint:Say(li,1290,OemToAnsi("-"),oCouNew10)  //solicitado em 19/04
+	oPrint:Say(li,1590,OemToAnsi(cvaltochar(CADTMP->D1_QUANT)),oCouNew10)
+	oPrint:Say(li,1790,OemToAnsi(Transform(CADTMP->D1_VUNIT,"@E 999,999,999.99")),oCouNew10)
+	oPrint:Say(li,2190,OemToAnsi(Transform(CADTMP->D1_TOTAL,"@E 999,999,999.99")),oCouNew10)
+	li+=050
+
+	
 	CADTMP->(DbSkip())
 
 EndDo

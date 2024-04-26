@@ -1,5 +1,8 @@
 #INCLUDE 'PROTHEUS.CH'
-
+/*
+    Ponto de entrada na geração de cotação
+    utilizado para não incluir os produtos pais na cotação
+*/
 User Function MTA131SK()
 
 Local lReturn := .T.
@@ -7,9 +10,7 @@ Local lReturn := .T.
 nQtdPai := cntfilho(SC1->C1_PRODUTO)
 
 If nQtdPai > 0
-    Reclock("SC1",.F.)
-    SC1->C1_COTACAO := 'XXX'
-    SC1->(Msunlock())
+    
     lReturn := .F.
 EndIf 
 

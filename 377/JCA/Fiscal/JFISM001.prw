@@ -57,12 +57,12 @@ Private oNo   	:= LoadBitmap(GetResources(),'br_vermelho')
 
 SetPrvt("oDlg1","oSay9","oGrp1","oSay1","oSay2","oSay3","oGet1","oCBox1","oCBox2","oBtn3","oGrp2","oSay4")
 SetPrvt("oSay6","oSay7","oBrw1","oGet2","oGet3","oGet4","oGet5","oBtn1","oGrp3","oSay8","oSay10","oSay11")
-SetPrvt("oBrw2","oGet6","oGet7","oGet8","oGet9","oBtn2","oBtn4","oBtn5")
+SetPrvt("oBrw2","oGet6","oGet7","oGet8","oGet9","oBtn2","oBtn4","oBtn5","oBtn6")
 
 If Select("SM0") == 0
     RpcSetType(3)
-    //RPCSetEnv("01","00020087")
-    RPCSetEnv("T1","D MG 01")
+    RPCSetEnv("01","00080264")
+    //RPCSetEnv("T1","D MG 01")
 EndIf
 
 aSm0 := FWLoadSM0()
@@ -172,8 +172,10 @@ oGrp3      := TGroup():New( 096,364,332,696,"Operação Intermunicipal",oDlg1,CLR_
     oBtn2      := TButton():New( 106,612,"Incluir",oGrp3,{|| AdicInt(2)},033,012,,,,.T.,,"",,,,.F. )
     oBtn2:disable()
 
-    oBtn4      := TButton():New( 333,224,"Salvar",oDlg1,{|| oDlg1:end(nOpcao := 1)},037,012,,,,.T.,,"",,,,.F. )
-    oBtn5      := TButton():New( 333,440,"Sair",oDlg1,{|| oDlg1:end(nOpcao := 0)},037,012,,,,.T.,,"",,,,.F. )
+    oBtn4      := TButton():New( 335,220,"Salvar",oDlg1,{|| oDlg1:end(nOpcao := 1)},037,012,,,,.T.,,"",,,,.F. )
+    oBtn5      := TButton():New( 335,440,"Sair",oDlg1,{|| oDlg1:end(nOpcao := 0)},037,012,,,,.T.,,"",,,,.F. )
+
+    oBtn6      := TButton():New( 335,330,"Represados",oDlg1,{|| Processa({|| Represa()},"Aguarde")},037,012,,,,.T.,,"",,,,.F. )
 
 oDlg1:Activate(,,,.T.)
 
@@ -576,5 +578,245 @@ EndIf
 oList1:refresh()
 oList2:refresh()
 oDlg1:refresh()
+
+Return
+
+/*/{Protheus.doc} Represa
+    Itens represados na tabela transitoria
+    @type  Static Function
+    @author user
+    @since date
+    @version version
+    @param param, param_type, param_descr
+    @return return, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+    /*/
+Static Function Represa()
+
+Local aArea  := GetArea()
+Local nOpcao := 0
+Local nCont 
+
+Private oDlgR,oGrpR1,oBtnR1,oGrpR2,oSay1,oSay2,oSay3,oSay4,oSay5,oSay6,oSay7
+Private oSay9,oSay10,oSay11,oSay12,oSay13,oSay14,oSay15,oSay16,oSay17,oSay18,oSay19
+Private oLisR1
+
+Private aListR1 := {}
+
+BuscaZph()
+
+If len(aListR1) > 0
+//Aadd(aListR1,{.F.,'','','','','','',0})
+
+    oDlgR      := MSDialog():New( 215,516,684,1418,"Itens Represados",,,.F.,,,,,,.T.,,,.T. )
+
+        oGrpR1     := TGroup():New( 004,004,144,440,"Itens",oDlgR,CLR_BLACK,CLR_WHITE,.T.,.F. )
+            //oBrw1      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{012,008,140,436},,, oGrpR1 ) 
+            oLisR1    := TCBrowse():New(012,008,425,130,, {'','Filial','Documento','Serie','Fornecedor','Razão Social'},;
+                                                        {10,25,25,30,30,30,70},;
+                                                        oGrpR1,,,,{|| FHelp(oLisR1:nAt)},{|| /*editped(oList1:nAt,1)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
+            oLisR1:SetArray(aListR1)
+            oLisR1:bLine := {||{if(aListR1[oLisR1:nAt,01],oOk,oNo),; 
+                                    aListR1[oLisR1:nAt,02],;
+                                    aListR1[oLisR1:nAt,03],;
+                                    aListR1[oLisR1:nAt,04],;
+                                    aListR1[oLisR1:nAt,05],;
+                                    aListR1[oLisR1:nAt,06]}}
+
+        oGrpR2     := TGroup():New( 148,004,204,440,"Combinação",oDlgR,CLR_BLACK,CLR_WHITE,.T.,.F. )
+
+        oSay1      := TSay():New( 160,012,{||"Filial"},oGrpR2,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
+        oSay2      := TSay():New( 160,052,{||"00020087"},oGrpR2,,,.F.,.F.,.F.,.T.,CLR_BLUE,CLR_WHITE,032,008)
+        
+        oSay3      := TSay():New( 160,096,{||"Estado Filial"},oGrpR2,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
+        oSay4      := TSay():New( 160,140,{||"MG"},oGrpR2,,,.F.,.F.,.F.,.T.,CLR_BLUE,CLR_WHITE,016,008)
+        
+        oSay5      := TSay():New( 160,172,{||"CFOP"},oGrpR2,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,020,008)
+        oSay6      := TSay():New( 160,204,{||"5405"},oGrpR2,,,.F.,.F.,.F.,.T.,CLR_BLUE,CLR_WHITE,020,008)
+        
+        oSay7      := TSay():New( 160,236,{||"Estado Inicial"},oGrpR2,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,036,008)
+        oSay8      := TSay():New( 160,276,{||"MG"},oGrpR2,,,.F.,.F.,.F.,.T.,CLR_BLUE,CLR_WHITE,016,008)
+        
+        oSay9      := TSay():New( 160,304,{||"Estado Final"},oGrpR2,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
+        oSay10     := TSay():New( 160,348,{||"SP"},oGrpR2,,,.F.,.F.,.F.,.T.,CLR_BLUE,CLR_WHITE,016,008)
+        
+        oSay11     := TSay():New( 176,012,{||"Municipio Inicio"},oGrpR2,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,048,008)
+        oSay12     := TSay():New( 176,052,{||"35805"},oGrpR2,,,.F.,.F.,.F.,.T.,CLR_BLUE,CLR_WHITE,032,008)
+        
+        oSay13     := TSay():New( 176,096,{||"Municipio Final"},oGrpR2,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,045,008)
+        oSay14     := TSay():New( 176,140,{||"54547"},oGrpR2,,,.F.,.F.,.F.,.T.,CLR_BLUE,CLR_WHITE,024,008)
+        
+        oSay15     := TSay():New( 176,172,{||"CST"},oGrpR2,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,016,008)
+        oSay16     := TSay():New( 176,204,{||"00"},oGrpR2,,,.F.,.F.,.F.,.T.,CLR_BLUE,CLR_WHITE,012,008)
+        
+        oSay17     := TSay():New( 176,236,{||"Estado Tomador"},oGrpR2,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,044,008)
+        oSay18     := TSay():New( 176,284,{||"RS"},oGrpR2,,,.F.,.F.,.F.,.T.,CLR_BLUE,CLR_WHITE,012,008)
+        
+        oSay19     := TSay():New( 176,304,{||"Valor R$"},oGrpR2,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
+        oSay20     := TSay():New( 176,348,{||"125.505,22"},oGrpR2,,,.F.,.F.,.F.,.T.,CLR_BLUE,CLR_WHITE,032,008)
+
+        oSay21     := TSay():New( 189,132,{||"TES"},oGrpR2,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
+        oSay22     := TSay():New( 189,208,{||"501"},oGrpR2,,,.F.,.F.,.F.,.T.,CLR_BLUE,CLR_WHITE,032,008)
+
+        oBtnR1     := TButton():New( 208,120,"Reprocessar",oDlgR,{|| If(MsgYesNo("Confirma o reprocessamento?"),oDlgR:end(nOpcao:=1),)},037,012,,,,.T.,,"",,,,.F. )
+        oBtnR2     := TButton():New( 208,240,"Sair",oDlgR,{|| oDlgR:end(nOpcao:=0)},037,012,,,,.T.,,"",,,,.F. )
+        
+
+    oDlgR:Activate(,,,.T.)
+
+    If nOpcao == 1
+        For nCont := 1 to len(aListR1)
+            If aListR1[nCont,01]
+                lRet := U_xvldws13(1,aListR1[nCont,07],2)
+
+                If lRet 
+                    DbSelectArea("ZPH")
+                    DbGoto(aListR1[nCont,08])
+                    Reclock("ZPH",.F.)
+                    ZPH->ZPH_STATUS := '1'
+                    ZPH->(Msunlock())
+                EndIf 
+            EndIf 
+        Next nCont
+    EndIF 
+Else 
+    MsgAlert("Não há itens represados")
+EndIF 
+
+RestArea(aArea)
+
+Return
+
+/*/{Protheus.doc} BuscaZph
+    Busca itens represados na ZPH
+    @type  Static Function
+    @author user
+    @since date
+    @version version
+    @param param, param_type, param_descr
+    @return return, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+    /*/
+Static Function BuscaZph
+
+Local aArea := GetArea()
+Local cQuery 
+Local nCont 
+
+cQuery := "SELECT ZPH_FILIAL,ZPH_DOC,ZPH_SERIE,ZPH_FORNEC,ZPH_LOJA,A1_NOME,ZPH.R_E_C_N_O_ AS RECZPH,"
+cQuery += "ISNULL(CAST(CAST(ZPH_XML AS VARBINARY(8000)) AS VARCHAR(8000)),'') AS ZPH_XML"
+cQuery += " FROM "+RetSQLName("ZPH")+" ZPH"
+cQuery += " LEFT JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_COD=ZPH_FORNEC AND A1_LOJA=ZPH_LOJA AND A1.D_E_L_E_T_=' '"
+cQuery += " WHERE ZPH.D_E_L_E_T_=' ' AND ZPH_FILIAL BETWEEN ' ' AND 'ZZZ'"
+cQuery += " AND ZPH_STATUS <> '1'"
+
+
+IF Select('TRB') > 0
+    dbSelectArea('TRB')
+    dbCloseArea()
+ENDIF
+
+MemoWrite("JFISM001.SQL",cQuery)
+DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
+
+DbSelectArea("TRB")  
+
+While !EOF()
+    Aadd(aListR1,{.F.,;
+                  TRB->ZPH_FILIAL,;
+                  TRB->ZPH_DOC,;
+                  TRB->ZPH_SERIE,;
+                  TRB->ZPH_FORNEC+'-'+TRB->ZPH_LOJA,;
+                  TRB->A1_NOME,;
+                  TRB->ZPH_XML,;
+                  TRB->RECZPH,;
+                  '',;
+                  '',;
+                  '',;
+                  '',;
+                  '',;
+                  '',;
+                  '',;
+                  '',;
+                  '',;
+                  '',;
+                  '' })
+    Dbskip()
+EndDo 
+
+For nCont := 1 to len(aListR1)
+    aRet := U_xvldws13(1,aListR1[nCont,07],1)
+    iF VALTYPE(aRet) == "A"
+        If len(aRet) > 0
+            aListR1[nCont,09] := aRet[1]
+            aListR1[nCont,10] := aRet[2]
+            aListR1[nCont,11] := aRet[3] 
+            aListR1[nCont,12] := aRet[4]
+            aListR1[nCont,13] := aRet[5]
+            aListR1[nCont,14] := aRet[6]
+            aListR1[nCont,15] := aRet[7]
+            aListR1[nCont,16] := aRet[8]
+            aListR1[nCont,17] := aRet[9]
+            aListR1[nCont,18] := aRet[10]
+            aListR1[nCont,19] := aRet[11]
+
+            If !Empty(aRet[11]) .And. !Empty(aListR1[nCont,06])
+                aListR1[nCont,01] := .T.
+            EndIf 
+        EndIf 
+    EndIf 
+Next nCont 
+
+RestArea(aArea)
+
+Return
+
+/*/{Protheus.doc} FHelp(nLinha)
+    Atualiza objetos say com informações do xml
+    @type  Static Function
+    @author user
+    @since date
+    @version version
+    @param param, param_type, param_descr
+    @return return, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+    /*/
+Static Function FHelp(nLinha)
+
+Local aArea := GetArea()
+
+oSay2:settext("")
+oSay4:settext("")
+oSay6:settext("")
+oSay8:settext("")
+oSay10:settext("")
+oSay12:settext("")
+oSay14:settext("")
+oSay16:settext("")
+oSay18:settext("")
+oSay20:settext("")
+oSay22:settext("")
+
+oSay2:settext(aListR1[nLinha,09])
+oSay4:settext(aListR1[nLinha,10])
+oSay6:settext(aListR1[nLinha,11])
+oSay8:settext(aListR1[nLinha,12])
+oSay10:settext(aListR1[nLinha,13])
+oSay12:settext(aListR1[nLinha,14])
+oSay14:settext(aListR1[nLinha,15])
+oSay16:settext(aListR1[nLinha,16])
+oSay18:settext(aListR1[nLinha,17])
+oSay20:settext(aListR1[nLinha,18])
+oSay22:settext(aListR1[nLinha,19])
+
+oDlgR:refresh()
+
+RestArea(aArea)
 
 Return

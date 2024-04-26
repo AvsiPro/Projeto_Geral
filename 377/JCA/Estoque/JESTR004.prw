@@ -297,7 +297,7 @@ oPrint:line(250,0030,250,1195 )
 oPrint:line(200,0535,300,535 )
 
 oPrint:Say(190,0510,OemToAnsi("FILIAL"),oArial14N)
-oPrint:Say(230,0035,OemToAnsi(SM0->M0_CODIGO+" "+SM0->M0_NOMECOM ),oArial10N)
+oPrint:Say(230,0035,OemToAnsi(Substr(alltrim(SM0->M0_CODIGO)+" "+alltrim(SM0->M0_NOMECOM),1,30) ),oArial10N)
 oPrint:Say(230,0540,OemToAnsi("CNPJ: "+Transform(SM0->M0_CGC,"@R 99.999.999/9999-99") ),oArial10N)
 oPrint:Say(280,0035,OemToAnsi( SM0->M0_FILIAL),oArial10N)
 oPrint:Say(280,0540,OemToAnsi( SM0->M0_ENDENT),oArial10N)

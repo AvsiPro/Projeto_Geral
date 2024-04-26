@@ -52,7 +52,7 @@ If !Empty(cProd)
     BuscaSld(cCodPai,lFilAll)
 
     If len(aList) < 1
-        Aadd(aList,{'','','','','','','','','','','','','','','',''})
+        Aadd(aList,{'','','','','','','','','','','','','','','','',''})
     EndIf
 
     oDlg1      := MSDialog():New( 092,232,711,1652,"Saldos por marcas",,,.F.,,,,,,.T.,,,.T. )
@@ -188,6 +188,8 @@ nLinhadescription)
 /*/
 Static Function Fhelp(nLinha)
 
+Local cMarca := ''
+
 aSM0Data2 := FWSM0Util():GetSM0Data(cempant,aList[nLinha,01])
 
 nPos1     := Ascan(aSM0Data2,{|x| x[1] == "M0_CODFIL"})
@@ -199,7 +201,13 @@ cNameFil := aSM0Data2[nPos1,02]+"-"+aSM0Data2[nPos2,02]+"/"+aSM0Data2[nPos3,02]
 oSay2:settext("")
 oSay3:settext("")
 oSay2:settext(cNameFil)
-oSay3:settext(aList[nLinha,02]+"-"+Posicione("SB1",1,xFilial("SB1")+aList[nLinha,02],"B1_DESC"))
+
+If !Empty(Posicione("SB1",1,xFilial("SB1")+aList[nLinha,02],"B1_ZMARCA"))
+    cMarca := " / "+ Posicione("ZPM",1,xFilial("ZPM")+Posicione("SB1",1,xFilial("SB1")+aList[nLinha,02],"B1_ZMARCA"),"ZPM_DESC")
+EndIf 
+
+
+oSay3:settext(aList[nLinha,02]+"-"+Alltrim(Posicione("SB1",1,xFilial("SB1")+aList[nLinha,02],"B1_DESC"))+cMarca)
 
 oDlg1:refresh()
 

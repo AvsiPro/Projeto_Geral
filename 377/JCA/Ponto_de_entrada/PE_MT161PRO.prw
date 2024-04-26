@@ -77,7 +77,7 @@ For nW := 1 to len(aRet)
             aProdPai := {}
             For nX := 2 to len(aRet[nW,nCont])
                 For nJ := 1 to len(aRet[nW,nCont,nX])
-                    If aRet[nW,nCont,nX,nJ,1]
+                    //If aRet[nW,nCont,nX,nJ,1]
 
                         nPosP := Ascan(aProdPai,{|x| alltrim(x[1]) == substr(aRet[nW,nCont,nX,nJ,3],1,8)})
                         If nPosP > 0
@@ -89,7 +89,7 @@ For nW := 1 to len(aRet)
                         Else    
                             Aadd(aProdPai,{substr(aRet[nW,nCont,nX,nJ,3],1,8),aRet[nW,nCont,nX,nJ,4]}) //18
                         EndIf 
-                    EndIf
+                    //EndIf
                 Next nJ
             Next nX
 
@@ -101,7 +101,9 @@ For nW := 1 to len(aRet)
     Next nCont 
 Next nW 
 
+/*
 
+ULTIMA ATUALIZAÇÃO SOLICITADA PELO CAIO 26/04 DEVE VOLTAR AO ANTERIOR, SOMANDO TUDO DE CADA PAI
 For nW := 1 to len(aRet)
     //Soma para itens derrotados que o fornecedor não tenha nenhum item com medalha
     aProdPai := {}
@@ -133,5 +135,5 @@ For nW := 1 to len(aRet)
         EndIf 
     Next nCont
 Next nW 
-
+*/
 Return aRet
