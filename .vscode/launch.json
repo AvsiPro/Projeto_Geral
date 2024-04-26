@@ -30,7 +30,17 @@
 		},
 		{
 			"label": "u_jestr002"
+		},
+		{
+			"label": "u_xvldws13"
+		},
+		{
+			"label": "u_jfism001"
+		},
+		{
+			"label": "u_jfinj001"
 		}
 	],
-	"lastProgramExecuted": "sigaadv"
+	"lastProgramExecuted": "<cancel>",
+	"lastProgramArguments": []
 }
