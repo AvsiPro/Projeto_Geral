@@ -1,17 +1,17 @@
 #INCLUDE 'PROTHEUS.CH'
+/*
+    Ponto de entrada rotina de abastecimento manual e em lote
 
+    utilizado para gerar a movimentação do arla junto com o abastecimento
+    e tambem para grar o codigo do abastecimento na contabilização
+
+*/
 User Function NGUTIL4C()
 
 Local aArea     :=  GetArea()
-Local cFilBem   :=  ''
 Local lMnt656   :=  FUNNAME() == 'MNTA656'
 Local lMnt655   :=  FUNNAME() == 'MNTA655'
-/*
-If INCLUI .AND. lMnt656
-    cFilBem := Posicione("ST9",1,xFilial("ST9")+aCols[1,3],"T9_ZFILORI")
-    gerAbstOri(cFilBem)
-EndIf
-*/
+
 //Grava o numero do abastecimento CT2 / SD3
 If Inclui .And. (lMnt656 .Or.lMnt655)
     cAbast := Iif(lMnt656 .And. Type('cAbast') == 'C',cAbast, M->TQN_NABAST)
@@ -27,131 +27,61 @@ If Inclui .And. (lMnt656 .Or.lMnt655)
             SD3->D3_XABAST := cAbast
         SD3->(MsUnlock())
     EndIf
+
+    If !Empty(M->TQN_ZPRARL)
+        MovArla()
+    EndIf 
+
 EndIf
 
 RestArea(aArea)
 
 Return
-
-/*/{Protheus.doc} nomeStaticFunction
+/*/{Protheus.doc} MovArla
     (long_description)
     @type  Static Function
     @author user
-    @since 07/09/2023
+    @since date
     @version version
-    @param param_name, param_type, param_descr
-    @return return_var, return_type, return_description
+    @param param, param_type, param_descr
+    @return return, return_type, return_description
     @example
     (examples)
     @see (links_or_references)
-/*/
-Static Function gerAbstOri(cFilBem)
+    /*/
+Static Function MovArla()
 
-Local aArea     :=  GetArea()
-Local aAbast    :=  {}
-Local nPosPlc   :=  Ascan(aHeader,{|x| x[2] == "TQN_PLACA"})
-Local nPosFrt   :=  Ascan(aHeader,{|x| x[2] == "TQN_FROTA"})
-Local nPosDta   :=  Ascan(aHeader,{|x| x[2] == "TQN_DTABAS"})
-Local nPosHra   :=  Ascan(aHeader,{|x| x[2] == "TQN_HRABAS"})
-Local nPosQtd   :=  Ascan(aHeader,{|x| x[2] == "TQQ_QUANT"})
-Local nPosHod   :=  Ascan(aHeader,{|x| x[2] == "TQN_HODOM"})
-Local nPosCmt   :=  Ascan(aHeader,{|x| x[2] == "TQN_CODMOT"})
-Local nCont 
+Local _aItem    :=  {}
+Local _atotitem :=  {}
+Local _aCab1    :=  {}
+Local cLocPad   := Posicione("SB1",1,xFilial("SB1")+M->TQN_ZPRARL,"B1_LOCPAD")
+Local cUnMed    := Posicione("SB1",1,xFilial("SB1")+TQN_ZPRARL,"B1_UM")
+Local cDoc      := GetSXenum("SD3","D3_COD")
 
-For nCont := 1 to len(aCols)
-    aAuxHr := separa(aCols[nCont,nPosHra],":")
-    aAuxHr[2] := strzero(val(aAuxHr[2])+10,2)
-    If val(aAuxHr[2]) > 59
-        aAuxHr[2] := '00'
-        aAuxHr[1] := strzero(val(aAuxHr[1])+1,2)
-    EndIf 
+Private lMsErroAuto := .F.
 
-    aCols[nCont,nPosHra] := aAuxHr[1]+":"+aAuxHr[2]
+ConfirmSX8()
 
-    cCnpj := Posicione("TQN",1,cfilant+aCols[nCont,nPosFrt],"TQN_CNPJ")
-    cCodC := Posicione("TQN",1,cfilant+aCols[nCont,nPosFrt],"TQN_CODCOM")
+_aItem:={{"D3_COD"      ,M->TQN_ZPRARL      ,NIL},;
+        {"D3_UM"        ,cUnMed             ,NIL},;
+        {"D3_QUANT"     ,M->TQN_QTDARL      ,NIL},;
+        {"D3_LOCAL"     ,cLocPad            ,NIL},;
+        {"D3_LOTECTL"   ,""                 ,NIL},;
+        {"D3_LOCALIZ"   ,""                 ,NIL}}
 
-    aAbast := { {'TQN_FILIAL', cFilant                                           , Nil },;
-                {'TQN_PLACA' , PadR( aCols[nCont,nPosPlc] , TAMSX3("TQN_PLACA")[1] ) , Nil },;
-                {'TQN_FROTA' , PadR( aCols[nCont,nPosFrt] , TAMSX3("TQN_FROTA")[1] ) , Nil },;
-                {'TQN_CNPJ'  , PadR( cCnpj            , TAMSX3("TQN_CNPJ")[1] )  , Nil },;
-                {'TQN_CODCOM', PadR( cCodC            , TAMSX3("TQN_CODCOM")[1] ), Nil },;
-                {'TQN_DTABAS', aCols[nCont,nPosDta]+1                            , Nil },;
-                {'TQN_HRABAS', aCols[nCont,nPosHra]                              , Nil },;
-                {'TQN_XARLA' , '00310001'                                        , Nil },;
-                {'TQN_QUANT' , 1                                                 , Nil },;
-                {'TQN_VALUNI', 1                                                 , Nil },;
-                {'TQN_VALTOT', 1                                                 , Nil },;
-                {'TQN_CODMOT', PadR( aCols[n,nPosCmt] , TAMSX3("TQN_CODMOT")[1] ), Nil },;
-                {'TQN_POSTO' , PadR( TTA->TTA_POSTO   , TAMSX3("TQN_POSTO")[1] ) , Nil },;
-                {'TQN_LOJA'  , PadR( TTA->TTA_LOJA    , TAMSX3("TQN_LOJA")[1] )  , Nil },;
-                {'TQN_NOTFIS', PadR( 'CFOLHA'         , TAMSX3("TQN_NOTFIS")[1] ), Nil }}
+aadd(_atotitem,_aitem)
 
-/*
-{'TQN_QUANT' , aCols[nCont,nPosQtd]                              , Nil },;
-                {'TQN_VALUNI', 3.57                                              , Nil },;
-                {'TQN_VALTOT', 35.70                                             , Nil },;
+_aCab1 := { {"D3_DOC"       ,cDoc           , NIL},;
+            {"D3_TM"        ,SD3->D3_TM     , NIL},;
+            {"D3_CC"        ,SD3->D3_CC     , NIL},;
+            {"D3_CONTA"     ,SD3->D3_CONTA  , NIL},;
+            {"D3_XABAST"    ,M->TQN_NABAST  , NIL},;
+            {"D3_EMISSAO"   ,ddatabase      , NIL}}
+
+MSExecAuto({|x,y,z| MATA241(x,y,z)},_aCab1,_atotitem,3)
                 
-{'TQN_HODOM' , aCols[nCont,nPosHod]                                             , Nil },;
-                {'TQN_TANQUE', PadR( TTA->TTA_TANQUE  , TAMSX3("TQN_TANQUE")[1] ), Nil },;
-                {'TQN_BOMBA' , PadR( TTA->TTA_BOMBA   , TAMSX3("TQN_BOMBA")[1] ) , Nil },;
-                */
-    lMSHelpAuto := .T. // Não apresenta erro em tela
-    lMSErroAuto := .F. // Caso a variável torne-se .T. apos MsExecAuto, apresenta erro em tela     
-
-    MSExecAuto( { | v, x, y | MNTA655( v, x, y ) }, , aAbast, 3 )
-
-    If lMsErroAuto
-        Mostraerro()
-    ELSE
-        ConOut( "Inclusão com sucesso")
-    EndIf
-
-Next nCont 
-
-RestArea(aArea)
+If lMsErroAuto
+    Mostraerro()
+EndIf
 
 Return
-
-user function xtesaba
-
-Local aAbast := {}
- 
-    //Abre empresa/filial/módulo/arquivos - deve ser comentada a função RPCSetEnv se quiser verificar as mensagens de erro em tela
-    RPCSetEnv('01','00020087','','','GFR')
- 
-    // Itens obrigatórios para inclusão do abastecimento para posto interno
-    aAbast := { {'TQN_PLACA' , PadR( 'AAA1700 '       , TAMSX3("TQN_PLACA")[1] ) , Nil },;
-                {'TQN_FROTA' , PadR( '17000'          , TAMSX3("TQN_FROTA")[1] ) , Nil },;
-                {'TQN_CNPJ'  , PadR( '09338337000501' , TAMSX3("TQN_CNPJ")[1] )  , Nil },;
-                {'TQN_CODCOM', PadR( 'DA '            , TAMSX3("TQN_CODCOM")[1] ), Nil },;
-                {'TQN_DTABAS', StoD( '20230905' )                                , Nil },;
-                {'TQN_HRABAS', '15:05'                                           , Nil },;
-                {'TQN_TANQUE', PadR( '01'             , TAMSX3("TQN_TANQUE")[1] ), Nil },;
-                {'TQN_BOMBA' , PadR( '01'             , TAMSX3("TQN_BOMBA")[1] ) , Nil },;
-                {'TQN_QUANT' , 10                                                , Nil },;
-                {'TQN_VALUNI', 3.57                                              , Nil },;
-                {'TQN_VALTOT', 35.70                                             , Nil },;
-                {'TQN_HODOM' , 4050                                              , Nil },;
-                {'TQN_CODMOT', PadR( '000002'         , TAMSX3("TQN_CODMOT")[1] ), Nil },;
-                {'TQN_POSTO' , PadR( '000007'         , TAMSX3("TQN_POSTO")[1] ) , Nil },;
-                {'TQN_LOJA'  , PadR( '01'             , TAMSX3("TQN_LOJA")[1] )  , Nil },;
-                {'TQN_NOTFIS', PadR( '33'             , TAMSX3("TQN_NOTFIS")[1] ), Nil }}
- 
-    lMSHelpAuto := .T. // Não apresenta erro em tela
-    // Caso a variável torne-se .T. após MsExecAuto, apresenta erro em tela
-    //(se não possuir a função RPCSetEnv, com esta função não será apresentada mensagem em tela)
-    lMSErroAuto := .F.
-     
-    MSExecAuto( { | v, x, y | MNTA655( v, x, y ) }, , aAbast, 3 )
-    If lMsErroAuto
-        If !IsBlind() //Apresentará mensagem com o MostraErro se não utilizar RPCSetEnv.
-            MostraErro()
-        Else          //Não apresentará mensagem, pois utiliza a função RPCSetEnv.
-            cError := MostraErro(GetSrvProfString("Startpath", ""), "MNTA655EXEC_"+DTOS(DATE())+"_"+;
-                      Left(Time(),2)+SubStr(Time(),4,2)+".LOG") // Armazena mensagem de erro na raiz (StartPath).
-            ConOut( cError)
-        EndIf
-    EndIf
-
-return
