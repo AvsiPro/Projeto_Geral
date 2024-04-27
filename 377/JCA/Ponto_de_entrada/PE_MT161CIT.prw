@@ -1,5 +1,7 @@
 #Include 'Protheus.ch'
-
+/*
+    nao permitir incluir produto pai na cotação
+*/  
 User Function MT161CIT()
 
 Local cFiltro := ''

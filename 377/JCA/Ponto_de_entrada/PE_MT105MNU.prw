@@ -1,7 +1,7 @@
 #Include 'Totvs.ch'
 
 /*/{Protheus.doc} MT105MNU
-   @description: 
+   Incluir itens ao menu solicitação ao armazem 
    @type: User Function
    @author: Felipe Mayer
    @since: 20/09/2023

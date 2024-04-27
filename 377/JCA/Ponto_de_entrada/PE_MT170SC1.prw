@@ -1,5 +1,7 @@
 #INCLUDE 'PROTHEUS.CH'
-
+/*
+    Informações complementares ao finalização solicitação por ponto de pedido
+*/
 User Function MT170SC1
 
 Local aArea     := GetArea()

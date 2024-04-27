@@ -1,5 +1,9 @@
 #INCLUDE 'PROTHEUS.CH'
 
+/*
+    Validar se pneu pode ser utilizado no eixo
+
+*/
 User Function MNTA2324(xy)
 Local aEsquema  := Paramixb
 Local lRet      := .T.

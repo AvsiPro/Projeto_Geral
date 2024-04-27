@@ -1,5 +1,7 @@
 #Include 'Protheus.ch'
-
+/*
+    Nao incluir itens com bloqueio de marca na filial na solicitação de compras
+*/
 User Function MT131FIL()
 
 Local cItmNeg    := BuscaIt(cfilant)

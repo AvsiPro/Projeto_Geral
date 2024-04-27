@@ -1,7 +1,7 @@
 #Include 'Totvs.ch'
 
 /*/{Protheus.doc} MNTA420X
-   @description: 
+   Bloqueio de peças por tempo previsto 
    @type: User Function
    @author: Felipe Mayer
    @since: 19/09/2023

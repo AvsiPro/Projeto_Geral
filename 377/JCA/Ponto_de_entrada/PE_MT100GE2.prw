@@ -11,12 +11,8 @@
 */
 
 User Function MT100GE2()
-        Local aTitAtual := PARAMIXB[1]
         Local nOpc := PARAMIXB[2]
-        Local aHeadSE2:= PARAMIXB[3]
-        Local aParcelas := ParamIXB[5]
-        Local nX := ParamIXB[4]
-
+        
         If nOpc == 1 //.. inclusao
                 SE2->E2_ZCGCBOL := SA2->A2_ZCGCBOL 
         Endif

@@ -1,3 +1,7 @@
+/*
+    Incluir legendas MNTA420
+    
+*/
 User Function MNTA420M()
 
 //MsgInfo("Exemplo de semaforização através do Ponto de Entrada MNTA420M.","P.E. MNTA420M")

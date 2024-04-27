@@ -1,5 +1,8 @@
 #INCLUDE 'PROTHEUS.CH'
+/*
+    Ajuste do campo Saldo Pedido quando excluir solicitação de compra filho
 
+*/
 User Function MSC1110D() 
 
 Local lExclui := .T.

@@ -1,5 +1,7 @@
 #INCLUDE 'PROTHEUS.CH'
-
+/*
+    Ponto de entrada para validar se o pneu pode ser utilizado no eixo
+*/
 User Function MNTA2317()
 
 Local lRet := .T. 

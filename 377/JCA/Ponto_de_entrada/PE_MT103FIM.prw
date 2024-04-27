@@ -1,5 +1,7 @@
 #INCLUDE 'PROTHEUS.CH'
-
+/*
+	Ponto de entrada final mata103 documento de entrada, para permitir imprimir etiqueta e boletim
+*/
 User function MT103FIM
 
 	Local nOpcao    := PARAMIXB[1]   // Opção Escolhida pelo usuario no aRotina

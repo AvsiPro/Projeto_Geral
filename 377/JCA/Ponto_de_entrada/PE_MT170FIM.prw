@@ -1,5 +1,9 @@
 #INCLUDE 'PROTHEUS.CH'
 
+/*
+    Incluir os filhos na solicitação por ponto de pedido
+
+*/
 User Function MT170FIM()
 
 Local aArea     := GetArea() 

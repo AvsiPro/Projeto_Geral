@@ -1,3 +1,6 @@
+/*
+    Complemento do saldo do produto somando os filhos no momento da solicitaçao por ponto de pedido
+*/
 User Function MT170SLD( )
 
 Local nQuant    := PARAMIXB[1]

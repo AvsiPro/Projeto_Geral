@@ -1,5 +1,7 @@
 #INCLUDE 'PROTHEUS.CH'
-
+/*
+    Ponto de entrada para incluir pneu no estoque correto de acordo com cadatro
+*/
 User function MNTA2319
 
 LOCAL aArea     := GetArea()

@@ -1,7 +1,7 @@
 #INCLUDE 'PROTHEUS.CH'
 
 /*/{Protheus.doc} User Function nomeFunction
-    (long_description)
+    Conciliação de abastecimentos entre empresas do grupo
     @type  Function
     @author user
     @since 02/10/2023

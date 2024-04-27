@@ -1,3 +1,7 @@
+/*
+    Incluir opções menu cadastro de produtos
+    
+*/
 User Function MT010BRW()
 
 Local aRotUser := {}

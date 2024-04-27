@@ -1,5 +1,7 @@
 #INCLUDE 'PROTHEUS.CH'
-
+/*
+    Alterar local padrao e codigo do bem
+*/
 USER FUNCTION MNTA2311
 //apos salvar  
 //AARDELSTC - POSIC 2 BEM POSIC 13 PRODUTO SAIDA

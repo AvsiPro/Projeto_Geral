@@ -1,5 +1,8 @@
 #INCLUDE 'PROTHEUS.CH'
 
+/*
+    liberar produto pai na cotação ao excluir pedido de compra
+*/
 User Function MTA120E()
 
 Local ExpN1 := PARAMIXB[1]

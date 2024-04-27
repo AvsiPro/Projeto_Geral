@@ -2,7 +2,7 @@
 #Include "FWMVCDEF.ch"
 
 /*---------------------------------------------------------------------*
- | Func:  MenuDef                                                      |
+ | Func:  Cadastro de Campanhas                                                      |
  | Autor: Alexandre Venâncio                                           |
  | Data:  08/09/2023                                                   |
  | Desc:  Cadastro de Campanhas X Insumos                                         |

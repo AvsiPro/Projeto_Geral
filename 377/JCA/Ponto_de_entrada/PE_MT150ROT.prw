@@ -1,6 +1,8 @@
 #INCLUDE "PROTHEUS.CH"
 #INCLUDE "RWMAKE.CH"
-
+/*
+    Incluir opção para adicionar produtos filhos a cotação
+*/
 User Function MT150ROT()
 //Define Array contendo as Rotinas a executar do programa
 // ----------- Elementos contidos por dimensão ------------

@@ -2,7 +2,7 @@
 #Include "FWMVCDEF.ch"
 
 /*---------------------------------------------------------------------*
- | Func:  MenuDef                                                      |
+ | Func:  Browse MVC para cadastro de Marcas                           |
  | Autor: Alexandre Venâncio                                           |
  | Data:  06/09/2023                                                   |
  | Desc:  Criação do menu MVC                                          |

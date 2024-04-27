@@ -1,3 +1,6 @@
+/*
+    Incluir campo solicitação de compras
+*/
 User Function MT120C1D
 
 Local aRetDados := PARAMIXB
@@ -17,17 +20,6 @@ If Alias() == 'SC1'
 Endif
 
 Return(aRetTitle)
-user function MT120VIT()         
-ExpA1 := ParamIxb[1]            
-ExpN2 := ParamIxb[2]    
-//Customização do usuário para manipulação dos campos do array na seleção da Solicitação de Compras (Item) - F5 no Pedido de Compras.
 
-Return ExpA1
 
-User function MT120LCT
 
-local aarea := getarea()
-
-restarea(aarea)
-
-return
