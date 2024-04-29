@@ -89,6 +89,10 @@ If !Empty(cProd)
         oBtn1      := TButton():New( 284,256,"Alterar",oDlg1,{|| oDlg1:end(nOpcao:=oList:nAt)},037,012,,,,.T.,,"",,,,.F. )
         oBtn2      := TButton():New( 284,352,"Sair",oDlg1,{|| oDlg1:end(nOpcao:=0)},037,012,,,,.T.,,"",,,,.F. )
 
+        If nCham == 0
+            oBtn1:disable()
+        EndIf 
+
     oDlg1:Activate(,,,.T.)
 
     If nOpcao > 0
@@ -210,5 +214,41 @@ EndIf
 oSay3:settext(aList[nLinha,02]+"-"+Alltrim(Posicione("SB1",1,xFilial("SB1")+aList[nLinha,02],"B1_DESC"))+cMarca)
 
 oDlg1:refresh()
+
+Return
+
+/*/{Protheus.doc} Consulta padrão da rotina
+Inclusão da rotina no menu para consultar qualquer produto
+@type user function
+@author user
+@since 29/04/2024
+@version version
+@param param_name, param_type, param_descr
+@return return_var, return_type, return_description
+@example
+(examples)
+@see (links_or_references)
+/*/
+User Function JESTCx01()
+
+Local lContinua :=  .T.
+Local cProduto  :=  space(15)
+Local aParamBox	:=  {}
+
+If Empty(FunName())
+    RpcSetType(3)
+    RPCSetEnv("01","00020087") 
+EndIf
+
+aAdd(aParamBox,{01,"Produto" 	,cProduto 	,""		,"","SB1"	,"", 60,.F.})
+
+While lContinua
+    If ParamBox(aParamBox,"Filtro",/*aRet*/,/*bOk*/,/*aButtons*/,.T.,,,,FUNNAME(),.T.,.T.)
+        cProduto := MV_PAR01 
+        U_JESTC001(cProduto,0)
+    Else 
+        lContinua := .F.
+    EndIf 
+EndDo 
 
 Return
