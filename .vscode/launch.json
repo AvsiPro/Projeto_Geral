@@ -39,8 +39,11 @@
 		},
 		{
 			"label": "u_jfinj001"
+		},
+		{
+			"label": "u_jestcx01"
 		}
 	],
-	"lastProgramExecuted": "sigaadv",
+	"lastProgramExecuted": "u_jestcx01",
 	"lastProgramArguments": []
 }
