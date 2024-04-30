@@ -175,7 +175,7 @@ oGrp3      := TGroup():New( 096,364,332,696,"Operação Intermunicipal",oDlg1,CLR_
     oBtn4      := TButton():New( 335,220,"Salvar",oDlg1,{|| oDlg1:end(nOpcao := 1)},037,012,,,,.T.,,"",,,,.F. )
     oBtn5      := TButton():New( 335,440,"Sair",oDlg1,{|| oDlg1:end(nOpcao := 0)},037,012,,,,.T.,,"",,,,.F. )
 
-    oBtn6      := TButton():New( 335,330,"Represados",oDlg1,{|| Processa({|| Represa()},"Aguarde")},037,012,,,,.T.,,"",,,,.F. )
+    oBtn6      := TButton():New( 335,330,"Reprocessar",oDlg1,{|| Processa({|| Represa()},"Aguarde")},037,012,,,,.T.,,"",,,,.F. )
 
 oDlg1:Activate(,,,.T.)
 
@@ -263,6 +263,8 @@ If nOpcao == 1
             EndIf 
         Next nCont
     EndIf 
+
+    MsgAlert("Processo finalizado!!!")
 EndIf 
 
 Return
@@ -598,14 +600,17 @@ Static Function Represa()
 Local aArea  := GetArea()
 Local nOpcao := 0
 Local nCont 
+Local aPars  := {}
 
-Private oDlgR,oGrpR1,oBtnR1,oGrpR2,oSay1,oSay2,oSay3,oSay4,oSay5,oSay6,oSay7
+Private oDlgR,oGrpR1,oBtnR1,oGrpR2,oSay1,oSay2,oSay3,oSay4,oSay5,oSay6,oSay7,oSay23
 Private oSay9,oSay10,oSay11,oSay12,oSay13,oSay14,oSay15,oSay16,oSay17,oSay18,oSay19
 Private oLisR1
 
 Private aListR1 := {}
 
-BuscaZph()
+aPars := Prmrepr()
+
+BuscaZph(aPars)
 
 If len(aListR1) > 0
 //Aadd(aListR1,{.F.,'','','','','','',0})
@@ -660,6 +665,8 @@ If len(aListR1) > 0
         oSay21     := TSay():New( 189,132,{||"TES"},oGrpR2,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
         oSay22     := TSay():New( 189,208,{||"501"},oGrpR2,,,.F.,.F.,.F.,.T.,CLR_BLUE,CLR_WHITE,032,008)
 
+        oSay23     := TSay():New( 195,200,{||""},oGrpR2,,,.F.,.F.,.F.,.T.,CLR_RED,CLR_WHITE,132,008)
+
         oBtnR1     := TButton():New( 208,120,"Reprocessar",oDlgR,{|| If(MsgYesNo("Confirma o reprocessamento?"),oDlgR:end(nOpcao:=1),)},037,012,,,,.T.,,"",,,,.F. )
         oBtnR2     := TButton():New( 208,240,"Sair",oDlgR,{|| oDlgR:end(nOpcao:=0)},037,012,,,,.T.,,"",,,,.F. )
         
@@ -701,7 +708,7 @@ Return
     (examples)
     @see (links_or_references)
     /*/
-Static Function BuscaZph
+Static Function BuscaZph(aPars)
 
 Local aArea := GetArea()
 Local cQuery 
@@ -711,9 +718,34 @@ cQuery := "SELECT ZPH_FILIAL,ZPH_DOC,ZPH_SERIE,ZPH_FORNEC,ZPH_LOJA,A1_NOME,ZPH.R
 cQuery += "ISNULL(CAST(CAST(ZPH_XML AS VARBINARY(8000)) AS VARCHAR(8000)),'') AS ZPH_XML"
 cQuery += " FROM "+RetSQLName("ZPH")+" ZPH"
 cQuery += " LEFT JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_COD=ZPH_FORNEC AND A1_LOJA=ZPH_LOJA AND A1.D_E_L_E_T_=' '"
-cQuery += " WHERE ZPH.D_E_L_E_T_=' ' AND ZPH_FILIAL BETWEEN ' ' AND 'ZZZ'"
-cQuery += " AND ZPH_STATUS <> '1'"
+cQuery += " WHERE ZPH.D_E_L_E_T_=' ' "
+cQuery += " AND ZPH_STATUS = '"+cvaltochar(aPars[1])+"'"
+//nGrupo,cFilPar,cNotPar,cSerPar,cCliPar,cLojPar,cDtPar1,cDtPar2
+If !Empty(aPars[2])
+    cQuery += " AND ZPH_FILIAL='"+aPars[2]+"'"
+Else 
+    cQuery += " AND ZPH_FILIAL BETWEEN ' ' AND 'ZZZ'"
+EndIF 
 
+If !Empty(aPars[3])
+    cQuery += " AND ZPH_DOC='"+aPars[3]+"'"
+Endif 
+
+If !Empty(aPars[4])
+    cQuery += " AND ZPH_SERIE='"+aPars[4]+"'"
+Endif 
+
+If !Empty(aPars[5])
+    cQuery += " AND ZPH_FORNEC='"+aPars[5]+"'"
+Endif 
+
+If !Empty(aPars[6])
+    cQuery += " AND ZPH_LOJA='"+aPars[6]+"'"
+Endif 
+
+If !Empty(aPars[7]) .or. !Empty(aPars[8])
+    cQuery += " AND ZPH_DATA BETWEEN '"+dtos(aPars[7])+"' AND '"+dtos(aPars[8])+"'"
+Endif 
 
 IF Select('TRB') > 0
     dbSelectArea('TRB')
@@ -744,7 +776,8 @@ While !EOF()
                   '',;
                   '',;
                   '',;
-                  '' })
+                  '' ,;
+                  .f.})
     Dbskip()
 EndDo 
 
@@ -763,8 +796,9 @@ For nCont := 1 to len(aListR1)
             aListR1[nCont,17] := aRet[9]
             aListR1[nCont,18] := aRet[10]
             aListR1[nCont,19] := aRet[11]
+            aListR1[nCont,20] := aRet[12]
 
-            If !Empty(aRet[11]) .And. !Empty(aListR1[nCont,06])
+            If !Empty(aRet[11]) .And. !Empty(aListR1[nCont,06]) .And. !aRet[12]
                 aListR1[nCont,01] := .T.
             EndIf 
         EndIf 
@@ -802,6 +836,7 @@ oSay16:settext("")
 oSay18:settext("")
 oSay20:settext("")
 oSay22:settext("")
+oSay23:settext("")
 
 oSay2:settext(aListR1[nLinha,09])
 oSay4:settext(aListR1[nLinha,10])
@@ -814,9 +849,76 @@ oSay16:settext(aListR1[nLinha,16])
 oSay18:settext(aListR1[nLinha,17])
 oSay20:settext(aListR1[nLinha,18])
 oSay22:settext(aListR1[nLinha,19])
+oSay23:settext(If(aListR1[nLinha,20],"Nota já lançada",""))
 
 oDlgR:refresh()
 
 RestArea(aArea)
 
 Return
+/*
+    Parametros para reprocessamento das CTEs na tabela ZPH
+*/
+Static Function Prmrepr
+
+Local aArea     :=  GetArea()
+Local nOpcao    :=  0
+Local aRet      :=  {}
+
+Local oRepr,oSay1,oSay2,oSay3,oSay4,oSay5,oGet1,oGet2
+Local oGet4,oGet5,oGet6,oGet7,oBtn1,oBtn2,oSay6,oSay7
+
+Local cFilPar := space(TamSX3("F2_FILIAL")[1])
+Local cNotPar := space(TamSX3("F2_DOC")[1])
+Local cSerPar := space(TamSX3("F2_SERIE")[1])
+Local cCliPar := space(TamSX3("F2_CLIENTE")[1])
+Local cLojPar := space(TamSX3("F2_LOJA")[1])
+Local cDtPar1 := ctod(' / / ')
+Local cDtPar2 := ctod(' / / ')
+Local aOpcoes := {'0=Represados','1=Processados'}
+Local nGrupo  := aOpcoes[1]
+
+oRepr      := MSDialog():New( 139,752,537,1103,"Reprocessar",,,.F.,,,,,,.T.,,,.T. )
+    
+    oCBox1     := TComboBox():New( 020,052,{|u| If(Pcount()>0,nGrupo:=u,nGrupo)},aOpcoes,072,010,oRepr,,,,CLR_BLACK,CLR_WHITE,.T.,,"",,,,,,, )
+
+    oSay1      := TSay():New( 052,024,{||"Filial"},oRepr,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
+    oGet1      := TGet():New( 050,088,{|u| If(Pcount()>0,cFilPar:=u,cFilPar)},oRepr,060,008,'@!',,CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"SM0","",,)
+    
+    oSay2      := TSay():New( 068,024,{||"Nota"},oRepr,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
+    oGet2      := TGet():New( 068,088,{|u| If(Pcount()>0,cNotPar:=u,cNotPar)},oRepr,060,008,'@!',,CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"SF2","",,)
+    
+    oSay3      := TSay():New( 084,024,{||"Serie"},oRepr,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
+    oGet3      := TGet():New( 084,088,{|u| If(Pcount()>0,cSerPar:=u,cSerPar)},oRepr,060,008,'@!',,CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"","",,)
+    
+    oSay4      := TSay():New( 100,024,{||"Cliente"},oRepr,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
+    oGet4      := TGet():New( 100,088,{|u| If(Pcount()>0,cCliPar:=u,cCliPar)},oRepr,060,008,'',,CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"SA1","",,)
+    
+    oSay5      := TSay():New( 116,024,{||"Loja"},oRepr,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
+    oGet5      := TGet():New( 116,088,{|u| If(Pcount()>0,cLojPar:=u,cLojPar)},oRepr,060,008,'',,CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"","",,)
+    
+    oSay6      := TSay():New( 132,024,{||"Emissao"},oRepr,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
+    oGet6      := TGet():New( 132,088,{|u| If(Pcount()>0,cDtPar1:=u,cDtPar1)},oRepr,060,008,'',,CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"","",,)
+    
+    oSay7      := TSay():New( 148,024,{||"Emissao ate"},oRepr,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
+    oGet7      := TGet():New( 148,088,{|u| If(Pcount()>0,cDtPar2:=u,cDtPar2)},oRepr,060,008,'',,CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"","",,)
+    
+    oBtn1      := TButton():New( 172,024,"Confirmar",oRepr,{||oRepr:end(nOpcao:=1)},037,012,,,,.T.,,"",,,,.F. )
+    oBtn2      := TButton():New( 172,112,"Cancelar",oRepr,{||oRepr:end(nOpcao:=0)},037,012,,,,.T.,,"",,,,.F. )
+
+oRepr:Activate(,,,.T.)
+
+If nOpcao == 1
+    Aadd(aRet,nGrupo)
+    Aadd(aRet,cFilPar)
+    Aadd(aRet,cNotPar)
+    Aadd(aRet,cSerPar)
+    Aadd(aRet,cCliPar)
+    Aadd(aRet,cLojPar)
+    Aadd(aRet,cDtPar1)
+    Aadd(aRet,cDtPar2)
+endIf 
+
+RestArea(aArea)
+
+Return(aRet)

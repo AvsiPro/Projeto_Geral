@@ -79,6 +79,8 @@ WsMethod POST WSSERVICE JWSRA013
                 cXmlRec := Decode64(cXmlRec)
                 cXmlRec := fRemoveCarc(cXmlRec)
 
+                //cXmlRec := DecodeUTF8(cXmlRec)
+
                 oXml := XmlParser( cXmlRec, "_", @cError, @cWarning )
                 
                 If ValType(oXml) != "O"
@@ -192,6 +194,7 @@ Static Function XMLCTE(oXml,cNotaG,cXmlRec,nChama)
 
 Local lRet          := .t.
 Local nCont         := 0
+Local lLancado      := .F.
 Private cFilorig    := '' 
 Private cEspecie    := "CTE"
 Private cVersaoCTE  := ''
@@ -282,7 +285,11 @@ DbSetOrder(1)
 If Dbseek(cFilorig+cNum+cSerie+cCodCli+cLjFornec)
     cNfExst := cNum
     cErrorN := 'CTe já lançado'
-    Return(.F.)
+    If nChama == 0
+        Return(.F.)
+    else 
+        lLancado := .T.
+    EndIf 
 EndIf 
 
 cDtEmissao	:= oXml:_CTEPROC:_CTE:_INFCTE:_IDE:_dhEmi:Text
@@ -324,6 +331,21 @@ EndIf
 If nChama == 0
     If !Empty(cTesCTe)
         lRet := GerarCte()
+        DbSelectArea("ZPH")
+        DbSetOrder(1)
+        If !Dbseek(cFilorig+cNum+cSerie+cCodCli+cLjFornec)
+            RecLock("ZPH",.T.)
+            ZPH->ZPH_FILIAL := cFilorig
+            ZPH->ZPH_DOC    := cNum
+            ZPH->ZPH_SERIE  := cSerie
+            ZPH->ZPH_FORNEC := cCodCli
+            ZPH->ZPH_LOJA   := cLjFornec
+            ZPH->ZPH_XML    := cXmlRec
+            ZPH->ZPH_STATUS := '1'
+            ZPH->ZPH_DATA   := ddatabase
+            ZPH->ZPH_HORA   := cvaltochar(time())
+            ZPH->(Msunlock())
+        EndIf
     Else 
         DbSelectArea("ZPH")
         DbSetOrder(1)
@@ -336,6 +358,8 @@ If nChama == 0
             ZPH->ZPH_LOJA   := cLjFornec
             ZPH->ZPH_XML    := cXmlRec
             ZPH->ZPH_STATUS := '0'
+            ZPH->ZPH_DATA   := ddatabase
+            ZPH->ZPH_HORA   := cvaltochar(time())
             ZPH->(Msunlock())
         EndIf
         
@@ -343,7 +367,7 @@ If nChama == 0
         lRet := .F.
     EndIf
 ElseIf nChama == 1
-    lRet := {cFilorig,cEstFil,cCfopFrt,cEstIni,cEstFim,cMunIni,cMunFim,cCstCte,cEstTom,nTotalMerc,cTesCTe}
+    lRet := {cFilorig,cEstFil,cCfopFrt,cEstIni,cEstFim,cMunIni,cMunFim,cCstCte,cEstTom,nTotalMerc,cTesCTe,lLancado}
 Else 
     If !Empty(cTesCTe)
         lRet := GerarCte()
