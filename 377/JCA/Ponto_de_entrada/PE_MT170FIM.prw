@@ -12,8 +12,8 @@ Local aFilho    := {}
 Local nCont     := 0
 Local aCampos   := {}
 Local nCnt2     := 0
-Local nBkpQtd   := 0 //SC1->C1_QUANT
-Local nDivQtd   := 0 //round(nBkpQtd / len(aFilho),0)
+//Local nBkpQtd   := 0 //SC1->C1_QUANT
+//Local nDivQtd   := 0 //round(nBkpQtd / len(aFilho),0)
 Local aAux      := {}
 Local nX        := 0
 Local _aCols    := {}
@@ -37,6 +37,7 @@ If len(aFilho) > 0
     npos3 := Ascan(_aCols,{|x| x[1] == "C1_ITEM"})
     npos4 := Ascan(_aCols,{|x| x[1] == "C1_QUANT"})
     npos5 := Ascan(_aCols,{|x| x[1] == "C1_NUM"})
+    npos6 := Ascan(_aCols,{|x| x[1] == "C1_LOCAL"})
 
     
     For nCont := 1 to len(aFilho)
@@ -68,6 +69,8 @@ If len(aFilho) > 0
                 EndIf 
             Next nCnt2 
             SC1->(Msunlock())
+
+            AtSldPed(_aCols[npos1,02],_aCols[npos4,02],_aCols[npos6,02])
         Next nX
     Next nCont 
 
@@ -206,3 +209,31 @@ While !EOF()
 EndDo
 
 Return(aRet)
+
+/*/{Protheus.doc} AtSldPed
+    Atualiza campo B2_SALPED dos filhos
+    @type  Static Function
+    @author user
+    @since 30/04/2024
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function AtSldPed(cCod,nQtd,cLoc)
+
+Local aArea := GetArea()
+
+DbSelectArea("SB2")
+DbSetOrder(1)
+If Dbseek(xFilial("SB2")+cCod+cLoc)
+    Reclock("SB2",.F.)
+    SB2->B2_SALPEDI += nQtd
+    SB2->(Msunlock())
+EndIf 
+
+RestArea(aArea)
+
+Return 

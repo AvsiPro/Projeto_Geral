@@ -293,6 +293,8 @@ Static Function EtiqtaNF(aList)
 	Local oFont08	:= TFont():New('Arial',08,08,,.F.,,,,.T.,.F.,.F.)
 	Local oFont09	:= TFont():New('Arial',09,09,,.F.,,,,.T.,.F.,.F.)
 	Local oFont10	:= TFont():New('Arial',10,10,,.F.,,,,.T.,.F.,.F.)
+
+	Local oFont20	:= TFont():New('Arial',20,20,,.F.,,,,.T.,.F.,.F.)
  
 	Local lAdjustToLegacy 	:= .F.
 	Local lDisableSetup  	:= .T.
@@ -743,6 +745,9 @@ Static Function Etqprat()
 	Local oFont08	:= TFont():New('Arial',06,06,,.F.,,,,.T.,.F.,.F.)
 	Local oFont10	:= TFont():New('Arial',10,10,,.F.,,,,.T.,.F.,.F.)
 	
+	Local oFont20	:= TFont():New('Arial',20,20,,.F.,,,,.T.,.F.,.F.)
+	
+
 	Local lAdjustToLegacy 	:= .F.
 	Local lDisableSetup  	:= .T.
     Local nR 
@@ -776,7 +781,7 @@ Static Function Etqprat()
 	TcQuery cQuery New Alias "QRYTMP"
 	QRYTMP->(DbGoTop())
 
-	oPrinter:SetLandscape()
+	//oPrinter:SetLandscape()
  
 	oPrinter:SetMargin(001,001,001,001)
  
@@ -811,11 +816,11 @@ Static Function Etqprat()
 				nLin4 := 70
 				nLinC		:= 1.7//2.70		//Linha que será impresso o Código de Barra
 				nColC		:= 2.7 //5.7		//Coluna que será impresso o Código de Barra
-				nWidth	 	:= 0.0164 //0.0464	//Numero do Tamanho da barra. Default 0.025 limite de largura da etiqueta é 0.0164
-				nHeigth   	:= 0.8 //0.7		//Numero da Altura da barra. Default 1.5 --- limite de altura é 0.3
+				nWidth	 	:= 4.164//0.0164 //0.0464	//Numero do Tamanho da barra. Default 0.025 limite de largura da etiqueta é 0.0164
+				nHeigth   	:= 3.9 //0.8 //0.7		//Numero da Altura da barra. Default 1.5 --- limite de altura é 0.3
 				lBanner		:= .T.		//Se imprime a linha com o código embaixo da barra. Default .T.
-				nPFWidth	:= 0.2 //0.8		//Número do índice de ajuste da largura da fonte. Default 1
-				nPFHeigth	:= 0.9		//Número do índice de ajuste da altura da fonte. Default 1
+				nPFWidth	:= 1.8 //0.2 //0.8		//Número do índice de ajuste da largura da fonte. Default 1
+				nPFHeigth	:= 1.9		//Número do índice de ajuste da altura da fonte. Default 1
 				lCmtr2Pix	:= .T.		//Utiliza o método Cmtr2Pix() do objeto Printer.Default .T.
 				nPula		:= 0
 				nEtiquetas := 0
@@ -827,32 +832,34 @@ Static Function Etqprat()
 				//oPrinter:Box(nLin2,5,nLin4,170)
 
 				//oPrinter:Box(180,nLin2,15,nLin4)
+
 				//				180		10	   15	   70
-				oPrinter:Box(nColBox1,nLin2,nColBox2,nLin4)
+				//ESSE É O FINAL PRATELEIRA
+				//oPrinter:Box(nColBox1+270,nLin2,nColBox2,nLin4+60)
 			EndIf
  
-            oPrinter:Say(nLin,nCol,alltrim(QRYTMP->CODIGO) ,oFont10,,,270)
+            oPrinter:Say(nLin-130,nCol+095,alltrim(QRYTMP->CODIGO) ,oFont20,,,90)
             
 			nCol += 10
 
 			If len(alltrim(QRYTMP->DESCRI)) > 30
-				oPrinter:Say(nLin,nCol-1,substr(QRYTMP->DESCRI,1,60) ,oFont08,,,270)
+				oPrinter:Say(nLin-130,nCol+65,substr(QRYTMP->DESCRI,1,60) ,oFont20,,,90)
 				
-				oPrinter:Say(nLin,nCol+9,substr(QRYTMP->DESCRI,61) ,oFont08,,,270)
+				oPrinter:Say(nLin-130,nCol+64,substr(QRYTMP->DESCRI,61) ,oFont20,,,90)
 			Else 
-            	oPrinter:Say(nLin,nCol,alltrim(QRYTMP->DESCRI) ,oFont10,,,270) 
+            	oPrinter:Say(nLin-130,nCol+65,alltrim(QRYTMP->DESCRI) ,oFont20,,,90) 
 			EndIf
             
 			if nEtiquetas > 2
 				nColC += 0.28
 			endif
 			
-			oPrinter:FWMSBAR("CODE128" , nLinC , nColC, alltrim(QRYTMP->CODIGO), oPrinter,/*lCheck*/,/*Color*/,.F./*lHorz*/, nWidth, nHeigth,.F.,/*cFont*/,/*cMode*/,.F./*lPrint*/,nPFWidth,nPFHeigth,lCmtr2Pix)
+			oPrinter:FWMSBAR("CODE128" , nLinC+27 , nColC, alltrim(QRYTMP->CODIGO), oPrinter,/*lCheck*/,/*Color*/,.F./*lHorz*/, nWidth, nHeigth+0.7,.F.,/*cFont*/,/*cMode*/,.F./*lPrint*/,nPFWidth,nPFHeigth,lCmtr2Pix)
 			
-			nCol += 12
-			oPrinter:Say(nLin,nCol,alltrim(QRYTMP->B1_FABRIC) ,oFont08,,,270)
-            nCol += 10
-			oPrinter:Say(nLin,nCol,alltrim(QRYTMP->BZ_XLOCALI) ,oFont08,,,270)
+			//nCol += 12
+			oPrinter:Say(nLin-130,nCol+50,alltrim('QRYTMP->B1_FABRIC') ,oFont20,,,90)
+            //nCol += 10
+			oPrinter:Say(nLin-130,nCol+35,alltrim('QRYTMP->BZ_XLOCALI') ,oFont20,,,90)
 			
 			nCol += 38 //50
 			nColC += 5.7 //2
