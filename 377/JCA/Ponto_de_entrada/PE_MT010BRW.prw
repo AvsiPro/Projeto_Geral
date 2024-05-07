@@ -23,6 +23,7 @@ AAdd( aRotUser, { 'Cadastro de Marcas', 'U_JCOMA002()', 0, 3 } )
 //AAdd( aRotUser, { 'Cadastro de Produtos x Marcas', 'U_JCOMA001()', 0, 3 } )
 AAdd( aRotUser, { 'Copia JCA', 'U_JCOMG002()', 0, 3 } )
 AAdd( aRotUser, { 'Bloqueio Marca x Filial', 'U_JCOMA001()', 0, 3 } )
+AAdd( aRotUser, { 'Alterar Cod. Fab.', 'U_JGENX007()', 0, 3 } )
 
 
 Return (aRotUser)
