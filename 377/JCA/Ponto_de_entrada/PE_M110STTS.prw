@@ -24,10 +24,11 @@ Local nPosItem  :=  Ascan(aHeader,{|x| Alltrim(x[2]) == "C1_ITEM"})
 Local nPosProd  :=  Ascan(aHeader,{|x| Alltrim(x[2]) == "C1_PRODUTO"})
 Local nPosDesc  :=  Ascan(aHeader,{|x| Alltrim(x[2]) == "C1_DESCRI"})
 Local nPosQtd   :=  Ascan(aHeader,{|x| Alltrim(x[2]) == "C1_QUANT"})
-Local nPosVnt   :=  Ascan(aHeader,{|x| Alltrim(x[2]) == "C1_VUNIT"})
-Local nPosCC    :=  Ascan(aHeader,{|x| Alltrim(x[2]) == "C1_CC"})
+//Local nPosVnt   :=  Ascan(aHeader,{|x| Alltrim(x[2]) == "C1_VUNIT"})
+//Local nPosCC    :=  Ascan(aHeader,{|x| Alltrim(x[2]) == "C1_CC"})
+Local nPosLoc   :=  Ascan(aHeader,{|x| Alltrim(x[2]) == "C1_LOCAL"})
 Local nPosQO    :=  Ascan(aHeader,{|x| Alltrim(x[2]) == "C1_QTDORIG"})
-
+//Local lBloq     :=  SC1->C1_APROV == 'B'
 Local nCont     :=  1
 Local nX        :=  1   
 Local nZ        :=  1
@@ -74,15 +75,16 @@ If cvaltochar(nOpt) $ '1/2' .And. !lCopia
 
             aCols[nCont,nPosItem] := proxitm(cFilant,cNumSol)
 
-            aBlock := xBloqCC(aCols[nCont,nPosCC])
+            //Caio solicitou em 07/05/24 para retirar e manter o bloqueio do padrão
+            //aBlock := xBloqCC(aCols[nCont,nPosCC])
 
             Reclock("SC1",.T.)
             SC1->C1_FILIAL := cFilant
             SC1->C1_NUM    := cNumSol
             SC1->C1_FILENT := cFiEntr
-            If len(aBlock) > 0
+            //If len(aBlock) > 0
                 SC1->C1_APROV  := 'B'
-            EndIf
+            //EndIf
 
             For nX := 1 to len(aHeader)
                 lUsado := X3USO(GetSX3Cache(aHeader[nX,02], "X3_USADO"))
@@ -94,9 +96,18 @@ If cvaltochar(nOpt) $ '1/2' .And. !lCopia
             Next nX 
             SC1->(Msunlock())
 
-            If len(aBlock) > 0
-                GeraBloq(aBlock,cNumSol,aCols[nCont,nPosItem],aCols[nCont,nPosQtd] * aCols[nCont,nPosVnt])
+            DbSelectArea("SB2")
+            DbSetOrder(1)
+            If Dbseek(cFilant+aCols[nCont,nPosProd]+aCols[nCont,nPosLoc])
+                nSaldo := SaldoSB2()
+                Reclock("SB2",.F.)
+                SB2->B2_SALPEDI := nSaldo + aCols[nCont,nPosQtd] 
+                SB2->(Msunlock()) 
             EndIf 
+
+            /*If len(aBlock) > 0
+                GeraBloq(aBlock,cNumSol,aCols[nCont,nPosItem],aCols[nCont,nPosQtd] * aCols[nCont,nPosVnt])
+            EndIf */
         EndIf 
     Next nCont
 
@@ -125,7 +136,7 @@ EndIf
 Return Nil
 
 /*/{Protheus.doc} _SearchSon
-    (long_description)
+    Procurar produtos filhos relacionados no cadastro e validar se não existe restrição de compra na filial corrente
     @type  Static Function
     @author user
     @since 18/09/2023
@@ -213,7 +224,8 @@ EndDo
 Return(aRet)
 
 /*/{Protheus.doc} xBlocCC
-    (long_description)
+    Gera bloqueio por centro de custo customizado
+    Solicitado pelo Caio
     @type  Static Function
     @author user
     @since 18/10/2023
@@ -251,7 +263,7 @@ RestArea(aArea)
 Return
 
 /*/{Protheus.doc} proxitm
-    (long_description)
+    Busca o proximo item na solicitação de compra
     @type  Static Function
     @author user
     @since 22/12/2023
