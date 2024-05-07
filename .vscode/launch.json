@@ -42,6 +42,15 @@
 		},
 		{
 			"label": "u_jestcx01"
+		},
+		{
+			"label": "U_JFINM010"
+		},
+		{
+			"label": "U_xtstzbr"
+		},
+		{
+			"label": "U_JESTR008"
 		}
 	],
 	"lastProgramExecuted": "sigaadv",
