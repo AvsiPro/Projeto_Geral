@@ -11,7 +11,7 @@ User Function FA050ALT
 Local aArea := GetArea()
 Local lRet  := .T.
 
-If substr(M->E2_CONTAD,1,1) $ '4/5'
+If substr(M->E2_CONTAD,1,1) $ '4/5' .And. !'GLB' $ M->E2_PREFIXO
     If Empty(M->E2_CCUSTO)
         MsgAlert("Para contas contábeis iniciadas em ( 4 ou 5 ) o campo Centro de Custo é de preenchimento obrigatório")
         lRet := .F.
