@@ -210,9 +210,11 @@ If DbSeek(xFilial("SB1")+cCodigo) //
     For nCont := 1 to len(aAuxX3)
         lUsado := X3USO(GetSX3Cache(aAuxX3[nCont,1], "X3_USADO"))
         If lUsado .And. !Alltrim(aAuxX3[nCont,1]) $ cCpoNcp
-            /*If Alltrim(aAuxX3[nCont,1]) == "B1_DESC"
-                Aadd(aHoBrw1,{aAuxX3[nCont,1],Alltrim(&("SB1->"+aAuxX3[nCont,1]))}) //+' '+cDescM solicitado pela priscila para retirar 12/04/24*/
-            If Alltrim(aAuxX3[nCont,1]) == "B1_FABRIC"
+            If Alltrim(aAuxX3[nCont,1]) == "B1_DESC"
+                Aadd(aHoBrw1,{aAuxX3[nCont,1],Alltrim(&("SB1->"+aAuxX3[nCont,1]))+' '+cDescM}) 
+                //+' '+cDescM solicitado pela priscila para retirar 12/04/24*/
+                //solicitado para voltar em 01/05/24
+            ElseIf Alltrim(aAuxX3[nCont,1]) == "B1_FABRIC"
                 Aadd(aHoBrw1,{aAuxX3[nCont,1],cCodFab})
             Else
                 Aadd(aHoBrw1,{aAuxX3[nCont,1],&("SB1->"+aAuxX3[nCont,1])})
