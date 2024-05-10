@@ -171,7 +171,7 @@ User Function SPEDRTMS()
         AAdd(vLinha,    "D100")         //01 REG
         AAdd(vLinha,    cInd_Oper)      //02 IND_OPER
         AAdd(vLinha,    cInd_Emit)      //03 IND_EMIT
-        AAdd(vLinha,    IIf(cModelo$"63", "", cModelo))      //04 COD_PART
+        AAdd(vLinha,    IIf(cModelo$"63", "", CCOD_PART))      //04 COD_PART cModelo
         AAdd(vLinha,    AModNot(aCmpAntSFT[42])) //05 COD_MOD
         AAdd(vLinha,    "00")           //06 COD_SIT
         AAdd(vLinha,    aCmpAntSFT[2])  //07 SER

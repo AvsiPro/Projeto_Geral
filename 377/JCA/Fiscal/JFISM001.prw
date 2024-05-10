@@ -619,16 +619,17 @@ If len(aListR1) > 0
 
         oGrpR1     := TGroup():New( 004,004,144,440,"Itens",oDlgR,CLR_BLACK,CLR_WHITE,.T.,.F. )
             //oBrw1      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{012,008,140,436},,, oGrpR1 ) 
-            oLisR1    := TCBrowse():New(012,008,425,130,, {'','Filial','Documento','Serie','Fornecedor','Razão Social'},;
-                                                        {10,25,25,30,30,30,70},;
-                                                        oGrpR1,,,,{|| FHelp(oLisR1:nAt)},{|| /*editped(oList1:nAt,1)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
+            oLisR1    := TCBrowse():New(012,008,425,130,, {'','Filial','Documento','Serie','Fornecedor','Razão Social','Chave CT-e'},;
+                                                        {10,25,25,30,30,30,70,100},;
+                                                        oGrpR1,,,,{|| FHelp(oLisR1:nAt)},{|| chvcte(oLisR1:nAt)},, ,,,  ,,.F.,,.T.,,.F.,,,)
             oLisR1:SetArray(aListR1)
             oLisR1:bLine := {||{if(aListR1[oLisR1:nAt,01],oOk,oNo),; 
                                     aListR1[oLisR1:nAt,02],;
                                     aListR1[oLisR1:nAt,03],;
                                     aListR1[oLisR1:nAt,04],;
                                     aListR1[oLisR1:nAt,05],;
-                                    aListR1[oLisR1:nAt,06]}}
+                                    aListR1[oLisR1:nAt,06],;
+                                    aListR1[oLisR1:nAt,21]}}
 
         oGrpR2     := TGroup():New( 148,004,204,440,"Combinação",oDlgR,CLR_BLACK,CLR_WHITE,.T.,.F. )
 
@@ -666,6 +667,11 @@ If len(aListR1) > 0
         oSay22     := TSay():New( 189,208,{||"501"},oGrpR2,,,.F.,.F.,.F.,.T.,CLR_BLUE,CLR_WHITE,032,008)
 
         oSay23     := TSay():New( 195,200,{||""},oGrpR2,,,.F.,.F.,.F.,.T.,CLR_RED,CLR_WHITE,132,008)
+
+        oLg1 := TBitmap():Create(oDlgR,205,10,10,10,"BR_VERDE"			,,.T., {|| },,.F.,.F.,,,.F.,,.T.,,.F.)			// programadas
+        oLg2 := TBitmap():Create(oDlgR,215,10,10,10,"BR_VERMELHO"			,,.T., {|| },,.F.,.F.,,,.F.,,.T.,,.F.)			// programadas
+	    oSay24     := TSay():New( 205,020,{||"Habilitado para reprocessar"},oGrpR2,,,.F.,.F.,.F.,.T.,CLR_RED,CLR_WHITE,132,008)
+        oSay25     := TSay():New( 215,020,{||"Não habilitado para reprocessar"},oGrpR2,,,.F.,.F.,.F.,.T.,CLR_RED,CLR_WHITE,132,008)
 
         oBtnR1     := TButton():New( 208,120,"Reprocessar",oDlgR,{|| If(MsgYesNo("Confirma o reprocessamento?"),oDlgR:end(nOpcao:=1),)},037,012,,,,.T.,,"",,,,.F. )
         oBtnR2     := TButton():New( 208,240,"Sair",oDlgR,{|| oDlgR:end(nOpcao:=0)},037,012,,,,.T.,,"",,,,.F. )
@@ -777,7 +783,8 @@ While !EOF()
                   '',;
                   '',;
                   '' ,;
-                  .f.})
+                  .f.,;
+                  ''})
     Dbskip()
 EndDo 
 
@@ -797,6 +804,7 @@ For nCont := 1 to len(aListR1)
             aListR1[nCont,18] := aRet[10]
             aListR1[nCont,19] := aRet[11]
             aListR1[nCont,20] := aRet[12]
+            aListR1[nCont,21] := aRet[13]
 
             If !Empty(aRet[11]) .And. !Empty(aListR1[nCont,06]) .And. !aRet[12]
                 aListR1[nCont,01] := .T.
@@ -852,6 +860,35 @@ oSay22:settext(aListR1[nLinha,19])
 oSay23:settext(If(aListR1[nLinha,20],"Nota já lançada",""))
 
 oDlgR:refresh()
+
+RestArea(aArea)
+
+Return
+
+/*/{Protheus.doc} chvcte(oList1:nAt)
+    Copiar chave CTe
+    @type  Static Function
+    @author user
+    @since 08/05/2024
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function chvcte(nLinha)
+
+Local aArea := GetArea()
+Local cBkp1 := aListR1[nLinha,21]
+Local cBkp2 := aListR1[nLinha,07]
+
+aListR1[nLinha,07] := aListR1[nLinha,21]
+
+lEditCell(aListR1,oLisR1,"",7)
+
+aListR1[nLinha,21] := cBkp1
+aListR1[nLinha,07] := cBkp2
 
 RestArea(aArea)
 

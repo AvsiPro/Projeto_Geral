@@ -51,6 +51,12 @@
 		},
 		{
 			"label": "U_JESTR008"
+		},
+		{
+			"label": "u_jestm002"
+		},
+		{
+			"label": "u_jatfa001"
 		}
 	],
 	"lastProgramExecuted": "sigaadv",

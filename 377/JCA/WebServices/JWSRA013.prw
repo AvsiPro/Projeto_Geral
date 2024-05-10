@@ -213,7 +213,7 @@ Private cTesCTe     := ''
 Private cCodCli     := ''
 Private cLjFornec   := ''
 Private cTipoCli    := ''
-Private aCSTTipo    := separa(SuperGetMV("TI_CSTCTE",.F.,"00/40/41/51"),"/")
+Private aCSTTipo    := BuscaS2() //separa(SuperGetMV("TI_CSTCTE",.F.,"00/40/41/51"),"/")
 Private cCstCte     := ''
 Private cMunIni     := ''
 Private cMunFim     := ''
@@ -324,6 +324,18 @@ For nCont := 1 to len(aCSTTipo)
     EndIf 
 Next nCont
 
+//Saida contorno para tratamento de quando há um cst novo.
+If Empty(cCstCte)
+    For nCont := 1 to 99
+        nPosX := Ascan(aCSTTipo,{|x| x == Strzero(nCont,2)})
+        If nPosX == 0
+            If XmlChildEx( oXml:_CTEPROC:_CTE:_INFCTE:_IMP:_ICMS, "_ICMS"+strzero(nCont,2) ) <> Nil 
+                cCstCte := &("oXml:_CTEPROC:_CTE:_INFCTE:_IMP:_ICMS:_ICMS"+strzero(nCont,2)+":_CST:TEXT")
+            EndIf 
+        EndIf 
+    Next nCont 
+EndIf 
+
 If !Empty(cEstIni) .And. !Empty(cEstFim) .And. !Empty(cCstCte)
     cTesCTe := BuscaTes(cEstFil,cCfopFrt,cEstIni,cEstFim,cCstCte,cMunIni,cMunFim,cEstTom,cFilorig,nTotalMerc)
 EndIf 
@@ -341,7 +353,7 @@ If nChama == 0
             ZPH->ZPH_FORNEC := cCodCli
             ZPH->ZPH_LOJA   := cLjFornec
             ZPH->ZPH_XML    := cXmlRec
-            ZPH->ZPH_STATUS := '1'
+            ZPH->ZPH_STATUS := If(lRet,'1','0')
             ZPH->ZPH_DATA   := ddatabase
             ZPH->ZPH_HORA   := cvaltochar(time())
             ZPH->(Msunlock())
@@ -367,7 +379,7 @@ If nChama == 0
         lRet := .F.
     EndIf
 ElseIf nChama == 1
-    lRet := {cFilorig,cEstFil,cCfopFrt,cEstIni,cEstFim,cMunIni,cMunFim,cCstCte,cEstTom,nTotalMerc,cTesCTe,lLancado}
+    lRet := {cFilorig,cEstFil,cCfopFrt,cEstIni,cEstFim,cMunIni,cMunFim,cCstCte,cEstTom,nTotalMerc,cTesCTe,lLancado,cChave_Nfe}
 Else 
     If !Empty(cTesCTe)
         lRet := GerarCte()
@@ -556,3 +568,35 @@ Else
 EndIf 
 
 Return(aRet)
+
+
+/*/{Protheus.doc} BuscaS2()
+    Busca tipos ICMS para validação no xml
+    @type  Static Function
+    @author user
+    @since date
+    @version version
+    @param param, param_type, param_descr
+    @return return, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+    /*/
+Static Function BuscaS2()
+
+Local aArea :=  GetArea()
+Local aRet  :=  {}
+
+DbSelectArea("SX5")
+DbSetOrder(1)
+If Dbseek(xFilial("SX5")+'S2')
+    While !Eof() .And. SX5->X5_TABELA == 'S2'
+        Aadd(aRet,Alltrim(SX5->X5_CHAVE))
+        Dbskip()
+    EndDo 
+
+EndIf 
+
+RestArea(aArea)
+
+Return(aRet) 

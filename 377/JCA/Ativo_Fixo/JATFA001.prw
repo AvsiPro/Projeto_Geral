@@ -28,6 +28,7 @@ Private oList
 Private oOk   	:= LoadBitmap(GetResources(),'br_verde')       //Controla se o pedido foi alterado ou nao no grid.
 Private oNo   	:= LoadBitmap(GetResources(),'br_vermelho')
 Private lAchou  := .F.
+Private aCabec  :=  {}
 /*Private cGrupo  := space(TamSx3("N1_GRUPO")[1])
 Private cChapa  := space(TamSx3("N1_CHAPA")[1])
 Private cConta1 := space(TamSx3("N3_CCONTAB")[1])
@@ -62,7 +63,7 @@ EndIf
 
 
 cGrupo  := space(TamSx3("N1_GRUPO")[1])
-cChapa  := space(TamSx3("N1_CHAPA")[1])
+//cChapa  := space(TamSx3("N1_CHAPA")[1])
 cConta1 := space(TamSx3("N3_CCONTAB")[1])
 cCusto1 := space(TamSx3("N3_CUSTBEM")[1])
 cConta2 := space(TamSx3("N3_CDEPREC")[1])
@@ -99,8 +100,8 @@ oDlg1      := MSDialog():New( 092,232,695,1422,"Classificação em Lote",,,.F.,,,,
         oGet1      := TGet():New( 220,064,{|u| If(Pcount()>0,cGrupo:=u,cGrupo)},oGrp2,060,008,'',{|| Libok(1)},CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"SNG","",,)
         oSay7      := TSay():New( 220,272,{||""},oGrp2,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,296,008)
         
-        oSay2      := TSay():New( 220,144,{||"Chapa"},oGrp2,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
-        oGet2      := TGet():New( 220,196,{|u| If(Pcount()>0,cChapa:=u,cChapa)},oGrp2,060,008,'',{|| Libok(2)},CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"","",,)
+        //oSay2      := TSay():New( 220,144,{||"Chapa"},oGrp2,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
+        //oGet2      := TGet():New( 220,196,{|u| If(Pcount()>0,cChapa:=u,cChapa)},oGrp2,060,008,'',{|| Libok(2)},CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"","",,)
         
         
         oSay3      := TSay():New( 244,020,{||"Conta Contabil"},oGrp2,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,040,008)
@@ -127,6 +128,18 @@ oDlg1      := MSDialog():New( 092,232,695,1422,"Classificação em Lote",,,.F.,,,,
 oDlg1:Activate(,,,.T.)
 
 If nOpc == 1
+    For nCont := 1 to len(aList)
+        If aList[nCont,04] <> '0001'
+            cNovoN1 := GETSXENUM("SN1","N1_CBASE")
+            ConfirmSX8()
+            aList[nCont,03] := cNovoN1
+            aList[nCont,04] := '0001'
+            aList[nCont,07] := cNovoN1
+        Else 
+            aList[nCont,07] := aList[nCont,03]
+        EndIf 
+    Next nCont 
+
     DbSelectArea("SN3") //9
     For nCont := 1 to len(aList)
         If aList[nCont,01]
@@ -136,6 +149,8 @@ If nOpc == 1
             SN1->N1_GRUPO := cGrupo
             SN1->N1_CHAPA := aList[nCont,07]
             SN1->N1_STATUS:= '1'
+            SN1->N1_CBASE := aList[nCont,03] 
+            SN1->N1_ITEM  := aList[nCont,04]
             SN1->(Msunlock())
             DbSelectArea("SN3")
             DbGoto(aList[nCont,09])
@@ -145,9 +160,17 @@ If nOpc == 1
             SN3->N3_CUSTBEM := cCusto1
             SN3->N3_CDEPREC := cConta2
             SN3->N3_CCUSTO  := cCusto2
+            SN3->N3_CBASE   := aList[nCont,03] 
+            SN3->N3_ITEM    := aList[nCont,04]
             SN3->(Msunlock())
         EndIf 
     Next nCont 
+
+    
+    MsgAlert("Processo finalizado!!!")
+
+    GeraPlan()
+
 ENDIF
 
 Return
@@ -200,6 +223,13 @@ While !EOF()
     Dbskip()
 EndDo 
 
+Aadd(aCabec,{'Filial',;
+            'Codigo_Base',;
+            'Item',;
+            'Quantidade',;
+            'Descrição',;
+            'Chapa'})
+
 RestArea(aArea)
 
 Return(aRet)
@@ -220,9 +250,9 @@ Static Function Libok(nOpcao)
 
 Local nOk   := 0
 Local lOk   := .F.
-Local nTot  := 6
+Local nTot  := 5
 Local nCont := 1
-Local cBkpCh:= cChapa 
+//Local cBkpCh:= cChapa 
 
 If nOpcao == 1
     lOk := ExistCPO("SNG", cGrupo)
@@ -239,6 +269,7 @@ If nOpcao == 1
     oSay7:settext(Posicione("SNG",1,xFilial("SNG")+cGrupo,"NG_DESCRIC"))
 EndIf
 
+/*
 If nOpcao == 2
     DbSelectArea("SN1")
     DbSetOrder(1)
@@ -256,8 +287,8 @@ If nOpcao == 2
 
     EndIf 
 EndIf 
-
-If nOpcao == 3
+*/
+If nOpcao == 3 .Or. !Empty(cConta1)
     lOk := ExistCPO("CT1", cConta1)
     If !lOk .And. !Empty(cConta1)
         MsgAlert("Conta inexistente")
@@ -267,7 +298,7 @@ If nOpcao == 3
     oSay8:settext(Posicione("CT1",1,xFilial("CT1")+cConta1,"CT1_DESC01"))
 EndIf 
 
-If nOpcao == 4
+If nOpcao == 4 .Or. !Empty(cCusto1)
     lOk := ExistCPO("CTT", cCusto1)
     If !lOk .And. !Empty(cCusto1)
         MsgAlert("Centro de Custo inexistente")
@@ -277,7 +308,7 @@ If nOpcao == 4
     oSay9:settext(Posicione("CTT",1,xFilial("CTT")+cCusto1,"CTT_DESC01"))
 EndIf 
 
-If nOpcao == 5
+If nOpcao == 5 .Or. !Empty(cConta2)
     lOk := ExistCPO("CT1", cConta2)
     If !lOk .And. !Empty(cConta2)
         MsgAlert("Conta inexistente")
@@ -286,7 +317,7 @@ If nOpcao == 5
     oSay10:settext(Posicione("CT1",1,xFilial("CT1")+cConta2,"CT1_DESC01"))
 EndIf 
 
-If nOpcao == 6
+If nOpcao == 6 .Or. !Empty(cCusto2)
     lOk := ExistCPO("CTT", cCusto2)
     If !lOk .And. !Empty(cCusto2)
         MsgAlert("Centro de Custo inexistente")
@@ -300,10 +331,10 @@ EndIf
 If !Empty(cGrupo)
     nOk++
 EndIf 
-
+/*
 If !Empty(cChapa)
     nOk++
-ENDIF
+ENDIF*/
 
 If !Empty(cConta1)
     nOk++
@@ -337,3 +368,65 @@ oList:refresh()
 oDlg1:refresh()
 
 Return
+
+
+/*/{Protheus.doc} GeraPlan
+    (long_description)
+    @type  Static Function
+    @author user
+    @since 04/08/2022
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function GeraPlan()
+
+Local oExcel 	:= FWMSEXCEL():New()
+Local cDir 		:= ""
+Local cArqXls 	:= "Ativos_classificados_"+dtos(ddatabase)+strtran(time(),":")+".xls" 
+Local nX,nY 
+Local aAux      :=  {}
+
+lOCAL cExterno := 'Ativos Classificados'
+
+cDir := cGetFile(, OemToAnsi("Selecione o diretório de destino"), 0, "C:\", .T., GETF_LOCALHARD+GETF_NETWORKDRIVE+GETF_RETDIRECTORY, .F., .F.) 
+
+If Empty(cDir)
+	Return
+EndIf
+
+oExcel:AddworkSheet(cExterno) 
+oExcel:AddTable (cExterno,cExterno)
+
+For nX := 1 to len(aCabec[1])
+    oExcel:AddColumn(cExterno,cExterno,aCabec[1,nX],1,1)
+Next nX
+
+
+For nX := 1 to len(aList)
+    aAux := {}
+    For nY := 1 to len(aCabec[1])
+        Aadd(aAux,aList[nX,nY+1])
+    Next nY
+
+    oExcel:AddRow(cExterno,cExterno,aAux)
+Next nX
+
+
+
+oExcel:Activate()
+
+oExcel:GetXMLFile(cDir +cArqXls)
+
+oExcelApp := MsExcel():New()
+oExcelApp:WorkBooks:Open(cDir +cArqXls)     //Abre uma planilha
+oExcelApp:SetVisible(.T.)        
+oExcelApp:Destroy()
+
+MsgAlert("Relatório finalizado")
+	
+    
+Return(cDir+cArqXls)

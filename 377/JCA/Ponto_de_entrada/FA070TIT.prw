@@ -31,7 +31,7 @@ User function FA070TIT()
 
     If lLigaTr
         If !Empty(cTipBx)
-            If Alltrim(SE1->E1_TIPO) $ cTipBx .And. SE1->E1_SALDO == 0
+            If Alltrim(SE1->E1_TIPO) $ cTipBx .And. SE1->E1_SALDO == nValrec
                 EnvTrck()
             EndIf 
         EndIf 

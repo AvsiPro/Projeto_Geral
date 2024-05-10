@@ -27,6 +27,10 @@ user function ROT002()
 	private lMsHelpAuto 		:= .T.
 	private aLogInt				:= {}
 	private aZ04AtivosPreCad 	:= {}
+	Private cRecCt2		  		:= ''
+	Private dDtMovC		
+	Private cHistor	 	  		:= ''
+	Private cXCCATF 		  		:= ''
 
 	if fShowParam()
 
@@ -66,10 +70,7 @@ static function fProcess(aZ04_Atual,aZ05AtivosPreCadastro)
 	local cCTINVE         := ""
 	local nQtdCrd 		  := 0
 	local nQtdDeb 		  := 0
-	Private cRecCt2		  := ''
-	Private dDtMovC		
-	Private cHistor	 	  := ''
-	Private cCusto 		  := ''
+	
 	
 	ProcRegua(nQtdRegsToInteg)
 
@@ -144,7 +145,12 @@ static function fSaveToATFA012(aZ04_Atual, nValor, aZ05AtivosPreCadastro, nI, cD
 
 			xErro := mostraErro("\")
 			cErro := fConvertArrToStr(xErro)
-			aAdd(aLogInt, {allTrim(cCodBase), cErro} )				
+			If !"A data de inicio de depre" $ cErro
+				aAdd(aLogInt, {allTrim(cCodBase), cErro} )	
+			Else 
+				aCommandsUPDCT2 := fGetSQLScriptFlagCT2(cITEM, cDataini, cDataFim, aZ05AtivosPreCadastro)
+				fExecUpdateFlagCT2(aCommandsUPDCT2)
+			EndIf 			
 		else
 			aCommandsUPDCT2 := fGetSQLScriptFlagCT2(cITEM, cDataini, cDataFim, aZ05AtivosPreCadastro)
 			fExecUpdateFlagCT2(aCommandsUPDCT2)	
@@ -420,7 +426,7 @@ static function fGetTotalDebito(cDataini, cDataFim, aZ05AtivosPreCadastro)
 		cRecCt2 += cvaltochar((cAlias)->REGCT2) + '/'
 		dDtMovC := stod((cAlias)->DATAMOV)
 		cHistor := Alltrim((cAlias)->HISTORICO)
-		cCusto  := (cAlias)->CCUSTO
+		cXCCATF  := alltrim((cAlias)->CCUSTO)
 	endIf
 
 	(cAlias)->(dbCloseArea())	
@@ -444,8 +450,8 @@ static function fGetTotalCredito(cDataini, cDataFim, aZ05AtivosPreCadastro)
 		dDtMovC := stod((cAlias)->DATAMOV)
 		cHistor := Alltrim((cAlias)->HISTORICO)
 
-		If Empty(cCusto)
-			cCusto  := (cAlias)->CCUSTO
+		If Empty(cXCCATF)
+			cXCCATF  := (cAlias)->CCUSTO
 		EndIf 
 	endIf
 
@@ -1004,9 +1010,9 @@ static function fPopula1ModelDetails(oModel, aZ04_Atual, aZ05AtivosPreCadastro, 
 			oModel:SetValue( "SN3DETAIL",  "N3_CODIND", '02')
 
 			If oModel:CanSetValue("SN3DETAIL", "N3_CUSTBEM")
-				oModel:SetValue( "SN3DETAIL",  "N3_CUSTBEM", aZ05AtivosPreCadastro[7])
+				oModel:SetValue( "SN3DETAIL",  "N3_CUSTBEM", cXCCATF) //aZ05AtivosPreCadastro[7]
 			else		
-				oModel:LoadValue("SN3DETAIL",  "N3_CUSTBEM", aZ05AtivosPreCadastro[7])
+				oModel:LoadValue("SN3DETAIL",  "N3_CUSTBEM", cXCCATF) //aZ05AtivosPreCadastro[7]
 			EndIf
 
 			If oModel:CanSetValue("SN3DETAIL", "N3_SUBCCON")
@@ -1047,9 +1053,9 @@ static function fPopula1ModelDetails(oModel, aZ04_Atual, aZ05AtivosPreCadastro, 
 			EndIf
 
 			If oModel:CanSetValue("SN3DETAIL", "N3_CCUSTO")
-				oModel:SetValue( "SN3DETAIL",  "N3_CCUSTO", cCusto)
+				oModel:SetValue( "SN3DETAIL",  "N3_CCUSTO", cXCCATF)
 			else		
-				oModel:LoadValue("SN3DETAIL",  "N3_CCUSTO", cCusto)
+				oModel:LoadValue("SN3DETAIL",  "N3_CCUSTO", cXCCATF)
 			EndIf
 			
 
