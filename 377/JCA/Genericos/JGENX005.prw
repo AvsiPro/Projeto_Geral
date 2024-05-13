@@ -17,7 +17,7 @@ Local aArea1	:=	GetArea()
 Local nX 
 Local aAuxX3    := FWSX3Util():GetAllFields( cTabela , .F. )
 Local aRet      :=  {}
-Local aItemFora := SEPARA(SuperGetMV("TI_ITEMFO",.F.,"B1_COD/B1_DESC/B1_GRUPO/B1_FABRIC/B1_ZMARCA"),"/")
+Local aItemFora := SEPARA(SuperGetMV("TI_ITEMFO",.F.,"B1_COD/B1_GRUPO/B1_FABRIC/B1_ZMARCA"),"/")
 
 cTabela	+=	"->"
 

@@ -44,6 +44,11 @@ If Altera
                         &('SB1->'+aAlterados[nCont,01]) := aAlterados[nCont,02]
                     Next nCont
 
+                    If !Empty(SB1->B1_ZMARCA)
+                        SB1->B1_DESC := Alltrim(SB1->B1_DESC)+" "+Alltrim(Posicione("ZPM",1,xFilial("ZPM")+SB1->B1_ZMARCA,"ZPM_DESC"))
+                    EndIf 
+                    
+
                     SB1->(Msunlock())
                 Next nX 
             EndIf 
