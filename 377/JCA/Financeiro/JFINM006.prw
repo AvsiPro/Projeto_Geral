@@ -15,51 +15,51 @@
 
 User Function JFINM006()
 
-	Local   nOpc       := 0
+	Local   nOpc       	:= 0
 	Local 	nX 			:= 0
-	Local   aDesc      := "Este programa irá efetivar os movimentos em lote."+chr(13)+"Informe as 3 primieras letras dos históricos desejados."+chr(13)+"Separando por ponto e virula, para mais de uma opção. EX: TAR;REN "
-	PRIVATE	cHist	:=	""
+	Local   aDesc      	:= "Este programa irá efetivar os movimentos em lote."+chr(13)+"Informe as 3 primieras letras dos históricos desejados."+chr(13)+"Separando por ponto e virula, para mais de uma opção. EX: TAR;REN "
+	PRIVATE	cHist		:=	""
 
-	PRIVATE 	cBanco	:= ''
-	PRIVATE aHist	:= {}
-	PRIVATE Exec       := .F.
-	PRIVATE cIndexName := ''
-	PRIVATE cIndexKey  := ''
-	PRIVATE cFilter    := ''
-	PRIVATE cPerg	   := "JCAFIN01"
+	PRIVATE cBanco		:= ''
+	PRIVATE aHist		:= {}
+	PRIVATE lExec       	:= .F.
+	PRIVATE cIndexName 	:= ''
+	PRIVATE cIndexKey  	:= ''
+	PRIVATE cFilter    	:= ''
+	PRIVATE cPerg	   	:= "JCAFIN01"
 	Private _lBcoCorrespondente := .f.
 
 	If Empty(FunName())
 		RpcSetType(3)
-		RpcSetEnv('01','00020087')
+		RpcSetEnv('01','00040208')
 	EndIf
 
 	nOpc := Aviso("Efetivação em lote",aDesc,{"Sim","Nao"})
 
-	aPergs   := {}
-
-	aAdd(aPergs, {1, "Histórico",  space(100),  "",             ".T.",        "", ".T.", 80,  .F.})
-	aAdd(aPergs, {1, "Banco", Space(TamSx3('A6_COD')[1]),  "",             ".T.",        "SA6", ".T.", 80,  .T.})
-	aAdd(aPergs, {1, "Agencia", Space(TamSx3('A6_AGENCIA')[1]),  "",             ".T.",        "", ".T.", 80,  .T.})
-	aAdd(aPergs, {1, "Conta", Space(TamSx3('A6_NUMCON')[1]),  "",             ".T.",        "", ".T.", 80,  .T.})
-	aAdd(aPergs, {1, "Data De",  CTOD('  /  /  '),  "",             ".T.",        "",    ".T.", 80,  .F.})
-	aAdd(aPergs, {1, "Data Ate",  CTOD('  /  /  '),  "",             ".T.",        "",    ".T.", 80,  .F.})
-	aAdd(aPergs, {1, "Natureza",  space(12),  "", ".T.", "SED", ".T.", 80,  .F.})
-
-	If !ParamBox(aPergs, "Informe os parâmetros")
-		Return
-	EndIf
-
-	aHist := Separa(alltrim(MV_PAR01),";",.T.)
-	cBanco	:= MV_PAR02
-	cNatur  := MV_PAR07
-
-	FOR nX := 1 TO len(aHist)
-		cHist += alltrim(UPPER(aHist[nX]))
-	NEXT nX
-
 	If nOpc == 1
+		aPergs   := {}
 
+		aAdd(aPergs, {1, "Histórico",  space(100),  "",             ".T.",        "", ".T.", 80,  .F.})
+		aAdd(aPergs, {1, "Banco", Space(TamSx3('A6_COD')[1]),  "",             ".T.",        "SA6", ".T.", 80,  .T.})
+		aAdd(aPergs, {1, "Agencia", Space(TamSx3('A6_AGENCIA')[1]),  "",             ".T.",        "", ".T.", 80,  .T.})
+		aAdd(aPergs, {1, "Conta", Space(TamSx3('A6_NUMCON')[1]),  "",             ".T.",        "", ".T.", 80,  .T.})
+		aAdd(aPergs, {1, "Data De",  CTOD('  /  /  '),  "",             ".T.",        "",    ".T.", 80,  .F.})
+		aAdd(aPergs, {1, "Data Ate",  CTOD('  /  /  '),  "",             ".T.",        "",    ".T.", 80,  .F.})
+		aAdd(aPergs, {1, "Natureza",  space(12),  "", ".T.", "SED", ".T.", 80,  .F.})
+
+		If !ParamBox(aPergs, "Informe os parâmetros")
+			Return
+		EndIf
+
+		aHist := Separa(alltrim(MV_PAR01),";",.T.)
+		cBanco	:= MV_PAR02
+		cNatur  := MV_PAR07
+
+		FOR nX := 1 TO len(aHist)
+			cHist += alltrim(UPPER(aHist[nX]))+'/'
+		NEXT nX
+
+	
 		fSeleSIF()
 
 		lSIF :=.f.
@@ -97,13 +97,16 @@ User Function JFINM006()
 		cQuery += " AND IG_DTEXTR BETWEEN '"+DTOS(MV_PAR05)+"' AND '"+DTOS(MV_PAR06)+"' "
 		cQuery += " AND IG_IDPROC IN ("+cProcesso+") "
 		cQuery += " AND IG_STATUS = '1' "
-		cQuery += " AND IG_CARTER = '2' "
+		//cQuery += " AND IG_CARTER = '2' "
 
 		cAliasTMP := GetNextAlias()
 		MPSysOpenQuery(cQuery, cAliasTMP)
 
 		While (cAliasTMP)->(!EoF())
-			if SUBSTRING(ALLTRIM((cAliasTMP)->IG_HISTEXT),1,3) $ cHist
+			nPosHst := Ascan(aHist,{|x| alltrim(x) $ ALLTRIM((cAliasTMP)->IG_HISTEXT)})
+
+			If nPosHst > 0
+			//if SUBSTRING(ALLTRIM((cAliasTMP)->IG_HISTEXT),1,3) $ cHist
 
 				RecLock("TTRB",.T.)
 				TTRB->IG_XOK 	:= cMarca
@@ -145,11 +148,11 @@ User Function JFINM006()
 		oMark:oBrowse:lCanAllmark := .t.
 		oMark:oBrowse:bAllMark := {|| Inverte(cMarca,@oMark)}
 
-		@ 180,310 BMPBUTTON TYPE 01 ACTION (Exec := .T.,Close(oDlg))
-		@ 180,280 BMPBUTTON TYPE 02 ACTION (Exec := .F.,Close(oDlg))
+		@ 180,310 BMPBUTTON TYPE 01 ACTION (lExec := .T.,Close(oDlg))
+		@ 180,280 BMPBUTTON TYPE 02 ACTION (lExec := .F.,Close(oDlg))
 		ACTIVATE DIALOG oDlg CENTERED
 
-		If Exec
+		If lExec
 			Processa({|lEnd|EFETIVA()})  //Executa movimento financeiro a pagar e atualiza SIG
 		Endif
 
@@ -185,6 +188,7 @@ Static Function fSeleSIF()
 
 	cQuery := " SELECT * FROM "+RetSqlName("SIF")+" "
 	cQuery += " WHERE D_E_L_E_T_ = ' ' "
+	cQuery += " AND IF_FILIAL='"+xFilial("SIF")+"' AND IF_STATUS IN('1','2')"
 
 	cAliasTMP := GetNextAlias()
 	MPSysOpenQuery(cQuery, cAliasTMP)
@@ -223,8 +227,8 @@ Static Function fSeleSIF()
 	oMark:oBrowse:lhasMark := .t.
 	oMark:oBrowse:lCanAllmark := .t.
 
-	@ 180,310 BMPBUTTON TYPE 01 ACTION (Exec := .T.,Close(oDlg))
-	@ 180,280 BMPBUTTON TYPE 02 ACTION (Exec := .F.,Close(oDlg))
+	@ 180,310 BMPBUTTON TYPE 01 ACTION (lExec := .T.,Close(oDlg))
+	@ 180,280 BMPBUTTON TYPE 02 ACTION (lExec := .F.,Close(oDlg))
 	ACTIVATE DIALOG oDlg CENTERED
 
 

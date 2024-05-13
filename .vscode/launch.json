@@ -57,8 +57,11 @@
 		},
 		{
 			"label": "u_jatfa001"
+		},
+		{
+			"label": "U_JFINM006"
 		}
 	],
-	"lastProgramExecuted": "sigaadv",
+	"lastProgramExecuted": "U_JFINM006",
 	"lastProgramArguments": []
 }
