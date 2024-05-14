@@ -42,13 +42,13 @@ Local lLibera := .T.
                 nTempo  := (cAliasTMP)->ZPO_TEMPO
 
                 If (cAliasTMP)->ZPO_TPTEMP == 'M' //mes
-                    lLibera := Iif(nTempo > DateDiffMonth(dFimAnt, dIniAtu),.T.,.F.)
+                    lLibera := Iif(DateDiffMonth(dFimAnt, dIniAtu) > nTempo,.T.,.F.)
 
                 ElseIf (cAliasTMP)->ZPO_TPTEMP == 'S' //semana
-                    lLibera := Iif(nTempo > GetWeekDifference(dFimAnt, dIniAtu),.T.,.F.)
+                    lLibera := Iif(GetWeekDifference(dFimAnt, dIniAtu) > nTempo ,.T.,.F.)
 
                 ElseIf (cAliasTMP)->ZPO_TPTEMP == 'D' //dia
-                    lLibera := Iif(nTempo > DateDiffDay(dFimAnt, dIniAtu),.T.,.F.)
+                    lLibera := Iif(DateDiffDay(dFimAnt, dIniAtu) > nTempo,.T.,.F.)
 
                 ElseIf (cAliasTMP)->ZPO_TPTEMP == 'H' //hora
                     
@@ -58,7 +58,7 @@ Local lLibera := .T.
                     dateTime1 := DToC(dFimAnt) + " " + cHrFimAnt
                     dateTime2 := DToC(dIniAtu) + " " + cHrIniAtu
 
-                    lLibera := Iif(nTempo > GetHourDifference(dateTime1, dateTime2),.T.,.F.)
+                    lLibera := Iif(GetHourDifference(dateTime1, dateTime2) > nTempo,.T.,.F.)
                 EndIf
 
             EndIf

@@ -12,7 +12,7 @@ User Function MT105MNU()
     
 Local aRet := {}
     
-    aAdd(aRet,{'Libera por Tempo Previso'   ,'u_LIBREJ(1)'  , 0 , 2})
+    aAdd(aRet,{'Libera por Tempo Previsto'  ,'u_LIBREJ(1)'  , 0 , 2})
     aAdd(aRet,{'Rejeitar'                   ,'u_LIBREJ(2)'  , 0 , 2})
     aAdd(aRet,{'Imprimir Requisição'        ,'U_JESTR001()' , 0 , 2})
     aAdd(aRet,{'Baixar Requisição'          ,'Processa({|| U_JESTM001(SCP->CP_NUM) },"Aguarde ")' , 0 , 2})

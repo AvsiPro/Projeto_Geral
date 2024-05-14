@@ -8,7 +8,7 @@
 */
 User Function M185GRV() 
 Local lRet := .T.    
-Local aAux1 := If(Funname()=="MATA185",aDadosCQ,{})
+Local aAux1 := If(Funname()=="MATA185",if(valtype("aDadosCQ")=="A",aDadosCQ,{}),{})
 Local aAux2 := {}
 Local nCont := 0
 

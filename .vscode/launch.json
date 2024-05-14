@@ -9,7 +9,17 @@
 			"cwb": "${workspaceFolder}",
 			"smartclientBin": "C:\\Adm\\SMARTCLIENT20.3.0.0\\smartclient.exe",
 			"isMultiSession": true,
-			"enableTableSync": true
+			"enableTableSync": true,
+			"programArguments": [],
+			"enableMultiThread": true,
+			"enableProfile": false,
+			"isAccessibilityMode": false,
+			"doNotShowSplash": false,
+			"openglMode": false,
+			"dpiMode": false,
+			"olddpiMode": false,
+			"language": "",
+			"ignoreFiles": false
 		}
 	],
 	"lastPrograms": [
@@ -62,6 +72,6 @@
 			"label": "U_JFINM006"
 		}
 	],
-	"lastProgramExecuted": "U_JFINM006",
+	"lastProgramExecuted": "sigaadv",
 	"lastProgramArguments": []
 }

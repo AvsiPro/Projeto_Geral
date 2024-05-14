@@ -80,7 +80,7 @@ WsMethod POST WsReceive RECEIVE WsService JWSRA011
 
         RpcSetType(3)
         RPCSetEnv('01','00020087')
-        //RPCSetEnv('00','00001000100')
+        //RPCSetEnv('T1','D MG 01')
         
         If lRet
             oBody  := JsonObject():New()
@@ -128,6 +128,15 @@ WsMethod POST WsReceive RECEIVE WsService JWSRA011
                     EndIF 
                 EndIf 
                 
+                DbSelectArea("SE5")
+                DbSetOrder(10)
+                If Dbseek(Avkey(cFilMov,"E5_FILIAL")+Avkey(cTitulo,"E5_DOCUMEN"))
+                    cCode 	 := "#400"
+                    cMessage += "#erro_titulo "
+                    cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"titulo_duplicado" : "'+"Titulo ja esta na base "+cTitulo+'"'
+                    lRet := .F.
+                EndIf 
+
 
                 If cTipOper == "1"
                     For nX := 1 to len(aObrig1)
@@ -258,6 +267,7 @@ WsMethod POST WsReceive RECEIVE WsService JWSRA011
 
                 If !Empty(cTitulo) .And. cTitulo <> 'null'
                     aAdd(aVetSE5, {"E5_NUMERO"  , Avkey(cTitulo,"E5_NUMERO")    ,  Nil})
+                    aAdd(aVetSE5, {"E5_DOCUMEN" , Avkey(cTitulo,"E5_DOCUMEN")   ,  Nil})
                 EndIf 
                 
                 If cTipOper == "1"
