@@ -19,7 +19,7 @@
 			"dpiMode": false,
 			"olddpiMode": false,
 			"language": "",
-			"ignoreFiles": false
+			"ignoreFiles": true
 		}
 	],
 	"lastPrograms": [
@@ -70,6 +70,9 @@
 		},
 		{
 			"label": "U_JFINM006"
+		},
+		{
+			"label": "u_jestr003"
 		}
 	],
 	"lastProgramExecuted": "sigaadv",
