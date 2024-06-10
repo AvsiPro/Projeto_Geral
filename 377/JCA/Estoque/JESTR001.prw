@@ -25,6 +25,7 @@ LOCAL wnrel		 	:= "RESTAT1"
 LOCAL cDesc1	    := "Relação entrega de materiais"
 LOCAL cDesc2	    := "conforme parametro"
 LOCAL cDesc3	    := "Especifico JCA"
+LOCAL nOpcRel		:= 0
 PRIVATE nLastKey 	:= 0
 PRIVATE cPerg	 	:= Padr("RESTAT1",10)
 PRIVATE aLinha		:= {}
@@ -62,6 +63,7 @@ PRIVATE cContato    := ""
 PRIVATE cNomFor     := ""
 Private nReg 		:= 0
 Private lBrowse		:= .F.
+Private lBrGFR		:= .F.
 
 If Select("SM0") == 0
     RpcSetType(3)
@@ -69,21 +71,30 @@ If Select("SM0") == 0
 EndIf
 
 If Funname() == "MNTA420" .OR. Funname() <> "MATA105"
-	AjustaSx1(cPerg)
-	Pergunte(cPerg,.f.)
+	If !MsgYesNo("Imprimir relação de peças da OS posicionada?")
+		AjustaSx1(cPerg)
+		Pergunte(cPerg,.f.)
 
 
-	@ 096,042 TO 323,505 DIALOG oDlg TITLE OemToAnsi("Relatorio de Entrega de peças")
-	@ 008,010 TO 084,222
-	@ 018,020 SAY OemToAnsi(cDesc1)
-	@ 030,020 SAY OemToAnsi(cDesc2)
-	@ 045,020 SAY OemToAnsi(cDesc3)
+		@ 096,042 TO 323,505 DIALOG oDlg TITLE OemToAnsi("Relatorio de Entrega de peças")
+		@ 008,010 TO 084,222
+		@ 018,020 SAY OemToAnsi(cDesc1)
+		@ 030,020 SAY OemToAnsi(cDesc2)
+		@ 045,020 SAY OemToAnsi(cDesc3)
 
-	@ 095,120 BMPBUTTON TYPE 5 	ACTION Pergunte(cPerg,.T.)
-	@ 095,155 BMPBUTTON TYPE 1  ACTION Eval( { || nOpcRel := 1, oDlg:End() } )
-	@ 095,187 BMPBUTTON TYPE 2  ACTION Eval( { || nOpcRel := 0, oDlg:End() } )
+		@ 095,120 BMPBUTTON TYPE 5 	ACTION Pergunte(cPerg,.T.)
+		@ 095,155 BMPBUTTON TYPE 1  ACTION Eval( { || nOpcRel := 1, oDlg:End() } )
+		@ 095,187 BMPBUTTON TYPE 2  ACTION Eval( { || nOpcRel := 0, oDlg:End() } )
 
-	ACTIVATE DIALOG oDlg CENTERED
+		ACTIVATE DIALOG oDlg CENTERED
+	Else 
+		MV_PAR01 := ' '
+		MV_PAR02 := 'ZZZ'
+		MV_PAR03 := STJ->TJ_ORDEM
+		lBrowse := .t.
+		nOpcRel := 1
+		lBrGFR := .T.
+	endIf 
 else
 	MV_PAR01 := SCP->CP_NUM
 	MV_PAR02 := SCP->CP_NUM
@@ -155,15 +166,17 @@ Static Function GFR01(lEnd,WnRel,cString,nReg)
 
 nPg		  := 0
 
-cQuery := "SELECT CP_FILIAL,CP_NUM,CP_ITEM,CP_PRODUTO,CP_DESCRI,CP_QUANT,CP_EMISSAO,CP_SOLICIT,BZ_XLOCALI,"
+cQuery := "SELECT CP_FILIAL,CP_NUM,CP_ITEM,CP_PRODUTO,CP_DESCRI,CP_QUANT,CP_EMISSAO,CP_SOLICIT,BE_LOCALIZ,"//BZ_XLOCALI
 cQuery += " CP_CC,CP_OP,ZPM_DESC,B2_QATU-B2_RESERVA AS SALDO,B2_CM1,CP_XMATREQ,CP_XNOMREQ,ZPU_ENDERE"
 cQuery += " FROM "+RetSQLName("SCP")+" CP"
 cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD=CP_PRODUTO AND B1.D_E_L_E_T_=' '"
-cQuery += " LEFT JOIN "+RetSQLName("SBZ")+" BZ ON BZ_FILIAL=CP_FILIAL AND BZ_COD=CP_PRODUTO AND BZ.D_E_L_E_T_=' '"
+//cQuery += " LEFT JOIN "+RetSQLName("SBZ")+" BZ ON BZ_FILIAL=CP_FILIAL AND BZ_COD=CP_PRODUTO AND BZ.D_E_L_E_T_=' '"
+cQuery += " LEFT JOIN "+RetSQLName("SBE")+" BE ON BE_FILIAL=CP_FILIAL AND BE_LOCAL=B1_LOCPAD AND BE.D_E_L_E_T_=' '"
+cQuery += " AND (B1_XCODPAI=' ' OR B1_COD=BE_CODPRO)"
 cQuery += " LEFT JOIN "+RetSQLName("ZPM")+" ZPM ON ZPM_FILIAL=B1_FILIAL AND ZPM_COD=B1_ZMARCA AND ZPM.D_E_L_E_T_=' '" 
 cQuery += " LEFT JOIN "+RetSQLName("SB2")+" B2 ON B2_FILIAL=CP_FILIAL AND B2_COD=CP_PRODUTO AND B2_LOCAL=B1_LOCPAD AND B2.D_E_L_E_T_=' '"
 cQuery += " LEFT JOIN "+RetSQLName("ZPU")+" ZPU ON ZPU_FILIAL=CP_FILIAL AND ZPU_COD=CP_PRODUTO AND ZPU.D_E_L_E_T_=' '"
-cQuery += " WHERE CP_FILIAL='"+xFilial("SCP")+"'"
+cQuery += " WHERE CP_FILIAL='"+xFilial("SCP")+"' AND CP.D_E_L_E_T_=' '"
 
 If !lBrowse
 	cQuery += " AND CP_EMISSAO BETWEEN '"+dtos(MV_PAR01)+"' AND '"+dtos(MV_PAR02)+"'"
@@ -171,6 +184,10 @@ If !lBrowse
 	cQuery += " AND CP_NUMOS BETWEEN '"+MV_PAR05+"' AND '"+MV_PAR06+"'"
 Else 
 	cQuery += " AND CP_NUM BETWEEN '"+MV_PAR01+"' AND '"+MV_PAR02+"'"
+
+	If lBrGFR
+		cQuery += " AND CP_OP LIKE '"+Alltrim(MV_PAR03)+"%'"
+	EndIf 
 EndIf 
 
 cQuery += " ORDER BY CP_NUM"
@@ -213,9 +230,8 @@ While CADTMP->(!Eof())
 		Exit
 	Endif
 
-	oPrint:Say(li,0040,CADTMP->CP_PRODUTO+' - '+CADTMP->CP_DESCRI,oArial09N)
 	oPrint:Say(li,1100,Capital(CADTMP->ZPM_DESC),oArial09N)
-	oPrint:Say(li,1700,Capital(CADTMP->BZ_XLOCALI),oArial09N)
+	oPrint:Say(li,1700,Capital(CADTMP->BE_LOCALIZ),oArial09N)
 	
 	oPrint:Say(li,2000,Capital(CADTMP->CP_PRODUTO),oArial09N)
 	oPrint:Say(li,2250,Transform(CADTMP->SALDO,"@E 999,999"),oArial09N)
@@ -226,6 +242,14 @@ While CADTMP->(!Eof())
 	nQtdTot	 += CADTMP->CP_QUANT
 	nVlrTot  += CADTMP->CP_QUANT*CADTMP->B2_CM1
 
+	If len(CADTMP->CP_PRODUTO+' - '+CADTMP->CP_DESCRI) > 50
+		oPrint:Say(li,0040,substr(CADTMP->CP_PRODUTO+' - '+CADTMP->CP_DESCRI,1,50),oArial09N)
+		li+=50
+		oPrint:Say(li,0040,substr(CADTMP->CP_PRODUTO+' - '+CADTMP->CP_DESCRI,51),oArial09N)
+	Else 
+		oPrint:Say(li,0040,CADTMP->CP_PRODUTO+' - '+CADTMP->CP_DESCRI,oArial09N)
+	EndIf 
+	
 	li+=50
 	
 	CADTMP->(DbSkip(1))
@@ -367,12 +391,12 @@ Local	_nx		:= 0,;
 		//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
 		//³Cria uma array, contendo todos os valores...³
 		//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-		aAdd(_aRegs,{cPerg,'01',"Emissao Inicial ?" ,"Emissao Inicial ?" ,"Emissao Inicial ?" ,'mv_ch1','D',08,0,0,'G','','mv_par01','','','','',"",""})
-		aAdd(_aRegs,{cPerg,'02',"Emissao Final? "   ,"Emissao Final? "   ,"Emissao Final? "   ,'mv_ch2','D',08,0,0,'G','','mv_par02','','','','',"",""})
+		aAdd(_aRegs,{cPerg,'01',"Emissão Inicial ?" ,"Emissão Inicial ?" ,"Emissão Inicial ?" ,'mv_ch1','D',08,0,0,'G','','mv_par01','','','','',"",""})
+		aAdd(_aRegs,{cPerg,'02',"Emissão Final? "   ,"Emissão Final? "   ,"Emissão Final? "   ,'mv_ch2','D',08,0,0,'G','','mv_par02','','','','',"",""})
 		aAdd(_aRegs,{cPerg,'03',"Solicitação de?","","",'mv_ch3','C', 6,0,0,'G','','mv_par03','','','','',"","SCP"})
 		aAdd(_aRegs,{cPerg,'04',"Solicitação ate?","","",'mv_ch4','C', 6,0,0,'G','','mv_par04','','','','',"","SCP"})
-		aAdd(_aRegs,{cPerg,'05',"Ordem de Seriço de?","","",'mv_ch5','C', 6,0,0,'G','','mv_par05','','','','',"","STJ"})
-		aAdd(_aRegs,{cPerg,'06',"Ordem de Seriço ate?","","",'mv_ch6','C', 6,0,0,'G','','mv_par06','','','','',"","STJ"})
+		aAdd(_aRegs,{cPerg,'05',"Ordem de Serviço de?","","",'mv_ch5','C', 6,0,0,'G','','mv_par05','','','','',"","STJ"})
+		aAdd(_aRegs,{cPerg,'06',"Ordem de Serviço ate?","","",'mv_ch6','C', 6,0,0,'G','','mv_par06','','','','',"","STJ"})
 		
 		DbSelectArea('SX1')
 		SX1->(DbSetOrder(1))

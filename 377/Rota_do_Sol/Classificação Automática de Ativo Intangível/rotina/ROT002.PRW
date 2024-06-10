@@ -30,7 +30,8 @@ user function ROT002()
 	Private cRecCt2		  		:= ''
 	Private dDtMovC		
 	Private cHistor	 	  		:= ''
-	Private cXCCATF 		  		:= ''
+	Private cXCCATF 		  	:= ''
+	Private nVlrOrig			:=	0
 
 	if fShowParam()
 
@@ -91,6 +92,13 @@ static function fProcess(aZ04_Atual,aZ05AtivosPreCadastro)
 				nTotalCredito		:= fGetTotalCredito(cDataini, cDataFim, aZ05AtivosPreCadastro[nI])
 				nValor		 		:= nTotalDebito - nTotalCredito
 				
+				nVlrOrig := 0
+
+				If nValor < 0
+					nVlrOrig := nValor 
+					nValor := 1
+				EndIf 
+				
 				fSaveToATFA012(aZ04_Atual,nValor, aZ05AtivosPreCadastro[nI], nI, cDataini, cDataFim)	
 			
 			Next nX 
@@ -147,11 +155,24 @@ static function fSaveToATFA012(aZ04_Atual, nValor, aZ05AtivosPreCadastro, nI, cD
 			cErro := fConvertArrToStr(xErro)
 			If !"A data de inicio de depre" $ cErro
 				aAdd(aLogInt, {allTrim(cCodBase), cErro} )	
-			Else 
+			Else 		
+				If nVlrOrig < 0
+					Reclock("SN3",.F.)
+					SN3->N3_VORIG1 := nVlrOrig
+					SN3->(Msunlock())
+					nVlrOrig := 0
+				EndIf 
 				aCommandsUPDCT2 := fGetSQLScriptFlagCT2(cITEM, cDataini, cDataFim, aZ05AtivosPreCadastro)
 				fExecUpdateFlagCT2(aCommandsUPDCT2)
 			EndIf 			
 		else
+			If nVlrOrig < 0
+				Reclock("SN3",.F.)
+				SN3->N3_VORIG1 := nVlrOrig
+				SN3->(Msunlock())
+				nVlrOrig := 0
+			EndIf 
+			
 			aCommandsUPDCT2 := fGetSQLScriptFlagCT2(cITEM, cDataini, cDataFim, aZ05AtivosPreCadastro)
 			fExecUpdateFlagCT2(aCommandsUPDCT2)	
 			//fExec1UpdateHistSN3(aZ04_Atual)
@@ -321,6 +342,7 @@ static function fGetCabecalho(aZ04_Atual, aZ05AtivosPreCadastro, nI,nValor, cITE
 	aAdd(aCabecalho,{"N1_DESCRIC" 	, cDescPreCad			,nil})	
 	aAdd(aCabecalho,{"N1_PATRIM" 	, cPatrim 				,nil})
 	aAdd(aCabecalho,{"N1_ZZDESCR" 	, cDescriFull 			,nil})
+	aAdd(aCabecalho,{"N1_ORIGEM" 	, 'INTANGIVEL' 			,nil})  
 //	aAdd(aCabecalho,{"N1_CHAPA" 	, Alltrim(Str(Val(cCBASE)))        		,nil})
 
 	//aAdd(aCabecalho,{"N1_MARGEM" 	, cGrupo 		,nil}) //PODE SER QUE JÁ GATILHA
@@ -968,6 +990,7 @@ static function fPopulaModelMaster(oModel, aZ04_Atual, aZ05AtivosPreCadastro, nV
 	oModel:SetValue( "SN1MASTER",  "N1_DESCRIC", cDescPreCad	)
 	oModel:SetValue( "SN1MASTER",  "N1_PATRIM", cPatrim			)
 	oModel:SetValue( "SN1MASTER",  "N1_CHAPA", Alltrim(cCBASE)+Alltrim(cITEM)  		) // colocado o mesmo numero do bem na plaqueta
+	oModel:SetValue( "SN1MASTER",  "N1_ORIGEM", 'INTANGIVEL'	)
 
 return
 

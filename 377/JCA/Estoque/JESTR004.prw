@@ -239,7 +239,10 @@ While CADTMP->(!Eof())
     oPrint:Say(li,2160,Alltrim(cPrefixo),oArial09N)
 
 	If len(aAux) > 0 .And. !Empty(CADTMP->ZPC_TIPO)
-		oPrint:Say(li,2330,substr(aAux[val(CADTMP->ZPC_TIPO)],3),oArial09N)
+		nPosx := val(CADTMP->ZPC_TIPO)
+		If nPosx > 0
+			oPrint:Say(li,2330,substr(aAux[nPosx],3),oArial09N)
+		Endif 
 	EndIf 
     
 	li+=20

@@ -131,10 +131,12 @@ WsMethod POST WsReceive RECEIVE WsService JWSRA011
                 DbSelectArea("SE5")
                 DbSetOrder(10)
                 If Dbseek(Avkey(cFilMov,"E5_FILIAL")+Avkey(cTitulo,"E5_DOCUMEN"))
-                    cCode 	 := "#400"
-                    cMessage += "#erro_titulo "
-                    cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"titulo_duplicado" : "'+"Titulo ja esta na base "+cTitulo+'"'
-                    lRet := .F.
+                    If nValor == SE5->E5_VALOR
+                        cCode 	 := "#400"
+                        cMessage += "#erro_titulo "
+                        cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"titulo_duplicado" : "'+"Titulo ja esta na base "+cTitulo+'"'
+                        lRet := .F.
+                    EndIF 
                 EndIf 
 
 

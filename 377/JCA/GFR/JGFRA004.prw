@@ -33,15 +33,15 @@ aAdd(aPergs ,{1,"Filial de:"	,space(TamSx3("BZ_FILIAL")[1]),"@!",".T.","SM0",".T
 aAdd(aPergs ,{1,"Filial Até:"	,padr('zz',TamSx3("BZ_FILIAL")[1]),"@!",".T.","SM0",".T.",70,.F.})
 aAdd(aPergs ,{1,"Data de"	    ,dDatad ,"@!",".T.","",".T.",60,.F.})
 aAdd(aPergs ,{1,"Data Até"	    ,dDataa ,"@!",".T.","",".T.",60,.F.})
-aAdd(aPergs ,{1,"Fornecedor de" ,space(TamSx3("A2_COD")[1])   ,"@!",".T.","SA2",".T.",80,.F.})
-aAdd(aPergs ,{1,"Fornecedor Até",padr('zz',TamSx3("A2_COD")[1])   ,"@!",".T.","SA2",".T.",80,.F.})
+aAdd(aPergs ,{1,"Posto de"      ,space(TamSx3("TQN_POSTO")[1])   ,"@!",".T.","NGK",".T.",80,.F.})
+aAdd(aPergs ,{1,"Posto Até"     ,padr('zz',TamSx3("TQN_POSTO")[1])   ,"@!",".T.","NGK",".T.",80,.F.})
 
 
 If ParamBox(aPergs ,"Filtrar por",@aRet)    
     MV_PAR01 := aRet[1]
     MV_PAR02 := aRet[2]
-    MV_PAR03 := aRet[3]
-    MV_PAR04 := aRet[4]
+    MV_PAR03 := dtos(aRet[3])
+    MV_PAR04 := dtos(aRet[4])
     MV_PAR05 := aRet[5]
     MV_PAR06 := aRet[6]
 EndIf
@@ -78,7 +78,9 @@ cQuery += " FROM "+RetSQLName("TQN")+" TQN"
 cQuery += " INNER JOIN "+RetSQLName("TQF")+" TQF ON TQF_FILIAL=TQN_FILIAL AND TQF_CODIGO=TQN_POSTO AND TQF_TIPPOS='1' AND TQF.D_E_L_E_T_=' '"
 cQuery += " INNER JOIN "+RetSQLName("ST9")+" ST9 ON T9_FILIAL='"+xFilial("ST9")+"' AND T9_CODBEM=TQN_FROTA AND ST9.D_E_L_E_T_=' '"
 cQuery += " WHERE TQN.D_E_L_E_T_=' ' " //TQN_POSTO = '315062'"
-
+cQuery += " AND TQN_FILIAL BETWEEN '"+MV_PAR01+"' AND '"+MV_PAR02+"'"
+cQuery += " AND TQN_DTABAS BETWEEN '"+MV_PAR03+"' AND '"+MV_PAR04+"'"
+cQuery += " AND TQN_POSTO BETWEEN '"+MV_PAR05+"' AND '"+MV_PAR06+"'"
 
 IF Select('TRB') > 0
     dbSelectArea('TRB')

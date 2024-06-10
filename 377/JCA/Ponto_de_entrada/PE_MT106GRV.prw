@@ -18,6 +18,13 @@ Local aArea     :=  GetArea()
 Local cCodPai   :=  Posicione("SB1",1,xFilial("SB1")+SCP->CP_PRODUTO,"B1_XCODPAI")
 Local lSldFil   :=  .F.
 Local aAreaB1   :=  {}
+Local cOsSTJ    :=  If(!Empty(SCP->CP_OP),Posicione("STJ",1,SCP->CP_FILIAL+SUBSTR(SCP->CP_OP,1,6),"TJ_TERMINO"),"")
+Local cDtEnc    :=  If(cOsSTJ=="S",Posicione("STJ",1,SCP->CP_FILIAL+SUBSTR(SCP->CP_OP,1,6),"TJ_DTMRFIM"),"")
+
+If !Empty(cOsSTJ) .And. cOsSTJ == "S"
+    MsgAlert("OP/OS já encerrada em "+cvaltochar(cDtEnc)+" - Procure o setor responsável","MT106GRV")
+    Return(.F.)
+EndIF 
 
 DbSelectArea("SB2")
 DbSetOrder(1)

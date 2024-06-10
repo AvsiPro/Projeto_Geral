@@ -4,7 +4,7 @@
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
 ±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
-±±³Fun‡…o    ³ MATR900  ³ Autor ³ Nereu Humberto Junior ³ Data ³ 25.07.06 ³±±
+±±³Fun‡…o    ³ EST013  ³ Autor ³ Alexandre Venancio      ³ Data ³ 01.01.24 ³±±
 ±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
 ±±³Descri‡…o ³ Kardex fisico - financeiro                                 ³±±
 ±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
@@ -845,6 +845,7 @@ If !Empty(aFilsCalc)
 						SB1.B1_GRUPO,      	//-- 05 GRUPO
 						SB1.B1_DESC,      		//-- 06 DESCR
 						SB1.B1_POSIPI, 		//-- 07
+						SB1.B1_LOCPAD BELOCALIZ,
 						D1_SEQCALC SEQCALC,    //-- 08
 						D1_DTDIGIT DTDIGIT,		//-- 09 DTDIGIT
 						D1_TES TES,			//-- 10 TES
@@ -889,6 +890,7 @@ If !Empty(aFilsCalc)
 						SB1.B1_GRUPO,
 						SB1.B1_DESC,
 						SB1.B1_POSIPI,
+						SB1.B1_LOCPAD BELOCALIZ,
 						D2_SEQCALC,
 						D2_EMISSAO,
 						D2_TES,
@@ -932,6 +934,7 @@ If !Empty(aFilsCalc)
 							SB1.B1_GRUPO,
 							SB1.B1_DESC,
 							SB1.B1_POSIPI,
+							SB1.B1_LOCPAD BELOCALIZ,
 							D3_SEQCALC,
 							D3_EMISSAO,
 							D3_TM,
@@ -1052,7 +1055,14 @@ If !Empty(aFilsCalc)
 				cDescric  := Posicione("SB1",1,xFilial("SB1")+cProdAnt,"B1_DESC")
 				cFabric   := Posicione("SB1",1,xFilial("SB1")+cProdAnt,"B1_FABRIC")
 				lFirst:=.F.
-				cPratel   := Posicione("SBZ",1,SB2->B2_FILIAL+(cAliasTop)->PRODUTO,"BZ_XLOCALI")
+				
+				cProdPai := Posicione("SB1",1,xFilial("SB1")+cProdAnt,"B1_XCODPAI")
+				If !Empty(cProdPai)
+					cPratel   := Posicione("SBE",7,SB2->B2_FILIAL+cProdPai,"BE_LOCALIZ")
+				Else 
+					cPratel   := Posicione("SBE",7,SB2->B2_FILIAL+(cAliasTop)->PRODUTO,"BE_LOCALIZ")
+				EndIf 
+				//Posicione("SBZ",1,SB2->B2_FILIAL+(cAliasTop)->PRODUTO,"BZ_XLOCALI")
 
 				MR900ImpS1(@aSalAtu,cAliasTop,.T.,lVEIC,lCusFil,lCusEmp,oSection1,oSection2,oReport,aFils)
 

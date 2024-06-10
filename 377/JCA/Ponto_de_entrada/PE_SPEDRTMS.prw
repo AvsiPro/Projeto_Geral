@@ -1,3 +1,9 @@
+/*
+    Ponto de entrada SPEDRTMS tem como finalidade permitir a manipulação com as informações 
+    envolvendo Conhecimentos de Transporte para os clientes que possuem movimentos gerados 
+    sem integração com o ambiente SIGATMS - Gestão de Transportes
+    Foi utilizado para geração dos registros D no sped fiscal
+*/
 User Function SPEDRTMS()
    
     Local vLinha     := {}
@@ -16,6 +22,7 @@ User Function SPEDRTMS()
     Local cInd_Oper  := ""
     Local cInd_Emit  := ""
     Local cModelo := AModNot(aCmpAntSFT[42])
+    Local aDadosGZH :=  {}
     //Campos contidos no array aCmpAntSFT:
     //01 - Doc. Fiscal
     //02 - Serie NF
@@ -82,6 +89,12 @@ User Function SPEDRTMS()
     //63 - CÃ³digo do Produto na SB1
     //64 - Conta ContÃ¡bil do Produto na SB1
    
+    //GetInfCTEO
+    aDadosGZH := GetInfCTEO(aCmpAntSFT[22],aCmpAntSFT[1],aCmpAntSFT[2],aCmpAntSFT[3],aCmpAntSFT[4])
+
+    cCodMunOri := aDadosGZH[1,2]
+    cCodMunDes := aDadosGZH[1,4]
+
     If aCmpAntSFT[43] == "S"
            
         DbSelectArea("SA1")
@@ -89,28 +102,28 @@ User Function SPEDRTMS()
         SA1->(DBSeek(XFilial("SA1") + aCmpAntSFT[3] + aCmpAntSFT[4]))
    
         cCod_Part   := "SA1"
-        cCodMunOri  := SM0->M0_CODMUN
-        cCodMunDes  := UfCodIBGE(SA1->A1_EST) + AllTrim(SA1->A1_COD_MUN)
+        //cCodMunOri  := SM0->M0_CODMUN
+        //cCodMunDes  := UfCodIBGE(SA1->A1_EST) + AllTrim(SA1->A1_COD_MUN)
    
         DbSelectArea("SF2")
         SF2->(DBSetOrder(1))
         SF2->(DBSeek(XFilial("SF2") + aCmpAntSFT[1] + aCmpAntSFT[2] + aCmpAntSFT[3] + aCmpAntSFT[4]))
            
-        cCod_Part += SF2->(F2_FILIAL+F2_CLIENTE+F2_LOJA)
+        cCod_Part += SF2->(F2_CLIENTE+F2_LOJA) //SF2->(F2_FILIAL+F2_CLIENTE+F2_LOJA)
     Else
         DbSelectArea("SA2")
         SA2->(DBSetOrder(1))
         SA2->(DBSeek(XFilial("SA2") + aCmpAntSFT[3] + aCmpAntSFT[4]))
    
         cCod_Part   := "SA2"
-        cCodMunOri  := UfCodIBGE(SA2->A2_EST) + AllTrim(SA2->A2_COD_MUN)
-        cCodMunDes  := SM0->M0_CODMUN
+        //cCodMunOri  := UfCodIBGE(SA2->A2_EST) + AllTrim(SA2->A2_COD_MUN)
+        //cCodMunDes  := SM0->M0_CODMUN
   
         DbSelectArea("SF1")
         SF1->(DBSetOrder(1))
         SF1->(DBSeek(XFilial("SF1") + aCmpAntSFT[1] + aCmpAntSFT[2] + aCmpAntSFT[3] + aCmpAntSFT[4]))
    
-        cCod_Part += SF1->(F1_FILIAL+F1_FORNECE+F1_LOJA)
+        cCod_Part += SF1->(F1_FILIAL+F1_FORNECE+F1_LOJA)//SF1->(F1_FILIAL+F1_FORNECE+F1_LOJA)
     EndIf
    
     If cReg == "D140"

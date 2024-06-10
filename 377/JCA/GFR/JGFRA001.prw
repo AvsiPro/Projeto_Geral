@@ -174,6 +174,7 @@ PRIVATE oNo        :=    LoadBitmap(GetResources(),'br_vermelho')
 
 Private aList1  :=  {}
 Private oList1
+Private aHeader1    :=  {}
 
 Default nOpc := 2
 
@@ -218,13 +219,12 @@ oDlg1      := MSDialog():New( 092,232,596,1360,"Campanha x Veiculos",,,.F.,,,,,,
     oBtn1      := TButton():New( 218,068,"Associa Veículo",oDlg1,{|| veiculos()},047,012,,,,.T.,,"",,,,.F. ) //88
     oBtn5      := TButton():New( 218,130,"Remover Veículo",oDlg1,{|| removbem()},047,012,,,,.T.,,"",,,,.F. )
     oBtn2      := TButton():New( 218,192,"Gerar OS",oDlg1,{|| Processa({|| geraros()},"Aguarde")},047,012,,,,.T.,,"",,,,.F. ) //174
-    oBtn3      := TButton():New( 218,254,"Relatório",oDlg1,,047,012,,,,.T.,,"",,,,.F. ) //256
+    oBtn3      := TButton():New( 218,254,"Relatório",oDlg1,{||Processa({|| GeraPlan()},"Aguarde") },047,012,,,,.T.,,"",,,,.F. ) //256
     oBtn4      := TButton():New( 218,316,"Sair",oDlg1,{||oDlg1:end()},047,012,,,,.T.,,"",,,,.F. ) //344
-
 
     oBtn1:disable()
     oBtn2:disable()
-    oBtn3:disable()
+    //oBtn3:disable()
     
     If nOpc == 2
         Busca()
@@ -275,19 +275,22 @@ If !Empty(TRB->ZPP_DESCRI)
 EndIf
 
 WHILE !EOF() 
-    Aadd(aList1,{   .F.,;
-                    TRB->ZPR_FILIAL,;
-                    TRB->ZPR_CODBEM,;
-                    TRB->ZPR_PLACA,;
-                    TRB->ZPR_ANO,;
-                    TRB->ZPR_CHASSI,;
-                    TRB->ZPR_NUMOS,;
-                    stod(TRB->ZPR_DTINI),;
-                    stod(TRB->ZPR_DTFIM),;
-                    TRB->RECZPR})
+    If TRB->RECZPR > 0
+        Aadd(aList1,{   .F.,;
+                        TRB->ZPR_FILIAL,;
+                        TRB->ZPR_CODBEM,;
+                        TRB->ZPR_PLACA,;
+                        TRB->ZPR_ANO,;
+                        TRB->ZPR_CHASSI,;
+                        TRB->ZPR_NUMOS,;
+                        stod(TRB->ZPR_DTINI),;
+                        stod(TRB->ZPR_DTFIM),;
+                        TRB->RECZPR})
+    endif
     Dbskip()
 EndDo 
 
+                
 If len(aList1) < 1
      Aadd(aList1,{.F.,'','','','','','','','',0})
 EndIf
@@ -439,6 +442,25 @@ Private aAux  :=  {}
 For nX := 1 to len(aList1)
     If aList1[nX,01]
         If Empty(aList1[nX,07])
+            aAux  :=  {}
+
+            DbselectArEA("ZPR")
+            DbSetOrder(1)
+            If Dbseek(cfilant+cCampanha+aList1[nX,03])
+                Reclock("ZPR",.F.)
+            Else
+                Reclock("ZPR",.T.)
+            EndIF 
+            ZPR->ZPR_FILIAL := cfilant
+            ZPR->ZPR_CODIGO := cCampanha
+            ZPR->ZPR_CODBEM := aList1[nX,03]
+            ZPR->ZPR_PLACA  := aList1[nX,04]
+            ZPR->ZPR_ANO    := aList1[nX,05]
+            ZPR->ZPR_CHASSI := aList1[nX,06]
+            nRecno := ZPR->(Recno())
+            ZPR->(Msunlock())
+            aList1[nX,10] := nRecno
+            
             DbSelectArea("ZPQ")
             DbSetOrder(1)
             If Dbseek(xFilial("ZPQ")+cCampanha)
@@ -455,6 +477,7 @@ For nX := 1 to len(aList1)
             EndIf 
             
             cOrdem  := GETSXENUM("STJ","TJ_ORDEM")
+            ConfirmSx8()
             cPlano  := SuperGetmv("TI_TJPLANO",.F.,"000000")
             cTipOs  := SuperGetmv("TI_TJTIPOS",.F.,"B")
             cCodBem := aList1[nX,03]
@@ -825,6 +848,10 @@ If nOpc == 1
                         aList1[oList1:nAt,09]}}
     oList1:refresh()
     oDlg1:refresh()
+Else 
+    If len(aList1) < 1
+        Aadd(aList1,{.F.,'','','','','','','','',0})
+    EndIf 
 EndIf 
 
 RestArea(aArea)
@@ -888,3 +915,74 @@ Else
 ENDIF 
 
 Return
+
+/*/{Protheus.doc} GeraPlan
+    (long_description)
+    @type  Static Function
+    @author user
+    @since 04/08/2022
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function GeraPlan()
+
+Local oExcel 	:= FWMSEXCEL():New()
+Local cDir 		:= ""
+Local cArqXls 	:= "Campanhas_"+dtos(ddatabase)+strtran(time(),":")+".xls" 
+Local nX,nY 
+Local aAux      :=  {}
+Local cInterno  :=  'Campanhas'
+
+cDir := cGetFile(, OemToAnsi("Selecione o diretório de destino"), 0, "C:\", .T., GETF_LOCALHARD+GETF_NETWORKDRIVE+GETF_RETDIRECTORY, .F., .F.) 
+
+If Empty(cDir)
+	Return
+EndIf
+
+Aadd(aHeader1,{'',;
+                'Filial',;
+                'Codigo Bem',;
+                'Placa',;
+                'Ano',;
+                'Chassis',;
+                'OS',;
+                'Inicio OS',;
+                'Fim OS'})
+
+
+oExcel:AddworkSheet(cInterno) 
+oExcel:AddTable (cInterno,cInterno)
+
+For nX := 1 to len(aHeader1[1])
+    oExcel:AddColumn(cInterno,cInterno,aHeader1[1,nX],1,1)
+Next nX
+
+
+For nX := 1 to len(aList1)
+    aAux := {}
+    For nY := 1 to len(aHeader1[1])
+        Aadd(aAux,aList1[nX,nY])
+    Next nY
+
+    oExcel:AddRow(cInterno,cInterno,aAux)
+Next nX
+
+
+
+
+oExcel:Activate()
+
+oExcel:GetXMLFile(cDir +cArqXls)
+
+oExcelApp := MsExcel():New()
+oExcelApp:WorkBooks:Open(cDir +cArqXls)     //Abre uma planilha
+oExcelApp:SetVisible(.T.)        
+oExcelApp:Destroy()
+
+	
+    
+Return(cDir+cArqXls)

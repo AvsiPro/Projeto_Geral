@@ -25,6 +25,7 @@ LOCAL wnrel		 	:= "RGFR001"
 LOCAL cDesc1	    := "Relação Ordem de Serviço JCA"
 LOCAL cDesc2	    := "conforme parametro"
 LOCAL cDesc3	    := "Especifico JCA"
+Local nOpcRel		:= 0
 PRIVATE nLastKey 	:= 0
 PRIVATE cPerg	 	:= Padr("RGFR001",10)
 PRIVATE aLinha		:= {}
@@ -158,14 +159,19 @@ Return Nil
 Static Function GFR01(lEnd,WnRel,cString,nReg)
 
 Local nCont 
+Local nObs 
 nPg		  := 0
 
-cQuery := "SELECT TJ_FILIAL,TJ_ORDEM,TJ_DTORIGI,TJ_HORACO1,TJ_SERVICO,T4_NOME,TJ_CODBEM,T9_PLACA,TJ_POSCONT,TL_TAREFA,TT9_DESCRI"
+cQuery := "SELECT DISTINCT TJ_FILIAL,TJ_ORDEM,TJ_DTORIGI,TJ_HORACO1,TJ_SERVICO,T4_NOME,TJ_CODBEM,T9_PLACA,"
+cQuery += " TJ_POSCONT,TL_TAREFA,TT9_DESCRI,TN_TAREFA,T8_NOME,TN_CODOCOR,"
+cQuery += "ISNULL(CAST(CAST(TN_DESCRIC AS VARBINARY(8000)) AS VARCHAR(8000)),'') AS TN_DESCRIC"
 cQuery += " FROM "+RetSQLName("STJ")+" TJ"
-cQuery += " INNER JOIN "+RetSQLName("STL")+" TL ON TL_FILIAL=TJ_FILIAL AND TL_ORDEM=TJ_ORDEM AND TL.D_E_L_E_T_=' '"
-cQuery += " INNER JOIN "+RetSQLName("TT9")+" TT9 ON TT9_FILIAL='"+xFilial("TT9")+"' AND TT9_TAREFA=TL_TAREFA AND TT9.D_E_L_E_T_=' '"
-cQuery += " INNER JOIN "+RetSQLName("ST4")+" T4 ON T4_FILIAL='"+xFilial("ST4")+"' AND T4_SERVICO=TJ_SERVICO AND T4.D_E_L_E_T_=' '"
-cQuery += " INNER JOIN "+RetSQLName("ST9")+" T9 ON T9_FILIAL='"+xFilial("ST9")+"' AND T9_CODBEM=TJ_CODBEM AND T9.D_E_L_E_T_=' '"
+cQuery += " LEFT JOIN "+RetSQLName("STL")+" TL ON TL_FILIAL=TJ_FILIAL AND TL_ORDEM=TJ_ORDEM AND TL.D_E_L_E_T_=' '"
+cQuery += " LEFT JOIN "+RetSQLName("ST4")+" T4 ON T4_FILIAL='"+xFilial("ST4")+"' AND T4_SERVICO=TJ_SERVICO AND T4.D_E_L_E_T_=' '"
+cQuery += " LEFT JOIN "+RetSQLName("ST9")+" T9 ON T9_FILIAL='"+xFilial("ST9")+"' AND T9_CODBEM=TJ_CODBEM AND T9.D_E_L_E_T_=' '"
+cQuery += " LEFT JOIN "+RetSQLName("STN")+" TN ON TN_FILIAL='"+xFilial("STN")+"' AND TN_ORDEM=TJ_ORDEM AND TN_PLANO=TJ_PLANO AND TN_TAREFA=TL_TAREFA AND TN.D_E_L_E_T_=' '"
+cQuery += " LEFT JOIN "+RetSQLName("TT9")+" TT9 ON TT9_FILIAL='"+xFilial("TT9")+"' AND TT9_TAREFA=TN_TAREFA AND TT9.D_E_L_E_T_=' '"
+cQuery += " LEFT JOIN "+RetSQLName("ST8")+" T8 ON T8_FILIAL='"+xFilial("ST8")+"' AND T8_CODOCOR=TN_CODOCOR AND T8.D_E_L_E_T_=' '"
 cQuery += " WHERE TJ.D_E_L_E_T_=' '" 
 cQuery += " AND TJ_FILIAL='"+xFilial("STJ")+"'"
 
@@ -180,8 +186,6 @@ EndIf
  
 
 TCQUERY cQuery NEW ALIAS "CADTMP"
-
-//TcSetField('CADTMP','D2_EMISSAO','D')
 
 Count To nReg
 
@@ -198,9 +202,7 @@ ProcRegua(nReg,"Aguarde a Impressao")
 //For nCont := 1 to 20 
 While CADTMP->(!Eof())
 	IncProc()
-	//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-	//³ Verifica se havera salto de formulario                       ³
-	//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+	
 	If li > 2900 .Or. cCotacao <> CADTMP->TJ_ORDEM
 		If Li <> 5000
 			oPrint:EndPage()
@@ -218,31 +220,65 @@ While CADTMP->(!Eof())
 		Exit
 	Endif
 
-	oPrint:Say(li,0060,"Grupo de defeito: ",oCouNew14N)
+	/*oPrint:Say(li,0060,"Grupo de defeito: ",oCouNew14N)
 	oPrint:Say(li,0500,CADTMP->TJ_SERVICO+" - "+CADTMP->T4_NOME,oArial14N)
 	
     li+=150
 
     oPrint:Say(li,0060,"Defeito: ",oCouNew12N)
 	oPrint:Say(li,0280,CADTMP->TL_TAREFA+" - "+CADTMP->TT9_DESCRI,oArial12N)
+	*/
 	
-    oPrint:Say(li,1560,"Matricula",oCouNew12N)
+	oPrint:Say(li,0060,"Tarefa: ",oCouNew12N)
+	oPrint:Say(li,0280,CADTMP->TN_TAREFA+" - "+CADTMP->TT9_DESCRI,oArial12N)
+	
+
+    oPrint:Say(li,1290,"Matricula",oCouNew12N)
+	oPrint:Say(li,1580,"Data",oCouNew12N)
     oPrint:Say(li,1830,"Hora   Inicial",oCouNew12N)
     oPrint:Say(li,2160,"Hora   Final ",oCouNew12N)
 
     li+=70
 
-    oPrint:Say(li,0060,"ALAVANCA DURA ",oCouNew12N)
+    //oPrint:Say(li,0060,"ALAVANCA DURA ",oCouNew12N)
 
-	oPrint:Say(li,1050,"V ( )   T ( )",oCouNew12N)
-    
-    oPrint:Say(li,1560,"_____________",oCouNew12N)
+	//oPrint:Say(li,1050,"V ( )   T ( )",oCouNew12N)
+	oPrint:Say(li,0060,"Problema: ",oCouNew12N)
+	oPrint:Say(li,0280,alltrim(CADTMP->TN_CODOCOR)+" - "+Alltrim(CADTMP->T8_NOME),oArial12N)
+	
+	oPrint:Say(li,1290,"_____________",oCouNew12N)
+	oPrint:Say(li,1580,"___________",oCouNew12N)
     oPrint:Say(li,1830,"______:______",oCouNew12N)
     oPrint:Say(li,2160,"______:______",oCouNew12N)
     
-	
+	oPrint:Say(li+50,1290,"_____________",oCouNew12N)
+    oPrint:Say(li+50,1580,"___________",oCouNew12N)
+    oPrint:Say(li+50,1830,"______:______",oCouNew12N)
+    oPrint:Say(li+50,2160,"______:______",oCouNew12N)
+    
+	li+=120
 
-	li+=150
+	oPrint:Say(li,0060,"Descrição: ",oCouNew12N)
+	nQtdL := round(len(alltrim(CADTMP->TN_DESCRIC)) / 140,0)
+	nPosO := 1
+	For nObs := 1 to nQtdL 
+		oPrint:Say(li,0280,substr(CADTMP->TN_DESCRIC,nPosO,140),oArial12N)
+		li+=50
+		nPosO += 140
+	Next nObs
+	
+    li+=40
+
+    oPrint:Say(li,0060,"Obs.: ",oCouNew12N)
+	oPrint:Say(li,0160,Replicate("_",128),oCouNew12N)
+	li+=70
+	oPrint:Say(li,0160,Replicate("_",128),oCouNew12N)
+	li+=70
+	oPrint:Say(li,0160,Replicate("_",128),oCouNew12N)
+	
+	//li+=150
+
+	li+=100
 	
 	CADTMP->(DbSkip(1))
 
@@ -287,15 +323,15 @@ oPrint:Say(060,1280,OemToAnsi(cvaltochar(STOD(CADTMP->TJ_DTORIGI))+" - "+ cvalto
 oPrint:Say(060,1740,OemToAnsi("Emissão :"),oCouNew12N)
 oPrint:Say(060,1980,OemToAnsi(cvaltochar(dDatabase)+" - "+ cvaltochar(time()) ),oCouNew12N)
 
-oPrint:Say(130,0040,OemToAnsi("Empresa  :"),oCouNew12N)
+oPrint:Say(130,0040,OemToAnsi("Grupo  :"),oCouNew12N)
 oPrint:Say(130,0280,OemToAnsi( SM0->M0_CODIGO+" "+SM0->M0_NOME),oCouNew12N)
 
 oPrint:Say(130,1240,OemToAnsi("Filial  :"),oCouNew12N)
-oPrint:Say(130,1380,OemToAnsi( SM0->M0_CODFIL+" "+SM0->M0_NOMECOM),oCouNew12N)
+oPrint:Say(130,1380,OemToAnsi( SM0->M0_CODFIL+" "+SM0->M0_FILIAL),oCouNew12N)
 
 
 oPrint:line(190,0030,190,2550)
-
+/*
 oPrint:Say(250,0040,OemToAnsi("Data da Execução:"),oCouNew12N)
 oPrint:Say(250,0400,OemToAnsi(' ' ),oCouNew12N)
 
@@ -311,7 +347,7 @@ oPrint:Say(320,1380,OemToAnsi(SM0->M0_CODFIL+" "+SM0->M0_NOMECOM ),oCouNew12N)
 oPrint:Say(390,0040,OemToAnsi("Garagem:"),oCouNew12N)
 oPrint:Say(390,0400,OemToAnsi(SM0->M0_CODIGO+" "+SM0->M0_NOME ),oCouNew12N)
 
-oPrint:Say(390,1070,OemToAnsi("Carro:"),oArial14N)
+oPrint:Say(390,1070,OemToAnsi("Prefixo:"),oArial14N)
 oPrint:Say(390,1200,OemToAnsi(CADTMP->TJ_CODBEM ),oArial14N)
 
 oPrint:Say(390,1440,OemToAnsi("Placa:"),oCouNew12N)
@@ -319,7 +355,25 @@ oPrint:Say(390,1580,OemToAnsi(CADTMP->T9_PLACA ),oCouNew12N)
 
 oPrint:Say(390,1870,OemToAnsi("KM Atual Veiculo:"),oCouNew12N)
 oPrint:Say(390,2280,OemToAnsi(CVALTOCHAR(CADTMP->TJ_POSCONT) ),oCouNew12N)
+*/
 
+oPrint:Say(250,0140,OemToAnsi("Prefixo:"),oArial14N)
+oPrint:Say(250,0500,OemToAnsi(CADTMP->TJ_CODBEM ),oArial14N)
+
+oPrint:Say(250,1140,OemToAnsi("Placa:"),oCouNew12N)
+oPrint:Say(250,1280,OemToAnsi(CADTMP->T9_PLACA ),oCouNew12N)
+
+oPrint:Say(250,1870,OemToAnsi("KM Atual Veiculo:"),oCouNew12N)
+oPrint:Say(250,2280,OemToAnsi(CVALTOCHAR(CADTMP->TJ_POSCONT) ),oCouNew12N)
+
+oPrint:Say(390,0040,OemToAnsi("Data do Fechamento:"),oCouNew12N)
+oPrint:Say(390,0400,OemToAnsi('____/_____/_____' ),oCouNew12N)
+
+oPrint:Say(390,0940,OemToAnsi("Hora do Termino:"),oCouNew12N)
+oPrint:Say(390,1280,OemToAnsi('____:____' ),oCouNew12N)
+
+oPrint:Say(390,1650,OemToAnsi("Encarregado:"),oCouNew12N)
+oPrint:Say(390,1900,OemToAnsi('__________________________' ),oCouNew12N)
 
 oPrint:line(450,0030,450,2550)
 
@@ -346,10 +400,10 @@ Local	_nx		:= 0,;
 		//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
 		//³Cria uma array, contendo todos os valores...³
 		//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-		aAdd(_aRegs,{cPerg,'01',"Emissao Inicial ?" ,"Emissao Inicial ?" ,"Emissao Inicial ?" ,'mv_ch1','D',08,0,0,'G','','mv_par01','','','','',"",""})
-		aAdd(_aRegs,{cPerg,'02',"Emissao Final? "   ,"Emissao Final? "   ,"Emissao Final? "   ,'mv_ch2','D',08,0,0,'G','','mv_par02','','','','',"",""})
-		aAdd(_aRegs,{cPerg,'03',"Ordem de Seriço de?","","",'mv_ch3','C', 6,0,0,'G','','mv_par03','','','','',"","STJ"})
-		aAdd(_aRegs,{cPerg,'04',"Ordem de Seriço ate?","","",'mv_ch4','C', 6,0,0,'G','','mv_par04','','','','',"","STJ"})
+		aAdd(_aRegs,{cPerg,'01',"Emissão Inicial ?" ,"Emissão Inicial ?" ,"Emissão Inicial ?" ,'mv_ch1','D',08,0,0,'G','','mv_par01','','','','',"",""})
+		aAdd(_aRegs,{cPerg,'02',"Emissão Final? "   ,"Emissão Final? "   ,"Emissão Final? "   ,'mv_ch2','D',08,0,0,'G','','mv_par02','','','','',"",""})
+		aAdd(_aRegs,{cPerg,'03',"Ordem de Serviço de?","","",'mv_ch3','C', 6,0,0,'G','','mv_par03','','','','',"","STJ"})
+		aAdd(_aRegs,{cPerg,'04',"Ordem de Serviço ate?","","",'mv_ch4','C', 6,0,0,'G','','mv_par04','','','','',"","STJ"})
 		
 		DbSelectArea('SX1')
 		SX1->(DbSetOrder(1))

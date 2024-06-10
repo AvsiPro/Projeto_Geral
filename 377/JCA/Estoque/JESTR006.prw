@@ -206,7 +206,7 @@ Do While ! Eof() .And. SM0->M0_CODIGO == cEmpAnt
 	dbSelectArea("SD2")
 
 	cQuery := "SELECT SD2.D2_FILIAL,SD2.D2_EMISSAO,SD2.D2_DOC,"+ IIF(SerieNfId("SD2",3,"D2_SERIE")<>"D2_SERIE","SD2."+SerieNfId("SD2",3,"D2_SERIE")+","," ")
-	cQuery += "SD2.D2_SERIE,SD2.D2_COD,SD2.D2_TES,SD2.D2_CF,SD2.D2_UM,"
+	cQuery += "SD2.D2_SERIE,SD2.D2_COD,SD2.D2_TES,SD2.D2_CF,SD2.D2_UM,B1_FABRIC,"
 	cQuery += "SD2.D2_QUANT,SD2.D2_TOTAL,SD2.D2_CUSTO1,SD2.D2_TIPO,SD2.D2_CLIENTE,SD2.D2_LOJA,SD2.D2_LOCAL"
 	//旼컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴�
 	//쿐sta rotina foi escrita para adicionar no select os campos         �
@@ -359,7 +359,8 @@ Do While ! Eof() .And. SM0->M0_CODIGO == cEmpAnt
 						Aadd(aAuxExc,Substr((cAliasSD2)->D2_COD,1,15))
                         Aadd(aAuxExc,Substr(SB1->B1_DESC,1,15))
 						Aadd(aAuxExc,Alltrim(Posicione("ZPM",1,xFilial("ZPM")+SB1->B1_ZMARCA,"ZPM_DESC")))
-                        Aadd(aAuxExc,Substr(SB1->B1_GRUPO,1,5))
+						Aadd(aAuxExc,Alltrim((cAliasSD2)->B1_FABRIC))
+						Aadd(aAuxExc,Substr(SB1->B1_GRUPO,1,5))
                         Aadd(aAuxExc,Substr((cAliasSD2)->D2_UM,1,2))
 						
 						If lTamDoc
@@ -400,8 +401,19 @@ Do While ! Eof() .And. SM0->M0_CODIGO == cEmpAnt
                                 Aadd(aAuxExc,Substr(aRetNf[2],1,10))
                                 Aadd(aAuxExc,aRetNf[3])
 
-								Aadd(aAuxExc,Posicione("SBZ",1,aRetNf[1]+(cAliasSD2)->D2_COD,"BZ_LOCPAD"))
-								Aadd(aAuxExc,Posicione("SBZ",1,aRetNf[1]+(cAliasSD2)->D2_COD,"BZ_XLOCALI"))
+								//Aadd(aAuxExc,Posicione("SBZ",1,aRetNf[1]+(cAliasSD2)->D2_COD,"BZ_LOCPAD"))
+								//Aadd(aAuxExc,Posicione("SBZ",1,aRetNf[1]+(cAliasSD2)->D2_COD,"BZ_XLOCALI"))
+								cLocPd := Posicione("SB1",1,aRetNf[1]+(cAliasSD2)->D2_COD,"B1_LOCPAD")
+								Aadd(aAuxExc,cLocPd)
+
+								cProdPai := Posicione("SB1",1,xFilial("SB1")+(cAliasSD2)->D2_COD,"B1_XCODPAI")
+								If !Empty(cProdPai)
+									cPrat   := Posicione("SBE",7,(cAliasSD2)->D2_FILIAL+cProdPai,"BE_LOCALIZ")
+								Else 
+									cPrat   := Posicione("SBE",7,(cAliasSD2)->D2_FILIAL+(cAliasSD2)->D2_COD,"BE_LOCALIZ")
+								EndIf 
+
+								Aadd(aAuxExc,cPrat)
 
 							Else
 								
@@ -418,7 +430,15 @@ Do While ! Eof() .And. SM0->M0_CODIGO == cEmpAnt
 							EndIf
 						EndIf
 
-						cPrat := Posicione("SBZ",1,(cAliasSD2)->D2_FILIAL+Substr((cAliasSD2)->D2_COD,1,15),"BZ_XLOCALI")
+						cLocPd := Posicione("SB1",1,aRetNf[1]+(cAliasSD2)->D2_COD,"B1_LOCPAD")
+						cProdPai := Posicione("SB1",1,xFilial("SB1")+(cAliasSD2)->D2_COD,"B1_XCODPAI")
+						If !Empty(cProdPai)
+							cPrat   := Posicione("SBE",7,(cAliasSD2)->D2_FILIAL+cProdPai,"BE_LOCALIZ")
+						Else 
+							cPrat   := Posicione("SBE",7,(cAliasSD2)->D2_FILIAL+(cAliasSD2)->D2_COD,"BE_LOCALIZ")
+						EndIf 
+						//Posicione("SBZ",1,(cAliasSD2)->D2_FILIAL+Substr((cAliasSD2)->D2_COD,1,15),"BZ_XLOCALI")
+
 						Aadd(aAuxExc,(cAliasSD2)->D2_LOCAL)
 						Aadd(aAuxExc,cPrat)
 
@@ -651,6 +671,7 @@ Aadd(aHeader,{  'Filial_Origem',;				//01
 				'Produto',;						//08
 				'Descricao',;					//09
 				'Marca',;						//10
+				'Cod.Original',;
 				'Grupo',;						//11
 				'UM',;							//12
 				'Quantidade',;					//13

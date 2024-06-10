@@ -31,8 +31,15 @@ User function FA070TIT()
 
     If lLigaTr
         If !Empty(cTipBx)
-            If Alltrim(SE1->E1_TIPO) $ cTipBx .And. SE1->E1_SALDO == nValrec
-                EnvTrck()
+            If !Empty(SE1->E1_NUMLIQ)
+                nSaldo := conssld()
+                If Alltrim(SE1->E1_TIPO) $ cTipBx .And. nSaldo == nValrec
+                    EnvTrck()
+                EndIf
+            Else
+                If Alltrim(SE1->E1_TIPO) $ cTipBx .And. SE1->E1_SALDO == nValrec
+                    EnvTrck()
+                EndIf 
             EndIf 
         EndIf 
     EndIF 
@@ -69,10 +76,12 @@ oEnvio['cliente']   := Posicione("SA1",1,xFilial("SA1")+SE1->E1_CLIENTE+SE1->E1_
 oEnvio['emissao']   := cvaltochar(SE1->E1_EMISSAO)
 oEnvio['vencimento']:= cvaltochar(SE1->E1_VENCTO)
 oEnvio['vencto_real']:= cvaltochar(SE1->E1_VENCREA)
-oEnvio['data_baixa'] := cvaltochar(dDataBase)
+oEnvio['data_baixa']:= cvaltochar(dDataBase)
 oEnvio['valor']     := SE1->E1_VALOR
 oEnvio['historico'] := SE1->E1_HIST 
 oEnvio['motivo_baixa'] := cMotBx
+oEnvio['movimento'] := 'liquidacao'
+oEnvio['usuario']   := cusername
 
 cRet := oEnvio:toJson()
 
@@ -127,3 +136,47 @@ else
 Endif
 
 Return(cRet)
+
+/*/{Protheus.doc} conssld
+    (long_description)
+    @type  Static Function
+    @author user
+    @since 23/05/2024
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function conssld()
+
+Local aArea := GetArea()
+Local nRet  :=  0
+Local cQuery 
+
+cQuery := "SELECT E1_NUMLIQ,SUM(E1_VALOR) AS TOTAL,SUM(E1_SALDO) AS SALDO,"
+cQuery += " SUM(E1_VALOR-E1_SALDO) AS BAIXADOS"
+cQuery += " FROM "+RetSQLName("SE1")
+cQuery += " WHERE E1_FILIAL='"+SE1->E1_FILIAL+"'"
+cQuery += " AND E1_NUM='"+SE1->E1_NUM+"'"
+cQuery += " GROUP BY E1_NUMLIQ"
+
+IF Select('TRB') > 0
+    dbSelectArea('TRB')
+    dbCloseArea()
+ENDIF
+
+MemoWrite("FA070TIT.SQL",cQuery)
+DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
+
+DbSelectArea("TRB")  
+            
+While !EOF()
+    nRet += TRB->SALDO
+    Dbskip()
+EndDo 
+
+RestArea(aArea)
+
+Return(nRet)

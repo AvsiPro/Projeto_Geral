@@ -206,14 +206,15 @@ Local cQuery
 
 aList := {}
 
-cQuery := "SELECT D1_COD,B1_DESC,D1_QUANT,D1_DOC,D1_DTDIGIT,D1_UM,B1_FABRIC,B1_ZMARCA,BZ_XLOCALI,ZPM_DESC"
+cQuery := "SELECT D1_COD,B1_DESC,D1_QUANT,D1_DOC,D1_DTDIGIT,D1_UM,B1_FABRIC,B1_ZMARCA,BE_LOCALIZ,ZPM_DESC" //BZ_XLOCALI
 cQuery += " FROM "+RetSQLName("SD1")+" D1"
 cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"'"
 cQuery += "  AND B1_COD=D1_COD AND B1.D_E_L_E_T_=' '"
 cQuery += " LEFT JOIN "+RetSQLName("ZPM")+" ZPM ON ZPM_FILIAL='"+xFilial("ZPM")+"' AND ZPM_COD=B1_ZMARCA AND ZPM.D_E_L_E_T_=' '"
-//cQuery += " LEFT JOIN "+RetSQLName("SBE")+" BE ON BE_FILIAL=D1_FILIAL AND BE_CODPRO=D1_COD AND BE_LOCAL=D1_LOCAL"
-cQuery += " LEFT JOIN "+RetSQLName("SBZ")+" BZ ON BZ_FILIAL=D1_FILIAL AND BZ_COD=D1_COD AND BZ.D_E_L_E_T_=' '"
-//cQuery += "  AND BE.D_E_L_E_T_=' '"
+cQuery += " LEFT JOIN "+RetSQLName("SBE")+" BE ON BE_FILIAL=D1_FILIAL AND BE_LOCAL=D1_LOCAL" //AND BE_CODPRO=D1_COD 
+cQuery += " AND BE_LOCALIZ BETWEEN '"+cPar05+"' AND '"+cPar06+"'"
+//cQuery += " LEFT JOIN "+RetSQLName("SBZ")+" BZ ON BZ_FILIAL=D1_FILIAL AND BZ_COD=D1_COD AND BZ.D_E_L_E_T_=' '"
+cQuery += "  AND BE.D_E_L_E_T_=' '"
 cQuery += " WHERE D1_FILIAL='"+xFilial("SD1")+"' AND D1_DOC='"+cPar08+"' AND D1_FORNECE='"+cPar09+"'"
 cQuery += " AND D1_LOJA='"+cPar10+"' AND D1_SERIE='"+cPar13+"' AND D1.D_E_L_E_T_=' '"
 
@@ -708,11 +709,13 @@ Static Function Etqprat()
 	
 	If len(aList[1]) < 5
 		cQuery := "SELECT DISTINCT B1_COD AS CODIGO,B1_DESC AS DESCRI,B1_CODBAR AS CODBAR,ZPM_DESC AS MARCA,B1_UM AS UM,"
-		cQuery += " B1_FABRIC,BZ_XLOCALI"
+		cQuery += " B1_FABRIC,BE_LOCALIZ,B1_XCODPAI" //BZ_XLOCALI
 		cQuery += " FROM "+RetSQLName("SB1")+" B1"
 		
 		cQuery += " LEFT JOIN "+RetSQLName("ZPM")+" ZPM ON ZPM_FILIAL=B1_FILIAL AND ZPM_COD=B1_ZMARCA AND ZPM.D_E_L_E_T_=' '"
-		cQuery += " LEFT JOIN "+RetSQLName("SBZ")+" BZ ON BZ_FILIAL='"+xFilial("SBZ")+"' AND BZ_COD=B1_COD AND BZ.D_E_L_E_T_=' '"
+		//cQuery += " LEFT JOIN "+RetSQLName("SBZ")+" BZ ON BZ_FILIAL='"+xFilial("SBZ")+"' AND BZ_COD=B1_COD AND BZ.D_E_L_E_T_=' '"
+		cQuery += " LEFT JOIN "+RetSQLName("SBE")+" BE ON BE_FILIAL='"+xFilial("SBE")+"' AND BE.D_E_L_E_T_=' '"
+		cQuery += " AND BE_LOCALIZ BETWEEN '"+cPar05+"' AND '"+cPar06+"'"
 		
 		cQuery += " WHERE B1_FILIAL='"+xFilial("SB1")+"'"
 
@@ -757,7 +760,7 @@ Static Function Etqprat()
 					nQuant := 1
 				EndIf 
 
-				u_jestr008(alltrim(QRYTMP->CODIGO),alltrim(QRYTMP->DESCRI),alltrim(QRYTMP->B1_FABRIC),alltrim(QRYTMP->BZ_XLOCALI),cImpress,nQuant)
+				u_jestr008(alltrim(QRYTMP->CODIGO),alltrim(QRYTMP->DESCRI),alltrim(QRYTMP->B1_FABRIC),alltrim(QRYTMP->BE_LOCALIZ),cImpress,nQuant)
 				
 			Else
 				For nR := 1 to nQuant
@@ -782,7 +785,7 @@ Static Function Etqprat()
 					
 					oPrinter:Say(nLin-130,nCol+50,alltrim(QRYTMP->B1_FABRIC) ,oFont40,,,90)
 					
-					oPrinter:Say(nLin-130,nCol+35,alltrim(QRYTMP->BZ_XLOCALI) ,oFont40,,,90)
+					oPrinter:Say(nLin-130,nCol+35,alltrim(QRYTMP->BE_LOCALIZ) ,oFont40,,,90)
 					
 					lTrocaPag := .t.
 				

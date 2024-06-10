@@ -98,6 +98,9 @@ Return oView
 User Function JCA2APRV()
 
 Local aArea := GetArea()
+Local aGrup := UsrRetGrp(PswChave(RetCodUsr()),RetCodUsr())
+Local nCont 
+Local lAdm := .F.
 
 If Empty(FunName())
    RpcSetType(3)
@@ -106,12 +109,19 @@ EndIf
     
 ZPT->(DbSetOrder(1))
 lAprov := ZPT->(DbSeek( FWxFilial('ZPT') + AvKey(RetCodUsr(),'ZPT_USER') ))
-lAdm := RetCodUsr() == '000000'
 
-If !( lAprov .Or. lAdm )
+//lAdm := RetCodUsr() == '000000'
+For nCont := 1 to len(aGrup)
+    If aGrup[nCont] == "000000"
+        lAdm := .T.
+    endif 
+Next nCont 
+
+If !(lAprov .OR. lAdm )
     MsgAlert('Usuário não possui permissão para cadastrar aprovadores.')
     Return
 EndIf
+
 
 //Objetos da Janela
 Private oDlgPvt
