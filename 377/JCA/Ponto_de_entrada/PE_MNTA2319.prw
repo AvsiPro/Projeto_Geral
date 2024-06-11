@@ -1,6 +1,8 @@
 #INCLUDE 'PROTHEUS.CH'
 /*
+    PNEU002
     Ponto de entrada para incluir pneu no estoque correto de acordo com cadatro
+    11/06/24 - Foi solicitado para que o conteúdo do estoque seja fixo em 08 através da atualização da mit pneu002
 */
 User function MNTA2319
 
@@ -8,7 +10,15 @@ LOCAL aArea     := GetArea()
 Local aPneu     := Paramixb
 Local aRet      := {}
 Local aStatus   := {'10','08','04','09'}
-Local nPos      := Ascan(aStatus,{|x| x == TQY_STATUS })
+Local nPos      := 0
+
+If M->TQY_STATUS <> '08'
+    M->TQY_STATUS := '08'
+    MsgAlert("O Estoque de destino deve ser obrigatoriamente o 08","MNTA2319")
+
+EndIf 
+
+nPos := Ascan(aStatus,{|x| x == TQY_STATUS })
 
 If nPos > 0
     DbSelectArea("ST9")

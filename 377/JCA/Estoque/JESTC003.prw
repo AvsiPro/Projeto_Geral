@@ -84,7 +84,7 @@ Local oStruSC6 := FwFormStruct(1, "ZPJ")
     // DEFINE A RELAÇÃO ENTRE OS SUBMODELOS
     oModel:SetRelation("ZPJDETAIL", {{"ZPJ_FILIAL", "FwXFilial('ZPJ')"}, {"ZPJ_CODBOX", "ZPJ_CODBOX"}}, ZPJ->(IndexKey(1)))
 
-    //oStruSC6:AddTrigger("ZY1_VEND", "ZY1_NVEND",{|| .T.}, {|| POSICIONE("ZPJ",1,XFILIAL("ZPJ")+oModel:GetValue('ZY1DETAIL','ZY1_VEND'),"A3_NOME") })
+    //oStruSC6:AddTrigger("ZPJ_CODFER", "ZPJ_DESCRI",{|| .T.}, {|| Alltrim(POSICIONE("ZPI",1,XFILIAL("ZPI")+oModel:GetValue('ZPJDETAIL','ZPJ_CODFER'),"ZPI_DESCRI")) })
     
     // DESCRIÇÃO DO MODELO
     oModel:SetDescription("Cadastro de Caixa de Ferramentas")

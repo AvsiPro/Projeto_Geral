@@ -98,15 +98,27 @@ Return oView
 User Function JCA2APRV()
 
 Local aArea := GetArea()
-Local aGrup := UsrRetGrp(PswChave(RetCodUsr()),RetCodUsr())
+//Local aGrup := UsrRetGrp(PswChave(RetCodUsr()),RetCodUsr())
 Local nCont 
 Local lAdm := .F.
+Local cAprv := SuperGetMV("TI_JAPROVB",.F.,"000000/000347")
 
 If Empty(FunName())
    RpcSetType(3)
    RpcSetEnv('01','00020087')
 EndIf
-    
+
+lAdm := RetCodUsr() $ cAprv
+
+If !lAdm
+    MsgAlert('Usuário não possui permissão para cadastrar aprovadores.',"JGFRA002 - JCA2APRV")
+    Return
+EndIf
+/*
+
+    Em 10/06/24 foi solicitado para que fosse criado um parametro para controlar quem pode
+    incluir usuários aprovadores.
+
 ZPT->(DbSetOrder(1))
 lAprov := ZPT->(DbSeek( FWxFilial('ZPT') + AvKey(RetCodUsr(),'ZPT_USER') ))
 
@@ -121,7 +133,11 @@ If !(lAprov .OR. lAdm )
     MsgAlert('Usuário não possui permissão para cadastrar aprovadores.')
     Return
 EndIf
+*/
 
+For nCont := 1 to len(aAprv)
+
+Next nCont 
 
 //Objetos da Janela
 Private oDlgPvt
