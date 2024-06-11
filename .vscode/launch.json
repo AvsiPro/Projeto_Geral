@@ -73,6 +73,33 @@
 		},
 		{
 			"label": "u_jestr003"
+		},
+		{
+			"label": "U_ROTR001"
+		},
+		{
+			"label": "u_JGFRR001"
+		},
+		{
+			"label": "u_rotr002"
+		},
+		{
+			"label": "U_JGFRA004"
+		},
+		{
+			"label": "u_jcacmxve"
+		},
+		{
+			"label": "u_xmta105"
+		},
+		{
+			"label": "u_xjestm3"
+		},
+		{
+			"label": "u_xreplicar"
+		},
+		{
+			"label": "u_jgfra006"
 		}
 	],
 	"lastProgramExecuted": "sigaadv",
