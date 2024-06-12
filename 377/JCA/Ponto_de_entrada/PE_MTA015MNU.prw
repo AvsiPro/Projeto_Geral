@@ -152,6 +152,9 @@ Else
             else 
                 oSay6:settext(SBE->BE_DESCRIC)
             EndIf 
+        Else 
+            MsgAlert("Endereço inexistente","PE_MTA015MNU")
+            lRet := .F.
         EndIf 
     EndIf 
 

@@ -204,7 +204,7 @@ Else
         While !EOF() .AND. ZPK->ZPK_CODIGO == cCodigo 
             //'','Codigo','Descricao','Data Saída','Hora Saída','Ocorrência'
             Aadd(aList1,{.F.,;
-                        ZPK->ZPK_CODIGO,;
+                        ZPK->ZPK_CODFER,;
                         Alltrim(Posicione("ZPI",1,XFILIAL("ZPI")+ZPK->ZPK_CODFER,"ZPI_DESCRI")),;
                         ZPK->ZPK_DTEMPR,;
                         TRANSFORM(ZPK->ZPK_HREMPR,"@R 99:99"),;

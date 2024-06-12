@@ -126,7 +126,7 @@ oDlg1      := MSDialog():New( 092,232,744,1563,"Réplica de Pneus",,,.F.,,,,,,.T.
 oDlg1:Activate(,,,.T.)
 
 If nOpca == 1
-    If MsgYesNo("Confirma a réplica dos itens E atualização dos pneus aplicados?")
+    If MsgYesNo("Confirma a réplica dos itens?")
         For nCont := 1 to len(aList)
             DbSelectArea("ST9")
             Reclock("ST9",.T.)
@@ -144,9 +144,16 @@ If nOpca == 1
 
             ST9->(MSUNLOCK())
 
-            If !Empty(aList[nCont,10]) .And. !Empty(aList[nCont,11])
+            /*If !Empty(aList[nCont,10]) .And. !Empty(aList[nCont,11])
                 LimpaTQS(alltrim(aList[nCont,10]),alltrim(aList[nCont,11]))
-            EndIf 
+            EndIf */
+
+            If Empty(aList1[nCont,08]) .or. Empty(aList1[nCont,11])
+                aList1[nCont,08] := ''
+                aList1[nCont,09] := ''
+                aList1[nCont,10] := ''
+                aList1[nCont,11] := ''
+            EndIf
 
             DbSelectArea("TQS")
             Reclock("TQS",.T.)
@@ -482,8 +489,9 @@ Local lRet      := .T.
 Local cFami     := ''
 Local cTipM     := ''
 Local lEixos    := .F.
-Local nCont     := 0
-Local lOk       := .F.
+//Local nCont     := 0
+//Local lOk       := .F.
+Local cPlaca    := ''
 
 If nOpcao == 1
     If !Empty(cFrota)
@@ -510,6 +518,8 @@ Else
             If Dbseek(xfilial("ST9")+cFrota)
                 cFami := ST9->T9_CODFAMI
                 cTipM := ST9->T9_TIPMOD 
+                cPlaca := ST9->T9_PLACA
+
                 DbSelectArea("TQ1")
                 DbSetOrder(1)
                 If Dbseek(xFilial("TQ1")+cFami+cTipM)
@@ -518,7 +528,21 @@ Else
             endIf 
         EndIf 
 
-        If ExistCpo("TPS",cEixo)
+        If !lEixos 
+            MsgAlert("Eixo não cadastrado para o veículo","JGFRA006")
+            cEixo := space(TamSX3("TQS_POSIC")[1])
+            lRet := .F.
+        Else 
+            IF Empty(Bemusado(cPlaca,cEixo))
+                aList[oList:nAt,11] := cEixo 
+            Else 
+                MsgAlert("Eixo já esta sendo utilizado","JGFRA006")
+                cEixo := space(TamSX3("TQS_POSIC")[1])
+                lRet := .F.
+            EndIf 
+        EndIf 
+
+        /*If ExistCpo("TPS",cEixo)
             If !Empty(aList[oList:nAt,01])
                 While !EOF() .AND. TQ1->TQ1_DESENH == cFami .AND. Alltrim(TQ1->TQ1_TIPMOD) == Alltrim(cTipM)
                     For nCont := 1 to 10
@@ -546,7 +570,7 @@ Else
             MsgAlert("Eixo não cadastrado")
             cEixo := space(TamSX3("TQS_POSIC")[1])
             lRet := .F.
-        EndIf  
+        EndIf  */
 
     EndIf 
 EndIf 
@@ -555,6 +579,44 @@ oList:refresh()
 oDlg1:refresh()
 
 Return(lRet)
+
+/*/{Protheus.doc} Bemusado(cPlaca,cEixo)
+    (long_description)
+    @type  Static Function
+    @author user
+    @since 12/06/2024
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function Bemusado(cPlaca,cEixo)
+
+Local aArea := GetArea()
+Local cCodB := ''
+Local cQuery 
+
+cQuery := "SELECT TQS_CODBEM FROM "+RetSQLName("TQS")
+cQuery += " WHERE TQS_FILIAL='"+xFilial("TQS")+"'"
+cQuery += " AND TQS_PLACA='"+alltrim(cPlaca)+"' AND TQS_POSIC='"+alltrim(cEixo)+"' AND D_E_L_E_T_=' '"
+
+IF Select('TRB') > 0
+    dbSelectArea('TRB')
+    dbCloseArea()
+ENDIF
+
+MemoWrite("TIINCP01.SQL",cQuery)
+DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
+
+DbSelectArea("TRB")
+
+cCodB := TRB->TQS_CODBEM
+
+RestArea(aArea)
+
+Return(cCodB)
 
 /*/{Protheus.doc} LimpaTQS
     Limpar os itens que foram aplicados
