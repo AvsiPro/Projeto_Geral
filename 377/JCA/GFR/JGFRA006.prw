@@ -34,6 +34,10 @@ Private nPosBm := Ascan(aAuxX1,{|x| x == "T9_CODBEM"})
 Private nPosFm := Ascan(aAuxX1,{|x| x == "T9_CODFAMI"})
 Private nPosCc := Ascan(aAuxX1,{|x| x == "T9_CCUSTO"})
 Private nPosBT := Ascan(aAuxX2,{|x| x == "TQS_CODBEM"})
+Private nPosPl := Ascan(aAuxX2,{|x| x == "TQS_PLACA"})
+Private nPosPx := Ascan(aAuxX2,{|x| x == "TQS_POSIC"})
+Private nPosEx := Ascan(aAuxX2,{|x| x == "TQS_EIXO"})
+Private nPosTx := Ascan(aAuxX2,{|x| x == "TQS_TIPEIX"})
 
 For nCont := 1 to len(aAuxX1)
     Aadd(aCabec,{aAuxX1[nCont],&("ST9->"+aAuxX1[nCont])})
@@ -84,7 +88,7 @@ Private aNotRep:= {'TQS_PLACA','TQS_NOMPAI','TQS_POSIC','TQS_EIXO','TQS_TIPEIX'}
 Private oDlg1,oGrp1,oSay1,oSay2,oSay3,oSay4,oGet1,oGet2,oGrp2,oBrw1,oBtn1,oBtn2,oGrp3,oSay5,oGet3
 Private oSay6,oGet4,oSay7,oGet5
 
-Aadd(aList,{'','','','','','','','','','','',''})
+Aadd(aList,{'','','','','','','','','','','','',''})
 
 oDlg1      := MSDialog():New( 092,232,744,1563,"Réplica de Pneus",,,.F.,,,,,,.T.,,,.T. )
     
@@ -136,7 +140,7 @@ If nOpca == 1
                     aCabec[nX,02] := cvaltochar(aList[nCont,01])
                 EndIF 
                 If nX == nPosSt 
-                    aCabec[nX,02] := "04"
+                    aCabec[nX,02] := cStats //"04"
                 EndIf 
 
                 &("ST9->"+aCabec[nX,01]) := aCabec[nX,02]
@@ -148,11 +152,11 @@ If nOpca == 1
                 LimpaTQS(alltrim(aList[nCont,10]),alltrim(aList[nCont,11]))
             EndIf */
 
-            If Empty(aList1[nCont,08]) .or. Empty(aList1[nCont,11])
-                aList1[nCont,08] := ''
-                aList1[nCont,09] := ''
-                aList1[nCont,10] := ''
-                aList1[nCont,11] := ''
+            If Empty(aList[nCont,08]) .or. Empty(aList[nCont,11])
+                aList[nCont,08] := ''
+                aList[nCont,09] := ''
+                aList[nCont,10] := ''
+                aList[nCont,11] := ''
             EndIf
 
             DbSelectArea("TQS")
@@ -174,6 +178,22 @@ If nOpca == 1
                 If nX == nPosBT
                     aItens[nX,02] := cvaltochar(aList[nCont,01])
                 EndIf 
+
+                If nX == nPosPl
+                    aItens[nX,02] := cvaltochar(aList[nCont,10])
+                EndIf 
+
+                If nX == nPosPx
+                    aItens[nX,02] := cvaltochar(aList[nCont,11])
+                EndIf 
+
+                If nX == nPosEx
+                    aItens[nX,02] := alltrim(aList[nCont,12])
+                endIf 
+
+                If nX == nPosTx
+                    aItens[nX,02] := alltrim(aList[nCont,13])
+                Endif 
 
                 &("TQS->"+aItens[nX,01]) := aItens[nX,02]
 
@@ -366,6 +386,7 @@ If nOk == 3
                                 '',;
                                 '',;
                                 '',;
+                                '',;
                                 ''})
                 EndIf 
 
@@ -386,6 +407,7 @@ If nOk == 3
                             '',;
                             '',;
                             '',;
+                            '',;
                             ''})
 
                 cCodBem++ 
@@ -393,7 +415,7 @@ If nOk == 3
         EndIf  
 
         If len(aList) < 1
-            Aadd(aList,{'','','','','','','','','','','',''})
+            Aadd(aList,{'','','','','','','','','','','','',''})
         Endif 
         
         oList:SetArray(aList)
@@ -524,6 +546,8 @@ Else
                 DbSetOrder(1)
                 If Dbseek(xFilial("TQ1")+cFami+cTipM)
                     lEixos := .T.
+                    aList[oList:nAt,12] := TQ1->TQ1_EIXO
+                    aList[oList:nAt,13] := TQ1->TQ1_TIPEIX
                 EndIF 
             endIf 
         EndIf 

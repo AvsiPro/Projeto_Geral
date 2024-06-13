@@ -17,7 +17,7 @@
     
 */
 
-User Function JESTR001()
+User Function JESTR001(nChamada)
 
 LOCAL cString		:= "SD2"
 Local titulo 		:= ""
@@ -26,6 +26,8 @@ LOCAL cDesc1	    := "Relação entrega de materiais"
 LOCAL cDesc2	    := "conforme parametro"
 LOCAL cDesc3	    := "Especifico JCA"
 LOCAL nOpcRel		:= 0
+Local lImpPos		:= .F.
+
 PRIVATE nLastKey 	:= 0
 PRIVATE cPerg	 	:= Padr("RESTAT1",10)
 PRIVATE aLinha		:= {}
@@ -65,13 +67,22 @@ Private nReg 		:= 0
 Private lBrowse		:= .F.
 Private lBrGFR		:= .F.
 
+Default nChamada 	:=	0
+
 If Select("SM0") == 0
     RpcSetType(3)
     RPCSetEnv("01","00020087")
 EndIf
 
+IF nChamada == 1
+	If MsgYesNo("Imprimir relação de peças da OS posicionada?")
+		lImpPos := .T.
+	EndIf 
+EndIf 
+
 If Funname() == "MNTA420" .OR. Funname() <> "MATA105"
-	If !MsgYesNo("Imprimir relação de peças da OS posicionada?")
+	
+	If !lImpPos
 		AjustaSx1(cPerg)
 		Pergunte(cPerg,.f.)
 
@@ -96,10 +107,28 @@ If Funname() == "MNTA420" .OR. Funname() <> "MATA105"
 		lBrGFR := .T.
 	endIf 
 else
-	MV_PAR01 := SCP->CP_NUM
-	MV_PAR02 := SCP->CP_NUM
-	lBrowse := .t.
-	nOpcRel := 1
+	If !lImpPos
+		AjustaSx1(cPerg)
+		Pergunte(cPerg,.f.)
+
+
+		@ 096,042 TO 323,505 DIALOG oDlg TITLE OemToAnsi("Relatorio de Entrega de peças")
+		@ 008,010 TO 084,222
+		@ 018,020 SAY OemToAnsi(cDesc1)
+		@ 030,020 SAY OemToAnsi(cDesc2)
+		@ 045,020 SAY OemToAnsi(cDesc3)
+
+		@ 095,120 BMPBUTTON TYPE 5 	ACTION Pergunte(cPerg,.T.)
+		@ 095,155 BMPBUTTON TYPE 1  ACTION Eval( { || nOpcRel := 1, oDlg:End() } )
+		@ 095,187 BMPBUTTON TYPE 2  ACTION Eval( { || nOpcRel := 0, oDlg:End() } )
+
+		ACTIVATE DIALOG oDlg CENTERED
+	Else 
+		MV_PAR01 := SCP->CP_NUM
+		MV_PAR02 := SCP->CP_NUM
+		lBrowse := .t.
+		nOpcRel := 1
+	EndIf 
 EndIf
 
 
@@ -171,8 +200,10 @@ cQuery += " CP_CC,CP_OP,ZPM_DESC,B2_QATU-B2_RESERVA AS SALDO,B2_CM1,CP_XMATREQ,C
 cQuery += " FROM "+RetSQLName("SCP")+" CP"
 cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD=CP_PRODUTO AND B1.D_E_L_E_T_=' '"
 //cQuery += " LEFT JOIN "+RetSQLName("SBZ")+" BZ ON BZ_FILIAL=CP_FILIAL AND BZ_COD=CP_PRODUTO AND BZ.D_E_L_E_T_=' '"
-cQuery += " LEFT JOIN "+RetSQLName("SBE")+" BE ON BE_FILIAL=CP_FILIAL AND BE_LOCAL=B1_LOCPAD AND BE.D_E_L_E_T_=' '"
-cQuery += " AND (B1_XCODPAI=' ' OR B1_COD=BE_CODPRO)"
+cQuery += " LEFT JOIN "+RetSQLName("SBE")+" BE ON BE_FILIAL=CP_FILIAL "
+cQuery += " AND BE_LOCAL=B1_LOCPAD AND (CASE WHEN B1_XCODPAI = ' ' THEN B1_COD ELSE B1_XCODPAI END = BE_CODPRO)"
+cQuery += " AND BE.D_E_L_E_T_=' '"
+//cQuery += " AND B1_XCODPAI=' ' OR B1_COD=BE_CODPRO)"
 cQuery += " LEFT JOIN "+RetSQLName("ZPM")+" ZPM ON ZPM_FILIAL=B1_FILIAL AND ZPM_COD=B1_ZMARCA AND ZPM.D_E_L_E_T_=' '" 
 cQuery += " LEFT JOIN "+RetSQLName("SB2")+" B2 ON B2_FILIAL=CP_FILIAL AND B2_COD=CP_PRODUTO AND B2_LOCAL=B1_LOCPAD AND B2.D_E_L_E_T_=' '"
 cQuery += " LEFT JOIN "+RetSQLName("ZPU")+" ZPU ON ZPU_FILIAL=CP_FILIAL AND ZPU_COD=CP_PRODUTO AND ZPU.D_E_L_E_T_=' '"
