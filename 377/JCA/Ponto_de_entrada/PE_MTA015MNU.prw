@@ -36,7 +36,7 @@ If Select("SM0") == 0
     RPCSetEnv("01","00090276")
 EndIf
 
-Private cCodigo := space(TamSX3("B1_COD")[1])
+Private cCodigo := SBE->BE_CODPRO //space(TamSX3("B1_COD")[1])
 Private cEndere := space(TamSX3("BE_LOCALIZ")[1])
 Private cEndAtu := ''
 

@@ -171,7 +171,7 @@ User Function xJestM3(nOpc)
 Local nOpcao   := 0
 Local nCont 
 Private oDlg1,oGrp1,oSay1,oSay2,oSay3,oSay4,oSay5,oSay6,oGet1,oGet2,oGet3,oGet4
-Private oSay7,oBrw1,oGet5,oBtn1,oBtn2,oBtn3,oList1,oSay8,oSay9
+Private oSay7,oBrw1,oGet5,oBtn1,oBtn2,oBtn3,oList1,oSay8,oSay9,oGet8,oSay14
 
 Private dDtEmp := CTOD(' / / ')
 Private cHrEmp := space(5)
@@ -181,6 +181,7 @@ Private cAlmSa := space(6)
 Private cAlmEn := space(6)
 Private cFunEm := space(6)
 Private cCodFr := space(6)
+Private cCodBx := space(6)
 Private aList1 := {}
 
 Default nOpc   := 0
@@ -252,8 +253,12 @@ oDlg1      := MSDialog():New( 092,232,661,1192,"Cadastro de Empréstimos",,,.F.,,
 
     oGrp2      := TGroup():New( 064,008,256,464,"Ferramentas",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
     
-        oSay7      := TSay():New( 076,144,{||"Ferramenta"},oGrp2,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
-        oGet5      := TGet():New( 075,208,{|u| If(Pcount()>0,cCodFr:=u,cCodFr)},oGrp2,060,008,'',{||inclfer(cCodFr)},CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"ZPI","",,)
+        oSay7      := TSay():New( 076,104,{||"Ferramenta"},oGrp2,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
+        oGet5      := TGet():New( 075,148,{|u| If(Pcount()>0,cCodFr:=u,cCodFr)},oGrp2,060,008,'',{||inclfer(cCodFr,1)},CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"ZPI","",,)
+        
+        oSay1      := TSay():New( 076,230,{||"Box"},oGrp2,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
+        oGet8      := TGet():New( 075,268,{|u| If(Pcount()>0,cCodBx:=u,cCodBx)},oGrp2,060,008,'',{||inclfer(cCodBx,2)},CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"ZPJ","",,)
+        
         //oBrw1      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{092,012,252,460},,, oGrp2 ) 
         oList1    := TCBrowse():New(092,012,445,150,, {'','Codigo','Descricao','Data Saída','Hora Saída','Ocorrência'},;
                                         {10,60,90,45,45,40},;
@@ -396,58 +401,86 @@ Return(lRet)
     (examples)
     @see (links_or_references)
 /*/
-Static Function inclfer(cCodFer)
+Static Function inclfer(cCodFer,nOpc)
 
 Local aArea := GetArea()
 Local lRet  := .T.
 Local nPos  := Ascan(aList1,{|x| x[2] == cCodFer})
 
-If nPos == 0
-
+If !Empty(cCodFer)
     If Empty(aList1[1,2])
         aList1 := {}
     EndIf 
 
-    DBSelectArea("ZPI")
-    DBSetOrder(1)
-    If Dbseek(xFilial("ZPI")+cCodFer)
-        If ZPI->ZPI_STATUS == 'L'
-            MsgAlert("Ferramenta não está liberada para empréstimo!!!")
-            lRet := .F.
-        Else 
-            Aadd(aList1,{.T.,;
-                        ZPI->ZPI_CODFER,;
-                        alltrim(ZPI->ZPI_DESCRI),;
-                        If(empty(dDtEmp),ddatabase,dDtEmp),;
-                        if(empty(cHrEmp),cvaltochar(time()),cHrEmp),;
-                        '',;
-                        '',;
-                        '',;
-                        '',;
-                        ''})
+    If nOpc == 1
+        If nPos == 0
+
+            DBSelectArea("ZPI")
+            DBSetOrder(1)
+            If Dbseek(xFilial("ZPI")+cCodFer)
+                If ZPI->ZPI_STATUS <> 'L'
+                    MsgAlert("Ferramenta não está liberada para empréstimo!!!")
+                    lRet := .F.
+                Else 
+                    Aadd(aList1,{.T.,;
+                                ZPI->ZPI_CODFER,;
+                                alltrim(ZPI->ZPI_DESCRI),;
+                                If(empty(dDtEmp),ddatabase,dDtEmp),;
+                                if(empty(cHrEmp),cvaltochar(time()),cHrEmp),;
+                                '',;
+                                '',;
+                                '',;
+                                '',;
+                                ''})
+                EndIf 
+
+                
+            Else
+                MsgAlert("Ferramenta não existe no cadastro")
+                lRet := .F.
+            EndIf 
         EndIf 
+    Else 
+        DbSelectArea("ZPJ")
+        DBSetOrder(1)
+        If Dbseek(xFilial("ZPJ")+cCodFer)
+            While !EOF() .AND. ZPJ->ZPJ_CODBOX == cCodFer
+                lLib := Posicione("ZPI",1,xFilial("ZPI")+ZPJ->ZPJ_CODFER,"ZPI_STATUS") == "L"
+                If lLib 
+                    Aadd(aList1,{.T.,;
+                                ZPJ->ZPJ_CODFER,;
+                                alltrim(ZPJ->ZPJ_DESCFE),;
+                                If(empty(dDtEmp),ddatabase,dDtEmp),;
+                                if(empty(cHrEmp),cvaltochar(time()),cHrEmp),;
+                                '',;
+                                '',;
+                                '',;
+                                '',;
+                                ''})
+                EndIf 
+                Dbskip()
+            EndDo 
+        endif 
 
-        If len(aList1) < 1
-            Aadd(aList1,{.F.,'','','','','','','','','',''})
-        EndIf 
-
-        oList1:SetArray(aList1)
-        oList1:bLine := {||{iF(aList1[oList1:nAt,01],oOk,oNo),; 
-                                aList1[oList1:nAt,02],;
-                                aList1[oList1:nAt,03],;
-                                aList1[oList1:nAt,04],;
-                                aList1[oList1:nAt,05],;
-                                aList1[oList1:nAt,06]}}
-        
-        
-        liberok()
-
-        oList1:refresh()
-        oDlg1:refresh()
-    Else
-        MsgAlert("Ferramenta não existe no cadastro")
-        lRet := .F.
     EndIf 
+
+    If len(aList1) < 1
+        Aadd(aList1,{.F.,'','','','','','','','','',''})
+    EndIf 
+
+    oList1:SetArray(aList1)
+    oList1:bLine := {||{iF(aList1[oList1:nAt,01],oOk,oNo),; 
+                            aList1[oList1:nAt,02],;
+                            aList1[oList1:nAt,03],;
+                            aList1[oList1:nAt,04],;
+                            aList1[oList1:nAt,05],;
+                            aList1[oList1:nAt,06]}}
+
+
+    liberok()
+
+    oList1:refresh()
+    oDlg1:refresh()
 EndIf 
 
 RestArea(aArea)

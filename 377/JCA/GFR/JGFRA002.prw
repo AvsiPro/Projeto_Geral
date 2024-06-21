@@ -99,14 +99,15 @@ User Function JCA2APRV()
 
 Local aArea := GetArea()
 //Local aGrup := UsrRetGrp(PswChave(RetCodUsr()),RetCodUsr())
-Local nCont 
+//Local nCont 
 Local lAdm := .F.
-Local cAprv := SuperGetMV("TI_JAPROVB",.F.,"000000/000347")
 
 If Empty(FunName())
    RpcSetType(3)
    RpcSetEnv('01','00020087')
 EndIf
+
+Private cAprv := SuperGetMV("TI_JAPROVB",.F.,"000000/000347")
 
 lAdm := RetCodUsr() $ cAprv
 
@@ -135,10 +136,6 @@ If !(lAprov .OR. lAdm )
 EndIf
 */
 
-For nCont := 1 to len(aAprv)
-
-Next nCont 
-
 //Objetos da Janela
 Private oDlgPvt
 Private oMsGetZPT
@@ -160,6 +157,7 @@ Private    oFontBtn   := TFont():New(cFontUti,,-14)
     aAdd(aHeadZPT, {"Filial",   "ZPT_FILIAL", "",                           TamSX3("ZPT_FILIAL")[01], 0,           "NaoVazio()",            ".T.", "C", "SM0",""} )
     aAdd(aHeadZPT, {"Usuário",  "ZPT_USER",   "",                           TamSX3("ZPT_USER")[01],   0,           "u_USRGAT(ReadVar())",   ".T.", "C", "USR",""} )
     aAdd(aHeadZPT, {"Nome",     "ZPT_NOME",   "",                           TamSX3("ZPT_NOME")[01],   0,           ".F.",                   ".F.", "C", ""   ,""} )
+    aAdd(aHeadZPT, {"Tipo Acesso","ZPT_ROTINA",   "",                       TamSX3("ZPT_ROTINA")[01], 0,           ".T.",                   ".F.", "C", ""   ,""} )
     aAdd(aHeadZPT, {"Recno",    "XX_RECNO",  "@E 999,999,999,999,999,999",  018,                      0,           ".F.",                   ".F.", "N", ""   ,""} )
  
     Processa({|| fCarAcols()}, "Processando")
@@ -213,7 +211,7 @@ Local nTotal := 0
     
     //Seleciona dados do documento de entrada
     cQry := " SELECT R_E_C_N_O_ AS RECZPT, * FROM "+RetSqlName("ZPT")+" "
-    cQry += " WHERE D_E_L_E_T_ = '' "
+    cQry += " WHERE D_E_L_E_T_ = ' ' "
 
     TCQuery cQry New Alias "QRYTMP"
      
@@ -234,6 +232,7 @@ Local nTotal := 0
             QRYTMP->ZPT_FILIAL,;
             QRYTMP->ZPT_USER,;
             QRYTMP->ZPT_NOME,;
+            QRYTMP->ZPT_ROTINA,;
             QRYTMP->RECZPT,;
             .F.;
         })
@@ -257,6 +256,7 @@ Local aColsAux := oMsGetZPT:aCols
 Local nPosFil  := aScan(aHeadZPT, {|x| Alltrim(x[2]) == "ZPT_FILIAL"})
 Local nPosUsr  := aScan(aHeadZPT, {|x| Alltrim(x[2]) == "ZPT_USER"})
 Local nPosNom  := aScan(aHeadZPT, {|x| Alltrim(x[2]) == "ZPT_NOME"})
+Local nPosRot  := aScan(aHeadZPT, {|x| Alltrim(x[2]) == "ZPT_ROTINA"})
 Local nPosRec  := aScan(aHeadZPT, {|x| Alltrim(x[2]) == "XX_RECNO"})
 Local nPosDel  := Len(aHeadZPT) + 1
 Local nLinha   := 0
@@ -284,17 +284,19 @@ Local nLinha   := 0
         //Se a linha for incluída
         ElseIf aColsAux[nLinha][nPosRec] == 0
             RecLock('ZPT', .T.)
-                ZPT->ZPT_FILIAL  := aColsAux[nLinha][nPosFil]
-                ZPT->ZPT_USER    := aColsAux[nLinha][nPosUsr]
-                ZPT->ZPT_NOME    := aColsAux[nLinha][nPosNom]
+            ZPT->ZPT_FILIAL  := aColsAux[nLinha][nPosFil]
+            ZPT->ZPT_USER    := aColsAux[nLinha][nPosUsr]
+            ZPT->ZPT_NOME    := aColsAux[nLinha][nPosNom]
+            ZPT->ZPT_ROTINA  := aColsAux[nLinha][nPosRot]
             ZPT->(MsUnlock())
-
+            aColsAux[nLinha][nPosRec] := ZPT->(Recno())
        //Senão, será alteração
         Else
             RecLock('ZPT', .F.)
-                ZPT->ZPT_FILIAL  := aColsAux[nLinha][nPosFil]
-                ZPT->ZPT_USER    := aColsAux[nLinha][nPosUsr]
-                ZPT->ZPT_NOME    := aColsAux[nLinha][nPosNom]
+            ZPT->ZPT_FILIAL  := aColsAux[nLinha][nPosFil]
+            ZPT->ZPT_USER    := aColsAux[nLinha][nPosUsr]
+            ZPT->ZPT_NOME    := aColsAux[nLinha][nPosNom]
+            ZPT->ZPT_ROTINA  := aColsAux[nLinha][nPosRot]
             SBM->(MsUnlock())
         EndIf
          

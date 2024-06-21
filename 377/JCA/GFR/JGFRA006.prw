@@ -25,19 +25,29 @@ EndIf
 
 Private aAuxX1 := FWSX3Util():GetAllFields( 'ST9' , .F. )
 Private aAuxX2 := FWSX3Util():GetAllFields( 'TQS' , .F. )
+Private aAuxX3 := FWSX3Util():GetAllFields( 'STC' , .F. )
 Private aCabec := {}
 Private aItens := {}
+Private aPnAlc := {}
 Private nPosFg := Ascan(aAuxX2,{|x| x == "TQS_NUMFOG"})
 Private nPosSt := Ascan(aAuxX1,{|x| x == "T9_STATUS"})
 Private nPosTM := Ascan(aAuxX1,{|x| x == "T9_TIPMOD"})
 Private nPosBm := Ascan(aAuxX1,{|x| x == "T9_CODBEM"})
 Private nPosFm := Ascan(aAuxX1,{|x| x == "T9_CODFAMI"})
 Private nPosCc := Ascan(aAuxX1,{|x| x == "T9_CCUSTO"})
+Private nPosEs := Ascan(aAuxX1,{|x| x == "T9_ESTRUTU"})
 Private nPosBT := Ascan(aAuxX2,{|x| x == "TQS_CODBEM"})
 Private nPosPl := Ascan(aAuxX2,{|x| x == "TQS_PLACA"})
 Private nPosPx := Ascan(aAuxX2,{|x| x == "TQS_POSIC"})
 Private nPosEx := Ascan(aAuxX2,{|x| x == "TQS_EIXO"})
 Private nPosTx := Ascan(aAuxX2,{|x| x == "TQS_TIPEIX"})
+
+Private nPosTc := Ascan(aAuxX3,{|x| x == "TC_CODBEM"})
+Private nPosCp := Ascan(aAuxX3,{|x| x == "TC_COMPONE"})
+Private nPosTe := Ascan(aAuxX3,{|x| x == "TC_TIPOEST"})
+Private nPosLc := Ascan(aAuxX3,{|x| x == "TC_LOCALIZ"})
+Private nPosDi := Ascan(aAuxX3,{|x| x == "TC_DATAINI"})
+Private nPosTp := Ascan(aAuxX3,{|x| x == "TC_TIPMOD"})
 
 For nCont := 1 to len(aAuxX1)
     Aadd(aCabec,{aAuxX1[nCont],&("ST9->"+aAuxX1[nCont])})
@@ -49,6 +59,10 @@ DbSeek(xFilial("TQS")+ST9->T9_CODBEM)
 
 For nCont := 1 to len(aAuxX2)
     Aadd(aItens,{aAuxX2[nCont],&("TQS->"+aAuxX2[nCont])})
+Next nCont 
+
+For nCont := 1 to len(aAuxX3)
+    Aadd(aPnAlc,{aAuxX3[nCont],If(alltrim(aAuxX3[nCont])$"TC_SEQUENC/TC_SEQUEN",0,'')})
 Next nCont 
 
 If len(aCabec) > 0
@@ -88,7 +102,7 @@ Private aNotRep:= {'TQS_PLACA','TQS_NOMPAI','TQS_POSIC','TQS_EIXO','TQS_TIPEIX'}
 Private oDlg1,oGrp1,oSay1,oSay2,oSay3,oSay4,oGet1,oGet2,oGrp2,oBrw1,oBtn1,oBtn2,oGrp3,oSay5,oGet3
 Private oSay6,oGet4,oSay7,oGet5
 
-Aadd(aList,{'','','','','','','','','','','','',''})
+Aadd(aList,{'','','','','','','','','','','','','',''})
 
 oDlg1      := MSDialog():New( 092,232,744,1563,"Réplica de Pneus",,,.F.,,,,,,.T.,,,.T. )
     
@@ -141,6 +155,12 @@ If nOpca == 1
                 EndIF 
                 If nX == nPosSt 
                     aCabec[nX,02] := cStats //"04"
+                EndIf 
+
+                If nX == nPosEs
+                    If Empty(aList[nCont,08]) .or. Empty(aList[nCont,11])
+                        aCabec[nX,02] := 'N'
+                    EndIf 
                 EndIf 
 
                 &("ST9->"+aCabec[nX,01]) := aCabec[nX,02]
@@ -200,7 +220,47 @@ If nOpca == 1
             Next nX 
 
             TQS->(MSUNLOCK())
+
+            If !Empty(aList[nCont,08]) .And. !Empty(aList[nCont,11])
+                DbSelectArea("STC")
+                Reclock("STC",.T.)
+
+                For nX := 1 to len(aPnAlc)
+                    If nX == nPosTc
+                        aPnAlc[nX,02] := aList[nCont,08]
+                    EndIf 
+
+                    If nX == nPosCp
+                        aPnAlc[nX,02] := CVALTOCHAR(aList[nCont,01])
+                    EndIf
+
+                    If nX == nPosTe
+                        aPnAlc[nX,02] := 'B'
+                    EndIf
+
+                    If nX == nPosLc
+                        aPnAlc[nX,02] := aList[nCont,11]
+                    EndIf
+
+                    If nX == nPosDi
+                        aPnAlc[nX,02] := DDATABASE
+                    EndIf
+
+                    If nX == nPosTp
+                        aPnAlc[nX,02] := aList[nCont,14]
+                    EndIf
+
+                    &("STC->"+aPnAlc[nX,01]) := aPnAlc[nX,02]
+
+                Next nX 
+
+                
+                STC->(MSUNLOCK())
+            EndIf 
+
         Next nCont
+
+        MsgAlert("Processo finalizado","JGFRA006")
     EndIf 
 EndIf 
 
@@ -387,7 +447,8 @@ If nOk == 3
                                 '',;
                                 '',;
                                 '',;
-                                ''})
+                                '',;
+                                ST9->T9_TIPMOD})
                 EndIf 
 
                 cCodBem++ 
@@ -408,14 +469,15 @@ If nOk == 3
                             '',;
                             '',;
                             '',;
-                            ''})
+                            '',;
+                            ST9->T9_TIPMOD})
 
                 cCodBem++ 
             Next nX
         EndIf  
 
         If len(aList) < 1
-            Aadd(aList,{'','','','','','','','','','','','',''})
+            Aadd(aList,{'','','','','','','','','','','','','',''})
         Endif 
         
         oList:SetArray(aList)
@@ -511,8 +573,8 @@ Local lRet      := .T.
 Local cFami     := ''
 Local cTipM     := ''
 Local lEixos    := .F.
-//Local nCont     := 0
-//Local lOk       := .F.
+Local nCont     := 0
+Local lOk       := .F.
 Local cPlaca    := ''
 
 If nOpcao == 1
@@ -546,8 +608,23 @@ Else
                 DbSetOrder(1)
                 If Dbseek(xFilial("TQ1")+cFami+cTipM)
                     lEixos := .T.
-                    aList[oList:nAt,12] := TQ1->TQ1_EIXO
-                    aList[oList:nAt,13] := TQ1->TQ1_TIPEIX
+                    
+                    
+                    While !EOF() .AND. TQ1->TQ1_DESENH == cFami .AND. Alltrim(TQ1->TQ1_TIPMOD) == Alltrim(cTipM)
+                        For nCont := 1 to 10
+                            If alltrim(&("TQ1->TQ1_LOCPN"+cvaltochar(if(nCont==10,0,nCont)))) == alltrim(cEixo)
+                                lOk := .T.
+                                aList[oList:nAt,12] := TQ1->TQ1_EIXO
+                                aList[oList:nAt,13] := TQ1->TQ1_TIPEIX
+                                exit
+                            EndIf     
+                        Next nCont 
+
+                        If lOk 
+                            exit 
+                        EndIf 
+                        Dbskip()
+                    EndDo 
                 EndIF 
             endIf 
         EndIf 
@@ -558,7 +635,13 @@ Else
             lRet := .F.
         Else 
             IF Empty(Bemusado(cPlaca,cEixo))
-                aList[oList:nAt,11] := cEixo 
+                If ALLTRIM(aList[oList:nAt,12]) == "1" .And. TQS->TQS_BANDAA <> '0'
+                    MsgAlert("Pneu não pode ser utilizado neste eixo","JGFRA006")
+                    cEixo := space(TamSX3("TQS_POSIC")[1])
+                    lRet := .F.
+                Else
+                    aList[oList:nAt,11] := cEixo 
+                EndIf 
             Else 
                 MsgAlert("Eixo já esta sendo utilizado","JGFRA006")
                 cEixo := space(TamSX3("TQS_POSIC")[1])

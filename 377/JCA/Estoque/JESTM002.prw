@@ -529,7 +529,9 @@ If ParamBox(aPergs ,"Filtrar por",@aRet)
 
     PreaList(cCodInv,nContag)
 
-    _xQrjest2(nContag)
+    If nContag > 1
+        _xQrjest2(nContag)
+    EndIf 
 
     FHelp(1)
 
@@ -551,14 +553,17 @@ Return
 Static Function _xQrjest2(nCntg)
 
 Local cWhereD1 := '', cWhereD1C := ''
-Local cWhereD2 := '', cWhereD2C := ''
+Local cWhereD2 := '', cWhereD2C := '', cWhereB1N := ''
 Local cWhereD3 := '', cWhereD3C := '', cWhereB1C := ''
 
-Local cFromSBZ  := ''
+Local cFromSBE  := ''
 Local cAliasTop := GetNextAlias()
 Local aSalAtu   := { 0,0,0,0,0,0,0 }
 Local cHora     := ''
 Local nSaldoFim := 0
+Local nCont     := 0
+Local cBarra    := ''
+
 iF nCntg == 0
     aList1 := {}
 
@@ -574,6 +579,14 @@ Else
     ElseIf nCntg == 3
         dDtDe   := STOD(alist1[1,22])
     endif 
+
+
+    If nCntg > 1
+        For nCont := 1 to len(aList1)
+            cWhereB1N += cBarra + alltrim(aList1[nCont,04])
+            cBarra := "/"
+        Next nCont 
+    EndIf  
 
     dDtAt   := ddatabase //STOD(alist1[1,20])
     lSoMov  := .T.
@@ -591,7 +604,7 @@ cWhereB1B:= "%"
 cWhereB1C:= "%"
 cWhereB1D:= "%"
 
-cFromSBZ := '%'+RetSqlName('SB1')+' SB1,'+RetSqlName('SBZ')+' SBZ %'
+cFromSBE := '%'+RetSqlName('SB1')+' SB1,'+RetSqlName('SBE')+' SBE %'
 
 cWhereD1C := "%"
 cWhereD1C += " D1_FILIAL ='" + xFilial("SD1") + "' AND "
@@ -601,7 +614,11 @@ cWhereD1C += " F1_DOC =D1_DOC AND "
 cWhereD1C += " F1_SERIE =D1_SERIE AND "
 cWhereD1C += " F1_FORNECE =D1_FORNECE AND "
 cWhereD1C += " F1_LOJA =D1_LOJA AND "
-cWhereD1C += " (F1_HORA > '"+cHora+"' AND F1_DTDIGIT>='"+DTOS(dDtAt)+"') AND "
+
+If nCntg > 1
+    cWhereD1C += " (F1_HORA > '"+cHora+"' AND F1_DTDIGIT>='"+DTOS(dDtAt)+"') AND "
+endif 
+
 cWhereD1C += "%"
 
 
@@ -621,6 +638,16 @@ cWhereD2 += "%"
 cWhereD2C := "%"
 cWhereD2C += " D2_FILIAL ='" + xFilial("SD2") + "' AND "
 cWhereD2C += " SF4.F4_FILIAL = '" + xFilial("SF4") + "' AND"
+cWhereD2C += " F2_FILIAL =D2_FILIAL AND "
+cWhereD2C += " F2_DOC = D2_DOC AND "
+cWhereD2C += " F2_SERIE = D2_SERIE AND "
+cWhereD2C += " F2_CLIENTE = D2_CLIENTE AND "
+cWhereD2C += " F2_LOJA = D2_LOJA AND "
+
+If nCntg > 1
+    cWhereD2C += " (F2_HORA > '"+cHora+"' AND F2_DTDIGIT>='"+DTOS(dDtAt)+"') AND "
+endif
+
 cWhereD2C += "%"
 
 
@@ -688,7 +715,7 @@ BeginSql Alias cAliasTop
             SD1.R_E_C_N_O_ NRECNO,  //-- 29 RECNO
             SD1.D1_LOCAL ARMLOC
 
-    FROM %Exp:cFromSBZ%,%table:SD1% SD1,%table:SF4% SF4,%table:SF1% SF1
+    FROM %Exp:cFromSBE%,%table:SD1% SD1,%table:SF4% SF4,%table:SF1% SF1
 
     WHERE	SB1.B1_COD     =  SD1.D1_COD		AND  	%Exp:cWhereD1C%  
             SD1.D1_TES     =  SF4.F4_CODIGO	AND
@@ -697,8 +724,8 @@ BeginSql Alias cAliasTop
             %Exp:cWhereD1%                     
             SD1.%NotDel%    				  AND 	SF4.%NotDel%
             %Exp:cWhereB1A%                   AND
-            %Exp:cWhereB1C%
-
+            %Exp:cWhereB1C%                    
+            
     UNION
 
         SELECT 'SD2' ARQ,
@@ -730,7 +757,7 @@ BeginSql Alias cAliasTop
             ' ',
             SD2.R_E_C_N_O_ SD2RECNO, //-- 29 RECNO
             SD2.D2_LOCAL
-        FROM %Exp:cFromSBZ%,%table:SD2% SD2,%table:SF4% SF4
+        FROM %Exp:cFromSBE%,%table:SD2% SD2,%table:SF2% SF2 ,%table:SF4% SF4
 
         WHERE	SB1.B1_COD     =  SD2.D2_COD		AND	%Exp:cWhereD2C%
                 SD2.D2_TES     =  SF4.F4_CODIGO		AND
@@ -739,8 +766,8 @@ BeginSql Alias cAliasTop
                 %Exp:cWhereD2%
                 SD2.%NotDel%						AND SF4.%NotDel%
                 %Exp:cWhereB1A%                     AND
-                %Exp:cWhereB1C%
-
+                %Exp:cWhereB1C%                     
+                
     UNION
 
         SELECT 	'SD3' ARQ,
@@ -773,13 +800,13 @@ BeginSql Alias cAliasTop
                 SD3.R_E_C_N_O_ SD3RECNO, //-- 29 RECNO
                 SD3.D3_LOCAL
 
-        FROM %Exp:cFromSBZ%,%table:SD3% SD3
+        FROM %Exp:cFromSBE%,%table:SD3% SD3
 
         WHERE	SB1.B1_COD     =  SD3.D3_COD 		AND %Exp:cWhereD3C%
                 SD3.D3_EMISSAO >= %Exp:dDtDe%	AND	SD3.D3_EMISSAO <= %Exp:dDtAt%	AND
                 %Exp:cWhereD3%
-                SD3.%NotDel%
-
+                SD3.%NotDel%    
+                
     
 
     ORDER BY %Exp:cOrder%
@@ -787,6 +814,12 @@ BeginSql Alias cAliasTop
 EndSql
 //%Exp:cUnion%
 While !(cAliasTop)->(Eof())
+
+    iF !alltrim((cAliasTop)->PRODUTO) $ cWhereB1N
+        dbskip()
+        loop
+        
+    EndIf 
 
     nSaldoB2 := 0
     //nSaldoFim := 0
@@ -812,11 +845,18 @@ While !(cAliasTop)->(Eof())
 
     If nPosic1 == 0
         MR900ImpS1(@aSalAtu,cAliasTop,.T.,cLocIn)
-        cPrat := Posicione("SBZ",1,xFilial("SBZ")+(cAliasTop)->PRODUTO,"BZ_XLOCALI")
+        
+        cProdP := Posicione("SB1",1,xFilial("SB1")+(cAliasTop)->PRODUTO,"B1_XCODPAI")
+
+        If Empty(cProdP)
+            cPrat := Posicione("SBE",10,xFilial("SBE")+(cAliasTop)->PRODUTO+(cAliasTop)->ARMAZEM,"BE_LOCALIZ")
+        Else 
+            cPrat := Posicione("SBE",10,xFilial("SBE")+cProdP+(cAliasTop)->ARMAZEM,"BE_LOCALIZ")
+        EndIf 
 
         nSaldoIni := aSalAtu[1]
         nSaldoFim := aSalAtu[1]+nQtd1-nQtd2
-        If nSaldoB2 <> nSaldoFim
+        If nSaldoB2 <> nSaldoFim .And. nCntg > 1
             nSaldoIni := (aSalAtu[1]+nQtd1-nQtd2) - nSaldoB2
             If nSaldoIni < 0
                 nSaldoIni := nSaldoIni * (-1)
@@ -850,34 +890,37 @@ While !(cAliasTop)->(Eof())
                     '',;
                     '',;
                     '',;
-                    '',;
-                    '',;
-                    '',;
-                    '',;
-                    '',;
-                    '',;
+                    0,;
+                    0,;
+                    0,;
+                    0,;
+                    0,;
+                    0,;
                     .f.})
     Else 
         
         //MR900ImpS1(@aSalAtu,cAliasTop,.T.,cLocIn)
-        If nCntg <= 1
-            nSaldoIni := aList1[nPosic1,11] //if(nCntg<= 1,aList1[nPosic1,11],if(nCntg==2,aList1[nPosic1,28],aList1[nPosic1,31])) 
+        //If nCntg <= 1
+        //    nSaldoIni := aList1[nPosic1,11] //if(nCntg<= 1,aList1[nPosic1,11],if(nCntg==2,aList1[nPosic1,28],aList1[nPosic1,31])) 
             
+        //Else
+        If nCntg <= 1
+            nSaldoIni := aList1[nPosic1,08]
         Elseif nCntg == 2
             if aList1[nPosic1,11] < aList1[nPosic1,28]
                 nSaldoIni := nSaldoFim
             else 
-                nSaldoIni := aList1[nPosic1,11]
+                nSaldoIni := aList1[nPosic1,12]
             endif 
         Elseif nCntg == 3
             if aList1[nPosic1,11] < aList1[nPosic1,30]
                 nSaldoIni := nSaldoFim
             else 
-                nSaldoIni := aList1[nPosic1,11]
+                nSaldoIni := aList1[nPosic1,12]
             endif 
         endif 
 
-        nSaldoFim := nSaldoIni+nQtd1-nQtd2
+        nSaldoFim := nSaldoIni+nSaldoFim+nQtd1-nQtd2
         //If nSaldoB2 <> nSaldoFim
         //    nSaldoIni := (aList1[nPosic1,If(nCntg == 2,11,if(nCntg ==3,28,31))]-nQtd1+nQtd2) //- nSaldoB2
             // (nSaldoIni+nQtd1-nQtd2) - nSaldoB2
@@ -916,9 +959,10 @@ EndDo
 
 If !lSoMov
    
-    cQuery := "SELECT ZPM_DESC,B1_COD AS PRODUTO, B1_COD AS B1_COD,B1.*  "
+    cQuery := "SELECT ZPM_DESC,B1_COD AS PRODUTO,B1_LOCPAD, B1_COD AS B1_COD,B1.*  "
     cQuery += " FROM "+RetSqlName("SB1")+" B1"
     cQuery += " INNER JOIN "+RetSqlName("ZPM")+" ZPM ON ZPM_FILIAL='"+xFilial("ZPM")+"' AND ZPM_COD=B1_ZMARCA AND ZPM.D_E_L_E_T_=' '"
+    cQuery += " INNER JOIN "+RetSqlName("SB2")+" SB2 ON B2_FILIAL='"+xFilial("SB2")+"' AND B2_COD=B1_COD AND B2_LOCAL='"+cLocIn+"' AND SB2.D_E_L_E_T_=' '"
     cQuery += " WHERE B1_FILIAL='"+xFilial("SB1")+"'"
     cQuery += " AND B1.D_E_L_E_T_=' '"
     cQuery += " AND B1_COD BETWEEN '"+cProdDe+"' AND '"+cProdAt+"'"
@@ -930,6 +974,8 @@ If !lSoMov
     Else 
         cQuery += " AND B1_XCODPAI=' '"
     EndIf 
+
+    //cQuery += " AND B1_LOCPAD ='"+cLocIn+"'"
     
         
     IF Select('TRB') > 0
@@ -944,7 +990,15 @@ If !lSoMov
 
     While !EOF()
         If ascan(aList1,{|x| x[4] == TRB->B1_COD}) == 0
-            cPrat := Posicione("SBZ",1,xFilial("SBZ")+TRB->B1_COD,"BZ_XLOCALI")
+            
+            cProdP := Posicione("SB1",1,xFilial("SB1")+TRB->PRODUTO+TRB->B1_LOCPAD,"B1_XCODPAI")
+
+            If Empty(cProdP)
+                cPrat := Posicione("SBE",10,xFilial("SBE")+TRB->PRODUTO+TRB->B1_LOCPAD,"BE_LOCALIZ")
+            Else 
+                cPrat := Posicione("SBE",10,xFilial("SBE")+cProdP+TRB->B1_LOCPAD,"BE_LOCALIZ")
+            EndIf 
+
             MR900ImpS1(@aSalAtu,"TRB",.T.,cLocIn)
             Aadd(aList1,{ .T.,;
                             cLocIn,;
@@ -971,12 +1025,12 @@ If !lSoMov
                             '',;
                             '',;
                             '',;
-                            '',;
-                            '',;
-                            '',;
-                            '',;
-                            '',;
-                            '',;
+                            0,;
+                            0,;
+                            0,;
+                            0,;
+                            0,;
+                            0,;
                             .f.})
         endif
         Dbskip()
@@ -1147,7 +1201,7 @@ Local cCodUsr := ''
 
 aList1 := {}
 
-cQuery := "SELECT ZPE.R_E_C_N_O_ AS RECZPE,B1_ZMARCA,ZPM_DESC,B1_DESC,B1_FABRIC,ZPE.* "
+cQuery := "SELECT ZPE.R_E_C_N_O_ AS RECZPE,B1_ZMARCA,ZPM_DESC,B1_LOCPAD,B1_DESC,B1_COD,B1_XCODPAI,B1_FABRIC,ZPE.* "
 cQuery += " FROM "+RetSqlName("ZPE")+" ZPE "
 cQuery += " INNER JOIN "+RetSqlName("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD=ZPE_PRODUT AND B1.D_E_L_E_T_=' '"
 cQuery += " LEFT JOIN "+RetSqlName("ZPM")+" ZPM ON ZPM_FILIAL='"+xFilial("ZPM")+"' AND ZPM_COD=B1_ZMARCA AND ZPM.D_E_L_E_T_=' '"
@@ -1176,7 +1230,12 @@ While !EOF()
     EndIf 
 
     cCodUsr := TRB->ZPE_CODUSU
-    cPrat := Posicione("SBZ",1,xFilial("SBZ")+TRB->ZPE_PRODUT,"BZ_XLOCALI")
+    
+    If Empty(TRB->B1_XCODPAI)
+        cPrat := Posicione("SBE",10,xFilial("SBE")+TRB->B1_COD+TRB->B1_LOCPAD,"BE_LOCALIZ")
+    Else 
+        cPrat := Posicione("SBE",10,xFilial("SBE")+TRB->B1_XCODPAI+TRB->B1_LOCPAD,"BE_LOCALIZ")
+    EndIf
 
     cVlrCm := Posicione("SB2",1,xFilial("SB2")+TRB->ZPE_PRODUT+TRB->ZPE_LOCAL,"B2_CM1")
 
@@ -1244,6 +1303,7 @@ oList1:bLine := {||{iF(aList1[oList1:nAt,01],oOk,oNo),;
                     aList1[oList1:nAt,15],;
                     Transform(aList1[oList1:nAt,18],"@E 999,999.99"),;
                     aList1[oList1:nAt,19]}}
+                    //aList1[oList1:nAt,If(nContag == 1,11,If(nContag==2,28,31))],;
 
 oList1:refresh()
 oDlg1:refresh()

@@ -206,12 +206,13 @@ Local cQuery
 
 aList := {}
 
-cQuery := "SELECT D1_COD,B1_DESC,D1_QUANT,D1_DOC,D1_DTDIGIT,D1_UM,B1_FABRIC,B1_ZMARCA,BE_LOCALIZ,ZPM_DESC" //BZ_XLOCALI
+cQuery := "SELECT DISTINCT D1_ITEM,D1_COD,B1_DESC,D1_QUANT,D1_DOC,D1_DTDIGIT,D1_UM,B1_FABRIC,B1_ZMARCA,BE_LOCALIZ,ZPM_DESC" //BZ_XLOCALI
 cQuery += " FROM "+RetSQLName("SD1")+" D1"
 cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"'"
 cQuery += "  AND B1_COD=D1_COD AND B1.D_E_L_E_T_=' '"
 cQuery += " LEFT JOIN "+RetSQLName("ZPM")+" ZPM ON ZPM_FILIAL='"+xFilial("ZPM")+"' AND ZPM_COD=B1_ZMARCA AND ZPM.D_E_L_E_T_=' '"
 cQuery += " LEFT JOIN "+RetSQLName("SBE")+" BE ON BE_FILIAL=D1_FILIAL AND BE_LOCAL=D1_LOCAL" //AND BE_CODPRO=D1_COD 
+cQuery += " AND (CASE WHEN B1_XCODPAI = ' ' THEN B1_COD ELSE B1_XCODPAI END = BE_CODPRO)"
 cQuery += " AND BE_LOCALIZ BETWEEN '"+cPar05+"' AND '"+cPar06+"'"
 //cQuery += " LEFT JOIN "+RetSQLName("SBZ")+" BZ ON BZ_FILIAL=D1_FILIAL AND BZ_COD=D1_COD AND BZ.D_E_L_E_T_=' '"
 cQuery += "  AND BE.D_E_L_E_T_=' '"
@@ -230,16 +231,19 @@ DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
 DbSelectArea("TRB")
 
 While !EOF()
-	Aadd(aList,{alltrim(TRB->D1_COD),;
-				alltrim(TRB->B1_DESC),;
-				TRB->D1_QUANT,;
-				TRB->D1_QUANT,;
-				TRB->D1_DOC,;
-				TRB->D1_DTDIGIT,;
-				TRB->D1_UM,;
-				TRB->B1_FABRIC,;
-				TRB->ZPM_DESC,;
-				TRB->BZ_XLOCALI})
+	If Ascan(aList,{|x| x[11] == TRB->D1_ITEM}) == 0
+		Aadd(aList,{alltrim(TRB->D1_COD),;
+					alltrim(TRB->B1_DESC),;
+					TRB->D1_QUANT,;
+					TRB->D1_QUANT,;
+					TRB->D1_DOC,;
+					TRB->D1_DTDIGIT,;
+					TRB->D1_UM,;
+					TRB->B1_FABRIC,;
+					TRB->ZPM_DESC,;
+					TRB->BE_LOCALIZ,;
+					TRB->D1_ITEM})
+	EndIf 
 	Dbskip()
 EndDo 
 

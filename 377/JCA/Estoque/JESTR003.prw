@@ -66,7 +66,7 @@ Private lBrowse		:= .F.
 
 If Select("SM0") == 0
     RpcSetType(3)
-    RPCSetEnv("01","00020087")
+    RPCSetEnv("01","00090276")
 EndIf
 
 Private aSm0 := FWLoadSM0()
@@ -229,8 +229,8 @@ While CADTMP->(!Eof())
 	Endif
 
     If !Alltrim(CADTMP->D1_PEDIDO) $ cPedidos
-        cPedidos := cBarra + Alltrim(CADTMP->D1_PEDIDO)
-        cBarra := "/"
+        cPedidos += cBarra + Alltrim(CADTMP->D1_PEDIDO)
+        cBarra := " / "
     EndIf
 /*
 	If len(Alltrim(CADTMP->D1_COD)+"-"+Alltrim(CADTMP->B1_DESC)) < 60

@@ -13,7 +13,8 @@
 user Function MNT40011
 
 Local aArea := GetArea()
+Local lRet  := .T.
 
 RestArea(aArea)
 
-Return
+Return(lRet)

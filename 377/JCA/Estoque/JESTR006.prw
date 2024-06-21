@@ -339,12 +339,12 @@ Do While ! Eof() .And. SM0->M0_CODIGO == cEmpAnt
 						Aadd(aAuxExc,Substr((cAliasSD2)->D2_DOC,1,nTamDoc))
                         
 
-						If lTamDoc
+						//If lTamDoc
 							
-							Aadd(aAuxExc,Substr((cAliasSD2)->&(SerieNfId("SD2",3,"D2_SERIE")),1,3))
-                            Aadd(aAuxExc,Substr((cAliasSD2)->D2_TES,1,3))
-                            Aadd(aAuxExc,Substr((cAliasSD2)->D2_CF,1,5))
-						Else
+						//	Aadd(aAuxExc,Substr((cAliasSD2)->&(SerieNfId("SD2",3,"D2_SERIE")),1,3))
+                        //    Aadd(aAuxExc,Substr((cAliasSD2)->D2_TES,1,3))
+                        //    Aadd(aAuxExc,Substr((cAliasSD2)->D2_CF,1,5))
+						//Else
 							
 							Aadd(aAuxExc,Substr((cAliasSD2)->&(SerieNfId("SD2",3,"D2_SERIE")),1,3))
                             Aadd(aAuxExc,Substr((cAliasSD2)->D2_TES,1,3))
@@ -354,7 +354,7 @@ Do While ! Eof() .And. SM0->M0_CODIGO == cEmpAnt
 							
 							Aadd(aAuxExc,Substr(SF4->F4_TEXTO,1,18))
 							SF4->(dbGoTo(nRecnoSF4))
-						EndIf	
+						//EndIf	
 						
 						Aadd(aAuxExc,Substr((cAliasSD2)->D2_COD,1,15))
                         Aadd(aAuxExc,Substr(SB1->B1_DESC,1,15))
@@ -363,31 +363,31 @@ Do While ! Eof() .And. SM0->M0_CODIGO == cEmpAnt
 						Aadd(aAuxExc,Substr(SB1->B1_GRUPO,1,5))
                         Aadd(aAuxExc,Substr((cAliasSD2)->D2_UM,1,2))
 						
-						If lTamDoc
+						//If lTamDoc
 							
-                            Aadd(aAuxExc,(cAliasSD2)->D2_QUANT)
-                            Aadd(aAuxExc,(cAliasSD2)->D2_TOTAL)
-                            Aadd(aAuxExc,(cAliasSD2)->D2_CUSTO1)
-                            Aadd(aAuxExc,(cAliasSD2)->D2_EMISSAO)
+                        //    Aadd(aAuxExc,(cAliasSD2)->D2_QUANT)
+                        //    Aadd(aAuxExc,(cAliasSD2)->D2_TOTAL)
+                        //    Aadd(aAuxExc,(cAliasSD2)->D2_CUSTO1)
+                        //    Aadd(aAuxExc,(cAliasSD2)->D2_EMISSAO)
 
 							// Imprime informacoes da devolucao
-							If !Empty(aRetNf[3])
+						//	If !Empty(aRetNf[3])
 								
-								Aadd(aAuxExc,Substr(aRetNf[1],1,10))
-                                Aadd(aAuxExc,Substr(aRetNf[2],1,10))
-                                Aadd(aAuxExc,aRetNf[3])
-							Else
-								
-								Aadd(aAuxExc,aRetNf[1])
-                                Aadd(aAuxExc,Substr(aRetNf[2],1,10))
+						//		Aadd(aAuxExc,Substr(aRetNf[1],1,10))
+                        //        Aadd(aAuxExc,Substr(aRetNf[2],1,10))
+                        //        Aadd(aAuxExc,aRetNf[3])
+						//	Else
+						//		
+						//		Aadd(aAuxExc,aRetNf[1])
+                        //        Aadd(aAuxExc,Substr(aRetNf[2],1,10))
 
-								Aadd(aAuxExc,STR0019)
+						//		Aadd(aAuxExc,STR0019)
 
-								aTotais[1]+=(cAliasSD2)->D2_QUANT ;aTotaisGer[1]+=(cAliasSD2)->D2_QUANT
-								aTotais[2]+=(cAliasSD2)->D2_TOTAL ;aTotaisGer[2]+=(cAliasSD2)->D2_TOTAL
-								aTotais[3]+=(cAliasSD2)->D2_CUSTO1;aTotaisGer[3]+=(cAliasSD2)->D2_CUSTO1
-							EndIf
-						Else
+						//		aTotais[1]+=(cAliasSD2)->D2_QUANT ;aTotaisGer[1]+=(cAliasSD2)->D2_QUANT
+						//		aTotais[2]+=(cAliasSD2)->D2_TOTAL ;aTotaisGer[2]+=(cAliasSD2)->D2_TOTAL
+						//		aTotais[3]+=(cAliasSD2)->D2_CUSTO1;aTotaisGer[3]+=(cAliasSD2)->D2_CUSTO1
+						//	EndIf
+						//Else
 							
 							Aadd(aAuxExc,(cAliasSD2)->D2_QUANT)
                             Aadd(aAuxExc,(cAliasSD2)->D2_TOTAL)
@@ -401,19 +401,7 @@ Do While ! Eof() .And. SM0->M0_CODIGO == cEmpAnt
                                 Aadd(aAuxExc,Substr(aRetNf[2],1,10))
                                 Aadd(aAuxExc,aRetNf[3])
 
-								//Aadd(aAuxExc,Posicione("SBZ",1,aRetNf[1]+(cAliasSD2)->D2_COD,"BZ_LOCPAD"))
-								//Aadd(aAuxExc,Posicione("SBZ",1,aRetNf[1]+(cAliasSD2)->D2_COD,"BZ_XLOCALI"))
-								cLocPd := Posicione("SB1",1,aRetNf[1]+(cAliasSD2)->D2_COD,"B1_LOCPAD")
-								Aadd(aAuxExc,cLocPd)
-
-								cProdPai := Posicione("SB1",1,xFilial("SB1")+(cAliasSD2)->D2_COD,"B1_XCODPAI")
-								If !Empty(cProdPai)
-									cPrat   := Posicione("SBE",7,(cAliasSD2)->D2_FILIAL+cProdPai,"BE_LOCALIZ")
-								Else 
-									cPrat   := Posicione("SBE",7,(cAliasSD2)->D2_FILIAL+(cAliasSD2)->D2_COD,"BE_LOCALIZ")
-								EndIf 
-
-								Aadd(aAuxExc,cPrat)
+								
 
 							Else
 								
@@ -422,25 +410,47 @@ Do While ! Eof() .And. SM0->M0_CODIGO == cEmpAnt
 
 								Aadd(aAuxExc,STR0019)
 
-								Aadd(aAuxExc,'')
-								Aadd(aAuxExc,'')
-								aTotais[1]+=(cAliasSD2)->D2_QUANT ;aTotaisGer[1]+=(cAliasSD2)->D2_QUANT
-								aTotais[2]+=(cAliasSD2)->D2_TOTAL ;aTotaisGer[2]+=(cAliasSD2)->D2_TOTAL
-								aTotais[3]+=(cAliasSD2)->D2_CUSTO1;aTotaisGer[3]+=(cAliasSD2)->D2_CUSTO1
+								//Aadd(aAuxExc,'')
+								//Aadd(aAuxExc,'')
+								
 							EndIf
-						EndIf
+						//EndIf
+						aTotais[1]+=(cAliasSD2)->D2_QUANT ;aTotaisGer[1]+=(cAliasSD2)->D2_QUANT
+						aTotais[2]+=(cAliasSD2)->D2_TOTAL ;aTotaisGer[2]+=(cAliasSD2)->D2_TOTAL
+						aTotais[3]+=(cAliasSD2)->D2_CUSTO1;aTotaisGer[3]+=(cAliasSD2)->D2_CUSTO1
+						
 
-						cLocPd := Posicione("SB1",1,aRetNf[1]+(cAliasSD2)->D2_COD,"B1_LOCPAD")
+						cLocPd := Posicione("SB1",1,xFilial("SB1")+(cAliasSD2)->D2_COD,"B1_LOCPAD")
+						Aadd(aAuxExc,cLocPd)
+
 						cProdPai := Posicione("SB1",1,xFilial("SB1")+(cAliasSD2)->D2_COD,"B1_XCODPAI")
+						
 						If !Empty(cProdPai)
 							cPrat   := Posicione("SBE",7,(cAliasSD2)->D2_FILIAL+cProdPai,"BE_LOCALIZ")
 						Else 
 							cPrat   := Posicione("SBE",7,(cAliasSD2)->D2_FILIAL+(cAliasSD2)->D2_COD,"BE_LOCALIZ")
 						EndIf 
-						//Posicione("SBZ",1,(cAliasSD2)->D2_FILIAL+Substr((cAliasSD2)->D2_COD,1,15),"BZ_XLOCALI")
 
-						Aadd(aAuxExc,(cAliasSD2)->D2_LOCAL)
 						Aadd(aAuxExc,cPrat)
+						
+						If !Empty(aRetNf[4])
+						
+							cLocPd := aRetNf[5]
+							cPrat := ''
+							cProdPai := Posicione("SB1",1,xFilial("SB1")+aRetNf[4],"B1_XCODPAI")
+
+							If !Empty(cProdPai)
+								cPrat   := Posicione("SBE",7,aRetNf[1]+cProdPai,"BE_LOCALIZ")
+							Else 
+								cPrat   := Posicione("SBE",7,aRetNf[1]+aRetNf[4],"BE_LOCALIZ")
+							EndIf 
+							
+							Aadd(aAuxExc,cLocPd)
+							Aadd(aAuxExc,cPrat)
+						Else 
+							Aadd(aAuxExc,'')
+							Aadd(aAuxExc,'')
+						EndIf 
 
 						li++
 						cbCont++
@@ -514,7 +524,7 @@ Return(.T.)
 ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
 */
 Static Function MR715BuscaNF(aFilsCalc,cAliasSD2,lUsaFilTrf)
-Local aRetNf      := {"","",""}
+Local aRetNf      := {"","","","",""}
 Local nAchoCGC    := 0
 Local nAchoFil    := 0
 Local aArea       := GetArea()
@@ -558,21 +568,21 @@ If !lUsaFilTrf
 						dbSelectArea("SA1")
 						dbSetOrder(1)
 						If MsSeek(xFilial("SA1")+SD1->D1_FORNECE+SD1->D1_LOJA) .And. SA1->A1_CGC == cCGCDest
-							aRetNf:={cFilAnt,aFilsCalc[nAchoCGC,3],SD1->D1_DTDIGIT}
+							aRetNf:={cFilAnt,aFilsCalc[nAchoCGC,3],SD1->D1_DTDIGIT,SD1->D1_COD,SD1->D1_LOCAL}
 							Exit
 						EndIf
 					Else
 						dbSelectArea("SA2")
 						dbSetOrder(1)
 						If MsSeek(xFilial("SA2")+SD1->D1_FORNECE+SD1->D1_LOJA) .And. SA2->A2_CGC == cCGCDest
-							aRetNf:={aFilsCalc[nAchoCGC,1] ,aFilsCalc[nAchoCGC,3],SD1->D1_DTDIGIT}
+							aRetNf:={aFilsCalc[nAchoCGC,1] ,aFilsCalc[nAchoCGC,3],SD1->D1_DTDIGIT,SD1->D1_COD,SD1->D1_LOCAL}
 							Exit
 						EndIf
 					EndIf
 				EndIf
 			Else
 				// O documento ainda nao foi classificado (pre-nota), portanto o material pode ser considerado "ainda em transito"
-				aRetNf:={cFilAnt,aFilsCalc[nAchoCGC,3],''}
+				aRetNf:={cFilAnt,aFilsCalc[nAchoCGC,3],'',SD1->D1_COD,SD1->D1_LOCAL}
 			EndIf
 			dbSelectArea("SD1")
 			dbSkip()
@@ -612,21 +622,21 @@ Else
 						dbSelectArea("SA1")
 						dbSetOrder(1)
 						If MsSeek(xFilial("SA1")+SD1->D1_FORNECE+SD1->D1_LOJA) .And. alltrim(SA1->A1_FILTRF) == alltrim(cCodFilDest)
-							aRetNf:={cFilAnt,aFilsCalc[nAchoFil,3],SD1->D1_DTDIGIT}
+							aRetNf:={cFilAnt,aFilsCalc[nAchoFil,3],SD1->D1_DTDIGIT,SD1->D1_COD,SD1->D1_LOCAL}
 							Exit
 						EndIf
 					Else
 						dbSelectArea("SA2")
 						dbSetOrder(1)
 						If MsSeek(xFilial("SA2")+SD1->D1_FORNECE+SD1->D1_LOJA) .And. alltrim(SA2->A2_FILTRF) == alltrim(cCodFilDest)
-							aRetNf:={aFilsCalc[nAchoFil,1] ,aFilsCalc[nAchoFil,3],SD1->D1_DTDIGIT}
+							aRetNf:={aFilsCalc[nAchoFil,1] ,aFilsCalc[nAchoFil,3],SD1->D1_DTDIGIT,SD1->D1_COD,SD1->D1_LOCAL}
 							Exit
 						EndIf
 					EndIf
 				EndIf
 			Else
 				// O documento ainda nao foi classificado (pre-nota), portanto o material pode ser considerado "ainda em transito"
-				aRetNf:={cFilAnt,aFilsCalc[nAchoFil,3],''}
+				aRetNf:={cFilAnt,aFilsCalc[nAchoFil,3],'',SD1->D1_COD,SD1->D1_LOCAL}
 			EndIf
 			dbSelectArea("SD1")
 			dbSkip()
