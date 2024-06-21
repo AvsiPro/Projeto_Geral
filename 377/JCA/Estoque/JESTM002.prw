@@ -815,11 +815,13 @@ EndSql
 //%Exp:cUnion%
 While !(cAliasTop)->(Eof())
 
-    iF !alltrim((cAliasTop)->PRODUTO) $ cWhereB1N
-        dbskip()
-        loop
-        
-    EndIf 
+    If nCntg > 1
+        iF !alltrim((cAliasTop)->PRODUTO) $ cWhereB1N
+            dbskip()
+            loop
+            
+        EndIf 
+    EndIF 
 
     nSaldoB2 := 0
     //nSaldoFim := 0
@@ -907,11 +909,12 @@ While !(cAliasTop)->(Eof())
         If nCntg <= 1
             nSaldoIni := aList1[nPosic1,08]
         Elseif nCntg == 2
-            if aList1[nPosic1,11] < aList1[nPosic1,28]
+            /*if aList1[nPosic1,11] < aList1[nPosic1,28]
                 nSaldoIni := nSaldoFim
             else 
                 nSaldoIni := aList1[nPosic1,12]
-            endif 
+            endif */
+            nSaldoIni := aList1[nPosic1,11]
         Elseif nCntg == 3
             if aList1[nPosic1,11] < aList1[nPosic1,30]
                 nSaldoIni := nSaldoFim
