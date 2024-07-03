@@ -14,20 +14,22 @@ Local aArea := GetArea()
 Local lRet  := .T.
 
 Local lBloq := .F.
-Local nPosR := Ascan(aHeader,{|x| alltrim(x[2]) == "CP_REC_WT"})
+//Local nPosR := Ascan(aHeader,{|x| alltrim(x[2]) == "CP_REC_WT"})
 Local nPosP := Ascan(aHeader,{|x| alltrim(x[2]) == "CP_PRODUTO"})
 Local nPosO := Ascan(aHeader,{|x| alltrim(x[2]) == "CP_OP"})
 Local nCont := 1
 
 For nCont := 1 to len(aCols)
-    If aCols[nCont,nPosR] == 0 .AND. !Empty(aCols[n,nPosP])
+    //If aCols[nCont,nPosR] == 0 .AND. 
+    iF !Empty(aCols[n,nPosP])
         cOrdem := SUBSTR(aCols[n,nPosO],1,6)
         cCodBem := Posicione("STJ",1,xFilial("STJ")+cOrdem,"TJ_CODBEM")
+        cContad := Posicione("STJ",1,xFilial("STJ")+cOrdem,"TJ_POSCONT")
         If !Empty(cOrdem)
-            lBloq := U_xvld105(aCols[nCont,nPosP],cCodBem)
+            lBloq := U_xvld105(aCols[nCont,nPosP],cCodBem,cOrdem,cContad)
         endif
 
-        If lBloq 
+        If !lBloq 
             MsgAlert("Item "+alltrim(aCols[nCont,nPosP])+" será bloqueado devido a regra de tempo x contadores","MTA105LIN")
         EndIf 
     EndIf 

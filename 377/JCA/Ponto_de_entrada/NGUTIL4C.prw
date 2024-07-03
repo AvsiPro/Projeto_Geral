@@ -55,7 +55,7 @@ Local _aItem    :=  {}
 Local _atotitem :=  {}
 Local _aCab1    :=  {}
 Local cLocPad   := Posicione("SB1",1,xFilial("SB1")+M->TQN_ZPRARL,"B1_LOCPAD")
-Local cUnMed    := Posicione("SB1",1,xFilial("SB1")+TQN_ZPRARL,"B1_UM")
+Local cUnMed    := Posicione("SB1",1,xFilial("SB1")+M->TQN_ZPRARL,"B1_UM")
 Local cDoc      := GetSXenum("SD3","D3_COD")
 
 Private lMsErroAuto := .F.

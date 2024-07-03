@@ -13,15 +13,17 @@ User Function MTA105LIN
 Local aArea := GetArea()
 Local lRet  := .T.
 Local lBloq := .F.
-Local nPosR := Ascan(aHeader,{|x| alltrim(x[2]) == "CP_REC_WT"})
+//Local nPosR := Ascan(aHeader,{|x| alltrim(x[2]) == "CP_REC_WT"})
 Local nPosP := Ascan(aHeader,{|x| alltrim(x[2]) == "CP_PRODUTO"})
 Local nPosO := Ascan(aHeader,{|x| alltrim(x[2]) == "CP_OP"})
 
-If aCols[n,nPosR] == 0 .AND. !Empty(aCols[n,nPosP])
+//If aCols[n,nPosR] == 0 .AND. 
+If !Empty(aCols[n,nPosP])
     cOrdem := SUBSTR(aCols[n,nPosO],1,6)
     cCodBem := Posicione("STJ",1,xFilial("STJ")+cOrdem,"TJ_CODBEM")
+    cContad := Posicione("STJ",1,xFilial("STJ")+cOrdem,"TJ_POSCONT")
     If !Empty(cOrdem)
-        lBloq := U_xvld105(aCols[n,nPosP],cCodBem)
+        lBloq := U_xvld105(aCols[n,nPosP],cCodBem,cOrdem,cContad)
     endif
 
     If lBloq 
@@ -46,7 +48,7 @@ Return(lRet)
     (examples)
     @see (links_or_references)
 /*/
-User Function xvld105(cProduto,cCodBem)
+User Function xvld105(cProduto,cCodBem,cOrdem,cContad)
 
 Local aArea     := GetArea()
 Local cQuery    := '' 
@@ -80,6 +82,8 @@ cQuery += "        AND ZPO.D_E_L_E_T_ = ' '"
 cQuery += " WHERE  STJ.D_E_L_E_T_ = ' '"
 cQuery += "  AND TJ_FILIAL BETWEEN ' ' AND 'ZZ'"
 cQuery += "  AND TJ_CODBEM='"+cCodBem+"'"
+cQuery += "     AND TL_ORDEM <> '"+cOrdem+"'"
+cQuery += "     ORDER BY TL_ORDEM DESC"
 
 cAliasTMP := GetNextAlias()
 MPSysOpenQuery(cQuery, cAliasTMP)
@@ -87,7 +91,7 @@ MPSysOpenQuery(cQuery, cAliasTMP)
 If (cAliasTMP)->(!EoF())
     
     If (cAliasTMP)->ZPO_TIPO == '1' .Or. (cAliasTMP)->ZPO_TIPO == '3' //Contador
-        lLibera := Iif((cAliasTMP)->ZPO_CONTAD >= (cAliasTMP)->TJ_POSCONTAD,.T.,.F.)
+        lLibera := Iif((cAliasTMP)->ZPO_CONTAD < (cContad - (cAliasTMP)->TJ_POSCONT),.T.,.F.)
     EndIf
 
     If ((cAliasTMP)->ZPO_TIPO == '2' .Or. (cAliasTMP)->ZPO_TIPO == '3') .And. !lLibera //Tempo

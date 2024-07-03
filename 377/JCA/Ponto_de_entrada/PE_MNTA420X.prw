@@ -8,23 +8,26 @@
 /*/
 User Function MNTA420X()
     
-Local lLibera := .T.
+Local lLibera := .F.
 
-    If Inclui .And. STL->TL_TIPOREG == 'P'
+    //If Inclui .And. 
+    If STL->TL_TIPOREG == 'P'
         cQuery := " SELECT * FROM "+RetSqlName("STL")+" STL
         cQuery += " INNER JOIN "+RetSqlName("STJ")+" STJ
         cQuery += " 	ON  TJ_FILIAL = TL_FILIAL
         cQuery += " 	AND TJ_ORDEM = TL_ORDEM
         cQuery += " 	AND STJ.D_E_L_E_T_ = ''
         cQuery += " INNER JOIN "+RetSqlName("ZPO")+" ZPO
-        cQuery += " 	ON ZPO_FILIAL = ''
+        cQuery += " 	ON ZPO_FILIAL = '"+xFilial("ZPO")+"'"
         cQuery += " 	AND ZPO_CODIGO = TL_CODIGO
-        cQuery += " 	AND ZPO.D_E_L_E_T_ = ''
-        cQuery += " WHERE STL.D_E_L_E_T_ = ''
-        cQuery += "     AND TL_FILIAL = '"+FWxFilial('STL')+"' "
-        cQuery += " 	AND TL_CODIGO = '"+STL->TL_CODIGO+"'
-        cQuery += " 	AND TL_SEQRELA = '1'
-        cQuery += " 	AND TL_TIPOREG = 'P'
+        cQuery += " 	AND ZPO.D_E_L_E_T_ = ' '
+        cQuery += " WHERE STL.D_E_L_E_T_ = ' '
+        cQuery += "     AND TL_FILIAL BETWEEN ' ' AND 'ZZZ' " //= '"+FWxFilial('STL')+"' "
+        cQuery += " 	AND TL_CODIGO = '"+STL->TL_CODIGO+"'"
+        //cQuery += " 	AND TL_SEQRELA = '1'"
+        cQuery += " 	AND TL_TIPOREG = 'P'"
+        cQuery += "     AND TL_ORDEM <> '"+STJ->TJ_ORDEM+"'"
+        cQuery += "     ORDER BY TL_ORDEM DESC"
         
         cAliasTMP := GetNextAlias()
         MPSysOpenQuery(cQuery, cAliasTMP)
@@ -32,10 +35,10 @@ Local lLibera := .T.
         If (cAliasTMP)->(!EoF())
             
             If (cAliasTMP)->ZPO_TIPO == '1' .Or. (cAliasTMP)->ZPO_TIPO == '3' //Contador
-                lLibera := Iif((cAliasTMP)->ZPO_CONTAD >= STJ->TJ_POSCONTAD,.T.,.F.)
+                lLibera := Iif((cAliasTMP)->ZPO_CONTAD < ((cAliasTMP)->TJ_POSCONT - STJ->TJ_POSCONT),.T.,.F.)
             EndIf
 
-            If ((cAliasTMP)->ZPO_TIPO == '2' .Or. (cAliasTMP)->ZPO_TIPO == '3') .And. lLibera //Tempo
+            If ((cAliasTMP)->ZPO_TIPO == '2' .Or. (cAliasTMP)->ZPO_TIPO == '3') .And. !lLibera //Tempo
 
                 dIniAtu := STL->TL_DTINICI
                 dFimAnt := SToD((cAliasTMP)->TL_DTFIM)

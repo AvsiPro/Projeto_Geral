@@ -5,7 +5,7 @@
 
 
 //Variáveis Estáticas
-Static cTitulo := "Cadastro de Peças com Tempo Previsto"
+Static cTitulo := "Cadastro de Peças por Tempo e Contador"
 
 User Function JGFRA002()
     Local aArea   := GetArea()
@@ -34,7 +34,7 @@ Static Function MenuDef()
     ADD OPTION aRot TITLE 'Incluir'     ACTION 'VIEWDEF.JGFRA002' OPERATION MODEL_OPERATION_INSERT ACCESS 0 //OPERATION 3
     ADD OPTION aRot TITLE 'Alterar'     ACTION 'VIEWDEF.JGFRA002' OPERATION MODEL_OPERATION_UPDATE ACCESS 0 //OPERATION 4
     ADD OPTION aRot TITLE 'Excluir'     ACTION 'VIEWDEF.JGFRA002' OPERATION MODEL_OPERATION_DELETE ACCESS 0 //OPERATION 5
-    ADD OPTION aRot TITLE 'Aprovadores' ACTION 'u_JCA2APRV()'     OPERATION 9 ACCESS 0
+    ADD OPTION aRot TITLE 'Aprovadores de peças e Rebertura de OS' ACTION 'u_JCA2APRV()'     OPERATION 9 ACCESS 0
  
 Return aRot
  
