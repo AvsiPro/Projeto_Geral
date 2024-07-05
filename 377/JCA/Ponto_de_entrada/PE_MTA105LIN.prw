@@ -96,7 +96,7 @@ If (cAliasTMP)->(!EoF())
 
     If ((cAliasTMP)->ZPO_TIPO == '2' .Or. (cAliasTMP)->ZPO_TIPO == '3') .And. !lLibera //Tempo
 
-        dIniAtu := (cAliasTMP)->TL_DTINICI
+        dIniAtu := stod((cAliasTMP)->TL_DTINICI)
         dFimAnt := SToD((cAliasTMP)->TL_DTFIM)
         nTempo  := (cAliasTMP)->ZPO_TEMPO
 

@@ -20,9 +20,11 @@ Local ccc    	:= aCols[n, aScan(aHeader, {|_1| Upper(AllTrim(_1[2])) == "D1_CC"}
 
 If FunName() <> "COMXCOL"
 
-    If substr(cconta,1,1) $ "4/5" .And. Empty(ccc)
-        MsgAlert("Contas Contabeis iniciadas em 4 e 5, necessitam que o campo centro de custo seja digitado")
-        lRet := .F.
+    If !aCols[n,len(aHeader)+1]
+        If substr(cconta,1,1) $ "4/5" .And. Empty(ccc)
+            MsgAlert("Contas Contabeis iniciadas em 4 e 5, necessitam que o campo centro de custo seja digitado")
+            lRet := .F.
+        EndIf 
     EndIf 
 EndIf 
 

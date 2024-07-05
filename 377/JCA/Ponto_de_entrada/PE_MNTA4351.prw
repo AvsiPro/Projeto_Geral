@@ -13,6 +13,6 @@
     /*/
 User Function MNTA4351()
  
-    aBtn := {"NG_ICO_ALTBEMM",{|| U_JCA2APRV()},"Aprovadores de Peças e Reabertura de O.S.","Aprovadores de Peças e Reabertura de O.S."}
+    aBtn := {"NG_ICO_ATENDIMENTO",{|| U_JCA2APRV()},"Aprovadores de Peças e Reabertura de O.S.","Aprovadores de Peças e Reabertura de O.S."}
      
 Return aBtn

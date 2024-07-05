@@ -138,7 +138,7 @@ oDlg1      := MSDialog():New( 092,232,744,1563,"Réplica de Pneus",,,.F.,,,,,,.T.
                             aList[oList:nAt,10],;
                             aList[oList:nAt,11]}}
 
-    oBtn1      := TButton():New( 295,196,"Confirmar",oDlg1,{||oDlg1:end(nOpca:=1)},037,012,,,,.T.,,"",,,,.F. )
+    oBtn1      := TButton():New( 295,196,"Confirmar",oDlg1,{||If(cStats=="01" .And. AlocTds(cStats),oDlg1:end(nOpca:=1),If(cStats<>"01",oDlg1:end(nOpca:=1),))},037,012,,,,.T.,,"",,,,.F. )
     oBtn2      := TButton():New( 295,400,"Cancelar" ,oDlg1,{||oDlg1:end(nOpca:=0)},037,012,,,,.T.,,"",,,,.F. )
 
 oDlg1:Activate(,,,.T.)
@@ -349,6 +349,38 @@ oDlg1:refresh()
 
 
 Return
+
+/*/{Protheus.doc} AlocTds
+    Verifica se no status 01 "alocar" todos os itens foram alocados nos veiculos
+    @type  Static Function
+    @author user
+    @since 04/07/2024
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function AlocTds(cStatus)
+
+Local aArea := GetArea()
+Local lRet  := .T.
+Local nCont 
+
+If cStatus == "01"
+    For nCont := 1 to len(aList)
+        If Empty(aList[nCont,08]) .Or. Empty(aList[nCont,11])
+            MsgAlert("Linha "+cvaltochar(nCont)+" não foi informado veículo ou eixo para alocação do pneu, obrigatório para o status igual a 01","JGFRA006")
+            lRet := .F.
+            exit
+        EndIf 
+    Next nCont 
+EndIf 
+
+RestArea(aArea)
+    
+Return(lRet)
 
 /*/{Protheus.doc} Libok
     Libera o botão ok para salvar o cadastro da negociação da multa.

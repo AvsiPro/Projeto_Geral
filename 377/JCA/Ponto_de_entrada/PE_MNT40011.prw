@@ -74,9 +74,9 @@ If DbSeek(xFilial("STQ")+cOrdem)
         MsgAlert("Não foram apontados executantes das tarefas na ordem de serviços","MNT40011")
         lRet := .F.
     EndIf 
-else 
+/*else 
     MsgAlert("Não foram apontadas as etapas da ordem de serviços","MNT40011")
-    lRet := .F.
+    lRet := .F.*/
 EndIf 
 
 RestArea(aArea)

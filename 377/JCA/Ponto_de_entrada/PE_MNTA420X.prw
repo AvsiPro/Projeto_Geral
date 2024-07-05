@@ -8,7 +8,7 @@
 /*/
 User Function MNTA420X()
     
-Local lLibera := .F.
+Local lLibera := .T.
 
     //If Inclui .And. 
     If STL->TL_TIPOREG == 'P'

@@ -34,7 +34,7 @@ Static Function MenuDef()
     ADD OPTION aRot TITLE 'Incluir'     ACTION 'VIEWDEF.JGFRA002' OPERATION MODEL_OPERATION_INSERT ACCESS 0 //OPERATION 3
     ADD OPTION aRot TITLE 'Alterar'     ACTION 'VIEWDEF.JGFRA002' OPERATION MODEL_OPERATION_UPDATE ACCESS 0 //OPERATION 4
     ADD OPTION aRot TITLE 'Excluir'     ACTION 'VIEWDEF.JGFRA002' OPERATION MODEL_OPERATION_DELETE ACCESS 0 //OPERATION 5
-    ADD OPTION aRot TITLE 'Aprovadores de peças e Rebertura de OS' ACTION 'u_JCA2APRV()'     OPERATION 9 ACCESS 0
+    ADD OPTION aRot TITLE 'Aprovadores de peças e Reabertura de OS' ACTION 'u_JCA2APRV()'     OPERATION 9 ACCESS 0
  
 Return aRot
  
@@ -166,7 +166,7 @@ Private    oFontBtn   := TFont():New(cFontUti,,-14)
     DEFINE MSDIALOG oDlgPvt TITLE "Usuários Aprovadores" FROM 000, 000  TO nJanAltu, nJanLarg COLORS 0, 16777215 PIXEL
         //Labels gerais
         @ 004, 003 SAY "Usuários Aprovadores"                SIZE 200, 030 FONT oFontSub  OF oDlgPvt COLORS RGB(031,073,125) PIXEL
-        @ 014, 003 SAY "Peças por tempo fora do previsto"    SIZE 200, 030 FONT oFontSubN OF oDlgPvt COLORS RGB(031,073,125) PIXEL
+        @ 014, 003 SAY "Aprovadores de peças e Reabertura de OS"    SIZE 400, 030 FONT oFontSubN OF oDlgPvt COLORS RGB(031,073,125) PIXEL
          
         //Botões
         @ 006, (nJanLarg/2-001)-(0052*01) BUTTON oBtnFech  PROMPT "Fechar"  SIZE 050, 018 OF oDlgPvt ACTION (oDlgPvt:End()) FONT oFontBtn PIXEL

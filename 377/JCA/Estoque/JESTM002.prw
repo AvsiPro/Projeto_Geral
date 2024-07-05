@@ -1256,10 +1256,10 @@ While !EOF()
                     TRB->ZPE_CONTA1,;                //12
                     TRB->ZPE_CONTA2,;                //13
                     TRB->ZPE_CONTA3,;                //14
-                    TRB->ZPE_RESULT,;                //15
+                    0,;                //15 TRB->ZPE_RESULT
                     TRB->RECZPE,;                   //16
                     TRB->ZPE_STATUS,;                //17
-                    cVlrCm*TRB->ZPE_RESULT,;                //18
+                    0,;                //18 cVlrCm*TRB->ZPE_RESULT
                     If(nContag>3,3,(TRB->ZPE_RESULT * &('TRB->ZPE_CONTA'+cvaltochar(nContag)))/100),; //19
                     TRB->ZPE_DTCNT1,; //20
                     TRB->ZPE_HRCNT1,; //21
