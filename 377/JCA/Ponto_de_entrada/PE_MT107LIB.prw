@@ -51,7 +51,7 @@ Local cMsgAux := ''
                         lRet := .F.
                     Else
                         RecLock('STJ', .F.)
-                            STJ->TJ_SITUACA := 'L'
+                        STJ->TJ_XSITUAC := '2'
                         STJ->(MsUnlock())
 
                         cMsgAux := 'Usuário Liberação: '+UsrRetName(RetCodUsr()) + CRLF
@@ -60,7 +60,8 @@ Local cMsgAux := ''
                         cMsgAux += 'Justificativa: '+cMsg + CRLF
                         
                         RecLock('SCP', .F.)
-                            SCP->CP_XMSGLIB := cMsgAux
+                        SCP->CP_XMSGLIB := cMsgAux
+                        SCP->CP_STATSA  := 'L'
                         SCP->(MsUnlock())
                     EndIf
                 Else

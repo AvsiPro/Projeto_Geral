@@ -110,13 +110,15 @@ If len(aITEM)
 
             If lMsErroAuto
                 Mostraerro()
+            Else
+                MsgAlert("Processo de baixa finalizado!!!")
             EndIf
         Else
             Aviso("SIGAEST", "Req. nao encontrada", {" Ok "})  
         EndIf
     Next nX
 
-    MsgAlert("Processo de baixa finalizado!!!")
+    
 EndIf 
 
 

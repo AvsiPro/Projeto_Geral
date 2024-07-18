@@ -1,0 +1,65 @@
+0001#STR0001#ALL#List of Invoices
+0002#STR0002#ALL#This program will print the list of Invoices.       
+0003#STR0003#ALL#Z.Form 
+0004#STR0004#ALL#Management   
+0005#STR0005#ALL#LIST OF INVOICES    
+0006#STR0006#ALL#PRODUCT         DESCRIPTION                    QUANTITY          UNIT VALUE     GOODS´ VALUE     WRH.  CFO   TIO ORDER/IT         IPI AMOUNT        ICM AMOUNT       ISS AMOUNT         ACESSORY EXPENSES              TOTAL
+0007#STR0007#ALL#CANCELLED BY THE OPERATOR
+0008#STR0008#ALL#SUPPLIER : 
+0009#STR0009#ALL#ISSUE DT : 
+0010#STR0010#ALL# TYPE OF INVOICE : 
+0011#STR0011#ALL#CUSTOMER   : 
+0012#STR0012#ALL#SOLIDARY ICMS ---------> 
+0013#STR0013#ALL#EXTRA EXPENSES  -----------> 
+0014#STR0014#ALL#INVOICE TOTAL - 
+0015#STR0015#ALL#TOTAL OF DAY ----> 
+0016#STR0016#ALL#GRAND TOTAL          ---->
+0017#STR0017#ALL#INVOICE NET TOTAL   ---->
+0018#STR0018#ALL#PRODUCT         DESCRIPTION                       DEP. ORDER/IT   ORDER/ITEM         QUANTITY    UNIT VALUE      VALUE OF GOODS                 TAXES         TAXES NOT      EXTRA EXPENSES             TOTAL
+0019#STR0019#ALL#                                                                                                                                       INCL. IN PRICE    INCL. IN PRICE                                      
+0020#STR0020#ALL#NET TOTAL OF DAY    ---->
+0021#STR0021#ALL#GRAND NET TOTAL   ---->
+0022#STR0022#ALL#Credit Note
+0023#STR0023#ALL#Debit Note
+0024#STR0024#ALL#Invoice
+0025#STR0025#ALL#Print Purch.Return ?
+0026#STR0026#ALL#Yes
+0027#STR0027#ALL#No
+0028#STR0028#ALL#INV. DETAILS                                   QUANTITY          UNIT VALUE     GOODS VALUE      WAREH CFO   TIO ORDER/IT         IPI VALUE         ICM VALUE        ISS VALUE          ACCES. EXPENSES                TOTAL
+0029#STR0029#ALL#ICMS REF.AUTONOMOUS FREIGHT ---> 
+0030#STR0030#ALL#List of invoices        
+0031#STR0031#ALL#This program will list invoices.                    
+0032#STR0032#ALL#Accessory Exp. 
+0033#STR0033#ALL#Total
+0034#STR0034#ALL#Day total    
+0035#STR0035#ALL#Product
+0036#STR0036#ALL#Descript.
+0037#STR0037#ALL#Quantity  
+0038#STR0038#ALL#Unit value    
+0039#STR0039#ALL#MerchandiseValue
+0040#STR0040#ALL#Wareh
+0041#STR0041#ALL#FOC
+0042#STR0042#ALL#TIO
+0043#STR0043#ALL#Order 
+0044#STR0044#ALL#It
+0045#STR0045#ALL#IPIamount
+0046#STR0046#ALL#ICMS amount
+0047#STR0047#ALL#ISSamount
+0048#STR0048#ALL#Invoice total 
+0049#STR0049#ALL#Tax Incl in Price
+0050#STR0050#ALL#Tax Not Incl in Price
+0051#STR0051#ALL#Other expenses 
+0052#STR0052#ALL#Joint ICMS    
+0053#STR0053#ALL#Icms Ref.Autonom. Freight
+0054#STR0054#ALL#Gross total
+0055#STR0055#ALL#Summarized - Invoices    
+0056#STR0056#ALL#Detailed - Customers
+0057#STR0057#ALL#Detailed - Items 
+0058#STR0058#ALL#Totallizer by day  
+0059#STR0059#ALL#Totallizer of ancillary expenses   
+0060#STR0060#ALL#Grand total
+0061#STR0061#ALL#Inflow NF Heading
+0062#STR0062#ALL#Outflow NF Heading
+0063#STR0063#ALL#Inflow NF Items
+0064#STR0064#ALL#Outflow NF Items
+0065#STR0065#VEN#PRODUCT          DESCRIPT.                        DEP. ORDER/IT     FACT/ITEM      QUANTITY      UNIT VALUE       GOODS VALUE                TAXES       TAXES      NO     OTHER EXPENSES                TOTAL

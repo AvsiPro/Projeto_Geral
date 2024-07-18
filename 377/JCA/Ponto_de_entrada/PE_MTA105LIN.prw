@@ -12,12 +12,10 @@ User Function MTA105LIN
 
 Local aArea := GetArea()
 Local lRet  := .T.
-Local lBloq := .F.
-//Local nPosR := Ascan(aHeader,{|x| alltrim(x[2]) == "CP_REC_WT"})
+Local lBloq := .T.
 Local nPosP := Ascan(aHeader,{|x| alltrim(x[2]) == "CP_PRODUTO"})
 Local nPosO := Ascan(aHeader,{|x| alltrim(x[2]) == "CP_OP"})
 
-//If aCols[n,nPosR] == 0 .AND. 
 If !Empty(aCols[n,nPosP])
     cOrdem := SUBSTR(aCols[n,nPosO],1,6)
     cCodBem := Posicione("STJ",1,xFilial("STJ")+cOrdem,"TJ_CODBEM")
@@ -26,9 +24,9 @@ If !Empty(aCols[n,nPosP])
         lBloq := U_xvld105(aCols[n,nPosP],cCodBem,cOrdem,cContad)
     endif
 
-    If lBloq 
-        MsgAlert("Item será bloqueado devido a regra de tempo x contadores","MTA105LIN")
-    EndIf 
+    //If !lBloq 
+        //MsgAlert("Item será bloqueado devido a regra de tempo x contadores","MTA105LIN")
+    //EndIf 
 EndIf 
 
 RestArea(aArea)
@@ -52,22 +50,7 @@ User Function xvld105(cProduto,cCodBem,cOrdem,cContad)
 
 Local aArea     := GetArea()
 Local cQuery    := '' 
-Local lLibera   := .F.
-/*
-cQuery := "SELECT * FROM "+RetSQLName("SCP")+" SCP"
-cQuery += " INNER JOIN "+RetSQLName("STJ")+" STJ ON  TJ_FILIAL = CP_FILIAL	AND TJ_ORDEM = '"+cOrdem+"'"
-cQuery += " AND STJ.D_E_L_E_T_ = ' '"
-cQuery += " INNER JOIN "+RetSqlName("STL")+" STL ON  TJ_FILIAL = TL_FILIAL AND TJ_ORDEM = TL_ORDEM"
-cQuery += " AND STL.D_E_L_E_T_ = ' '
-//cQuery += " AND TL_SEQRELA = '1'"
-cQuery += " AND TL_TIPOREG = 'P' 
-cQuery += " AND TL_FILIAL = '"+FWxFilial('STL')+"'" 
-cQuery += " INNER JOIN "+RetSQLName("ZPO")+" ZPO ON ZPO_FILIAL = ' ' AND ZPO_CODIGO = CP_PRODUTO"
-cQuery += " AND ZPO.D_E_L_E_T_ = ' '"
-cQuery += " WHERE SCP.D_E_L_E_T_ = ' '"
-cQuery += " AND CP_FILIAL = '"+xFilial("SCP")+"'"
-cQuery += " AND CP_PRODUTO = '"+cProduto+"'"
-*/
+Local lLibera   := .T.
 
 cQuery := "SELECT *"
 cQuery += " FROM "+RetSQLName("STJ")+" STJ"
@@ -77,13 +60,15 @@ cQuery += "        AND STL.D_E_L_E_T_ = ' '"
 cQuery += "        AND TL_TIPOREG = 'P'"
 cQuery += "        AND TL_CODIGO='"+cProduto+"'"
 cQuery += " INNER JOIN "+RetSQLName("ZPO")+" ZPO ON ZPO_FILIAL = '"+xFilial("ZPO")+"'"
-cQuery += "        AND ZPO_CODIGO = TL_CODIGO" 
+cQuery += "        AND (ZPO_CODIGO = TL_CODIGO  OR ZPO_CODIGO "
+cQuery += "             IN(SELECT B1_XCODPAI FROM "+RetSQLName("SB1")+" WHERE B1_FILIAL=' ' AND B1_COD='"+cProduto+"'))"
+
 cQuery += "        AND ZPO.D_E_L_E_T_ = ' '"
 cQuery += " WHERE  STJ.D_E_L_E_T_ = ' '"
 cQuery += "  AND TJ_FILIAL BETWEEN ' ' AND 'ZZ'"
 cQuery += "  AND TJ_CODBEM='"+cCodBem+"'"
 cQuery += "     AND TL_ORDEM <> '"+cOrdem+"'"
-cQuery += "     ORDER BY TL_ORDEM DESC"
+cQuery += "     ORDER BY TL_ORDEM DESC,ZPO_CODIGO DESC"
 
 cAliasTMP := GetNextAlias()
 MPSysOpenQuery(cQuery, cAliasTMP)

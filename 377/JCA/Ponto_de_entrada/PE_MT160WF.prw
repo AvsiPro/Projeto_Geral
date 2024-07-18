@@ -11,6 +11,17 @@ Local cCotacao  := Paramixb[1]
 Local cPedido   := SC7->C7_NUM
 Local cNumSc    := SC7->C7_NUMSC
 Local aItenSc1  := {}
+Local aGerou    := {}
+
+DbselectArea("SC7")
+DbSetOrder(1)
+If Dbseek(xFilial("SC7")+cPedido)
+    While !EOF() .AND. SC7->C7_FILIAL == xFilial("SC7") .and. SC7->C7_NUM == cPedido
+        Aadd(aGerou,{SC7->C7_PRODUTO,Posicione("SB1",1,xFilial("SB1")+SC7->C7_PRODUTO,"B1_XCODPAI")})
+        Dbskip()
+    EndDo 
+EndIf 
+
 
 DbSelectArea("SC8")
 DbSetOrder(1)
@@ -29,12 +40,21 @@ DbSelectArea("SC1")
 DbSetOrder(1)
 If DbSeek(xFilial("SC1")+cNumSc)
     While !EOF() .AND. SC1->C1_FILIAL == xFilial("SC1") .And. SC1->C1_NUM == cNumSc 
-        Aadd(aItenSc1,{SC1->C1_NUM,SC1->C1_ITEM,SC1->C1_XTIPCOT,SC1->C1_QUANT})
-        If Empty(SC1->C1_PEDIDO)
-            Reclock("SC1",.F.)
-            SC1->C1_PEDIDO := 'XXX'
-            SC1->C1_QUJE   := SC1->C1_QUANT
-            SC1->(Msunlock())
+        cProdPai := Posicione("SB1",1,xFilial("SB1")+SC1->C1_PRODUTO,"B1_XCODPAI")
+        nPosfilho := Ascan(aGerou,{|x| alltrim(x[1]) == alltrim(SC1->C1_PRODUTO)})
+        nPosPai := Ascan(aGerou,{|x| alltrim(x[2]) == alltrim(cProdPai)})
+
+        If (Empty(cProdPai) .Or. nPosPai > 0) .AND. nPosfilho == 0 //EMPTY(SC1->C1_COTACAO) .And. 
+                
+            Aadd(aItenSc1,{SC1->C1_NUM,SC1->C1_ITEM,SC1->C1_XTIPCOT,SC1->C1_QUANT})
+
+            If Empty(SC1->C1_PEDIDO)
+                Reclock("SC1",.F.)
+                SC1->C1_PEDIDO := 'XXX'
+                SC1->C1_QUJE   := SC1->C1_QUANT
+                SC1->(Msunlock())
+            EndIf 
+        
         EndIf 
 
         Dbskip()

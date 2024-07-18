@@ -377,7 +377,7 @@ While  !Eof()
 	//旼컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴커
 	//� Calcula a Necessidade de uma Solicitacao de Compra/Autorizacao de Entrega  �
 	//읕컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴켸
-	If	SCP->CP_PREREQU<>"S" .And. lContinua
+	If	SCP->CP_PREREQU<>"S" .And. lContinua .And. SCP->CP_STATSA <> 'B' //.AND. SCP->CP_SALBLQ == 0
 		If lMarkb
 			 IsMark("CP_OK",ThisMark(),ThisInv())
 		EndIf

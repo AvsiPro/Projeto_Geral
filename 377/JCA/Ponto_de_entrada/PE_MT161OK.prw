@@ -26,7 +26,7 @@ Local aAux      := {}
 Local aAux2     := {}
 Local aDados    := {}
 Local lCotOk    := .t. //valc1qtd(SC8->C8_NUM)
-Local cNumSC8   := SC8->C8_NUM
+//Local cNumSC8   := SC8->C8_NUM
 Local aItensV   := {}
 
 If lCotOk
@@ -61,11 +61,15 @@ If lCotOk
             If Valtype(aDados[nCont1,nCont2]) == "A"
                 //For nCont3 := 1 to len(aDados[nCont1][nCont2])
                     If aDados[nCont1,nCont2,1]
-                        nQtdC8 := Posicione("SC8",3,xFilial("SC8")+cNumSC8+aDados[nCont1,nCont2,3]+aDados[nCont1,1]+aDados[nCont1,2],"C8_QUANT")
+                        DbSelectArea("SC8")
+                        DbGoto(aDados[nCont1,nCont2,9])
+                        nQtdC8 := SC8->C8_QUANT
+                        //nQtdC8 := Posicione("SC8",3,xFilial("SC8")+cNumSC8+aDados[nCont1,nCont2,3]+aDados[nCont1,1]+aDados[nCont1,2],"C8_QUANT")
                         Aadd(aItensV,{  aDados[nCont1,nCont2,3],;
                                         aDados[nCont1,nCont2,4],;
                                         aDados[nCont1,nCont2,13],;
-                                        nQtdC8})
+                                        nQtdC8,;
+                                        aDados[nCont1,nCont2,9]})
                                         //round(aDados[nCont1,nCont2,4] / aDados[nCont1,nCont2,13],0)})
                     EndIf 
                 //Next nCont3
@@ -74,7 +78,8 @@ If lCotOk
     Next nCont1
 
     If len(aItensV) > 0
-        
+        DbSelectArea("SC8")
+        Dbgoto(aItensV[1,5])
         lCotOk := valc1qtd(SC8->C8_NUM,aItensV)
         If lCotOk
             gravar(aDados)

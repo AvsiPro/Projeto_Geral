@@ -13,14 +13,16 @@ User Function MTA105OK
 Local aArea := GetArea()
 Local lRet  := .T.
 
-Local lBloq := .F.
-//Local nPosR := Ascan(aHeader,{|x| alltrim(x[2]) == "CP_REC_WT"})
+Local lBloq := .T.
 Local nPosP := Ascan(aHeader,{|x| alltrim(x[2]) == "CP_PRODUTO"})
 Local nPosO := Ascan(aHeader,{|x| alltrim(x[2]) == "CP_OP"})
+Local nPosS := Ascan(aHeader,{|x| alltrim(x[2]) == "CP_SALBLQ"})
+Local nPosX := Ascan(aHeader,{|x| alltrim(x[2]) == "CP_XORIGEM"})
+Local nPosQ := Ascan(aHeader,{|x| alltrim(x[2]) == "CP_QUANT"})
 Local nCont := 1
 
 For nCont := 1 to len(aCols)
-    //If aCols[nCont,nPosR] == 0 .AND. 
+    
     iF !Empty(aCols[n,nPosP])
         cOrdem := SUBSTR(aCols[n,nPosO],1,6)
         cCodBem := Posicione("STJ",1,xFilial("STJ")+cOrdem,"TJ_CODBEM")
@@ -30,7 +32,12 @@ For nCont := 1 to len(aCols)
         endif
 
         If !lBloq 
-            MsgAlert("Item "+alltrim(aCols[nCont,nPosP])+" será bloqueado devido a regra de tempo x contadores","MTA105LIN")
+            
+            If Funname() == "MATA105"
+                MsgAlert("Item "+alltrim(aCols[nCont,nPosP])+" será bloqueado devido a regra de tempo x contadores","MTA105OK")
+                aCols[nCont,nPosS] := aCols[nCont,nPosQ]
+                aCols[nCont,nPosX] := Alltrim(Funname())
+            EndIf 
         EndIf 
     EndIf 
 Next nCont
@@ -38,3 +45,4 @@ Next nCont
 RestArea(aArea)
 
 Return(lRet)
+

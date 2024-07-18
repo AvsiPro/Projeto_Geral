@@ -9,80 +9,113 @@
 User Function MNTA420X()
     
 Local lLibera := .T.
+Local cPlano  := STJ->TJ_PLANO
+Local cOrdem  := STJ->TJ_ORDEM 
+Local cFilOS  := STJ->TJ_FILIAL 
+Local aAreaTL := {}
+Local lBloq   := .F.
+//TJ_FILIAL+TJ_ORDEM+TJ_PLANO+TJ_TIPOOS+TJ_CODBEM+TJ_SERVICO+TJ_SEQRELA
+//TL_FILIAL+TL_ORDEM+TL_PLANO+TL_TAREFA+TL_TIPOREG+TL_CODIGO+TL_SEQRELA+TL_SEQTARE
 
-    //If Inclui .And. 
-    If STL->TL_TIPOREG == 'P'
-        cQuery := " SELECT * FROM "+RetSqlName("STL")+" STL
-        cQuery += " INNER JOIN "+RetSqlName("STJ")+" STJ
-        cQuery += " 	ON  TJ_FILIAL = TL_FILIAL
-        cQuery += " 	AND TJ_ORDEM = TL_ORDEM
-        cQuery += " 	AND STJ.D_E_L_E_T_ = ''
-        cQuery += " INNER JOIN "+RetSqlName("ZPO")+" ZPO
-        cQuery += " 	ON ZPO_FILIAL = '"+xFilial("ZPO")+"'"
-        cQuery += " 	AND ZPO_CODIGO = TL_CODIGO
-        cQuery += " 	AND ZPO.D_E_L_E_T_ = ' '
-        cQuery += " WHERE STL.D_E_L_E_T_ = ' '
-        cQuery += "     AND TL_FILIAL BETWEEN ' ' AND 'ZZZ' " //= '"+FWxFilial('STL')+"' "
-        cQuery += " 	AND TL_CODIGO = '"+STL->TL_CODIGO+"'"
-        //cQuery += " 	AND TL_SEQRELA = '1'"
-        cQuery += " 	AND TL_TIPOREG = 'P'"
-        cQuery += "     AND TL_ORDEM <> '"+STJ->TJ_ORDEM+"'"
-        cQuery += "     ORDER BY TL_ORDEM DESC"
-        
-        cAliasTMP := GetNextAlias()
-        MPSysOpenQuery(cQuery, cAliasTMP)
-        
-        If (cAliasTMP)->(!EoF())
-            
-            If (cAliasTMP)->ZPO_TIPO == '1' .Or. (cAliasTMP)->ZPO_TIPO == '3' //Contador
-                lLibera := Iif((cAliasTMP)->ZPO_CONTAD < ((cAliasTMP)->TJ_POSCONT - STJ->TJ_POSCONT),.T.,.F.)
-            EndIf
-
-            If ((cAliasTMP)->ZPO_TIPO == '2' .Or. (cAliasTMP)->ZPO_TIPO == '3') .And. !lLibera //Tempo
-
-                dIniAtu := STL->TL_DTINICI
-                dFimAnt := SToD((cAliasTMP)->TL_DTFIM)
-                nTempo  := (cAliasTMP)->ZPO_TEMPO
-
-                If (cAliasTMP)->ZPO_TPTEMP == 'M' //mes
-                    lLibera := Iif(DateDiffMonth(dFimAnt, dIniAtu) > nTempo,.T.,.F.)
-
-                ElseIf (cAliasTMP)->ZPO_TPTEMP == 'S' //semana
-                    lLibera := Iif(GetWeekDifference(dFimAnt, dIniAtu) > nTempo ,.T.,.F.)
-
-                ElseIf (cAliasTMP)->ZPO_TPTEMP == 'D' //dia
-                    lLibera := Iif(DateDiffDay(dFimAnt, dIniAtu) > nTempo,.T.,.F.)
-
-                ElseIf (cAliasTMP)->ZPO_TPTEMP == 'H' //hora
+    If Inclui .OR. ALTERA 
+        DbSelectArea("STL")
+        DbSetOrder(1)
+        If Dbseek(cFilOS+cOrdem+cPlano)
+            While !Eof() .AND. STL->TL_FILIAL == cFilOS .AND. STL->TL_ORDEM == cOrdem .AND. STL->TL_PLANO == cPlano
+                If STL->TL_TIPOREG == 'P'
+                    lLibera := .t.
                     
-                    cHrIniAtu := STL->TL_HOINICI
-                    cHrFimAnt := (cAliasTMP)->TL_HOFIM
+                    aAreaTL := GetArea()
 
-                    dateTime1 := DToC(dFimAnt) + " " + cHrFimAnt
-                    dateTime2 := DToC(dIniAtu) + " " + cHrIniAtu
+                    cQuery := " SELECT * FROM "+RetSqlName("STL")+" STL
+                    cQuery += " INNER JOIN "+RetSqlName("STJ")+" STJ
+                    cQuery += " 	ON  TJ_FILIAL = TL_FILIAL
+                    cQuery += " 	AND TJ_ORDEM = TL_ORDEM
+                    cQuery += " 	AND STJ.D_E_L_E_T_ = ''
+                    cQuery += " INNER JOIN "+RetSqlName("ZPO")+" ZPO
+                    cQuery += " 	ON ZPO_FILIAL = '"+xFilial("ZPO")+"'"
+                    cQuery += "        AND (ZPO_CODIGO = TL_CODIGO  OR ZPO_CODIGO "
+                    cQuery += "             IN(SELECT B1_XCODPAI FROM "+RetSQLName("SB1")+" WHERE B1_FILIAL=' ' AND B1_COD='"+STL->TL_CODIGO+"'))"
 
-                    lLibera := Iif(GetHourDifference(dateTime1, dateTime2) > nTempo,.T.,.F.)
+                    cQuery += " 	AND ZPO.D_E_L_E_T_ = ' '
+                    cQuery += " WHERE STL.D_E_L_E_T_ = ' '
+                    cQuery += "     AND TL_FILIAL BETWEEN ' ' AND 'ZZZ' "
+                    cQuery += " 	AND TL_CODIGO = '"+STL->TL_CODIGO+"'"
+                    cQuery += " 	AND TL_TIPOREG = 'P'"
+                    cQuery += "     AND TL_ORDEM <> '"+STJ->TJ_ORDEM+"'"
+                    cQuery += "     ORDER BY TL_ORDEM DESC,ZPO_CODIGO DESC"
+                    
+                    cAliasTMP := GetNextAlias()
+                    MPSysOpenQuery(cQuery, cAliasTMP)
+                    
+                    If (cAliasTMP)->(!EoF())
+                        
+                        If (cAliasTMP)->ZPO_TIPO == '1' .Or. (cAliasTMP)->ZPO_TIPO == '3' //Contador
+                            lLibera := Iif((cAliasTMP)->ZPO_CONTAD < ((cAliasTMP)->TJ_POSCONT - STJ->TJ_POSCONT),.T.,.F.)
+                        EndIf
+
+                        If ((cAliasTMP)->ZPO_TIPO == '2' .Or. (cAliasTMP)->ZPO_TIPO == '3') .And. !lLibera //Tempo
+
+                            dIniAtu := STL->TL_DTINICI
+                            dFimAnt := SToD((cAliasTMP)->TL_DTFIM)
+                            nTempo  := (cAliasTMP)->ZPO_TEMPO
+
+                            If (cAliasTMP)->ZPO_TPTEMP == 'M' //mes
+                                lLibera := Iif(DateDiffMonth(dFimAnt, dIniAtu) > nTempo,.T.,.F.)
+
+                            ElseIf (cAliasTMP)->ZPO_TPTEMP == 'S' //semana
+                                lLibera := Iif(GetWeekDifference(dFimAnt, dIniAtu) > nTempo ,.T.,.F.)
+
+                            ElseIf (cAliasTMP)->ZPO_TPTEMP == 'D' //dia
+                                lLibera := Iif(DateDiffDay(dFimAnt, dIniAtu) > nTempo,.T.,.F.)
+
+                            ElseIf (cAliasTMP)->ZPO_TPTEMP == 'H' //hora
+                                
+                                cHrIniAtu := STL->TL_HOINICI
+                                cHrFimAnt := (cAliasTMP)->TL_HOFIM
+
+                                dateTime1 := DToC(dFimAnt) + " " + cHrFimAnt
+                                dateTime2 := DToC(dIniAtu) + " " + cHrIniAtu
+
+                                lLibera := Iif(GetHourDifference(dateTime1, dateTime2) > nTempo,.T.,.F.)
+                            EndIf
+
+                        EndIf
+
+                    EndIf
+                    
+                    (cAliasTMP)->(DbCloseArea())
+
+                    RestArea(aAreaTL)
+
+                    DbSelectArea("STL")
+                    //DbSetOrder(1)
+                    //Dbseek(cFilOS+cOrdem+cPlano)
+                    If !lLibera
+                        STJ->TJ_XSITUAC := '1'
+                        lBloq := .T.
+                        DbSelectArea("SCP")
+                        DbSetOrder(2)
+                        //If NGIFDBSEEK("SCP",STL->TL_NUMSA+STL->TL_ITEMSA,1,.F.)
+                        If Dbseek(xFilial("SCP")+STL->TL_CODIGO+STL->TL_NUMSA+STL->TL_ITEMSA)
+                            RecLock('SCP', .F.)
+                                SCP->CP_STATSA  := 'B'
+                                SCP->CP_SALBLQ  := SCP->CP_QUANT
+                                SCP->CP_XORIGEM := Alltrim(FunName())
+                            SCP->(MsUnlock())
+                        EndIf
+                    EndIf
+
                 EndIf
 
-            EndIf
+                STL->(Dbskip())
+            EndDo 
+        EndIf 
 
-        EndIf
-        
-        (cAliasTMP)->(DbCloseArea())
-
-        If !lLibera
+        if lBloq
             MsgInfo('Bloqueado de acordo com a regra de peças com tempo previsto.')
-            STJ->TJ_SITUACA := 'B'
-            
-            If NGIFDBSEEK("SCP",STL->TL_NUMSA+STL->TL_ITEMSA,1,.F.)
-                RecLock('SCP', .F.)
-                    SCP->CP_STATSA  := 'B'
-                    SCP->CP_SALBLQ  := SCP->CP_QUANT
-                    SCP->CP_XORIGEM := Alltrim(FunName())
-                SCP->(MsUnlock())
-            EndIf
-        EndIf
-    EndIf
+        EndIf 
+    ENDIF 
 
 Return .T.
 

@@ -10,7 +10,7 @@ User Function MNTA420L()
 
 cRet := " TJ_SITUACA = 'L' OR "
 cRet += " TJ_SITUACA = 'C' OR "
-cRet += " TJ_SITUACA = 'B' "
+cRet += " TJ_SITUACA = 'P' "
 
 cFilMbrSTJ := StrTran(cFilMbrSTJ,"TJ_SITUACA = 'L'", cRet)
 

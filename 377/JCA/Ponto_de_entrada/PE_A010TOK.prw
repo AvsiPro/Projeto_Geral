@@ -21,10 +21,10 @@ Local aAlterados    :=  {}
 Local nCont         :=  0
 Local aFilhos       :=  {}
 Local nX            :=  0
-Local cBkpSb1       :=  SB1->B1_COD
+Local cBkpSb1       :=  M->B1_COD
 
 If Altera 
-    If !Empty(SB1->B1_XCODPAI)
+    If !Empty(M->B1_XCODPAI)
         MsgAlert("Produtos filhos não podem ser alterados.","A010TOK")
         lExecuta := .F.
     else 

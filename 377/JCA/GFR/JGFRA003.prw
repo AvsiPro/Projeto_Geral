@@ -84,7 +84,7 @@ Local oStruSC6 := FwFormStruct(1, "ZPQ")
     // DEFINE A RELAÇÃO ENTRE OS SUBMODELOS
     oModel:SetRelation("ZPQDETAIL", {{"ZPQ_FILIAL", "ZPP_FILIAL"}, {"ZPQ_CODIGO", "ZPP_CODIGO"}}, ZPQ->(IndexKey(1)))
 
-    //oStruSC6:AddTrigger("ZY1_VEND", "ZY1_NVEND",{|| .T.}, {|| POSICIONE("SA3",1,XFILIAL("SA3")+oModel:GetValue('ZY1DETAIL','ZY1_VEND'),"A3_NOME") })
+    oStruSC6:AddTrigger("ZPQ_CODIGO", "ZPQ_DESCRI",{|| .T.}, {|| POSICIONE("SB1",1,XFILIAL("SB1")+oModel:GetValue('ZPQDETAIL','ZPQ_PRODUT'),"B1_DESC") })
     
     // DESCRIÇÃO DO MODELO
     oModel:SetDescription("Cadastro de Campanhas")

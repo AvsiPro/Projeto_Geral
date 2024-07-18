@@ -153,6 +153,7 @@ Static Function fMontaHead()
     //[3] - Tamanho
     //[4] - Decimais
     //[5] - Máscara
+    aAdd(aHeadAux, {"Filial OS.",        "C", TamSX3('TL_FILIAL')[01],   0, ""})
     aAdd(aHeadAux, {"Ordem Serv.",       "C", TamSX3('TL_ORDEM')[01],   0, ""})
     aAdd(aHeadAux, {"Tarefa",            "C", TamSX3('TL_TAREFA')[01],    0, ""})
     aAdd(aHeadAux, {"Nome Tarefa",       "C", TamSX3('TL_NOMTAR')[01],  0, ""})
@@ -183,6 +184,7 @@ Static Function fMontDados(oSay)
     Local aArea := GetArea()
     Local nAtual := 0
     Local nTotal := 0
+    Local cCodBem := Posicione("STJ",1,xFilial("STJ")+Substr(SCP->CP_OP,1,6),"TJ_CODBEM")
   
     Private LCORRET := .F. //variavel NGNOMETAR nao apagar 
     //Zera a grid
@@ -191,7 +193,7 @@ Static Function fMontDados(oSay)
     //Montando a query
     oSay:SetText("Montando a consulta")
 
-    cQuery := " SELECT STL.R_E_C_N_O_ AS RECSTL, * FROM "+RetSqlName("SCP")+" SCP
+    cQuery := " SELECT TOP 4 STL.R_E_C_N_O_ AS RECSTL, * FROM "+RetSqlName("SCP")+" SCP
     cQuery += " INNER JOIN "+RetSqlName("STL")+" STL
     cQuery += " 	ON TL_FILIAL = CP_FILIAL
     cQuery += " 	AND TL_NUMSA = CP_NUM
@@ -200,12 +202,14 @@ Static Function fMontDados(oSay)
     cQuery += " INNER JOIN "+RetSqlName("STJ")+" STJ
     cQuery += " 	ON  TJ_FILIAL = TL_FILIAL
     cQuery += " 	AND TJ_ORDEM = TL_ORDEM
-    cQuery += " 	AND STJ.D_E_L_E_T_ = ''
+    cQuery += " 	AND STJ.D_E_L_E_T_ = ' ' AND TJ_CODBEM='"+cCodBem+"'"
     cQuery += " WHERE SCP.D_E_L_E_T_ = ''
-    cQuery += " 	AND CP_FILIAL = '"+FWxFilial('SCP')+"'
+    cQuery += " 	AND CP_FILIAL BETWEEN ' ' AND 'ZZZ' " //'"+FWxFilial('SCP')+"'
     cQuery += " 	AND CP_XORIGEM = 'MNTA420'
-    cQuery += " 	AND CP_NUM = '"+SCP->CP_NUM+"'
-    cQuery += " 	AND CP_ITEM = '"+SCP->CP_ITEM+"'
+    cQuery += "     AND CP_PRODUTO='"+SCP->CP_PRODUTO+"'"
+    cQuery += " 	AND CP_NUM <> '"+SCP->CP_NUM+"'
+    cQuery += "     ORDER BY CP_NUM DESC"
+    //cQuery += " 	AND CP_ITEM = '"+SCP->CP_ITEM+"'
 
     //Executando a query
     oSay:SetText("Executando a consulta")
@@ -226,6 +230,7 @@ Static Function fMontDados(oSay)
             oSay:SetText("Adicionando registro " + cValToChar(nAtual) + " de " + cValToChar(nTotal) + "...")
             
             aAdd(aColsGrid, {;
+                QRYTMP->TL_FILIAL,;
                 QRYTMP->TL_ORDEM,;
                 QRYTMP->TL_TAREFA,;
                 NGNOMETAR(QRYTMP->TJ_CODBEM+QRYTMP->TJ_SERVICO+QRYTMP->TJ_SEQRELA,QRYTMP->TL_TAREFA,TAMSX3('TL_NOMTAR')[1]),;
@@ -246,7 +251,7 @@ Static Function fMontDados(oSay)
         EndDo
   
     Else  
-        aAdd(aColsGrid, {"","","","","","","","","","","","",0,.F.})
+        aAdd(aColsGrid, {"","","","","","","","","","","","","",0,.F.})
     EndIf
 
     QRYTMP->(DbCloseArea())

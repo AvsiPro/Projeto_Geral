@@ -168,7 +168,8 @@ User Function JcaCmxVe(nOpc)
 
 Private cCampanha := space(6)
 
-SetPrvt("oDlg1","oGrp1","oSay1","oSay2","oGet1","oGrp2","oBrw1","oBtn1","oBtn2","oBtn3","oBtn4")
+Private oDlg1,oGrp1,oSay1,oSay2,oGet1,oGrp2,oBrw1,oBtn1,oBtn2,oBtn3,oBtn4
+
 PRIVATE oOk        :=    LoadBitmap(GetResources(),'br_verde')  //Controla se o pedido foi alterado ou nao no grid.
 PRIVATE oNo        :=    LoadBitmap(GetResources(),'br_vermelho')
 
@@ -184,7 +185,7 @@ If Select("SM0") == 0
 EndIf
 
 If nOpc == 1
-    Aadd(aList1,{.F.,'','','','','','','','',0})
+    Aadd(aList1,{.F.,'','','','','','','','',0,'','','',''})
 Else 
     cCampanha := ZPR->ZPR_CODIGO
 EndIf
@@ -202,8 +203,8 @@ oDlg1      := MSDialog():New( 092,232,596,1360,"Campanha x Veiculos",,,.F.,,,,,,
 
     oGrp2      := TGroup():New( 040,008,216,548,"",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
         //oBrw1      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{048,012,212,544},,, oGrp2 ) 
-        oList1    := TCBrowse():New(048,012,532,165,, {'','Filial','Veículo','Placa','Ano','Chassi','Num. OS','Data Ini. OS','Data Fim Os'},;
-                                        {10,40,50,40,70,40,40,40},;
+        oList1    := TCBrowse():New(048,012,532,165,, {'','Filial','Veículo','Placa','Ano','Chassi','Familia','Modelo','Data Assoc.','Filial Ab.','Num. OS','Data Ini. OS','Data Fim Os'},;
+                                        {10,40,50,40,70,40,40,40,40,40,40,40},;
                                         oGrp2,,,,{|| /*FHelp(oList1:nAt)*/},{|| editcol(oList1:nAt)},, ,,,  ,,.F.,,.T.,,.F.,,,)
         oList1:SetArray(aList1)
         oList1:bLine := {||{IF(aList1[oList1:nAt,01],oOk,oNo),; 
@@ -212,6 +213,10 @@ oDlg1      := MSDialog():New( 092,232,596,1360,"Campanha x Veiculos",,,.F.,,,,,,
                             aList1[oList1:nAt,04],;
                             aList1[oList1:nAt,05],;
                             aList1[oList1:nAt,06],;
+                            aList1[oList1:nAt,11],;
+                            aList1[oList1:nAt,12],;
+                            aList1[oList1:nAt,13],;
+                            aList1[oList1:nAt,14],;
                             aList1[oList1:nAt,07],;
                             aList1[oList1:nAt,08],;
                             aList1[oList1:nAt,09]}}
@@ -219,8 +224,9 @@ oDlg1      := MSDialog():New( 092,232,596,1360,"Campanha x Veiculos",,,.F.,,,,,,
     oBtn1      := TButton():New( 218,068,"Associa Veículo",oDlg1,{|| veiculos()},047,012,,,,.T.,,"",,,,.F. ) //88
     oBtn5      := TButton():New( 218,130,"Remover Veículo",oDlg1,{|| removbem()},047,012,,,,.T.,,"",,,,.F. )
     oBtn2      := TButton():New( 218,192,"Gerar OS",oDlg1,{|| Processa({|| geraros()},"Aguarde")},047,012,,,,.T.,,"",,,,.F. ) //174
-    oBtn3      := TButton():New( 218,254,"Relatório",oDlg1,{||Processa({|| GeraPlan()},"Aguarde") },047,012,,,,.T.,,"",,,,.F. ) //256
-    oBtn4      := TButton():New( 218,316,"Sair",oDlg1,{||oDlg1:end()},047,012,,,,.T.,,"",,,,.F. ) //344
+    oBtn6      := TButton():New( 218,254,"Gravar",oDlg1,{||Processa({|| gravaros()},"Aguarde")},047,012,,,,.T.,,"",,,,.F. ) //344
+    oBtn3      := TButton():New( 218,316,"Relatório",oDlg1,{||Processa({|| GeraPlan()},"Aguarde") },047,012,,,,.T.,,"",,,,.F. ) //256
+    oBtn4      := TButton():New( 218,378,"Sair",oDlg1,{||oDlg1:end()},047,012,,,,.T.,,"",,,,.F. ) //344
 
     oBtn1:disable()
     oBtn2:disable()
@@ -285,20 +291,67 @@ WHILE !EOF()
                         TRB->ZPR_NUMOS,;
                         stod(TRB->ZPR_DTINI),;
                         stod(TRB->ZPR_DTFIM),;
-                        TRB->RECZPR})
+                        TRB->RECZPR,;
+                        '',;
+                        '',;
+                        '',;
+                        ''})
     endif
     Dbskip()
 EndDo 
 
                 
 If len(aList1) < 1
-     Aadd(aList1,{.F.,'','','','','','','','',0})
+     Aadd(aList1,{.F.,'','','','','','','','',0,'','','',''})
 EndIf
 
 
 
 Return
 
+/*/{Protheus.doc} gravaros()
+    Gravar registros sem gerar os
+    @type  Static Function
+    @author user
+    @since 11/07/2024
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function gravaros()
+
+Local nX 
+
+For nX := 1 to len(aList1)
+    If aList1[nX,01]
+        If Empty(aList1[nX,07])
+            aAux  :=  {}
+
+            DbselectArEA("ZPR")
+            DbSetOrder(1)
+            If Dbseek(cfilant+cCampanha+aList1[nX,03])
+                Reclock("ZPR",.F.)
+            Else
+                Reclock("ZPR",.T.)
+            EndIF 
+            ZPR->ZPR_FILIAL := cfilant
+            ZPR->ZPR_CODIGO := cCampanha
+            ZPR->ZPR_CODBEM := aList1[nX,03]
+            ZPR->ZPR_PLACA  := aList1[nX,04]
+            ZPR->ZPR_ANO    := aList1[nX,05]
+            ZPR->ZPR_CHASSI := aList1[nX,06]
+            ZPR->ZPR_FAMILI := aList1[nX,15]
+            nRecno := ZPR->(Recno())
+            ZPR->(Msunlock())
+            aList1[nX,10] := nRecno
+        EndIF 
+    EndIf 
+Next nX 
+    
+Return 
 
 /*/{Protheus.doc} editcol
     (long_description)
@@ -366,7 +419,6 @@ If ParamBox(aPergs, "Informe o código da Marca a ser gerada para o produto",aRet
         DbSetOrder(1)
         If Dbseek(xFilial("ST9")+cVeiculo)
             If MsgYesNo("Confirma a inclusão do bem "+cVeiculo+" nesta campanha?")
-                //Aadd(aList1,{'','','','','','','',''})
                 //'','Filial','Veículo','Ano','Chassi','Num. OS','Data Ini. OS','Data Fim Os'
             
                 Aadd(aList1,{   .F.,;
@@ -378,7 +430,13 @@ If ParamBox(aPergs, "Informe o código da Marca a ser gerada para o produto",aRet
                                 '',;
                                 '',;
                                 '',;
-                                0})
+                                0,;
+                                Posicione("ST6",1,xFilial("ST6")+ST9->T9_CODFAMI,"T6_NOME"),;
+                                Posicione("TQR",1,xFilial("TQR")+ST9->T9_TIPMOD,"TQR_DESMOD"),;
+                                '',;
+                                '',;
+                                ST9->T9_CODFAMI,;
+                                ST9->T9_TIPMOD})
                 
                 Reclock("ZPR",.T.)
                 ZPR->ZPR_FILIAL := cfilant
@@ -391,10 +449,10 @@ If ParamBox(aPergs, "Informe o código da Marca a ser gerada para o produto",aRet
                 ZPR->(Msunlock())
                 aList1[len(alist1),10] := nRecno                
             Else     
-                Aadd(aList1,{.F.,'','','','','','','','',0})                
+                Aadd(aList1,{.F.,'','','','','','','','',0,'','','','','',''})                
             EndIf 
         Else 
-            Aadd(aList1,{.F.,'','','','','','','','',0})
+            Aadd(aList1,{.F.,'','','','','','','','',0,'','','','','',''})
             MsgAlert("Veículo não encontrado na base, verifique!!!")
         EndIf
     Else 
@@ -411,6 +469,10 @@ oList1:bLine := {||{IF(aList1[oList1:nAt,01],oOk,oNo),;
                     aList1[oList1:nAt,04],;
                     aList1[oList1:nAt,05],;
                     aList1[oList1:nAt,06],;
+                    aList1[oList1:nAt,11],;
+                    aList1[oList1:nAt,12],;
+                    aList1[oList1:nAt,13],;
+                    aList1[oList1:nAt,14],;
                     aList1[oList1:nAt,07],;
                     aList1[oList1:nAt,08],;
                     aList1[oList1:nAt,09]}}
@@ -510,7 +572,7 @@ For nX := 1 to len(aList1)
                 STJ->TJ_USUARIO :=  CUSERNAME
                 STJ->TJ_PRIORID :=  'ZZZ'
                 STJ->TJ_TERMINO :=  'N'
-                STJ->TJ_SITUACA :=  'L'
+                STJ->TJ_XSITUAC :=  '2'
                 STJ->TJ_TERCEIR :=  '1'
                 STJ->TJ_CONTINI :=  cContado
                 STJ->TJ_USUAINI :=  CUSERNAME
@@ -714,7 +776,7 @@ While nTam >= nX .and. len(aList1) >= nX
 ENDDO
 
 If len(aList1) < 1
-     Aadd(aList1,{.F.,'','','','','','','','',0})
+     Aadd(aList1,{.F.,'','','','','','','','',0,'','','','','',''})
 EndIf
 
 
@@ -726,6 +788,10 @@ oList1:bLine := {||{IF(aList1[oList1:nAt,01],oOk,oNo),;
                     aList1[oList1:nAt,04],;
                     aList1[oList1:nAt,05],;
                     aList1[oList1:nAt,06],;
+                    aList1[oList1:nAt,11],;
+                    aList1[oList1:nAt,12],;
+                    aList1[oList1:nAt,13],;
+                    aList1[oList1:nAt,14],;
                     aList1[oList1:nAt,07],;
                     aList1[oList1:nAt,08],;
                     aList1[oList1:nAt,09]}}
@@ -754,21 +820,26 @@ Local aArea     := GetArea()
 Local nOpc      :=  0
 Local nX 
 Local cQuery 
+
 Private lCheck     :=   .F.
 PRIVATE aVeiculos :=  {}
+Private cPesquisa  :=   space(25)
 
 PRIVATE oOk        :=    LoadBitmap(GetResources(),'br_verde')  //Controla se o pedido foi alterado ou nao no grid.
 PRIVATE oNo        :=    LoadBitmap(GetResources(),'br_vermelho')
 Private nPrimMrk   :=   1
-Private oDlg1v,oGrp1v,oBtn1v,oBtn2v,oList1v
+Private oDlg1v,oGrp1v,oBtn1v,oBtn2v,oList1v,oSay1v,oGet1v,oBtn3v
 
 If Empty(aList1[1,2])
     aList1 := {}
 EndIf 
 
 cQuery := "SELECT T9_CODBEM,T9_NOME,T9_PLACA,T9_ZFILORI,T9_ANOMOD,T9_CHASSI"
-cQuery += " FROM "+RetSQLName("ST9")
-cQuery += " WHERE T9_FILIAL='"+xFilial("ST9")+"' AND T9_CATBEM='4' AND D_E_L_E_T_=' '"
+cQuery += " ,TQR_DESMOD,T9_CODFAMI,T6_NOME,T9_TIPMOD,T9_CODFAMI"
+cQuery += " FROM "+RetSQLName("ST9")+" T9"
+cQuery += " LEFT JOIN "+RetSQLName("ST6")+" T6 ON T6_FILIAL=T9_FILIAL AND T6_CODFAMI=T9_CODFAMI AND T6.D_E_L_E_T_=' '"
+cQuery += " LEFT JOIN "+RetSQLName("TQR")+" TQR ON TQR_FILIAL=T9_FILIAL AND TQR_TIPMOD=T9_TIPMOD AND TQR.D_E_L_E_T_=' '"
+cQuery += " WHERE T9_FILIAL='"+xFilial("ST9")+"' AND T9_CATBEM='4' AND T9.D_E_L_E_T_=' '"
 
 IF Select('TRB') > 0
     dbSelectArea('TRB')
@@ -787,12 +858,20 @@ While !EOF()
                     TRB->T9_PLACA,;
                     TRB->T9_ZFILORI,;
                     TRB->T9_ANOMOD,;
-                    TRB->T9_CHASSI})
+                    TRB->T9_CHASSI,;
+                    TRB->T6_NOME,;
+                    TRB->TQR_DESMOD,;
+                    TRB->T9_TIPMOD,;
+                    TRB->T9_CODFAMI})
     Dbskip()
 ENDDO
 
 If len(aVeiculos) > 0
     oDlg1v      := MSDialog():New( 092,232,557,863,"Veiculos",,,.F.,,,,,,.T.,,,.T. )
+        
+        oSay1v  := TSay():New( 005,108,{||"Pesquisa"},oDlg1v,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
+        oGet1v  := TGet():New( 005,148,{|c| If(Pcount()>0,cPesquisa:=c,cPesquisa)},oDlg1v,060,007,'@!',{||/*If(!Empty(cPesquisa),Processa({|| busca()},"Aguarde"),)*/},CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"","",,)
+        
         oGrp1v      := TGroup():New( 012,016,192,294,"Selecione",oDlg1v,CLR_BLACK,CLR_WHITE,.T.,.F. )
         //oBrw1      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{024,024,184,236},,, oGrp1v ) 
         oList1v 	   := TCBrowse():New(024,024,260,165,, {'','Veículo','Descricao','Placa','Filial Veiculo'},;
@@ -810,6 +889,9 @@ If len(aVeiculos) > 0
 	
         oBtn1v      := TButton():New( 200,080,"Confirmar",oDlg1v,{|x| oDlg1v:end(nOpc:=1)},037,012,,,,.T.,,"",,,,.F. )
         oBtn2v      := TButton():New( 200,160,"Cancelar",oDlg1v,{|x| oDlg1v:end(nOpc:=0)},037,012,,,,.T.,,"",,,,.F. )
+        
+        oBtn3v  := TButton():New( 005,210,"?",oDlg1v,{|x| PesqVeic(cPesquisa,oList1v:nAt)},027,008,,,,.T.,,"",,,,.F. )
+        
 
     oDlg1v:Activate(,,,.T.)
 else
@@ -828,35 +910,86 @@ If nOpc == 1
                         '',;
                         '',;
                         '',;
-                        0})
+                        0,;
+                        aVeiculos[nX,08],;
+                        aVeiculos[nX,09],;
+                        '',;
+                        '',;
+                        aVeiculos[nX,10],;
+                        aVeiculos[nX,11]})
         endIf 
     Next nX 
 
     If len(aList1) < 1
-        Aadd(aList1,{.F.,'','','','','','','','',0})
+        Aadd(aList1,{.F.,'','','','','','','','',0,'','','','','',''})
     EndIf 
 
     oList1:SetArray(aList1)
     oList1:bLine := {||{IF(aList1[oList1:nAt,01],oOk,oNo),; 
-                        aList1[oList1:nAt,02],;
-                        aList1[oList1:nAt,03],;
-                        aList1[oList1:nAt,04],;
-                        aList1[oList1:nAt,05],;
-                        aList1[oList1:nAt,06],;
-                        aList1[oList1:nAt,07],;
-                        aList1[oList1:nAt,08],;
-                        aList1[oList1:nAt,09]}}
+                            aList1[oList1:nAt,02],;
+                            aList1[oList1:nAt,03],;
+                            aList1[oList1:nAt,04],;
+                            aList1[oList1:nAt,05],;
+                            aList1[oList1:nAt,06],;
+                            aList1[oList1:nAt,11],;
+                            aList1[oList1:nAt,12],;
+                            aList1[oList1:nAt,13],;
+                            aList1[oList1:nAt,14],;
+                            aList1[oList1:nAt,07],;
+                            aList1[oList1:nAt,08],;
+                            aList1[oList1:nAt,09]}}
     oList1:refresh()
     oDlg1:refresh()
 Else 
     If len(aList1) < 1
-        Aadd(aList1,{.F.,'','','','','','','','',0})
+        Aadd(aList1,{.F.,'','','','','','','','',0,'','','','','',''})
     EndIf 
 EndIf 
 
 RestArea(aArea)
 
 Return 
+
+/*/{Protheus.doc} PesqVeic(cPesquisa)
+    Pesquisa
+    @type  Static Function
+    @author user
+    @since 11/07/2024
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function PesqVeic(cPesquisa,nInicio)
+
+Local aArea := GetArea()
+Local nCont 
+Local nX 
+Local lAchou := .F.
+
+For nCont := nInicio to len(aVeiculos)
+    For nX := 2 to 9
+        If Alltrim(cPesquisa) $ Alltrim(aVeiculos[nCont,nX])
+            oList1v:nAt := nCont
+            lAchou := .T.
+            exit
+        EndIF     
+    Next nX 
+
+    If lAchou
+        exit 
+    EndIf 
+
+Next nCont 
+
+oList1v:refresh()
+oDlg1V:refresh()
+
+RestArea(aArea)
+
+Return
 
 /*/{Protheus.doc} editcol
     (long_description)

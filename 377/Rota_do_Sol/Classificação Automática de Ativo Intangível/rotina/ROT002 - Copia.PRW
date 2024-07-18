@@ -32,7 +32,6 @@ user function ROT002()
 	Private cHistor	 	  		:= ''
 	Private cXCCATF 		  	:= ''
 	Private nVlrOrig			:=	0
-	Private cContExc			:=	alltrim(SuperGetMV("TI_CNTEXC",.F.,"'44101010014410101001','31301010013130101001'"))
 
 	if fShowParam()
 
@@ -90,24 +89,8 @@ static function fProcess(aZ04_Atual,aZ05AtivosPreCadastro)
 			For nX := 1 to nQtdDeb
 
 				nTotalDebito 		:= fGetTotalDebito(cDataini, cDataFim, aZ05AtivosPreCadastro[nI])
-				//nTotalCredito		:= fGetTotalCredito(cDataini, cDataFim, aZ05AtivosPreCadastro[nI])
-				nValor		 		:= nTotalDebito //- nTotalCredito
-				
-				nVlrOrig := 0
-
-				If nValor < 0
-					nVlrOrig := nValor 
-					nValor := 1
-				EndIf 
-				
-				fSaveToATFA012(aZ04_Atual,nValor, aZ05AtivosPreCadastro[nI], nI, cDataini, cDataFim)	
-			
-			Next nX 
-
-			For nX := 1 to nQtdCrd
-
 				nTotalCredito		:= fGetTotalCredito(cDataini, cDataFim, aZ05AtivosPreCadastro[nI])
-				nValor		 		:= nTotalCredito 
+				nValor		 		:= nTotalDebito - nTotalCredito
 				
 				nVlrOrig := 0
 
@@ -181,13 +164,7 @@ static function fSaveToATFA012(aZ04_Atual, nValor, aZ05AtivosPreCadastro, nI, cD
 				EndIf 
 				aCommandsUPDCT2 := fGetSQLScriptFlagCT2(cITEM, cDataini, cDataFim, aZ05AtivosPreCadastro)
 				//fExecUpdateFlagCT2(aCommandsUPDCT2)
-			EndIf 	
-
-			If !Empty(cHistor)
-				Reclock("SN3",.F.)
-				SN3->N3_HISTOR := cHistor
-				SN3->(Msunlock())
-			endIf 		
+			EndIf 			
 		else
 			If nVlrOrig < 0
 				Reclock("SN3",.F.)
@@ -195,12 +172,6 @@ static function fSaveToATFA012(aZ04_Atual, nValor, aZ05AtivosPreCadastro, nI, cD
 				SN3->(Msunlock())
 				nVlrOrig := 0
 			EndIf 
-
-			If !Empty(cHistor)
-				Reclock("SN3",.F.)
-				SN3->N3_HISTOR := cHistor
-				SN3->(Msunlock())
-			endIf 
 			
 			aCommandsUPDCT2 := fGetSQLScriptFlagCT2(cITEM, cDataini, cDataFim, aZ05AtivosPreCadastro)
 			//fExecUpdateFlagCT2(aCommandsUPDCT2)	
@@ -531,9 +502,7 @@ static function fGet3QueryCT2(nTipo, aZ05AtivosPreCadastro, cDataini, cDataFim)
 		cCTINVE := aZ05AtivosPreCadastro[6]	//-20230221
 
 		//cQuery := " SELECT SUM(CT2.CT2_VALOR) TOTAL FROM " + 	retSqlName("CT2") + " CT2 "  + CRLF
-		//cQuery := " SELECT TOP 1 CT2.CT2_VALOR TOTAL, CT2.R_E_C_N_O_ AS REGCT2, CT2.CT2_DATA AS DATAMOV, "
-		cQuery := " SELECT TOP 1 CASE WHEN CT2.CT2_CREDIT LIKE '4%' THEN (CT2.CT2_VALOR * (-1) ) ELSE CT2.CT2_VALOR END TOTAL,"
-		cQuery += " CT2.R_E_C_N_O_ AS REGCT2, CT2.CT2_DATA AS DATAMOV, "
+		cQuery := " SELECT TOP 1 CT2.CT2_VALOR TOTAL, CT2.R_E_C_N_O_ AS REGCT2, CT2.CT2_DATA AS DATAMOV, "
 		cQuery += " CT2.CT2_HIST AS HISTORICO "
 
 		if nTipo == DEBITO
@@ -590,8 +559,6 @@ static function fGet3QueryCT2(nTipo, aZ05AtivosPreCadastro, cDataini, cDataFim)
 		cQuery += "    AND CT2_DATA BETWEEN '" + cDataini + "' AND '" + cDataFim + "' "		 + CRLF
 		cQuery += "    AND CT2.D_E_L_E_T_ = ' ' "	 										 + CRLF
 
-		cQuery += "    AND (CT2_DEBITO NOT IN("+cContExc+") AND CT2_CREDIT NOT IN("+cContExc+"))" + CRLF
-		
 		If len(aRecnos) > 0
 			cQuery += " AND CT2.R_E_C_N_O_ NOT IN ('"
 			cVirg := ""
@@ -951,7 +918,7 @@ static function fGet2QueryCT2Comb(nTipo, aZ05AtivosPreCadastro, cDataini, cDataF
 
 		cQuery += "    AND SUBSTRING(CT2.CT2_CCD,1,4)   = '1631' " 					 		 + CRLF			
 		cQuery += "    AND SUBSTRING(CT2.CT2_DEBITO,1,1)   = '4' " 					 		 + CRLF			
-		cQuery += "    AND (CT2_DEBITO NOT IN("+cContExc+") AND CT2_CREDIT NOT IN("+cContExc+"))" + CRLF
+
 	endIf
 
 return cQuery
