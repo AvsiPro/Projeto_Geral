@@ -72,6 +72,7 @@ static function fProcess(aZ04_Atual,aZ05AtivosPreCadastro)
 	local cCTINVE         := ""
 	local nQtdCrd 		  := 0
 	local nQtdDeb 		  := 0
+	local nRecCrv		  := 0
 	
 	
 	ProcRegua(nQtdRegsToInteg)
@@ -89,7 +90,9 @@ static function fProcess(aZ04_Atual,aZ05AtivosPreCadastro)
 
 			For nX := 1 to nQtdDeb
 
-				nTotalDebito 		:= fGetTotalDebito(cDataini, cDataFim, aZ05AtivosPreCadastro[nI])
+				nRecCrv		  := 0
+
+				nTotalDebito 		:= fGetTotalDebito(cDataini, cDataFim, aZ05AtivosPreCadastro[nI], @nRecCrv)
 				//nTotalCredito		:= fGetTotalCredito(cDataini, cDataFim, aZ05AtivosPreCadastro[nI])
 				nValor		 		:= nTotalDebito //- nTotalCredito
 				
@@ -100,7 +103,7 @@ static function fProcess(aZ04_Atual,aZ05AtivosPreCadastro)
 					nValor := 1
 				EndIf 
 				
-				fSaveToATFA012(aZ04_Atual,nValor, aZ05AtivosPreCadastro[nI], nI, cDataini, cDataFim)	
+				fSaveToATFA012(aZ04_Atual,nValor, aZ05AtivosPreCadastro[nI], nI, cDataini, cDataFim, nRecCrv)	
 			
 			Next nX 
 
@@ -148,7 +151,7 @@ return
 /***
 * Salvam o valor na ATF012
 **/
-static function fSaveToATFA012(aZ04_Atual, nValor, aZ05AtivosPreCadastro, nI, cDataini, cDataFim)
+static function fSaveToATFA012(aZ04_Atual, nValor, aZ05AtivosPreCadastro, nI, cDataini, cDataFim, nRecCrv)
 
 	local cItem		 := ''	
 	local cCodBase	 := aZ05AtivosPreCadastro[1]
@@ -179,15 +182,19 @@ static function fSaveToATFA012(aZ04_Atual, nValor, aZ05AtivosPreCadastro, nI, cD
 					SN3->(Msunlock())
 					nVlrOrig := 0
 				EndIf 
-				aCommandsUPDCT2 := fGetSQLScriptFlagCT2(cITEM, cDataini, cDataFim, aZ05AtivosPreCadastro)
-				//fExecUpdateFlagCT2(aCommandsUPDCT2)
+				aCommandsUPDCT2 := fGetSQLScriptFlagCT2(cITEM, cDataini, cDataFim, aZ05AtivosPreCadastro, nRecCrv)
+				fExecUpdateFlagCT2(aCommandsUPDCT2)
 			EndIf 	
 
 			If !Empty(cHistor)
 				Reclock("SN3",.F.)
 				SN3->N3_HISTOR := cHistor
 				SN3->(Msunlock())
-			endIf 		
+			endIf 
+
+			Reclock("SN3",.F.)
+			SN3->N3_ZORIGEM := '1'
+			SN3->(Msunlock())
 		else
 			If nVlrOrig < 0
 				Reclock("SN3",.F.)
@@ -202,8 +209,12 @@ static function fSaveToATFA012(aZ04_Atual, nValor, aZ05AtivosPreCadastro, nI, cD
 				SN3->(Msunlock())
 			endIf 
 			
-			aCommandsUPDCT2 := fGetSQLScriptFlagCT2(cITEM, cDataini, cDataFim, aZ05AtivosPreCadastro)
-			//fExecUpdateFlagCT2(aCommandsUPDCT2)	
+			Reclock("SN3",.F.)
+			SN3->N3_ZORIGEM := '1'
+			SN3->(Msunlock())
+
+			aCommandsUPDCT2 := fGetSQLScriptFlagCT2(cITEM, cDataini, cDataFim, aZ05AtivosPreCadastro, nRecCrv)
+			fExecUpdateFlagCT2(aCommandsUPDCT2)	
 				//fExec1UpdateHistSN3(aZ04_Atual)
 		endIf
 
@@ -383,17 +394,17 @@ return aCabecalho
 /**
 * Obtém os recnos da CT2 para marcar o flag posteriormente
 **/
-static function fGetSQLScriptFlagCT2(cITEM, cDataini, cDataFim, aZ05AtivosPreCadastro)
+static function fGetSQLScriptFlagCT2(cITEM, cDataini, cDataFim, aZ05AtivosPreCadastro, nRecCrv)
 
-	local cSqlUpdDEBITO 	:= fGetSqlUpdCT2(	DEBITO	, aZ05AtivosPreCadastro, cITEM, cDataini, cDataFim)
-	local cSqlUpdCREDITO 	:= fGetSqlUpdCT2(CREDITO	, aZ05AtivosPreCadastro, cITEM, cDataini, cDataFim)	
+	local cSqlUpdDEBITO 	:= fGetSqlUpdCT2(	DEBITO	, aZ05AtivosPreCadastro, cITEM, cDataini, cDataFim, nRecCrv)
+	local cSqlUpdCREDITO 	:= fGetSqlUpdCT2(CREDITO	, aZ05AtivosPreCadastro, cITEM, cDataini, cDataFim, nRecCrv)	
 
 return {cSqlUpdDEBITO, cSqlUpdCREDITO}
 
 /**
 * Obtém o script CT2 para para atualização de campos FLAG
 **/
-static function fGetSqlUpdCT2(nTipo, aZ05AtivosPreCadastro, cITEM, cDataini, cDataFim)
+static function fGetSqlUpdCT2(nTipo, aZ05AtivosPreCadastro, cITEM, cDataini, cDataFim, nRecCrv)
 
 	local cCCINVE				:= ""
 	local cITINVE				:= ""
@@ -420,43 +431,46 @@ static function fGetSqlUpdCT2(nTipo, aZ05AtivosPreCadastro, cITEM, cDataini, cDa
 		cQuery += " WHERE 1 = 1 "  								 	 				 		 + CRLF
 		cQuery += "    AND CT2_FILIAL = '"+fwxFilial("CT2")+"' "						 	 + CRLF
 
-		if nTipo == DEBITO
-			If !Empty(cCCINVE)	
-				cQuery += "    AND CT2_CCD    = '"+cCCINVE+"' "	 			 					 + CRLF
-			EndIf 
-			If !Empty(cITINVE)				
-				cQuery += "    AND CT2_ITEMD  = '"+cITINVE+"' "	 		 					 	 + CRLF
-			EndIf 
-			If !Empty(cCLINVE)	
-				cQuery += "    AND CT2_CLVLDB = '"+cCLINVE+"' "	 			 					 + CRLF			
-			EndIf 
-			If !Empty(cCTINVE)	
-				cQuery += "    AND CT2_DEBITO = '"+cCTINVE+"' "	 			 					 + CRLF			
-			EndIf 
-		ElseIf nTipo == CREDITO
-			If !Empty(cCCINVE)	
-				cQuery += "    AND CT2_CCC    = '"+cCCINVE+"' "	 			 					 + CRLF
-			EndIf 
-			If !Empty(cITINVE)				
-				cQuery += "    AND CT2_ITEMC  = '"+cITINVE+"' "	 		 						 + CRLF
-			EndIf 
-			If !Empty(cCLINVE)				
-				cQuery += "    AND CT2_CLVLCR = '"+cCLINVE+"' "	 			 					 + CRLF		
-			EndIf 
-			If !Empty(cCTINVE)				
-				cQuery += "    AND CT2_CREDIT = '"+cCTINVE+"' "	 			 					 + CRLF			
-			EndIf 
-		EndIf
-		cQuery += "    AND CT2_TPSALD = '1' "	 										 	 + CRLF
-		cQuery += "    AND CT2_ZZFILA = ' ' "	 										 	 + CRLF
-		cQuery += "    AND CT2_ZZCAI  = ' ' "	 									 	 	 + CRLF
-		cQuery += "    AND CT2_ZZITAI = ' ' "	 										 	 + CRLF
-		cQuery += "    AND CT2_ZZDTAI = ' ' "	 										 	 + CRLF
-		cQuery += "    AND CT2_ZZHRAI = ' ' "	 										 	 + CRLF
-		cQuery += "    AND CT2_ROTINA NOT LIKE '%ATF%' "								 	 + CRLF
-		cQuery += "    AND CT2_DATA BETWEEN '" + cDataini + "' AND '" + cDataFim + "' "		 + CRLF
-		cQuery += "    AND D_E_L_E_T_ = ' '"	 										 	 + CRLF
-
+		If nRecCrv > 0
+			cQuery += "    AND R_E_C_N_O_ = "+cvaltochar(nRecCrv)
+		Else 
+			if nTipo == DEBITO
+				If !Empty(cCCINVE)	
+					cQuery += "    AND CT2_CCD    = '"+cCCINVE+"' "	 			 					 + CRLF
+				EndIf 
+				If !Empty(cITINVE)				
+					cQuery += "    AND CT2_ITEMD  = '"+cITINVE+"' "	 		 					 	 + CRLF
+				EndIf 
+				If !Empty(cCLINVE)	
+					cQuery += "    AND CT2_CLVLDB = '"+cCLINVE+"' "	 			 					 + CRLF			
+				EndIf 
+				If !Empty(cCTINVE)	
+					cQuery += "    AND CT2_DEBITO = '"+cCTINVE+"' "	 			 					 + CRLF			
+				EndIf 
+			ElseIf nTipo == CREDITO
+				If !Empty(cCCINVE)	
+					cQuery += "    AND CT2_CCC    = '"+cCCINVE+"' "	 			 					 + CRLF
+				EndIf 
+				If !Empty(cITINVE)				
+					cQuery += "    AND CT2_ITEMC  = '"+cITINVE+"' "	 		 						 + CRLF
+				EndIf 
+				If !Empty(cCLINVE)				
+					cQuery += "    AND CT2_CLVLCR = '"+cCLINVE+"' "	 			 					 + CRLF		
+				EndIf 
+				If !Empty(cCTINVE)				
+					cQuery += "    AND CT2_CREDIT = '"+cCTINVE+"' "	 			 					 + CRLF			
+				EndIf 
+			EndIf
+			cQuery += "    AND CT2_TPSALD = '1' "	 										 	 + CRLF
+			cQuery += "    AND CT2_ZZFILA = ' ' "	 										 	 + CRLF
+			cQuery += "    AND CT2_ZZCAI  = ' ' "	 									 	 	 + CRLF
+			cQuery += "    AND CT2_ZZITAI = ' ' "	 										 	 + CRLF
+			cQuery += "    AND CT2_ZZDTAI = ' ' "	 										 	 + CRLF
+			cQuery += "    AND CT2_ZZHRAI = ' ' "	 										 	 + CRLF
+			cQuery += "    AND CT2_ROTINA NOT LIKE '%ATF%' "								 	 + CRLF
+			cQuery += "    AND CT2_DATA BETWEEN '" + cDataini + "' AND '" + cDataFim + "' "		 + CRLF
+			cQuery += "    AND D_E_L_E_T_ = ' '"	 										 	 + CRLF
+		endif 
 	endIf
 
 return cQuery
@@ -464,7 +478,7 @@ return cQuery
 /**
 * Obtém o total débito
 **/
-static function fGetTotalDebito(cDataini, cDataFim, aZ05AtivosPreCadastro)
+static function fGetTotalDebito(cDataini, cDataFim, aZ05AtivosPreCadastro,nRecCrv)
 
 	local cQuery 		:= fGet3QueryCT2(DEBITO, aZ05AtivosPreCadastro, cDataini, cDataFim)
 	local cAlias 		:= getNextAlias()
@@ -475,6 +489,7 @@ static function fGetTotalDebito(cDataini, cDataFim, aZ05AtivosPreCadastro)
 	if (cAlias)->(!eof())
 		nTotalDebito := (cAlias)->TOTAL	
 		cRecCt2 += cvaltochar((cAlias)->REGCT2) + '/'
+		nRecCrv := (cAlias)->REGCT2
 		dDtMovC := stod((cAlias)->DATAMOV)
 		cHistor := Alltrim((cAlias)->HISTORICO)
 		cXCCATF  := alltrim((cAlias)->CCUSTO)
@@ -1027,6 +1042,7 @@ static function fPopulaModelMaster(oModel, aZ04_Atual, aZ05AtivosPreCadastro, nV
 	oModel:SetValue( "SN1MASTER",  "N1_PATRIM", cPatrim			)
 	oModel:SetValue( "SN1MASTER",  "N1_CHAPA", Alltrim(cCBASE)+Alltrim(cITEM)  		) // colocado o mesmo numero do bem na plaqueta
 	oModel:SetValue( "SN1MASTER",  "N1_ORIGEM", 'INTANGIVEL'	)
+	oModel:SetValue( "SN1MASTER",  "N1_ZORIGEM", '1'			)
 
 return
 

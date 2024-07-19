@@ -51,7 +51,7 @@ Local lBloq   := .F.
                     If (cAliasTMP)->(!EoF())
                         
                         If (cAliasTMP)->ZPO_TIPO == '1' .Or. (cAliasTMP)->ZPO_TIPO == '3' //Contador
-                            lLibera := Iif((cAliasTMP)->ZPO_CONTAD < ((cAliasTMP)->TJ_POSCONT - STJ->TJ_POSCONT),.T.,.F.)
+                            lLibera := Iif((cAliasTMP)->ZPO_CONTAD < (STJ->TJ_POSCONT - (cAliasTMP)->TJ_POSCONT),.T.,.F.)
                         EndIf
 
                         If ((cAliasTMP)->ZPO_TIPO == '2' .Or. (cAliasTMP)->ZPO_TIPO == '3') .And. !lLibera //Tempo

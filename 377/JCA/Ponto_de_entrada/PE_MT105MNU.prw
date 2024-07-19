@@ -36,7 +36,7 @@ User Function LIBREJ(nOpt)
 
 Local lAdm := RetCodUsr() == '000000'
     
-    If Alltrim(SCP->CP_XORIGEM) == 'MNTA420'
+    //If Alltrim(SCP->CP_XORIGEM) == 'MNTA420'
 
         If !Empty(SCP->CP_PREREQU) .AND. !SCP->CP_STATSA $ 'BR'
             MsgAlert('Não é possível liberar ou rejeitar uma pré-requisição gerada.','MT105MNU')
@@ -72,9 +72,9 @@ Local lAdm := RetCodUsr() == '000000'
                 EndIf
             EndIf
         EndIf
-    Else
-        MsgStop('Somente é possível liberar ou rejeitar solicitações geradas na rotina O.S. Corretiva (MNTA420)','MT105MNU')
-    EndIf
+    //Else
+    //    MsgStop('Somente é possível liberar ou rejeitar solicitações geradas na rotina O.S. Corretiva (MNTA420)','MT105MNU')
+    //EndIf
 
 Return
 

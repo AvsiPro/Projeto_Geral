@@ -11,15 +11,19 @@
 
 User Function MT105FIM()
 
-Local nOpcao := PARAMIXB 
+Local lBloq := .F. 
 Local nPosI := Ascan(aHeader,{|x| alltrim(x[2]) == "CP_ITEM"})
 Local nPosS := Ascan(aHeader,{|x| alltrim(x[2]) == "CP_SALBLQ"})
 Local nPosX := Ascan(aHeader,{|x| alltrim(x[2]) == "CP_XORIGEM"})
 Local nPosQ := Ascan(aHeader,{|x| alltrim(x[2]) == "CP_QUANT"})
 Local nPosO := Ascan(aHeader,{|x| alltrim(x[2]) == "CP_OP"})
-Local nCont := 0
+Local nPosP := Ascan(aHeader,{|x| alltrim(x[2]) == "CP_PRODUTO"})
 
-If Funname() == "MATA105" .And. nOpcao == 1
+Local nCont := 0
+Local cItens:= ""
+Local cBarra := ""
+
+If Funname() == "MATA105" 
     For nCont := 1 to len(aCols)
         If aCols[nCont,nPosS] == aCols[nCont,nPosQ] .And. !Empty(aCols[nCont,nPosX]) .And. !Empty(aCols[nCont,nPosO])
             DbSelectArea("SCP")
@@ -28,9 +32,19 @@ If Funname() == "MATA105" .And. nOpcao == 1
                 Reclock("SCP",.F.)
                 SCP->CP_STATSA  := 'B'
                 SCP->(MsUnlock())
+                lBloq := .T.
+                cItens += cBarra + Alltrim(aCols[nCont,nPosP])
+                cBarra := "/"
+
             EndIf 
+                
         EndIf 
     Next nCont 
+
+    If lBloq
+        MsgAlert("Item(ns) "+cItens+" será(ão) bloqueado(s) devido a regra de tempo x contadores","MT105FIM")
+    EndIf 
+
 EndIf 
 
 Return

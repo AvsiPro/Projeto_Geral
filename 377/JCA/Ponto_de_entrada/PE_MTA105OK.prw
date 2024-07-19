@@ -34,7 +34,6 @@ For nCont := 1 to len(aCols)
         If !lBloq 
             
             If Funname() == "MATA105"
-                MsgAlert("Item "+alltrim(aCols[nCont,nPosP])+" será bloqueado devido a regra de tempo x contadores","MTA105OK")
                 aCols[nCont,nPosS] := aCols[nCont,nPosQ]
                 aCols[nCont,nPosX] := Alltrim(Funname())
             EndIf 
