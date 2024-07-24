@@ -1,3 +1,4 @@
+ #INCLUDE 'PROTHEUS.CH'
  /*/{Protheus.doc} MNT40011
     Ponto de entrada para realizar o bloqueio de encerramento de OS
     na falta de apontamentos.
@@ -16,24 +17,60 @@ User Function MNT40011
 Local aArea     := GetArea()
 Local lRet      := .T.
 Local cOrdem    := STJ->TJ_ORDEM
-Local lMObr     := .F.
+//Local lMObr     := .F.
 Local lSoluc    := .T.
 Local lExect    := .T.
+Local aMaoObra  := {}
+Local aBaixSCP  := {}
+Local nCont 
 
 DbSelectArea("STL")
 DBSetOrder(1)
 If Dbseek(xFilial("STL")+cOrdem)
     While !EOF() .And. STL->TL_ORDEM == cOrdem 
-        If STL->TL_TIPOREG == "M"
+        nPos := Ascan(aBaixSCP,{|x| x[1]+x[2]+x[3] == STL->TL_CODIGO+STL->TL_NUMSA+STL->TL_ITEMSA})
+        If STL->TL_TIPOREG == "P" .And. nPos == 0
+            Aadd(aBaixSCP,{STL->TL_CODIGO,STL->TL_NUMSA,STL->TL_ITEMSA})
+        EndIf 
+
+        nPos := Ascan(aMaoObra,{|x| x[1] == STL->TL_TAREFA}) 
+        If nPos == 0
+            Aadd(aMaoObra,{STL->TL_TAREFA,If(STL->TL_TIPOREG == "M",.T.,.F.)})
+        Else 
+            If !aMaoObra[nPos,02]
+                aMaoObra[nPos,02] := If(STL->TL_TIPOREG == "M",.T.,.F.)
+            EndIf 
+        EndIf 
+        /*If STL->TL_TIPOREG == "M"
             lMObr := .T.
-        EndIF 
+        EndIF*/ 
         Dbskip()
     EndDo 
 
-    If !lMObr
-        MsgAlert("Não foi apontado mão de obra na ordem de serviço","MNT40011")
+    For nCont := 1 to len(aMaoObra)
+        //If !lMObr
+        If !aMaoObra[nCont,02]
+            MsgAlert("Não foi apontado mão de obra na ordem de serviço para a tarefa "+aMaoObra[nCont,01],"MNT40011")
+            lRet := .F.
+        EndIF
+    Next nCont  
+
+    cMsgBaixa := ""
+
+    DbSelectArea("SCP")
+    DbSetOrder(2)
+    For nCont := 1 to len(aBaixSCP)
+        If Dbseek(xfilial("SCP")+aBaixSCP[nCont,01]+aBaixSCP[nCont,02]+aBaixSCP[nCont,03])
+            If SCP->CP_STATUS <> 'E'
+                cMsgBaixa += "Produto "+aBaixSCP[nCont,01]+" sem baixa na solicitação ao armazém."+CRLF 
+            EndIf 
+        EndIf 
+    Next nCont 
+
+    If !Empty(cMsgBaixa)
+        Msgalert(cMsgBaixa,"MNT40011")
         lRet := .F.
-    EndIF 
+    EndIf 
 Else
     MsgAlert("Não foram apontados os detalhes da ordem de serviços","MNT40011")
     lRet := .F.
@@ -54,9 +91,9 @@ If Dbseek(xFilial("STN")+cOrdem)
         Msgalert("Não foram apontadas Soluções na ordem de serviços","MNT40011")
         lRet := .F.
     EndIF 
-Else
+/*Else
     MsgAlert("Não foram apontadas as ocorrências da ordem de serviços","MNT40011")
-    lRet := .F.
+    lRet := .F.*/
 EndIF 
 
 DbSelectArea("STQ")

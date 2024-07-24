@@ -208,9 +208,8 @@ Static Function fMontDados(oSay)
     cQuery += " 	AND CP_XORIGEM = 'MNTA420'
     cQuery += "     AND CP_PRODUTO='"+SCP->CP_PRODUTO+"'"
     cQuery += " 	AND CP_NUM <> '"+SCP->CP_NUM+"'
-    cQuery += "     ORDER BY CP_NUM DESC"
-    //cQuery += " 	AND CP_ITEM = '"+SCP->CP_ITEM+"'
-
+    cQuery += "     ORDER BY CP_DATPRF DESC,TL_HOINICI DESC"
+    
     //Executando a query
     oSay:SetText("Executando a consulta")
     PLSQuery(cQuery, "QRYTMP")

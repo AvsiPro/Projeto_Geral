@@ -144,26 +144,28 @@ DbSelectArea("ZPS")
 For nCont := 1 to len(aDados)
     If len(aDados[nCont]) > 2
         For nCont2 := 8 to len(aDados[nCont])
-            Reclock("ZPS",.T.)
-            //ZPS->ZPS_CODIGO := GetSXENum("ZPS","ZPS_CODIGO")
-            ZPS->ZPS_COTACA := SC8->C8_NUM
-            ZPS->ZPS_FORNEC := aDados[nCont,01]
-            ZPS->ZPS_LOJA   := aDados[nCont,02]
-            ZPS->ZPS_CONDPG := aDados[nCont,05]
-            ZPS->ZPS_FRETE  := aDados[nCont,06]
-            ZPS->ZPS_VLTOTP := aDados[nCont,07]
+            If valtype(aDados[nCont,01]) == "C"
+                Reclock("ZPS",.T.)
+                //ZPS->ZPS_CODIGO := GetSXENum("ZPS","ZPS_CODIGO")
+                ZPS->ZPS_COTACA := SC8->C8_NUM
+                ZPS->ZPS_FORNEC := aDados[nCont,01]
+                ZPS->ZPS_LOJA   := aDados[nCont,02]
+                ZPS->ZPS_CONDPG := aDados[nCont,05]
+                ZPS->ZPS_FRETE  := aDados[nCont,06]
+                ZPS->ZPS_VLTOTP := aDados[nCont,07]
 
-            ZPS->ZPS_FLAGWI := aDados[nCont,nCont2,01]
-            ZPS->ZPS_ITEMCO := aDados[nCont,nCont2,02]
-            ZPS->ZPS_PRODUT := aDados[nCont,nCont2,03]
-            ZPS->ZPS_QUANT  := aDados[nCont,nCont2,11]
-            ZPS->ZPS_VLRUNI := aDados[nCont,nCont2,13]
-            ZPS->ZPS_VLRTOT := aDados[nCont,nCont2,04]
-            ZPS->ZPS_FILENT := aDados[nCont,nCont2,07]
-            ZPS->ZPS_DTENTR := aDados[nCont,nCont2,05]
-            ZPS->ZPS_QTITPR := aDados[nCont,nCont2,11]
-            ZPS->ZPS_OBSERV := aDados[nCont,nCont2,06]
-            ZPS->(Msunlock())
+                ZPS->ZPS_FLAGWI := aDados[nCont,nCont2,01]
+                ZPS->ZPS_ITEMCO := aDados[nCont,nCont2,02]
+                ZPS->ZPS_PRODUT := aDados[nCont,nCont2,03]
+                ZPS->ZPS_QUANT  := aDados[nCont,nCont2,11]
+                ZPS->ZPS_VLRUNI := aDados[nCont,nCont2,13]
+                ZPS->ZPS_VLRTOT := aDados[nCont,nCont2,04]
+                ZPS->ZPS_FILENT := aDados[nCont,nCont2,07]
+                ZPS->ZPS_DTENTR := aDados[nCont,nCont2,05]
+                ZPS->ZPS_QTITPR := aDados[nCont,nCont2,11]
+                ZPS->ZPS_OBSERV := aDados[nCont,nCont2,06]
+                ZPS->(Msunlock())
+            EndIf 
         Next nCont2
         
     EndIf

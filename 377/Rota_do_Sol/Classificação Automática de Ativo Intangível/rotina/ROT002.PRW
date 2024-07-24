@@ -107,6 +107,8 @@ static function fProcess(aZ04_Atual,aZ05AtivosPreCadastro)
 			
 			Next nX 
 
+			cRecCt2 := ""
+			
 			For nX := 1 to nQtdCrd
 
 				nTotalCredito		:= fGetTotalCredito(cDataini, cDataFim, aZ05AtivosPreCadastro[nI])
@@ -119,7 +121,7 @@ static function fProcess(aZ04_Atual,aZ05AtivosPreCadastro)
 					nValor := 1
 				EndIf 
 				
-				fSaveToATFA012(aZ04_Atual,nValor, aZ05AtivosPreCadastro[nI], nI, cDataini, cDataFim)	
+				fSaveToATFA012(aZ04_Atual,nValor, aZ05AtivosPreCadastro[nI], nI, cDataini, cDataFim, nRecCrv)	
 			
 			Next nX 
 
@@ -547,7 +549,14 @@ static function fGet3QueryCT2(nTipo, aZ05AtivosPreCadastro, cDataini, cDataFim)
 
 		//cQuery := " SELECT SUM(CT2.CT2_VALOR) TOTAL FROM " + 	retSqlName("CT2") + " CT2 "  + CRLF
 		//cQuery := " SELECT TOP 1 CT2.CT2_VALOR TOTAL, CT2.R_E_C_N_O_ AS REGCT2, CT2.CT2_DATA AS DATAMOV, "
-		cQuery := " SELECT TOP 1 CASE WHEN CT2.CT2_CREDIT LIKE '4%' THEN (CT2.CT2_VALOR * (-1) ) ELSE CT2.CT2_VALOR END TOTAL,"
+		
+		//cQuery := " SELECT TOP 1 CASE WHEN "+if(nTipo == DEBITO,"CT2.CT2_CREDIT","( CT2.CT2_DEBITO")+" LIKE '4%' "+if(nTipo == CREDITO," OR CT2.CT2_CCD=' ')","")+" AND CT2_LOTE "+if(nTipo == CREDITO,"","NOT")+" LIKE 'FA%' THEN (CT2.CT2_VALOR * (-1) )  ELSE CT2.CT2_VALOR END TOTAL,"
+		if nTipo == DEBITO
+			cQuery := " SELECT TOP 1 CT2.CT2_VALOR TOTAL,"
+		Else
+			cQuery := " SELECT TOP 1 CASE WHEN CT2.CT2_CREDIT LIKE '4%' AND CT2.CT2_CCC LIKE '1631%' THEN (CT2.CT2_VALOR * (-1) )  ELSE CT2.CT2_VALOR END TOTAL,"
+		EndIf 
+
 		cQuery += " CT2.R_E_C_N_O_ AS REGCT2, CT2.CT2_DATA AS DATAMOV, "
 		cQuery += " CT2.CT2_HIST AS HISTORICO "
 
@@ -579,6 +588,8 @@ static function fGet3QueryCT2(nTipo, aZ05AtivosPreCadastro, cDataini, cDataFim)
 			cQuery += "    AND SUBSTRING(CT2.CT2_CCD,1,4)   = '1631' " 					 		 + CRLF			
 			cQuery += "    AND SUBSTRING(CT2.CT2_DEBITO,1,1)   = '4' " 					 		 + CRLF			
 
+			cQuery += "    AND CT2_ZZINTA != '1'"	 
+
 		elseIf nTipo == CREDITO
 			iF !Empty(cCCINVE)
 				cQuery += "    AND CT2.CT2_CCC   = '"+cCCINVE+"' "	 			 				 + CRLF
@@ -597,10 +608,12 @@ static function fGet3QueryCT2(nTipo, aZ05AtivosPreCadastro, cDataini, cDataFim)
 			cQuery += "    AND SUBSTRING(CT2.CT2_CCC,1,4)   = '1631' " 					 		 + CRLF			
 			cQuery += "    AND SUBSTRING(CT2.CT2_CREDIT,1,1)   = '4' " 					 		 + CRLF			
 
+			cQuery += "    AND (CT2.CT2_LOTE LIKE 'FA%' OR CT2.CT2_ZZINTA != '1') "			 	 + CRLF
+
 		endIf
 
 		cQuery += "    AND CT2.CT2_TPSALD = '1' "											 + CRLF
-		cQuery += "    AND CT2_ZZINTA != '1'"	  											 + CRLF
+		//cQuery += "    AND CT2_ZZINTA != '1'"	  											 + CRLF
 		cQuery += "    AND CT2.CT2_ROTINA NOT LIKE '%ATF%'"	  								 + CRLF
 		cQuery += "    AND CT2_DATA BETWEEN '" + cDataini + "' AND '" + cDataFim + "' "		 + CRLF
 		cQuery += "    AND CT2.D_E_L_E_T_ = ' ' "	 										 + CRLF
@@ -943,6 +956,12 @@ static function fGet2QueryCT2Comb(nTipo, aZ05AtivosPreCadastro, cDataini, cDataF
 			If !Empty(cCTINVE)	
 				cQuery += "    AND CT2_DEBITO    = '"+cCTINVE+"'"	 		 					 + CRLF
 			EndIf 
+
+			cQuery += "    AND CT2_ZZINTA != '1'"	 			 					 			 + CRLF		
+
+			cQuery += "    AND SUBSTRING(CT2.CT2_CCD,1,4)   = '1631' " 					 		 + CRLF			
+			cQuery += "    AND SUBSTRING(CT2.CT2_DEBITO,1,1)   = '4' " 					 		 + CRLF			
+			
 		elseIf nTipo == CREDITO
 			If !Empty(cCCINVE)	
 				cQuery += "    AND CT2.CT2_CCC   = '"+cCCINVE+"'"	 		 					 + CRLF
@@ -956,16 +975,19 @@ static function fGet2QueryCT2Comb(nTipo, aZ05AtivosPreCadastro, cDataini, cDataF
 			If !Empty(cCTINVE)	
 				cQuery += "    AND CT2_CREDIT    = '"+cCTINVE+"'"	 			 				 + CRLF
 			EndIf 
-		endIf
+
+			cQuery += "    AND (CT2.CT2_LOTE LIKE 'FA%' OR CT2.CT2_ZZINTA != '1') "			 	 + CRLF
+
+			cQuery += "    AND SUBSTRING(CT2.CT2_CCC,1,4)   = '1631' " 					 		 + CRLF			
+			cQuery += "    AND SUBSTRING(CT2.CT2_CREDIT,1,1)   = '4' " 					 		 + CRLF			
 		
+		endIf
+
 		cQuery += "    AND CT2.CT2_TPSALD = '1' "											 + CRLF
-		cQuery += "    AND CT2_ZZINTA != '1'"	 			 					 			 + CRLF		
 		cQuery += "    AND CT2.CT2_ROTINA NOT LIKE '%ATF%'"	  								 + CRLF
 		cQuery += "    AND CT2_DATA BETWEEN '" + cDataini + "' AND '" + cDataFim + "' "		 + CRLF
 		cQuery += "    AND CT2.D_E_L_E_T_ = ' '"	 										 + CRLF
 
-		cQuery += "    AND SUBSTRING(CT2.CT2_CCD,1,4)   = '1631' " 					 		 + CRLF			
-		cQuery += "    AND SUBSTRING(CT2.CT2_DEBITO,1,1)   = '4' " 					 		 + CRLF			
 		cQuery += "    AND (CT2_DEBITO NOT IN("+cContExc+") AND CT2_CREDIT NOT IN("+cContExc+"))" + CRLF
 	endIf
 

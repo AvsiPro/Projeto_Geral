@@ -23,7 +23,6 @@ Local lBloq   := .F.
         If Dbseek(cFilOS+cOrdem+cPlano)
             While !Eof() .AND. STL->TL_FILIAL == cFilOS .AND. STL->TL_ORDEM == cOrdem .AND. STL->TL_PLANO == cPlano
                 If STL->TL_TIPOREG == 'P'
-                    lLibera := .t.
                     
                     aAreaTL := GetArea()
 
@@ -99,9 +98,9 @@ Local lBloq   := .F.
                         //If NGIFDBSEEK("SCP",STL->TL_NUMSA+STL->TL_ITEMSA,1,.F.)
                         If Dbseek(xFilial("SCP")+STL->TL_CODIGO+STL->TL_NUMSA+STL->TL_ITEMSA)
                             RecLock('SCP', .F.)
-                                SCP->CP_STATSA  := 'B'
-                                SCP->CP_SALBLQ  := SCP->CP_QUANT
-                                SCP->CP_XORIGEM := Alltrim(FunName())
+                            SCP->CP_STATSA  := 'B'
+                            SCP->CP_SALBLQ  := SCP->CP_QUANT
+                            SCP->CP_XORIGEM := Alltrim(FunName())
                             SCP->(MsUnlock())
                         EndIf
                     EndIf

@@ -75,6 +75,8 @@ MPSysOpenQuery(cQuery, cAliasTMP)
 
 If (cAliasTMP)->(!EoF())
     
+    lLibera := .t.
+    
     If (cAliasTMP)->ZPO_TIPO == '1' .Or. (cAliasTMP)->ZPO_TIPO == '3' //Contador
         lLibera := Iif((cAliasTMP)->ZPO_CONTAD < (cContad - (cAliasTMP)->TJ_POSCONT),.T.,.F.)
     EndIf

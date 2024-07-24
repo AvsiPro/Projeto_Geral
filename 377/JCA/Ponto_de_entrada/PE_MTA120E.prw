@@ -5,12 +5,12 @@
 */
 User Function MTA120E()
 
-Local ExpN1 := PARAMIXB[1]
+//Local ExpN1 := PARAMIXB[1]
 //Local ExpC1 := PARAMIXB[2]
 Local ExpL1 := .T.
 Local cNumCot   := SC7->C7_NUMCOT 
 Local nNumSc    := SC7->C7_NUMSC
-
+Local cNumPC    := SC7->C7_NUM 
 //If ExpN1 == 1
      
 
@@ -46,14 +46,16 @@ Local nNumSc    := SC7->C7_NUMSC
             DbSelectArea("SC1")
             DbSetOrder(1)
             If Dbseek(xFilial("SC1")+nNumSc)
-                While !EOF() .AND. SC1->C1_FILIAL == xFilial("SC1") .AND. SC1->C1_NUM == nNumSc
-                    Reclock("SC1",.F.)
-                    SC1->C1_PEDIDO := SPACE(6)
-                    SC1->C1_ITEMPED:= SPACE(4)
-                    SC1->C1_QUJE   := 0
-                    SC1->C1_FORNECE:= SPACE(6)
-                    SC1->C1_LOJA   := SPACE(4)
-                    SC1->(MSUNLOCK())
+                While !EOF() .AND. SC1->C1_FILIAL == xFilial("SC1") .AND. SC1->C1_NUM == nNumSc 
+                    iF SC1->C1_PEDIDO == cNumPC .OR. SC1->C1_COTACAO == cNumCot 
+                        Reclock("SC1",.F.)
+                        SC1->C1_PEDIDO := SPACE(6)
+                        SC1->C1_ITEMPED:= SPACE(4)
+                        SC1->C1_QUJE   := 0
+                        SC1->C1_FORNECE:= SPACE(6)
+                        SC1->C1_LOJA   := SPACE(4)
+                        SC1->(MSUNLOCK())
+                    eNDiF 
                     DBSKIP()
                 ENDDO
             EndIf
