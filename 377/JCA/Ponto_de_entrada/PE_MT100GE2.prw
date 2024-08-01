@@ -29,12 +29,23 @@
 
 User Function MT100GE2
 
-Local nOpc := PARAMIXB[2]  // 1=inclusao ; 2 = exclusão
+	Local nOpc := PARAMIXB[2]  // 1=inclusao ; 2 = exclusão
+	LOCAL nPar := 0
 
-If nOpc = 1 
-	SE2->E2_HIST := cHistJCA103
-	SE2->E2_ZCGCBOL := SA2->A2_ZCGCBOL
-Endif
+	If nOpc = 1
+		SE2->E2_HIST := cHistJCA103
+		SE2->E2_ZCGCBOL := SA2->A2_ZCGCBOL
 
+		//ajusta data de vencimento na integração fluig
+		IF valtype(aVcto) != nil
+			nPar := val(PARAMIXB[1,1])
+			IF len(aVcto) >= nPar
+				IF valtype(stod(aVcto[nPar])) == "D" .AND. aVcto[nPar] != NIL
+					SE2->E2_VENCTO  := ctod(aVcto[nPar])
+					SE2->E2_VENCREA := DataValida(ctod(aVcto[nPar]),.T.)
+				ENDIF
+			ENDIF
+		ENDIF
 
-Return
+	Endif
+	Return
