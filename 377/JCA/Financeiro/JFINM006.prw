@@ -119,6 +119,7 @@ User Function JFINM006()
 				TTRB->IG_CONEXT := (cAliasTMP)->IG_CONEXT
 				TTRB->IG_DOCEXT := (cAliasTMP)->IG_DOCEXT
 				TTRB->IG_SEQMOV := (cAliasTMP)->IG_SEQMOV
+				TTRB->IG_CARTER := (cAliasTMP)->IG_CARTER
 				TTRB->(MsUnlock())
 
 			EndIf
@@ -243,6 +244,7 @@ static function EFETIVA()
 	Local nAt := 0
 	Local aDados    := {}
 	Local lRet := .T.
+	Local cTpmov := ""
 	Private aLstAux := {}
 	Private aEfetiv := {}
 	Private lP := .F.
@@ -256,7 +258,7 @@ static function EFETIVA()
 	TTRB->(DbGoTop())
 	while !TTRB->(Eof())
 		IF !Empty(TTRB->IG_XOK)
-			aLstAux := {IG_IDPROC,IG_ITEM,IG_VLREXT,IG_DTEXTR,IG_HISTEXT,IG_AGEEXT,IG_CONEXT,IG_DOCEXT,IG_SEQMOV}
+			aLstAux := {IG_IDPROC,IG_ITEM,IG_VLREXT,IG_DTEXTR,IG_HISTEXT,IG_AGEEXT,IG_CONEXT,IG_DOCEXT,IG_SEQMOV,IG_CARTER}
 			aAdd(aEfetiv,aLstAux  )//,TRB->TMP_VLNF,TRB->TMP_VLICMR,TRB->TMP_EMIS})
 			lAp := .T.
 		ENDIF
@@ -268,7 +270,14 @@ static function EFETIVA()
 		For nAt := 1 to len(aEfetiv)
 			lP := .F.
 			//MOVIMENTO BANCÁRIO
-			nOperacao := 3 //3=Inclusão de Movimento "Pagar"
+			IF aEfetiv[nAt,10] == "1"
+				nOperacao := 4 //3=Inclusão de Movimento "RECEBER"
+				cTpmov	  := "R"
+			ELSE
+				nOperacao := 3 //3=Inclusão de Movimento "Pagar"
+				cTpmov	  := "P"
+			ENDIF
+			
 			IF nAt == 1
 				cNatur      := PadR(alltrim(cNatur)   , TamSx3("E5_NATUREZ")[1])
 				cBanco      := PadR(cBanco      , TamSx3("A6_COD"    )[1])
@@ -288,7 +297,7 @@ static function EFETIVA()
 				aAdd( aDados, {"E5_VALOR"   , aEfetiv[nAt,3]    , NIL} )
 				aAdd( aDados, {"E5_NATUREZ" , cNatur , NIL} )
 				aAdd( aDados, {"E5_MOEDA"   , "M1"      , NIL} )
-				aAdd( aDados, {"E5_RECPAG"   , "P"      , NIL} )
+				aAdd( aDados, {"E5_RECPAG"   , cTpmov      , NIL} )
 				aAdd( aDados, {"E5_HISTOR"  , ALLTRIM(aEfetiv[nAt,5])   , NIL} )
 				aAdd( aDados, {"E5_RATEIO"  , "N"   , NIL} )
 				aAdd( aDados, {"E5_RECONC"  , "x"   , NIL} )
