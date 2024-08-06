@@ -61,7 +61,7 @@ If Dbseek(xFilial("STL")+cOrdem)
     DbSetOrder(2)
     For nCont := 1 to len(aBaixSCP)
         If Dbseek(xfilial("SCP")+aBaixSCP[nCont,01]+aBaixSCP[nCont,02]+aBaixSCP[nCont,03])
-            If SCP->CP_STATUS <> 'E'
+            If SCP->CP_STATUS <> 'E' .and. Empty(SCP->CP_XTIPO)
                 cMsgBaixa += "Produto "+aBaixSCP[nCont,01]+" sem baixa na solicitação ao armazém."+CRLF 
             EndIf 
         EndIf 

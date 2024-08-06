@@ -12,6 +12,7 @@ Local lLibera := .T.
 Local cPlano  := STJ->TJ_PLANO
 Local cOrdem  := STJ->TJ_ORDEM 
 Local cFilOS  := STJ->TJ_FILIAL 
+Local cCodBem := STJ->TJ_CODBEM
 Local aAreaTL := {}
 Local lBloq   := .F.
 //TJ_FILIAL+TJ_ORDEM+TJ_PLANO+TJ_TIPOOS+TJ_CODBEM+TJ_SERVICO+TJ_SEQRELA
@@ -30,6 +31,7 @@ Local lBloq   := .F.
                     cQuery += " INNER JOIN "+RetSqlName("STJ")+" STJ
                     cQuery += " 	ON  TJ_FILIAL = TL_FILIAL
                     cQuery += " 	AND TJ_ORDEM = TL_ORDEM
+                    cQuery += "     AND TJ_CODBEM = '"+cCodBem+"'"
                     cQuery += " 	AND STJ.D_E_L_E_T_ = ''
                     cQuery += " INNER JOIN "+RetSqlName("ZPO")+" ZPO
                     cQuery += " 	ON ZPO_FILIAL = '"+xFilial("ZPO")+"'"
