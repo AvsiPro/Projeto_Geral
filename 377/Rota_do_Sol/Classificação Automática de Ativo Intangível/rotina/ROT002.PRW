@@ -103,7 +103,7 @@ static function fProcess(aZ04_Atual,aZ05AtivosPreCadastro)
 					nValor := 1
 				EndIf 
 				
-				fSaveToATFA012(aZ04_Atual,nValor, aZ05AtivosPreCadastro[nI], nI, cDataini, cDataFim, nRecCrv)	
+				fSaveToATFA012(aZ04_Atual,nValor, aZ05AtivosPreCadastro[nI], nI, cDataini, cDataFim, nRecCrv,1)	
 			
 			Next nX 
 
@@ -111,7 +111,8 @@ static function fProcess(aZ04_Atual,aZ05AtivosPreCadastro)
 			
 			For nX := 1 to nQtdCrd
 
-				nTotalCredito		:= fGetTotalCredito(cDataini, cDataFim, aZ05AtivosPreCadastro[nI])
+				nRecCrv		  := 0 
+				nTotalCredito		:= fGetTotalCredito(cDataini, cDataFim, aZ05AtivosPreCadastro[nI], @nRecCrv)
 				nValor		 		:= nTotalCredito 
 				
 				nVlrOrig := 0
@@ -121,7 +122,7 @@ static function fProcess(aZ04_Atual,aZ05AtivosPreCadastro)
 					nValor := 1
 				EndIf 
 				
-				fSaveToATFA012(aZ04_Atual,nValor, aZ05AtivosPreCadastro[nI], nI, cDataini, cDataFim, nRecCrv)	
+				fSaveToATFA012(aZ04_Atual,nValor, aZ05AtivosPreCadastro[nI], nI, cDataini, cDataFim, nRecCrv,2)	
 			
 			Next nX 
 
@@ -145,7 +146,7 @@ static function fProcess(aZ04_Atual,aZ05AtivosPreCadastro)
 		ApMsgInfo( "Registros processados com Erros.<br><br>"+;
 		"<b>Solução:</b> Verifique o Log de Erros  .","Atenção")
 	else
-		ApMsgInfo( "Registros processados com Sucesso.<br><br>.","Atenção")
+		ApMsgInfo( "Processo finalizado.<br><br>.","Atenção")
 	endIf
 
 return
@@ -153,7 +154,7 @@ return
 /***
 * Salvam o valor na ATF012
 **/
-static function fSaveToATFA012(aZ04_Atual, nValor, aZ05AtivosPreCadastro, nI, cDataini, cDataFim, nRecCrv)
+static function fSaveToATFA012(aZ04_Atual, nValor, aZ05AtivosPreCadastro, nI, cDataini, cDataFim, nRecCrv ,nOpcGrv)
 
 	local cItem		 := ''	
 	local cCodBase	 := aZ05AtivosPreCadastro[1]
@@ -184,7 +185,7 @@ static function fSaveToATFA012(aZ04_Atual, nValor, aZ05AtivosPreCadastro, nI, cD
 					SN3->(Msunlock())
 					nVlrOrig := 0
 				EndIf 
-				aCommandsUPDCT2 := fGetSQLScriptFlagCT2(cITEM, cDataini, cDataFim, aZ05AtivosPreCadastro, nRecCrv)
+				aCommandsUPDCT2 := fGetSQLScriptFlagCT2(cITEM, cDataini, cDataFim, aZ05AtivosPreCadastro, nRecCrv,nOpcGrv)
 				fExecUpdateFlagCT2(aCommandsUPDCT2)
 			EndIf 	
 
@@ -194,9 +195,9 @@ static function fSaveToATFA012(aZ04_Atual, nValor, aZ05AtivosPreCadastro, nI, cD
 				SN3->(Msunlock())
 			endIf 
 
-			Reclock("SN3",.F.)
+			/*Reclock("SN3",.F.)
 			SN3->N3_ZORIGEM := '1'
-			SN3->(Msunlock())
+			SN3->(Msunlock())*/
 		else
 			If nVlrOrig < 0
 				Reclock("SN3",.F.)
@@ -210,12 +211,12 @@ static function fSaveToATFA012(aZ04_Atual, nValor, aZ05AtivosPreCadastro, nI, cD
 				SN3->N3_HISTOR := cHistor
 				SN3->(Msunlock())
 			endIf 
-			
+			/*
 			Reclock("SN3",.F.)
 			SN3->N3_ZORIGEM := '1'
-			SN3->(Msunlock())
+			SN3->(Msunlock())*/
 
-			aCommandsUPDCT2 := fGetSQLScriptFlagCT2(cITEM, cDataini, cDataFim, aZ05AtivosPreCadastro, nRecCrv)
+			aCommandsUPDCT2 := fGetSQLScriptFlagCT2(cITEM, cDataini, cDataFim, aZ05AtivosPreCadastro, nRecCrv,nOpcGrv)
 			fExecUpdateFlagCT2(aCommandsUPDCT2)	
 				//fExec1UpdateHistSN3(aZ04_Atual)
 		endIf
@@ -396,17 +397,17 @@ return aCabecalho
 /**
 * Obtém os recnos da CT2 para marcar o flag posteriormente
 **/
-static function fGetSQLScriptFlagCT2(cITEM, cDataini, cDataFim, aZ05AtivosPreCadastro, nRecCrv)
+static function fGetSQLScriptFlagCT2(cITEM, cDataini, cDataFim, aZ05AtivosPreCadastro, nRecCrv,nOpcGrv)
 
-	local cSqlUpdDEBITO 	:= fGetSqlUpdCT2(	DEBITO	, aZ05AtivosPreCadastro, cITEM, cDataini, cDataFim, nRecCrv)
-	local cSqlUpdCREDITO 	:= fGetSqlUpdCT2(CREDITO	, aZ05AtivosPreCadastro, cITEM, cDataini, cDataFim, nRecCrv)	
+	local cSqlUpdDEBITO 	:= fGetSqlUpdCT2(	DEBITO	, aZ05AtivosPreCadastro, cITEM, cDataini, cDataFim, nRecCrv,nOpcGrv)
+	local cSqlUpdCREDITO 	:= fGetSqlUpdCT2(CREDITO	, aZ05AtivosPreCadastro, cITEM, cDataini, cDataFim, nRecCrv,nOpcGrv)	
 
 return {cSqlUpdDEBITO, cSqlUpdCREDITO}
 
 /**
 * Obtém o script CT2 para para atualização de campos FLAG
 **/
-static function fGetSqlUpdCT2(nTipo, aZ05AtivosPreCadastro, cITEM, cDataini, cDataFim, nRecCrv)
+static function fGetSqlUpdCT2(nTipo, aZ05AtivosPreCadastro, cITEM, cDataini, cDataFim, nRecCrv, nOpcGrv)
 
 	local cCCINVE				:= ""
 	local cITINVE				:= ""
@@ -424,7 +425,13 @@ static function fGetSqlUpdCT2(nTipo, aZ05AtivosPreCadastro, cITEM, cDataini, cDa
 		cCTINVE := aZ05AtivosPreCadastro[6]	//-20230221
 
 		cQuery := " UPDATE  " + retSqlName("CT2")    										 + CRLF
-		cQuery += " SET CT2_ZZINTA = '1', "    										 	 	 + CRLF
+		
+		if nOpcGrv == 1
+			cQuery += " SET CT2_ZZINTA = '1', "    										 	 	 + CRLF
+		else 
+			cQuery += " SET CT2_ZZINTA = '2', "    										 	 	 + CRLF
+		endif  
+
 		cQuery += "     CT2_ZZFILA = '"+fwxFilial("CT2")+"', "    							 + CRLF
 		cQuery += "     CT2_ZZCAI = '"+cCBASE+"', "    							 			 + CRLF
 		cQuery += "     CT2_ZZITAI = '"+cITEM+"', "    							 			 + CRLF
@@ -504,7 +511,7 @@ return nTotalDebito
 /**
 * Obtém o total crédito
 **/
-static function fGetTotalCredito(cDataini, cDataFim, aZ05AtivosPreCadastro)
+static function fGetTotalCredito(cDataini, cDataFim, aZ05AtivosPreCadastro,nRecCrv)
 
 	local cQuery 		:= fGet3QueryCT2(CREDITO, aZ05AtivosPreCadastro, cDataini, cDataFim)
 	local cAlias 		:= getNextAlias()
@@ -515,6 +522,7 @@ static function fGetTotalCredito(cDataini, cDataFim, aZ05AtivosPreCadastro)
 	if (cAlias)->(!eof())
 		nTotalCredit := (cAlias)->TOTAL	
 		cRecCt2 += cvaltochar((cAlias)->REGCT2) + '/'
+		nRecCrv := (cAlias)->REGCT2
 		dDtMovC := stod((cAlias)->DATAMOV)
 		cHistor := Alltrim((cAlias)->HISTORICO)
 
@@ -588,7 +596,7 @@ static function fGet3QueryCT2(nTipo, aZ05AtivosPreCadastro, cDataini, cDataFim)
 			cQuery += "    AND SUBSTRING(CT2.CT2_CCD,1,4)   = '1631' " 					 		 + CRLF			
 			cQuery += "    AND SUBSTRING(CT2.CT2_DEBITO,1,1)   = '4' " 					 		 + CRLF			
 
-			cQuery += "    AND CT2_ZZINTA != '1'"	 
+			cQuery += "    AND CT2_ZZINTA = ' ' " //!= '1'"	 
 
 		elseIf nTipo == CREDITO
 			iF !Empty(cCCINVE)
@@ -608,12 +616,12 @@ static function fGet3QueryCT2(nTipo, aZ05AtivosPreCadastro, cDataini, cDataFim)
 			cQuery += "    AND SUBSTRING(CT2.CT2_CCC,1,4)   = '1631' " 					 		 + CRLF			
 			cQuery += "    AND SUBSTRING(CT2.CT2_CREDIT,1,1)   = '4' " 					 		 + CRLF			
 
-			cQuery += "    AND (CT2.CT2_LOTE LIKE 'FA%' OR CT2.CT2_ZZINTA != '1') "			 	 + CRLF
+			//cQuery += "    AND (CT2.CT2_LOTE LIKE 'FA%' OR CT2.CT2_ZZINTA != '1') "			 	 + CRLF
+			cQuery += "    AND CT2.CT2_ZZINTA IN(' ','1') "			 	 + CRLF
 
 		endIf
 
 		cQuery += "    AND CT2.CT2_TPSALD = '1' "											 + CRLF
-		//cQuery += "    AND CT2_ZZINTA != '1'"	  											 + CRLF
 		cQuery += "    AND CT2.CT2_ROTINA NOT LIKE '%ATF%'"	  								 + CRLF
 		cQuery += "    AND CT2_DATA BETWEEN '" + cDataini + "' AND '" + cDataFim + "' "		 + CRLF
 		cQuery += "    AND CT2.D_E_L_E_T_ = ' ' "	 										 + CRLF
@@ -686,7 +694,8 @@ static function  fGetQueryCombinacoesContab(cCodBem)
 	cQuery += "    AND Z05.Z05_FILIAL = '"+fwxFilial("Z05")+"'" + CRLF
 	cQuery += "    AND Z05.Z05_CBASE= '"+cCodBem+"'" 			+ CRLF
 	cQuery += "    AND Z05.Z05_STATUS = '1' "			+ CRLF
-	cQuery += "    AND Z05.D_E_L_E_T_ = ' '" 					+ CRLF	
+	cQuery += "    AND Z05.D_E_L_E_T_ = ' '" 					+ CRLF
+	cQuery += "    ORDER BY Z05_CCINVE "	
 
 return cQuery
 
@@ -957,7 +966,7 @@ static function fGet2QueryCT2Comb(nTipo, aZ05AtivosPreCadastro, cDataini, cDataF
 				cQuery += "    AND CT2_DEBITO    = '"+cCTINVE+"'"	 		 					 + CRLF
 			EndIf 
 
-			cQuery += "    AND CT2_ZZINTA != '1'"	 			 					 			 + CRLF		
+			cQuery += "    AND CT2_ZZINTA = ' ' " //!= '1'"	 			 					 			 + CRLF		
 
 			cQuery += "    AND SUBSTRING(CT2.CT2_CCD,1,4)   = '1631' " 					 		 + CRLF			
 			cQuery += "    AND SUBSTRING(CT2.CT2_DEBITO,1,1)   = '4' " 					 		 + CRLF			
@@ -976,7 +985,8 @@ static function fGet2QueryCT2Comb(nTipo, aZ05AtivosPreCadastro, cDataini, cDataF
 				cQuery += "    AND CT2_CREDIT    = '"+cCTINVE+"'"	 			 				 + CRLF
 			EndIf 
 
-			cQuery += "    AND (CT2.CT2_LOTE LIKE 'FA%' OR CT2.CT2_ZZINTA != '1') "			 	 + CRLF
+			//cQuery += "    AND (CT2.CT2_LOTE LIKE 'FA%' OR CT2.CT2_ZZINTA != '1') "			 	 + CRLF
+			cQuery += "    AND CT2.CT2_ZZINTA IN(' ','1') "			 	 + CRLF
 
 			cQuery += "    AND SUBSTRING(CT2.CT2_CCC,1,4)   = '1631' " 					 		 + CRLF			
 			cQuery += "    AND SUBSTRING(CT2.CT2_CREDIT,1,1)   = '4' " 					 		 + CRLF			
@@ -1149,13 +1159,19 @@ static function fPopula1ModelDetails(oModel, aZ04_Atual, aZ05AtivosPreCadastro, 
 				oModel:LoadValue("SN3DETAIL",  "N3_HISTOR", cHistor)
 			EndIf
 
-			If oModel:CanSetValue("SN3DETAIL", "N3_CCUSTO")
+			/*If oModel:CanSetValue("SN3DETAIL", "N3_CCUSTO")
 				oModel:SetValue( "SN3DETAIL",  "N3_CCUSTO", cXCCATF)
 			else		
 				oModel:LoadValue("SN3DETAIL",  "N3_CCUSTO", cXCCATF)
+			EndIf*/
+			
+			
+			If oModel:CanSetValue("SN3DETAIL", "N3_ZORIGEM")
+				oModel:SetValue( "SN3DETAIL",  "N3_ZORIGEM", '1')
+			else		
+				oModel:LoadValue("SN3DETAIL",  "N3_ZORIGEM", '1')
 			EndIf
 			
-
 			If oModel:CanSetValue("SN3DETAIL", "N3_ZZDESCR")
 				oModel:SetValue( "SN3DETAIL",  "N3_ZZDESCR", cDescriFull)
 			else		

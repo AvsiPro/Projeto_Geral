@@ -205,7 +205,7 @@ Static Function fMontDados(oSay)
     cQuery += " 	AND STJ.D_E_L_E_T_ = ' ' AND TJ_CODBEM='"+cCodBem+"'"
     cQuery += " WHERE SCP.D_E_L_E_T_ = ''
     cQuery += " 	AND CP_FILIAL BETWEEN ' ' AND 'ZZZ' " //'"+FWxFilial('SCP')+"'
-    cQuery += " 	AND CP_XORIGEM = 'MNTA420'
+    //cQuery += " 	AND CP_XORIGEM = 'MNTA420'
     cQuery += "     AND CP_PRODUTO='"+SCP->CP_PRODUTO+"'"
     cQuery += " 	AND CP_NUM <> '"+SCP->CP_NUM+"'
     cQuery += "     ORDER BY CP_DATPRF DESC,TL_HOINICI DESC"
