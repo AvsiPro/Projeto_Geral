@@ -336,9 +336,11 @@ SCP->(dbCommit())
 cCursor := GetNextAlias()
 cQuery  := "SELECT CP_FILIAL,R_E_C_N_O_ SCPRECNO "
 cQuery  += "FROM "+RetSqlName("SCP")+" SCP "
-cQuery  += "WHERE "
-cQuery  += "CP_PREREQU<>'S' AND "
-cQuery  += "D_E_L_E_T_=' ' "
+cQuery  += " WHERE "
+cQuery  += " CP_PREREQU<>'S' AND "
+cQuery  += " D_E_L_E_T_=' ' AND "
+cQuery  += " CP_FILIAL = '"+xFilial("SCP")+"'"
+
 If ( lMarkb )
 	If ( ThisInv() )
 		cQuery += "AND CP_OK<>'"+ThisMark()+"' "
