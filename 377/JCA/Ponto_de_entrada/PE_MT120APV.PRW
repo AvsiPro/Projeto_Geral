@@ -1,16 +1,17 @@
-#include "rwmake.ch"
-#include "protheus.ch"
-
+#Include "Protheus.ch"
+#Include "RwMake.ch"
+#Include "TbiConn.ch"
+#Include "totvs.ch"
 
 //+----------------------------------------------------------------------------------------------------------------------+
-//| PROGRAMA  | MT100GE2 | WRC                                                                              | 26/04/2023 |
+//| PROGRAMA  | MT120APV | WRC                                                                              | 06/08/2024 |
 //+----------------------------------------------------------------------------------------------------------------------+
-//| DESCRIÇÃO | Ponto de entrada que edita o conteúdo dos titulos a pagar gerados na MATA103                             |
+//| DESCRIÇÃO | O Ponto de Entrada MT120APV é responsavel pela gravação do 						                         |
 //|           |                                                                                                          |
-//|           | Usado para atualizar o histórico do título.  Chamado 179854                                              |
+//|           | grupo de aprovação do Pedido de Compras e/ou Autorização de Entrega                                      |
 //|           |                                                                                                          |
-//|           | Esta rotina trabalha em conjunto com o PE MA103BUT através da variável cHistJCA103                       |
-//|           |                                                                                                          |
+//|           | Este ponto de entrada foi solicitado para atender os pedidos gerados via msexecauto fluig                |
+//|           | Os pedidos não devem nascer bloqueados.                                                                                                         |
 //|           |                                                                                                          |
 //+----------------------------------------------------------------------------------------------------------------------+
 //| HISTORICO DAS ALTERAÇÕES                                                                                             |
@@ -27,26 +28,22 @@
 //+----------------------------------------------------------------------------------------------------------------------+
 
 
-User Function MT100GE2
+User Function MT120APV()
 
-	Local nOpc := PARAMIXB[2]  // 1=inclusao ; 2 = exclusão
-	LOCAL nPar := 0
+	Local ExpC1 := Nil
+	Local ExpC2 := Nil
+	Local cGrp := "" //Grupo de aprovação
 
-	If nOpc = 1
-		SE2->E2_HIST := cHistJCA103
-		SE2->E2_ZCGCBOL := SA2->A2_ZCGCBOL
+	IF IsInCallStack('MSEXECAUTO')
+		If Type("ALTERA") == "U"
+			ALTERA := .F.
+		Endif
 
-		//ajusta data de vencimento na integração fluig
-		IF FUNNAME() == "RPC"
-			IF valtype(aVcto) != nil
-				nPar := val(PARAMIXB[1,1])
-				IF len(aVcto) >= nPar
-					IF valtype(stod(aVcto[nPar])) == "D" .AND. aVcto[nPar] != NIL
-						SE2->E2_VENCTO  := ctod(aVcto[nPar])
-						SE2->E2_VENCREA := DataValida(ctod(aVcto[nPar]),.T.)
-					ENDIF
-				ENDIF
-			ENDIF
-		ENDIF
-	Endif
-Return
+		If Type("PARAMIXB") == "U"
+			//EXEMPLO 1 (Manipulando o grupo de aprovação):
+			cGrp := "999999"
+			Return cGrp
+		Endif
+	ENDIF
+
+Return 
