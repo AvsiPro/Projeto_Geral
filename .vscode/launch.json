@@ -7,7 +7,7 @@
 			"name": "Depuração do idioma TOTVS",
 			"program": "${command:AskForProgramName}",
 			"cwb": "${workspaceFolder}",
-			"smartclientBin": "C:\\Adm\\SMARTCLIENT20.3.0.0\\smartclient.exe",
+			"smartclientBin": "C:/smartclient/smartclientQAjca/smartclient.exe",
 			"isMultiSession": true,
 			"enableTableSync": true,
 			"programArguments": [],

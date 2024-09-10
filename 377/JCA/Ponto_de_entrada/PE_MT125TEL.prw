@@ -1,11 +1,12 @@
 #INCLUDE 'PROTHEUS.CH'
 /*--------------------------------------------------------------------------------------------------------------*
- | P.E.:  MT120TEL                                                                                              |
- | Desc:  Ponto de Entrada para gravar informações no pedido de compra a cada item (usado junto com MTA120G2)   |
- | Link:  http://tdn.totvs.com/pages/releaseview.action?pageId=6085572                                          |
- *--------------------------------------------------------------------------------------------------------------*/
+ | P.E.:  MT125TEL                                                                                               |
+ | Desc:  Se encontra dentro da rotina que monta a dialog do contrato de parceria antes  da montagem dos folders.   |
+ | Link:  https://tdn.totvs.com/display/public/PROT/MT125TEL                                       |
+ | Requi: Leonardo, vedido a erro ao gerar autorização de entrega manual 10/09/2024 Rodrigo Barreto
+  *--------------------------------------------------------------------------------------------------------------*/
   
-User Function MT120TEL()
+User Function MT125TEL()
     Local aArea     := GetArea()
     Local oDlg      := PARAMIXB[1] 
     Local aPosGet   := PARAMIXB[2]
@@ -30,41 +31,38 @@ User Function MT120TEL()
 
     //cOpcao := aStatusP[1]
     //Define o conteúdo para os campos
-    SC7->(DbGoTo(nRecPC))
+    SC3->(DbGoTo(nRecPC))
     If nOpcx == 3
-        cOpcao := CriaVar("C7_ZTPCOM",.F.)
+        cXObsAux := CriaVar("C3_XTIPCOT",.F.)
     Else
-        cOpcao := SC7->C7_ZTPCOM
+        cXObsAux := SC3->C3_XTIPCOT
     EndIf
  
     //Criando na janela o campo OBS
-    @ 062, aPosGet[1,08] - 012 SAY Alltrim(RetTitle("C7_ZTPCOM")) OF oDlg PIXEL SIZE 050,006
+    @ 065, aPosGet[1,07] - 450 SAY "Tipo de Compra" OF oDlg PIXEL SIZE 050,006    
     
-    
-    @ 061, aPosGet[1,09] MSCOMBOBOX oEdit1 VAR cOpcao ITEMS aStatusP SIZE 140, 013 OF oDlg PIXEL COLORS 0, 16777215
- 
-   
+    @ 066, aPosGet[1,08] - 250 MSCOMBOBOX oEdit1 VAR cXObsAux ITEMS aStatusP SIZE 140, 013 OF oDlg PIXEL COLORS 0, 16777215
  
     RestArea(aArea)
 Return
   
 /*--------------------------------------------------------------------------------------------------------------*
- | P.E.:  MTA120G2                                                                                              |
+ | P.E.:  MT125GRV                                                                                              |
  | Desc:  Ponto de Entrada para gravar informações no pedido de compra a cada item (usado junto com MT120TEL)   |
  | Link:  http://tdn.totvs.com/pages/releaseview.action?pageId=6085572                                          |
  *--------------------------------------------------------------------------------------------------------------*/
   
-User Function MTA120G2()
+User Function MT125GRV()
     Local aArea := GetArea()
     
     If !"CNTA" $ Funname()
-    //Atualiza a descrição, com a variável pública criada no ponto de entrada MT120TEL
+    //Atualiza a descrição, com a variável pública criada no ponto de entrada MT125TEL
         IF type('cXObsAux') != 'U'
             SC7->C7_ZTPCOM := cXObsAux
         ELSEIF Funname() == "MATA173"
             SC7->C7_ZTPCOM := SC3->C3_XTIPCOT
         ENDIF
     EndIf 
-
+    
     RestArea(aArea)
 Return
