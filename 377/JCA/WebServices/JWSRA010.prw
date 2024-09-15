@@ -79,9 +79,11 @@ WsMethod POST WsReceive RECEIVE WsService JWSRA010
 		lRet		:= .F.
 	Else
 
-        RpcSetType(3)
-        RPCSetEnv('01','00020087')
-        //RPCSetEnv('00','00001000100')
+        If Empty(FunName())
+            RpcSetType(3)
+            //RPCSetEnv('01','00020087')
+            RPCSetEnv('T1','D MG 01 ')
+        EndIf 
         
         If lRet
             oBody  := JsonObject():New()
@@ -344,19 +346,38 @@ WsMethod POST WsReceive RECEIVE WsService JWSRA010
                 aAdd(aVetSE1, {"E1_HIST",    cHist,             Nil})
                 aAdd(aVetSE1, {"E1_MOEDA",   1,                 Nil})
             EndIf 
+            
+            If nMulta <> 'null' .AND. nDesconto <> 'null'
+                nResultado := val(nMulta) - val(nDesconto)
+                
+                aAdd(aVetSE1, {"E1_CACRE",  val(nMulta),         Nil})
+                aAdd(aVetSE1, {"E1_CDESC", val(nDesconto),       Nil})
 
-            If nMulta <> 'null'
-                aAdd(aVetSE1, {"E1_ACRESC",  val(nMulta),         Nil})
-            EndIF 
+                If nResultado > 0
+                    aAdd(aVetSE1, {"E1_ACRESC",  nResultado,     Nil})
+                Else 
+                    aAdd(aVetSE1, {"E1_DECRESC", nResultado*(-1),      Nil})
+                EndIf 
+            Else
+                If nMulta <> 'null'
+                    //E1_CACRE  Campo informativo JCA para quando enviarem acrescimo e decrescimo juntos
+                    aAdd(aVetSE1, {"E1_ACRESC",  val(nMulta),         Nil})
+                    aAdd(aVetSE1, {"E1_CACRE",  val(nMulta),         Nil})
+                
+                EndIF 
+
+                If nDesconto <> 'null'
+                    //E1_CDESC  Campo informativo JCA para quando enviarem acrescimo e decrescimo juntos
+                    aAdd(aVetSE1, {"E1_DECRESC", val(nDesconto),      Nil})
+                    aAdd(aVetSE1, {"E1_CDESC", val(nDesconto),       Nil})
+                EndIF  
+            Endif 
 
             If nJuros <> 'null'
                 aAdd(aVetSE1, {"E1_VALJUR",  val(nJuros),         Nil})
             EndIF
 
-            If nDesconto <> 'null'
-                aAdd(aVetSE1, {"E1_DECRESC", val(nDesconto),      Nil})
-            EndIF  
-
+            
             If cTipOper == "1"
                
                 DbSelectArea("SE1")

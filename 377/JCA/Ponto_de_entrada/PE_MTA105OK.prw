@@ -19,20 +19,29 @@ Local nPosO := Ascan(aHeader,{|x| alltrim(x[2]) == "CP_OP"})
 Local nPosS := Ascan(aHeader,{|x| alltrim(x[2]) == "CP_SALBLQ"})
 Local nPosX := Ascan(aHeader,{|x| alltrim(x[2]) == "CP_XORIGEM"})
 Local nPosQ := Ascan(aHeader,{|x| alltrim(x[2]) == "CP_QUANT"})
+Local nPosI := Ascan(aHeader,{|x| alltrim(x[2]) == "CP_ITEM"})
 Local nCont := 1
+Local lAvulso := .F.
 
 For nCont := 1 to len(aCols)
     
-    iF !Empty(aCols[n,nPosP])
-        cOrdem := SUBSTR(aCols[n,nPosO],1,6)
+    iF !Empty(aCols[nCont,nPosP])
+
+        cOrdem := SUBSTR(aCols[nCont,nPosO],1,6)
         cPlano := Posicione("STJ",1,xFilial("STJ")+cOrdem,"TJ_PLANO")
         cCodBem := Posicione("STJ",1,xFilial("STJ")+cOrdem,"TJ_CODBEM")
         cContad := Posicione("STJ",1,xFilial("STJ")+cOrdem,"TJ_POSCONT")
-        If !Empty(cOrdem)
-            //lBloq := U_xvld105(aCols[nCont,nPosP],cCodBem,cOrdem,cContad)
-            lBloq := xvld105(aCols[nCont,nPosP],cCodBem,cOrdem,cContad,cPlano)
-        endif
 
+        If Funname() <> "MNTA420"
+            lAvulso := ItmAvls(ca105num,aCols[nCont,nPosI],cOrdem,cPlano)
+        EndIf 
+
+        //If lAvulso
+        If !Empty(cOrdem) 
+            //lBloq := U_xvld105(aCols[nCont,nPosP],cCodBem,cOrdem,cContad)
+            lBloq := xvld105(aCols[nCont,nPosP],cCodBem,cOrdem,cContad,cPlano,aCols[nCont,nPosI],lAvulso)
+        endif
+    
         If !lBloq 
             
             If Funname() == "MATA105"
@@ -60,106 +69,67 @@ Return(lRet)
     (examples)
     @see (links_or_references)
 /*/
-static Function xvld105(cProduto,cCodBem,cOrdem,cContad,cPlano)
+static Function xvld105(cProduto,cCodBem,cOrdem,cContad,cPlano,cItemSA,lAvulso)
 
 Local aArea     := GetArea()
-Local cQuery    := '' 
-Local lLibera   := .T.
+
+Private lLibera   := .T.
 
 DbSelectArea("STL")
 DbSetOrder(1)
 If Dbseek(xFilial("STL")+cOrdem+cPlano)
-    While !Eof() .AND. STL->TL_FILIAL == xfilial("STL") .AND. STL->TL_ORDEM == cOrdem .AND. STL->TL_PLANO == cPlano
-        If STL->TL_TIPOREG == 'P'
+    If !lAvulso
+        While !Eof() .AND. STL->TL_FILIAL == xfilial("STL") .AND. STL->TL_ORDEM == cOrdem .AND. STL->TL_PLANO == cPlano
+            If STL->TL_TIPOREG == 'P' .And. cProduto == STL->TL_CODIGO .And. STL->TL_ITEMSA == cItemSA  //.And. STL->TL_SEQRELA <> '0' 
 
-            aAreaTL := GetArea()
+                aAreaTL := GetArea()
 
-            lLibera := .t.
-            
-            cQuery := "SELECT *"
-            cQuery += " FROM "+RetSQLName("STJ")+" STJ"
-            cQuery += " INNER JOIN "+RetSQLName("STL")+" STL ON TJ_FILIAL = TL_FILIAL"
-            cQuery += "        AND TJ_ORDEM = TL_ORDEM"
-            cQuery += "        AND STL.D_E_L_E_T_ = ' '"
-            cQuery += "        AND TL_TIPOREG = 'P'"
-            cQuery += "        AND TL_CODIGO='"+cProduto+"'"
-            cQuery += " INNER JOIN "+RetSQLName("ZPO")+" ZPO ON ZPO_FILIAL = '"+xFilial("ZPO")+"'"
-            cQuery += "        AND (ZPO_CODIGO = TL_CODIGO  OR ZPO_CODIGO "
-            cQuery += "             IN(SELECT B1_XCODPAI FROM "+RetSQLName("SB1")+" WHERE B1_FILIAL=' ' AND B1_COD='"+cProduto+"'))"
-
-            cQuery += "        AND ZPO.D_E_L_E_T_ = ' '"
-            cQuery += " WHERE  STJ.D_E_L_E_T_ = ' '"
-            cQuery += "  AND TJ_FILIAL BETWEEN ' ' AND 'ZZ'"
-            cQuery += "  AND TJ_CODBEM='"+cCodBem+"'"
-            cQuery += "     AND TL_ORDEM <> '"+cOrdem+"'"
-            cQuery += "     ORDER BY TL_ORDEM DESC,ZPO_CODIGO DESC"
-
-            cAliasTMP := GetNextAlias()
-            MPSysOpenQuery(cQuery, cAliasTMP)
-
-            If (cAliasTMP)->(!EoF())
+                lLibera := .t.
                 
+                vldBlqTL(cProduto,cCodBem,cOrdem,cContad,cPlano,cItemSA)
                 
-                If (cAliasTMP)->ZPO_TIPO == '1' .Or. (cAliasTMP)->ZPO_TIPO == '3' //Contador
-                    lLibera := Iif((cAliasTMP)->ZPO_CONTAD < (cContad - (cAliasTMP)->TJ_POSCONT),.T.,.F.)
-                EndIf
+                RestArea(aAreaTL)
 
-                If ((cAliasTMP)->ZPO_TIPO == '2' .Or. (cAliasTMP)->ZPO_TIPO == '3') .And. !lLibera //Tempo
-
-                    dIniAtu := stod((cAliasTMP)->TL_DTINICI)
-                    dFimAnt := SToD((cAliasTMP)->TL_DTFIM)
-                    nTempo  := (cAliasTMP)->ZPO_TEMPO
-
-                    If (cAliasTMP)->ZPO_TPTEMP == 'M' //mes
-                        lLibera := Iif(DateDiffMonth(dFimAnt, dIniAtu) > nTempo,.T.,.F.)
-
-                    ElseIf (cAliasTMP)->ZPO_TPTEMP == 'S' //semana
-                        lLibera := Iif(GetWeekDifference(dFimAnt, dIniAtu) > nTempo ,.T.,.F.)
-
-                    ElseIf (cAliasTMP)->ZPO_TPTEMP == 'D' //dia
-                        lLibera := Iif(DateDiffDay(dFimAnt, dIniAtu) > nTempo,.T.,.F.)
-
-                    ElseIf (cAliasTMP)->ZPO_TPTEMP == 'H' //hora
-                        
-                        cHrIniAtu := (cAliasTMP)->TL_HOINICI
-                        cHrFimAnt := (cAliasTMP)->TL_HOFIM
-
-                        dateTime1 := DToC(dFimAnt) + " " + cHrFimAnt
-                        dateTime2 := DToC(dIniAtu) + " " + cHrIniAtu
-
-                        lLibera := Iif(GetHourDifference(dateTime1, dateTime2) > nTempo,.T.,.F.)
+                DbSelectArea("STL")
+                If !lLibera
+                    lBloq := .T.
+                    DbSelectArea("SCP")
+                    DbSetOrder(2)
+                    If Dbseek(xFilial("SCP")+STL->TL_CODIGO+STL->TL_NUMSA+STL->TL_ITEMSA)
+                        RecLock('SCP', .F.)
+                        SCP->CP_STATSA  := 'B'
+                        SCP->CP_SALBLQ  := SCP->CP_QUANT
+                        SCP->CP_XORIGEM := Alltrim(FunName())
+                        SCP->(MsUnlock())
                     EndIf
-
-                EndIf
-
-            EndIf
-
-            (cAliasTMP)->(DbCloseArea())
-
-            RestArea(aAreaTL)
-
-            DbSelectArea("STL")
-            //DbSetOrder(1)
-            //Dbseek(cFilOS+cOrdem+cPlano)
-            If !lLibera
-                //STJ->TJ_XSITUAC := '1'
-                lBloq := .T.
-                DbSelectArea("SCP")
-                DbSetOrder(2)
-                //If NGIFDBSEEK("SCP",STL->TL_NUMSA+STL->TL_ITEMSA,1,.F.)
-                If Dbseek(xFilial("SCP")+STL->TL_CODIGO+STL->TL_NUMSA+STL->TL_ITEMSA)
-                    RecLock('SCP', .F.)
-                    SCP->CP_STATSA  := 'B'
-                    SCP->CP_SALBLQ  := SCP->CP_QUANT
-                    SCP->CP_XORIGEM := Alltrim(FunName())
-                    SCP->(MsUnlock())
                 EndIf
             EndIf
 
+            STL->(Dbskip())
+        EndDo 
+    Else 
+        aAreaTL := GetArea()
+
+        lLibera := .f.
+        
+        vldBlqTL(cProduto,cCodBem,cOrdem,cContad,cPlano,cItemSA)
+        
+        RestArea(aAreaTL)
+
+        DbSelectArea("STL")
+        If !lLibera
+            lBloq := .T.
+            DbSelectArea("SCP")
+            DbSetOrder(2)
+            If Dbseek(xFilial("SCP")+STL->TL_CODIGO+STL->TL_NUMSA+STL->TL_ITEMSA)
+                RecLock('SCP', .F.)
+                SCP->CP_STATSA  := 'B'
+                SCP->CP_SALBLQ  := SCP->CP_QUANT
+                SCP->CP_XORIGEM := Alltrim(FunName())
+                SCP->(MsUnlock())
+            EndIf
         EndIf
-
-        STL->(Dbskip())
-    EndDo 
+    EndIf 
 EndIf 
 RestArea(aArea)
     
@@ -226,3 +196,115 @@ hourDifference := (daysDifference * 24) + (minutesDifference / 60.0)
 
 return hourDifference
 
+/*/{Protheus.doc} ItmAvls
+    (long_description)
+    @type  Static Function
+    @author user
+    @since 13/08/2024
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function ItmAvls(cNum,cItem,cOrdem,cPlano)
+
+Local aArea := GetArea()
+Local lRet  := .F.
+Local cQuery 
+
+cQuery := "SELECT COUNT(*) AS QTD FROM "+RetSQLName("STL")
+cQuery += " WHERE TL_FILIAL='"+xFilial("STL")+"' "
+cQuery += " AND TL_NUMSA='"+cNum+"' AND TL_ITEMSA='"+cItem+"'"
+cQuery += " AND TL_ORDEM='"+cOrdem+"' AND TL_PLANO='"+cPlano+"'"
+cQuery += " AND D_E_L_E_T_=' '"
+
+cAliasTMP := GetNextAlias()
+MPSysOpenQuery(cQuery, cAliasTMP)
+
+If (cAliasTMP)->QTD  < 1
+    lRet := .T. 
+EndIF 
+
+RestArea(aArea)
+
+Return(lRet)
+
+/*/{Protheus.doc} vldBlqTL
+    Valida se será bloqueado o item
+    @type  Static Function
+    @author user
+    @since 13/08/2024
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function vldBlqTL(cProduto,cCodBem,cOrdem,cContad,cPlano,cItemSA)
+
+Local cQuery    := '' 
+
+cQuery := "SELECT *"
+cQuery += " FROM "+RetSQLName("STJ")+" STJ"
+cQuery += " INNER JOIN "+RetSQLName("STL")+" STL ON TJ_FILIAL = TL_FILIAL"
+cQuery += "        AND TJ_ORDEM = TL_ORDEM"
+cQuery += "        AND STL.D_E_L_E_T_ = ' '"
+cQuery += "        AND TL_TIPOREG = 'P'"
+cQuery += "        AND TL_CODIGO='"+cProduto+"'"
+cQuery += " INNER JOIN "+RetSQLName("ZPO")+" ZPO ON ZPO_FILIAL = '"+xFilial("ZPO")+"'"
+cQuery += "        AND (ZPO_CODIGO = TL_CODIGO  OR ZPO_CODIGO "
+cQuery += "             IN(SELECT B1_XCODPAI FROM "+RetSQLName("SB1")+" WHERE B1_FILIAL=' ' AND B1_COD='"+cProduto+"'))"
+
+cQuery += "        AND ZPO.D_E_L_E_T_ = ' '"
+cQuery += " WHERE  STJ.D_E_L_E_T_ = ' '"
+cQuery += "  AND TJ_FILIAL BETWEEN ' ' AND 'ZZ'"
+cQuery += "  AND TJ_CODBEM='"+cCodBem+"'"
+cQuery += "     AND TL_ORDEM <> '"+cOrdem+"'"
+cQuery += "     ORDER BY TL_ORDEM DESC,ZPO_CODIGO DESC"
+
+cAliasTMP := GetNextAlias()
+MPSysOpenQuery(cQuery, cAliasTMP)
+
+If (cAliasTMP)->(!EoF())
+    
+    
+    If (cAliasTMP)->ZPO_TIPO == '1' .Or. (cAliasTMP)->ZPO_TIPO == '3' //Contador
+        lLibera := Iif((cAliasTMP)->ZPO_CONTAD < (cContad - (cAliasTMP)->TJ_POSCONT),.T.,.F.)
+    EndIf
+
+    If ((cAliasTMP)->ZPO_TIPO == '2' .Or. (cAliasTMP)->ZPO_TIPO == '3') .And. !lLibera //Tempo
+
+        dIniAtu := stod((cAliasTMP)->TL_DTINICI)
+        dFimAnt := SToD((cAliasTMP)->TL_DTFIM)
+        nTempo  := (cAliasTMP)->ZPO_TEMPO
+
+        If (cAliasTMP)->ZPO_TPTEMP == 'M' //mes
+            lLibera := Iif(DateDiffMonth(dFimAnt, dIniAtu) > nTempo,.T.,.F.)
+
+        ElseIf (cAliasTMP)->ZPO_TPTEMP == 'S' //semana
+            lLibera := Iif(GetWeekDifference(dFimAnt, dIniAtu) > nTempo ,.T.,.F.)
+
+        ElseIf (cAliasTMP)->ZPO_TPTEMP == 'D' //dia
+            lLibera := Iif(DateDiffDay(dFimAnt, dIniAtu) > nTempo,.T.,.F.)
+
+        ElseIf (cAliasTMP)->ZPO_TPTEMP == 'H' //hora
+            
+            cHrIniAtu := (cAliasTMP)->TL_HOINICI
+            cHrFimAnt := (cAliasTMP)->TL_HOFIM
+
+            dateTime1 := DToC(dFimAnt) + " " + cHrFimAnt
+            dateTime2 := DToC(dIniAtu) + " " + cHrIniAtu
+
+            lLibera := Iif(GetHourDifference(dateTime1, dateTime2) > nTempo,.T.,.F.)
+        EndIf
+
+    EndIf
+
+EndIf
+
+(cAliasTMP)->(DbCloseArea())
+
+Return

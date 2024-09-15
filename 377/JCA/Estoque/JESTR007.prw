@@ -1004,9 +1004,11 @@ Static Function ReportPrint(oReport)
 
                     MR900ImpS1(@aSalAtu,cAliasTop,.T.,lVEIC,lCusFil,lCusEmp,oSection1,oSection2,oReport)
 
-                    If Alltrim(aProdPai[len(aProdPai),01]) == substr(cProdAnt,1,8)
-                        aProdPai[len(aProdPai),04] += aSalAtu[1]
-                    endif 
+					If len(aProdPai) > 0
+						If Alltrim(aProdPai[len(aProdPai),01]) == substr(cProdAnt,1,8)
+							aProdPai[len(aProdPai),04] += aSalAtu[1]
+						endif 
+					endif 
 
                     oSection3:Init()
 

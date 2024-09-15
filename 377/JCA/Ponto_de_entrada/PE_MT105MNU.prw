@@ -12,7 +12,7 @@ User Function MT105MNU()
     
 Local aRet := {}
     
-    aAdd(aRet,{'Liberação por Tempo Previsto','u_LIBREJ(1)'  , 0 , 2})
+    aAdd(aRet,{'Libera por contador e tempo previsto','u_LIBREJ(1)'  , 0 , 2})
     aAdd(aRet,{'Rejeitar'                    ,'u_LIBREJ(2)'  , 0 , 2})
     aAdd(aRet,{'Imprimir Requisição'         ,'U_JESTR001(1)' , 0 , 2})
     aAdd(aRet,{'Gerar Pre-Requisição'        ,'Processa({|| U_JCOMJ003() },"Aguarde ")' , 0 , 2})

@@ -24,9 +24,6 @@ If !Empty(aCols[n,nPosP])
         lBloq := U_xvld105(aCols[n,nPosP],cCodBem,cOrdem,cContad)
     endif
 
-    //If !lBloq 
-        //MsgAlert("Item será bloqueado devido a regra de tempo x contadores","MTA105LIN")
-    //EndIf 
 EndIf 
 
 RestArea(aArea)
