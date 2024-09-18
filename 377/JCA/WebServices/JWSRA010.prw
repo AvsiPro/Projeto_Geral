@@ -405,7 +405,7 @@ WsMethod POST WsReceive RECEIVE WsService JWSRA010
                     else
                         cMessage  += "sucesso "
                         cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"sucesso" : "'+"Titulo gerado com sucesso!!!"+'"'"
-                        cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"recno" : "'+"Recno nr. "+cvaltochar(Recno())+'"'"
+                        cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"recno" : "'+cvaltochar(Recno())+'"'"
                     EndIf    
 
                     //Finaliza a transação
@@ -443,7 +443,7 @@ WsMethod POST WsReceive RECEIVE WsService JWSRA010
 
                         cMessage  += "sucesso "
                         cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"sucesso" : "'+"Titulo de imposto gerado com sucesso!!!"+'"'"
-                        cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"recno" : "'+"Recno nr. "+cvaltochar(Recno())+'"'"
+                        cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"recno" : "'+cvaltochar(Recno())+'"'"
                     
                     Else
                         
@@ -485,7 +485,7 @@ WsMethod POST WsReceive RECEIVE WsService JWSRA010
                             else
                                 cMessage  += "sucesso "
                                 cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"sucesso" : "'+"Titulo de imposto a pagar gerado com sucesso!!!"+'"'"
-                                cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"recno" : "'+"Recno nr. "+cvaltochar(Recno())+'"'"
+                                cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"recno" : "'+cvaltochar(Recno())+'"'"
                             EndIf    
    
                         Next nCont 
@@ -518,7 +518,7 @@ WsMethod POST WsReceive RECEIVE WsService JWSRA010
                     else
                         cMessage  += "sucesso "
                         cResultAux += '"sucesso" : "'+"Titulo alterado com sucesso!!!"+'"'"
-                        cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"recno" : "'+"Recno nr. "+cvaltochar(Recno())+'"'"
+                        cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"recno" : "'+cvaltochar(Recno())+'"'"
                     EndIf    
 
                     //Finaliza a transação
@@ -552,7 +552,7 @@ WsMethod POST WsReceive RECEIVE WsService JWSRA010
                     else
                         cMessage  += "sucesso "
                         cResultAux += '"sucesso" : "'+"Titulo alterado com sucesso!!!"+'"'"
-                        cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"recno" : "'+"Recno nr. "+cvaltochar(Recno())+'"'"
+                        cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"recno" : "'+cvaltochar(Recno())+'"'"
                     EndIf    
 
                     //Finaliza a transação

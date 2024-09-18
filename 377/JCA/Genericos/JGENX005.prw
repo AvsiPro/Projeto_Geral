@@ -20,6 +20,8 @@ Local aRet      :=  {}
 Local aItemFora := SEPARA(SuperGetMV("TI_ITEMFO",.F.,"B1_COD/B1_GRUPO/B1_FABRIC/B1_ZMARCA/B1_UCOM/B1_UCALSTD/B1_UCOM/B1_UPRC/B1_DATREF/B1_UCALSTD/B1_VIGENC/B1_CONINI/B1_PROC/B1_CODISS/B1_ALIQISS/B1_XCODPAI"),"/")
 Local lImport   := .F.
 
+Default aAuto   := ""
+
 cTabela	+=	"->"
 
 If nOpc == 1

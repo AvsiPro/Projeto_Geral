@@ -78,10 +78,12 @@ WsMethod POST WsReceive RECEIVE WsService JWSRA011
 		lRet		:= .F.
 	Else
 
-        RpcSetType(3)
-        RPCSetEnv('01','00020087')
-        //RPCSetEnv('T1','D MG 01')
-        
+        If Empty(Funname())
+            RpcSetType(3)
+            RPCSetEnv('01','00020087')
+            //RPCSetEnv('T1','D MG 01')
+        EndIf 
+
         If lRet
             oBody  := JsonObject():New()
             oBody:fromJson(cJson) 
@@ -221,10 +223,16 @@ WsMethod POST WsReceive RECEIVE WsService JWSRA011
                     EndIf
                 Else 
                     If val(nRecEnv) <= 0
-                        cCode 	 := "#400"
-                        cMessage += "#erro_renoc "
-                        cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"recno" : "'+"Nao foi informado o Recno da transacao"+'"'"
-                        lRet		:= .F.
+                        DbSelectArea("SE5")
+                        DbSetOrder(7)
+                        If Dbseek(cFilMov+Avkey(cPrefixo,"E5_PREFIXO")+Avkey(cTitulo,"E5_NUMERO")+Avkey(cParcela,"E5_PARCELA")+Avkey(cTipo,"E5_TIPO")+Avkey(cCliente,"E5_CLIFOR")+Avkey(cLoja,"E5_LOJA"))
+                            nRecEnv := Recno()
+                        Else 
+                            cCode 	 := "#400"
+                            cMessage += "#erro_renoc "
+                            cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"recno" : "'+"Nao foi informado o Recno da transacao"+'"'"
+                            lRet		:= .F.
+                        EndIf 
                     EndIf  
                 EndIf
 
