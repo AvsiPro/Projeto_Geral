@@ -24,7 +24,8 @@ Local lBloq   := .F.
         If Dbseek(cFilOS+cOrdem+cPlano)
             While !Eof() .AND. STL->TL_FILIAL == cFilOS .AND. STL->TL_ORDEM == cOrdem .AND. STL->TL_PLANO == cPlano
                 If STL->TL_TIPOREG == 'P'
-                    
+                    lLibera := .t.
+
                     aAreaTL := GetArea()
 
                     cQuery := " SELECT * FROM "+RetSqlName("STL")+" STL
@@ -55,7 +56,7 @@ Local lBloq   := .F.
                             lLibera := Iif((cAliasTMP)->ZPO_CONTAD < (STJ->TJ_POSCONT - (cAliasTMP)->TJ_POSCONT),.T.,.F.)
                         EndIf
 
-                        If ((cAliasTMP)->ZPO_TIPO == '2' .Or. (cAliasTMP)->ZPO_TIPO == '3') .And. !lLibera //Tempo
+                        If ((cAliasTMP)->ZPO_TIPO == '2' .Or. (cAliasTMP)->ZPO_TIPO == '3') .And. lLibera //Tempo
 
                             dIniAtu := STL->TL_DTINICI
                             dFimAnt := SToD((cAliasTMP)->TL_DTFIM)

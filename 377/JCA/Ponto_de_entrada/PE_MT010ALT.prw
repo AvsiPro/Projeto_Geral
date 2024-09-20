@@ -19,12 +19,66 @@ Local nCont         :=  0
 Local aFilhos       :=  {}
 Local nX,nZ
 Local cBkpSb1       :=  SB1->B1_COD
+Local cDescric      :=  SB1->B1_DESC
 Local aFilSBZ       :=  {}
 
 If Empty(SB1->B1_XCODPAI)
     aFilhos := Buscafilhos(cBkpSb1)
     aFilSBZ := BuscaFBZ(cBkpSb1)
     
+    If len(aFilhos) > 0
+        aAlterados := {}
+        aAlterados := U_JGENX005('SB1',1)
+
+        DbSelectArea("SB1")
+        For nX := 1 to len(aFilhos)
+            Dbgoto(aFilhos[nX,02])
+            Reclock("SB1",.F.)
+
+            For nCont := 1 to len(aAlterados)
+                &('SB1->'+aAlterados[nCont,01]) := aAlterados[nCont,02]
+            Next nCont
+
+            If !Empty(SB1->B1_ZMARCA)
+                SB1->B1_DESC := Alltrim(cDescric)+" "+Alltrim(Posicione("ZPM",1,xFilial("ZPM")+SB1->B1_ZMARCA,"ZPM_DESC"))
+            EndIf 
+            
+
+            SB1->(Msunlock())
+        Next nX 
+
+        aAlterados := {}
+                
+        DbSelectArea("SB5")
+        DbSetOrder(1)
+        If DbSeek(xFilial("SB5")+cBkpSb1)
+            aAlterados := U_JGENX005('SB5',2)
+
+            If len(aFilhos) > 0 .And. len(aAlterados) > 0
+                DbSelectArea("SB5")
+                For nX := 1 to len(aFilhos)
+                    If DbSeek(xFilial("SB5")+aFilhos[nX,01])
+                        Reclock("SB5",.F.)
+                    Else 
+                        Reclock("SB5",.T.)
+                    EndIf 
+
+                    For nCont := 1 to len(aAlterados)
+                        
+                        If Alltrim(aAlterados[nCont,01]) == "B5_COD"
+                            &('SB5->'+aAlterados[nCont,01]) := aFilhos[nX,01]
+                        Else
+                            &('SB5->'+aAlterados[nCont,01]) := aAlterados[nCont,02]
+                        endif
+                    Next nCont
+
+                    SB5->(Msunlock())
+                Next nX 
+            EndIf 
+        EndIf
+    EndIf
+
+
     For nZ := 1 to len(aFilSBZ)
         DbSelectArea("SBZ")
         DbSetOrder(1)

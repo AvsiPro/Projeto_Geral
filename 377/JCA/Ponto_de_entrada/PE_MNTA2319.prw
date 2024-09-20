@@ -9,8 +9,26 @@ User function MNTA2319
 LOCAL aArea     := GetArea()
 Local aPneu     := Paramixb
 Local aRet      := {}
-Local aStatus   := {'10','08','04','09'}
+//Local aStatus   := {'10','08','04','09'}
 Local nPos      := 0
+Local aStatus   := {}
+Local aItens    := SuperGetMV("TI_NGSOPC",.F.,"MV_NGSTAGR/MV_NGSTAGC/MV_NGSTAEU/MV_NGSTAEN")
+Local aDados    := {}
+/*
+Reforma: MV_NGSTAGR = 02    //AGUARDANDO REFORMA
+Conserto: MV_NGSTAGC = 03   //AGUARDANDO CONSERTO
+Usado: MV_NGSTAEU = 08      //ESTOQUE USADO
+Novo: MV_NGSTAEN = 10       //ESTOQUE NOVO
+*/
+
+aDados := separa(aItens,"/")
+
+For nPos := 1 to len(aDados)
+    cOpcao := ""
+    cOpcao := alltrim(SuperGetMV(aDados[nPos],.f.,""))
+    Aadd(aStatus,cOpcao)
+Next nPos 
+
 
 If M->TQY_STATUS <> '08'
     M->TQY_STATUS := '08'
@@ -47,3 +65,5 @@ EndIf
 RestArea(aArea)
 
 Return(aRet)
+
+

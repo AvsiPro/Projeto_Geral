@@ -23,6 +23,28 @@ Local lExect    := .T.
 Local aMaoObra  := {}
 Local aBaixSCP  := {}
 Local nCont 
+Local aTarefas  :=  {}
+
+//Solicitado pelo Toninho em 19/08 para validar se todas as tarefas da STN estão na STL
+DbSelectArea("STN")
+DBSetOrder(1)
+If Dbseek(xFilial("STN")+cOrdem)
+    //aqui que valida se a ocorrencia tem solução campo Solucao TN_SOLUCAO preenchido
+    While !EOF() .AND. STN->TN_FILIAL == xFilial("STN") .AND. STN->TN_ORDEM == cOrdem
+        If Empty(STN->TN_SOLUCAO)
+            lSoluc := .F.
+        EndIf 
+        If Ascan(aTarefas,{|x| alltrim(x[1]) == Alltrim(STN->TN_TAREFA)}) == 0
+            Aadd(aTarefas,{STN->TN_TAREFA,.f.})
+        EndIf 
+        Dbskip()
+    EndDo 
+
+    If !lSoluc
+        Msgalert("Não foram apontadas Soluções na ordem de serviços","MNT40011")
+        lRet := .F.
+    EndIF 
+EndIF 
 
 DbSelectArea("STL")
 DBSetOrder(1)
@@ -33,7 +55,14 @@ If Dbseek(xFilial("STL")+cOrdem)
             Aadd(aBaixSCP,{STL->TL_CODIGO,STL->TL_NUMSA,STL->TL_ITEMSA})
         EndIf 
 
+        nPos := Ascan(aTarefas,{|x| alltrim(x[1]) == alltrim(STL->TL_TAREFA)})
+        
+        If nPos > 0 .And. STL->TL_TIPOREG == "M"
+            aTarefas[nPos,02] := .t.
+        endIf 
+
         nPos := Ascan(aMaoObra,{|x| x[1] == STL->TL_TAREFA}) 
+
         If nPos == 0
             Aadd(aMaoObra,{STL->TL_TAREFA,If(STL->TL_TIPOREG == "M",.T.,.F.)})
         Else 
@@ -54,6 +83,19 @@ If Dbseek(xFilial("STL")+cOrdem)
             lRet := .F.
         EndIF
     Next nCont  
+
+    cMsg := ""
+
+    For nCont := 1 to len(aTarefas)
+        If !aTarefas[nCont,02]
+            cMsg += "Tarefa "+aTarefas[nCont,01]+" sem apontamento de mão de obra "+CRLF
+        EndIf 
+    Next nCont 
+
+    If !Empty(cMsg)
+        MsgAlert(cMsg,"MNT40011")
+        lRet := .F.
+    EndIF 
 
     cMsgBaixa := ""
 
@@ -76,25 +118,7 @@ Else
     lRet := .F.
 EndIF 
 
-DbSelectArea("STN")
-DBSetOrder(1)
-If Dbseek(xFilial("STN")+cOrdem)
-    //aqui que valida se a ocorrencia tem solução campo Solucao TN_SOLUCAO preenchido
-    While !EOF() .AND. STN->TN_FILIAL == xFilial("STN") .AND. STN->TN_ORDEM == cOrdem
-        If Empty(STN->TN_SOLUCAO)
-            lSoluc := .F.
-        EndIf 
-        Dbskip()
-    EndDo 
 
-    If !lSoluc
-        Msgalert("Não foram apontadas Soluções na ordem de serviços","MNT40011")
-        lRet := .F.
-    EndIF 
-/*Else
-    MsgAlert("Não foram apontadas as ocorrências da ordem de serviços","MNT40011")
-    lRet := .F.*/
-EndIF 
 
 DbSelectArea("STQ")
 DBSetOrder(1)

@@ -120,7 +120,7 @@ Local oModel   := FwLoadModel("JESTC003")
     oStruSC5:RemoveField("ZPJ_DESCFE")
     
     
-    oStruSC6:RemoveField("ZPJ_FILIAL")
+    oStruSC6C
     oStruSC6:RemoveField("ZPJ_CODBOX")
     oStruSC6:RemoveField("ZPJ_DESCRI")
     

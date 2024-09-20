@@ -19,6 +19,8 @@ Private cProdDe := ''
 Private cProdAt := ''
 Private cGrupDe := ''
 Private cGrupAt := ''
+Private cEndeDe := ''
+Private cEndAte := ''
 Private cMarcDe := ''
 Private cMarcAt := ''
 Private dDtDe   := CtoD(' / / ')
@@ -280,15 +282,21 @@ Return
 Static Function GravCont()
 
 Local nCont 
+Local lEncerra  :=  .F.
 
 If nContag == 4 //.Or. aList1[oList1:nAt,17] == "F"
     Return 
 endIf 
 
 If len(aList1) > 0 
+
+    If MsgYesNo("Encerrar a contagem da acuracidade?","GravCont - JESTM002")
+        lEncerra := .T.
+    EndIf 
+
     For nCont := 1 to len(aList1)
         If aList1[nCont,1]
-            Processa({||GravPrInv(nCont)}, "Aguarde")
+            Processa({||GravPrInv(nCont,lEncerra)}, "Aguarde")
         EndIf 
     Next nCont 
 
@@ -463,17 +471,21 @@ Local aPergs := {}
 Local aRet   := {}
 
 
+                                                                             //"ExistCpo('SB1', &(ReadVar()))"
+aAdd(aPergs ,{1,"Produto de:"	,space(TamSx3("B1_COD")[1])             ,"@!","U_xJestm01(&(ReadVar()),'SB1')","SB1",".T.",70,.F.})
+aAdd(aPergs ,{1,"Produto Até:"	,padr('zz',TamSx3("B1_COD")[1])         ,"@!","U_xJestm01(&(ReadVar()),'SB1')","SB1",".T.",70,.F.})
+aAdd(aPergs ,{1,"Grupo de"	    ,space(TamSx3("B1_GRUPO")[1])           ,"@!","U_xJestm01(&(ReadVar()),'SBM')","SBM",".T.",60,.F.})
+aAdd(aPergs ,{1,"Grupo Até"	    ,padr('zz',TamSx3("B1_GRUPO")[1])       ,"@!","U_xJestm01(&(ReadVar()),'SBM')","SBM",".T.",60,.F.})
 
-aAdd(aPergs ,{1,"Produto de:"	,space(TamSx3("B1_COD")[1]),"@!",".T.","SB1",".T.",70,.F.})
-aAdd(aPergs ,{1,"Produto Até:"	,padr('zz',TamSx3("B1_COD")[1]),"@!",".T.","SB1",".T.",70,.F.})
-aAdd(aPergs ,{1,"Grupo de"	    ,space(TamSx3("B1_GRUPO")[1]) ,"@!",".T.","SBM",".T.",60,.F.})
-aAdd(aPergs ,{1,"Grupo Até"	    ,padr('zz',TamSx3("B1_GRUPO")[1]) ,"@!",".T.","SBM",".T.",60,.F.})
-aAdd(aPergs ,{2,"Marca?"        ,"",{"1=Sim","2=Nao"},50,'',.T.}) //   ,"@!",".T.","ZPM",".T.",80,.F.})
-//aAdd(aPergs ,{1,"Marca Até"     ,padr('zz',TamSx3("ZPM_COD")[1])   ,"@!",".T.","ZPM",".T.",80,.F.})
-aAdd(aPergs ,{1,"Data de"       ,dDtDe   ,"",".T.","",".T.",80,.F.})
-aAdd(aPergs ,{1,"Data Até"      ,dDtAt   ,"",".T.","",".T.",80,.F.})
-aAdd(aPergs ,{1,"Local"         ,space(TamSx3("D1_LOCAL")[1])   ,"@!",".T.","NNR",".T.",80,.F.})
-aAdd(aPergs ,{2,"Somente c/Mov.","", {"1=Sim","2=Nao"},50,'',.T.})
+aAdd(aPergs ,{1,"Endereço de"	,space(TamSx3("BE_LOCALIZ")[1])         ,"@!","U_xJestm01(&(ReadVar()),'SBE')","SBM",".T.",60,.F.})
+aAdd(aPergs ,{1,"Endereço Até"	,padr('zz',TamSx3("BE_LOCALIZ")[1])     ,"@!","U_xJestm01(&(ReadVar()),'SBE')","SBM",".T.",60,.F.})
+
+aAdd(aPergs ,{2,"Marca?"        ,""                                     ,{"1=Sim","2=Nao"},50,'',.T.}) 
+
+aAdd(aPergs ,{1,"Data de"       ,dDtDe                                  ,"",".T.","",".T.",80,.F.})
+aAdd(aPergs ,{1,"Data Até"      ,dDtAt                                  ,"",".T.","",".T.",80,.F.})
+aAdd(aPergs ,{1,"Local"         ,space(TamSx3("D1_LOCAL")[1])           ,"@!","U_xJestm01(&(ReadVar()),'NNR')","NNR",".T.",80,.F.})
+aAdd(aPergs ,{2,"Somente c/Mov.",""                                     , {"1=Sim","2=Nao"},50,'',.T.})
 
 
 If ParamBox(aPergs ,"Filtrar por",@aRet)    
@@ -482,12 +494,14 @@ If ParamBox(aPergs ,"Filtrar por",@aRet)
     cProdAt := aRet[2]
     cGrupDe := aRet[3]
     cGrupAt := aRet[4]
-    cMarcDe := If(aRet[5]=="1",.T.,.F.)//aRet[5]
+    cEndeDe := aRet[5]
+    cEndAte := aRet[6]
+    cMarcDe := If(aRet[7]=="1",.T.,.F.)//aRet[5]
     //cMarcAt := aRet[6]
-    dDtDe   := aRet[6]
-    dDtAt   := aRet[7]
-    cLocIn  := aRet[8]
-    lSoMov  := If(aRet[9]=="1",.T.,.F.)
+    dDtDe   := aRet[8]
+    dDtAt   := aRet[9]
+    cLocIn  := aRet[10]
+    lSoMov  := If(aRet[11]=="1",.T.,.F.)
 
     _xQrjest2(0)
     
@@ -498,6 +512,31 @@ If ParamBox(aPergs ,"Filtrar por",@aRet)
 EndIf
     
 Return
+
+ /*/{Protheus.doc} nomeFunction
+    (long_description)
+    @type  Function
+    @author user
+    @since date
+    @version version
+    @param param, param_type, param_descr
+    @return return, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+    /*/
+User Function xJestm01(cConteudo,cTabela)
+
+Local aArea := GetArea()
+Local lRet  := .T.
+
+If !Empty(cConteudo) .And. !'ZZ' $ upper(cConteudo)
+    lRet := ExistCpo(cTabela,cConteudo)
+EndIf 
+
+RestArea(aArea)
+
+Return(lRet)
 
 /*/{Protheus.doc} _buscainv
     Procura um inventário pelo código
@@ -515,29 +554,80 @@ Static Function _buscainv()
 
 Local aPergs := {}
 Local aRet   := {}
+Local lLibCnt:= .F.
 
 aAdd(aPergs ,{1,"Código:"	,space(TamSx3("ZPE_CODIGO")[1]),"@!",".T.","ZPE",".T.",70,.F.})
 aAdd(aPergs ,{2,"Contagem"	,"", {"1=Contagem 1","2=Contagem 2","3=Contagem 3","4=Conferência"},50,'',.T.})
 
 //aAdd(aPergs ,{1,"Data"      ,dDtDe   ,"",".T.","",".T.",80,.F.})
 
+While !lLibCnt
+    If ParamBox(aPergs ,"Filtrar por",@aRet)    
+        
+        cCodInv := aRet[1]
+        nContag := val(aRet[2])
 
-If ParamBox(aPergs ,"Filtrar por",@aRet)    
+        lLibCnt := VldCnt(cCodInv,nContag)
+        
+
+        /*If nContag > 1
+            _xQrjest2(nContag)
+        EndIf*/ 
+
+        
+    Else   
+        exit
+    EndIf
+EndDo 
     
-    cCodInv := aRet[1]
-    nContag := val(aRet[2])
 
-    PreaList(cCodInv,nContag)
+If lLibCnt
 
-    If nContag > 1
-        _xQrjest2(nContag)
-    EndIf 
-
+    PreaList(cCodInv,nContag,.f.)
     FHelp(1)
 
-EndIf
-    
+EndIf 
+
 Return
+
+/*/{Protheus.doc} VldCnt(cCodInv,nContag)
+    Verifica se a contagem informada no parametro é igual a contagem atual do inventario
+    @type  Static Function
+    @author user
+    @since 09/09/2024
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function VldCnt(cCodInv,nContag)
+
+Local lRet := .T.
+Local cQuery 
+
+cQuery := "SELECT MAX(ZPE_STATUS) AS CONTAGEM FROM "+RetSQLName("ZPE")
+cQuery += " WHERE D_E_L_E_T_=' ' AND ZPE_CODIGO='"+cCodInv+"'"
+
+IF Select('TRB') > 0
+    dbSelectArea('TRB')
+    dbCloseArea()
+ENDIF
+
+MemoWrite("JESTM002_VldCnt.SQL",cQuery)
+DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
+
+DbSelectArea("TRB") 
+
+If val(TRB->CONTAGEM) <> nContag
+    If val(TRB->CONTAGEM) == 0 .and. nContag <> 1
+        MsgAlert("Contagem informada divergente da contagem atual deste inventário, contagem atual "+If(val(TRB->CONTAGEM)==0,'1',TRB->CONTAGEM))
+        lRet := .F.
+    EndIf 
+EndIF 
+
+Return(lRet)
 /*/{Protheus.doc} _xQrjest2
     Gera um novo inventário
     @type  Static Function
@@ -718,9 +808,10 @@ BeginSql Alias cAliasTop
     FROM %Exp:cFromSBE%,%table:SD1% SD1,%table:SF4% SF4,%table:SF1% SF1
 
     WHERE	SB1.B1_COD     =  SD1.D1_COD		AND  	%Exp:cWhereD1C%  
-            SD1.D1_TES     =  SF4.F4_CODIGO	AND
-            SF4.F4_ESTOQUE =  'S'				AND 	SD1.D1_DTDIGIT >= %Exp:dDtDe%	AND
-            SD1.D1_DTDIGIT <= %Exp:dDtAt%	AND		SD1.D1_ORIGLAN <> 'LF' AND SF1.F1_DTDIGIT <= %Exp:dDtAt%  AND 
+            SD1.D1_TES     =  SF4.F4_CODIGO	    AND   SF4.F4_ESTOQUE =  'S'	AND
+            SD1.D1_DTDIGIT >= %Exp:dDtDe%	AND SD1.D1_DTDIGIT <= %Exp:dDtAt%	AND
+            SBE.BE_LOCALIZ >= %Exp:cEndeDe% AND SBE.BE_LOCALIZ <= %Exp:cEndAte% AND
+            SD1.D1_ORIGLAN <> 'LF' AND SF1.F1_DTDIGIT <= %Exp:dDtAt%  AND 
             %Exp:cWhereD1%                     
             SD1.%NotDel%    				  AND 	SF4.%NotDel%
             %Exp:cWhereB1A%                   AND
@@ -761,8 +852,10 @@ BeginSql Alias cAliasTop
 
         WHERE	SB1.B1_COD     =  SD2.D2_COD		AND	%Exp:cWhereD2C%
                 SD2.D2_TES     =  SF4.F4_CODIGO		AND
-                SF4.F4_ESTOQUE =  'S'				AND	SD2.D2_EMISSAO >= %Exp:dDtDe%	AND
-                SD2.D2_EMISSAO <= %Exp:dDtAt%	AND	SD2.D2_ORIGLAN <> 'LF'
+                SF4.F4_ESTOQUE =  'S'				AND	
+                SD2.D2_EMISSAO >= %Exp:dDtDe%	    AND SD2.D2_EMISSAO <= %Exp:dDtAt%	AND
+                SBE.BE_LOCALIZ >= %Exp:cEndeDe% AND SBE.BE_LOCALIZ <= %Exp:cEndAte% AND
+                SD2.D2_ORIGLAN <> 'LF'
                 %Exp:cWhereD2%
                 SD2.%NotDel%						AND SF4.%NotDel%
                 %Exp:cWhereB1A%                     AND
@@ -804,6 +897,7 @@ BeginSql Alias cAliasTop
 
         WHERE	SB1.B1_COD     =  SD3.D3_COD 		AND %Exp:cWhereD3C%
                 SD3.D3_EMISSAO >= %Exp:dDtDe%	AND	SD3.D3_EMISSAO <= %Exp:dDtAt%	AND
+                SBE.BE_LOCALIZ >= %Exp:cEndeDe% AND SBE.BE_LOCALIZ <= %Exp:cEndAte% AND
                 %Exp:cWhereD3%
                 SD3.%NotDel%    
                 
@@ -1184,6 +1278,80 @@ RestArea(aArea)
 
 RETURN
 
+/*/{Protheus.doc} XJESTM2       
+Retorno consulta padrão do campo codigo do inventário
+@type user function
+@author user
+@since 22/08/2024
+@version version
+@param param_name, param_type, param_descr
+@return return_var, return_type, return_description
+@example
+(examples)
+@see (links_or_references)
+/*/
+User Function XJESTM2()
+
+Local cQuery 
+Local aRet  :=  {}
+Local lRet  := .T.
+Local oDlg2,oSay1,oGrp1,oBtn1,oBtn2,oLista
+
+cQuery := "SELECT ZPE_CODIGO, ZPE_CODUSU, ZPE_DATA, R_E_C_N_O_ AS RECNOZPE"
+cQuery += " FROM "+RetSqlName("ZPE")+" AS main"
+cQuery += " WHERE D_E_L_E_T_ = ' ' AND main.ZPE_FILIAL='"+xFilial("ZPE")+"'"
+cQuery += "   AND R_E_C_N_O_ = ("
+cQuery += "       SELECT MAX(sub.R_E_C_N_O_) "
+cQuery += "       FROM "+RetSqlName("ZPE")+" AS sub "
+cQuery += "       WHERE sub.ZPE_CODIGO = main.ZPE_CODIGO "
+cQuery += "         AND sub.D_E_L_E_T_ = ' ' AND sub.ZPE_FILIAL='"+xFilial("ZPE")+"')"
+cQuery += " ORDER BY ZPE_CODIGO"
+
+IF Select('TRB') > 0
+    dbSelectArea('TRB')
+    dbCloseArea()
+ENDIF
+
+MemoWrite("JESTM002.SQL",cQuery)
+DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
+
+DbSelectArea("TRB") 
+
+While !EOF()
+    Aadd(aRet,{TRB->ZPE_CODIGO,UsrRetName(TRB->ZPE_CODUSU),stod(TRB->ZPE_DATA),TRB->RECNOZPE})
+    Dbskip()
+EndDo 
+
+If len(aRet) > 0
+    oDlg2      := MSDialog():New( 269,536,608,1040,"Consulta",,,.F.,,,,,,.T.,,,.T. )
+    oSay1      := TSay():New( 004,104,{||"Selecione"},oDlg2,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
+    oGrp1      := TGroup():New( 016,016,136,228,"",oDlg2,CLR_BLACK,CLR_WHITE,.T.,.F. )
+    //oBrw1      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{024,020,128,224},,, oGrp1 ) 
+
+    oLista    := TCBrowse():New(024,020,210,110,, {'Codigo','Inventariante','Data'},;
+                                        {40,90,40},;
+                                        oGrp1,,,,{|| /*FHelp(oList1:nAt)*/},{|| /*editped(oList1:nAt,1)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
+        oLista:SetArray(aRet)
+        oLista:bLine := {||{aRet[oLista:nAt,01],;
+                            aRet[oLista:nAt,02],;
+                            aRet[oLista:nAt,03]}}
+
+    oBtn1      := TButton():New( 144,064,"Confirmar",oDlg2,{||oDlg2:end(nOpcao:=oLista:nAt)},037,012,,,,.T.,,"",,,,.F. )
+    oBtn2      := TButton():New( 144,144,"Cancelar",oDlg2,{||oDlg2:end(nOpcao:=0)},037,012,,,,.T.,,"",,,,.F. )
+
+    oDlg2:Activate(,,,.T.)
+
+    If nOpcao <> 0
+        DbSelectArea("ZPE")
+        DbGoto(aRet[nOpcao,04])
+    Endif 
+else 
+    MsgAlert("Não há itens a serem apresentados")
+    lRet := .F.
+EndIf 
+
+Return(lRet)
+
 /*/{Protheus.doc} PreaList(cCodInv)
     Preenche array com o inventário ja cadastrado.
     @type  Static Function
@@ -1196,7 +1364,7 @@ RETURN
     (examples)
     @see (links_or_references)
     /*/
-Static Function PreaList(cCodInv,nContag)
+Static Function PreaList(cCodInv,nContag,lRel)
 
 Local aArea := GetArea()
 Local cQuery 
@@ -1212,8 +1380,14 @@ cQuery += " WHERE ZPE_FILIAL = '"+xFilial("ZPE")+"' "
 cQuery += " AND ZPE_CODIGO = '"+cCodInv+"' "
 cQuery += " AND ZPE.D_E_L_E_T_= ' ' "
 
-If nContag <> 4
-    cQuery += " AND ZPE_FLAGOK <> '1' " 
+If !lRel 
+    If nContag <> 4
+        cQuery += " AND ZPE_FLAGOK <> '1' " 
+
+        If nContag > 1
+            cQuery += " AND ZPE_STATUS = '"+cvaltochar(nContag-1)+" ' " 
+        EndIf 
+    EndIf 
 EndIf 
 
 IF Select('TRB') > 0
@@ -1227,10 +1401,10 @@ DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
 DbSelectArea("TRB") 
 
 While !EOF()
-    If val(TRB->ZPE_STATUS)+1 <> nContag .And. val(TRB->ZPE_STATUS) <> 3 .And. nContag <> 4
+    /* If val(TRB->ZPE_STATUS)+1 <> nContag .And. val(TRB->ZPE_STATUS) <> 3 .And. nContag <> 4
         MsgAlert("Número da digitação informada é inválido, a contagem para este Acuracidade atual é a numero "+cvaltochar(val(TRB->ZPE_STATUS)+1))
         exit
-    EndIf 
+    EndIf */ 
 
     cCodUsr := TRB->ZPE_CODUSU
     
@@ -1256,10 +1430,10 @@ While !EOF()
                     TRB->ZPE_CONTA1,;                //12
                     TRB->ZPE_CONTA2,;                //13
                     TRB->ZPE_CONTA3,;                //14
-                    0,;                //15 TRB->ZPE_RESULT
+                    TRB->ZPE_RESULT,;                //15 TRB->ZPE_RESULT  0
                     TRB->RECZPE,;                   //16
                     TRB->ZPE_STATUS,;                //17
-                    0,;                //18 cVlrCm*TRB->ZPE_RESULT
+                    cVlrCm*TRB->ZPE_RESULT,;                //18 cVlrCm*TRB->ZPE_RESULT 0
                     If(nContag>3,3,(TRB->ZPE_RESULT * &('TRB->ZPE_CONTA'+cvaltochar(nContag)))/100),; //19
                     TRB->ZPE_DTCNT1,; //20
                     TRB->ZPE_HRCNT1,; //21
@@ -1297,9 +1471,9 @@ oList1:bLine := {||{iF(aList1[oList1:nAt,01],oOk,oNo),;
                     aList1[oList1:nAt,06],;
                     aList1[oList1:nAt,07],;
                     aList1[oList1:nAt,08],;
-                    aList1[oList1:nAt,If(nContag == 1,09,If(nContag==2,26,29))],;
-                    aList1[oList1:nAt,If(nContag == 1,10,If(nContag==2,27,30))],;
-                    aList1[oList1:nAt,If(nContag == 1,11,If(nContag==2,28,31))],;
+                    aList1[oList1:nAt,09],;
+                    aList1[oList1:nAt,10],;
+                    aList1[oList1:nAt,11],;
                     aList1[oList1:nAt,12],;
                     aList1[oList1:nAt,13],;
                     aList1[oList1:nAt,14],;
@@ -1307,6 +1481,9 @@ oList1:bLine := {||{iF(aList1[oList1:nAt,01],oOk,oNo),;
                     Transform(aList1[oList1:nAt,18],"@E 999,999.99"),;
                     aList1[oList1:nAt,19]}}
                     //aList1[oList1:nAt,If(nContag == 1,11,If(nContag==2,28,31))],;
+                    /*aList1[oList1:nAt,If(nContag == 1,09,If(nContag==2,26,29))],;
+                    aList1[oList1:nAt,If(nContag == 1,10,If(nContag==2,27,30))],;
+                    aList1[oList1:nAt,If(nContag == 1,11,If(nContag==2,28,31))],;*/
 
 oList1:refresh()
 oDlg1:refresh()
@@ -1329,7 +1506,7 @@ description)
 /*/
 
 
-Static Function GravPrInv(nLinha)
+Static Function GravPrInv(nLinha,lEncerra)
 
 Local aArea := GetArea()
 
@@ -1361,7 +1538,10 @@ Else
     ZPE->ZPE_CONTA2 := aList1[nLinha,13]
     ZPE->ZPE_CONTA3 := aList1[nLinha,14]
     ZPE->ZPE_RESULT := aList1[nLinha,15]
-    ZPE->ZPE_STATUS := cvaltochar(nContag)
+
+    If lEncerra
+        ZPE->ZPE_STATUS := cvaltochar(nContag)
+    EndIf 
 
     ZPE->ZPE_QTDEN2 := If(valtype(aList1[nLinha,26])<>"N",val(aList1[nLinha,26]),aList1[nLinha,26])
     ZPE->ZPE_QTDSA2 := If(valtype(aList1[nLinha,27])<>"N",val(aList1[nLinha,27]),aList1[nLinha,27])
@@ -1382,7 +1562,7 @@ Else
         ZPE->ZPE_HRCNT3 := cvaltochar(time())
     EndIf 
 
-    If ZPE->ZPE_RESULT == 0
+    If ZPE->ZPE_RESULT == 0 .And. lEncerra
         ZPE->ZPE_FLAGOK := '1'
     Else 
         ZPE->ZPE_FLAGOK := '0'
@@ -1589,12 +1769,33 @@ Local nSldDia
 
 Local oSection0 := oReport:Section(1)
 Local oSection1 := oReport:Section(1):Section(1)
+Local aListBkp  := aList1 
 
+aList1 := {}
+
+PreaList(cCodInv,nContag,.T.)
 
 oSection0:Init()
 oSection1:Init()
 
 oSection0:PrintLine()
+
+
+                    /* TRB->ZPE_LOCAL,;                //2
+                    cPrat,;                         //3
+                    TRB->ZPE_PRODUT,;                //4
+                    TRB->B1_DESC,;                //5
+                    TRB->ZPM_DESC,;                //6
+                    TRB->B1_FABRIC,;                //7
+                    TRB->ZPE_SLDINI,;                //8
+                    TRB->ZPE_QTDENT,;                //9
+                    TRB->ZPE_QTDSAI,;                //10
+                    TRB->ZPE_SLDFIM,;                //11
+                    TRB->ZPE_CONTA1,;                //12
+                    TRB->ZPE_CONTA2,;                //13
+                    TRB->ZPE_CONTA3,;                //14
+                    0,;                //15 TRB->ZPE_RESULT */
+                    
 
 For nSldDia := 1 to len(aList1)
     oSection1:Cell("cLocal"):SetValue(aList1[nSldDia,02])
@@ -1614,6 +1815,9 @@ For nSldDia := 1 to len(aList1)
 
     oSection1:PrintLine()
 Next
+
+
+aList1 := aListBkp
 
 //oReport:EndPage()
 
@@ -1938,6 +2142,43 @@ If ParamBox(aPergs ,"Informe o código",@aRet)
 
         MsgAlert("Finalizado")
     EndIf 
+
+    aList1 := {}
+
+    If len(aList1) < 1
+        Aadd(aList1,{.f.,'','','','','','','','','','','','','','',0,'','','','','','','','','','','','','','','',.f.})
+    Else 
+        oSay2:settext("")
+        oSay4:settext("")
+    EndIf 
+
+                    
+    oList1:SetArray(aList1)
+    oList1:bLine := {||{iF(aList1[oList1:nAt,01],oOk,oNo),; 
+                        aList1[oList1:nAt,02],;
+                        aList1[oList1:nAt,03],;
+                        aList1[oList1:nAt,04],;
+                        aList1[oList1:nAt,05],;
+                        aList1[oList1:nAt,06],;
+                        aList1[oList1:nAt,07],;
+                        aList1[oList1:nAt,08],;
+                        aList1[oList1:nAt,09],;
+                        aList1[oList1:nAt,10],;
+                        aList1[oList1:nAt,11],;
+                        aList1[oList1:nAt,12],;
+                        aList1[oList1:nAt,13],;
+                        aList1[oList1:nAt,14],;
+                        aList1[oList1:nAt,15],;
+                        Transform(aList1[oList1:nAt,18],"@E 999,999.99"),;
+                        aList1[oList1:nAt,19]}}
+                    
+                        /* aList1[oList1:nAt,If(nContag == 1,09,If(nContag==2,26,29))],;
+                        aList1[oList1:nAt,If(nContag == 1,10,If(nContag==2,27,30))],;
+                        aList1[oList1:nAt,If(nContag == 1,11,If(nContag==2,28,31))],; */
+                        
+                    
+    oList1:refresh()
+    oDlg1:refresh()
 
 EndIf 
 

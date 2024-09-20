@@ -28,7 +28,9 @@ DbSelectArea("SCP")
 DbSetOrder(1)
 If Dbseek(xFilial("SCP")+cNumSCP)
     While !EOF() .AND. SCP->CP_FILIAL == CFILANT .AND. SCP->CP_NUM == cNumSCP
-        Aadd(aITEM,{SCP->CP_ITEM,SCP->CP_PRODUTO,SCP->CP_UM,SCP->CP_QUANT,SCP->CP_LOCAL})
+        If Empty(SCP->CP_XTIPO)
+            Aadd(aITEM,{SCP->CP_ITEM,SCP->CP_PRODUTO,SCP->CP_UM,SCP->CP_QUANT,SCP->CP_LOCAL})
+        EndIf 
         Dbskip()
     EndDo
 EndIf 

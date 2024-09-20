@@ -786,7 +786,7 @@ If !Empty(aFilsCalc)
 				cUnion += ", ''"					// 12
 				cUnion += ", ''"					// 13
 				cUnion += ", ''"					// 14
-				cUnion += ", 0"						// 15
+				cUnion += ", ''"					// 15
 				cUnion += ", 0"						// 16
 				cUnion += ", ''"					// 17
 				cUnion += ", ''"					// 18
@@ -796,12 +796,12 @@ If !Empty(aFilsCalc)
 				cUnion += ", ''"					// 22
 				cUnion += ", ''"					// 23
 				cUnion += ", ''"					// 24
-				cUnion += ", 0"						// 25
+				cUnion += ", ''"						// 25
 				cUnion += ", ''"					// 26
 				cUnion += ", ''"					// 27
-				If lVEIC
+				//If lVEIC
 					cUnion += ", SB1EXS.B1_CODITE CODITE"	// 28
-				EndIf
+				//EndIf
 				cUnion += ", 0"						// 29
 				cUnion += ", ''"					// 30 local
 				cUnion += " FROM "+RetSqlName("SB1") + " SB1EXS WHERE"
@@ -1135,7 +1135,7 @@ If !Empty(aFilsCalc)
 										aSalAtu[7] += aDadosTran[4]
 									Else
 										oSection3:Cell("nSAIQtd"):Show()
-										oSection3:Cell("nSAICus"):Show()
+										//oSection3:Cell("nSAICus"):Show()
 
 										aSldDia[len(aSldDia),08] += aDadosTran[2]
 
@@ -1165,7 +1165,7 @@ If !Empty(aFilsCalc)
 								aSalAtu[7] += (cAliasTOP)->QUANT2UM
 							Else
 								oSection3:Cell("nSAIQtd"):Show()
-								oSection3:Cell("nSAICus"):Show()
+								//oSection3:Cell("nSAICus"):Show()
 
 								If lDev
 						
@@ -1207,7 +1207,7 @@ If !Empty(aFilsCalc)
 								EndIf
 							Else
 								oSection3:Cell("nSAIQtd"):Show()
-								oSection3:Cell("nSAICus"):Show()
+								//oSection3:Cell("nSAICus"):Show()
 
 								aSldDia[len(aSldDia),07] +=  (cAliasTOP)->QUANTIDADE
 
@@ -1228,7 +1228,7 @@ If !Empty(aFilsCalc)
 									aSalAtu[7]			+= (cAliasTOP)->QUANT2UM
 								Else
 									oSection3:Cell("nSAIQtd"):Show()
-									oSection3:Cell("nSAICus"):Show()
+									//oSection3:Cell("nSAICus"):Show()
 						
 									aSldDia[len(aSldDia),07] +=  (cAliasTOP)->QUANTIDADE
 
