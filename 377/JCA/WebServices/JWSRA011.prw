@@ -80,8 +80,8 @@ WsMethod POST WsReceive RECEIVE WsService JWSRA011
 
         If Empty(Funname())
             RpcSetType(3)
-            //RPCSetEnv('01','00020087')
-            RPCSetEnv('T1','D MG 01')
+            RPCSetEnv('01','00020087')
+            //RPCSetEnv('T1','D MG 01')
         EndIf 
 
         If lRet
@@ -130,15 +130,17 @@ WsMethod POST WsReceive RECEIVE WsService JWSRA011
                     EndIF 
                 EndIf 
                 
-                DbSelectArea("SE5")
-                DbSetOrder(10)
-                If Dbseek(Avkey(cFilMov,"E5_FILIAL")+Avkey(cTitulo,"E5_DOCUMEN"))
-                    If nValor == SE5->E5_VALOR
-                        cCode 	 := "#400"
-                        cMessage += "#erro_titulo "
-                        cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"titulo_duplicado" : "'+"Titulo ja esta na base "+cTitulo+'"'
-                        lRet := .F.
-                    EndIF 
+                If cTipOper == "1"
+                    DbSelectArea("SE5")
+                    DbSetOrder(10)
+                    If Dbseek(Avkey(cFilMov,"E5_FILIAL")+Avkey(cTitulo,"E5_DOCUMEN"))
+                        If val(nValor) == SE5->E5_VALOR
+                            cCode 	 := "#400"
+                            cMessage += "#erro_titulo "
+                            cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"titulo_duplicado" : "'+"Titulo ja esta na base "+cTitulo+'"'
+                            lRet := .F.
+                        EndIF 
+                    EndIf 
                 EndIf 
 
 
