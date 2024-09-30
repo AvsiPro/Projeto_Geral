@@ -80,8 +80,8 @@ WsMethod POST WsReceive RECEIVE WsService JWSRA011
 
         If Empty(Funname())
             RpcSetType(3)
-            RPCSetEnv('01','00020087')
-            //RPCSetEnv('T1','D MG 01')
+            //RPCSetEnv('01','00020087')
+            RPCSetEnv('T1','D MG 01')
         EndIf 
 
         If lRet
