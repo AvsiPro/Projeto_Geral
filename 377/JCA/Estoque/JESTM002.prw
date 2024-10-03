@@ -27,6 +27,8 @@ Private dDtDe   := CtoD(' / / ')
 Private dDtAt   := CtoD(' / / ')
 Private cLocIn  := ''
 Private lSoMov  := .F.
+Private dDtCnt := ctod(" / / ")
+Private cHrCnt := space(5)
 
 If Select("SM0") == 0
     RpcSetType(3)
@@ -64,7 +66,7 @@ PRIVATE oNo     := LoadBitmap(GetResources(),'br_vermelho')
 Private cCodInv := ''
 Private nContag := 0
 
-Aadd(aList1,{.f.,'','','','','','','','','','','','','','',0,'','','','','','','','','','','','','','','',.f.})
+Aadd(aList1,{.f.,'','','','','','','','','','','','','','',0,'','','','','','','','','','','','','','','',.f.,'','','','','',''})
 
 oDlg1      := MSDialog():New( 092,232,809,1666,"Acuracidade Rotativa",,,.F.,,,,,,.T.,,,.T. )
 
@@ -90,9 +92,12 @@ oDlg1      := MSDialog():New( 092,232,809,1666,"Acuracidade Rotativa",,,.F.,,,,,
         //oBrw1      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{052,012,324,700},,, oGrp2 ) 
         oList1    := TCBrowse():New(052,012,685,270,, {'','Local','Prateleira','Material','Descrição','Marca','Cod.Original',;
                                                     'Qtd Inicial','Qtd Entrada','Qtd Saida','Qtd Atual',;
-                                                    'Contagem 1','Contagem 2','Contagem 3','Divergência','Diverg. Valor','% Diverg.'},;
-                                        {10,20,30,45,80,30,35,30,30,30,30,30,30,30,30,30,30},;
+                                                    'Sld Cnt 1','Contagem 1','Div. Cnt 1',;
+                                                    'Sld Cnt 2','Contagem 2','Div. Cnt 2',;
+                                                    'Sld Cnt 3','Contagem 3','Div. Cnt 3'},;
+                                        {10,20,30,45,65,30,35,40,40,40,40,40,40,40,40,40,40,40,40,40},; //,40,40,40
                                         oGrp1,,,,{|| FHelp(oList1:nAt)},{|| editped(oList1:nAt,1)},, ,,,  ,,.F.,,.T.,,.F.,,,)
+                                        /* 'Divergência','Diverg. Valor','% Diverg.'},;*/
         oList1:SetArray(aList1)
         oList1:bLine := {||{iF(aList1[oList1:nAt,01],oOk,oNo),; 
                             aList1[oList1:nAt,02],;
@@ -105,12 +110,18 @@ oDlg1      := MSDialog():New( 092,232,809,1666,"Acuracidade Rotativa",,,.F.,,,,,
                             aList1[oList1:nAt,09],;
                             aList1[oList1:nAt,10],;
                             aList1[oList1:nAt,11],;
+                            aList1[oList1:nAt,33],;
                             aList1[oList1:nAt,12],;
+                            aList1[oList1:nAt,36],;
+                            aList1[oList1:nAt,34],;
                             aList1[oList1:nAt,13],;
+                            aList1[oList1:nAt,37],;
+                            aList1[oList1:nAt,35],;
                             aList1[oList1:nAt,14],;
-                            aList1[oList1:nAt,15],;
+                            aList1[oList1:nAt,38]}}
+                            /*aList1[oList1:nAt,15],;
                             aList1[oList1:nAt,18],;
-                            aList1[oList1:nAt,19]}}
+                            aList1[oList1:nAt,19]}}*/
 
         //oBtn1      := TButton():New( 332,664,"oBtn1",oDlg1,{||oDlg1:end()},037,012,,,,.T.,,"",,,,.F. )
         //Botões diversos
@@ -186,12 +197,24 @@ If aList1[nLinha,16] > 0
     oSay6:settext(cvaltochar(ZPE->ZPE_DATA)+" "+ZPE->ZPE_HRSLF1)
     If !Empty(ZPE_DTCNT1)
         oSay8:settext(cvaltochar(ZPE->ZPE_DTCNT1)+" "+ZPE->ZPE_HRCNT1)
+    Else 
+        If nContag == 1
+            oSay8:settext(cvaltochar(dDtCnt)+" "+transform(cHrCnt,"@R 99:99"))
+        EndIf 
     EndIf 
     If !Empty(ZPE_DTCNT2)
         oSay10:settext(cvaltochar(ZPE->ZPE_DTCNT2)+" "+ZPE->ZPE_HRCNT2)
+    Else 
+        If nContag == 2
+            oSay10:settext(cvaltochar(dDtCnt)+" "+transform(cHrCnt,"@R 99:99"))
+        EndIf 
     EndIf 
     If !Empty(ZPE_DTCNT3)
         oSay12:settext(cvaltochar(ZPE->ZPE_DTCNT3)+" "+ZPE->ZPE_HRCNT3)
+    Else 
+        If nContag == 3
+            oSay12:settext(cvaltochar(dDtCnt)+" "+transform(cHrCnt,"@R 99:99"))
+        EndIf 
     EndIf 
 EndIf 
 
@@ -248,15 +271,39 @@ Else
     //If nPosCol >= 12 .And. nPosCol <= 14
     If nContag <> 4
         If aList1[oList1:nAt,01]
-            lEditCell(aList1,oList1,"@E 9999999",If(nContag==1,12,If(nContag==2,13,14)))
+            nPosL := 0
+            cBkp  := ""
+            If nContag == 1
+                nPosL := 13
+                cBkp  := aList1[oList1:nAt,13]
+                aList1[oList1:nAt,13] := aList1[oList1:nAt,12]
+            ElseIf nContag == 2
+                nPosL := 16
+                cBkp  := aList1[oList1:nAt,16]
+                aList1[oList1:nAt,16] := aList1[oList1:nAt,13]
+            ElseIf nContag == 3
+                nPosL := 19
+                cBkp  := aList1[oList1:nAt,19]
+                aList1[oList1:nAt,19] := aList1[oList1:nAt,14]
+            EndIf 
+
+            lEditCell(aList1,oList1,"@E 9999999",nPosL) //If(nContag==1,12,If(nContag==2,13,14))
 
             If nContag == 1
-                aList1[oList1:nAt,15] := aList1[oList1:nAt,12] - aList1[oList1:nAt,11]
+                //aList1[oList1:nAt,15] := aList1[oList1:nAt,12] - aList1[oList1:nAt,11]
+                aList1[oList1:nAt,36] := aList1[oList1:nAt,13] - aList1[oList1:nAt,33]
+                aList1[oList1:nAt,12] := aList1[oList1:nAt,13]
+                aList1[oList1:nAt,13] := cBkp
             ElseIf nContag == 2
-                aList1[oList1:nAt,15] := aList1[oList1:nAt,13] - aList1[oList1:nAt,11]
-
-            Else
-                aList1[oList1:nAt,15] := aList1[oList1:nAt,14] - aList1[oList1:nAt,11]
+                //aList1[oList1:nAt,15] := aList1[oList1:nAt,13] - aList1[oList1:nAt,11]
+                aList1[oList1:nAt,37] := aList1[oList1:nAt,16] - aList1[oList1:nAt,34]
+                aList1[oList1:nAt,13] := aList1[oList1:nAt,16]
+                aList1[oList1:nAt,16] := cBkp
+            ElseIf nContag == 3
+                //aList1[oList1:nAt,15] := aList1[oList1:nAt,14] - aList1[oList1:nAt,11]
+                aList1[oList1:nAt,38] := aList1[oList1:nAt,19] - aList1[oList1:nAt,35]
+                aList1[oList1:nAt,14] := aList1[oList1:nAt,19]
+                aList1[oList1:nAt,19] := cBkp
             EndIf  
         EndIf 
     EndIf
@@ -556,17 +603,18 @@ Local aPergs := {}
 Local aRet   := {}
 Local lLibCnt:= .F.
 
-aAdd(aPergs ,{1,"Código:"	,space(TamSx3("ZPE_CODIGO")[1]),"@!",".T.","ZPE",".T.",70,.F.})
-aAdd(aPergs ,{2,"Contagem"	,"", {"1=Contagem 1","2=Contagem 2","3=Contagem 3","4=Conferência"},50,'',.T.})
-
-//aAdd(aPergs ,{1,"Data"      ,dDtDe   ,"",".T.","",".T.",80,.F.})
+aAdd(aPergs ,{1,"Código:"	    ,space(TamSx3("ZPE_CODIGO")[1]),"@!",".T.","ZPE",".T.",70,.F.})
+aAdd(aPergs ,{2,"Contagem"	    ,"", {"1=Contagem 1","2=Contagem 2","3=Contagem 3","4=Conferência"},50,'',.T.})
+aAdd(aPergs ,{1,"Data Contagem" ,dDtCnt   ,"",".T.","",".T.",80,.T.})
+aAdd(aPergs ,{1,"Data Contagem" ,cHrCnt   ,"@R 99:99",".T.","",".T.",70,.F.})
 
 While !lLibCnt
     If ParamBox(aPergs ,"Filtrar por",@aRet)    
         
         cCodInv := aRet[1]
         nContag := val(aRet[2])
-
+        dDtCnt  := aRet[3]
+        cHrCnt  := aRet[4]
         lLibCnt := VldCnt(cCodInv,nContag)
         
 
@@ -992,7 +1040,13 @@ While !(cAliasTop)->(Eof())
                     0,;
                     0,;
                     0,;
-                    .f.})
+                    .f.,;
+                    0,;
+                    0,;
+                    0,;
+                    0,;
+                    0,;
+                    0})
     Else 
         
         //MR900ImpS1(@aSalAtu,cAliasTop,.T.,cLocIn)
@@ -1088,12 +1142,12 @@ If !lSoMov
     While !EOF()
         If ascan(aList1,{|x| x[4] == TRB->B1_COD}) == 0
             
-            cProdP := Posicione("SB1",1,xFilial("SB1")+TRB->PRODUTO+TRB->B1_LOCPAD,"B1_XCODPAI")
+            cProdP := Posicione("SB1",1,xFilial("SB1")+TRB->PRODUTO+cLocIn,"B1_XCODPAI")
 
             If Empty(cProdP)
-                cPrat := Posicione("SBE",10,xFilial("SBE")+TRB->PRODUTO+TRB->B1_LOCPAD,"BE_LOCALIZ")
+                cPrat := Posicione("SBE",10,xFilial("SBE")+TRB->PRODUTO+cLocIn,"BE_LOCALIZ")
             Else 
-                cPrat := Posicione("SBE",10,xFilial("SBE")+cProdP+TRB->B1_LOCPAD,"BE_LOCALIZ")
+                cPrat := Posicione("SBE",10,xFilial("SBE")+cProdP+cLocIn,"BE_LOCALIZ")
             EndIf 
 
             MR900ImpS1(@aSalAtu,"TRB",.T.,cLocIn)
@@ -1128,14 +1182,20 @@ If !lSoMov
                             0,;
                             0,;
                             0,;
-                            .f.})
+                            .f.,;
+                            0,;
+                            0,;
+                            0,;
+                            0,;
+                            0,;
+                            0})
         endif
         Dbskip()
     EndDo 
 EndIf 
 
 If len(aList1) < 1
-    Aadd(aList1,{.f.,'','','','','','','','','','','','','','',0,'','','','','','','','','','','','','','','',.f.})
+    Aadd(aList1,{.f.,'','','','','','','','','','','','','','',0,'','','','','','','','','','','','','','','',.f.,'','','','','',''})
 Else 
     Asort(aList1,,,{|x,y| x[4] < y[4]})
 
@@ -1150,22 +1210,28 @@ EndIf
 
 oList1:SetArray(aList1)
 oList1:bLine := {||{iF(aList1[oList1:nAt,01],oOk,oNo),; 
-                    aList1[oList1:nAt,02],;
-                    aList1[oList1:nAt,03],;
-                    aList1[oList1:nAt,04],;
-                    aList1[oList1:nAt,05],;
-                    aList1[oList1:nAt,06],;
-                    aList1[oList1:nAt,07],;
-                    aList1[oList1:nAt,08],;
-                    aList1[oList1:nAt,If(nCntg <= 1,09,If(nCntg==2,26,29))],;
-                    aList1[oList1:nAt,If(nCntg <= 1,10,If(nCntg==2,27,30))],;
-                    aList1[oList1:nAt,If(nCntg <= 1,11,If(nCntg==2,28,31))],;
-                    aList1[oList1:nAt,12],;
-                    aList1[oList1:nAt,13],;
-                    aList1[oList1:nAt,14],;
-                    aList1[oList1:nAt,15],;
-                    aList1[oList1:nAt,18],;
-                    aList1[oList1:nAt,19]}}
+                            aList1[oList1:nAt,02],;
+                            aList1[oList1:nAt,03],;
+                            aList1[oList1:nAt,04],;
+                            aList1[oList1:nAt,05],;
+                            aList1[oList1:nAt,06],;
+                            aList1[oList1:nAt,07],;
+                            aList1[oList1:nAt,08],;
+                            aList1[oList1:nAt,09],;
+                            aList1[oList1:nAt,10],;
+                            aList1[oList1:nAt,11],;
+                            aList1[oList1:nAt,33],;
+                            aList1[oList1:nAt,12],;
+                            aList1[oList1:nAt,36],;
+                            aList1[oList1:nAt,34],;
+                            aList1[oList1:nAt,13],;
+                            aList1[oList1:nAt,37],;
+                            aList1[oList1:nAt,35],;
+                            aList1[oList1:nAt,14],;
+                            aList1[oList1:nAt,38]}}
+                            /*aList1[oList1:nAt,15],;
+                            aList1[oList1:nAt,18],;
+                            aList1[oList1:nAt,19]}}*/
 
 oList1:refresh()
 oDlg1:refresh()
@@ -1369,6 +1435,9 @@ Static Function PreaList(cCodInv,nContag,lRel)
 Local aArea := GetArea()
 Local cQuery 
 Local cCodUsr := ''
+Local lCusRep      := SuperGetMv("MV_CUSREP",.F.,.F.) .And. MA330AvRep()
+
+mv_par17 := 1
 
 aList1 := {}
 
@@ -1405,13 +1474,28 @@ While !EOF()
         MsgAlert("Número da digitação informada é inválido, a contagem para este Acuracidade atual é a numero "+cvaltochar(val(TRB->ZPE_STATUS)+1))
         exit
     EndIf */ 
+    
+    If Empty(cHrCnt)
+        If nContag == 1 .And. !Empty(TRB->ZPE_HRCNT1)
+            cHrCnt := TRB->ZPE_HRCNT1
+            dDtCnt := TRB->ZPE_DTCNT1
+        ElseIf nContag == 2 .And. !Empty(TRB->ZPE_HRCNT2)
+            cHrCnt := TRB->ZPE_HRCNT2
+            dDtCnt := TRB->ZPE_DTCNT2
+        ElseIf nContag == 3 .And. !Empty(TRB->ZPE_HRCNT3)
+            cHrCnt := TRB->ZPE_HRCNT3
+            dDtCnt := TRB->ZPE_DTCNT3
+        EndIf 
+    EndIf 
+
+    aSldData := CalcEst(TRB->B1_COD,TRB->ZPE_LOCAL,dDtCnt,,, ( lCusRep .And. mv_par17==2 ) )
 
     cCodUsr := TRB->ZPE_CODUSU
     
     If Empty(TRB->B1_XCODPAI)
-        cPrat := Posicione("SBE",10,xFilial("SBE")+TRB->B1_COD+TRB->B1_LOCPAD,"BE_LOCALIZ")
+        cPrat := Posicione("SBE",10,xFilial("SBE")+TRB->B1_COD+TRB->ZPE_LOCAL,"BE_LOCALIZ")
     Else 
-        cPrat := Posicione("SBE",10,xFilial("SBE")+TRB->B1_XCODPAI+TRB->B1_LOCPAD,"BE_LOCALIZ")
+        cPrat := Posicione("SBE",10,xFilial("SBE")+TRB->B1_XCODPAI+TRB->ZPE_LOCAL,"BE_LOCALIZ")
     EndIf
 
     cVlrCm := Posicione("SB2",1,xFilial("SB2")+TRB->ZPE_PRODUT+TRB->ZPE_LOCAL,"B2_CM1")
@@ -1419,41 +1503,47 @@ While !EOF()
     Aadd(aList1,{   .T.,;                           //1
                     TRB->ZPE_LOCAL,;                //2
                     cPrat,;                         //3
-                    TRB->ZPE_PRODUT,;                //4
-                    TRB->B1_DESC,;                //5
-                    TRB->ZPM_DESC,;                //6
+                    TRB->ZPE_PRODUT,;               //4
+                    TRB->B1_DESC,;                  //5
+                    TRB->ZPM_DESC,;                 //6
                     TRB->B1_FABRIC,;                //7
-                    TRB->ZPE_SLDINI,;                //8
-                    TRB->ZPE_QTDENT,;                //9
-                    TRB->ZPE_QTDSAI,;                //10
-                    TRB->ZPE_SLDFIM,;                //11
-                    TRB->ZPE_CONTA1,;                //12
-                    TRB->ZPE_CONTA2,;                //13
-                    TRB->ZPE_CONTA3,;                //14
-                    TRB->ZPE_RESULT,;                //15 TRB->ZPE_RESULT  0
+                    TRB->ZPE_SLDINI,;               //8
+                    TRB->ZPE_QTDENT,;               //9
+                    TRB->ZPE_QTDSAI,;               //10
+                    TRB->ZPE_SLDFIM,;               //11
+                    TRB->ZPE_CONTA1,;               //12
+                    TRB->ZPE_CONTA2,;               //13
+                    TRB->ZPE_CONTA3,;               //14
+                    TRB->ZPE_RESULT,;               //15 TRB->ZPE_RESULT  0
                     TRB->RECZPE,;                   //16
-                    TRB->ZPE_STATUS,;                //17
-                    cVlrCm*TRB->ZPE_RESULT,;                //18 cVlrCm*TRB->ZPE_RESULT 0
+                    TRB->ZPE_STATUS,;               //17
+                    cVlrCm*TRB->ZPE_RESULT,;        //18 cVlrCm*TRB->ZPE_RESULT 0
                     If(nContag>3,3,(TRB->ZPE_RESULT * &('TRB->ZPE_CONTA'+cvaltochar(nContag)))/100),; //19
-                    TRB->ZPE_DTCNT1,; //20
-                    TRB->ZPE_HRCNT1,; //21
-                    TRB->ZPE_DTCNT2,; //22
-                    TRB->ZPE_HRCNT2,; //23
-                    TRB->ZPE_DTCNT3,; //24
-                    TRB->ZPE_HRCNT3,; //25
-                    TRB->ZPE_QTDEN2,; //26
-                    TRB->ZPE_QTDSA2,; //27
-                    TRB->ZPE_QTDFI2,; //28
-                    TRB->ZPE_QTDEN3,; //29
-                    TRB->ZPE_QTDSA3,; //30
-                    TRB->ZPE_QTDFI3,; //31
-                    .f.})             //32
+                    TRB->ZPE_DTCNT1,;               //20
+                    TRB->ZPE_HRCNT1,;               //21
+                    TRB->ZPE_DTCNT2,;               //22
+                    TRB->ZPE_HRCNT2,;               //23
+                    TRB->ZPE_DTCNT3,;               //24
+                    TRB->ZPE_HRCNT3,;               //25
+                    TRB->ZPE_QTDEN2,;               //26
+                    TRB->ZPE_QTDSA2,;               //27
+                    TRB->ZPE_QTDFI2,;               //28
+                    TRB->ZPE_QTDEN3,;               //29
+                    TRB->ZPE_QTDSA3,;               //30
+                    TRB->ZPE_QTDFI3,;               //31
+                    .f.            ,;               //32
+                    if(nContag==1,aSldData[1],TRB->ZPE_SLDCN1),;  //33
+                    if(nContag==2,aSldData[1],TRB->ZPE_SLDCN2),;  //34
+                    if(nContag==3,aSldData[1],TRB->ZPE_SLDCN3),;  //35
+                    TRB->ZPE_QTDFI1,;                             //36
+                    TRB->ZPE_QTDFI2,;                             //37
+                    TRB->ZPE_QTDFI3})                             //38
     Dbskip()
 EndDo 
 
 
 If len(aList1) < 1
-    Aadd(aList1,{.f.,'','','','','','','','','','','','','','',0,'','','','','','','','','','','','','','','',.f.})
+    Aadd(aList1,{.f.,'','','','','','','','','','','','','','',0,'','','','','','','','','','','','','','','',.f.,'','','','','',''})
 Else 
     oSay2:settext("")
     oSay4:settext("")
@@ -1464,22 +1554,28 @@ EndIf
                     
 oList1:SetArray(aList1)
 oList1:bLine := {||{iF(aList1[oList1:nAt,01],oOk,oNo),; 
-                    aList1[oList1:nAt,02],;
-                    aList1[oList1:nAt,03],;
-                    aList1[oList1:nAt,04],;
-                    aList1[oList1:nAt,05],;
-                    aList1[oList1:nAt,06],;
-                    aList1[oList1:nAt,07],;
-                    aList1[oList1:nAt,08],;
-                    aList1[oList1:nAt,09],;
-                    aList1[oList1:nAt,10],;
-                    aList1[oList1:nAt,11],;
-                    aList1[oList1:nAt,12],;
-                    aList1[oList1:nAt,13],;
-                    aList1[oList1:nAt,14],;
-                    aList1[oList1:nAt,15],;
-                    Transform(aList1[oList1:nAt,18],"@E 999,999.99"),;
-                    aList1[oList1:nAt,19]}}
+                            aList1[oList1:nAt,02],;
+                            aList1[oList1:nAt,03],;
+                            aList1[oList1:nAt,04],;
+                            aList1[oList1:nAt,05],;
+                            aList1[oList1:nAt,06],;
+                            aList1[oList1:nAt,07],;
+                            aList1[oList1:nAt,08],;
+                            aList1[oList1:nAt,09],;
+                            aList1[oList1:nAt,10],;
+                            aList1[oList1:nAt,11],;
+                            aList1[oList1:nAt,33],;
+                            aList1[oList1:nAt,12],;
+                            aList1[oList1:nAt,36],;
+                            aList1[oList1:nAt,34],;
+                            aList1[oList1:nAt,13],;
+                            aList1[oList1:nAt,37],;
+                            aList1[oList1:nAt,35],;
+                            aList1[oList1:nAt,14],;
+                            aList1[oList1:nAt,38]}}
+                            /*aList1[oList1:nAt,15],;
+                            aList1[oList1:nAt,18],;
+                            aList1[oList1:nAt,19]}}*/
                     //aList1[oList1:nAt,If(nContag == 1,11,If(nContag==2,28,31))],;
                     /*aList1[oList1:nAt,If(nContag == 1,09,If(nContag==2,26,29))],;
                     aList1[oList1:nAt,If(nContag == 1,10,If(nContag==2,27,30))],;
@@ -1542,31 +1638,59 @@ Else
     If lEncerra
         ZPE->ZPE_STATUS := cvaltochar(nContag)
     EndIf 
-
+/*
     ZPE->ZPE_QTDEN2 := If(valtype(aList1[nLinha,26])<>"N",val(aList1[nLinha,26]),aList1[nLinha,26])
     ZPE->ZPE_QTDSA2 := If(valtype(aList1[nLinha,27])<>"N",val(aList1[nLinha,27]),aList1[nLinha,27])
     ZPE->ZPE_QTDFI2 := If(valtype(aList1[nLinha,28])<>"N",val(aList1[nLinha,28]),aList1[nLinha,28])
     ZPE->ZPE_QTDEN3 := If(valtype(aList1[nLinha,29])<>"N",val(aList1[nLinha,29]),aList1[nLinha,29])
     ZPE->ZPE_QTDSA2 := If(valtype(aList1[nLinha,30])<>"N",val(aList1[nLinha,30]),aList1[nLinha,30])
     ZPE->ZPE_QTDFI2 := If(valtype(aList1[nLinha,31])<>"N",val(aList1[nLinha,31]),aList1[nLinha,31])
-    
+ */   
+    ZPE->ZPE_SLDCN1 := aList1[nLinha,33]
+    ZPE->ZPE_SLDCN2 := aList1[nLinha,34]
+    ZPE->ZPE_SLDCN3 := aList1[nLinha,35]
+    ZPE->ZPE_QTDFI1 := aList1[nLinha,36]
+    ZPE->ZPE_QTDFI2 := aList1[nLinha,37]
+    ZPE->ZPE_QTDFI3 := aList1[nLinha,38]
 
-    If nContag == 1
-        ZPE->ZPE_DTCNT1 := ddatabase
-        ZPE->ZPE_HRCNT1 := cvaltochar(time())
-    ElseIf nContag == 2
-        ZPE->ZPE_DTCNT2 := ddatabase
-        ZPE->ZPE_HRCNT2 := cvaltochar(time())
-    Else 
-        ZPE->ZPE_DTCNT3 := ddatabase
-        ZPE->ZPE_HRCNT3 := cvaltochar(time())
+    If nContag == 1 
+        If ZPE->ZPE_QTDFI1 == 0 .And. lEncerra
+            ZPE->ZPE_FLAGOK := '1'
+        Else 
+            ZPE->ZPE_FLAGOK := '0'
+        EndIF
+
+        If Empty(ZPE->ZPE_HRCNT1)
+            ZPE->ZPE_DTCNT1 := dDtCnt // ddatabase
+            ZPE->ZPE_HRCNT1 := cHrCnt //cvaltochar(time())
+        EndIf 
+    ElseIf nContag == 2 
+
+        If ZPE->ZPE_QTDFI2 == 0 .And. lEncerra
+            ZPE->ZPE_FLAGOK := '1'
+        Else 
+            ZPE->ZPE_FLAGOK := '0'
+        EndIF
+
+        If Empty(ZPE->ZPE_HRCNT2)
+            ZPE->ZPE_DTCNT2 := dDtCnt //ddatabase
+            ZPE->ZPE_HRCNT2 := cHrCnt //cvaltochar(time())
+        EndIf 
+    ElseIf nContag == 3 
+        
+        If ZPE->ZPE_QTDFI3 == 0 .And. lEncerra
+            ZPE->ZPE_FLAGOK := '1'
+        Else 
+            ZPE->ZPE_FLAGOK := '0'
+        EndIF
+
+        If Empty(ZPE->ZPE_HRCNT3)
+            ZPE->ZPE_DTCNT3 := dDtCnt //ddatabase
+            ZPE->ZPE_HRCNT3 := cHrCnt //cvaltochar(time())
+        EndIf 
     EndIf 
 
-    If ZPE->ZPE_RESULT == 0 .And. lEncerra
-        ZPE->ZPE_FLAGOK := '1'
-    Else 
-        ZPE->ZPE_FLAGOK := '0'
-    EndIF 
+    
 EndIf 
 
 aList1[nLinha,16] := Recno()
@@ -2146,7 +2270,7 @@ If ParamBox(aPergs ,"Informe o código",@aRet)
     aList1 := {}
 
     If len(aList1) < 1
-        Aadd(aList1,{.f.,'','','','','','','','','','','','','','',0,'','','','','','','','','','','','','','','',.f.})
+        Aadd(aList1,{.f.,'','','','','','','','','','','','','','',0,'','','','','','','','','','','','','','','',.f.,'','','','','',''})
     Else 
         oSay2:settext("")
         oSay4:settext("")
@@ -2155,22 +2279,28 @@ If ParamBox(aPergs ,"Informe o código",@aRet)
                     
     oList1:SetArray(aList1)
     oList1:bLine := {||{iF(aList1[oList1:nAt,01],oOk,oNo),; 
-                        aList1[oList1:nAt,02],;
-                        aList1[oList1:nAt,03],;
-                        aList1[oList1:nAt,04],;
-                        aList1[oList1:nAt,05],;
-                        aList1[oList1:nAt,06],;
-                        aList1[oList1:nAt,07],;
-                        aList1[oList1:nAt,08],;
-                        aList1[oList1:nAt,09],;
-                        aList1[oList1:nAt,10],;
-                        aList1[oList1:nAt,11],;
-                        aList1[oList1:nAt,12],;
-                        aList1[oList1:nAt,13],;
-                        aList1[oList1:nAt,14],;
-                        aList1[oList1:nAt,15],;
-                        Transform(aList1[oList1:nAt,18],"@E 999,999.99"),;
-                        aList1[oList1:nAt,19]}}
+                            aList1[oList1:nAt,02],;
+                            aList1[oList1:nAt,03],;
+                            aList1[oList1:nAt,04],;
+                            aList1[oList1:nAt,05],;
+                            aList1[oList1:nAt,06],;
+                            aList1[oList1:nAt,07],;
+                            aList1[oList1:nAt,08],;
+                            aList1[oList1:nAt,09],;
+                            aList1[oList1:nAt,10],;
+                            aList1[oList1:nAt,11],;
+                            aList1[oList1:nAt,33],;
+                            aList1[oList1:nAt,12],;
+                            aList1[oList1:nAt,36],;
+                            aList1[oList1:nAt,34],;
+                            aList1[oList1:nAt,13],;
+                            aList1[oList1:nAt,37],;
+                            aList1[oList1:nAt,35],;
+                            aList1[oList1:nAt,14],;
+                            aList1[oList1:nAt,38]}}
+                            /*aList1[oList1:nAt,15],;
+                            aList1[oList1:nAt,18],;
+                            aList1[oList1:nAt,19]}}*/
                     
                         /* aList1[oList1:nAt,If(nContag == 1,09,If(nContag==2,26,29))],;
                         aList1[oList1:nAt,If(nContag == 1,10,If(nContag==2,27,30))],;

@@ -151,6 +151,11 @@ aAdd(aPergs ,{1,"Produto de"    ,space(TamSx3("ZPC_CODIGO")[1])   ,"@!",".T.","S
 aAdd(aPergs ,{1,"Produto Até"	,padr('zz',TamSx3("ZPC_CODIGO")[1])   ,"@!",".T.","SB1",".T.",80,.F.})
 aAdd(aPergs ,{1,"Usuário de"    ,space(TamSx3("ZPC_ALMOXA")[1])   ,"@!",".T.","SRA",".T.",80,.F.})
 aAdd(aPergs ,{1,"Usuário Até"	,padr('zz',TamSx3("ZPC_ALMOXA")[1])   ,"@!",".T.","SRA",".T.",80,.F.})
+
+
+aAdd(aPergs ,{1,"Frota de"    	,space(TamSx3("ZPC_PREFIX")[1])   ,"@!",".T.","",".T.",80,.F.})
+aAdd(aPergs ,{1,"Frota Até"		,padr('zz',TamSx3("ZPC_PREFIX")[1])   ,"@!",".T.","",".T.",80,.F.})
+
 aAdd(aPergs ,{2,"Veículo Parado?"	,"", {"1=Sim","2=Não","3=Ambos"},50,'',.T.})
 
 	
@@ -159,9 +164,11 @@ If ParamBox(aPergs ,"Filtrar por",@aRet)
     cFiltro += " .AND. ZPC->ZPC_DATA >= '"+DTOS(aRet[3])+"' .AND. ZPC->ZPC_DATA<='"+DTOS(aRet[4])+"'"
     cFiltro += " .AND. ZPC->ZPC_CODIGO >= '"+aRet[5]+"' .AND. ZPC->ZPC_CODIGO<='"+aRet[6]+"'"
     cFiltro += " .AND. ZPC->ZPC_ALMOXA >= '"+aRet[7]+"' .AND. ZPC->ZPC_ALMOXA<='"+aRet[8]+"'"
+
+	cFiltro += " .AND. ZPC->ZPC_PREFIX >= '"+aRet[9]+"' .AND. ZPC->ZPC_PREFIX<='"+aRet[10]+"'"
     
-    If aRet[9] <> "3"
-        cFiltro += " .AND. ZPC->ZPC_STATUS == '"+aRet[9]+"'"
+    If aRet[11] <> "3"
+        cFiltro += " .AND. ZPC->ZPC_STATUS == '"+aRet[11]+"'"
     EndIf 
 
     oBrowse:SetFilterDefault(cFiltro)
@@ -220,11 +227,12 @@ Local cChvSCP:= ZPC->ZPC_FILIAL+ZPC->ZPC_CODIGO+ZPC->ZPC_REQUIS+ZPC->ZPC_ITEM
 Local cChvSTL:= ""
 Local lOk    := .t.
 Local cBkpAtu:= ZPC->ZPC_CODIGO
+PRIVATE CCODPAI:= Posicione("SB1",1,xFilial("SB1")+ZPC->ZPC_CODIGO,"B1_XCODPAI")
 
 cPrdAtu := ZPC->ZPC_CODIGO + Alltrim(Posicione("SB1",1,xFilial("SB1")+ZPC->ZPC_CODIGO,"B1_DESC"))
 
 aAdd(aPergs,{9,"Produto Atual = "+cPrdAtu,160,13,.T.})
-aAdd(aPergs,{1,"Produto novo"	,  cNewPrd ,"@!","Existcpo('SB1')","SB1",".T.",90,.T.})
+aAdd(aPergs,{1,"Produto novo"	,  cNewPrd ,"@!","Existcpo('SB1')","SB1ZPC",".T.",90,.T.})
 
 aAdd(aPergs,{11,"Informe o motivo","",".T.",".T.",.T.})
 	
