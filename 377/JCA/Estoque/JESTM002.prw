@@ -615,7 +615,7 @@ While !lLibCnt
         nContag := val(aRet[2])
         dDtCnt  := aRet[3]
         cHrCnt  := aRet[4]
-        lLibCnt := VldCnt(cCodInv,nContag)
+        lLibCnt := VldCnt(cCodInv,nContag,dDtCnt)
         
 
         /*If nContag > 1
@@ -650,7 +650,7 @@ Return
     (examples)
     @see (links_or_references)
 /*/
-Static Function VldCnt(cCodInv,nContag)
+Static Function VldCnt(cCodInv,nContag,dDtCnt)
 
 Local lRet := .T.
 Local cQuery 
@@ -674,6 +674,24 @@ If val(TRB->CONTAGEM) <> nContag
         lRet := .F.
     EndIf 
 EndIF 
+
+cQuery := "SELECT ZPE_DATA FROM "+RetSQLName("ZPE")
+cQuery += " WHERE D_E_L_E_T_=' ' AND ZPE_CODIGO='"+cCodInv+"' AND ZPE_FILIAL='"+xFilial("ZPE")+"'"
+
+IF Select('TRB') > 0
+    dbSelectArea('TRB')
+    dbCloseArea()
+ENDIF
+
+MemoWrite("JESTM002_VldCnt.SQL",cQuery)
+DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
+
+DbSelectArea("TRB") 
+
+If stod(TRB->ZPE_DATA) > dDtCnt
+    MsgAlert("Data de contagem não pode ser inferior a data de inclusão do inventário.")
+    lRet := .F.
+EndIf 
 
 Return(lRet)
 /*/{Protheus.doc} _xQrjest2
@@ -1200,7 +1218,8 @@ Else
     Asort(aList1,,,{|x,y| x[4] < y[4]})
 
     DbSelectArea("ZPE")
-    cCodInv := GETSXENUM("ZPE","ZPE_CODIGO")     
+    cCodInv := GETSXENUM("ZPE","ZPE_CODIGO")  
+    ConfirmSX8()   
     oSay2:settext("")
     oSay4:settext("")
     oSay2:settext(cCodInv)
@@ -2089,145 +2108,6 @@ EndIf
 
 Return(aRet)
 
-/*/{Protheus.doc} gerarB7
-    (long_description)
-    @type  Static Function
-    @author user
-    @since 21/01/2024
-    @version version
-    @param param_name, param_type, param_descr
-    @return return_var, return_type, return_description
-    @example
-    (examples)
-    @see (links_or_references)
-/*/
-Static Function gerarB7()
-
-Local aArea := GetArea()
-Local lOk   := .T.
-Local nCont 
-
-PRIVATE lMsErroAuto := .F.
-
-For nCont := 1 to len(aList1)
-    If val(aList1[nCont,17]) < 3 .or. aList1[nCont,17] == 'F'
-        lOk := .F.
-        exit 
-    EndIf 
-Next nCont 
-
-If !lOk 
-    MsgAlert("Para processar a Acuracidade, todos os itens devem conter as 3 contagens.")
-    return
-Else
-    /*
-    Begin Transaction
-    For nCont := 1 to len(aList1)
-        DbSelectArea("SB1")
-        DbSetOrder(1)
-        If DbSeek(xFilial("SB1")+aList1[nCont,04])  
-        
-            DbSelectArea("SB2")
-            DbSetOrder(1)
-            If !DbSeek(xFilial("SB2")+Avkey(Alltrim(aList1[nCont,04]),"B2_COD")+Avkey(aList1[nCont,02],"B2_LOCAL"))
-                CriaSB2(aList1[nCont,04],aList1[nCont,02])
-            EndIf
-
-            aVetor := {;
-                    {"B7_FILIAL" 	,xFilial("SB7")		        ,Nil},;
-                    {"B7_COD"		,aList1[nCont,04]			,Nil},;
-                    {"B7_DOC"		,cCodInv			        ,Nil},;
-                    {"B7_QUANT"		,aList1[nCont,14]   		,Nil},;
-                    {"B7_LOCAL"		,aList1[nCont,02]		    ,Nil},;
-                    {"B7_CONTAGE"	,aList1[nCont,17]		    ,Nil},;
-                    {"B7_ESCOLHA"	,'S'            		    ,Nil},;
-                    {"B7_DATA"		,DDATABASE			        ,Nil} }
-
-            lMsErroAuto	:=	.F.
-        
-            MSExecAuto({|x,y| mata270(x,y)},aVetor,.F.,3)
-            
-            If lMsErroAuto
-                MostraErro()
-                DisarmTransaction()
-                lOk := .F.
-                exit 
-            Endif		
-            
-        EndIF	
-    Next nCont 
-    
-    End Transaction
-*/
-    If lOk 
-        //lOk := procinvt()
-
-        If lOk 
-            For nCont := 1 to len(aList1)
-                aList1[nCont,17] := 'F'
-                DbSelectArea("ZPE")
-                DbGoto(aList1[nCont,16])
-                Reclock("ZPE",.F.)
-                ZPE->ZPE_STATUS := 'F'
-                ZPE->ZPE_DATAB7 := ddatabase
-                ZPE->ZPE_HORAB7 := cvaltochar(time())
-                ZPE->(Msunlock())
-            Next nCont 
-        EndIf 
-
-    EndIf 
-EndIf 
-
-RestArea(aarea)
-
-
-Return
-
-
-/*/{Protheus.doc} nomeStaticFunction
-    (long_description)
-    @type  Static Function
-    @author user
-    @since 21/01/2024
-    @version version
-    @param param_name, param_type, param_descr
-    @return return_var, return_type, return_description
-    @example
-    (examples)
-    @see (links_or_references)
-/*/
-Static Function procinvt()
-    
-Local lOk      := .T.
-Private lMsErroAuto := .F.
-
-
-DbSelectArea("SB7")
-DbSetOrder(3)
-
-If !SB7->(MsSeek(xFilial("SB7")+cCodInv))
-    lOk := .F.  
-    ConOut(OemToAnsi("Cadastrar Acuracidade: "+cCodInv))
-EndIf
-
-If lOk
-    SB7->(MsSeek(xFilial("SB7")+cCodInv))
-
-    While !EOF() .And. alltrim(SB7->B7_DOC) == alltrim(cCodInv)
-        MSExecAuto({|x,y,z| mata340(x,y,z)}, .T., cCodInv, .T.)               
-        
-        If lMsErroAuto
-            lOk := .F.
-            MostraErro()        
-        EndIf    
-
-        dBSKIP()
-    EndDo    
-    
-        
-ENDIF
-
-Return(lOk)
 
 /*/{Protheus.doc} exclZPE
     Excluir inventário rotativo

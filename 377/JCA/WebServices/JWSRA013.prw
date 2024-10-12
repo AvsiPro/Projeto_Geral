@@ -219,6 +219,8 @@ Private cMunIni     := ''
 Private cMunFim     := ''
 Private cEstFil     := ''
 Private cEstTom     := ''
+Private aPesos      := {}
+Private aPeCTe      := {}
 Default nChama      := 0
 
 If ValType(oXml) != "O"
@@ -316,6 +318,20 @@ EndIf
 
 If XmlChildEx( oXml:_CTEPROC:_CTE:_INFCTE:_DEST:_ENDERDEST, "_CMUN" ) != Nil
     cMunFim := oXml:_CTEPROC:_CTE:_INFCTE:_DEST:_ENDERDEST:_CMUN:TEXT
+EndIf 
+
+If XmlChildEx( oXml:_CTEPROC:_CTE:_INFCTE, "_INFCTENORM" ) != Nil
+    If XmlChildEx( oXml:_CTEPROC:_CTE:_INFCTE:_INFCTENORM, "_INFCARGA" ) != Nil
+        If XmlChildEx( oXml:_CTEPROC:_CTE:_INFCTE:_INFCTENORM:_INFCARGA, "_INFQ" ) != Nil
+            aPesos := oXml:_CTEPROC:_CTE:_INFCTE:_INFCTENORM:_INFCARGA:_INFQ
+
+            For nCont := 1 to len(aPesos)
+                cTexto := aPesos[nCont]:_TPMED:TEXT
+                cConteudo := aPesos[nCont]:_QCARGA:TEXT
+                Aadd(aPeCTe,{cTexto,cConteudo})
+            Next nCont 
+        EndIf 
+    EndIF 
 EndIf 
 
 For nCont := 1 to len(aCSTTipo)
@@ -486,12 +502,119 @@ Return(cRet)
 /*/
 Static Function GerarCte()
 
-Local aCabec    := {}
-Local aItensT   := {}   
-Local aLinha    := {}
+//Local aCabec    := {}
+//Local aItensT   := {}   
+//Local aLinha    := {}
+Local aCab      :=  {}
 Local lRet      := .T.
+Local lCont     := .T.
 Local cProdCTe  :=  SuperGetMv("TI_PRODCTE",.F.,"S0500001")
+Local nPesCB    :=  ascan(aPeCte,{|x| 'PESO'$ x[1] .AND. 'CUB' $ X[1]  })
+Local nPesTx    :=  ascan(aPeCte,{|x| 'PESO'$ x[1] .AND. 'TAX' $ X[1]  })
+Local nVolm     :=  ascan(aPeCte,{|x| 'VOLUM'$ x[1] })
+Local aItemDTC  :=  {}
+Local aItem     :=  {}
+Local cRet      :=  ""
+Local aCabDTC   :=  {}
 
+Private lMsErroAuto :=  .F.
+
+
+AAdd(aCab,{'DTP_QTDLOT',1,NIL})
+AAdd(aCab,{'DTP_QTDDIG',0,NIL})
+AAdd(aCab,{'DTP_STATUS','1',NIL}) //-- Em aberto
+
+MsExecAuto({|x,y|cRet := TmsA170(x,y)},aCab,3)
+
+If lMsErroAuto
+
+    MostraErro()
+
+    lCont := .F.
+
+Else
+
+    cLotNfc := cRet
+
+EndIf
+
+If lCont
+
+		lMsErroAuto := .F.
+		DbSelectArea("DTC")
+
+		aCabDTC := {{"DTC_FILIAL" ,xFilial("DTC") 					, Nil},;
+					{"DTC_FILORI" ,CFILANT 							, Nil},;
+                    {"DTC_LOTNFC" ,cLotNfc 							, Nil},;
+                    {"DTC_CLIREM" ,Padr(cCodCli,Len(DTC->DTC_CLIREM))	, Nil},;
+                    {"DTC_LOJREM" ,Padr(cLjFornec ,Len(DTC->DTC_LOJREM))	, Nil},;
+                    {"DTC_DATENT" ,dDataBase 						, Nil},;
+                    {"DTC_CLIDES" ,Padr("049651",Len(DTC->DTC_CLIREM))	, Nil},;
+                    {"DTC_LOJDES" ,Padr(cLjFornec ,Len(DTC->DTC_LOJREM))	, Nil},;
+                    {"DTC_CLIDEV" ,Padr(cCodCli,Len(DTC->DTC_CLIREM))	, Nil},;
+                    {"DTC_LOJDEV" ,Padr(cLjFornec ,Len(DTC->DTC_LOJREM))	, Nil},;
+                    {"DTC_CLICAL" ,Padr(cCodCli,Len(DTC->DTC_CLIREM))	, Nil},;
+                    {"DTC_LOJCAL" ,Padr(cLjFornec ,Len(DTC->DTC_LOJREM))	, Nil},;
+                    {"DTC_NUMNFC" ,cNum 							, Nil},;
+                    {"DTC_SERNFC" ,cSerie							, Nil},;
+                    {"DTC_DOCTMS" ,'2'								, Nil},;
+                    {"DTC_DEVFRE" ,"1" 								, Nil},;
+                    {"DTC_SERTMS" ,"3" 								, Nil},;
+                    {"DTC_TIPTRA" ,"1" 								, Nil},;
+                    {"DTC_TIPNFC" ,"0" 								, Nil},;
+                    {"DTC_TIPFRE" ,"1" 								, Nil},;
+                    {"DTC_CODNEG" ,"01" 							, Nil},;
+                    {"DTC_SELORI" ,"1" 								, Nil},;
+                    {"DTC_CDRORI" ,'Q'+substr(cMunIni,3)			, Nil},;
+                    {"DTC_CDRDES" ,'Q'+substr(cMunFim,3)			, Nil},;
+                    {"DTC_CDRCAL" ,'Q'+substr(cMunFim,3)			, Nil},;
+					{"DTC_NFEID"  ,cChave_Nfe						, Nil},;
+					{"DTC_NFENTR" ,'1'								, Nil},;
+					{"DTC_TIPAGD" ,'1'								, Nil},;
+					{"DTC_DOCREE" ,'2'								, Nil},;
+					{"DTC_RETIRA" ,'1'								, Nil},;
+					{"DTC_INVORI" ,'2'								, Nil},;
+                    {"DTC_SERVIC" ,"018" 							, Nil},;
+                    {"DTC_DISTIV" ,'2'								, Nil}}
+//
+//					
+                    
+		aItem := {{"DTC_NUMNFC" 	,cNum							, Nil},;
+                    {"DTC_SERNFC" 	,cSerie							, Nil},;
+                    {"DTC_CODPRO" 	,cProdCTe						, Nil},;
+					{"DTC_CF" 		,cCfopFrt						, Nil},;
+                    {"DTC_CODEMB" 	,"CX" 							, Nil},;
+                    {"DTC_EMINFC" 	,ctod(cDtEmissao) 				, Nil},;
+                    {"DTC_QTDVOL" 	,If(nVolm>0,val(aPeCTe[nVolm,2]),0)		, Nil},;
+                    {"DTC_PESO" 	,If(nPesTx>0,val(aPeCTe[nPesTx,2]),0)	, Nil},;
+                    {"DTC_PESOM3" 	,If(nPesCB>0,val(aPeCTe[nPesCB,2]),0)   , Nil},;
+                    {"DTC_VALOR" 	,nTotalMerc						, Nil},;
+                    {"DTC_BASSEG" 	,0.00 							, Nil},;
+                    {"DTC_METRO3" 	,0.0000							, Nil},;
+                    {"DTC_QTDUNI" 	,0 								, Nil},;
+					{"DTC_MOEDA" 	,1 								, Nil},;
+                    {"DTC_EDI" 		,"2" 							, Nil}}
+
+		AAdd(aItemDTC,aClone(aItem))
+//
+    // Parametros da TMSA050 (notas fiscais do cliente)
+    // xAutoCab - Cabecalho da nota fiscal
+    // xAutoItens - Itens da nota fiscal
+    // xItensPesM3 - acols de Peso Cubado
+    // xItensEnder - acols de Enderecamento
+    // nOpcAuto - Opcao rotina automatica
+
+    MSExecAuto({|u,v,x,y,z| TMSA050(u,v,x,y,z)},aCabDTC,aItemDTC,,,3)
+
+    If lMsErroAuto
+        MostraErro()
+        lCont := .F.
+    Else
+        DTC->(dbCommit())
+    EndIf
+
+EndIf
+/*
 aadd(aCabec,{"F2_FILIAL"    ,cFilorig   })
 aadd(aCabec,{"F2_TIPO"      ,"N"        })
 aadd(aCabec,{"F2_FORMUL"    ,"N"        })
@@ -527,6 +650,8 @@ If lMsErroAuto
     cErrorN := GetErro()
     lRet := .F.
 EndIf 
+*/
+
 
 Return(lRet)
 
@@ -549,7 +674,7 @@ Default nTipo := 1
 
 If Select("SM0") == 0
     RpcSetType(3)
-    RPCSetEnv("01","00020087")
+    RPCSetEnv("01","00080230")
 EndIf
 
 If nOpc == 0

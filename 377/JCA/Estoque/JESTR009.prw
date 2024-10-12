@@ -18,7 +18,7 @@ User Function JESTR009()
 
     If Select("SM0") == 0
         RpcSetType(3)
-        RPCSetEnv("01","00020087")
+        RPCSetEnv("01","00080230")
     EndIf
 
 
@@ -26,7 +26,7 @@ User Function JESTR009()
 	AAdd(aCab,{'DTP_QTDDIG',0,NIL})
 	AAdd(aCab,{'DTP_STATUS','1',NIL}) //-- Em aberto
 
-	MsExecAuto({|x,y|cRet := TmsA170(x,y)},aCab,3)
+	MsExecAuto({|x,y| cRet := TmsA170(x,y)},aCab,3)
 
 	If lMsErroAuto
 
@@ -43,44 +43,55 @@ User Function JESTR009()
 	If lCont
 
 		lMsErroAuto := .F.
+		DbSelectArea("DTC")
 
-		aCabDTC := { {"DTC_FILORI" ,"01" , Nil},;
-                    {"DTC_LOTNFC" ,cLotNfc , Nil},;
-                    {"DTC_CLIREM" ,Padr("001",Len(DTC->DTC_CLIREM)), Nil},;
-                    {"DTC_LOJREM" ,Padr("01" ,Len(DTC->DTC_LOJREM)), Nil},;
-                    {"DTC_DATENT" ,Ctod('24/08/2011') , Nil},;
-                    {"DTC_CLIDES" ,Padr("002",Len(DTC->DTC_CLIREM)), Nil},;
-                    {"DTC_LOJDES" ,Padr("01" ,Len(DTC->DTC_LOJREM)), Nil},;
-                    {"DTC_CLIDEV" ,Padr("001",Len(DTC->DTC_CLIREM)), Nil},;
-                    {"DTC_LOJDEV" ,Padr("01" ,Len(DTC->DTC_LOJREM)), Nil},;
-                    {"DTC_CLICAL" ,Padr("001",Len(DTC->DTC_CLIREM)), Nil},;
-                    {"DTC_LOJCAL" ,Padr("01" ,Len(DTC->DTC_LOJREM)), Nil},;
-                    {"DTC_DEVFRE" ,"1" , Nil},;
-                    {"DTC_SERTMS" ,"2" , Nil},;
-                    {"DTC_TIPTRA" ,"1" , Nil},;
-                    {"DTC_SERVIC" ,"010" , Nil},;
-                    {"DTC_TIPNFC" ,"0" , Nil},;
-                    {"DTC_TIPFRE" ,"1" , Nil},;
-                    {"DTC_CODNEG" ,"1" , Nil},;
-                    {"DTC_SELORI" ,"1" , Nil},;
-                    {"DTC_CDRORI" ,'01001', Nil},;
-                    {"DTC_CDRDES" ,'05001', Nil},;
-                    {"DTC_CDRCAL" ,'05001', Nil},;
-                    {"DTC_DISTIV" ,'2', Nil}}
+		aCabDTC := {{"DTC_FILIAL" ,xFilial("DTC") 					, Nil},;
+					{"DTC_FILORI" ,CFILANT 							, Nil},;
+                    {"DTC_LOTNFC" ,cLotNfc 							, Nil},;
+                    {"DTC_CLIREM" ,Padr(cCodCli,Len(DTC->DTC_CLIREM))	, Nil},;
+                    {"DTC_LOJREM" ,Padr(cLjFornec ,Len(DTC->DTC_LOJREM))	, Nil},;
+                    {"DTC_DATENT" ,dDataBase 						, Nil},;
+                    {"DTC_CLIDES" ,Padr("049651",Len(DTC->DTC_CLIREM))	, Nil},;
+                    {"DTC_LOJDES" ,Padr(cLjFornec ,Len(DTC->DTC_LOJREM))	, Nil},;
+                    {"DTC_CLIDEV" ,Padr(cCodCli,Len(DTC->DTC_CLIREM))	, Nil},;
+                    {"DTC_LOJDEV" ,Padr(cLjFornec ,Len(DTC->DTC_LOJREM))	, Nil},;
+                    {"DTC_CLICAL" ,Padr(cCodCli,Len(DTC->DTC_CLIREM))	, Nil},;
+                    {"DTC_LOJCAL" ,Padr(cLjFornec ,Len(DTC->DTC_LOJREM))	, Nil},;
+                    {"DTC_DEVFRE" ,"1" 								, Nil},;
+                    {"DTC_SERTMS" ,"3" 								, Nil},;
+                    {"DTC_TIPTRA" ,"1" 								, Nil},;
+                    {"DTC_SERVIC" ,"018" 							, Nil},;
+                    {"DTC_TIPNFC" ,"0" 								, Nil},;
+                    {"DTC_TIPFRE" ,"1" 								, Nil},;
+                    {"DTC_CODNEG" ,"01" 							, Nil},;
+                    {"DTC_SELORI" ,"1" 								, Nil},;
+                    {"DTC_CDRORI" ,'Q'+substr(cMunIni,3)			, Nil},;
+                    {"DTC_CDRDES" ,'Q'+substr(cMunFim,3)			, Nil},;
+                    {"DTC_CDRCAL" ,'Q'+substr(cMunFim,3)			, Nil},;
+					{"DTC_NFEID"  ,cChave_Nfe						, Nil},;
+					{"DTC_NFENTR" ,'1'								, Nil},;
+					{"DTC_TIPAGD" ,'1'								, Nil},;
+					{"DTC_DOCTMS" ,'2'								, Nil},;
+					{"DTC_DOCREE" ,'2'								, Nil},;
+					{"DTC_RETIRA" ,'1'								, Nil},;
+					{"DTC_INVORI" ,'2'								, Nil},;
+                    {"DTC_DISTIV" ,'2'								, Nil}}
 
-		aItem := {{"DTC_NUMNFC" ,"011" , Nil},;
-                    {"DTC_SERNFC" ,"UNI" , Nil},;
-                    {"DTC_CODPRO" ,"001", Nil},;
-                    {"DTC_CODEMB" ,"CX" , Nil},;
-                    {"DTC_EMINFC" ,Ctod('01/01/11') , Nil},;
-                    {"DTC_QTDVOL" ,20 , Nil},;
-                    {"DTC_PESO" ,200.0000, Nil},;
-                    {"DTC_PESOM3" ,0.0000, Nil},;
-                    {"DTC_VALOR" ,20000.00, Nil},;
-                    {"DTC_BASSEG" ,0.00 , Nil},;
-                    {"DTC_METRO3" ,0.0000, Nil},;
-                    {"DTC_QTDUNI" ,0 , Nil},;
-                    {"DTC_EDI" ,"2" , Nil}}
+		aItem := {{"DTC_NUMNFC" 	,cNum							, Nil},;
+                    {"DTC_SERNFC" 	,cSerie							, Nil},;
+                    {"DTC_CODPRO" 	,cProdCTe						, Nil},;
+					{"DTC_CF" 		,cCfopFrt						, Nil},;
+                    {"DTC_CODEMB" 	,"CX" 							, Nil},;
+                    {"DTC_EMINFC" 	,ctod(cDtEmissao) 				, Nil},;
+                    {"DTC_QTDVOL" 	,1								, Nil},;
+                    {"DTC_PESO" 	,100.0000						, Nil},;
+                    {"DTC_PESOM3" 	,0.0000							, Nil},;
+                    {"DTC_VALOR" 	,nTotalMerc						, Nil},;
+                    {"DTC_BASSEG" 	,0.00 							, Nil},;
+                    {"DTC_METRO3" 	,0.0000							, Nil},;
+                    {"DTC_QTDUNI" 	,0 								, Nil},;
+					{"DTC_MOEDA" 	,1 								, Nil},;
+                    {"DTC_EDI" 		,"2" 							, Nil}}
 
 		AAdd(aItemDTC,aClone(aItem))
 //

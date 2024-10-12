@@ -384,6 +384,29 @@ WsMethod POST WsReceive RECEIVE WsService JWSRA011
                     EndIf
 
                     If lRet
+                        //Inicia o controle de transação
+                        Begin Transaction
+                        //Chama a rotina automática
+                        lMsErroAuto := .F.
+                        MSExecAuto({|x,y,z| FINA100(x,y,z)},0, aVetSE5, 3)
+                        
+
+                        //Se houve erro, mostra o erro ao usuário e desarma a transação
+                        If lMsErroAuto
+                            cCode 	 := "#400"
+                            cMessage  := "falha "
+                            cResultAux := GetErro()
+                            DisarmTransaction()
+                        else
+                            cMessage  += "sucesso "
+                            cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"'+cvaltochar(nCont)+'.sucesso" : "'+"Titulo gerado com sucesso!!!"+'"'"
+                            cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"'+cvaltochar(nCont)+'.recno" : "'+"Recno nr. "+cvaltochar(SE5->(Recno()))+'"'"
+                        EndIf    
+
+                        //Finaliza a transação
+                        End Transaction
+
+                    /*
                         DbGoto(val(nRecEnv))
                         Reclock("SE5",.F.)
                         DbDelete()
@@ -391,7 +414,7 @@ WsMethod POST WsReceive RECEIVE WsService JWSRA011
                         cMessage  += "sucesso "
                         cResultAux += '"sucesso" : "'+"Titulo excluido com sucesso!!!"+'"'"
                         cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"recno" : "'+"Recno nr. "+cvaltochar(nRecEnv)+'"'"
-                        
+                      */  
                         /*
                         //Feito via Reclock, na documentação do Caio diz para excluir e se usar com execauto a rotina cancela o lançamento.
                         Begin Transaction

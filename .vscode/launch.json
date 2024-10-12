@@ -109,8 +109,11 @@
 		},
 		{
 			"label": "U_JESTR009"
+		},
+		{
+			"label": "SIGATMS"
 		}
 	],
-	"lastProgramExecuted": "u_jestm002",
+	"lastProgramExecuted": "SIGATMS",
 	"lastProgramArguments": []
 }
