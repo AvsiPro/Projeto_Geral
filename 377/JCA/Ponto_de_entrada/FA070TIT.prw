@@ -15,9 +15,11 @@ User function FA070TIT()
 	Local cInst         := GETMV("MV_INSCOB")
 	Local cTipBx        := SuperGetmv("TI_TIPBXT",.F.,"FT")
 	Local lLigaTr       := SuperGetmv("TI_LIGINT",.F.,.T.)
-	Local nBkpRec		:= SE1->(recno()) 
+	Private nBkpRec		:= SE1->(recno())
 	Private aItemsFI2   := {}
-	Private nVlrOrig := 0
+	Private nVlrOrig 	:= 0
+	Private nValBai		:= 0
+	Private aRecLiq  := {}
 
 	IF cInst == "1" .And. !EMPTY(SE1->E1_IDCNAB) .And. !EMPTY(SE1->E1_NUMBOR)
 		If  MSGYESNO("Titulo se encontra em cobrança bancária. Deseja gerar instrução de cobrança? ")
@@ -33,19 +35,19 @@ User function FA070TIT()
 
 	If lLigaTr
 		If !Empty(cTipBx)
-			If !Empty(SE1->E1_NUMLIQ)				
+			If !Empty(SE1->E1_NUMLIQ)
 				nSaldo := conssld()
 				//posiciona novamente
 				SE1->(DbGoTo(nBkpRec))
 				If Alltrim(SE1->E1_TIPO) $ cTipBx //.And. (nSaldo == nValrec .or. (nSaldo == 0 .And. nVlrOrig > 0))
-
 					If nSaldo == 0 .And. nVlrOrig > 0
-						nVlrBaixa := nVlrOrig
-					Else
 						nVlrBaixa := SldLiq()
+						IF nVlrOrig == nValBai + nValrec
+							EnvTrck(nVlrOrig)
+						ENDIF
 					EndIf
-					EnvTrck(nVlrBaixa)
 				EndIf
+				SE1->(DbGoTo(nBkpRec))
 			Else
 				If Alltrim(SE1->E1_TIPO) $ cTipBx .And. SE1->E1_SALDO == nValrec
 					EnvTrck(0)
@@ -75,27 +77,36 @@ Static Function EnvTrck(nVlrBaixa)
 	Local cApiDest  := SuperGetMV("TI_APIDES",.F.,"https://buslog.track3r.com.br")
 	Local cEndPnt   := SuperGetMV("TI_ENDPNT",.F.,"/api/totvs-protheus/confirma-pagamento-fatura")
 	Local cToken    := SuperGetMV("TI_TOKTRK",.F.,'0D901F83-1739-41E3-995B-7303EF0BB19A')
+	Local nCont 	:= 0
 
-	oEnvio['filial']    := SE1->E1_FILIAL
-	oEnvio['prefixo']   := SE1->E1_PREFIXO
-	oEnvio['titulo']    := SE1->E1_NUM
-	oEnvio['parcela']   := SE1->E1_PARCELA
-	oEnvio['tipo']      := SE1->E1_TIPO
-	oEnvio['natureza']  := SE1->E1_NATUREZ
-	oEnvio['cliente']   := Posicione("SA1",1,xFilial("SA1")+SE1->E1_CLIENTE+SE1->E1_LOJA,"A1_CGC")
-	oEnvio['emissao']   := cvaltochar(SE1->E1_EMISSAO)
-	oEnvio['vencimento']:= cvaltochar(SE1->E1_VENCTO)
-	oEnvio['vencto_real']:= cvaltochar(SE1->E1_VENCREA)
-	oEnvio['data_baixa']:= cvaltochar(dDataBase)
-	oEnvio['valor']     := If(nVlrBaixa>0,nVlrBaixa,SE1->E1_VALOR)
-	oEnvio['historico'] := SE1->E1_HIST
-	oEnvio['motivo_baixa'] := cMotBx
-	oEnvio['movimento'] := 'liquidacao'
-	oEnvio['usuario']   := cusername
+	nCont := 1
+	For nCont := 1 to len(aRecLiq)
 
-	cRet := oEnvio:toJson()
+		DbselectArea("SE1")
+		DbGoto(aRecLiq[nCont,1])
 
-	ApiEnv04(cApiDest,cEndPnt,cRet,cToken)
+		oEnvio['filial']    := SE1->E1_FILIAL
+		oEnvio['prefixo']   := SE1->E1_PREFIXO
+		oEnvio['titulo']    := SE1->E1_NUM
+		oEnvio['parcela']   := SE1->E1_PARCELA
+		oEnvio['tipo']      := SE1->E1_TIPO
+		oEnvio['natureza']  := SE1->E1_NATUREZ
+		oEnvio['cliente']   := Posicione("SA1",1,xFilial("SA1")+SE1->E1_CLIENTE+SE1->E1_LOJA,"A1_CGC")
+		oEnvio['emissao']   := cvaltochar(SE1->E1_EMISSAO)
+		oEnvio['vencimento']:= cvaltochar(SE1->E1_VENCTO)
+		oEnvio['vencto_real']:= cvaltochar(SE1->E1_VENCREA)
+		oEnvio['data_baixa']:= cvaltochar(dDataBase)
+		oEnvio['valor']     := SE1->E1_VALOR//If(nVlrBaixa>0,nVlrBaixa,SE1->E1_VALOR)
+		oEnvio['historico'] := SE1->E1_HIST
+		oEnvio['motivo_baixa'] := cMotBx
+		oEnvio['movimento'] := 'liquidacao'
+		oEnvio['usuario']   := cusername
+		
+		cRet := oEnvio:toJson()
+		
+		ApiEnv04(cApiDest,cEndPnt,cRet,cToken)
+
+	NEXT nCont
 
 	RestArea(aArea)
 
@@ -168,17 +179,17 @@ Static Function conssld()
 	Local aLiquida := {}
 	Local nRecPrcp := 0
 
-//cQuery := "SELECT DISTINCT E5_FILIAL,E5_DATA,E5_NATUREZ,E5_NUMERO,E5_PREFIXO,E5_PARCELA,E5_CLIFOR,E5_LOJA,E5_VALOR,E1.R_E_C_N_O_ E1RECNO,E1_NUMLIQ,E1_TIPOLIQ,FO0_PROCES,E5_DOCUMEN"
-	cQuery := "SELECT DISTINCT E1.R_E_C_N_O_ E1RECNO,E1_NUMLIQ,E1_TIPOLIQ"
+	//cQuery := "SELECT DISTINCT E5_FILIAL,E5_DATA,E5_NATUREZ,E5_NUMERO,E5_PREFIXO,E5_PARCELA,E5_CLIFOR,E5_LOJA,E5_VALOR,E1.R_E_C_N_O_ E1RECNO,E1_NUMLIQ,E1_TIPOLIQ,FO0_PROCES,E5_DOCUMEN"
+	cQuery := "SELECT DISTINCT E5.E5_VALOR,E1.R_E_C_N_O_ E1RECNO,E1_NUMLIQ,E1_TIPOLIQ"
 	cQuery += " FROM "+RetSQLName("SE5")+" E5"
 	cQuery += " INNER JOIN "+RetSQLName("SE1")+" E1 ON E1_FILIAL=E5_FILIAL AND E1_PREFIXO=E5_PREFIXO AND E1_NUM=E5_NUMERO AND E1_PARCELA=E5_PARCELA AND E1_CLIENTE=E5_CLIFOR AND E1_LOJA=E5_LOJA AND E1.D_E_L_E_T_=' '"
-//cQuery += " INNER JOIN "+RetSQLName("FO0")+" FO0 ON FO0_FILIAL=E5_FILIAL AND FO0_NUMLIQ=E5_DOCUMEN AND FO0.D_E_L_E_T_=' '"
+	//cQuery += " INNER JOIN "+RetSQLName("FO0")+" FO0 ON FO0_FILIAL=E5_FILIAL AND FO0_NUMLIQ=E5_DOCUMEN AND FO0.D_E_L_E_T_=' '"
 	cQuery += " WHERE "
 	cQuery += " E5_IDORIG IN (SELECT E5_IDORIG FROM "+RetSQLName("SE5")+" E5 "
 	cQuery += "     INNER JOIN "+RetSQLName("SE1")+" E1 ON E1_FILIAL=E5_FILIAL AND E1_PREFIXO=E5_PREFIXO AND E1_NUM=E5_NUMERO AND E1_PARCELA=E5_PARCELA AND E1_CLIENTE=E5_CLIFOR AND E1_LOJA=E5_LOJA AND E1.D_E_L_E_T_=' '"
 	cQuery += "     WHERE E5_FILIAL='"+SE1->E1_FILIAL+"' AND E5_CLIFOR='"+SE1->E1_CLIENTE+"' AND E1_NUMLIQ='"+SE1->E1_NUMLIQ+"' AND E5.D_E_L_E_T_=' ') "
 	cQuery += " OR E5_DOCUMEN='"+SE1->E1_NUMLIQ+"'"
-	cQuery += " ORDER BY E1_TIPOLIQ DESC"
+	cQuery += " ORDER BY E1_TIPOLIQ DESC "
 
 	IF Select('TRB') > 0
 		dbSelectArea('TRB')
@@ -194,7 +205,10 @@ Static Function conssld()
 		Aadd(aLiquida,{TRB->E1_NUMLIQ,TRB->E1_TIPOLIQ,TRB->E1RECNO})
 		If Empty(TRB->E1_NUMLIQ)
 			nRecPrcp := TRB->E1RECNO
-			exit
+			Aadd(aRecLiq,{TRB->E1RECNO})
+		else
+			nValBai += TRB->E5_VALOR
+			//exit
 		EndIf
 		Dbskip()
 	EndDo
@@ -227,54 +241,61 @@ Static Function conssld()
 				Aadd(aLiquida,{TRB->E1_NUMLIQ,TRB->E1_TIPOLIQ,TRB->E1RECNO})
 				If Empty(TRB->E1_NUMLIQ)
 					nRecPrcp := TRB->E1RECNO
-					exit
+					Aadd(aRecLiq,{TRB->E1RECNO})
+					//exit
 				EndIf
 				Dbskip()
 			EndDo
 
-			If nRecPrcp > 0
+			/*If nRecPrcp > 0
 				exit
-			EndIf
+			EndIf*/
 			nCont++
 			//Asize(aLiquida,len(aLiquida))
 		enddo
 
 	EndIf
 
-	If nRecPrcp >  0
-		DbselectArea("SE1")
-		DbGoto(nRecPrcp)
-		nVlrOrig := SE1->E1_VALOR
-	EndIf
+	IF len(aRecLiq) > 0
+		nCont := 1
 
-	cQuery := "SELECT E1_NUMLIQ,SUM(E1_VALOR) AS TOTAL,SUM(E1_SALDO) AS SALDO,"
-	cQuery += " SUM(E1_VALOR-E1_SALDO) AS BAIXADOS"
-	cQuery += " FROM "+RetSQLName("SE1")
-	cQuery += " WHERE E1_FILIAL='"+SE1->E1_FILIAL+"'"
-	cQuery += " AND E1_NUM='"+SE1->E1_NUM+"'"
-	cQuery += " AND E1_PREFIXO='"+SE1->E1_PREFIXO+"'"
-	cQuery += " AND E1_CLIENTE='"+SE1->E1_CLIENTE+"'"
-	cQuery += " AND E1_LOJA='"+SE1->E1_LOJA+"'"
-	cQuery += " AND E1_TIPO='"+SE1->E1_TIPO+"'"
-	cQuery += " AND E1_NUMLIQ='"+SE1->E1_NUMLIQ+"'"
-	cQuery += " GROUP BY E1_NUMLIQ"
+		while nCont <= len(aRecLiq)
+			DbselectArea("SE1")
+			DbGoto(aRecLiq[nCont,1])
+			nVlrOrig += SE1->E1_VALOR
+			
+			cQuery := "SELECT E1_NUMLIQ,SUM(E1_VALOR) AS TOTAL,SUM(E1_SALDO) AS SALDO,"
+			cQuery += " SUM(E1_VALOR-E1_SALDO) AS BAIXADOS"
+			cQuery += " FROM "+RetSQLName("SE1")
+			cQuery += " WHERE E1_FILIAL='"+SE1->E1_FILIAL+"'"
+			cQuery += " AND E1_NUM='"+SE1->E1_NUM+"'"
+			cQuery += " AND E1_PREFIXO='"+SE1->E1_PREFIXO+"'"
+			cQuery += " AND E1_CLIENTE='"+SE1->E1_CLIENTE+"'"
+			cQuery += " AND E1_LOJA='"+SE1->E1_LOJA+"'"
+			cQuery += " AND E1_TIPO='"+SE1->E1_TIPO+"'"
+			cQuery += " AND E1_NUMLIQ='"+SE1->E1_NUMLIQ+"'"
+			cQuery += " GROUP BY E1_NUMLIQ"
 
-	IF Select('TRB') > 0
-		dbSelectArea('TRB')
-		dbCloseArea()
+			IF Select('TRB') > 0
+				dbSelectArea('TRB')
+				dbCloseArea()
+			ENDIF
+
+			MemoWrite("FA070TIT.SQL",cQuery)
+			DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
+
+			DbSelectArea("TRB")
+
+			While !EOF()
+				nRet += TRB->SALDO
+				Dbskip()
+			EndDo
+			nCont++
+					//Asize(aLiquida,len(aLiquida))
+		EndDo
 	ENDIF
 
-	MemoWrite("FA070TIT.SQL",cQuery)
-	DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
-
-	DbSelectArea("TRB")
-
-	While !EOF()
-		nRet += TRB->SALDO
-		Dbskip()
-	EndDo
-
-	RestArea(aArea)
+RestArea(aArea)
 
 Return(nRet)
 
