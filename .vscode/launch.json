@@ -112,8 +112,11 @@
 		},
 		{
 			"label": "SIGATMS"
+		},
+		{
+			"label": "SIGAATF"
 		}
 	],
-	"lastProgramExecuted": "SIGATMS",
+	"lastProgramExecuted": "SIGAATF",
 	"lastProgramArguments": []
 }
