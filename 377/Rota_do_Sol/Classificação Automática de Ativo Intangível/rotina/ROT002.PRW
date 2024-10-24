@@ -174,7 +174,7 @@ static function fSaveToATFA012(aZ04_Atual, nValor, aZ05AtivosPreCadastro, nI, cD
 
 		if lMsErroAuto
 
-			xErro := mostraErro("\")
+			xErro := mostraErro("\spool\ativo_intangivel.txt")
 			cErro := fConvertArrToStr(xErro)
 			If !"A data de inicio de depre" $ cErro
 				aAdd(aLogInt, {allTrim(cCodBase), cErro} )	

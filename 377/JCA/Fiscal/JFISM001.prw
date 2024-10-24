@@ -601,6 +601,7 @@ Local aArea  := GetArea()
 Local nOpcao := 0
 Local nCont 
 Local aPars  := {}
+Local lRet   := .f.
 
 Private oDlgR,oGrpR1,oBtnR1,oGrpR2,oSay1,oSay2,oSay3,oSay4,oSay5,oSay6,oSay7,oSay23
 Private oSay9,oSay10,oSay11,oSay12,oSay13,oSay14,oSay15,oSay16,oSay17,oSay18,oSay19
@@ -610,26 +611,34 @@ Private aListR1 := {}
 
 aPars := Prmrepr()
 
-BuscaZph(aPars)
+
+If Len(aPars) > 0
+    BuscaZph(aPars)
+Endif 
 
 If len(aListR1) > 0
+    
 //Aadd(aListR1,{.F.,'','','','','','',0})
-
+    If aPars[1] == '1'
+        oDlgR      := MSDialog():New( 215,516,684,1418,"Itens Integrados",,,.F.,,,,,,.T.,,,.T. )
+    Else 
     oDlgR      := MSDialog():New( 215,516,684,1418,"Itens Represados",,,.F.,,,,,,.T.,,,.T. )
-
+    Endif
         oGrpR1     := TGroup():New( 004,004,144,440,"Itens",oDlgR,CLR_BLACK,CLR_WHITE,.T.,.F. )
             //oBrw1      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{012,008,140,436},,, oGrpR1 ) 
-            oLisR1    := TCBrowse():New(012,008,425,130,, {'','Filial','Documento','Serie','Fornecedor','Razão Social','Chave CT-e'},;
+            oLisR1    := TCBrowse():New(012,008,425,130,, {'','Filial','Documento','Serie','Cliente','Razão Social','Chave CT-e', 'Log de Erro'},;
                                                         {10,25,25,30,30,30,70,100},;
                                                         oGrpR1,,,,{|| FHelp(oLisR1:nAt)},{|| chvcte(oLisR1:nAt)},, ,,,  ,,.F.,,.T.,,.F.,,,)
             oLisR1:SetArray(aListR1)
-            oLisR1:bLine := {||{if(aListR1[oLisR1:nAt,01],oOk,oNo),; 
+            //oLisR1:bLine := {||{if(aListR1[oLisR1:nAt,01],oOk,oNo),; 
+            oLisR1:bLine := {||{if(aPars[1] == '1',oOk,oNo),; 
                                     aListR1[oLisR1:nAt,02],;
                                     aListR1[oLisR1:nAt,03],;
                                     aListR1[oLisR1:nAt,04],;
                                     aListR1[oLisR1:nAt,05],;
                                     aListR1[oLisR1:nAt,06],;
-                                    aListR1[oLisR1:nAt,21]}}
+                                    aListR1[oLisR1:nAt,21],;
+                                    aListR1[oLisR1:nAt,22]}}
 
         oGrpR2     := TGroup():New( 148,004,204,440,"Combinação",oDlgR,CLR_BLACK,CLR_WHITE,.T.,.F. )
 
@@ -668,8 +677,10 @@ If len(aListR1) > 0
 
         oSay23     := TSay():New( 195,200,{||""},oGrpR2,,,.F.,.F.,.F.,.T.,CLR_RED,CLR_WHITE,132,008)
 
-        oLg1 := TBitmap():Create(oDlgR,205,10,10,10,"BR_VERDE"			,,.T., {|| },,.F.,.F.,,,.F.,,.T.,,.F.)			// programadas
-        oLg2 := TBitmap():Create(oDlgR,215,10,10,10,"BR_VERMELHO"			,,.T., {|| },,.F.,.F.,,,.F.,,.T.,,.F.)			// programadas
+        oLg1 := TBitmap():Create(oDlgR,205,10,10,10,"BR_VERMELHO"			,,.T., {|| },,.F.,.F.,,,.F.,,.T.,,.F.)			// programadas
+       // oLg1 := TBitmap():Create(oDlgR,205,10,10,10,"BR_VERDE"			,,.T., {|| },,.F.,.F.,,,.F.,,.T.,,.F.)			// programadas
+        oLg2 := TBitmap():Create(oDlgR,215,10,10,10,"BR_VERDE"			,,.T., {|| },,.F.,.F.,,,.F.,,.T.,,.F.)			// programadas
+        //oLg2 := TBitmap():Create(oDlgR,215,10,10,10,"BR_VERMELHO"			,,.T., {|| },,.F.,.F.,,,.F.,,.T.,,.F.)			// programadas
 	    oSay24     := TSay():New( 205,020,{||"Habilitado para reprocessar"},oGrpR2,,,.F.,.F.,.F.,.T.,CLR_RED,CLR_WHITE,132,008)
         oSay25     := TSay():New( 215,020,{||"Não habilitado para reprocessar"},oGrpR2,,,.F.,.F.,.F.,.T.,CLR_RED,CLR_WHITE,132,008)
 
@@ -681,8 +692,9 @@ If len(aListR1) > 0
 
     If nOpcao == 1
         For nCont := 1 to len(aListR1)
-            If aListR1[nCont,01]
-                lRet := U_xvldws13(1,aListR1[nCont,07],2)
+            If !aListR1[nCont,01]
+                CFILANT := aListR1[nCont,02]
+                lRet := U_xvldws13(1,aListR1[nCont,07],2,aListR1[nCont,08])
 
                 If lRet 
                     DbSelectArea("ZPH")
@@ -693,6 +705,12 @@ If len(aListR1) > 0
                 EndIf 
             EndIf 
         Next nCont
+        
+        If lRet
+            MsgAlert("itens represados")
+        Else
+             MsgAlert("nf não integrada")
+        Endif
     EndIF 
 Else 
     MsgAlert("Não há itens represados")
@@ -719,9 +737,13 @@ Static Function BuscaZph(aPars)
 Local aArea := GetArea()
 Local cQuery 
 Local nCont 
+Local aListR12 := {}
+Local lLegenda := .F.
+Private aRet := {}
+Default aPars := {}
 
 cQuery := "SELECT ZPH_FILIAL,ZPH_DOC,ZPH_SERIE,ZPH_FORNEC,ZPH_LOJA,A1_NOME,ZPH.R_E_C_N_O_ AS RECZPH,"
-cQuery += "ISNULL(CAST(CAST(ZPH_XML AS VARBINARY(8000)) AS VARCHAR(8000)),'') AS ZPH_XML"
+cQuery += " ISNULL(CAST(CAST(ZPH_XML AS VARBINARY(8000)) AS VARCHAR(8000)),'') AS ZPH_XML"
 cQuery += " FROM "+RetSQLName("ZPH")+" ZPH"
 cQuery += " LEFT JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_COD=ZPH_FORNEC AND A1_LOJA=ZPH_LOJA AND A1.D_E_L_E_T_=' '"
 cQuery += " WHERE ZPH.D_E_L_E_T_=' ' "
@@ -764,7 +786,7 @@ DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
 DbSelectArea("TRB")  
 
 While !EOF()
-    Aadd(aListR1,{.F.,;
+    Aadd(aListR12,{.F.,;
                   TRB->ZPH_FILIAL,;
                   TRB->ZPH_DOC,;
                   TRB->ZPH_SERIE,;
@@ -784,31 +806,56 @@ While !EOF()
                   '',;
                   '' ,;
                   .f.,;
+                  '',;
                   ''})
     Dbskip()
 EndDo 
 
-For nCont := 1 to len(aListR1)
-    aRet := U_xvldws13(1,aListR1[nCont,07],1)
-    iF VALTYPE(aRet) == "A"
+For nCont := 1 to len(aListR12)
+    CFILANT := aListR12[nCont,02]
+    aRet := U_xvldws13(1,aListR12[nCont,07],1,aListR12[nCont,08])
+    If VALTYPE(aRet) == "A"
         If len(aRet) > 0
-            aListR1[nCont,09] := aRet[1]
-            aListR1[nCont,10] := aRet[2]
-            aListR1[nCont,11] := aRet[3] 
-            aListR1[nCont,12] := aRet[4]
-            aListR1[nCont,13] := aRet[5]
-            aListR1[nCont,14] := aRet[6]
-            aListR1[nCont,15] := aRet[7]
-            aListR1[nCont,16] := aRet[8]
-            aListR1[nCont,17] := aRet[9]
-            aListR1[nCont,18] := aRet[10]
-            aListR1[nCont,19] := aRet[11]
-            aListR1[nCont,20] := aRet[12]
-            aListR1[nCont,21] := aRet[13]
 
-            If !Empty(aRet[11]) .And. !Empty(aListR1[nCont,06]) .And. !aRet[12]
-                aListR1[nCont,01] := .T.
+            If !aRet[12] .AND. aPars[1] = '1' 
+                Loop
+            Endif
+
+            If aRet[12] .AND. aPars[1] = '0' 
+                Loop
+            Endif   
+
+            If !Empty(aRet[11]) .And. !Empty(aListR12[nCont,06]) .And. !aRet[12]
+                If aRet[12] .AND. aPars[1] = '1' 
+                    lLegenda := .T.
+                Endif     
             EndIf 
+
+            Aadd(aListR1,{lLegenda ,;
+                          aListR12[nCont,02],;
+                          aListR12[nCont,03],;
+                          aListR12[nCont,04],;
+                          aListR12[nCont,05],;
+                          aListR12[nCont,06],;
+                          aListR12[nCont,07],;
+                          aListR12[nCont,08],;
+                          aRet[1],;
+                          aRet[2],;
+                          aRet[3] ,;
+                          aRet[4],;
+                          aRet[5],;
+                          aRet[6],;
+                          aRet[7],;
+                          aRet[8],;
+                          aRet[9],;
+                          aRet[10],;
+                          aRet[11],;
+                          aRet[12],;
+                          aRet[13],;
+                          aRet[14]})
+                            
+            
+            
         EndIf 
     EndIf 
 Next nCont 
@@ -900,7 +947,7 @@ Static Function Prmrepr
 
 Local aArea     :=  GetArea()
 Local nOpcao    :=  0
-Local aRet      :=  {}
+Local aRet1      :=  {}
 
 Local oRepr,oSay1,oSay2,oSay3,oSay4,oSay5,oGet1,oGet2
 Local oGet4,oGet5,oGet6,oGet7,oBtn1,oBtn2,oSay6,oSay7
@@ -934,10 +981,10 @@ oRepr      := MSDialog():New( 139,752,537,1103,"Reprocessar",,,.F.,,,,,,.T.,,,.T
     oSay5      := TSay():New( 116,024,{||"Loja"},oRepr,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
     oGet5      := TGet():New( 116,088,{|u| If(Pcount()>0,cLojPar:=u,cLojPar)},oRepr,060,008,'',,CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"","",,)
     
-    oSay6      := TSay():New( 132,024,{||"Emissao"},oRepr,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
+    oSay6      := TSay():New( 132,024,{||"Data De"},oRepr,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
     oGet6      := TGet():New( 132,088,{|u| If(Pcount()>0,cDtPar1:=u,cDtPar1)},oRepr,060,008,'',,CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"","",,)
     
-    oSay7      := TSay():New( 148,024,{||"Emissao ate"},oRepr,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
+    oSay7      := TSay():New( 148,024,{||"Data Ate "},oRepr,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
     oGet7      := TGet():New( 148,088,{|u| If(Pcount()>0,cDtPar2:=u,cDtPar2)},oRepr,060,008,'',,CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"","",,)
     
     oBtn1      := TButton():New( 172,024,"Confirmar",oRepr,{||oRepr:end(nOpcao:=1)},037,012,,,,.T.,,"",,,,.F. )
@@ -946,16 +993,16 @@ oRepr      := MSDialog():New( 139,752,537,1103,"Reprocessar",,,.F.,,,,,,.T.,,,.T
 oRepr:Activate(,,,.T.)
 
 If nOpcao == 1
-    Aadd(aRet,nGrupo)
-    Aadd(aRet,cFilPar)
-    Aadd(aRet,cNotPar)
-    Aadd(aRet,cSerPar)
-    Aadd(aRet,cCliPar)
-    Aadd(aRet,cLojPar)
-    Aadd(aRet,cDtPar1)
-    Aadd(aRet,cDtPar2)
+    Aadd(aRet1,nGrupo)
+    Aadd(aRet1,cFilPar)
+    Aadd(aRet1,cNotPar)
+    Aadd(aRet1,cSerPar)
+    Aadd(aRet1,cCliPar)
+    Aadd(aRet1,cLojPar)
+    Aadd(aRet1,cDtPar1)
+    Aadd(aRet1,cDtPar2)
 endIf 
 
 RestArea(aArea)
 
-Return(aRet)
+Return(aRet1)
