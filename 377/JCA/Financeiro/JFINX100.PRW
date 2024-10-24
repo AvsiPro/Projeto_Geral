@@ -51,7 +51,7 @@ User Function JFINX100(lDanfe,lEmail,lTitulo)
 	
 	if lBolEmail
 		aRotina := {{ 'Imprime Boletos' , 'U_RF01BImp(.F.)' , 0, 1 },;
-					{ 'Envia Boletos' , 'U_RF01BImp(.T.)' , 0, 1 }}
+					{ 'Envia Boletos' 	, 'U_RF01BImp(.T.)' , 0, 1 }}
 	else
 		aRotina := {{ 'Imprime Boletos' , 'U_RF01BImp(.F.)' , 0, 1 }}
 	endif
@@ -496,7 +496,7 @@ Return NIL
 //Desta forma posso chamar direto da nota por exemplo, passando os parametros
 User Function RF01B062(xBanco,xAgencia,xConta,xSubCt, lEmail)
 
-	Local cDir			:= Alltrim(GetTempPath()) //Busca Pasta temporaria do Usuario
+	Local cDir			:= "c:\temp\" //Alltrim(GetTempPath()) //Busca Pasta temporaria do Usuario
 	Local cPath 		:= Replace( cDir, "\\", "\" )
 	Local cRutaSmr 		:= Alltrim(GetTempPath()) 
 	Local cPDFNom		:= "BOLETO_"+Dtos(MSDate())+StrTran(Time(),":","")
@@ -747,7 +747,7 @@ User Function RF01B062(xBanco,xAgencia,xConta,xSubCt, lEmail)
 			cmsg3 := AllTrim(&(SEE->EE_FOREXT1))
 		EndIf
 
-		If !Empty(SA1->A1_PRIOR)
+		If SA1->A1_B2B=="1"
 			cmsg4 := AllTrim(cValToChar(SE1->E1_HIST))
 		EndIf
 
@@ -1853,9 +1853,9 @@ Static Function Impres2(oPrint,aDadosEmp,aDadosTit,aDadosBanco,aDatSacado,aBolTe
 		oPrint:Say  (nRow2+1090,100 ,"Após o vencimento cobrar multa de: "+aValorAcres+".",oFont10)
 		oPrint:Say  (nRow2+1150,100 ,"Após o vencimento cobrar juros de: "+aValorMora+" ao dia.",oFont10)
 		//oPrint:Say  (nRow2+1200,100 ,aBolText[1],oFont10)
-		oPrint:Say  (nRow2+1250,100 ,aBolText[1],oFont10)
-		oPrint:Say  (nRow2+1300,100 ,aBolText[2],oFont10)
-		//oPrint:Say  (nRow2+1300,100 ,aBolText[4],oFont10)
+		oPrint:Say  (nRow2+1250,100 ,aBolText[4],oFont10)
+		oPrint:Say  (nRow2+1300,100 ,aBolText[1],oFont10)
+		//oPrint:Say  (nRow2+1300,100 ,aBolText[2],oFont10)
 		//oPrint:Say  (nRow2+1090,100 ,aBolText[1],oFont10)
 		//oPrint:Say  (nRow2+1140,100 ,aBolText[2],oFont10)
 		//oPrint:Say  (nRow2+1190,100 ,aBolText[3],oFont10)
@@ -2094,9 +2094,9 @@ Static Function Impres2(oPrint,aDadosEmp,aDadosTit,aDadosBanco,aDatSacado,aBolTe
 		oPrint:Say  (nRow2+2390,100 ,"Após o vencimento cobrar multa de: "+aValorAcres+".",oFont10)
 		oPrint:Say  (nRow2+2450,100 ,"Após o vencimento cobrar juros de: "+aValorMora+" ao dia.",oFont10)
 		//oPrint:Say  (nRow2+2500,100 ,aBolText[1] /*/+" "+AllTrim(Transform((aDadosTit[5]*0.02),"@E 99,999.99"))       /*/,oFont10)
-		oPrint:Say  (nRow2+2550,100 ,aBolText[1] /*/+" "+AllTrim(Transform(((aDadosTit[5]*0.01)/30),"@E 99,999.99"))  /*/,oFont10)
-		oPrint:Say  (nRow2+2600,100 ,aBolText[2],oFont10)
-		//oPrint:Say  (nRow2+2600,100 ,aBolText[4],oFont10)
+		oPrint:Say  (nRow2+2550,100 ,aBolText[4] /*/+" "+AllTrim(Transform(((aDadosTit[5]*0.01)/30),"@E 99,999.99"))  /*/,oFont10)
+		oPrint:Say  (nRow2+2600,100 ,aBolText[1],oFont10)
+		//oPrint:Say  (nRow2+2600,100 ,aBolText[2],oFont10)
 		//oPrint:Say  (nRow2+2390,100 ,aBolText[1] /*/+" "+AllTrim(Transform((aDadosTit[5]*0.02),"@E 99,999.99"))       /*/,oFont10)
 		//oPrint:Say  (nRow2+2440,100 ,aBolText[2] /*/+" "+AllTrim(Transform(((aDadosTit[5]*0.01)/30),"@E 99,999.99"))  /*/,oFont10)
 		//oPrint:Say  (nRow2+2490,100 ,aBolText[3],oFont10)
@@ -2430,8 +2430,8 @@ Local lOk := .t.
 		cTexto += '<p></p>
 		cTexto += '<p></p>		
 		cTexto += '<p align="LEFT"><b>'
-		cTexto += '<p>Dúvidas? Fale com:</p><a href="mailto:'+GetMV("FS_MAILTO")+'">'+GetMV("FS_MAILTO")+'</a>'
-		cTexto += '<br>'
+	//	cTexto += '<p>Dúvidas? Fale com:</p><a href="mailto:'+GetMV("FS_MAILTO")+'">'+GetMV("FS_MAILTO")+'</a>'
+	//	cTexto += '<br>'
 		//cTexto += '<a href="mailto:'+GetMV("FS_MAILTO")+'">'+GetMV("FS_MAILTO")
 		cTexto += '<p>Atenciosamente,</p>
 		cTexto += '<br>'
@@ -2530,7 +2530,7 @@ Return aTo
 
 Static Function RF02B062(xBanco,xAgencia,xConta,xSubCt, lEmail)
 
-	Local cDir			:= Alltrim(GetTempPath()) //Busca Pasta temporaria do Usuario
+	Local cDir			:= "c:\temp\" //Alltrim(GetTempPath()) //Busca Pasta temporaria do Usuario
 	Local cPath 		:= Replace( cDir, "\\", "\" )
 	Local cRutaSmr 		:=  Alltrim(GetTempPath()) 
 	Local cPDFNom		:= "BOLETO_"+Dtos(MSDate())+StrTran(Time(),":","")
@@ -2584,7 +2584,7 @@ Static Function RF02B062(xBanco,xAgencia,xConta,xSubCt, lEmail)
 	
 	IF !lEmail
 		// INDICA SE O RELATORIO SERÁ VISUALIZADO APOS IMPRESSÃO.
-		oPrint:lViewPDF := .f.
+		oPrint:lViewPDF := .T.
 	Else
 		oPrint:lViewPDF := .f.
 	Endif	
@@ -2781,7 +2781,7 @@ Static Function RF02B062(xBanco,xAgencia,xConta,xSubCt, lEmail)
 			cmsg3 := AllTrim(&(SEE->EE_FOREXT1))
 		EndIf
 
-		If !Empty(SA1->A1_PRIOR)
+		If SA1->A1_B2B=="1"
 			cmsg4 := AllTrim(cValToChar(SE1->E1_HIST))
 		EndIf
 
