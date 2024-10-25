@@ -33,6 +33,13 @@ User Function JGENX008()
 	oBrowse:SetDescription(cTitulo)
     //oBrowse:SetFilterDefault("ZPC_SEQ == '001'")
     
+	oBrowse:AddLegend( "ZPC->ZPC_TIPO == '99' .AND. Empty(ZPC->ZPC_SOLICC) .AND. Empty(ZPC->ZPC_CODANT) .AND. !U__Jgex8Bx()"	, "WHITE",    	"Aguardando análise" )
+    oBrowse:AddLegend( "ZPC->ZPC_TIPO <> '99'  .AND. !Empty(ZPC->ZPC_TIPO) .AND. !U__Jgex8Bx()", "ORANGE",    "Analisado motivo venda perdida" )
+    oBrowse:AddLegend( "!Empty(ZPC->ZPC_CODANT)", "GREEN",    	"Alterado insumo da OS" )
+	oBrowse:AddLegend( "!Empty(ZPC->ZPC_SOLICC)", "PINK",    	"Gerado SC" )
+	oBrowse:AddLegend( "U__Jgex8Bx()"			, "RED",    	"SA Baixada" )
+	//oBrowse:AddLegend( "!Empty(ZPC->ZPC_SOLICC)", "BR_PRETO",    	"Exclusão Insumo" )
+ 
 	oBrowse:Activate()
 	
 	RestArea(aArea)
@@ -54,6 +61,7 @@ Static Function MenuDef()
 	ADD OPTION aRot TITLE 'Troca Motivo Vd.Perdida' ACTION 'Processa({||U_xGenx85()},"Aguarde")' 	        OPERATION MODEL_OPERATION_VIEW   ACCESS 0 //OPERATION 1
     ADD OPTION aRot TITLE 'Gera Solic. Compra' 	    ACTION 'Processa({||U_xGenx86()},"Aguarde")' 	        OPERATION MODEL_OPERATION_VIEW   ACCESS 0 //OPERATION 1
 	ADD OPTION aRot TITLE 'Consulta log transação'  ACTION 'Processa({||U_JGENX010("ZPC",ZPC->(Recno()))},"Aguarde")' 	        OPERATION MODEL_OPERATION_VIEW   ACCESS 0 //OPERATION 1
+	ADD OPTION aRot TITLE 'Legendas'				ACTION 'u__Jgex8Leg()'						 	        OPERATION MODEL_OPERATION_VIEW   ACCESS 0 //OPERATION 1
 	
 Return aRot
 
@@ -453,4 +461,58 @@ EndIf
 RestArea(aArea)
 
 Return 
+/*/{Protheus.doc} Legendas
+(long_description)
+@type user function
+@author user
+@since 25/10/2024
+@version version
+@param param_name, param_type, param_descr
+@return return_var, return_type, return_description
+@example
+(examples)
+@see (links_or_references)
+/*/
+USER FUNCTION _Jgex8Leg()
 
+    LOCAL aLegenda    :=    {}
+     
+    //Monta as cores
+    AADD(aLegenda,{"BR_BRANCO"  ,    "Aguardando análise"    })
+    AADD(aLegenda,{"BR_LARANJA"	,    "Analisado motivo venda perdida"        })
+	AADD(aLegenda,{"BR_VERDE"   ,    "Alterado insumo da OS" })
+	AADD(aLegenda,{"BR_ROSA"  	,    "Gerado SC"		     })
+	AADD(aLegenda,{"BR_VERMELHO",    "SA Baixada"    })
+	AADD(aLegenda,{"BR_PRETO"   ,    "Exclusão Insumo"    })
+	 
+    BrwLegenda('Venda perdida', "Status", aLegenda)
+RETURN
+
+/*/{Protheus.doc} _Jgex8Bx
+Verifica se a SA esta baixada
+@type user function
+@author user
+@since 25/10/2024
+@version version
+@param param_name, param_type, param_descr
+@return return_var, return_type, return_description
+@example
+(examples)
+@see (links_or_references)
+/*/
+User Function _Jgex8Bx()
+
+Local aArea := GetArea()
+Local lRet  := .T.
+
+DbselectArea("SCP")
+DbSetOrder(2)
+If Dbseek(ZPC->ZPC_FILIAL+ZPC->ZPC_CODIGO+ZPC->ZPC_REQUIS+ZPC->ZPC_ITEM)
+	If SCP->CP_STATUS == "E"
+		lRet := .T.
+	EndIf 
+EndIf 
+
+RestAreA(aArea)
+
+Return(lRet)
