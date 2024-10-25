@@ -151,7 +151,7 @@ If Empty(cTipo)
         DbSetOrder(2)
         If Dbseek(xFilial("SCP")+cCodigo+cNum+cItem)
             Reclock("SCP",.F.)
-            SCP->CP_XTIPO := '.'
+            SCP->CP_XTIPO := '99'
             SCP->(Msunlock())
             lRet := .T.
         EndIf 

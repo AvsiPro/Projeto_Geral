@@ -74,7 +74,7 @@ If nOpc == 1
         ZPC->ZPC_REQUIS := SCP->CP_NUM 
         ZPC->ZPC_DATA   := dDatabase
         ZPC->ZPC_QUANT  := SCP->CP_QUANT 
-        ZPC->ZPC_PREFIX := SCP->CP_NUM
+        ZPC->ZPC_PREFIX := SCP->CP_OBS
         ZPC->ZPC_SOLICI := SCP->CP_XMATREQ
         ZPC->ZPC_STATUS := '1'
         ZPC->ZPC_ITEM   := SCP->CP_ITEM

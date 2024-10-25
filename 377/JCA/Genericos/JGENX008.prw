@@ -53,7 +53,8 @@ Static Function MenuDef()
     ADD OPTION aRot TITLE 'Troca Insumo'         	ACTION 'Processa({||U_xGenx84()},"Aguarde")' 	        OPERATION MODEL_OPERATION_VIEW   ACCESS 0 //OPERATION 1
 	ADD OPTION aRot TITLE 'Troca Motivo Vd.Perdida' ACTION 'Processa({||U_xGenx85()},"Aguarde")' 	        OPERATION MODEL_OPERATION_VIEW   ACCESS 0 //OPERATION 1
     ADD OPTION aRot TITLE 'Gera Solic. Compra' 	    ACTION 'Processa({||U_xGenx86()},"Aguarde")' 	        OPERATION MODEL_OPERATION_VIEW   ACCESS 0 //OPERATION 1
-
+	ADD OPTION aRot TITLE 'Consulta log transação'  ACTION 'Processa({||U_JGENX010("ZPC",ZPC->(Recno()))},"Aguarde")' 	        OPERATION MODEL_OPERATION_VIEW   ACCESS 0 //OPERATION 1
+	
 Return aRot
 
 /*
@@ -229,6 +230,11 @@ Local lOk    := .t.
 Local cBkpAtu:= ZPC->ZPC_CODIGO
 PRIVATE CCODPAI:= Posicione("SB1",1,xFilial("SB1")+ZPC->ZPC_CODIGO,"B1_XCODPAI")
 
+If ZPC->ZPC_TIPO == "99"
+	MsgAlert("Classifique o tipo da venda perdida antes de realizar a troca do insumo")
+	Return 
+EndIf 
+
 cPrdAtu := ZPC->ZPC_CODIGO + Alltrim(Posicione("SB1",1,xFilial("SB1")+ZPC->ZPC_CODIGO,"B1_DESC"))
 
 aAdd(aPergs,{9,"Produto Atual = "+cPrdAtu,160,13,.T.})
@@ -263,6 +269,7 @@ If ParamBox(aPergs ,"Opções por",@aRet)
 			Else 
 				Reclock("SCP",.F.)
 				SCP->CP_PRODUTO := cNewPrd
+				SCP->CP_XTIPO   := ' '
 				SCP->(Msunlock())
 			EndIf 
 
@@ -287,7 +294,8 @@ If ParamBox(aPergs ,"Opções por",@aRet)
 				U_JGENX001(xFilial("SZL"),'Compras','Alt. Venda Perdida','',cvaltochar(ZPC->(Recno())),'',CUSERNAME,ddatabase,cvaltochar(time()),0,cCntAlt,''		  ,''	   ,'ZPC'  ,0      ,0      ,0     ,0      ,0)
 
 				Reclock("ZPC",.F.)
-				ZPC->ZPC_TIPO := 'XX'
+				ZPC->ZPC_CODIGO := cNewPrd
+				ZPC->ZPC_CODANT := cBkpAtu
 				ZPC->(Msunlock())
 			EndIf 
 			//ZPC->ZPC_ITEM
@@ -321,6 +329,7 @@ Local cMotAtu:= ""
 Local cMotNew:= ""
 Local cDesMtv:= ""
 Local cCntAlt:= ""
+Local cVeiPar:= ""
 
 DbselectArea("ZPV")
 DbGotop()
@@ -337,14 +346,27 @@ EndIf
 
 aAdd(aPergs,{9,"Conteúdo Atual = "+cMotAtu,80,7,.T.})
 aAdd(aPergs,{2,"Selecione o novo Motivo?"	,"", aMotivo,80,'',.T.})
+aAdd(aPergs,{2,"Veículo Parado?"	,"", {"1=Sim","2=Não"},50,'',.T.})
 aAdd(aPergs,{11,"Informe o motivo","",".T.",".T.",.T.})
 	
 If ParamBox(aPergs ,"Opções por",@aRet)
 	cMotNew := aRet[2]
-	cDesMtv := aRet[3]
+	cVeiPar := aRet[3]
+	cDesMtv := aRet[4]
+
 	Reclock("ZPC",.F.)
 	ZPC->ZPC_TIPO := cMotNew
+	ZPC->ZPC_STATUS := cVeiPar
 	ZPC->(Msunlock())
+
+	DbSelectArea("SCP")
+	DbSetOrder(2)
+	If DbSeek(ZPC->ZPC_FILIAL+ZPC->ZPC_CODIGO+ZPC->ZPC_REQUIS+ZPC->ZPC_ITEM)
+		Reclock("SCP",.F.)
+		SCP->CP_XTIPO := cMotNew
+		SCP->(Msunlock())
+	EndIf 
+
 	cCntAlt := "Alterado o motivo da venda perdida, conteudo anterior - "+cMotAtu+", conteudo informado - "+cMotNew+if(ascan(aMotivo,{|x| cmotnew $ x})>0,aMotivo[ascan(aMotivo,{|x| cmotnew $ x})],"")+", Motivo da troca - "+alltrim(cDesMtv)
 				//xFil		  ,Modulo  ,     TipoMov       ,Prefixo, Docto    ,    cItem     , UserMov , DiaMov  ,      HoraMov     ,Valor,            Obs                              ,cCli     ,cLoja   ,cTabela,nQtdAtu,nVlTotA,nVlAnt,nQtdAnt,nTotAnt
 	U_JGENX001(xFilial("SZL"),'Compras','Alt. Venda Perdida','',cvaltochar(ZPC->(Recno())),'',CUSERNAME,ddatabase,cvaltochar(time()),0    ,cCntAlt,''		  ,''	   ,'ZPC'  ,0      ,0      ,0     ,0      ,0)
@@ -431,3 +453,4 @@ EndIf
 RestArea(aArea)
 
 Return 
+

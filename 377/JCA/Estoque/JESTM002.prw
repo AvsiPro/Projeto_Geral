@@ -1216,10 +1216,17 @@ If len(aList1) < 1
     Aadd(aList1,{.f.,'','','','','','','','','','','','','','',0,'','','','','','','','','','','','','','','',.f.,'','','','','',''})
 Else 
     Asort(aList1,,,{|x,y| x[4] < y[4]})
+    lNovaCnt := .F.
 
     DbSelectArea("ZPE")
-    cCodInv := GETSXENUM("ZPE","ZPE_CODIGO")  
-    ConfirmSX8()   
+    While !lNovaCnt
+        cCodInv := GETSXENUM("ZPE","ZPE_CODIGO")  
+        If !Dbseek(xFilial("ZPE")+cCodInv)
+            lNovaCnt := .T.
+        EndIf 
+        ConfirmSX8()   
+    Enddo 
+
     oSay2:settext("")
     oSay4:settext("")
     oSay2:settext(cCodInv)
@@ -1308,7 +1315,7 @@ If lCusFil
 	dbSetOrder(1)
 	dbSeek(cSeek:=xFilial("SB2") + If(lQuery,(cAliasTOP)->PRODUTO,SB1->B1_COD)+cLocIn)
 	While !Eof() .And. B2_FILIAL+B2_COD+B2_LOCAL == cSeek
-		aSalAlmox := CalcEst(If(lQuery,(cAliasTOP)->PRODUTO,SB1->B1_COD),SB2->B2_LOCAL,dDtDe,,, ( lCusRep .And. mv_par17==2 ) )
+		aSalAlmox := CalcEst(If(lQuery,(cAliasTOP)->PRODUTO,SB1->B1_COD),SB2->B2_LOCAL,dDtAt,,, ( lCusRep .And. mv_par17==2 ) )
 		For i:=1 to Len(aSalAtu)
 			aSalAtu[i] += aSalAlmox[i]
 		Next i

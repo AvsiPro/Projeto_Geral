@@ -515,94 +515,112 @@ WsMethod POST WsReceive RECEIVE WsService JWSRA010
                         cMessage  := "falha "
                         cResultAux := GetErro()
                         DisarmTransaction()
+                        lRet := .F.
                     else
                         cMessage  += "sucesso "
                         cResultAux += '"sucesso" : "'+"Titulo alterado com sucesso!!!"+'"'"
                         cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"recno" : "'+cvaltochar(Recno())+'"'"
                     EndIf   
 
-                    //Titulo de imposto
-                    If lTitImp .And. len(aAuxImp) > 0 .And. lBaixaTt
-                        For nCont := 1 to len(aAuxImp)
-                            For nX := 1 to len(aAuxImp[nCont])
-                                nPosAux := Ascan(aVetSE1,{|x| x[1] == aAuxImp[nCont,nX,01] })
-                                If nPosAux > 0
-                                    aVetSE1[nPosAux,02] := aAuxImp[nCont,nX,02]
-                                EndIf
-                            Next nX
-                        Next nCont
+                    End Transaction
 
-                        aAdd(aVetSE1, {"E1_TITPAI",cTitPai,Nil})
-                        
-                        DbSelectArea("SE1")
-                        Reclock("SE1",.T.)
+                    If  lRet
+                        //Titulo de imposto
+                        If lTitImp .And. len(aAuxImp) > 0 .And. lBaixaTt 
+                            For nCont := 1 to len(aAuxImp)
+                                For nX := 1 to len(aAuxImp[nCont])
+                                    nPosAux := Ascan(aVetSE1,{|x| x[1] == aAuxImp[nCont,nX,01] })
+                                    If nPosAux > 0
+                                        aVetSE1[nPosAux,02] := aAuxImp[nCont,nX,02]
+                                    EndIf
+                                Next nX
+                            Next nCont
 
-                        SE1->E1_FILIAL := CFILANT
+                            aAdd(aVetSE1, {"E1_TITPAI",cTitPai,Nil})
+                            
+                            DbSelectArea("SE1")
+                            DbSetOrder(1)
+                            
+                            nPosF := Ascan(aVetSE1,{|x| x[1] == "E1_FILIAL"})
+                            nPosX := Ascan(aVetSE1,{|x| x[1] == "E1_PREFIXO"})
+                            nPosN := Ascan(aVetSE1,{|x| x[1] == "E1_NUM"})
+                            nPosP := Ascan(aVetSE1,{|x| x[1] == "E1_PARCELA"})
+                            nPosT := Ascan(aVetSE1,{|x| x[1] == "E1_TIPO"})
+                            
+                            If nPosF > 0 .And. nPosX > 0 .And. nPosN > 0 .And. nPosP > 0 .And. nPosT > 0
+                                If DbSeek(Avkey(aVetSE1[nPosF,02],"E1_FILIAL")+Avkey(aVetSE1[nPosX,02],"E1_PREFIXO")+Avkey(aVetSE1[nPosN,02],"E1_NUM")+Avkey(aVetSE1[nPosP,02],"E1_PARCELA")+Avkey(aVetSE1[nPosT,02],"E1_TIPO"))
+                                    Reclock("SE1",.F.)
+                                Else
+                                    Reclock("SE1",.T.)
+                                EndIF 
 
-                        For nCont := 1 to len(aVetSE1)
-                            &("SE1->"+aVetSE1[nCont,01]) := aVetSE1[nCont,02]
-                        Next nCont
+                                SE1->E1_FILIAL := CFILANT
 
-                        /*If lBaixaTt
-                            SE1->E1_BAIXA := SE1->E1_VENCREA
-                        Else */
-                            SE1->E1_SALDO := SE1->E1_VALOR 
-                        //EndIF 
+                                For nCont := 1 to len(aVetSE1)
+                                    &("SE1->"+aVetSE1[nCont,01]) := aVetSE1[nCont,02]
+                                Next nCont
 
-                        SE1->(Msunlock())
-
-                        cMessage  += "sucesso "
-                        cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"sucesso" : "'+"Titulo de imposto alterado com sucesso!!!"+'"'"
-                        cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"recno" : "'+cvaltochar(Recno())+'"'"
-                    
-                    Else
-                        
-                        
-                        For nCont := 1 to len(aAuxImp)
-
-                            nPos1 := Ascan(aAuxImp[nCont],{|x| x[1] == "E2_PREFIXO"})
-                            nPos2 := Ascan(aAuxImp[nCont],{|x| x[1] == "E2_TIPO"})
-                            nPos3 := Ascan(aAuxImp[nCont],{|x| x[1] == "E2_FORNECE"})
-                            nPos4 := Ascan(aAuxImp[nCont],{|x| x[1] == "E2_LOJA"})
-                            nPos5 := Ascan(aAuxImp[nCont],{|x| x[1] == "E2_VALOR"})
-
-                            aVetSE2 := {}
-                        //aAuxImp
-                        
-                            aAdd(aVetSE2, {"E2_FILIAL"  , cFilMov                   ,   Nil})
-                            aAdd(aVetSE2, {"E2_NUM"     , cTitulo                   ,   Nil})
-                            aAdd(aVetSE2, {"E2_PREFIXO" , aAuxImp[nCont,nPos1,02]   ,   Nil})
-                            aAdd(aVetSE2, {"E2_PARCELA" , cParcela                  ,   Nil})
-                            aAdd(aVetSE2, {"E2_TIPO"    , aAuxImp[nCont,nPos2,02]   ,   Nil})
-                            aAdd(aVetSE2, {"E2_FORNECE" , aAuxImp[nCont,nPos3,02]   ,   Nil})
-                            aAdd(aVetSE2, {"E2_LOJA"    , aAuxImp[nCont,nPos4,02]   ,   Nil})
-                            aAdd(aVetSE2, {"E2_NATUREZ" , aAuxImp[nCont,nPos1,02]   ,   Nil})
-                            aAdd(aVetSE2, {"E2_EMISSAO" , dDataBase                 ,   Nil})
-                            aAdd(aVetSE2, {"E2_VENCTO"  , CTOD(dVencto)             ,   Nil})
-                            aAdd(aVetSE2, {"E2_VENCREA" , CTOD(dVenctoReal)         ,   Nil})
-                            aAdd(aVetSE2, {"E2_VALOR"   , aAuxImp[nCont,nPos5,02]   ,   Nil})
-                            aAdd(aVetSE2, {"E2_MOEDA"   , 1                         ,   Nil})
-
-                            lMsErroAuto := .F.
-
-                            MSExecAuto({|x,y| FINA050(x,y)}, aVetSE2, 3)
-                                                        
-                            If lMsErroAuto
-                                cCode 	 := "#400"
-                                cMessage  := "falha "
-                                cResultAux := GetErro()
-                                DisarmTransaction()
-                            else
+                                SE1->E1_SALDO := SE1->E1_VALOR 
+                                SE1->(Msunlock())
                                 cMessage  += "sucesso "
-                                cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"sucesso" : "'+"Titulo de imposto a pagar alterado com sucesso!!!"+'"'"
+                                cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"sucesso" : "'+"Titulo de imposto alterado com sucesso!!!"+'"'"
                                 cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"recno" : "'+cvaltochar(Recno())+'"'"
-                            EndIf    
-   
-                        Next nCont 
-                    EndIf  
+                                
+                            Else 
+                                lRet := .F.
+                                cMessage  += "erro "
+                                cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"erro" : "'+"Titulo de imposto não alterado por falta de informação do titulo principal!!!"+'"'"
+                            EndIf 
+
+                        Else
+                            
+                            
+                            For nCont := 1 to len(aAuxImp)
+
+                                nPos1 := Ascan(aAuxImp[nCont],{|x| x[1] == "E2_PREFIXO"})
+                                nPos2 := Ascan(aAuxImp[nCont],{|x| x[1] == "E2_TIPO"})
+                                nPos3 := Ascan(aAuxImp[nCont],{|x| x[1] == "E2_FORNECE"})
+                                nPos4 := Ascan(aAuxImp[nCont],{|x| x[1] == "E2_LOJA"})
+                                nPos5 := Ascan(aAuxImp[nCont],{|x| x[1] == "E2_VALOR"})
+
+                                aVetSE2 := {}
+                            //aAuxImp
+                            
+                                aAdd(aVetSE2, {"E2_FILIAL"  , cFilMov                   ,   Nil})
+                                aAdd(aVetSE2, {"E2_NUM"     , cTitulo                   ,   Nil})
+                                aAdd(aVetSE2, {"E2_PREFIXO" , aAuxImp[nCont,nPos1,02]   ,   Nil})
+                                aAdd(aVetSE2, {"E2_PARCELA" , cParcela                  ,   Nil})
+                                aAdd(aVetSE2, {"E2_TIPO"    , aAuxImp[nCont,nPos2,02]   ,   Nil})
+                                aAdd(aVetSE2, {"E2_FORNECE" , aAuxImp[nCont,nPos3,02]   ,   Nil})
+                                aAdd(aVetSE2, {"E2_LOJA"    , aAuxImp[nCont,nPos4,02]   ,   Nil})
+                                aAdd(aVetSE2, {"E2_NATUREZ" , aAuxImp[nCont,nPos1,02]   ,   Nil})
+                                aAdd(aVetSE2, {"E2_EMISSAO" , dDataBase                 ,   Nil})
+                                aAdd(aVetSE2, {"E2_VENCTO"  , CTOD(dVencto)             ,   Nil})
+                                aAdd(aVetSE2, {"E2_VENCREA" , CTOD(dVenctoReal)         ,   Nil})
+                                aAdd(aVetSE2, {"E2_VALOR"   , aAuxImp[nCont,nPos5,02]   ,   Nil})
+                                aAdd(aVetSE2, {"E2_MOEDA"   , 1                         ,   Nil})
+
+                                lMsErroAuto := .F.
+
+                                MSExecAuto({|x,y| FINA050(x,y)}, aVetSE2, 3)
+                                                            
+                                If lMsErroAuto
+                                    cCode 	 := "#400"
+                                    cMessage  := "falha "
+                                    cResultAux := GetErro()
+                                    DisarmTransaction()
+                                else
+                                    cMessage  += "sucesso "
+                                    cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"sucesso" : "'+"Titulo de imposto a pagar alterado com sucesso!!!"+'"'"
+                                    cResultAux += If(!Empty(cResultAux),cVirgula,'')+'"recno" : "'+cvaltochar(Recno())+'"'"
+                                EndIf    
+    
+                            Next nCont 
+                        EndIf  
+                    EndIF 
 
                     //Finaliza a transação
-                    End Transaction
+                    //End Transaction
                 EndIf
             ElseIf cTipOper == "3"
                 DbSelectArea("SE1")
