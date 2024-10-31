@@ -39,6 +39,16 @@ If lLiga
     EndIf 
 EndIf 
 
+If lRet
+    DbSelectArea("ZPC")
+    DbSetOrder(1)
+    If Dbseek(SCP->CP_FILIAL+SCP->CP_NUM+SCP->CP_ITEM+SCP->CP_PRODUTO)
+        Reclock("ZPC",.F.)
+        ZPC->ZPC_CPBAIX := '1'
+        ZPC->(Msunlock())
+    EndIf 
+EndIf 
+
 Return(lRet)
 
 

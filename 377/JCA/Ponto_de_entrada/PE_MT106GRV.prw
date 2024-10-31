@@ -67,6 +67,8 @@ Else
 EndIf 
 
 If !lSldFil 
+    cServ := Posicione("STJ",1,xFilial("STJ")+SUBSTR(SCP->CP_OP,1,6),"TJ_SERVICO")
+    
     Reclock("ZPC",.T.)
     ZPC->ZPC_FILIAL := SCP->CP_FILIAL 
     ZPC->ZPC_CODIGO := SCP->CP_PRODUTO 
@@ -80,6 +82,10 @@ If !lSldFil
     ZPC->ZPC_LOCAL  := SCP->CP_LOCAL
     ZPC->ZPC_ALMOXA := SCP->CP_CODSOLI
     ZPC->ZPC_TIPO   := SCP->CP_XTIPO
+    ZPC->ZPC_OS     := SUBSTR(SCP->CP_OP,1,6)
+    ZPC->ZPC_PLACA  := Posicione("ST9",1,xFilial("ST9")+Alltrim(SCP->CP_OBS),"T9_PLACA")
+    ZPC->ZPC_ORIGEM := Posicione("STJ",1,xFilial("STJ")+SUBSTR(SCP->CP_OP,1,6),"TJ_ZCORIGE")
+    ZPC->ZPC_PRECOR := If(!Empty(cServ),Posicione("STE",1,xFilial("STE")+cServ,"TE_CARACTE"),"")
     ZPC->(Msunlock())
 EndIf 
 

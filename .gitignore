@@ -41,6 +41,5 @@
 *.launch.json
 .vscode/launch.json
 .vscode/launch.json
-Robsol/Portal/node_modules/webpack/lib/index.js
-Robsol/Portal/node_modules/webpack/lib/webpack.js
+Robsol/Portal/*
 launch.json

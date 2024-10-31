@@ -719,6 +719,8 @@ Local cHora     := ''
 Local nSaldoFim := 0
 Local nCont     := 0
 Local cBarra    := ''
+Local aBkpProd  := {}
+Local nPosic1
 
 iF nCntg == 0
     aList1 := {}
@@ -983,8 +985,8 @@ While !(cAliasTop)->(Eof())
         EndIf 
     EndIF 
 
+/*
     nSaldoB2 := 0
-    //nSaldoFim := 0
     aAreaB2 := GetArea()
     DbselectArea("SB2")
     DbSetOrder(1)
@@ -992,7 +994,7 @@ While !(cAliasTop)->(Eof())
         nSaldoB2 := SaldoSB2()
     EndIF 
     RestArea(aAreaB2)
-
+*/
     nPosic1 := Ascan(aList1,{|x| x[4] == (cAliasTop)->PRODUTO})
 
     nQtd1 := 0
@@ -1006,7 +1008,11 @@ While !(cAliasTop)->(Eof())
     EndIf 
 
     If nPosic1 == 0
-        MR900ImpS1(@aSalAtu,cAliasTop,.T.,cLocIn)
+        aSalAtu := {0,0,0,0}
+
+        If Ascan(aBkpProd,{|x| alltrim(x) == alltrim((cAliasTop)->PRODUTO)}) == 0
+            MR900ImpS1(@aSalAtu,cAliasTop,.T.,cLocIn)
+        EndIf 
         
         cProdP := Posicione("SB1",1,xFilial("SB1")+(cAliasTop)->PRODUTO,"B1_XCODPAI")
 
@@ -1018,14 +1024,14 @@ While !(cAliasTop)->(Eof())
 
         nSaldoIni := aSalAtu[1]
         nSaldoFim := aSalAtu[1]+nQtd1-nQtd2
-        If nSaldoB2 <> nSaldoFim .And. nCntg > 1
+/*        If nSaldoB2 <> nSaldoFim .And. nCntg > 1
             nSaldoIni := (aSalAtu[1]+nQtd1-nQtd2) - nSaldoB2
             If nSaldoIni < 0
                 nSaldoIni := nSaldoIni * (-1)
             EndIf
             nSaldoFim := nSaldoB2
             
-        EndIF 
+        EndIF */
 
         Aadd(aList1,{ .T.,;
                     (cAliasTop)->ARMAZEM,;
@@ -1089,7 +1095,7 @@ While !(cAliasTop)->(Eof())
             endif 
         endif 
 
-        nSaldoFim := nSaldoIni+nSaldoFim+nQtd1-nQtd2
+        nSaldoFim := nSaldoIni+nQtd1-nQtd2 //nSaldoFim
         //If nSaldoB2 <> nSaldoFim
         //    nSaldoIni := (aList1[nPosic1,If(nCntg == 2,11,if(nCntg ==3,28,31))]-nQtd1+nQtd2) //- nSaldoB2
             // (nSaldoIni+nQtd1-nQtd2) - nSaldoB2
@@ -1125,6 +1131,12 @@ While !(cAliasTop)->(Eof())
 
     Dbskip()
 EndDo 
+
+For nPosic1 := 1 to len(aList1)
+    If nCntg <= 1
+        aList1[nPosic1,11] := aList1[nPosic1,08] + aList1[nPosic1,09] - aList1[nPosic1,10]
+    EnDIf 
+Next nPosic1
 
 If !lSoMov
    
@@ -1312,10 +1324,10 @@ If lCusFil
 	aArea:=GetArea()
 	aSalAtu  := { 0,0,0,0,0,0,0 }
 	dbSelectArea("SB2")
-	dbSetOrder(1)
+	dbSetOrder(1) //dDtAt
 	dbSeek(cSeek:=xFilial("SB2") + If(lQuery,(cAliasTOP)->PRODUTO,SB1->B1_COD)+cLocIn)
 	While !Eof() .And. B2_FILIAL+B2_COD+B2_LOCAL == cSeek
-		aSalAlmox := CalcEst(If(lQuery,(cAliasTOP)->PRODUTO,SB1->B1_COD),SB2->B2_LOCAL,dDtAt,,, ( lCusRep .And. mv_par17==2 ) )
+		aSalAlmox := CalcEst(If(lQuery,(cAliasTOP)->PRODUTO,SB1->B1_COD),SB2->B2_LOCAL,dDtDe,,, ( lCusRep .And. mv_par17==2 ) )
 		For i:=1 to Len(aSalAtu)
 			aSalAtu[i] += aSalAlmox[i]
 		Next i
@@ -1514,7 +1526,7 @@ While !EOF()
         EndIf 
     EndIf 
 
-    aSldData := CalcEst(TRB->B1_COD,TRB->ZPE_LOCAL,dDtCnt,,, ( lCusRep .And. mv_par17==2 ) )
+    aSldData := CalcEst(TRB->B1_COD,TRB->ZPE_LOCAL,dDtCnt+1,,, ( lCusRep .And. mv_par17==2 ) )
 
     cCodUsr := TRB->ZPE_CODUSU
     
@@ -1828,15 +1840,11 @@ return
 Static function ReportDef()
 
 Local oReport
-Local oSection1
+//Local oSection1
 Local cPicD1Qt     := PesqPict("SD1","D1_QUANT" ,18)
-Local cTamD1Qt     := TamSX3( 'D1_QUANT' )[1]
 Local cPicD1Cust   := PesqPict("SD1","D1_CUSTO",18)
-Local cTamD1Cust   := TamSX3( 'D1_CUSTO' )[1]
 Local cPicD2Qt     := PesqPict("SD2","D2_QUANT" ,18)
-Local cTamD2Qt     := TamSX3( 'D2_QUANT' )[1]
 Local cPicB2Cust   := PesqPict("SB2","B2_CM1",18)
-Local cTamB2Cust   := TamSX3( 'B2_CM1' )[1]
 
 
 oReport:= TReport():New("JESTM002","Conferência","", {|oReport| ReportPrint(oReport)},"Conferência de Acuracidade")
@@ -1844,42 +1852,32 @@ oReport:SetLandscape()
 oReport:SetTotalInLine(.F.)  
 
 oSection0 := TRSection():New(oReport,'Conferência',{"SD1","SD2","SD3"}) //"Movimentação dos Produtos"
-oSection0 :SetTotalInLine(.F.)
-oSection0 :SetReadOnly()
-oSection0 :SetLineStyle()
+//oSection0 :SetTotalInLine(.F.)
+//oSection0 :SetReadOnly()
+//oSection0 :SetLineStyle()
 
-TRCell():New(oSection0, "cLocal"    	, " ", 'Local'             	, "@!"       , 2   , /*lPixel*/, /*{|| code-block de impressao }*/)
-TRCell():New(oSection0, "cPrateleira"   , " ", 'Prateleira'			, /*Picture*/, 2      , /*lPixel*/, /*{|| code-block de impressao }*/)
-TRCell():New(oSection0, "cProduto"   	, " ", 'Material'			, /*Picture*/, 6    , /*lPixel*/, )
-TRCell():New(oSection0, "cDescric" 		,"SB1",'Descrição'          , /*Picture*/, 25         , /*lPixel*/, /*{|| code-block de impressao }*/)
-TRCell():New(oSection0, "cMarca"   		, " ", 'Marca'              , "@!"       , 10   , /*lPixel*/, /*{|| code-block de impressao }*/)
-TRCell():New(oSection0, "cCodOri"  		, " ", 'Código'+CRLF+'Original'	, /*Picture*/, 10             , /*lPixel*/, )
-TRCell():New(oSection0, "nENTQtd"  		, " ", 'Qtde'+CRLF+'Inicial', cPicD1Qt   , 5      , /*lPixel*/, /*{|| code-block de impressao }*/)
-//TRCell():New(oSection0, "cTraco2"  		, " ", "|"+CRLF+"|"        , /*Picture*/, 1             , /*lPixel*/, {|| "|" })
-TRCell():New(oSection0, "nENTCus"  		, " ", 'Qtde'+CRLF+'Entradas', cPicD1Cust , 5    , /*lPixel*/, /*{|| code-block de impressao }*/)
-//TRCell():New(oSection0, "cTraco3"  		, " ", "|"+CRLF+"|"        , /*Picture*/, 1             , /*lPixel*/, {|| "|" })
-TRCell():New(oSection0, "nSAIQtd"  		, " ", 'Qtde'+CRLF+'Saídas', cPicB2Cust , 5    , /*lPixel*/, /*{|| code-block de impressao }*/)
-//TRCell():New(oSection0, "cTraco4"  		, " ", "|"+CRLF+"|"        , /*Picture*/, 1             , /*lPixel*/, {|| "|" })
-TRCell():New(oSection0, "nSALDQtd" 		, " ", 'Qtde'+CRLF+'Atual' , cPicD2Qt   , 5      , /*lPixel*/, /*{|| code-block de impressao }*/)
-
-TRCell():New(oSection0, "nCont1" 		, " ", 'Cont.1' , cPicD2Qt   , 5      , /*lPixel*/, /*{|| code-block de impressao }*/)
-TRCell():New(oSection0, "nCont2" 		, " ", 'Cont.2' , cPicD2Qt   , 5      , /*lPixel*/, /*{|| code-block de impressao }*/)
-TRCell():New(oSection0, "nCont3" 		, " ", 'Cont.3' , cPicD2Qt   , 5      , /*lPixel*/, /*{|| code-block de impressao }*/)
-TRCell():New(oSection0, "nDiverg" 		, " ", 'Divergencia', cPicD2Qt   , 5      , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection0, 'B1_LOCPAD'     , " ", 'Local'         	, /*Picture*/,  5   , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection0, "B1_COD"        , " ", 'Prateleira'		, /*Picture*/, 10   , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection0, "B1_COD"    	, " ", 'Produto'		, /*Picture*/, 15   , /*lPixel*/, )
+TRCell():New(oSection0, "B1_DESC"   	,""  ,'Descrição'      , /*Picture*/, 35   , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection0, "B1_XMARCA"   	, " ", 'Marca'          , /*Picture*/, 15   , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection0, "B1_COD"  		, " ", 'Cod.Original'   , /*Picture*/, 17   , /*lPixel*/, )
+TRCell():New(oSection0, "D1_QTD"  		, " ", 'Saldo Inicial'  , /*Picture*/, 11   , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection0, "D1_QTD"  		, " ", 'Entradas'       , /*Picture*/, 11   , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection0, "D1_QTD"  		, " ", 'Saídas'         , /*Picture*/, 11   , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection0, "D1_QTD" 		, " ", 'Saldo Final'    , /*Picture*/, 11   , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection0, "D1_QTD" 		, " ", 'Saldo Cnt 1'    , /*Picture*/, 11   , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection0, "D1_QTD" 		, " ", 'Contagem 1'     , /*Picture*/, 11   , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection0, "D1_QTD" 		, " ", 'Diverg. 1'      , /*Picture*/, 11   , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection0, "D1_QTD" 		, " ", 'Saldo Cnt 2'    , /*Picture*/, 11   , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection0, "D1_QTD" 		, " ", 'Contagem 2'     , /*Picture*/, 11   , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection0, "D1_QTD" 		, " ", 'Diverg. 2'      , /*Picture*/, 11   , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection0, "D1_QTD" 		, " ", 'Saldo Cnt 3'    , /*Picture*/, 11   , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection0, "D1_QTD" 		, " ", 'Contagem 3'     , /*Picture*/, 11   , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection0, "D1_QTD" 		, " ", 'Diverg. 3'      , /*Picture*/, 11   , /*lPixel*/, /*{|| code-block de impressao }*/)
 
 oSection1 := TRSection():New(oSection0,'Conferência',{"SD1","SD2","SD3"}) //"Movimentação dos Produtos"
-oSection1 :SetTotalInLine(.F.)
-oSection1 :SetReadOnly()
-oSection1 :SetLineStyle()
 
-//TRCell():New(oSection1, "cTraco5"  		, " ", ""        			, /*Picture*/, 1             , /*lPixel*/, )
-//TRCell():New(oSection1, "cTraco5"  		, " ", ""        			, /*Picture*/, 1             , /*lPixel*/, )
-//TRCell():New(oSection1, "cTraco5"  		, " ", ""        			, /*Picture*/, 1             , /*lPixel*/, )
-//TRCell():New(oSection1, "cTraco5"  		, " ", ""        			, /*Picture*/, 1             , /*lPixel*/, )
-//TRCell():New(oSection1, "cTraco5"  		, " ", ""        			, /*Picture*/, 1             , /*lPixel*/, )
-//TRCell():New(oSection1, "cTraco2"  		, " ", "|"+CRLF+"|"        , /*Picture*/, 1             , /*lPixel*/, {|| "|" })
-//TRCell():New(oSection1, "cTraco3"  		, " ", "|"+CRLF+"|"        , /*Picture*/, 1             , /*lPixel*/, {|| "|" })
-//TRCell():New(oSection1, "cTraco4"  		, " ", "|"+CRLF+"|"        , /*Picture*/, 1             , /*lPixel*/, {|| "|" })
 
 TRCell():New(oSection1, "cLocal"    	, " ", ''       	, "@!"       , 5   , /*lPixel*/, /*{|| code-block de impressao }*/)
 TRCell():New(oSection1, "cPrateleira"   , " ", ''			, /*Picture*/, 10      , /*lPixel*/, /*{|| code-block de impressao }*/)
@@ -1891,16 +1889,24 @@ TRCell():New(oSection1, "nENTQtd"  		, " ", ''           , cPicD2Qt   , 11      
 TRCell():New(oSection1, "nENTCus"  		, " ", ''           , cPicD2Qt   , 11    , /*lPixel*/, /*{|| code-block de impressao }*/)
 TRCell():New(oSection1, "nSAIQtd"  		, " ", ''           , cPicD2Qt   , 11    , /*lPixel*/, /*{|| code-block de impressao }*/)
 TRCell():New(oSection1, "nSALDQtd" 		, " ", ''           , cPicD2Qt   , 11      , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection1, "nSldI1" 		, " ", ''           , cPicD2Qt   , 11      , /*lPixel*/, /*{|| code-block de impressao }*/)
 TRCell():New(oSection1, "nCont1" 		, " ", ''           , cPicD2Qt   , 11      , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection1, "nDivg1" 		, " ", ''           , cPicD2Qt   , 11      , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection1, "nSldI2" 		, " ", ''           , cPicD2Qt   , 11      , /*lPixel*/, /*{|| code-block de impressao }*/)
 TRCell():New(oSection1, "nCont2" 		, " ", ''           , cPicD2Qt   , 11      , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection1, "nDivg2" 		, " ", ''           , cPicD2Qt   , 11      , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection1, "nSldI3" 		, " ", ''           , cPicD2Qt   , 11      , /*lPixel*/, /*{|| code-block de impressao }*/)
 TRCell():New(oSection1, "nCont3" 		, " ", ''           , cPicD2Qt   , 11      , /*lPixel*/, /*{|| code-block de impressao }*/)
-TRCell():New(oSection1, "nDiverg" 		, " ", ''           , cPicD2Qt   , 11      , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection1, "nDivg3" 		, " ", ''           , cPicD2Qt   , 11      , /*lPixel*/, /*{|| code-block de impressao }*/)
+//TRCell():New(oSection1, "nDiverg" 		, " ", ''           , cPicD2Qt   , 11      , /*lPixel*/, /*{|| code-block de impressao }*/)
 
-oSection1:SetNoFilter("SD1")
-oSection1:SetNoFilter("SD2")
-oSection1:SetNoFilter("SD3")
+oSection1:SetHeaderPage()
+//oSection1 :SetTotalInLine(.F.)
+//oSection1 :SetReadOnly()
+//oSection1 :SetLineStyle()
 
 Return(oReport)
+
 /*/{Protheus.doc} GeraConf
     Gera relatório de conferência de inventário.
     @type  Static Function
@@ -1926,26 +1932,11 @@ aList1 := {}
 PreaList(cCodInv,nContag,.T.)
 
 oSection0:Init()
-oSection1:Init()
 
 oSection0:PrintLine()
+oSection0:Finish()
 
-
-                    /* TRB->ZPE_LOCAL,;                //2
-                    cPrat,;                         //3
-                    TRB->ZPE_PRODUT,;                //4
-                    TRB->B1_DESC,;                //5
-                    TRB->ZPM_DESC,;                //6
-                    TRB->B1_FABRIC,;                //7
-                    TRB->ZPE_SLDINI,;                //8
-                    TRB->ZPE_QTDENT,;                //9
-                    TRB->ZPE_QTDSAI,;                //10
-                    TRB->ZPE_SLDFIM,;                //11
-                    TRB->ZPE_CONTA1,;                //12
-                    TRB->ZPE_CONTA2,;                //13
-                    TRB->ZPE_CONTA3,;                //14
-                    0,;                //15 TRB->ZPE_RESULT */
-                    
+oSection1:Init()
 
 For nSldDia := 1 to len(aList1)
     oSection1:Cell("cLocal"):SetValue(aList1[nSldDia,02])
@@ -1958,10 +1949,16 @@ For nSldDia := 1 to len(aList1)
     oSection1:Cell("nENTCus"):SetValue(aList1[nSldDia,09])
     oSection1:Cell("nSAIQtd"):SetValue(aList1[nSldDia,10])
     oSection1:Cell("nSALDQtd"):SetValue(aList1[nSldDia,11])
+    oSection1:Cell("nSldI1"):SetValue(aList1[nSldDia,33])
     oSection1:Cell("nCont1"):SetValue(aList1[nSldDia,12])
-    oSection1:Cell("nCont2"):SetValue(aList1[nSldDia,13])
-    oSection1:Cell("nCont3"):SetValue(aList1[nSldDia,14])
-    oSection1:Cell("nDiverg"):SetValue(aList1[nSldDia,15])
+    oSection1:Cell("nDivg1"):SetValue(aList1[nSldDia,36])
+    oSection1:Cell("nSldI2"):SetValue(aList1[nSldDia,34])
+    oSection1:Cell("nCont2"):SetValue(aList1[nSldDia,12])
+    oSection1:Cell("nDivg2"):SetValue(aList1[nSldDia,37])
+    oSection1:Cell("nSldI3"):SetValue(aList1[nSldDia,35])
+    oSection1:Cell("nCont3"):SetValue(aList1[nSldDia,12])
+    oSection1:Cell("nDivg3"):SetValue(aList1[nSldDia,38])
+    //oSection1:Cell("nDiverg"):SetValue(aList1[nSldDia,15])
 
     oSection1:PrintLine()
 Next
@@ -1969,7 +1966,7 @@ Next
 
 aList1 := aListBkp
 
-//oReport:EndPage()
+oReport:EndPage()
 
 Return 
 
