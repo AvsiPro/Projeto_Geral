@@ -1245,7 +1245,7 @@ Else
     oSay4:settext(cusername)                                                                                              
 EndIf 
 
-
+oList1:nAt := 1
 oList1:SetArray(aList1)
 oList1:bLine := {||{iF(aList1[oList1:nAt,01],oOk,oNo),; 
                             aList1[oList1:nAt,02],;
@@ -1400,8 +1400,15 @@ Local cQuery
 Local aRet  :=  {}
 Local lRet  := .T.
 Local oDlg2,oSay1,oGrp1,oBtn1,oBtn2,oLista
+Local nOpcao := 0
 
-cQuery := "SELECT ZPE_CODIGO, ZPE_CODUSU, ZPE_DATA, R_E_C_N_O_ AS RECNOZPE"
+If Select("SM0") == 0
+    RpcSetType(3)
+    RPCSetEnv("01","00090276")
+EndIf
+
+cQuery := "SELECT ZPE_CODIGO, ZPE_CODUSU, ZPE_DATA, R_E_C_N_O_ AS RECNOZPE,ZPE_STATUS,"
+cQuery += "ZPE_PAR01,ZPE_PAR02,ZPE_PAR03,ZPE_PAR04,ZPE_PAR05,ZPE_PAR06,ZPE_PAR07,ZPE_PAR08,ZPE_PAR09,ZPE_PAR10,ZPE_PAR11"
 cQuery += " FROM "+RetSqlName("ZPE")+" AS main"
 cQuery += " WHERE D_E_L_E_T_ = ' ' AND main.ZPE_FILIAL='"+xFilial("ZPE")+"'"
 cQuery += "   AND R_E_C_N_O_ = ("
@@ -1422,23 +1429,53 @@ DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
 DbSelectArea("TRB") 
 
 While !EOF()
-    Aadd(aRet,{TRB->ZPE_CODIGO,UsrRetName(TRB->ZPE_CODUSU),stod(TRB->ZPE_DATA),TRB->RECNOZPE})
+    Aadd(aRet,{TRB->ZPE_CODIGO,;
+                UsrRetName(TRB->ZPE_CODUSU),;
+                stod(TRB->ZPE_DATA),;
+                TRB->RECNOZPE,;
+                TRB->ZPE_STATUS,;
+                TRB->ZPE_PAR01,;
+                TRB->ZPE_PAR02,;
+                TRB->ZPE_PAR03,;
+                TRB->ZPE_PAR04,;
+                TRB->ZPE_PAR05,;
+                TRB->ZPE_PAR06,;
+                TRB->ZPE_PAR07,;
+                stod(TRB->ZPE_PAR08),;
+                stod(TRB->ZPE_PAR09),;
+                TRB->ZPE_PAR10,;
+                TRB->ZPE_PAR11})
     Dbskip()
 EndDo 
 
 If len(aRet) > 0
-    oDlg2      := MSDialog():New( 269,536,608,1040,"Consulta",,,.F.,,,,,,.T.,,,.T. )
+    oDlg2      := MSDialog():New( 269,536,608,1140,"Consulta",,,.F.,,,,,,.T.,,,.T. )
     oSay1      := TSay():New( 004,104,{||"Selecione"},oDlg2,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
-    oGrp1      := TGroup():New( 016,016,136,228,"",oDlg2,CLR_BLACK,CLR_WHITE,.T.,.F. )
+    oGrp1      := TGroup():New( 016,016,136,298,"",oDlg2,CLR_BLACK,CLR_WHITE,.T.,.F. )
     //oBrw1      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{024,020,128,224},,, oGrp1 ) 
 
-    oLista    := TCBrowse():New(024,020,210,110,, {'Codigo','Inventariante','Data'},;
-                                        {40,90,40},;
+    oLista    := TCBrowse():New(024,020,270,110,, {'Codigo','Inventariante','Data','Contagem atual',;
+                                        'Produto de','Produto Ate','Grupo de','Grupo Ate',;
+                                        'Endereço de','Endereço Ate','Marca',;
+                                        'Data de','Data Ate','Local','Somente c/mov.'},;
+                                        {40,90,40,40,40,40,40,40,40,40,40,40,40,40,40},;
                                         oGrp1,,,,{|| /*FHelp(oList1:nAt)*/},{|| /*editped(oList1:nAt,1)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
         oLista:SetArray(aRet)
         oLista:bLine := {||{aRet[oLista:nAt,01],;
                             aRet[oLista:nAt,02],;
-                            aRet[oLista:nAt,03]}}
+                            aRet[oLista:nAt,03],;
+                            aRet[oLista:nAt,05],;
+                            aRet[oLista:nAt,06],;
+                            aRet[oLista:nAt,07],;
+                            aRet[oLista:nAt,08],;
+                            aRet[oLista:nAt,09],;
+                            aRet[oLista:nAt,10],;
+                            aRet[oLista:nAt,11],;
+                            aRet[oLista:nAt,12],;
+                            aRet[oLista:nAt,13],;
+                            aRet[oLista:nAt,14],;
+                            aRet[oLista:nAt,15],;
+                            aRet[oLista:nAt,16]}}
 
     oBtn1      := TButton():New( 144,064,"Confirmar",oDlg2,{||oDlg2:end(nOpcao:=oLista:nAt)},037,012,,,,.T.,,"",,,,.F. )
     oBtn2      := TButton():New( 144,144,"Cancelar",oDlg2,{||oDlg2:end(nOpcao:=0)},037,012,,,,.T.,,"",,,,.F. )
@@ -1589,7 +1626,8 @@ Else
     oSay4:settext(FwGetUserName(cCodUsr))                                                                                              
 EndIf 
 
-                    
+oList1:nAt := 1
+
 oList1:SetArray(aList1)
 oList1:bLine := {||{iF(aList1[oList1:nAt,01],oOk,oNo),; 
                             aList1[oList1:nAt,02],;
@@ -1665,6 +1703,19 @@ If lNewInv
     ZPE->ZPE_STATUS := '0'
     ZPE->ZPE_DATA   := DDATABASE
     ZPE->ZPE_HRSLF1 := cvaltochar(time())
+
+    ZPE->ZPE_PAR01  := cProdDe
+    ZPE->ZPE_PAR02  := cProdAt
+    ZPE->ZPE_PAR03  := cGrupDe
+    ZPE->ZPE_PAR04  := cGrupAt
+    ZPE->ZPE_PAR05  := cEndeDe
+    ZPE->ZPE_PAR06  := cEndAte
+    ZPE->ZPE_PAR07  := If(cMarcDe,'1','2')
+    ZPE->ZPE_PAR08  := dDtDe
+    ZPE->ZPE_PAR09  := dDtAt
+    ZPE->ZPE_PAR10  := cLocIn
+    ZPE->ZPE_PAR11  := if(lSoMov,'1','2')
+
 Else 
     Dbgoto(aList1[nLinha,16])
     Reclock("ZPE",.F.)
@@ -1927,9 +1978,11 @@ Local oSection0 := oReport:Section(1)
 Local oSection1 := oReport:Section(1):Section(1)
 Local aListBkp  := aList1 
 
-aList1 := {}
+If nContag <> 4
+    aList1 := {}
 
-PreaList(cCodInv,nContag,.T.)
+    PreaList(cCodInv,nContag,.T.)
+EndIf 
 
 oSection0:Init()
 
@@ -1953,10 +2006,10 @@ For nSldDia := 1 to len(aList1)
     oSection1:Cell("nCont1"):SetValue(aList1[nSldDia,12])
     oSection1:Cell("nDivg1"):SetValue(aList1[nSldDia,36])
     oSection1:Cell("nSldI2"):SetValue(aList1[nSldDia,34])
-    oSection1:Cell("nCont2"):SetValue(aList1[nSldDia,12])
+    oSection1:Cell("nCont2"):SetValue(aList1[nSldDia,13])
     oSection1:Cell("nDivg2"):SetValue(aList1[nSldDia,37])
     oSection1:Cell("nSldI3"):SetValue(aList1[nSldDia,35])
-    oSection1:Cell("nCont3"):SetValue(aList1[nSldDia,12])
+    oSection1:Cell("nCont3"):SetValue(aList1[nSldDia,14])
     oSection1:Cell("nDivg3"):SetValue(aList1[nSldDia,38])
     //oSection1:Cell("nDiverg"):SetValue(aList1[nSldDia,15])
 
@@ -2160,7 +2213,7 @@ If ParamBox(aPergs ,"Informe o código",@aRet)
         oSay4:settext("")
     EndIf 
 
-                    
+    oList1:nAt := 1                
     oList1:SetArray(aList1)
     oList1:bLine := {||{iF(aList1[oList1:nAt,01],oOk,oNo),; 
                             aList1[oList1:nAt,02],;

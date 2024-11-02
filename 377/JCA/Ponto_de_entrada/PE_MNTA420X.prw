@@ -125,7 +125,7 @@ Return .T.
 Static function GetWeekFromDate(dt)
 local dia, mes, ano, data1, data2, dif, semana
 
-// Obtenha o dia, mês e ano da data
+// Obtenha o dia, mês e ano  da data
 dia := DAY(dt)
 mes := MONTH(dt)
 ano := YEAR(dt)

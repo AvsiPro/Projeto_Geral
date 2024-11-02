@@ -122,8 +122,10 @@ oReport:SetTotalInLine(.F.)
 //³ mv_par15         // Ate o Grupo                          ³
 //³ mv_par16         // Seleciona Filial?                    ³
 //³ mv_par17         // Qual Custo ? ( Medio / Reposicao )   ³
+//³ mv_par18         // Endereço de ?( Medio / Reposicao )   ³
+//³ mv_par19         // Endereço ate?( Medio / Reposicao )   ³
 //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-Pergunte("MTR900",.F.)
+Pergunte("MTR900",.F.) //AQUI XMTR900
 
 Aadd( aOrdem, STR0004 ) // " Codigo Produto "
 Aadd( aOrdem, STR0005 ) // " Tipo do Produto"

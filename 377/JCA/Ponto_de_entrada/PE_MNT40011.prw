@@ -140,6 +140,27 @@ If DbSeek(xFilial("STQ")+cOrdem)
     lRet := .F.*/
 EndIf 
 
+//Validação solicitada pelo Toninho 01/11
+/*
+Quando do retorno mod.2, se tem uma ocorrência cadastrada, o usuário deverá associar o insumo a suas ocorrências. 
+Hoje não está realizando a validação se esta associação está sendo realizada. 
+*/
+cOcorIns := ""
+cBarra   := ""
+For nCont := 1 to len(aCobrw3)
+    If !Empty(aCobrw3[nCont,02]) .And. len(aCobrw3[nCont,11]) < 1
+        cOcorIns += cBarra + " Ocorrencia "+aCobrw3[nCont,02]+" "+aCobrw3[nCont,03]+" sem associação com o insumo"
+        cBarra := "/"
+    EndIf 
+Next nCont 
+
+If !Empty(cOcorIns)
+
+    MsgAlert(cOcorIns,"MNT40011")
+    lRet := .F. 
+
+EndIf 
+
 RestArea(aArea)
 
 Return(lRet)

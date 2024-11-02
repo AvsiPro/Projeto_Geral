@@ -41,7 +41,7 @@ If len(aList) > 0
 	//ZL_TIPOMOV,ZL_DOCTO,ZL_USUARIO,ZL_DATA,ZL_HORA,ZL_OBS
 	oDlg1      := MSDialog():New( 092,232,542,1234,"Log de alterações",,,.F.,,,,,,.T.,,,.T. )
 	//oBrw1      := MsNewGetDados():New(000,004,200,492,nOpc,'AllwaysTrue()','AllwaysTrue()','',,0,99,'AllwaysTrue()','','AllwaysTrue()',oDlg1,aHoBrw1,aCoBrw1 )
-	oList 	   := TCBrowse():New(010,010,485,185,, {'Tipo Mov','Docto','Usuário','Data','Hora','Alteração'},{40,40,40,40,40,140},;
+	oList 	   := TCBrowse():New(010,010,485,185,, {'Tipo Mov','Docto','Usuário','Data','Hora','Alteração'},{40,40,40,40,40,840},;
 	                        oDlg1,,,,{|| /*FHelp(oList:nAt)*/},{|| /*editcol(oList:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
 	oList:SetArray(aList)
 	oList:bLine := {||{ aList[oList:nAt,01],;
