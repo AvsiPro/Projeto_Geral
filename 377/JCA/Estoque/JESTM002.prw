@@ -719,6 +719,8 @@ Local cHora     := ''
 Local nSaldoFim := 0
 Local nCont     := 0
 Local cBarra    := ''
+Local aBkpProd  := {}
+Local nPosic1
 
 iF nCntg == 0
     aList1 := {}
@@ -983,8 +985,8 @@ While !(cAliasTop)->(Eof())
         EndIf 
     EndIF 
 
+/*
     nSaldoB2 := 0
-    //nSaldoFim := 0
     aAreaB2 := GetArea()
     DbselectArea("SB2")
     DbSetOrder(1)
@@ -992,7 +994,7 @@ While !(cAliasTop)->(Eof())
         nSaldoB2 := SaldoSB2()
     EndIF 
     RestArea(aAreaB2)
-
+*/
     nPosic1 := Ascan(aList1,{|x| x[4] == (cAliasTop)->PRODUTO})
 
     nQtd1 := 0
@@ -1006,7 +1008,11 @@ While !(cAliasTop)->(Eof())
     EndIf 
 
     If nPosic1 == 0
-        MR900ImpS1(@aSalAtu,cAliasTop,.T.,cLocIn)
+        aSalAtu := {0,0,0,0}
+
+        If Ascan(aBkpProd,{|x| alltrim(x) == alltrim((cAliasTop)->PRODUTO)}) == 0
+            MR900ImpS1(@aSalAtu,cAliasTop,.T.,cLocIn)
+        EndIf 
         
         cProdP := Posicione("SB1",1,xFilial("SB1")+(cAliasTop)->PRODUTO,"B1_XCODPAI")
 
@@ -1018,14 +1024,14 @@ While !(cAliasTop)->(Eof())
 
         nSaldoIni := aSalAtu[1]
         nSaldoFim := aSalAtu[1]+nQtd1-nQtd2
-        If nSaldoB2 <> nSaldoFim .And. nCntg > 1
+/*        If nSaldoB2 <> nSaldoFim .And. nCntg > 1
             nSaldoIni := (aSalAtu[1]+nQtd1-nQtd2) - nSaldoB2
             If nSaldoIni < 0
                 nSaldoIni := nSaldoIni * (-1)
             EndIf
             nSaldoFim := nSaldoB2
             
-        EndIF 
+        EndIF */
 
         Aadd(aList1,{ .T.,;
                     (cAliasTop)->ARMAZEM,;
@@ -1089,7 +1095,7 @@ While !(cAliasTop)->(Eof())
             endif 
         endif 
 
-        nSaldoFim := nSaldoIni+nSaldoFim+nQtd1-nQtd2
+        nSaldoFim := nSaldoIni+nQtd1-nQtd2 //nSaldoFim
         //If nSaldoB2 <> nSaldoFim
         //    nSaldoIni := (aList1[nPosic1,If(nCntg == 2,11,if(nCntg ==3,28,31))]-nQtd1+nQtd2) //- nSaldoB2
             // (nSaldoIni+nQtd1-nQtd2) - nSaldoB2
@@ -1125,6 +1131,12 @@ While !(cAliasTop)->(Eof())
 
     Dbskip()
 EndDo 
+
+For nPosic1 := 1 to len(aList1)
+    If nCntg <= 1
+        aList1[nPosic1,11] := aList1[nPosic1,08] + aList1[nPosic1,09] - aList1[nPosic1,10]
+    EnDIf 
+Next nPosic1
 
 If !lSoMov
    
@@ -1216,17 +1228,24 @@ If len(aList1) < 1
     Aadd(aList1,{.f.,'','','','','','','','','','','','','','',0,'','','','','','','','','','','','','','','',.f.,'','','','','',''})
 Else 
     Asort(aList1,,,{|x,y| x[4] < y[4]})
+    lNovaCnt := .F.
 
     DbSelectArea("ZPE")
-    cCodInv := GETSXENUM("ZPE","ZPE_CODIGO")  
-    ConfirmSX8()   
+    While !lNovaCnt
+        cCodInv := GETSXENUM("ZPE","ZPE_CODIGO")  
+        If !Dbseek(xFilial("ZPE")+cCodInv)
+            lNovaCnt := .T.
+        EndIf 
+        ConfirmSX8()   
+    Enddo 
+
     oSay2:settext("")
     oSay4:settext("")
     oSay2:settext(cCodInv)
     oSay4:settext(cusername)                                                                                              
 EndIf 
 
-
+oList1:nAt := 1
 oList1:SetArray(aList1)
 oList1:bLine := {||{iF(aList1[oList1:nAt,01],oOk,oNo),; 
                             aList1[oList1:nAt,02],;
@@ -1305,7 +1324,7 @@ If lCusFil
 	aArea:=GetArea()
 	aSalAtu  := { 0,0,0,0,0,0,0 }
 	dbSelectArea("SB2")
-	dbSetOrder(1)
+	dbSetOrder(1) //dDtAt
 	dbSeek(cSeek:=xFilial("SB2") + If(lQuery,(cAliasTOP)->PRODUTO,SB1->B1_COD)+cLocIn)
 	While !Eof() .And. B2_FILIAL+B2_COD+B2_LOCAL == cSeek
 		aSalAlmox := CalcEst(If(lQuery,(cAliasTOP)->PRODUTO,SB1->B1_COD),SB2->B2_LOCAL,dDtDe,,, ( lCusRep .And. mv_par17==2 ) )
@@ -1381,8 +1400,15 @@ Local cQuery
 Local aRet  :=  {}
 Local lRet  := .T.
 Local oDlg2,oSay1,oGrp1,oBtn1,oBtn2,oLista
+Local nOpcao := 0
 
-cQuery := "SELECT ZPE_CODIGO, ZPE_CODUSU, ZPE_DATA, R_E_C_N_O_ AS RECNOZPE"
+If Select("SM0") == 0
+    RpcSetType(3)
+    RPCSetEnv("01","00090276")
+EndIf
+
+cQuery := "SELECT ZPE_CODIGO, ZPE_CODUSU, ZPE_DATA, R_E_C_N_O_ AS RECNOZPE,ZPE_STATUS,"
+cQuery += "ZPE_PAR01,ZPE_PAR02,ZPE_PAR03,ZPE_PAR04,ZPE_PAR05,ZPE_PAR06,ZPE_PAR07,ZPE_PAR08,ZPE_PAR09,ZPE_PAR10,ZPE_PAR11"
 cQuery += " FROM "+RetSqlName("ZPE")+" AS main"
 cQuery += " WHERE D_E_L_E_T_ = ' ' AND main.ZPE_FILIAL='"+xFilial("ZPE")+"'"
 cQuery += "   AND R_E_C_N_O_ = ("
@@ -1403,23 +1429,53 @@ DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
 DbSelectArea("TRB") 
 
 While !EOF()
-    Aadd(aRet,{TRB->ZPE_CODIGO,UsrRetName(TRB->ZPE_CODUSU),stod(TRB->ZPE_DATA),TRB->RECNOZPE})
+    Aadd(aRet,{TRB->ZPE_CODIGO,;
+                UsrRetName(TRB->ZPE_CODUSU),;
+                stod(TRB->ZPE_DATA),;
+                TRB->RECNOZPE,;
+                TRB->ZPE_STATUS,;
+                TRB->ZPE_PAR01,;
+                TRB->ZPE_PAR02,;
+                TRB->ZPE_PAR03,;
+                TRB->ZPE_PAR04,;
+                TRB->ZPE_PAR05,;
+                TRB->ZPE_PAR06,;
+                TRB->ZPE_PAR07,;
+                stod(TRB->ZPE_PAR08),;
+                stod(TRB->ZPE_PAR09),;
+                TRB->ZPE_PAR10,;
+                TRB->ZPE_PAR11})
     Dbskip()
 EndDo 
 
 If len(aRet) > 0
-    oDlg2      := MSDialog():New( 269,536,608,1040,"Consulta",,,.F.,,,,,,.T.,,,.T. )
+    oDlg2      := MSDialog():New( 269,536,608,1140,"Consulta",,,.F.,,,,,,.T.,,,.T. )
     oSay1      := TSay():New( 004,104,{||"Selecione"},oDlg2,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
-    oGrp1      := TGroup():New( 016,016,136,228,"",oDlg2,CLR_BLACK,CLR_WHITE,.T.,.F. )
+    oGrp1      := TGroup():New( 016,016,136,298,"",oDlg2,CLR_BLACK,CLR_WHITE,.T.,.F. )
     //oBrw1      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{024,020,128,224},,, oGrp1 ) 
 
-    oLista    := TCBrowse():New(024,020,210,110,, {'Codigo','Inventariante','Data'},;
-                                        {40,90,40},;
+    oLista    := TCBrowse():New(024,020,270,110,, {'Codigo','Inventariante','Data','Contagem atual',;
+                                        'Produto de','Produto Ate','Grupo de','Grupo Ate',;
+                                        'Endereço de','Endereço Ate','Marca',;
+                                        'Data de','Data Ate','Local','Somente c/mov.'},;
+                                        {40,90,40,40,40,40,40,40,40,40,40,40,40,40,40},;
                                         oGrp1,,,,{|| /*FHelp(oList1:nAt)*/},{|| /*editped(oList1:nAt,1)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
         oLista:SetArray(aRet)
         oLista:bLine := {||{aRet[oLista:nAt,01],;
                             aRet[oLista:nAt,02],;
-                            aRet[oLista:nAt,03]}}
+                            aRet[oLista:nAt,03],;
+                            aRet[oLista:nAt,05],;
+                            aRet[oLista:nAt,06],;
+                            aRet[oLista:nAt,07],;
+                            aRet[oLista:nAt,08],;
+                            aRet[oLista:nAt,09],;
+                            aRet[oLista:nAt,10],;
+                            aRet[oLista:nAt,11],;
+                            aRet[oLista:nAt,12],;
+                            aRet[oLista:nAt,13],;
+                            aRet[oLista:nAt,14],;
+                            aRet[oLista:nAt,15],;
+                            aRet[oLista:nAt,16]}}
 
     oBtn1      := TButton():New( 144,064,"Confirmar",oDlg2,{||oDlg2:end(nOpcao:=oLista:nAt)},037,012,,,,.T.,,"",,,,.F. )
     oBtn2      := TButton():New( 144,144,"Cancelar",oDlg2,{||oDlg2:end(nOpcao:=0)},037,012,,,,.T.,,"",,,,.F. )
@@ -1507,7 +1563,7 @@ While !EOF()
         EndIf 
     EndIf 
 
-    aSldData := CalcEst(TRB->B1_COD,TRB->ZPE_LOCAL,dDtCnt,,, ( lCusRep .And. mv_par17==2 ) )
+    aSldData := CalcEst(TRB->B1_COD,TRB->ZPE_LOCAL,dDtCnt+1,,, ( lCusRep .And. mv_par17==2 ) )
 
     cCodUsr := TRB->ZPE_CODUSU
     
@@ -1570,7 +1626,8 @@ Else
     oSay4:settext(FwGetUserName(cCodUsr))                                                                                              
 EndIf 
 
-                    
+oList1:nAt := 1
+
 oList1:SetArray(aList1)
 oList1:bLine := {||{iF(aList1[oList1:nAt,01],oOk,oNo),; 
                             aList1[oList1:nAt,02],;
@@ -1646,6 +1703,19 @@ If lNewInv
     ZPE->ZPE_STATUS := '0'
     ZPE->ZPE_DATA   := DDATABASE
     ZPE->ZPE_HRSLF1 := cvaltochar(time())
+
+    ZPE->ZPE_PAR01  := cProdDe
+    ZPE->ZPE_PAR02  := cProdAt
+    ZPE->ZPE_PAR03  := cGrupDe
+    ZPE->ZPE_PAR04  := cGrupAt
+    ZPE->ZPE_PAR05  := cEndeDe
+    ZPE->ZPE_PAR06  := cEndAte
+    ZPE->ZPE_PAR07  := If(cMarcDe,'1','2')
+    ZPE->ZPE_PAR08  := dDtDe
+    ZPE->ZPE_PAR09  := dDtAt
+    ZPE->ZPE_PAR10  := cLocIn
+    ZPE->ZPE_PAR11  := if(lSoMov,'1','2')
+
 Else 
     Dbgoto(aList1[nLinha,16])
     Reclock("ZPE",.F.)
@@ -1821,15 +1891,11 @@ return
 Static function ReportDef()
 
 Local oReport
-Local oSection1
+//Local oSection1
 Local cPicD1Qt     := PesqPict("SD1","D1_QUANT" ,18)
-Local cTamD1Qt     := TamSX3( 'D1_QUANT' )[1]
 Local cPicD1Cust   := PesqPict("SD1","D1_CUSTO",18)
-Local cTamD1Cust   := TamSX3( 'D1_CUSTO' )[1]
 Local cPicD2Qt     := PesqPict("SD2","D2_QUANT" ,18)
-Local cTamD2Qt     := TamSX3( 'D2_QUANT' )[1]
 Local cPicB2Cust   := PesqPict("SB2","B2_CM1",18)
-Local cTamB2Cust   := TamSX3( 'B2_CM1' )[1]
 
 
 oReport:= TReport():New("JESTM002","Conferência","", {|oReport| ReportPrint(oReport)},"Conferência de Acuracidade")
@@ -1837,42 +1903,32 @@ oReport:SetLandscape()
 oReport:SetTotalInLine(.F.)  
 
 oSection0 := TRSection():New(oReport,'Conferência',{"SD1","SD2","SD3"}) //"Movimentação dos Produtos"
-oSection0 :SetTotalInLine(.F.)
-oSection0 :SetReadOnly()
-oSection0 :SetLineStyle()
+//oSection0 :SetTotalInLine(.F.)
+//oSection0 :SetReadOnly()
+//oSection0 :SetLineStyle()
 
-TRCell():New(oSection0, "cLocal"    	, " ", 'Local'             	, "@!"       , 2   , /*lPixel*/, /*{|| code-block de impressao }*/)
-TRCell():New(oSection0, "cPrateleira"   , " ", 'Prateleira'			, /*Picture*/, 2      , /*lPixel*/, /*{|| code-block de impressao }*/)
-TRCell():New(oSection0, "cProduto"   	, " ", 'Material'			, /*Picture*/, 6    , /*lPixel*/, )
-TRCell():New(oSection0, "cDescric" 		,"SB1",'Descrição'          , /*Picture*/, 25         , /*lPixel*/, /*{|| code-block de impressao }*/)
-TRCell():New(oSection0, "cMarca"   		, " ", 'Marca'              , "@!"       , 10   , /*lPixel*/, /*{|| code-block de impressao }*/)
-TRCell():New(oSection0, "cCodOri"  		, " ", 'Código'+CRLF+'Original'	, /*Picture*/, 10             , /*lPixel*/, )
-TRCell():New(oSection0, "nENTQtd"  		, " ", 'Qtde'+CRLF+'Inicial', cPicD1Qt   , 5      , /*lPixel*/, /*{|| code-block de impressao }*/)
-//TRCell():New(oSection0, "cTraco2"  		, " ", "|"+CRLF+"|"        , /*Picture*/, 1             , /*lPixel*/, {|| "|" })
-TRCell():New(oSection0, "nENTCus"  		, " ", 'Qtde'+CRLF+'Entradas', cPicD1Cust , 5    , /*lPixel*/, /*{|| code-block de impressao }*/)
-//TRCell():New(oSection0, "cTraco3"  		, " ", "|"+CRLF+"|"        , /*Picture*/, 1             , /*lPixel*/, {|| "|" })
-TRCell():New(oSection0, "nSAIQtd"  		, " ", 'Qtde'+CRLF+'Saídas', cPicB2Cust , 5    , /*lPixel*/, /*{|| code-block de impressao }*/)
-//TRCell():New(oSection0, "cTraco4"  		, " ", "|"+CRLF+"|"        , /*Picture*/, 1             , /*lPixel*/, {|| "|" })
-TRCell():New(oSection0, "nSALDQtd" 		, " ", 'Qtde'+CRLF+'Atual' , cPicD2Qt   , 5      , /*lPixel*/, /*{|| code-block de impressao }*/)
-
-TRCell():New(oSection0, "nCont1" 		, " ", 'Cont.1' , cPicD2Qt   , 5      , /*lPixel*/, /*{|| code-block de impressao }*/)
-TRCell():New(oSection0, "nCont2" 		, " ", 'Cont.2' , cPicD2Qt   , 5      , /*lPixel*/, /*{|| code-block de impressao }*/)
-TRCell():New(oSection0, "nCont3" 		, " ", 'Cont.3' , cPicD2Qt   , 5      , /*lPixel*/, /*{|| code-block de impressao }*/)
-TRCell():New(oSection0, "nDiverg" 		, " ", 'Divergencia', cPicD2Qt   , 5      , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection0, 'B1_LOCPAD'     , " ", 'Local'         	, /*Picture*/,  5   , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection0, "B1_COD"        , " ", 'Prateleira'		, /*Picture*/, 10   , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection0, "B1_COD"    	, " ", 'Produto'		, /*Picture*/, 15   , /*lPixel*/, )
+TRCell():New(oSection0, "B1_DESC"   	,""  ,'Descrição'      , /*Picture*/, 35   , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection0, "B1_XMARCA"   	, " ", 'Marca'          , /*Picture*/, 15   , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection0, "B1_COD"  		, " ", 'Cod.Original'   , /*Picture*/, 17   , /*lPixel*/, )
+TRCell():New(oSection0, "D1_QTD"  		, " ", 'Saldo Inicial'  , /*Picture*/, 11   , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection0, "D1_QTD"  		, " ", 'Entradas'       , /*Picture*/, 11   , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection0, "D1_QTD"  		, " ", 'Saídas'         , /*Picture*/, 11   , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection0, "D1_QTD" 		, " ", 'Saldo Final'    , /*Picture*/, 11   , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection0, "D1_QTD" 		, " ", 'Saldo Cnt 1'    , /*Picture*/, 11   , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection0, "D1_QTD" 		, " ", 'Contagem 1'     , /*Picture*/, 11   , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection0, "D1_QTD" 		, " ", 'Diverg. 1'      , /*Picture*/, 11   , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection0, "D1_QTD" 		, " ", 'Saldo Cnt 2'    , /*Picture*/, 11   , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection0, "D1_QTD" 		, " ", 'Contagem 2'     , /*Picture*/, 11   , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection0, "D1_QTD" 		, " ", 'Diverg. 2'      , /*Picture*/, 11   , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection0, "D1_QTD" 		, " ", 'Saldo Cnt 3'    , /*Picture*/, 11   , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection0, "D1_QTD" 		, " ", 'Contagem 3'     , /*Picture*/, 11   , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection0, "D1_QTD" 		, " ", 'Diverg. 3'      , /*Picture*/, 11   , /*lPixel*/, /*{|| code-block de impressao }*/)
 
 oSection1 := TRSection():New(oSection0,'Conferência',{"SD1","SD2","SD3"}) //"Movimentação dos Produtos"
-oSection1 :SetTotalInLine(.F.)
-oSection1 :SetReadOnly()
-oSection1 :SetLineStyle()
 
-//TRCell():New(oSection1, "cTraco5"  		, " ", ""        			, /*Picture*/, 1             , /*lPixel*/, )
-//TRCell():New(oSection1, "cTraco5"  		, " ", ""        			, /*Picture*/, 1             , /*lPixel*/, )
-//TRCell():New(oSection1, "cTraco5"  		, " ", ""        			, /*Picture*/, 1             , /*lPixel*/, )
-//TRCell():New(oSection1, "cTraco5"  		, " ", ""        			, /*Picture*/, 1             , /*lPixel*/, )
-//TRCell():New(oSection1, "cTraco5"  		, " ", ""        			, /*Picture*/, 1             , /*lPixel*/, )
-//TRCell():New(oSection1, "cTraco2"  		, " ", "|"+CRLF+"|"        , /*Picture*/, 1             , /*lPixel*/, {|| "|" })
-//TRCell():New(oSection1, "cTraco3"  		, " ", "|"+CRLF+"|"        , /*Picture*/, 1             , /*lPixel*/, {|| "|" })
-//TRCell():New(oSection1, "cTraco4"  		, " ", "|"+CRLF+"|"        , /*Picture*/, 1             , /*lPixel*/, {|| "|" })
 
 TRCell():New(oSection1, "cLocal"    	, " ", ''       	, "@!"       , 5   , /*lPixel*/, /*{|| code-block de impressao }*/)
 TRCell():New(oSection1, "cPrateleira"   , " ", ''			, /*Picture*/, 10      , /*lPixel*/, /*{|| code-block de impressao }*/)
@@ -1884,16 +1940,24 @@ TRCell():New(oSection1, "nENTQtd"  		, " ", ''           , cPicD2Qt   , 11      
 TRCell():New(oSection1, "nENTCus"  		, " ", ''           , cPicD2Qt   , 11    , /*lPixel*/, /*{|| code-block de impressao }*/)
 TRCell():New(oSection1, "nSAIQtd"  		, " ", ''           , cPicD2Qt   , 11    , /*lPixel*/, /*{|| code-block de impressao }*/)
 TRCell():New(oSection1, "nSALDQtd" 		, " ", ''           , cPicD2Qt   , 11      , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection1, "nSldI1" 		, " ", ''           , cPicD2Qt   , 11      , /*lPixel*/, /*{|| code-block de impressao }*/)
 TRCell():New(oSection1, "nCont1" 		, " ", ''           , cPicD2Qt   , 11      , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection1, "nDivg1" 		, " ", ''           , cPicD2Qt   , 11      , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection1, "nSldI2" 		, " ", ''           , cPicD2Qt   , 11      , /*lPixel*/, /*{|| code-block de impressao }*/)
 TRCell():New(oSection1, "nCont2" 		, " ", ''           , cPicD2Qt   , 11      , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection1, "nDivg2" 		, " ", ''           , cPicD2Qt   , 11      , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection1, "nSldI3" 		, " ", ''           , cPicD2Qt   , 11      , /*lPixel*/, /*{|| code-block de impressao }*/)
 TRCell():New(oSection1, "nCont3" 		, " ", ''           , cPicD2Qt   , 11      , /*lPixel*/, /*{|| code-block de impressao }*/)
-TRCell():New(oSection1, "nDiverg" 		, " ", ''           , cPicD2Qt   , 11      , /*lPixel*/, /*{|| code-block de impressao }*/)
+TRCell():New(oSection1, "nDivg3" 		, " ", ''           , cPicD2Qt   , 11      , /*lPixel*/, /*{|| code-block de impressao }*/)
+//TRCell():New(oSection1, "nDiverg" 		, " ", ''           , cPicD2Qt   , 11      , /*lPixel*/, /*{|| code-block de impressao }*/)
 
-oSection1:SetNoFilter("SD1")
-oSection1:SetNoFilter("SD2")
-oSection1:SetNoFilter("SD3")
+oSection1:SetHeaderPage()
+//oSection1 :SetTotalInLine(.F.)
+//oSection1 :SetReadOnly()
+//oSection1 :SetLineStyle()
 
 Return(oReport)
+
 /*/{Protheus.doc} GeraConf
     Gera relatório de conferência de inventário.
     @type  Static Function
@@ -1914,31 +1978,18 @@ Local oSection0 := oReport:Section(1)
 Local oSection1 := oReport:Section(1):Section(1)
 Local aListBkp  := aList1 
 
-aList1 := {}
+If nContag <> 4
+    aList1 := {}
 
-PreaList(cCodInv,nContag,.T.)
+    PreaList(cCodInv,nContag,.T.)
+EndIf 
 
 oSection0:Init()
-oSection1:Init()
 
 oSection0:PrintLine()
+oSection0:Finish()
 
-
-                    /* TRB->ZPE_LOCAL,;                //2
-                    cPrat,;                         //3
-                    TRB->ZPE_PRODUT,;                //4
-                    TRB->B1_DESC,;                //5
-                    TRB->ZPM_DESC,;                //6
-                    TRB->B1_FABRIC,;                //7
-                    TRB->ZPE_SLDINI,;                //8
-                    TRB->ZPE_QTDENT,;                //9
-                    TRB->ZPE_QTDSAI,;                //10
-                    TRB->ZPE_SLDFIM,;                //11
-                    TRB->ZPE_CONTA1,;                //12
-                    TRB->ZPE_CONTA2,;                //13
-                    TRB->ZPE_CONTA3,;                //14
-                    0,;                //15 TRB->ZPE_RESULT */
-                    
+oSection1:Init()
 
 For nSldDia := 1 to len(aList1)
     oSection1:Cell("cLocal"):SetValue(aList1[nSldDia,02])
@@ -1951,10 +2002,16 @@ For nSldDia := 1 to len(aList1)
     oSection1:Cell("nENTCus"):SetValue(aList1[nSldDia,09])
     oSection1:Cell("nSAIQtd"):SetValue(aList1[nSldDia,10])
     oSection1:Cell("nSALDQtd"):SetValue(aList1[nSldDia,11])
+    oSection1:Cell("nSldI1"):SetValue(aList1[nSldDia,33])
     oSection1:Cell("nCont1"):SetValue(aList1[nSldDia,12])
+    oSection1:Cell("nDivg1"):SetValue(aList1[nSldDia,36])
+    oSection1:Cell("nSldI2"):SetValue(aList1[nSldDia,34])
     oSection1:Cell("nCont2"):SetValue(aList1[nSldDia,13])
+    oSection1:Cell("nDivg2"):SetValue(aList1[nSldDia,37])
+    oSection1:Cell("nSldI3"):SetValue(aList1[nSldDia,35])
     oSection1:Cell("nCont3"):SetValue(aList1[nSldDia,14])
-    oSection1:Cell("nDiverg"):SetValue(aList1[nSldDia,15])
+    oSection1:Cell("nDivg3"):SetValue(aList1[nSldDia,38])
+    //oSection1:Cell("nDiverg"):SetValue(aList1[nSldDia,15])
 
     oSection1:PrintLine()
 Next
@@ -1962,7 +2019,7 @@ Next
 
 aList1 := aListBkp
 
-//oReport:EndPage()
+oReport:EndPage()
 
 Return 
 
@@ -2156,7 +2213,7 @@ If ParamBox(aPergs ,"Informe o código",@aRet)
         oSay4:settext("")
     EndIf 
 
-                    
+    oList1:nAt := 1                
     oList1:SetArray(aList1)
     oList1:bLine := {||{iF(aList1[oList1:nAt,01],oOk,oNo),; 
                             aList1[oList1:nAt,02],;

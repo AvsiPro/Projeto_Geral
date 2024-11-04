@@ -67,6 +67,8 @@ If nOpc == 1
         Reclock("SCP",.F.)
         SCP->CP_XTIPO := aList[nX,05]
         SCP->(Msunlock())
+        
+        cServ := Posicione("STJ",1,xFilial("STJ")+SUBSTR(SCP->CP_OP,1,6),"TJ_SERVICO")
 
         Reclock("ZPC",.T.)
         ZPC->ZPC_FILIAL := SCP->CP_FILIAL 
@@ -74,13 +76,17 @@ If nOpc == 1
         ZPC->ZPC_REQUIS := SCP->CP_NUM 
         ZPC->ZPC_DATA   := dDatabase
         ZPC->ZPC_QUANT  := SCP->CP_QUANT 
-        ZPC->ZPC_PREFIX := SCP->CP_NUM
+        ZPC->ZPC_PREFIX := SCP->CP_OBS
         ZPC->ZPC_SOLICI := SCP->CP_XMATREQ
         ZPC->ZPC_STATUS := '1'
         ZPC->ZPC_ITEM   := SCP->CP_ITEM
         ZPC->ZPC_LOCAL  := SCP->CP_LOCAL
         ZPC->ZPC_ALMOXA := SCP->CP_CODSOLI
         ZPC->ZPC_TIPO   := SCP->CP_XTIPO
+        ZPC->ZPC_OS     := SUBSTR(SCP->CP_OP,1,6)
+        ZPC->ZPC_PLACA  := Posicione("ST9",1,xFilial("ST9")+Alltrim(SCP->CP_OBS),"T9_PLACA")
+        ZPC->ZPC_ORIGEM := Posicione("STJ",1,xFilial("STJ")+SUBSTR(SCP->CP_OP,1,6),"TJ_ZCORIGE")
+        ZPC->ZPC_PRECOR := If(!Empty(cServ),Posicione("STE",1,xFilial("STE")+cServ,"TE_CARACTE"),"")
         ZPC->(Msunlock())
     Next nX 
 EndIf 

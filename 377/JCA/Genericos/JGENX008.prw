@@ -33,6 +33,13 @@ User Function JGENX008()
 	oBrowse:SetDescription(cTitulo)
     //oBrowse:SetFilterDefault("ZPC_SEQ == '001'")
     
+	oBrowse:AddLegend( "ZPC->ZPC_TIPO == '99' .AND. Empty(ZPC->ZPC_SOLICC) .AND. Empty(ZPC->ZPC_CODANT) .AND. Empty(ZPC->ZPC_CPBAIX) .AND. Empty(ZPC->ZPC_INSEXC)"	, "WHITE",    	"Aguardando análise" )
+    oBrowse:AddLegend( "ZPC->ZPC_TIPO <> '99'  .AND. !Empty(ZPC->ZPC_TIPO) .And. Empty(ZPC->ZPC_CODANT) .AND. Empty(ZPC->ZPC_CPBAIX) .AND. Empty(ZPC->ZPC_INSEXC)"	, "ORANGE",    "Analisado motivo venda perdida" )
+    oBrowse:AddLegend( "!Empty(ZPC->ZPC_CODANT) .AND. Empty(ZPC->ZPC_CPBAIX) .AND. Empty(ZPC->ZPC_INSEXC)"	, "GREEN",    	"Alterado insumo da OS" )
+	oBrowse:AddLegend( "!Empty(ZPC->ZPC_SOLICC) .AND. Empty(ZPC->ZPC_CPBAIX) .AND. Empty(ZPC->ZPC_INSEXC)"	, "BLUE",    	"Gerado SC" )
+	oBrowse:AddLegend( "!Empty(ZPC->ZPC_CPBAIX)"															, "RED",    	"SA Baixada" )
+	oBrowse:AddLegend( "!Empty(ZPC->ZPC_INSEXC)"															, "BLACK",    	"Exclusão Insumo" )
+ 
 	oBrowse:Activate()
 	
 	RestArea(aArea)
@@ -53,7 +60,10 @@ Static Function MenuDef()
     ADD OPTION aRot TITLE 'Troca Insumo'         	ACTION 'Processa({||U_xGenx84()},"Aguarde")' 	        OPERATION MODEL_OPERATION_VIEW   ACCESS 0 //OPERATION 1
 	ADD OPTION aRot TITLE 'Troca Motivo Vd.Perdida' ACTION 'Processa({||U_xGenx85()},"Aguarde")' 	        OPERATION MODEL_OPERATION_VIEW   ACCESS 0 //OPERATION 1
     ADD OPTION aRot TITLE 'Gera Solic. Compra' 	    ACTION 'Processa({||U_xGenx86()},"Aguarde")' 	        OPERATION MODEL_OPERATION_VIEW   ACCESS 0 //OPERATION 1
-
+	ADD OPTION aRot TITLE 'Consulta log transação'  ACTION 'Processa({||U_JGENX010("ZPC",ZPC->(Recno()))},"Aguarde")' 	        OPERATION MODEL_OPERATION_VIEW   ACCESS 0 //OPERATION 1
+	ADD OPTION aRot TITLE 'Excluir Insumo'  		ACTION 'Processa({||U_xGenx87()},"Aguarde")' 	        OPERATION MODEL_OPERATION_VIEW   ACCESS 0 //OPERATION 1
+	ADD OPTION aRot TITLE 'Legendas'				ACTION 'u__Jgex8Leg()'						 	        OPERATION MODEL_OPERATION_VIEW   ACCESS 0 //OPERATION 1
+	
 Return aRot
 
 /*
@@ -229,6 +239,11 @@ Local lOk    := .t.
 Local cBkpAtu:= ZPC->ZPC_CODIGO
 PRIVATE CCODPAI:= Posicione("SB1",1,xFilial("SB1")+ZPC->ZPC_CODIGO,"B1_XCODPAI")
 
+If ZPC->ZPC_TIPO == "99"
+	MsgAlert("Classifique o tipo da venda perdida antes de realizar a troca do insumo")
+	Return 
+EndIf 
+
 cPrdAtu := ZPC->ZPC_CODIGO + Alltrim(Posicione("SB1",1,xFilial("SB1")+ZPC->ZPC_CODIGO,"B1_DESC"))
 
 aAdd(aPergs,{9,"Produto Atual = "+cPrdAtu,160,13,.T.})
@@ -263,6 +278,7 @@ If ParamBox(aPergs ,"Opções por",@aRet)
 			Else 
 				Reclock("SCP",.F.)
 				SCP->CP_PRODUTO := cNewPrd
+				SCP->CP_XTIPO   := ' '
 				SCP->(Msunlock())
 			EndIf 
 
@@ -287,7 +303,8 @@ If ParamBox(aPergs ,"Opções por",@aRet)
 				U_JGENX001(xFilial("SZL"),'Compras','Alt. Venda Perdida','',cvaltochar(ZPC->(Recno())),'',CUSERNAME,ddatabase,cvaltochar(time()),0,cCntAlt,''		  ,''	   ,'ZPC'  ,0      ,0      ,0     ,0      ,0)
 
 				Reclock("ZPC",.F.)
-				ZPC->ZPC_TIPO := 'XX'
+				ZPC->ZPC_CODIGO := cNewPrd
+				ZPC->ZPC_CODANT := cBkpAtu
 				ZPC->(Msunlock())
 			EndIf 
 			//ZPC->ZPC_ITEM
@@ -321,6 +338,7 @@ Local cMotAtu:= ""
 Local cMotNew:= ""
 Local cDesMtv:= ""
 Local cCntAlt:= ""
+Local cVeiPar:= ""
 
 DbselectArea("ZPV")
 DbGotop()
@@ -337,14 +355,27 @@ EndIf
 
 aAdd(aPergs,{9,"Conteúdo Atual = "+cMotAtu,80,7,.T.})
 aAdd(aPergs,{2,"Selecione o novo Motivo?"	,"", aMotivo,80,'',.T.})
+aAdd(aPergs,{2,"Veículo Parado?"	,"", {"1=Sim","2=Não"},50,'',.T.})
 aAdd(aPergs,{11,"Informe o motivo","",".T.",".T.",.T.})
 	
 If ParamBox(aPergs ,"Opções por",@aRet)
 	cMotNew := aRet[2]
-	cDesMtv := aRet[3]
+	cVeiPar := aRet[3]
+	cDesMtv := aRet[4]
+
 	Reclock("ZPC",.F.)
 	ZPC->ZPC_TIPO := cMotNew
+	ZPC->ZPC_STATUS := cVeiPar
 	ZPC->(Msunlock())
+
+	DbSelectArea("SCP")
+	DbSetOrder(2)
+	If DbSeek(ZPC->ZPC_FILIAL+ZPC->ZPC_CODIGO+ZPC->ZPC_REQUIS+ZPC->ZPC_ITEM)
+		Reclock("SCP",.F.)
+		SCP->CP_XTIPO := cMotNew
+		SCP->(Msunlock())
+	EndIf 
+
 	cCntAlt := "Alterado o motivo da venda perdida, conteudo anterior - "+cMotAtu+", conteudo informado - "+cMotNew+if(ascan(aMotivo,{|x| cmotnew $ x})>0,aMotivo[ascan(aMotivo,{|x| cmotnew $ x})],"")+", Motivo da troca - "+alltrim(cDesMtv)
 				//xFil		  ,Modulo  ,     TipoMov       ,Prefixo, Docto    ,    cItem     , UserMov , DiaMov  ,      HoraMov     ,Valor,            Obs                              ,cCli     ,cLoja   ,cTabela,nQtdAtu,nVlTotA,nVlAnt,nQtdAnt,nTotAnt
 	U_JGENX001(xFilial("SZL"),'Compras','Alt. Venda Perdida','',cvaltochar(ZPC->(Recno())),'',CUSERNAME,ddatabase,cvaltochar(time()),0    ,cCntAlt,''		  ,''	   ,'ZPC'  ,0      ,0      ,0     ,0      ,0)
@@ -431,3 +462,104 @@ EndIf
 RestArea(aArea)
 
 Return 
+
+/*/{Protheus.doc} xGenx87
+(long_description)
+@type user function
+@author user
+@since 29/10/2024
+@version version
+@param param_name, param_type, param_descr
+@return return_var, return_type, return_description
+@example
+(examples)
+@see (links_or_references)
+/*/
+User Function xGenx87()
+
+Local nRecZPC := ZPC->(Recno())
+Local lOk 	  := .F. 
+Local cChvSTL := ""
+Local cBkpAtu := ""
+
+If MsgYesNo("Confirmar a exculsão do Insumo?")
+	
+	DbSelectArea("SCP")
+	DbSetOrder(2)
+	If DbSeek(ZPC->ZPC_FILIAL+ZPC->ZPC_CODIGO+ZPC->ZPC_REQUIS+ZPC->ZPC_ITEM)
+		If SCP->CP_STATUS <> "E"
+			cChvSTL := Substr(SCP->CP_OP,1,6)
+			cBkpAtu := SCP->CP_PRODUTO
+			Reclock("SCP",.F.)
+			SCP->(DBDelete())
+			SCP->(Msunlock())
+			lOk := .T. 
+		
+		Else 
+			MsgAlert("Solicitação ao armazém se encontra baixada, não poderá ser excluído o insumos da OS")
+			lOk := .F.
+		EndIf 
+	EndIf 
+
+	If lOk 
+		DbSelectArea("STL")
+		DbSetOrder(1)
+		If Dbseek(ZPC->ZPC_FILIAL+cChvSTL)
+			While !EOF() .And. STL->TL_FILIAL == ZPC->ZPC_FILIAL .AND. STL->TL_ORDEM == cChvSTL
+				If STL->TL_CODIGO == cBkpAtu .And. STL->TL_NUMSA == ZPC->ZPC_REQUIS .And. STL->TL_ITEMSA == ZPC->ZPC_ITEM 
+					Reclock("STL",.F.)
+					STL->(DBDelete())
+					STL->(Msunlock())
+					exit
+				EndIf 
+				Dbskip()
+			EndDo
+		EndIf 
+		
+		cCntAlt := "Insumo excluído da venda perdida, conteudo anterior - "+cBkpAtu
+		
+		
+	EndIf 
+
+	If lOk
+		DbSelectArea("ZPC")
+		DbGoto(nRecZPC)
+		Reclock("ZPC",.F.)
+		ZPC->ZPC_INSEXC := '1'
+		ZPC->(Msunlock())
+
+		//xFil		  ,Modulo  ,     TipoMov       ,Prefixo, Docto    ,    cItem     , UserMov , DiaMov  ,      HoraMov     ,Valor,            Obs                              ,cCli     ,cLoja   ,cTabela,nQtdAtu,nVlTotA,nVlAnt,nQtdAnt,nTotAnt
+		U_JGENX001(xFilial("SZL"),'Compras','Alt. Venda Perdida','',cvaltochar(ZPC->(Recno())),'',CUSERNAME,ddatabase,cvaltochar(time()),0,cCntAlt,''		  ,''	   ,'ZPC'  ,0      ,0      ,0     ,0      ,0)
+
+	EndIf 
+EndIf 
+
+Return
+
+/*/{Protheus.doc} Legendas
+(long_description)
+@type user function
+@author user
+@since 25/10/2024
+@version version
+@param param_name, param_type, param_descr
+@return return_var, return_type, return_description
+@example
+(examples)
+@see (links_or_references)
+/*/
+USER FUNCTION _Jgex8Leg()
+
+    LOCAL aLegenda    :=    {}
+     
+    //Monta as cores
+    AADD(aLegenda,{"BR_BRANCO"  ,    "Aguardando análise"    })
+    AADD(aLegenda,{"BR_LARANJA"	,    "Analisado motivo venda perdida"        })
+	AADD(aLegenda,{"BR_VERDE"   ,    "Alterado insumo da OS" })
+	AADD(aLegenda,{"BR_AZUL"  	,    "Gerado SC"		     })
+	AADD(aLegenda,{"BR_VERMELHO",    "SA Baixada"    })
+	AADD(aLegenda,{"BR_PRETO"   ,    "Exclusão Insumo"    })
+	 
+    BrwLegenda('Venda perdida', "Status", aLegenda)
+RETURN
+

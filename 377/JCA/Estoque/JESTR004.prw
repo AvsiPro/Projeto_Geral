@@ -203,7 +203,19 @@ nVlrTot  := 0
 
 ProcRegua(nReg,"Aguarde a Impressao")
 
-cOpcoes := GetSx3Cache( "ZPC_TIPO" ,"X3_CBOX"	)
+//cOpcoes := GetSx3Cache( "ZPC_TIPO" ,"X3_CBOX"	)
+cOpcoes := ""
+cBarra  := ""
+
+DbselectArea("ZPV")
+DbGotop()
+While !EOF()
+	//Aadd(aMotivo,Alltrim(ZPV->ZPV_CODIGO)+"="+Alltrim(ZPV->ZPV_DESCRI))
+	cOpcoes += cBarra + Alltrim(ZPV->ZPV_CODIGO)+"="+Alltrim(ZPV->ZPV_DESCRI)
+	cBarra := ";"
+	Dbskip()
+EndDo 
+
 aAux := Separa(cOpcoes,";")
    
 While CADTMP->(!Eof())
@@ -211,7 +223,7 @@ While CADTMP->(!Eof())
 	//旼컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴커
 	//� Verifica se havera salto de formulario                       �
 	//읕컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴켸
-	If li > 1900 //.Or. cCotacao <> CADTMP->CP_NUM
+	If li > 3000 //.Or. cCotacao <> CADTMP->CP_NUM
 		If Li <> 5000
 			oPrint:EndPage()
 		Endif		
@@ -228,7 +240,14 @@ While CADTMP->(!Eof())
 
 	cPrefixo := Posicione("STJ",1,CADTMP->ZPC_FILIAL+substr(CADTMP->CP_OP,1,6),"TJ_CODBEM")
 	oPrint:Say(li,0055,Alltrim(CADTMP->ZPC_CODIGO),oArial09N)
-	oPrint:Say(li,0290,substr(CADTMP->B1_DESC,1,48),oArial09N)
+	
+	If len(CADTMP->B1_DESC) > 45
+		oPrint:Say(li-20,0290,substr(CADTMP->B1_DESC,1,45),oArial09N)
+		oPrint:Say(li,0290,substr(CADTMP->B1_DESC,46),oArial09N)
+	else 
+		oPrint:Say(li,0290,substr(CADTMP->B1_DESC,1,45),oArial09N)
+	endif
+	
 	oPrint:Say(li,0990,Alltrim(CADTMP->ZPC_REQUIS),oArial09N)
     oPrint:Say(li,1200,cvaltochar(CADTMP->ZPC_QUANT),oArial09N)
     //material planejado
@@ -236,12 +255,12 @@ While CADTMP->(!Eof())
     oPrint:Say(li,1500,CADTMP->ZPC_ALMOXA,oArial09N)
     oPrint:Say(li,1710,CADTMP->ZPC_SOLICI,oArial09N)
     oPrint:Say(li,1970,cvaltochar(stod(CADTMP->ZPC_DATA)),oArial09N)
-    oPrint:Say(li,2160,Alltrim(cPrefixo),oArial09N)
+    oPrint:Say(li,2150,Alltrim(cPrefixo),oArial09N)
 
 	If len(aAux) > 0 .And. !Empty(CADTMP->ZPC_TIPO)
-		nPosx := val(CADTMP->ZPC_TIPO)
+		nPosx := Ascan(aAux,{|x| substr(x,1,2) ==  CADTMP->ZPC_TIPO})//val(CADTMP->ZPC_TIPO)
 		If nPosx > 0
-			oPrint:Say(li,2330,substr(aAux[nPosx],3),oArial09N)
+			oPrint:Say(li,2311,substr(aAux[nPosx],4),oCouNew08)
 		Endif 
 	EndIf 
     
@@ -366,10 +385,11 @@ oPrint:Say(360,1960,OemToAnsi("Data do"),oArial10N)
 oPrint:Say(390,1960,OemToAnsi("Registro"),oArial10N)
 oPrint:line(330,2140,3100,2140 )
 
-oPrint:Say(360,2150,OemToAnsi("Prefixo"),oArial10N)
-oPrint:line(330,2310,3100,2310 )
+//oPrint:Say(360,2150,OemToAnsi("Prefixo"),oArial10N)
+oPrint:Say(360,2143,OemToAnsi("Prefixo"),oArial10N)
+oPrint:line(330,2305,3100,2305 )
 
-oPrint:Say(360,2320,OemToAnsi("Tipo"),oArial10N)
+oPrint:Say(360,2313,OemToAnsi("Tipo"),oArial10N)
 
 li := 480
 
