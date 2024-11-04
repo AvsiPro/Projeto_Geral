@@ -25,6 +25,7 @@ LOCAL wnrel		 	:= "JESTR004"
 LOCAL cDesc1	    := "Relação Vendas perdidas"
 LOCAL cDesc2	    := "conforme parametro"
 LOCAL cDesc3	    := "Especifico JCA"
+Local nOpcRel		:=	1
 PRIVATE nLastKey 	:= 0
 PRIVATE cPerg	 	:= Padr("RESTR10",10)
 PRIVATE aLinha		:= {}
@@ -170,39 +171,6 @@ mv_par10 := 'zzz'
 mv_par12 := 'zzz'
 */
 
-cQuery := "SELECT ZPC_FILIAL,ZPC_REQUIS,ZPC_CODIGO,B1_DESC,B1_EMIN,ZPC_LOCAL,ZPC_QUANT,"
-cQuery += " ZPC_DATA,ZPC_PREFIX,ZPC_SOLICI,RA_NOME,ZPC_STATUS,ZPC_ITEM,ZPC_TIPO,ZPC_ALMOXA,CP_OP"
-cQuery += " FROM "+RetSQLName("ZPC")+" ZPC"
-cQuery += " INNER JOIN "+RetSQLName("SCP")+" CP ON CP_FILIAL=ZPC_FILIAL AND CP_NUM=ZPC_REQUIS AND CP.D_E_L_E_T_=' '"
-cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD=ZPC_CODIGO AND B1.D_E_L_E_T_=' '"
-cQuery += " LEFT JOIN "+RetSQLName("SRA")+" RA ON RA_FILIAL=ZPC_FILIAL AND RA_MAT=ZPC_SOLICI AND RA.D_E_L_E_T_=' '"
-cQuery += " WHERE ZPC_FILIAL BETWEEN '"+MV_PAR01+"' AND '"+MV_PAR02+"'"
-
-cQuery += " AND ZPC_DATA BETWEEN '"+dtos(MV_PAR03)+"' AND '"+dtos(MV_PAR04)+"'"
-cQuery += " AND ZPC_CODIGO BETWEEN '"+MV_PAR05+"' AND '"+MV_PAR06+"'"
-cQuery += " AND ZPC_PREFIX BETWEEN '"+MV_PAR07+"' AND '"+MV_PAR08+"'"
-cQuery += " AND ZPC_SOLICI BETWEEN '"+MV_PAR09+"' AND '"+MV_PAR10+"'"
-cQuery += " AND ZPC_REQUIS BETWEEN '"+MV_PAR11+"' AND '"+MV_PAR12+"'"
-
-
-cQuery += " ORDER BY ZPC_REQUIS"
-
-TCQUERY cQuery NEW ALIAS "CADTMP"
-
-TcSetField('CADTMP','ZPC_REQUIS','C')
-
-Count To nReg
-
-CADTMP->(dbGoTop())
-
-li       := 5000
-dEmissao := CtoD('')
-cCotacao := ""
-nQtdTot	 := 0
-nVlrTot  := 0
-
-ProcRegua(nReg,"Aguarde a Impressao")
-
 //cOpcoes := GetSx3Cache( "ZPC_TIPO" ,"X3_CBOX"	)
 cOpcoes := ""
 cBarra  := ""
@@ -217,19 +185,56 @@ While !EOF()
 EndDo 
 
 aAux := Separa(cOpcoes,";")
+
+cQuery := "SELECT ZPC_FILIAL,ZPC_REQUIS,ZPC_CODIGO,B1_DESC,B1_EMIN,ZPC_LOCAL,ZPC_QUANT,"
+cQuery += " ZPC_DATA,ZPC_PREFIX,ZPC_SOLICI,RA_NOME,ZPC_STATUS,ZPC_ITEM,ZPC_TIPO,ZPC_ALMOXA,CP_OP"
+cQuery += " FROM "+RetSQLName("ZPC")+" ZPC"
+cQuery += " INNER JOIN "+RetSQLName("SCP")+" CP ON CP_FILIAL=ZPC_FILIAL AND CP_NUM=ZPC_REQUIS AND CP_ITEM=ZPC_ITEM AND CP.D_E_L_E_T_=' '"
+cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD=ZPC_CODIGO AND B1.D_E_L_E_T_=' '"
+cQuery += " LEFT JOIN "+RetSQLName("SRA")+" RA ON RA_FILIAL=ZPC_FILIAL AND RA_MAT=ZPC_SOLICI AND RA.D_E_L_E_T_=' '"
+cQuery += " WHERE ZPC_FILIAL BETWEEN '"+MV_PAR01+"' AND '"+MV_PAR02+"'"
+
+cQuery += " AND ZPC_DATA BETWEEN '"+dtos(MV_PAR03)+"' AND '"+dtos(MV_PAR04)+"'"
+cQuery += " AND ZPC_CODIGO BETWEEN '"+MV_PAR05+"' AND '"+MV_PAR06+"'"
+cQuery += " AND ZPC_PREFIX BETWEEN '"+MV_PAR07+"' AND '"+MV_PAR08+"'"
+cQuery += " AND ZPC_SOLICI BETWEEN '"+MV_PAR09+"' AND '"+MV_PAR10+"'"
+cQuery += " AND ZPC_REQUIS BETWEEN '"+MV_PAR11+"' AND '"+MV_PAR12+"'"
+cQuery += " AND ZPC.D_E_L_E_T_=' '"
+
+
+cQuery += " ORDER BY ZPC_FILIAL,ZPC_REQUIS"
+
+TCQUERY cQuery NEW ALIAS "CADTMP"
+
+TcSetField('CADTMP','ZPC_REQUIS','C')
+
+Count To nReg
+
+CADTMP->(dbGoTop())
+
+li       := 5000
+dEmissao := CtoD('')
+cCotacao := ""
+nQtdTot	 := 0
+nVlrTot  := 0
+cFilAtu  := ''
+
+ProcRegua(nReg,"Aguarde a Impressao")
+
    
 While CADTMP->(!Eof())
 	IncProc()
 	//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
 	//³ Verifica se havera salto de formulario                       ³
 	//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-	If li > 3000 //.Or. cCotacao <> CADTMP->CP_NUM
+	If li > 3000 .or. cFilAtu <>  CADTMP->ZPC_FILIAL  
 		If Li <> 5000
 			oPrint:EndPage()
 		Endif		
-	
 		nPg++
-		ImpCabec()                                                                     
+		ImpCabec(CADTMP->ZPC_FILIAL) //If(!Empty(cFilAtu),cFilAtu,)   
+		cFilAtu :=  CADTMP->ZPC_FILIAL
+		
 	Endif
 
 	If lEnd
@@ -297,10 +302,18 @@ Return
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
 ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
 /*/
-Static Function ImpCabec()
+Static Function ImpCabec(cFilAtu)
 
 Local cBitmap      := '\system\lgrl01.bmp'
 Local cBitLogo	   := '\system\logo_1001.bmp'
+
+cCod    := FWSM0Util():GetSM0Data( cEmpAnt , cFilAtu , { "M0_CODIGO" } ) 
+cNome   := FWSM0Util():GetSM0Data( cEmpAnt , cFilAtu , { "M0_NOMECOM"   } )
+cCodFil := FWSM0Util():GetSM0Data( cEmpAnt , cFilAtu , { "M0_CODFIL" } ) 
+cFil    := FWSM0Util():GetSM0Data( cEmpAnt , cFilAtu , { "M0_FILIAL" } ) 
+cCnpj   := FWSM0Util():GetSM0Data( cEmpAnt , cFilAtu , { "M0_CGC" } ) 
+cEndr   := FWSM0Util():GetSM0Data( cEmpAnt , cFilAtu , { "M0_ENDENT" } ) 
+
 
 oPrint:StartPage() 		// Inicia uma nova pagina
 oPrint:Box(000,0030,3100,2540 )  //LINHA/COLUNA/ALTURA/LARGURA
@@ -319,10 +332,10 @@ oPrint:line(250,0030,250,1195 )
 oPrint:line(200,0535,300,535 )
 
 oPrint:Say(190,0510,OemToAnsi("FILIAL"),oArial14N)
-oPrint:Say(230,0035,OemToAnsi(Substr(alltrim(SM0->M0_CODIGO)+" "+alltrim(SM0->M0_NOMECOM),1,30) ),oArial10N)
-oPrint:Say(230,0540,OemToAnsi("CNPJ: "+Transform(SM0->M0_CGC,"@R 99.999.999/9999-99") ),oArial10N)
-oPrint:Say(280,0035,OemToAnsi( SM0->M0_FILIAL),oArial10N)
-oPrint:Say(280,0540,OemToAnsi( SM0->M0_ENDENT),oArial10N)
+oPrint:Say(230,0035,OemToAnsi(Substr(alltrim(cCod[1,2])+" "+alltrim(cNome[1,2]),1,30) ),oArial10N)
+oPrint:Say(230,0540,OemToAnsi("CNPJ: "+Transform(cCnpj[1,2],"@R 99.999.999/9999-99") ),oArial10N)
+oPrint:Say(280,0035,OemToAnsi( substr(cFil[1,2],1,30)),oArial10N)
+oPrint:Say(280,0540,OemToAnsi( cEndr[1,2] ),oArial10N)
 
 
 oPrint:Fillrect( {160, 1210, 230, 2535 }, oBrush1, "-2")
