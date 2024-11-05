@@ -85,6 +85,10 @@ If cvaltochar(nOpt) $ '1/2' .And. !lCopia
             //If len(aBlock) > 0
                 SC1->C1_APROV  := 'B'
             //EndIf
+				//RODRIGO 24/10/2024 campo solicitante não existe em aheader
+				SC1->C1_SOLICIT := cSOLIC
+				SC1->C1_CODCOMP := cCODCOMPR
+                SC1->C1_USER    := __CUSERID
 
             For nX := 1 to len(aHeader)
                 lUsado := X3USO(GetSX3Cache(aHeader[nX,02], "X3_USADO"))

@@ -21,13 +21,16 @@ Local nEvento := PARAMIXB[1]
 Local aArea := GetArea()
 
 If nEvento == 4
-	
-	cSc 	:= SC7->C7_NUMSC 
-	cTipCot := Posicione("SC1",1,xFilial("SC1")+cSc,"C1_XTIPCOT")
-	
-	dbSelectArea('SC7')       	
+
+	dbSelectArea('SC7')  	
+
+	DbselectArea("SC1") 
+	DbSetOrder(1)
+	DbSeek(xFilial("SC1")+SC7->C7_NUMSC+SC7->C7_ITEMSC)
+      	
 	RecLock('SC7',.F.)    
-	SC7->C7_ZTPCOM	:=	cTipCot
+	SC7->C7_ZTPCOM	:=	SC1->C1_XTIPCOT
+	SC7->C7_ZPRECAR :=  SC1->C1_ZPRECAR
 	SC7->(MsUnlock())      
 
 EndIf
