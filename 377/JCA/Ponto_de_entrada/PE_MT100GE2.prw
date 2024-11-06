@@ -37,9 +37,17 @@ User Function MT100GE2
 		SE2->E2_ZCGCBOL := SA2->A2_ZCGCBOL
 
 		//ajusta data de vencimento na integração fluig
-		IF FUNNAME() == "RPC"
-			IF valtype(aVcto) != nil
-				nPar := val(PARAMIXB[1,1])
+		IF ISBLIND()
+			SE2->E2_PRETPIS	:= "1"
+			SE2->E2_PRETCOF	:= "1"
+			SE2->E2_PRETCSL	:= "1"
+			IF type("aVcto") != "u"
+				IF !EMPTY(PARAMIXB[1,1])
+					nPar := val(PARAMIXB[1,1])
+				ELSE
+					nPar := 1
+				ENDIF
+
 				IF len(aVcto) >= nPar
 					IF valtype(stod(aVcto[nPar])) == "D" .AND. aVcto[nPar] != NIL
 						SE2->E2_VENCTO  := ctod(aVcto[nPar])
