@@ -23,7 +23,7 @@ User Function FA070CAN
 
 	If lLigaTr
 		If !Empty(cTipBx)
-			If Alltrim(SE1->E1_TIPO) $ cTipBx
+			If Alltrim(SE1->E1_TIPO) $ cTipBx .and. !Empty(SE1->E1_NUMLIQ)
 				nSaldo := conssld()
 				//posiciona novamente
 				SE1->(DbGoTo(nBkpRec))
@@ -32,8 +32,8 @@ User Function FA070CAN
 				EndIf
 				SE1->(DbGoTo(nBkpRec))
 			Else
-				If Alltrim(SE1->E1_TIPO) $ cTipBx .And. SE1->E1_SALDO == nValrec
-					EnvTrck(0)
+				If Alltrim(SE1->E1_TIPO) $ cTipBx .And. Empty(SE1->E1_NUMLIQ) //SE1->E1_SALDO == nValrec
+					EnvTrck(nVlrOrig)
 				EndIf
 			EndIf
 
@@ -63,11 +63,10 @@ Static Function EnvTrck()
 	Local cToken    := SuperGetMV("TI_TOKTRK",.F.,'0D901F83-1739-41E3-995B-7303EF0BB19A')
 	Local nCont 	:= 0
 
-	nCont := 1
-	For nCont := 1 to len(aRecLiq)
 
+	If	len(aRecLiq) == 0
 		DbselectArea("SE1")
-		DbGoto(aRecLiq[nCont,1])
+		//DbGoto(aRecLiq[nCont,1])
 
 		oEnvio['filial']    := SE1->E1_FILIAL
 		oEnvio['prefixo']   := SE1->E1_PREFIXO
@@ -90,8 +89,36 @@ Static Function EnvTrck()
 
 		ApiEnv04(cApiDest,cEndPnt,cRet,cToken)
 
-	NEXT nCont
+	else
+		nCont := 1
+		For nCont := 1 to len(aRecLiq)
 
+			DbselectArea("SE1")
+			DbGoto(aRecLiq[nCont,1])
+
+			oEnvio['filial']    := SE1->E1_FILIAL
+			oEnvio['prefixo']   := SE1->E1_PREFIXO
+			oEnvio['titulo']    := SE1->E1_NUM
+			oEnvio['parcela']   := SE1->E1_PARCELA
+			oEnvio['tipo']      := SE1->E1_TIPO
+			oEnvio['natureza']  := SE1->E1_NATUREZ
+			oEnvio['cliente']   := Posicione("SA1",1,xFilial("SA1")+SE1->E1_CLIENTE+SE1->E1_LOJA,"A1_CGC")
+			oEnvio['emissao']   := cvaltochar(SE1->E1_EMISSAO)
+			oEnvio['vencimento']:= cvaltochar(SE1->E1_VENCTO)
+			oEnvio['vencto_real']:= cvaltochar(SE1->E1_VENCREA)
+			oEnvio['data_baixa']:= cvaltochar(dDataBase)
+			oEnvio['valor']     := SE1->E1_VALOR//If(nVlrBaixa>0,nVlrBaixa,SE1->E1_VALOR)
+			oEnvio['historico'] := SE1->E1_HIST
+			//oEnvio['motivo_baixa'] := cMotBx
+			oEnvio['movimento'] := 'estorno'
+			oEnvio['usuario']   := cusername
+
+			cRet := oEnvio:toJson()
+
+			ApiEnv04(cApiDest,cEndPnt,cRet,cToken)
+
+		NEXT nCont
+	endif
 	RestArea(aArea)
 Return
 
