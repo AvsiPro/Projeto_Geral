@@ -70,7 +70,7 @@ Return (aRot)
 
 Static Function ModelDef()
 
-Local oModel   := MPFormModel():New("JESTC2")
+Local oModel   := MPFormModel():New("JESTC4")
 Local oStruSC5 := FwFormStruct(1, "SX5")
 
 //Local oStruSC6 := FwFormStruct(1, "Z30")
@@ -85,6 +85,9 @@ Local oStruSC5 := FwFormStruct(1, "SX5")
     //oModel:SetRelation("Z30DETAIL", {{"Z30_FILIAL", "FwXFilial('Z30')"}, {"Z30_CODGER", "A3_COD"}}, Z30->(IndexKey(1)))
     oStruSC5:SetProperty('X5_TABELA', MODEL_FIELD_INIT, FwBuildFeature(STRUCT_FEATURE_INIPAD, '"_J"'))
 	oStruSC5:SetProperty('X5_CHAVE', MODEL_FIELD_INIT, FwBuildFeature(STRUCT_FEATURE_INIPAD, BuscaProx())) //'"_J"'
+    
+    oStruSC5:SetProperty("X5_CHAVE", MODEL_FIELD_WHEN, {|| .F.})
+    
                                     //
     //oStruSC6:AddTrigger("ZY1_VEND", "ZY1_NVEND",{|| .T.}, {|| POSICIONE("SX5",1,XFILIAL("SX5")+oModel:GetValue('ZY1DETAIL','ZY1_VEND'),"A3_NOME") })
     //oStruSC5:AddTrigger("X5_CHAVE","X5_DESCRI",{|| .T.},{||"_J"})
@@ -117,7 +120,7 @@ Local oModel   := FwLoadModel("JESTC004")
     oStruSC5:RemoveField("X5_TABELA")
     oStruSC5:RemoveField("X5_DESCSPA")
     oStruSC5:RemoveField("X5_DESCENG")
-    oStruSC5:RemoveField("X5_CHAVE")
+    ///oStruSC5:RemoveField("X5_CHAVE")
     
     //oStruSC6:RemoveField("Z30_FILIAL")
     //oStruSC6:RemoveField("ZY1_CODIGO")
@@ -168,7 +171,7 @@ Static Function BuscaProx()
 
 Local aArea := Getarea()
 Local cQuery 
-Local nRet  := 0
+Local nRet  := '0'
 
 cQuery := "SELECT COUNT(X5_CHAVE)+1 AS QTDX5 "
 cQuery += " FROM " + RetSQLName("SX5")

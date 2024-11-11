@@ -172,7 +172,8 @@ Local nCont
 
 Private cCodigo   :=  ''
 Private cDescri  := space(100)
-Private oDlg1,oGrp1,oSay1,oSay2,oSay3,oGet1,oGrp2,oBtn1,oBtn2
+Private cFermta  := space(6)  
+Private oDlg1,oGrp1,oSay1,oSay2,oSay3,oSay4,oGet1,oGet2,oGrp2,oBtn1,oBtn2
 Private aList := {}
 Private nLin  := 1
 PRIVATE oOk     := LoadBitmap(GetResources(),'br_verde')  
@@ -185,8 +186,6 @@ If Select("SM0") == 0
     RPCSetEnv("01","00020087")
 EndIf
 
-SetKey(K_CTRL_DOWN, { || chglin()})
-SetKey(K_CTRL_UP, { || chglin()})
 
 If nChamada == 1
     Aadd(aList,{'001','','',.f.})
@@ -197,20 +196,23 @@ Else
     cDescri := ZPJ->ZPJ_DESCRI
 EndIf 
 
-oDlg1      := MSDialog():New( 092,232,643,927,"Cadastro de Box",,,.F.,,,,,,.T.,,,.T. )
+oDlg1      := MSDialog():New( 092,232,743,1127,"Cadastro de Box",,,.F.,,,,,,.T.,,,.T. )
 
-oGrp1      := TGroup():New( 008,076,056,248,"Caixa de Ferramentas",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
-    oSay1      := TSay():New( 024,096,{||"Código"},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
-    oSay2      := TSay():New( 024,156,{||cCodigo},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,056,008)
-    oSay3      := TSay():New( 040,084,{||"Descrição"},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
-    oGet1      := TGet():New( 040,116,{|u| If(Pcount()>0,cDescri:=u,cDescri)},oGrp1,108,008,'@!',,CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"","",,)
-
+oGrp1      := TGroup():New( 008,076,086,388,"Caixa de Ferramentas",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
+    oSay1      := TSay():New( 024,176,{||"Código"},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
+    oSay2      := TSay():New( 024,236,{||cCodigo},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,056,008)
+    oSay3      := TSay():New( 040,094,{||"Descrição"},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,032,008)
+    oGet1      := TGet():New( 040,166,{|u| If(Pcount()>0,cDescri:=u,cDescri)},oGrp1,158,008,'@!',,CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"","",,)
+    oSay4      := TSay():New( 065,094,{||"Incluir Ferramenta"},oGrp1,,,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,132,008)
+    oGet2      := TGet():New( 065,166,{|u| If(Pcount()>0,cFermta:=u,cFermta)},oGrp1,088,008,'@!',{||inclfer()},CLR_BLACK,CLR_WHITE,,,,.T.,"",,,.F.,.F.,,.F.,.F.,"ZPI","",,)
+    
     If nChamada <> 1
         oGet1:disable()
     endif 
-oGrp2      := TGroup():New( 060,004,248,336,"Itens",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
+    
+oGrp2      := TGroup():New( 090,004,288,440,"Itens",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
     //oBrw1      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{068,008,244,332},,, oGrp2 ) 
-    oList    := TCBrowse():New(068,008,325,175,, {'','Item','Codigo','Descrição'},;
+    oList    := TCBrowse():New(098,008,425,185,, {'','Item','Codigo','Descrição'},;
                                                             {10,30,60,90},;
                                                             oGrp1,,,,{|| /*FHelp(oList:nAt)*/},{|| editcol(oList:nAT)},, ,,,  ,,.F.,,.T.,,.F.,,,)
         oList:SetArray(aList)
@@ -219,8 +221,8 @@ oGrp2      := TGroup():New( 060,004,248,336,"Itens",oDlg1,CLR_BLACK,CLR_WHITE,.T
                             aList[oList:nAt,02],;
                             aList[oList:nAt,03]}}
                             
-    oBtn1      := TButton():New( 252,088,"Salvar",oDlg1,{||oDlg1:end(nOpcao:=1)},037,012,,,,.T.,,"",,,,.F. )
-    oBtn2      := TButton():New( 252,200,"Cancelar",oDlg1,{||oDlg1:end(nOpcao:=0)},037,012,,,,.T.,,"",,,,.F. )
+    oBtn1      := TButton():New( 307,088,"Salvar",oDlg1,{||oDlg1:end(nOpcao:=1)},037,012,,,,.T.,,"",,,,.F. )
+    oBtn2      := TButton():New( 307,230,"Cancelar",oDlg1,{||oDlg1:end(nOpcao:=0)},037,012,,,,.T.,,"",,,,.F. )
 
 oDlg1:Activate(,,,.T.)
 
@@ -301,37 +303,6 @@ RestArea(aArea)
 
 
 Return
-/*/{Protheus.doc} chglin
-    Troca de linhas
-    @type  Static Function
-    @author user
-    @since 12/06/2024
-    @version version
-    @param param_name, param_type, param_descr
-    @return return_var, return_type, return_description
-    @example
-    (examples)
-    @see (links_or_references)
-/*/
-Static Function chglin()
-
-
-If !Empty(aList[oList:nAt,02])
-    Aadd(aList,{strzero(len(aList)+1,3),'','',.f.})
-
-    oList:SetArray(aList)
-    oList:bLine := {||{ If(aList[oList:nAt,04],oOk,oNo),;
-                            aList[oList:nAt,01],;
-                            aList[oList:nAt,02],;
-                            aList[oList:nAt,03]}}
-    
-    oList:nAt := len(aList)
-
-    oList:refresh()
-    oDlg1:refresh()
-EndIf 
-
-Return
 
 /*/{Protheus.doc} editcol
     Edita a linha do grid
@@ -376,5 +347,69 @@ Else
         oDlg1:refresh()
     EndIf 
 EndIf 
+
+Return
+
+/*/{Protheus.doc} inclfer
+    Incluir ferramentas na caixa
+    @type  Static Function
+    @author user
+    @since 08/11/2024
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function inclfer()
+
+Local aArea := GetArea()
+Local lRet  := .T.
+Local cDescr:= ""
+
+If empty(cFermta)
+    Return 
+endIf 
+
+If Ascan(aList,{|x| alltrim(x[2]) == cFermta}) > 0
+    MsgAlert("Item já adicionado a caixa")
+    lRet := .F.
+EndIF 
+
+//aList[oList:nAt,03] := Posicione("ZPI",1,xFilial("ZPI")+aList[oList:nAt,02],"ZPI_DESCRI")
+DbSelectArea("ZPI")
+DbSetOrder(1)
+If !Dbseek(xFilial("ZPI")+cFermta)
+    MsgAlert("Ferramenta não existe no cadastro")
+    lRet := .F.
+Else 
+    cDescr := ZPI->ZPI_DESCRI
+EndIf 
+
+If lRet
+    If Empty(aList[len(aList),02])
+        aList[oList:nAt,02] := cFermta
+        aList[oList:nAt,03] := cDescr
+        aList[oList:nAt,04] := .T.
+    Else 
+        Aadd(aList,{strzero(len(aList)+1,3),cFermta,cDescr,.T.})
+    EndIf 
+
+    oList:SetArray(aList)
+    oList:bLine := {||{ If(aList[oList:nAt,04],oOk,oNo),;
+                            aList[oList:nAt,01],;
+                            aList[oList:nAt,02],;
+                            aList[oList:nAt,03]}}
+    
+    //oList:nAt := len(aList)
+    cFermta := space(6)
+
+    oList:refresh()
+    oDlg1:refresh()
+EndIf 
+
+
+RestArea(aArea)
 
 Return

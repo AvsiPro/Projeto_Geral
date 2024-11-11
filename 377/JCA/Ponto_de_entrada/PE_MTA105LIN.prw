@@ -110,8 +110,70 @@ EndIf
 
 (cAliasTMP)->(DbCloseArea())
 
+
+
+If lLibera 
+    //Busca por produtos que estejam na SCP mas não estejam na STL, inclusão direta na solicitação ao armazem
+    cQuery := "SELECT * 
+    cQuery += " FROM "+RetSQLName("SCP")+" SCP"
+    cQuery += " INNER JOIN "+RetSQLName("ZPO")+" ZPO ON ZPO_FILIAL = '"+xFilial("ZPO")+"'"
+    cQuery += " AND (ZPO_CODIGO = CP_PRODUTO OR ZPO_CODIGO IN(SELECT B1_XCODPAI FROM "+RetSQLName("SB1")
+    cQuery += " WHERE  B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD='"+cProduto+"   ') ) AND ZPO.D_E_L_E_T_ = ' '"
+    cQuery += " LEFT JOIN "+RetSQLName("STJ")+" TJ1 ON TJ1.TJ_FILIAL=CP_FILIAL AND TJ1.TJ_ORDEM=SUBSTRING(CP_OP,1,6) AND TJ1.D_E_L_E_T_=' '"
+    cQuery += " WHERE  CP_FILIAL BETWEEN ' ' AND 'ZZ' AND SUBSTRING(CP_OP,1,6) <> '"+cOrdem+"'"
+    cQuery += " AND TRIM(CP_OBS)='"+cCodBem+"'"
+    cQuery += " AND SCP.D_E_L_E_T_=' '
+    cQuery += " AND CP_FILIAL+SUBSTRING(CP_OP,1,6)+CP_PRODUTO NOT IN(SELECT TL_FILIAL+TL_ORDEM+TL_CODIGO"
+    cQuery += "     FROM "+RetSQLName("STL")+" WHERE TL_FILIAL='"+xFilial("STL")+"' AND TL_ORDEM='"+cOrdem+"' AND D_E_L_E_T_=' ')
+    cQuery += " ORDER BY  CP_NUM,ZPO_CODIGO DESC "
+
+    cAliasTMP := GetNextAlias()
+    MPSysOpenQuery(cQuery, cAliasTMP)
+
+    If (cAliasTMP)->(!EoF())
+        
+        lLibera := .t.
+        
+        If (cAliasTMP)->ZPO_TIPO == '1' .Or. (cAliasTMP)->ZPO_TIPO == '3' //Contador
+            lLibera := Iif((cAliasTMP)->ZPO_CONTAD < (cContad - (cAliasTMP)->TJ_POSCONT),.T.,.F.)
+        EndIf
+
+        If ((cAliasTMP)->ZPO_TIPO == '2' .Or. (cAliasTMP)->ZPO_TIPO == '3') .And. !lLibera //Tempo
+
+            dIniAtu := stod((cAliasTMP)->TL_DTINICI)
+            dFimAnt := SToD((cAliasTMP)->TL_DTFIM)
+            nTempo  := (cAliasTMP)->ZPO_TEMPO
+
+            If (cAliasTMP)->ZPO_TPTEMP == 'M' //mes
+                lLibera := Iif(DateDiffMonth(dFimAnt, dIniAtu) > nTempo,.T.,.F.)
+
+            ElseIf (cAliasTMP)->ZPO_TPTEMP == 'S' //semana
+                lLibera := Iif(GetWeekDifference(dFimAnt, dIniAtu) > nTempo ,.T.,.F.)
+
+            ElseIf (cAliasTMP)->ZPO_TPTEMP == 'D' //dia
+                lLibera := Iif(DateDiffDay(dFimAnt, dIniAtu) > nTempo,.T.,.F.)
+
+            ElseIf (cAliasTMP)->ZPO_TPTEMP == 'H' //hora
+                
+                cHrIniAtu := (cAliasTMP)->TL_HOINICI
+                cHrFimAnt := (cAliasTMP)->TL_HOFIM
+
+                dateTime1 := DToC(dFimAnt) + " " + cHrFimAnt
+                dateTime2 := DToC(dIniAtu) + " " + cHrIniAtu
+
+                lLibera := Iif(GetHourDifference(dateTime1, dateTime2) > nTempo,.T.,.F.)
+            EndIf
+
+        EndIf
+
+    EndIf
+
+    (cAliasTMP)->(DbCloseArea())
+
+EndIf 
+
 RestArea(aArea)
-    
+
 Return(lLibera)
 
 Static function GetWeekFromDate(dt)

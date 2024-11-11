@@ -166,7 +166,7 @@ aAdd(aPergs ,{1,"Usuário Até"	,padr('zz',TamSx3("ZPC_ALMOXA")[1])   ,"@!",".T.",
 aAdd(aPergs ,{1,"Frota de"    	,space(TamSx3("ZPC_PREFIX")[1])   ,"@!",".T.","",".T.",80,.F.})
 aAdd(aPergs ,{1,"Frota Até"		,padr('zz',TamSx3("ZPC_PREFIX")[1])   ,"@!",".T.","",".T.",80,.F.})
 
-aAdd(aPergs ,{2,"Veículo Parado?"	,"", {"1=Sim","2=Não","3=Ambos"},50,'',.T.})
+aAdd(aPergs ,{2,"Tipo Venda Perdida?"	,"", {"1=Backlog","2=Veículo Parado","3=Venda Perdida","4=Ambos"},50,'',.T.})
 
 	
 If ParamBox(aPergs ,"Filtrar por",@aRet)
@@ -177,7 +177,7 @@ If ParamBox(aPergs ,"Filtrar por",@aRet)
 
 	cFiltro += " .AND. ZPC->ZPC_PREFIX >= '"+aRet[9]+"' .AND. ZPC->ZPC_PREFIX<='"+aRet[10]+"'"
     
-    If aRet[11] <> "3"
+    If aRet[11] <> "4"
         cFiltro += " .AND. ZPC->ZPC_STATUS == '"+aRet[11]+"'"
     EndIf 
 
@@ -355,7 +355,7 @@ EndIf
 
 aAdd(aPergs,{9,"Conteúdo Atual = "+cMotAtu,80,7,.T.})
 aAdd(aPergs,{2,"Selecione o novo Motivo?"	,"", aMotivo,80,'',.T.})
-aAdd(aPergs,{2,"Veículo Parado?"	,"", {"1=Sim","2=Não"},50,'',.T.})
+aAdd(aPergs,{2,"Tipo Venda Perdida?"	,"", {"1=Backlog","2=Veículo parado","3=Venda Perdida"},50,'',.T.})
 aAdd(aPergs,{11,"Informe o motivo","",".T.",".T.",.T.})
 	
 If ParamBox(aPergs ,"Opções por",@aRet)
