@@ -44,7 +44,7 @@ User function MT160WF
 			nPosfilho := Ascan(aGerou,{|x| alltrim(x[1]) == alltrim(SC1->C1_PRODUTO)})
 			nPosPai := Ascan(aGerou,{|x| alltrim(x[2]) == alltrim(cProdPai)})
 
-			Aadd(aItenSc1,{SC1->C1_NUM,SC1->C1_ITEM,SC1->C1_XTIPCOT,SC1->C1_QUANT})
+			Aadd(aItenSc1,{SC1->C1_NUM,SC1->C1_ITEM,SC1->C1_XTIPCOT,SC1->C1_QUANT,SC1->C1_ZPRECAR})
 
 
 			If (Empty(cProdPai) .Or. nPosPai > 0) .AND. nPosfilho == 0 //EMPTY(SC1->C1_COTACAO) .And.
@@ -76,6 +76,7 @@ User function MT160WF
 		If nPos > 0
 			Reclock("SC7",.F.)
 			SC7->C7_ZTPCOM := aItenSc1[nPos,03] //SC1->C1_XTIPCOT
+            SC7->C7_ZPRECAR := aItenSc1[nPos,05] // SC7->C7_ZPRECAR
 
 			If SC7->C7_QTDSOL == 0 .AND. aItenSc1[nPos,04] > 0
 				SC7->C7_QTDSOL := SC7->C7_QUANT
