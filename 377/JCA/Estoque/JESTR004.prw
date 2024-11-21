@@ -305,7 +305,7 @@ Return
 Static Function ImpCabec(cFilAtu)
 
 Local cBitmap      := '\system\lgrl01.bmp'
-Local cBitLogo	   := '\system\logo_1001.bmp'
+Local cBitLogo	   := '\system\lgrl'+cEmpAnt+cFilAtu+'.bmp' //'\system\logo_1001.bmp'
 
 cCod    := FWSM0Util():GetSM0Data( cEmpAnt , cFilAtu , { "M0_CODIGO" } ) 
 cNome   := FWSM0Util():GetSM0Data( cEmpAnt , cFilAtu , { "M0_NOMECOM"   } )
