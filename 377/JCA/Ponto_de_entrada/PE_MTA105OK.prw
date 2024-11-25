@@ -20,12 +20,13 @@ Local nPosS := Ascan(aHeader,{|x| alltrim(x[2]) == "CP_SALBLQ"})
 Local nPosX := Ascan(aHeader,{|x| alltrim(x[2]) == "CP_XORIGEM"})
 Local nPosQ := Ascan(aHeader,{|x| alltrim(x[2]) == "CP_QUANT"})
 Local nPosI := Ascan(aHeader,{|x| alltrim(x[2]) == "CP_ITEM"})
+//Local nPosZ := Ascan(aHeader,{|x| alltrim(x[2]) == "CP_STATUS"})
 Local nCont := 1
 Local lAvulso := .F.
 
 For nCont := 1 to len(aCols)
     
-    iF !Empty(aCols[nCont,nPosP])
+    iF !Empty(aCols[nCont,nPosP]) .And. Posicione("SCP",1,xFilial("SCP")+CA105NUM+aCols[nCont,nPosI],"CP_STATUS") <> 'E'
 
         cOrdem := SUBSTR(aCols[nCont,nPosO],1,6)
         cPlano := Posicione("STJ",1,xFilial("STJ")+cOrdem,"TJ_PLANO")
@@ -35,6 +36,35 @@ For nCont := 1 to len(aCols)
         If Funname() <> "MNTA420"
             lAvulso := ItmAvls(ca105num,aCols[nCont,nPosI],cOrdem,cPlano)
         EndIf 
+
+        If !lAvulso 
+            If POSICIONE("SCP",1,XFILIAL("SCP")+CA105NUM+ACOLS[NCONT,nPosI],"CP_PRODUTO") <> aCols[nCont,nPosP]
+                
+                DbSelectArea("STL")
+                DbSetOrder(1)
+                If Dbseek(xFilial("STL")+cOrdem+cPlano)
+                    While !EOF() .And. STL->TL_FILIAL == xFilial("STL") .and. STL->TL_ORDEM == cOrdem .AND. STL->TL_PLANO == cPlano
+
+                        If STL->TL_NUMSA == CA105NUM .AND. STL->TL_ITEMSA == aCols[nCont,nPosI]
+                            If STL->TL_CODIGO <> aCols[nCont,nPosP]
+                                Reclock("STL",.F.)
+                                STL->TL_CODIGO := aCols[nCont,nPosP]
+                                STL->(Msunlock())
+                            EndIf 
+                        endif 
+                        Dbskip()
+                    EndDo 
+                EndIf
+
+                DbSelectArea("SCP")
+                DbSetOrder(1)
+                If Dbseek(XFILIAL("SCP")+CA105NUM+ACOLS[NCONT,nPosI]) 
+                    Reclock("SCP",.F.)
+                    SCP->CP_PRODUTO := aCols[nCont,nPosP]
+                    SCP->(Msunlock())
+                EndIf 
+            endIf 
+        endIf 
 
         //If lAvulso
         If !Empty(cOrdem) 
@@ -110,14 +140,16 @@ If Dbseek(xFilial("STL")+cOrdem+cPlano)
     Else 
         aAreaTL := GetArea()
 
-        lLibera := .f.
+        If !lAvulso
+            lLibera := .f.
+        EndIf 
         
         vldBlqTL(cProduto,cCodBem,cOrdem,cContad,cPlano,cItemSA)
         
         RestArea(aAreaTL)
 
         DbSelectArea("STL")
-        If !lLibera
+        If !lLibera .and. !lAvulso
             lBloq := .T.
             DbSelectArea("SCP")
             DbSetOrder(2)
@@ -140,9 +172,15 @@ If lLibera .and. lAvulso
     cQuery += " AND (ZPO_CODIGO = CP_PRODUTO OR ZPO_CODIGO IN(SELECT B1_XCODPAI FROM "+RetSQLName("SB1")
     cQuery += " WHERE  B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD='"+cProduto+"   ') ) AND ZPO.D_E_L_E_T_ = ' '"
     cQuery += " LEFT JOIN "+RetSQLName("STJ")+" TJ1 ON TJ1.TJ_FILIAL=CP_FILIAL AND TJ1.TJ_ORDEM=SUBSTRING(CP_OP,1,6) AND TJ1.D_E_L_E_T_=' '"
+    cQuery += " LEFT JOIN "+RetSQLName("STL")+" STL ON TJ_FILIAL = TL_FILIAL"
+    cQuery += "        AND TJ_ORDEM = TL_ORDEM"
+    cQuery += "        AND STL.D_E_L_E_T_ = ' '"
+    cQuery += "        AND TL_TIPOREG = 'P'"
+    cQuery += "        AND TL_CODIGO='"+cProduto+"'"
     cQuery += " WHERE  CP_FILIAL BETWEEN ' ' AND 'ZZ' AND SUBSTRING(CP_OP,1,6) <> '"+cOrdem+"'"
     cQuery += " AND TRIM(CP_OBS)='"+cCodBem+"'"
-    cQuery += " AND SCP.D_E_L_E_T_=' '
+    cQuery += " AND SCP.D_E_L_E_T_=' '"
+    cQuery += "        AND CP_PRODUTO='"+cProduto+"'"
     cQuery += " AND CP_FILIAL+SUBSTRING(CP_OP,1,6)+CP_PRODUTO NOT IN(SELECT TL_FILIAL+TL_ORDEM+TL_CODIGO"
     cQuery += "     FROM "+RetSQLName("STL")+" WHERE TL_FILIAL='"+xFilial("STL")+"' AND TL_ORDEM='"+cOrdem+"' AND D_E_L_E_T_=' ')
     cQuery += " ORDER BY  CP_NUM,ZPO_CODIGO DESC "

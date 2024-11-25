@@ -37,7 +37,8 @@ User Function JGENX008()
     oBrowse:AddLegend( "ZPC->ZPC_TIPO <> '99'  .AND. !Empty(ZPC->ZPC_TIPO) .And. Empty(ZPC->ZPC_CODANT) .AND. Empty(ZPC->ZPC_CPBAIX) .AND. Empty(ZPC->ZPC_INSEXC)"	, "ORANGE",    "Analisado motivo venda perdida" )
     oBrowse:AddLegend( "!Empty(ZPC->ZPC_CODANT) .AND. Empty(ZPC->ZPC_CPBAIX) .AND. Empty(ZPC->ZPC_INSEXC)"	, "GREEN",    	"Alterado insumo da OS" )
 	oBrowse:AddLegend( "!Empty(ZPC->ZPC_SOLICC) .AND. Empty(ZPC->ZPC_CPBAIX) .AND. Empty(ZPC->ZPC_INSEXC)"	, "BLUE",    	"Gerado SC" )
-	oBrowse:AddLegend( "!Empty(ZPC->ZPC_CPBAIX)"															, "RED",    	"SA Baixada" )
+	oBrowse:AddLegend( "ZPC->ZPC_CPBAIX == '1'"																, "RED",    	"SA Baixada" )
+	oBrowse:AddLegend( "ZPC->ZPC_CPBAIX == '2'"																, "YELLOW",    	"OS Baixada" )
 	oBrowse:AddLegend( "!Empty(ZPC->ZPC_INSEXC)"															, "BLACK",    	"Exclusão Insumo" )
  
 	oBrowse:Activate()
@@ -553,13 +554,15 @@ USER FUNCTION _Jgex8Leg()
     LOCAL aLegenda    :=    {}
      
     //Monta as cores
-    AADD(aLegenda,{"BR_BRANCO"  ,    "Aguardando análise"    })
-    AADD(aLegenda,{"BR_LARANJA"	,    "Analisado motivo venda perdida"        })
-	AADD(aLegenda,{"BR_VERDE"   ,    "Alterado insumo da OS" })
-	AADD(aLegenda,{"BR_AZUL"  	,    "Gerado SC"		     })
-	AADD(aLegenda,{"BR_VERMELHO",    "SA Baixada"    })
-	AADD(aLegenda,{"BR_PRETO"   ,    "Exclusão Insumo"    })
-	 
-    BrwLegenda('Venda perdida', "Status", aLegenda)
+    AADD(aLegenda,{"BR_BRANCO"  ,    "Aguardando análise"    				})
+    AADD(aLegenda,{"BR_LARANJA"	,    "Analisado motivo venda perdida"       })
+	AADD(aLegenda,{"BR_VERDE"   ,    "Alterado insumo da OS" 				})
+	AADD(aLegenda,{"BR_AZUL"  	,    "Gerado SC"		     				})
+	AADD(aLegenda,{"BR_VERMELHO",    "SA Baixada"    						})
+	AADD(aLegenda,{"BR_AMARELO" ,    "OS Baixada"    						})
+	AADD(aLegenda,{"BR_PRETO"   ,    "Exclusão Insumo"    					})
+
+	BrwLegenda('Venda perdida', "Status", aLegenda)
+
 RETURN
 

@@ -207,7 +207,7 @@ Static Function fMontDados(oSay)
     cQuery += " 	AND CP_FILIAL BETWEEN ' ' AND 'ZZZ' " //'"+FWxFilial('SCP')+"'
     //cQuery += " 	AND CP_XORIGEM = 'MNTA420'
     cQuery += "     AND CP_PRODUTO='"+SCP->CP_PRODUTO+"'"
-    cQuery += " 	AND CP_NUM <> '"+SCP->CP_NUM+"'
+    cQuery += " 	AND CP_NUM <> '"+SCP->CP_NUM+"'"
     cQuery += "     ORDER BY CP_DATPRF DESC,TL_HOINICI DESC"
     
     //Executando a query
@@ -249,8 +249,64 @@ Static Function fMontDados(oSay)
             QRYTMP->(DbSkip())
         EndDo
   
-    Else  
-        aAdd(aColsGrid, {"","","","","","","","","","","","","",0,.F.})
+    Else    
+        cQuery := "SELECT DISTINCT TOP 4 STL.R_E_C_N_O_ AS RECSTL, *"
+        cQuery += " FROM "+RetSQLName("SCP")+" SCP"
+        cQuery += " INNER JOIN "+RetSQLName("ZPO")+" ZPO ON ZPO_FILIAL = '"+xFilial("ZPO")+"'"
+        cQuery += " AND (ZPO_CODIGO = CP_PRODUTO OR ZPO_CODIGO IN(SELECT B1_XCODPAI FROM "+RetSQLName("SB1")
+        cQuery += " WHERE  B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD='"+SCP->CP_PRODUTO+"   ') ) AND ZPO.D_E_L_E_T_ = ' '"
+        cQuery += " INNER JOIN "+RetSQLName("SB1")+" B1 ON B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD=CP_PRODUTO AND B1.D_E_L_E_T_=' '"
+        cQuery += " LEFT JOIN "+RetSQLName("STJ")+" TJ1 ON TJ1.TJ_FILIAL=CP_FILIAL AND TJ1.TJ_ORDEM=SUBSTRING(CP_OP,1,6) AND TJ1.D_E_L_E_T_=' '"
+        cQuery += " LEFT JOIN "+RetSqlName("STL")+" STL ON TL_FILIAL = CP_FILIAL AND TL_NUMSA = CP_NUM AND TL_ITEMSA = CP_ITEM AND STL.D_E_L_E_T_ = ''"
+        cQuery += " WHERE  CP_FILIAL BETWEEN ' ' AND 'ZZ' AND SUBSTRING(CP_OP,1,6) <> '"+Substr(SCP->CP_OP,1,6)+"'"
+        cQuery += " AND TRIM(CP_OBS)='"+cCodBem+"'"
+        cQuery += " AND SCP.D_E_L_E_T_=' '
+        cQuery += " 	AND CP_NUM <> '"+SCP->CP_NUM+"' AND CP_PRODUTO='"+SCP->CP_PRODUTO+"'"
+        cQuery += " AND CP_FILIAL+SUBSTRING(CP_OP,1,6)+CP_PRODUTO NOT IN(SELECT TL_FILIAL+TL_ORDEM+TL_CODIGO"
+        cQuery += "     FROM "+RetSQLName("STL")+" WHERE TL_FILIAL='"+xFilial("STL")+"' AND TL_ORDEM='"+cCodBem+"' AND D_E_L_E_T_=' ')
+        cQuery += " ORDER BY  CP_NUM,ZPO_CODIGO DESC "
+        
+        PLSQuery(cQuery, "QRYTMP")
+  
+        //Se houve dados
+        If ! QRYTMP->(EoF())
+            //Pegando o total de registros
+            DbSelectArea("QRYTMP")
+            Count To nTotal
+            QRYTMP->(DbGoTop())
+    
+            //Enquanto houver dados
+            While ! QRYTMP->(EoF())
+    
+                //Muda a mensagem na regua
+                nAtual++
+                oSay:SetText("Adicionando registro " + cValToChar(nAtual) + " de " + cValToChar(nTotal) + "...")
+                
+                aAdd(aColsGrid, {;
+                    QRYTMP->CP_FILIAL,;
+                    SUBSTRING(QRYTMP->CP_OP,1,6),;
+                    ' ',;
+                    NGNOMETAR(QRYTMP->TJ_CODBEM+QRYTMP->TJ_SERVICO+QRYTMP->TJ_SEQRELA,QRYTMP->TL_TAREFA,TAMSX3('TL_NOMTAR')[1]),;
+                    ' ',;
+                    TIPREGBRW(QRYTMP->TL_TIPOREG),;
+                    QRYTMP->CP_PRODUTO,;
+                    QRYTMP->B1_DESC,;
+                    QRYTMP->CP_LOCAL,;
+                    QRYTMP->TL_DTINICI,;
+                    QRYTMP->TL_HOINICI,;
+                    QRYTMP->TL_DTFIM,;
+                    QRYTMP->TL_HOFIM,;
+                    QRYTMP->RECSTL,;
+                    .F.;
+                })
+
+                QRYTMP->(DbSkip())
+            EndDo
+        EndIf 
+        
+        If len(aColsGrid) < 1
+            aAdd(aColsGrid, {"","","","","","","","","","","","","",0,.F.})
+        EndIf 
     EndIf
 
     QRYTMP->(DbCloseArea())

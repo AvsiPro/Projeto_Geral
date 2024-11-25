@@ -29,13 +29,14 @@ If Funname() == "MATA105"
             DbSelectArea("SCP")
             DbSetOrder(1)
             If Dbseek(xFilial("SCP")+CA105num+aCols[nCont,nPosI])
-                Reclock("SCP",.F.)
-                SCP->CP_STATSA  := 'B'
-                SCP->(MsUnlock())
-                lBloq := .T.
-                cItens += cBarra + Alltrim(aCols[nCont,nPosP])
-                cBarra := "/"
-
+                If SCP->CP_STATUS <> 'E'
+                    Reclock("SCP",.F.)
+                    SCP->CP_STATSA  := 'B'
+                    SCP->(MsUnlock())
+                    lBloq := .T.
+                    cItens += cBarra + Alltrim(aCols[nCont,nPosP])
+                    cBarra := "/"
+                ENDIF
             EndIf 
                 
         EndIf 

@@ -98,16 +98,34 @@ If Dbseek(xFilial("STL")+cOrdem)
     EndIF 
 
     cMsgBaixa := ""
-
+    cSCPSTL   := ""
+    cBarraC   := ""
+    cNumSCP   := ""
     DbSelectArea("SCP")
     DbSetOrder(2)
     For nCont := 1 to len(aBaixSCP)
         If Dbseek(xfilial("SCP")+aBaixSCP[nCont,01]+aBaixSCP[nCont,02]+aBaixSCP[nCont,03])
+            cSCPSTL += cBarraC + aBaixSCP[nCont,01]+aBaixSCP[nCont,02]+aBaixSCP[nCont,03]
+            cNumSCP := aBaixSCP[nCont,02]
+            cBarraC := "/"
             If SCP->CP_STATUS <> 'E' .and. Empty(SCP->CP_XTIPO)
                 cMsgBaixa += "Produto "+aBaixSCP[nCont,01]+" sem baixa na solicitação ao armazém."+CRLF 
             EndIf 
         EndIf 
     Next nCont 
+
+    DbSelectArea("SCP")
+    DbSetOrder(5)
+    If Dbseek(xFilial("SCP")+cOrdem)
+        While !EOF() .AND. SCP->CP_FILIAL == xFilial("SCP") .And. Alltrim(SCP->CP_NUMOS) == cOrdem
+            If !SCP->CP_PRODUTO+SCP->CP_NUM+SCP->CP_ITEM $ cSCPSTL
+                If SCP->CP_STATUS <> 'E' .and. Empty(SCP->CP_XTIPO)
+                    cMsgBaixa += "Produto "+SCP->CP_PRODUTO+" sem baixa na solicitação ao armazém."+CRLF 
+                EndIf 
+            EndIf 
+            Dbskip()
+        EndDo
+    EndIf  
 
     If !Empty(cMsgBaixa)
         Msgalert(cMsgBaixa,"MNT40011")

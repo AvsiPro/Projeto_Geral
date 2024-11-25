@@ -13,6 +13,7 @@ Local cPlano  := STJ->TJ_PLANO
 Local cOrdem  := STJ->TJ_ORDEM 
 Local cFilOS  := STJ->TJ_FILIAL 
 Local cCodBem := STJ->TJ_CODBEM
+	local cQuerSCP  := ''
 Local aAreaTL := {}
 Local lBloq   := .F.
 //TJ_FILIAL+TJ_ORDEM+TJ_PLANO+TJ_TIPOOS+TJ_CODBEM+TJ_SERVICO+TJ_SEQRELA
@@ -52,6 +53,17 @@ Local lBloq   := .F.
                     
                     If (cAliasTMP)->(!EoF())
                         
+						//VERIFICA SE ULTIMA SA NÃO FOI ATENDIDA POR VENDA PERDIDA
+						cQuerSCP := " SELECT * FROM "+RetSQLName("ZPC")+" ZPC"
+						cQuerSCP += " WHERE ZPC.D_E_L_E_T_='' AND ZPC_REQUIS = '"+(cAliasTMP)->TL_NUMSA+"' AND ZPC_ITEM = '"+(cAliasTMP)->TL_ITEMSA +"'"
+
+						cAliasSCP := GetNextAlias()
+						MPSysOpenQuery(cQuerSCP, cAliasSCP)
+						If (cAliasSCP)->(!EoF())
+							IF !EMPTY((cAliasSCP)->ZPC_REQUIS)
+								lLibera := .T.
+							ENDIF
+						ELSE
                         If (cAliasTMP)->ZPO_TIPO == '1' .Or. (cAliasTMP)->ZPO_TIPO == '3' //Contador
                             lLibera := Iif((cAliasTMP)->ZPO_CONTAD < (STJ->TJ_POSCONT - (cAliasTMP)->TJ_POSCONT),.T.,.F.)
                         EndIf
@@ -82,12 +94,15 @@ Local lBloq   := .F.
                                 lLibera := Iif(GetHourDifference(dateTime1, dateTime2) > nTempo,.T.,.F.)
                             EndIf
 
-                        EndIf
 
+							ENDIF
+
+						ENDIF
+						(cAliasSCP)->(DbCloseArea())
                     EndIf
                     
                     (cAliasTMP)->(DbCloseArea())
-
+					//(cAliasSCP)->(DbCloseArea())
                     RestArea(aAreaTL)
 
                     DbSelectArea("STL")

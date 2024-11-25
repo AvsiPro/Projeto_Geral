@@ -15,8 +15,9 @@ Local lRet  := .T.
 Local lBloq := .T.
 Local nPosP := Ascan(aHeader,{|x| alltrim(x[2]) == "CP_PRODUTO"})
 Local nPosO := Ascan(aHeader,{|x| alltrim(x[2]) == "CP_OP"})
+Local nPosI := Ascan(aHeader,{|x| alltrim(x[2]) == "CP_ITEM"})
 
-If !Empty(aCols[n,nPosP])
+If !Empty(aCols[n,nPosP]) .And. Posicione("SCP",1,xFilial("SCP")+CA105NUM+aCols[n,nPosI],"CP_STATUS") <> 'E'
     cOrdem := SUBSTR(aCols[n,nPosO],1,6)
     cCodBem := Posicione("STJ",1,xFilial("STJ")+cOrdem,"TJ_CODBEM")
     cContad := Posicione("STJ",1,xFilial("STJ")+cOrdem,"TJ_POSCONT")
@@ -120,9 +121,15 @@ If lLibera
     cQuery += " AND (ZPO_CODIGO = CP_PRODUTO OR ZPO_CODIGO IN(SELECT B1_XCODPAI FROM "+RetSQLName("SB1")
     cQuery += " WHERE  B1_FILIAL='"+xFilial("SB1")+"' AND B1_COD='"+cProduto+"   ') ) AND ZPO.D_E_L_E_T_ = ' '"
     cQuery += " LEFT JOIN "+RetSQLName("STJ")+" TJ1 ON TJ1.TJ_FILIAL=CP_FILIAL AND TJ1.TJ_ORDEM=SUBSTRING(CP_OP,1,6) AND TJ1.D_E_L_E_T_=' '"
+    cQuery += " LEFT JOIN "+RetSQLName("STL")+" STL ON TJ_FILIAL = TL_FILIAL"
+    cQuery += "        AND TJ_ORDEM = TL_ORDEM"
+    cQuery += "        AND STL.D_E_L_E_T_ = ' '"
+    cQuery += "        AND TL_TIPOREG = 'P'"
+    cQuery += "        AND TL_CODIGO='"+cProduto+"'"
     cQuery += " WHERE  CP_FILIAL BETWEEN ' ' AND 'ZZ' AND SUBSTRING(CP_OP,1,6) <> '"+cOrdem+"'"
     cQuery += " AND TRIM(CP_OBS)='"+cCodBem+"'"
-    cQuery += " AND SCP.D_E_L_E_T_=' '
+    cQuery += " AND SCP.D_E_L_E_T_=' '"
+    cQuery += " AND CP_PRODUTO='"+cProduto+"'"
     cQuery += " AND CP_FILIAL+SUBSTRING(CP_OP,1,6)+CP_PRODUTO NOT IN(SELECT TL_FILIAL+TL_ORDEM+TL_CODIGO"
     cQuery += "     FROM "+RetSQLName("STL")+" WHERE TL_FILIAL='"+xFilial("STL")+"' AND TL_ORDEM='"+cOrdem+"' AND D_E_L_E_T_=' ')
     cQuery += " ORDER BY  CP_NUM,ZPO_CODIGO DESC "
