@@ -15,7 +15,7 @@ User Function MT120TEL()
     Private aCombo   := RetSX3Box(GetSX3Cache("C1_XTIPCOT", "X3_CBOX"),,,1)
 
     Public cXObsAux := ""
-    Public cOpcao
+    //Public cOpcao
 
     Aeval(aCombo,{|x| Aadd(aStatusP,x[1]) })
     //;;;;;;;
@@ -32,16 +32,16 @@ User Function MT120TEL()
     //Define o conteúdo para os campos
     SC7->(DbGoTo(nRecPC))
     If nOpcx == 3
-        cOpcao := CriaVar("C7_ZTPCOM",.F.)
+        cXObsAux := CriaVar("C7_ZTPCOM",.F.)
     Else
-        cOpcao := SC7->C7_ZTPCOM
+        cXObsAux := SC7->C7_ZTPCOM
     EndIf
  
     //Criando na janela o campo OBS
     @ 062, aPosGet[1,08] - 012 SAY Alltrim(RetTitle("C7_ZTPCOM")) OF oDlg PIXEL SIZE 050,006
     
     
-    @ 061, aPosGet[1,09] MSCOMBOBOX oEdit1 VAR cOpcao ITEMS aStatusP SIZE 140, 013 OF oDlg PIXEL COLORS 0, 16777215
+    @ 061, aPosGet[1,09] MSCOMBOBOX oEdit1 VAR cXObsAux ITEMS aStatusP SIZE 140, 013 OF oDlg PIXEL COLORS 0, 16777215
  
    
  
