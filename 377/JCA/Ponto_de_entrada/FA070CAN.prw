@@ -54,7 +54,7 @@ return
     (examples)
     @see (links_or_references)
 /*/
-Static Function EnvTrck()
+Static Function EnvTrck(nVlrOrig)
 
 	Local aArea     := GetArea()
 	Local oEnvio    := JsonObject():New()
@@ -107,7 +107,7 @@ Static Function EnvTrck()
 			oEnvio['vencimento']:= cvaltochar(SE1->E1_VENCTO)
 			oEnvio['vencto_real']:= cvaltochar(SE1->E1_VENCREA)
 			oEnvio['data_baixa']:= cvaltochar(dDataBase)
-			oEnvio['valor']     := SE1->E1_VALOR//If(nVlrBaixa>0,nVlrBaixa,SE1->E1_VALOR)
+			oEnvio['valor']     := aRecLiq[nCont,2]//SE1->E1_VALOR//If(nVlrBaixa>0,nVlrBaixa,SE1->E1_VALOR)
 			oEnvio['historico'] := SE1->E1_HIST
 			//oEnvio['motivo_baixa'] := cMotBx
 			oEnvio['movimento'] := 'estorno'
@@ -198,7 +198,7 @@ Static Function conssld()
 	cQuery += " E5_IDORIG IN (SELECT E5_IDORIG FROM "+RetSQLName("SE5")+" E5 "
 	cQuery += "     INNER JOIN "+RetSQLName("SE1")+" E1 ON E1_FILIAL=E5_FILIAL AND E1_PREFIXO=E5_PREFIXO AND E1_NUM=E5_NUMERO AND E1_PARCELA=E5_PARCELA AND E1_CLIENTE=E5_CLIFOR AND E1_LOJA=E5_LOJA AND E1.D_E_L_E_T_=' '"
 	cQuery += "     WHERE E5_FILIAL='"+SE1->E1_FILIAL+"' AND E5_CLIFOR='"+SE1->E1_CLIENTE+"' AND E1_NUMLIQ='"+SE1->E1_NUMLIQ+"' AND E5.D_E_L_E_T_=' ') "
-	cQuery += " OR E5_DOCUMEN='"+SE1->E1_NUMLIQ+"'"
+	cQuery += " OR E5_DOCUMEN='"+SE1->E1_NUMLIQ+"'AND E1_TIPOLIQ = 'LIQ'"
 	cQuery += " ORDER BY E1_TIPOLIQ DESC "
 
 	IF Select('TRB') > 0
@@ -215,7 +215,7 @@ Static Function conssld()
 		Aadd(aLiquida,{TRB->E1_NUMLIQ,TRB->E1_TIPOLIQ,TRB->E1RECNO})
 		If Empty(TRB->E1_NUMLIQ)
 			nRecPrcp := TRB->E1RECNO
-			Aadd(aRecLiq,{TRB->E1RECNO})
+			Aadd(aRecLiq,{TRB->E1RECNO,TRB->E5_VALOR})
 		else
 			IF ALLTRIM(TRB->E5_TIPODOC) == "ES"
 				nValBai -= TRB->E5_VALOR
@@ -257,7 +257,7 @@ Static Function conssld()
 				Aadd(aLiquida,{TRB->E1_NUMLIQ,TRB->E1_TIPOLIQ,TRB->E1RECNO})
 				If Empty(TRB->E1_NUMLIQ)
 					nRecPrcp := TRB->E1RECNO
-					Aadd(aRecLiq,{TRB->E1RECNO})
+					Aadd(aRecLiq,{TRB->E1RECNO,TRB->E5_VALOR})
 				else
 					IF ALLTRIM(TRB->E5_TIPODOC) == "ES"
 						nValBai -= TRB->E5_VALOR
@@ -286,7 +286,7 @@ Static Function conssld()
 		while nCont <= len(aRecLiq)
 			DbselectArea("SE1")
 			DbGoto(aRecLiq[nCont,1])
-			nVlrOrig += SE1->E1_VALOR
+			nVlrOrig += aRecLiq[nCont,2]//SE1->E1_VALOR
 			
 			cQuery := "SELECT E1_NUMLIQ,SUM(E1_VALOR) AS TOTAL,SUM(E1_SALDO) AS SALDO,"
 			cQuery += " SUM(E1_VALOR-E1_SALDO) AS BAIXADOS"
