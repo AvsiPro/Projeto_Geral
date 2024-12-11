@@ -27,6 +27,14 @@ If Dbseek(xFilial("ZPC")+SCP->CP_NUM+SCP->CP_ITEM)
     EndDo 
 EndIf 
 
+DbSelectArea("SCP")
+DbSetOrder(1)
+If Dbseek(xFilial("SCP")+SCP->CP_NUM+SCP->CP_ITEM)
+    Reclock("SCP",.F.)
+    SCP->CP_XTIPO := ' '
+    SCP->(Msunlock())
+EndIf 
+
 RestArea(aArea)
 
 Return 

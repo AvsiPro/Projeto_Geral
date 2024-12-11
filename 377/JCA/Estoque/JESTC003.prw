@@ -120,7 +120,6 @@ Local oModel   := FwLoadModel("JESTC003")
     oStruSC5:RemoveField("ZPJ_DESCFE")
     
     
-    oStruSC6C
     oStruSC6:RemoveField("ZPJ_CODBOX")
     oStruSC6:RemoveField("ZPJ_DESCRI")
     
@@ -191,9 +190,29 @@ If nChamada == 1
     Aadd(aList,{'001','','',.f.})
     cCodigo := GetSXEnum("ZPJ","ZPJ_CODBOX")
 Else 
-    Busca(ZPJ->ZPJ_CODBOX)
-    cCodigo := ZPJ->ZPJ_CODBOX
-    cDescri := ZPJ->ZPJ_DESCRI
+    cQuery := "SELECT COUNT(*) AS QTD"
+    cQuery += " FROM "+RetSQLName("ZPK")
+    cQuery += " WHERE ZPK_FILIAL='"+xfilial("ZPK")+"' AND ZPK_CODBOX='"+ZPJ->ZPJ_CODBOX+"'"
+    cQuery += " AND D_E_L_E_T_=' ' AND ZPK_DTDEVO=' '"
+
+    cAliasTMP := GetNextAlias()
+    MPSysOpenQuery(cQuery, cAliasTMP)
+    lOkAlt := .F.
+
+    If (cAliasTMP)->(!EoF()) 
+        lOkAlt := (cAliasTMP)->QTD > 0
+    endIf 
+
+    If lOkAlt
+        MsgAlert("Caixa não poderá ser alterada, por estar com o status de empréstimo")
+        Return
+    else 
+
+        Busca(ZPJ->ZPJ_CODBOX)
+        cCodigo := ZPJ->ZPJ_CODBOX
+        cDescri := ZPJ->ZPJ_DESCRI
+    EndIf 
+    
 EndIf 
 
 oDlg1      := MSDialog():New( 092,232,743,1127,"Cadastro de Box",,,.F.,,,,,,.T.,,,.T. )
@@ -320,6 +339,8 @@ Static Function editcol(nLinha)
 
 Local lOk     := .F.
 Local nPosic  := oList:nColPos
+Local cBckp1   := ''
+Local cBckp2   := ''
 
 If nPosic == 1
     If !Empty(aList[oList:nAt,02])
@@ -329,20 +350,43 @@ If nPosic == 1
             aList[oList:nAt,04] := .T.
         EndIf 
     EndIf 
-Else 
+Elseif nPosic == 3
+    cBckp1 := aList[oList:nAt,02] 
+    cBckp2 := aList[oList:nAt,03] 
+        
     lOk := ConPad1(,,,"ZPI",,,.f.)
 
     If lOk 
         aList[oList:nAt,02] := ZPI->ZPI_CODFER
         aList[oList:nAt,03] := ZPI->ZPI_DESCRI
     Else 
-        lEditCell(aList,oList,"@!",2)
+        aList[oList:nAt,03] := aList[oList:nAt,02] 
+
+        lEditCell(aList,oList,"@!",3)
+
+        aList[oList:nAt,02] := aList[oList:nAt,03] 
+
     EndIf 
 
     if !Empty(aList[oList:nAt,02])
-        aList[oList:nAt,03] := Posicione("ZPI",1,xFilial("ZPI")+aList[oList:nAt,02],"ZPI_DESCRI")
-        
-        aList[oList:nAt,04] := .T.
+        nPos :=  Ascan(aList,{|x| alltrim(x[2]) == aList[oList:nAt,02]})
+        If nPos > 0 .and. nPos <> oList:nAt
+            MsgAlert("Item já adicionado a caixa")
+            aList[oList:nAt,02] := cBckp1
+            aList[oList:nAt,03] := cBckp2
+        ELSE 
+            If VldFerBox(aList[oList:nAt,02])
+                aList[oList:nAt,03] := Posicione("ZPI",1,xFilial("ZPI")+aList[oList:nAt,02],"ZPI_DESCRI")
+                
+                aList[oList:nAt,04] := .T.
+            Else 
+
+                MsgAlert("Ferramenta já esta sendo utilizada em outra caixa")
+                aList[oList:nAt,02] := cBckp1
+                aList[oList:nAt,03] := cBckp2
+            EndIF
+        EndIF 
+ 
         oList:refresh()
         oDlg1:refresh()
     EndIf 
@@ -377,15 +421,23 @@ If Ascan(aList,{|x| alltrim(x[2]) == cFermta}) > 0
     lRet := .F.
 EndIF 
 
-//aList[oList:nAt,03] := Posicione("ZPI",1,xFilial("ZPI")+aList[oList:nAt,02],"ZPI_DESCRI")
-DbSelectArea("ZPI")
-DbSetOrder(1)
-If !Dbseek(xFilial("ZPI")+cFermta)
-    MsgAlert("Ferramenta não existe no cadastro")
-    lRet := .F.
-Else 
-    cDescr := ZPI->ZPI_DESCRI
+If lRet
+    If !VldFerBox(cFermta)
+        MsgAlert("Ferramenta já adicionada a outra caixa")
+        lRet := .F.
+    EndIf 
 EndIf 
+
+If lRet
+    DbSelectArea("ZPI")
+    DbSetOrder(1)
+    If !Dbseek(xFilial("ZPI")+cFermta)
+        MsgAlert("Ferramenta não existe no cadastro")
+        lRet := .F.
+    Else 
+        cDescr := ZPI->ZPI_DESCRI
+    EndIf 
+Endif 
 
 If lRet
     If Empty(aList[len(aList),02])
@@ -413,3 +465,38 @@ EndIf
 RestArea(aArea)
 
 Return
+
+/*/{Protheus.doc} VldFerBox(cFermta)
+    (long_description)
+    @type  Static Function
+    @author user
+    @since 02/12/2024
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function VldFerBox(cFermta)
+
+Local lRet := .T. 
+Local cQuery
+Local nQtF := 0
+
+cQuery := "SELECT COUNT(*) AS QTD FROM "+RetSQLName("ZPJ")
+cQuery += " WHERE ZPJ_FILIAL='"+xFilial("ZPJ")+"' AND D_E_L_E_T_=' '"
+cQuery += " AND ZPJ_CODFER='"+cFermta+"'"
+
+cAliasTMP := GetNextAlias()
+MPSysOpenQuery(cQuery, cAliasTMP)
+
+If (cAliasTMP)->(!EoF()) 
+    nQtF := (cAliasTMP)->QTD
+endIf 
+
+If nQtF > 0
+    lRet := .F.
+EndIf 
+
+Return(lRet)

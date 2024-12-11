@@ -33,15 +33,17 @@ User Function MNTA4352()
 		If DbSeek(xFilial("SCP")+TMPZPC->TL_CODIGO+TMPZPC->TL_NUMSA+TMPZPC->TL_ITEMSA)
 			Aadd(aBaixSCP,{TMPZPC->TL_NUMSA,TMPZPC->TL_ITEMSA})
 			Reclock("SCP",.F.)
-			SCP->CP_QUJE = 0
-			SCP->CP_STATUS = "E"
+			SCP->CP_QUJE := 0
+			SCP->CP_STATUS := "E"
+			SCP->CP_XTIPO := ''
 			SCP->(Msunlock())
 		ENDIF
 		DbSelectArea("ZPC")
 		DbSetOrder(1)
 		If DbSeek(xFilial("ZPC")+TMPZPC->TL_NUMSA+TMPZPC->TL_ITEMSA+TMPZPC->TL_CODIGO)
 			Reclock("ZPC",.F.)
-			ZPC->ZPC_CPBAIX = "2"
+			ZPC->ZPC_CPBAIX := "2"
+			ZPC->ZPC_TIPO   := '98'
 			ZPC->(Msunlock())
 		ENDIF
 
@@ -57,8 +59,9 @@ User Function MNTA4352()
 		While !EOF() .AND. SCP->CP_FILIAL == xFilial("SCP") .AND. ALLTRIM(SCP->CP_NUMOS) == STJ->TJ_ORDEM 
 			If SCP->CP_STATUS <> 'E' .And. Ascan(aBaixSCP,{|x| x[1]+x[2] <> SCP->CP_NUM+SCP->CP_ITEM}) == 0
 				Reclock("SCP",.F.)
-				SCP->CP_QUJE = 0
-				SCP->CP_STATUS = "E"
+				SCP->CP_QUJE := 0
+				SCP->CP_STATUS := "E"
+				SCP->CP_XTIPO := ''
 				SCP->(Msunlock())
 			EndIf 
 
@@ -66,7 +69,8 @@ User Function MNTA4352()
 			DbSetOrder(1)
 			If DbSeek(xFilial("ZPC")+SCP->CP_NUM+SCP->CP_ITEM+SCP->CP_PRODUTO)
 				Reclock("ZPC",.F.)
-				ZPC->ZPC_CPBAIX = "2"
+				ZPC->ZPC_CPBAIX := "2"
+				ZPC->ZPC_TIPO   := "98"
 				ZPC->(Msunlock())
 			ENDIF
 

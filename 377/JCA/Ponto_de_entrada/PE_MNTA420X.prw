@@ -46,7 +46,8 @@ Local lBloq   := .F.
                     cQuery += " 	AND TL_CODIGO = '"+STL->TL_CODIGO+"'"
                     cQuery += " 	AND TL_TIPOREG = 'P'"
                     cQuery += "     AND TL_ORDEM <> '"+STJ->TJ_ORDEM+"'"
-                    cQuery += "     ORDER BY TL_ORDEM DESC,ZPO_CODIGO DESC"
+                    //cQuery += "     ORDER BY TL_ORDEM DESC,ZPO_CODIGO DESC"
+                    cQuery += "     ORDER BY TJ_HORACO1 DESC,TL_ORDEM DESC,ZPO_CODIGO DESC "
                     
                     cAliasTMP := GetNextAlias()
                     MPSysOpenQuery(cQuery, cAliasTMP)

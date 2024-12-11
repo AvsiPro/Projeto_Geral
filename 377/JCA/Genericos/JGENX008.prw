@@ -38,7 +38,7 @@ User Function JGENX008()
     oBrowse:AddLegend( "!Empty(ZPC->ZPC_CODANT) .AND. Empty(ZPC->ZPC_CPBAIX) .AND. Empty(ZPC->ZPC_INSEXC)"	, "GREEN",    	"Alterado insumo da OS" )
 	oBrowse:AddLegend( "!Empty(ZPC->ZPC_SOLICC) .AND. Empty(ZPC->ZPC_CPBAIX) .AND. Empty(ZPC->ZPC_INSEXC)"	, "BLUE",    	"Gerado SC" )
 	oBrowse:AddLegend( "ZPC->ZPC_CPBAIX == '1'"																, "RED",    	"SA Baixada" )
-	oBrowse:AddLegend( "ZPC->ZPC_CPBAIX == '2'"																, "YELLOW",    	"OS Baixada" )
+	oBrowse:AddLegend( "ZPC->ZPC_CPBAIX == '2'"																, "YELLOW",    	"SA Encerrada" )
 	oBrowse:AddLegend( "!Empty(ZPC->ZPC_INSEXC)"															, "BLACK",    	"Exclusão Insumo" )
  
 	oBrowse:Activate()
@@ -235,6 +235,7 @@ Local cNewPrd:= space(TamSx3("ZPC_CODIGO")[1])
 Local cPrdAtu:= ""
 Local cDesMtv:= ""
 Local cChvSCP:= ZPC->ZPC_FILIAL+ZPC->ZPC_CODIGO+ZPC->ZPC_REQUIS+ZPC->ZPC_ITEM
+Local cChvSCQ:= ZPC->ZPC_FILIAL+ZPC->ZPC_REQUIS+ZPC->ZPC_ITEM
 Local cChvSTL:= ""
 Local lOk    := .t.
 Local cBkpAtu:= ZPC->ZPC_CODIGO
@@ -245,10 +246,15 @@ If ZPC->ZPC_TIPO == "99"
 	Return 
 EndIf 
 
+If ZPC->ZPC_TIPO == "98"
+	MsgAlert("SA Já encerrada")
+	Return 
+EndIf 
+
 cPrdAtu := ZPC->ZPC_CODIGO + Alltrim(Posicione("SB1",1,xFilial("SB1")+ZPC->ZPC_CODIGO,"B1_DESC"))
 
 aAdd(aPergs,{9,"Produto Atual = "+cPrdAtu,160,13,.T.})
-aAdd(aPergs,{1,"Produto novo"	,  cNewPrd ,"@!","Existcpo('SB1')","SB1ZPC",".T.",90,.T.})
+aAdd(aPergs,{1,"Produto novo"	,  cNewPrd ,"@!","Existcpo('SB1')","SB1ZP2",".T.",90,.T.})
 
 aAdd(aPergs,{11,"Informe o motivo","",".T.",".T.",.T.})
 	
@@ -282,6 +288,19 @@ If ParamBox(aPergs ,"Opções por",@aRet)
 				SCP->CP_XTIPO   := ' '
 				SCP->(Msunlock())
 			EndIf 
+
+			If lOk 
+				DbSelectArea("SCQ")
+				DbSetOrder(1)
+				If Dbseek(cChvSCQ)
+					RecLock("SCQ",.F.)
+					SCQ->CQ_PRODUTO := cNewPrd
+					SCQ->(Msunlock())
+				Else 
+					MsgAlert("Item não encontrado na tabela SCQ")
+					lOk := .F.
+				EndIf 
+			EndIf
 
 			If lOk 
 				cChvSTL := Substr(SCP->CP_OP,1,6)
@@ -566,3 +585,66 @@ USER FUNCTION _Jgex8Leg()
 
 RETURN
 
+ /*/{Protheus.doc} nomeFunction
+	(long_description)
+	@type  Function
+	@author user
+	@since date
+	@version version
+	@param param, param_type, param_descr
+	@return return, return_type, return_description
+	@example
+	(examples)
+	@see (links_or_references)
+	/*/
+User Function _SB1ZPC
+
+Local aArea	:= GetArea()
+Local cRet  := ''
+Local cProdP:= Posicione("SB1",1,xFilial("SB1")+ZPC->ZPC_CODIGO,"B1_XCODPAI")
+Local oConsulta,oGrp1,oBtn1
+Local aRetorno := {}
+Local oList1
+Local nOpc	:=	0
+
+DbSelectArea("SB1")
+DbSetOrder(1)
+
+If Empty(cProdP)
+	Dbseek(xFilial("SB1")+ZPC->ZPC_CODIGO)
+	Dbskip(1)	
+	While !EOF() .And. SB1->B1_XCODPAI == ZPC->ZPC_CODIGO
+		Aadd(aRetorno,{SB1->B1_COD,SB1->B1_DESC})
+		Dbskip()
+	EndDo 
+Else 
+	Dbseek(xFilial("SB1")+CCODPAI)	
+	Dbskip(1)
+	While !EOF() .And. SB1->B1_XCODPAI == CCODPAI
+		Aadd(aRetorno,{SB1->B1_COD,SB1->B1_DESC})
+		Dbskip()
+	EndDo 
+EndIf 
+
+oConsulta  := MSDialog():New( 092,232,550,898,"Consulta Padrão",,,.F.,,,,,,.T.,,,.T. )
+oGrp1      := TGroup():New( 008,016,200,312,"Selecione",oConsulta,CLR_BLACK,CLR_WHITE,.T.,.F. )
+//oBrw1      := MsSelect():New( "","","",{{"","","Title",""}},.F.,,{020,020,196,308},,, oGrp1 )
+	oList1    := TCBrowse():New(020,020,285,170,, {'Código','Descrição'},;
+                                        {80,150},;
+                                        oGrp1,,,,{|| /*FHelp(oList1:nAt)*/},{|| /*editped(oList1:nAt)*/},, ,,,  ,,.F.,,.T.,,.F.,,,)
+    oList1:SetArray(aRetorno)
+    oList1:bLine := {||{aRetorno[oList1:nAt,01],; 
+                        aRetorno[oList1:nAt,02]}}
+
+oBtn1      := TButton():New( 204,144,"Selecionar",oConsulta,{||oConsulta:end(nOpc:=oList1:nAt)},037,012,,,,.T.,,"",,,,.F. )
+
+oConsulta:Activate(,,,.T.)
+
+If nOpc > 0
+	cRet := aRetorno[nOpc,01]
+	Dbseek(xFilial("SB1")+cRet)
+EndIf 
+
+RestArea(aArea)
+
+Return(.t.)
