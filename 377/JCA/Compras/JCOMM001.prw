@@ -154,7 +154,7 @@ dbSelectArea("TRB")
 While !EOF()
     aAux := {}
     For nCont := 1 to len(aHoBrw1)
-        Aadd(aAux,&("TRB->"+Alltrim(aHoBrw1[nCont,02])))
+        Aadd(aAux,If(valtype(&("TRB->"+Alltrim(aHoBrw1[nCont,02])))=="N",strtran(cvaltochar(&("TRB->"+Alltrim(aHoBrw1[nCont,02]))),",","."),&("TRB->"+Alltrim(aHoBrw1[nCont,02]))))
     Next nCont
     Aadd(aDados,aAux)
     Dbskip()
