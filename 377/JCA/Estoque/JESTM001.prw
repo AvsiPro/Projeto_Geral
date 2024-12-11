@@ -103,7 +103,7 @@ If len(aITEM)
                         "",;
                         SCP->(Recno())})
                     
-                    U_JGENX006(aAux2)
+                    //U_JGENX006(aAux2)
 
                 EndIf 
             EndIf 

@@ -24,7 +24,7 @@ If lOk
                 lOk := .F.
             EndIf 
 
-            If lOk
+            If lOk .AND. M->BE_CODPRO <> SBE->BE_CODPRO
                 DbSelectArea("SBE")
                 DbSetOrder(7)
                 If Dbseek(xFilial("SBE")+M->BE_CODPRO)
@@ -45,7 +45,7 @@ If lOk
     EndIf 
 EndIf 
 
-iF !Empty(M->BE_CODPRO)
+iF !Empty(M->BE_CODPRO) .AND. M->BE_CODPRO <> SBE->BE_CODPRO
     If (lOk .And. INCLUI) .OR. (lOk .And. M->BE_LOCALIZ <> SBE->BE_LOCALIZ)
         If !MsgYesNo("O Produto "+M->BE_CODPRO+" e seus filhos serão associados ao endereço "+M->BE_LOCALIZ+CRLF+"Confirma?")
             lOk := .F.

@@ -66,7 +66,8 @@ cQuery += " WHERE  STJ.D_E_L_E_T_ = ' '"
 cQuery += "  AND TJ_FILIAL BETWEEN ' ' AND 'ZZ'"
 cQuery += "  AND TJ_CODBEM='"+cCodBem+"'"
 cQuery += "     AND TL_ORDEM <> '"+cOrdem+"'"
-cQuery += "     ORDER BY TL_ORDEM DESC,ZPO_CODIGO DESC"
+cQuery += "     ORDER BY TJ_HORACO1 DESC,TL_ORDEM DESC,ZPO_CODIGO DESC "
+//cQuery += "     ORDER BY TL_ORDEM DESC,ZPO_CODIGO DESC"
 
 cAliasTMP := GetNextAlias()
 MPSysOpenQuery(cQuery, cAliasTMP)

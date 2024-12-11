@@ -34,9 +34,9 @@ If lLiga
         Next nCont 
     EndIf
 
-    If len(aAux2) > 0
+    /*If len(aAux2) > 0
         U_JGENX006(aAux2)
-    EndIf 
+    EndIf*/ 
 EndIf 
 
 If lRet
