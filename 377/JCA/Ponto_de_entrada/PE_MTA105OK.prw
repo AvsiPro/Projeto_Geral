@@ -67,7 +67,7 @@ For nCont := 1 to len(aCols)
         endIf 
 
         //If lAvulso
-        If !Empty(cOrdem) 
+        If !Empty(cOrdem) .And. Funname() <> "MNTA420" 
             //lBloq := U_xvld105(aCols[nCont,nPosP],cCodBem,cOrdem,cContad)
             lBloq := xvld105(aCols[nCont,nPosP],cCodBem,cOrdem,cContad,cPlano,aCols[nCont,nPosI],lAvulso)
         endif

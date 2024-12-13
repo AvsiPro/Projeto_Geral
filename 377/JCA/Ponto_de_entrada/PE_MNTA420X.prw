@@ -13,7 +13,7 @@ Local cPlano  := STJ->TJ_PLANO
 Local cOrdem  := STJ->TJ_ORDEM 
 Local cFilOS  := STJ->TJ_FILIAL 
 Local cCodBem := STJ->TJ_CODBEM
-	local cQuerSCP  := ''
+local cQuerSCP  := ''
 Local aAreaTL := {}
 Local lBloq   := .F.
 //TJ_FILIAL+TJ_ORDEM+TJ_PLANO+TJ_TIPOOS+TJ_CODBEM+TJ_SERVICO+TJ_SEQRELA
@@ -34,7 +34,8 @@ Local lBloq   := .F.
                     cQuery += " 	ON  TJ_FILIAL = TL_FILIAL
                     cQuery += " 	AND TJ_ORDEM = TL_ORDEM
                     cQuery += "     AND TJ_CODBEM = '"+cCodBem+"'"
-                    cQuery += " 	AND STJ.D_E_L_E_T_ = ''
+                    cQuery += " 	AND STJ.D_E_L_E_T_ = ' '"
+                    cQuery += "     AND TJ_SITUACA <> 'C' "
                     cQuery += " INNER JOIN "+RetSqlName("ZPO")+" ZPO
                     cQuery += " 	ON ZPO_FILIAL = '"+xFilial("ZPO")+"'"
                     cQuery += "        AND (ZPO_CODIGO = TL_CODIGO  OR ZPO_CODIGO "
@@ -43,11 +44,11 @@ Local lBloq   := .F.
                     cQuery += " 	AND ZPO.D_E_L_E_T_ = ' '
                     cQuery += " WHERE STL.D_E_L_E_T_ = ' '
                     cQuery += "     AND TL_FILIAL BETWEEN ' ' AND 'ZZZ' "
-                    cQuery += " 	AND TL_CODIGO = '"+STL->TL_CODIGO+"'"
+                    //cQuery += " 	AND TL_CODIGO = '"+STL->TL_CODIGO+"'"
                     cQuery += " 	AND TL_TIPOREG = 'P'"
                     cQuery += "     AND TL_ORDEM <> '"+STJ->TJ_ORDEM+"'"
                     //cQuery += "     ORDER BY TL_ORDEM DESC,ZPO_CODIGO DESC"
-                    cQuery += "     ORDER BY TJ_HORACO1 DESC,TL_ORDEM DESC,ZPO_CODIGO DESC "
+                    cQuery += "     ORDER BY TJ_DTORIGI DESC,TJ_HORACO1 DESC,TL_ORDEM DESC,ZPO_CODIGO" // DESC "
                     
                     cAliasTMP := GetNextAlias()
                     MPSysOpenQuery(cQuery, cAliasTMP)

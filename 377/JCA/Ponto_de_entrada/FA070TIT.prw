@@ -50,7 +50,7 @@ User function FA070TIT()
 				EndIf
 				SE1->(DbGoTo(nBkpRec))
 			Else
-				If Alltrim(SE1->E1_TIPO) $ cTipBx .And. SE1->E1_SALDO == nValrec
+				If Alltrim(SE1->E1_TIPO) $ cTipBx .And. (SE1->E1_SALDO+SE1->E1_ACRESC-SE1->E1_DECRESC) == nValrec
 					EnvTrck(nVlrBaixa)
 				EndIf
 			EndIf
