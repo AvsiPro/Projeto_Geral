@@ -1,5 +1,10 @@
 #Include 'Protheus.ch'
- 
+/*
+    PE para limpar campo que indica que uma OP esta bloqueada ao cancelar uma OS 
+    utilizado em conjunto com os PE´s de legendas
+    Alexandre 01/12/24    
+    
+*/
 User Function MNTA420P()
  
     // Parâmetro

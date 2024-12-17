@@ -366,11 +366,12 @@ Return .t.
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
 ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
 */
-User Function RF01BImp(lEmail)
+User Function RF01BImp(lEmail,lJobJ01)
 
 	Local aArea  := GetArea()
 	Local cRetCam := ''
 	Default lEmail := .f.
+	Default lJobJ01 := .t.
 	
 
 	lProblema := .F.
@@ -418,9 +419,9 @@ User Function RF01BImp(lEmail)
 			cNumTit := AllTrim(SE1->(E1_PREFIXO+E1_NUM+E1_PARCELA))
 			
 			if !lEmail
-				lProblema := U_RF01B062(,,,, lEmail)
+				lProblema := U_RF01B062(,,,, lEmail,lJobJ01)
 			else
-				lProblema := FWMsgRun(, {|| U_RF01B062(,,,, lEmail) }, "Aguarde...", "Gerando o boleto para ser enviado no e-mail do cliente...")
+				lProblema := FWMsgRun(, {|| U_RF01B062(,,,, lEmail,lJobJ01) }, "Aguarde...", "Gerando o boleto para ser enviado no e-mail do cliente...")
 			endif
 			
 			if lProblema
@@ -431,7 +432,7 @@ User Function RF01BImp(lEmail)
 			endif
 		EndDo
 	else
-		cRetCam := RF02B062(,,,, lEmail)
+		cRetCam := RF02B062(,,,, lEmail,lJobJ01)
 	endif
 
 	RestArea(aArea)
@@ -494,7 +495,7 @@ Return NIL
 /*/
 
 //Desta forma posso chamar direto da nota por exemplo, passando os parametros
-User Function RF01B062(xBanco,xAgencia,xConta,xSubCt, lEmail)
+User Function RF01B062(xBanco,xAgencia,xConta,xSubCt, lEmail,lJobJ01)
 
 	Local cDir			:= "c:\temp\" //Alltrim(GetTempPath()) //Busca Pasta temporaria do Usuario
 	Local cPath 		:= Replace( cDir, "\\", "\" )
@@ -548,7 +549,7 @@ User Function RF01B062(xBanco,xAgencia,xConta,xSubCt, lEmail)
 	// SELECIONA O OBJETO DE IMPRESSÃO PARA PDF.
 	oPrint:setDevice(IMP_PDF)
 	
-	IF !lEmail
+	IF !lEmail .and. lJobJ01
 		// INDICA SE O RELATORIO SERÁ VISUALIZADO APOS IMPRESSÃO.
 		oPrint:lViewPDF := .t.
 	Else
@@ -897,8 +898,8 @@ User Function RF01B062(xBanco,xAgencia,xConta,xSubCt, lEmail)
 
 	//EndDo
 
-	If !lEmail
-		If lGerBol
+	If !lEmail 
+		If lGerBol 
 			oPrint:Preview()// Visualiza antes de imprimir
 		Endif
 		FreeObj(oPrint)		
@@ -2191,7 +2192,12 @@ Static Function Impres2(oPrint,aDadosEmp,aDadosTit,aDadosBanco,aDatSacado,aBolTe
 	RecLock("SE1",.f.)
 	If Empty(Alltrim(SE1->E1_NUMBCO))
 		SE1->E1_NUMBCO 	:= cNumBco
+		
 	Endif
+
+	If SE1->E1_XCTRBOL <> '2'
+		SE1->E1_XCTRBOL := '1'				//Boleto impresso, pronto para ser enviado ao tracker
+	EndIf 
 
 	SE1->E1_PORTADO := aDadosBanco[1]	//Banco
 	SE1->E1_AGEDEP  := cAgencia			//Agencia
@@ -2528,7 +2534,7 @@ Local cChave	:= ""
 	
 Return aTo	
 
-Static Function RF02B062(xBanco,xAgencia,xConta,xSubCt, lEmail)
+Static Function RF02B062(xBanco,xAgencia,xConta,xSubCt, lEmail,lJobJ01)
 
 	Local cDir			:= "c:\temp\" //Alltrim(GetTempPath()) //Busca Pasta temporaria do Usuario
 	Local cPath 		:= Replace( cDir, "\\", "\" )
@@ -2582,7 +2588,7 @@ Static Function RF02B062(xBanco,xAgencia,xConta,xSubCt, lEmail)
 	// SELECIONA O OBJETO DE IMPRESSÃO PARA PDF.
 	oPrint:setDevice(IMP_PDF)
 	
-	IF !lEmail
+	IF !lEmail .and. lJobJ01
 		// INDICA SE O RELATORIO SERÁ VISUALIZADO APOS IMPRESSÃO.
 		oPrint:lViewPDF := .T.
 	Else
@@ -2913,7 +2919,7 @@ Static Function RF02B062(xBanco,xAgencia,xConta,xSubCt, lEmail)
 	EndDo
 
 	If !lEmail
-		If lGerBol
+		If lGerBol 
 			oPrint:Preview()// Visualiza antes de imprimir
 		Endif
 		FreeObj(oPrint)		

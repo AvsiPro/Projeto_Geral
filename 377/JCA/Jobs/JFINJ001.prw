@@ -9,7 +9,7 @@
    
    
 /*/
-User Function JFINJ001(xEmp, xFi, lJob)
+User Function JFINJ001(xEmp, xFi, lJob, cTitulo)
 
     Local aItens := {}
     Local nCont 
@@ -17,13 +17,14 @@ User Function JFINJ001(xEmp, xFi, lJob)
     Default xEmp := '01'
     Default xFil := '00080230'
     Default lJob := .F.
+    Default cTitulo := ''
 
     If Empty(FunName())
        RpcSetType(3)
        RpcSetEnv(xEmp,xFil)
     EndIf
 
-    aItens := Busca()
+    aItens := Busca(cTitulo)
 
     If len(aItens) > 0
         For nCont := 1 to len(aItens)
@@ -47,20 +48,29 @@ Return
     (examples)
     @see (links_or_references)
 /*/
-Static Function Busca()
+Static Function Busca(cTitulo)
 
 Local aArea := GetArea()
 Local cQuery 
 Local aRet  := {}
+Local cPref := Alltrim(SuperGetMV("TI_XPRTRC",.F.,"FAT"))
 
 cQuery := "SELECT E1_FILIAL,E1_PREFIXO,E1_NUM,E1_PARCELA,E1_TIPO,E1_NUMBCO,A1_CGC,E1_EMISSAO,E1_VENCREA,"
 cQuery += " E1_IDCNAB,E1_ZIMPBOL,E1_CODBAR,E1_CLIENTE,E1_LOJA,E1.R_E_C_N_O_ AS RECNOE1 "
 cQuery += " FROM "+RetSQLName("SE1")+" E1"
 cQuery += " INNER JOIN "+RetSQLName("SA1")+" A1 ON A1_FILIAL='"+xFilial("SA1")+"' AND A1_COD=E1_CLIENTE AND A1_LOJA=E1_LOJA AND A1.D_E_L_E_T_=' '"
 cQuery += " WHERE E1_FILIAL BETWEEN ' ' AND 'ZZZ'"
-cQuery += " AND E1_VENCREA>='"+dtos(dDatabase)+"' AND E1_BAIXA=' '"
+cQuery += " AND E1_BAIXA=' '"
 cQuery += " AND E1_NUMBCO<>' '"
-//cQUERY += " AND E1_NUM='155923'"
+cQuery += " AND E1_PREFIXO IN('"+cPref+"') "
+
+If !Empty(cTitulo)
+    cQUERY += " AND E1_NUM='"+cTitulo+"'"
+else
+    //cQuery += " AND E1_EMISSAO='"+dtos(dDataBase)+"'"
+    //cQuery += " AND E1_VENCREA>='"+dtos(dDatabase)+"'"
+    cQuery += " AND E1_XCTRBOL='1'"
+endif 
 
 IF Select('TRB') > 0
     dbSelectArea('TRB')
@@ -114,7 +124,6 @@ Local aArea     := GetArea()
 Local cEncode64 := ""
 
 Local cFile := ""// VALORES RETORNADOS NA LEITURA
-Local oFile //:= FwFileReader():New("/NR5.pdf") // CAMINHO ABAIXO DO ROOTPATH
 
 Private cMarca  := GetMark()
 
@@ -144,23 +153,56 @@ EndIf
 
 lBolSeparado := .f.
 
-CCMPVENCTO := SE1->E1_VENCTO
+CCMPVENCTO := "SE1->E1_VENCTO"
 
-cFileBol := U_RF01BImp(.f.)
+cFileBol := U_RF01BImp(.f.,.f.)
 
 If !'.pdf' $ cFileBol
     cFileBol := alltrim(cFileBol)+'.pdf'
 EndIf 
 
-oFile := FwFileReader():New(cFileBol) // CAMINHO ABAIXO DO ROOTPATH
-oFile:Open()
-cFile := oFile:FullRead() // EFETUA A LEITURA DO ARQUIVO
+cFile := CodificaBase64(cFileBol)
 
 cEncode64 := Encode64(cFile)
 
 RestArea(aArea)
 
 Return(cEncode64)
+
+
+/*/{Protheus.doc} CodificaBase64
+    Gerar o encode64 do boleto
+    @type  Static Function
+    @author user
+    @since 17/12/2024
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function CodificaBase64(cArquivo)
+
+    Local hFile, nSize, cBuffer
+    
+    // Abrir o arquivo para leitura
+    hFile := FOpen(cArquivo, FO_READ)
+    
+    If hFile == Nil
+        Return ""
+    EndIf
+    
+    nSize := FSeek(hFile, 0, 2)  
+    
+    FSeek(hFile, 0, 0)  
+
+    cBuffer := Space(nSize)
+    
+    FRead(hFile, @cBuffer, nSize)  
+    FClose(hFile)
+      
+Return cBuffer
 
 /*/{Protheus.doc} aItens
     (long_description)
@@ -200,7 +242,7 @@ For nCont := 1 to len(aItens)
 
     cRet := oEnvio:toJson()
     
-    ApiEnv04(cApiDest,cEndPnt,cRet,cToken)
+    ApiEnv04(cApiDest,cEndPnt,cRet,cToken,aItens[nCont,12])
 
 Next nCont 
 
@@ -221,7 +263,7 @@ Return
     (examples)
     @see (links_or_references)
 /*/
-Static Function ApiEnv04(cUrlDest,cPathDest,cJson,cToken)
+Static Function ApiEnv04(cUrlDest,cPathDest,cJson,cToken,nRecnE1)
 
 Local oRest 
 Local oJson     :=  ""
@@ -245,6 +287,11 @@ If oRest:Post(aHeader)
     cRet  := oRest:GetResult()
     oRet := oJson:FromJson(cRet)
     lRet := .T.
+    DbSelectArea("SE1")
+    dbGoto(nRecnE1)
+    Reclock("SE1",.F.)
+    SE1->E1_XCTRBOL := '2'
+    SE1->(MsUnLock())
 else
     cRetorno := Alltrim(oRest:GetLastError()) 
     cRet := Alltrim(oRest:cresult)
@@ -254,3 +301,22 @@ else
 Endif
 
 Return(cRet)
+
+User Function xJfinj01
+
+Local aPerg := {}
+Local cTit  := space(9)
+
+If Empty(FunName())
+    RpcSetType(3)
+    RpcSetEnv('01','00080230')
+EndIf
+
+aAdd(aPerg,{01,"Fornecedor" ,cTit 		,""					,"","SE1"	,"", 60,.F.})	// MV_PAR01
+
+If ParamBox(aPerg,"Filtro",/*aRet*/,/*bOk*/,/*aButtons*/,.T.,,,,FUNNAME(),.T.,.T.)
+    cFilNF := MV_PAR01 
+    Processa({|| U_JFINJ001('', '', .F., cFilNF)},"Aguarde")
+EndIf 
+
+Return 

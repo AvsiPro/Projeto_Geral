@@ -51,7 +51,7 @@ User function FA070TIT()
 				SE1->(DbGoTo(nBkpRec))
 			Else
 				If Alltrim(SE1->E1_TIPO) $ cTipBx .And. (SE1->E1_SALDO+SE1->E1_ACRESC-SE1->E1_DECRESC) == nValrec
-					EnvTrck(nVlrBaixa)
+					EnvTrck(nValrec)
 				EndIf
 			EndIf
 		EndIf
@@ -97,7 +97,7 @@ Static Function EnvTrck(nVlrBaixa)
 		oEnvio['vencimento']:= cvaltochar(SE1->E1_VENCTO)
 		oEnvio['vencto_real']:= cvaltochar(SE1->E1_VENCREA)
 		oEnvio['data_baixa']:= cvaltochar(dDataBase)
-		oEnvio['valor']     := SE1->E1_VALOR//If(nVlrBaixa>0,nVlrBaixa,SE1->E1_VALOR)
+		oEnvio['valor']     := If(nVlrBaixa>0,nVlrBaixa,SE1->E1_VALOR)
 		oEnvio['historico'] := SE1->E1_HIST
 		oEnvio['motivo_baixa'] := cMotBx
 		oEnvio['movimento'] := 'liquidacao'
