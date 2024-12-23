@@ -13,9 +13,11 @@ Local cPlano  := STJ->TJ_PLANO
 Local cOrdem  := STJ->TJ_ORDEM 
 Local cFilOS  := STJ->TJ_FILIAL 
 Local cCodBem := STJ->TJ_CODBEM
-	local cQuerSCP  := ''
+Local cCodPai := '' 
+local cQuerSCP:= ''
 Local aAreaTL := {}
 Local lBloq   := .F.
+Local lCodP   := .F.
 //TJ_FILIAL+TJ_ORDEM+TJ_PLANO+TJ_TIPOOS+TJ_CODBEM+TJ_SERVICO+TJ_SEQRELA
 //TL_FILIAL+TL_ORDEM+TL_PLANO+TL_TAREFA+TL_TIPOREG+TL_CODIGO+TL_SEQRELA+TL_SEQTARE
 
@@ -26,7 +28,8 @@ Local lBloq   := .F.
             While !Eof() .AND. STL->TL_FILIAL == cFilOS .AND. STL->TL_ORDEM == cOrdem .AND. STL->TL_PLANO == cPlano
                 If STL->TL_TIPOREG == 'P'
                     lLibera := .t.
-
+                    cCodPai := Posicione("SB1",1,xFilial("SB1")+STL->TL_CODIGO,"B1_XCODPAI")
+                    lCodP   := !Empty(Posicione("ZPO",1,xFilial("ZPO")+STL->TL_CODIGO,"ZPO_CODIGO"))
                     aAreaTL := GetArea()
 
                     cQuery := " SELECT * FROM "+RetSqlName("STL")+" STL
@@ -34,25 +37,31 @@ Local lBloq   := .F.
                     cQuery += " 	ON  TJ_FILIAL = TL_FILIAL
                     cQuery += " 	AND TJ_ORDEM = TL_ORDEM
                     cQuery += "     AND TJ_CODBEM = '"+cCodBem+"'"
-                    cQuery += " 	AND STJ.D_E_L_E_T_ = ''
+                    cQuery += " 	AND STJ.D_E_L_E_T_ = ' '"
+                    cQuery += "     AND TJ_SITUACA <> 'C' "
                     cQuery += " INNER JOIN "+RetSqlName("ZPO")+" ZPO
                     cQuery += " 	ON ZPO_FILIAL = '"+xFilial("ZPO")+"'"
-                    cQuery += "        AND (ZPO_CODIGO = TL_CODIGO  OR ZPO_CODIGO "
+                    cQuery += "        AND (ZPO_CODIGO = '"+STL->TL_CODIGO+"'  OR ZPO_CODIGO "
                     cQuery += "             IN(SELECT B1_XCODPAI FROM "+RetSQLName("SB1")+" WHERE B1_FILIAL=' ' AND B1_COD='"+STL->TL_CODIGO+"'))"
 
                     cQuery += " 	AND ZPO.D_E_L_E_T_ = ' '
                     cQuery += " WHERE STL.D_E_L_E_T_ = ' '
                     cQuery += "     AND TL_FILIAL BETWEEN ' ' AND 'ZZZ' "
-                    cQuery += " 	AND TL_CODIGO = '"+STL->TL_CODIGO+"'"
+
+                    If lCodP
+                        cQuery += " 	AND TL_CODIGO = '"+STL->TL_CODIGO+"'"
+                    EndIf 
+
                     cQuery += " 	AND TL_TIPOREG = 'P'"
                     cQuery += "     AND TL_ORDEM <> '"+STJ->TJ_ORDEM+"'"
                     //cQuery += "     ORDER BY TL_ORDEM DESC,ZPO_CODIGO DESC"
-                    cQuery += "     ORDER BY TJ_HORACO1 DESC,TL_ORDEM DESC,ZPO_CODIGO DESC "
+                    cQuery += "     ORDER BY TJ_DTORIGI DESC,TJ_HORACO1 DESC,TL_ORDEM DESC,ZPO_CODIGO DESC "
                     
                     cAliasTMP := GetNextAlias()
                     MPSysOpenQuery(cQuery, cAliasTMP)
                     
                     If (cAliasTMP)->(!EoF())
+                        
                         
 						//VERIFICA SE ULTIMA SA NÃO FOI ATENDIDA POR VENDA PERDIDA
 						cQuerSCP := " SELECT * FROM "+RetSQLName("ZPC")+" ZPC"

@@ -1,5 +1,10 @@
 #INCLUDE "PROTHEUS.CH"
-
+/*
+    PE para controle de quais usuários podem reabrir uma OS por grupo
+    
+    Alexandre 01/09/24    
+    
+*/
 User Function MNTA8802()
  
     Local lRet     := .F.
