@@ -312,7 +312,7 @@ If Empty(FunName())
     RpcSetEnv('01','00080230')
 EndIf
 
-aAdd(aPerg,{01,"Fornecedor" ,cTit 		,""					,"","SE1"	,"", 60,.F.})	// MV_PAR01
+aAdd(aPerg,{01,"Titulo" ,cTit 		,""					,"","SE1"	,"", 60,.F.})	// MV_PAR01
 
 If ParamBox(aPerg,"Filtro",/*aRet*/,/*bOk*/,/*aButtons*/,.T.,,,,FUNNAME(),.T.,.T.)
     cFilNF := MV_PAR01 

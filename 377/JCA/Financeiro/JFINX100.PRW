@@ -2536,7 +2536,7 @@ Return aTo
 
 Static Function RF02B062(xBanco,xAgencia,xConta,xSubCt, lEmail,lJobJ01)
 
-	Local cDir			:= "c:\temp\" //Alltrim(GetTempPath()) //Busca Pasta temporaria do Usuario
+	Local cDir			:= '\spool\' //GetTempPath() //"c:\temp\" //Alltrim(GetTempPath()) //Busca Pasta temporaria do Usuario
 	Local cPath 		:= Replace( cDir, "\\", "\" )
 	//Local cRutaSmr 		:=  Alltrim(GetTempPath()) 
 	Local cPDFNom		:= "BOLETO_"+Dtos(MSDate())+StrTran(Time(),":","")
@@ -2596,7 +2596,7 @@ Static Function RF02B062(xBanco,xAgencia,xConta,xSubCt, lEmail,lJobJ01)
 	Endif	
 	
 	// INDICA QUE A IMPRESSÃO SERÁ VIA SERVER.
-	oPrint:lServer	:= .F.
+	oPrint:lServer	:= .t.
 	
 	// DEFINE A ORIENTAÇÃO COMO PAISAGEM.
 	oPrint:SetPortrait(.T.)	
