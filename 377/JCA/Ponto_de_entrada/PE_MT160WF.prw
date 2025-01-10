@@ -71,12 +71,12 @@ User function MT160WF
 	Dbseek(xFilial("SC7")+cPedido)
 	While !EOF() .And. SC7->C7_FILIAL == xFilial("SC7") .And. SC7->C7_NUM == cPedido
 		//Reclock("SC7",.F.)
-	//	SC7->C7_ZTPCOM := aItenSc1[nPos,03] //SC1->C1_XTIPCOT
+		//	SC7->C7_ZTPCOM := aItenSc1[nPos,03] //SC1->C1_XTIPCOT
 		nPos := Ascan(aItenSc1,{|x| x[1]+x[2] == SC7->C7_NUMSC+SC7->C7_ITEMSC})
 		If nPos > 0
 			Reclock("SC7",.F.)
 			SC7->C7_ZTPCOM := aItenSc1[nPos,03] //SC1->C1_XTIPCOT
-            SC7->C7_ZPRECAR := aItenSc1[nPos,05] // SC7->C7_ZPRECAR
+			SC7->C7_ZPRECAR := aItenSc1[nPos,05] // SC7->C7_ZPRECAR
 
 			If SC7->C7_QTDSOL == 0 .AND. aItenSc1[nPos,04] > 0
 				SC7->C7_QTDSOL := SC7->C7_QUANT
