@@ -21,7 +21,7 @@ User Function JFINJ001(xEmp, xFi, lJob, cTitulo)
 
     If Empty(FunName())
        RpcSetType(3)
-       RpcSetEnv(xEmp,xFil)
+       RpcSetEnv('01','00080230')
     EndIf
 
     aItens := Busca(cTitulo)

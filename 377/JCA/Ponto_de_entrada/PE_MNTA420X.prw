@@ -18,6 +18,8 @@ local cQuerSCP:= ''
 Local aAreaTL := {}
 Local lBloq   := .F.
 Local lCodP   := .F.
+Local lNewReg := .F.
+
 //TJ_FILIAL+TJ_ORDEM+TJ_PLANO+TJ_TIPOOS+TJ_CODBEM+TJ_SERVICO+TJ_SEQRELA
 //TL_FILIAL+TL_ORDEM+TL_PLANO+TL_TAREFA+TL_TIPOREG+TL_CODIGO+TL_SEQRELA+TL_SEQTARE
 
@@ -55,14 +57,29 @@ Local lCodP   := .F.
                     cQuery += " 	AND TL_TIPOREG = 'P'"
                     cQuery += "     AND TL_ORDEM <> '"+STJ->TJ_ORDEM+"'"
                     //cQuery += "     ORDER BY TL_ORDEM DESC,ZPO_CODIGO DESC"
-                    cQuery += "     ORDER BY TJ_DTORIGI DESC,TJ_HORACO1 DESC,TL_ORDEM DESC,ZPO_CODIGO DESC "
+                    cQuery += "     ORDER BY TJ_DTORIGI DESC,TJ_HORACO1 DESC,TL_ORDEM DESC,ZPO_CODIGO"// DESC "
                     
                     cAliasTMP := GetNextAlias()
                     MPSysOpenQuery(cQuery, cAliasTMP)
                     
                     If (cAliasTMP)->(!EoF())
-                        
-                        
+                        //NOVA REGRA 19/12/24
+                        //NAO CONSIDERAR UM IRMAO QUE TENHA REGRA ESPECIFICA PRA ELE NA HORA DE BLOQUEAR
+                        While !lNewReg
+                            If STL->TL_CODIGO <> (cAliasTMP)->TL_CODIGO
+                                If !Empty(Posicione("ZPO",1,xFilial("ZPO")+(cAliasTMP)->TL_CODIGO,"ZPO_CODIGO"))
+                                    (cAliasTMP)->(Dbskip())
+                                    loop
+                                else 
+                                    /*If cCodPai <> (cAliasTMP)->TL_CODIGO
+
+                                    EndIf */
+                                    lNewReg := .T.
+                                EndIf 
+                            Else 
+                                lNewReg := .T.
+                            EndIf 
+                        Enddo 
 						//VERIFICA SE ULTIMA SA NÃO FOI ATENDIDA POR VENDA PERDIDA
 						cQuerSCP := " SELECT * FROM "+RetSQLName("ZPC")+" ZPC"
 						cQuerSCP += " WHERE ZPC.D_E_L_E_T_='' AND ZPC_REQUIS = '"+(cAliasTMP)->TL_NUMSA+"' AND ZPC_ITEM = '"+(cAliasTMP)->TL_ITEMSA +"'"

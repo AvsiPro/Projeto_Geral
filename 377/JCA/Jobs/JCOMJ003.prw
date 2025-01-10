@@ -129,8 +129,15 @@ Return
 /*/
 User Function xJCom3j(cCodigo,cLocal,nQtd,cNum,cItem,cTipo)
 
-Local aArea := GetArea()
-Local lRet  := .T.
+Local aArea  := GetArea()
+Local lRet   := .T.
+Local nDifer := 0
+Local aAuxCP := FWSX3Util():GetAllFields('SCP')
+Local aAuxCQ := FWSX3Util():GetAllFields('SCQ')
+Local aAxCpo1:= {}
+Local aAxCpo2:= {}
+Local nX 
+Local cProx  := ''
 
 If Empty(cTipo)
 
@@ -141,20 +148,118 @@ If Empty(cTipo)
 
         If nQtd > nSaldo 
             lRet := .F.
+			nDifer := nQtd - nSaldo
         EndIf 
     Else 
         lRet := .F.
     endIf 
 
     If !lRet 
+	//Alteração solicitada pelo Toninho 20/12/24
+	//Quando não tiver saldo, alterar a SCP do item para a quantidade disponível
+	//e criar uma nova linha na SCP com a quantidade restante para atender,
+	//como venda perdida.
         DbSelectArea("SCP")
         DbSetOrder(2)
-        If Dbseek(xFilial("SCP")+cCodigo+cNum+cItem)
-            Reclock("SCP",.F.)
-            SCP->CP_XTIPO := '99'
-            SCP->(Msunlock())
-            lRet := .T.
-        EndIf 
+		If Dbseek(xFilial("SCP")+cCodigo+cNum+cItem)
+			For nX := 1 to len(aAuxCP)
+				Aadd(aAxCpo1,{aAuxCP[nX],&("SCP->"+aAuxCP[nX])})
+			Next nX 
+
+			Reclock("SCP",.F.)
+			
+			If nDifer > 0 .And. nSaldo > 0
+				SCP->CP_QUANT := nSaldo
+			else 
+				SCP->CP_XTIPO := '99'
+			EndIf 
+
+			SCP->(Msunlock())
+
+			lRet := .T.
+
+			If nDifer > 0 .And. nSaldo > 0
+				cProx := PrxItCP(xFilial("SCP"),cNum)
+
+				Reclock("SCP",.T.)
+
+				For nX := 1 to len(aAxCpo1)
+					cConteudo := ""
+					If Alltrim(aAxCpo1[nX,01]) == "CP_ITEM"
+						cConteudo := cProx
+					ElseIf Alltrim(aAxCpo1[nX,01]) == "CP_XTIPO"
+						cConteudo := "99"
+					ElseIf Alltrim(aAxCpo1[nX,01]) == "CP_QUANT"
+						cConteudo := nDifer
+					Else 
+						cConteudo := aAxCpo1[nX,02]
+					EndIf
+
+					&("SCP->"+aAxCpo1[nX,01]) :=  cConteudo
+ 				Next nX 
+
+				SCP->(Msunlock())
+
+			    cServ := Posicione("STJ",1,xFilial("STJ")+SUBSTR(SCP->CP_OP,1,6),"TJ_SERVICO")
+    
+				Reclock("ZPC",.T.)
+				ZPC->ZPC_FILIAL := SCP->CP_FILIAL 
+				ZPC->ZPC_CODIGO := SCP->CP_PRODUTO 
+				ZPC->ZPC_REQUIS := SCP->CP_NUM 
+				ZPC->ZPC_DATA   := dDatabase
+				ZPC->ZPC_QUANT  := SCP->CP_QUANT 
+				ZPC->ZPC_PREFIX := SCP->CP_OBS
+				ZPC->ZPC_SOLICI := SCP->CP_XMATREQ
+				ZPC->ZPC_STATUS := '1'
+				ZPC->ZPC_ITEM   := SCP->CP_ITEM
+				ZPC->ZPC_LOCAL  := SCP->CP_LOCAL
+				ZPC->ZPC_ALMOXA := SCP->CP_CODSOLI
+				ZPC->ZPC_TIPO   := SCP->CP_XTIPO
+				ZPC->ZPC_OS     := SUBSTR(SCP->CP_OP,1,6)
+				ZPC->ZPC_PLACA  := Posicione("ST9",1,xFilial("ST9")+Alltrim(SCP->CP_OBS),"T9_PLACA")
+				ZPC->ZPC_ORIGEM := Posicione("STJ",1,xFilial("STJ")+SUBSTR(SCP->CP_OP,1,6),"TJ_ZCORIGE")
+				ZPC->ZPC_PRECOR := If(!Empty(cServ),Posicione("STE",1,xFilial("STE")+cServ,"TE_CARACTE"),"")
+				ZPC->(Msunlock())
+
+				//lRet := .F.
+
+			EndIf 
+
+		EndIf 
+
+		If nDifer > 0 .And. nSaldo > 0
+			DbSelectArea("SCQ")
+			DbSetOrder(1)
+			If Dbseek(xFilial("SCQ")+cNum+cItem)
+				For nX := 1 to len(aAuxCQ)
+					Aadd(aAxCpo2,{aAuxCQ[nX],&("SCQ->"+aAuxCQ[nX])})
+				Next nX 
+
+				Reclock("SCQ",.F.)
+				
+				SCQ->CQ_QUANT := nSaldo
+				
+				SCQ->(Msunlock())
+
+				Reclock("SCP",.T.)
+
+				For nX := 1 to len(aAxCpo2)
+					cConteudo := ""
+					If Alltrim(aAxCpo2[nX,01]) == "CQ_ITEM"
+						cConteudo := cProx
+					ElseIf Alltrim(aAxCpo2[nX,01]) == "CQ_QUANT"
+						cConteudo := nDifer
+					Else 
+						cConteudo := aAxCpo2[nX,02]
+					EndIf
+
+					&("SCQ->"+aAxCpo2[nX,01]) :=  cConteudo
+ 				Next nX 
+
+				SCP->(Msunlock())
+			EndIF 
+		endIF 
+		
     EndIf 
 EndIf 
 
@@ -162,6 +267,41 @@ EndIf
 RestArea(aArea)
 
 Return(lRet)
+
+/*/{Protheus.doc} PrxItCP
+	(long_description)
+	@type  Static Function
+	@author user
+	@since 20/12/2024
+	@version version
+	@param param_name, param_type, param_descr
+	@return return_var, return_type, return_description
+	@example
+	(examples)
+	@see (links_or_references)
+/*/
+Static Function PrxItCP(cFil,cNum)
+
+Local aArea := GetArea()
+Local cRet  := "01"
+Local cQuery  
+
+cQuery := "SELECT MAX(CP_ITEM)+1 AS PROX FROM "+RetSQLName("SCP")
+cQuery += " WHERE CP_FILIAL='"+cFil+"' AND CP_NUM='"+cNum+"' AND D_E_L_E_T_=' '"
+
+If Select("TRB") > 0
+	TRB->( dbclosearea() )
+Endif
+
+cQuery := ChangeQuery( cQuery )
+
+dbUseArea( .T., "TOPCONN", TcGenQry( ,,cQuery ), "TRB", .F., .T. ) 		
+
+cRet := STRZERO(TRB->PROX,2)
+
+RestArea(aArea)
+
+Return cRet
 
 /*/{Protheus.doc} xGermail
     (long_description)

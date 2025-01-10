@@ -499,7 +499,7 @@ User Function RF01B062(xBanco,xAgencia,xConta,xSubCt, lEmail,lJobJ01)
 
 	Local cDir			:= "c:\temp\" //Alltrim(GetTempPath()) //Busca Pasta temporaria do Usuario
 	Local cPath 		:= Replace( cDir, "\\", "\" )
-	Local cRutaSmr 		:= Alltrim(GetTempPath()) 
+	//Local cRutaSmr 		:= Alltrim(GetTempPath()) 
 	Local cPDFNom		:= "BOLETO_"+Dtos(MSDate())+StrTran(Time(),":","")
 	Local oPrint
 	Local nX 			:= 0
@@ -2538,7 +2538,7 @@ Static Function RF02B062(xBanco,xAgencia,xConta,xSubCt, lEmail,lJobJ01)
 
 	Local cDir			:= "c:\temp\" //Alltrim(GetTempPath()) //Busca Pasta temporaria do Usuario
 	Local cPath 		:= Replace( cDir, "\\", "\" )
-	Local cRutaSmr 		:=  Alltrim(GetTempPath()) 
+	//Local cRutaSmr 		:=  Alltrim(GetTempPath()) 
 	Local cPDFNom		:= "BOLETO_"+Dtos(MSDate())+StrTran(Time(),":","")
 	Local oPrint
 	Local nX 			:= 0
