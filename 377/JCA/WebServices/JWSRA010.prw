@@ -675,7 +675,7 @@ WsMethod POST WsReceive RECEIVE WsService JWSRA010
     ::SetContentType('application/json')
     ::SetResponse(cResult)
 
-	RpcClearEnv()
+	//RpcClearEnv()
 
 Return lRet
 

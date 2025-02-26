@@ -54,8 +54,16 @@ User function FA070TIT()
 				EndIf
 				SE1->(DbGoTo(nBkpRec))
 			Else
-				If Alltrim(SE1->E1_TIPO) $ cTipBx .And. (SE1->E1_SALDO+SE1->E1_ACRESC-SE1->E1_DECRESC) == nValrec
-					EnvTrck(nValrec)
+				nSaldo := SldParc()
+				If Alltrim(SE1->E1_TIPO) $ cTipBx 
+					If (SE1->E1_SALDO+SE1->E1_ACRESC-SE1->E1_DECRESC) == nValrec
+						nValrec := SE1->E1_SALDO+SE1->E1_ACRESC-SE1->E1_DECRESC+nSaldo
+						EnvTrck(nValrec)
+					ElseIf  (nSaldo+SE1->E1_SALDO-SE1->E1_ACRESC-SE1->E1_DECRESC) == SE1->E1_VALOR .aND. (nSaldo+nValrec-SE1->E1_ACRESC-SE1->E1_DECRESC) == SE1->E1_VALOR
+						nValrec := SE1->E1_VALOR+SE1->E1_ACRESC-SE1->E1_DECRESC
+						EnvTrck(nValrec)
+					EndIf 
+					
 				EndIf
 			EndIf
 		EndIf
@@ -101,7 +109,7 @@ Static Function EnvTrck(nVlrBaixa)
 		oEnvio['vencimento']:= cvaltochar(SE1->E1_VENCTO)
 		oEnvio['vencto_real']:= cvaltochar(SE1->E1_VENCREA)
 		oEnvio['data_baixa']:= cvaltochar(dDataBase)
-		oEnvio['valor']     := If(nVlrBaixa>0,nVlrBaixa,SE1->E1_VALOR)
+		oEnvio['valor']     := If(nVlrBaixa>0,nVlrBaixa,SE1->E1_VALOR) //SE1->E1_VALOR
 		oEnvio['historico'] := SE1->E1_HIST
 		oEnvio['motivo_baixa'] := cMotBx
 		oEnvio['movimento'] := 'liquidacao'
@@ -376,3 +384,59 @@ Static Function SldLiq()
 	RestArea(aArea)
 
 Return(nRet)
+
+/*/{Protheus.doc} SldParc()
+	(long_description)
+	@type  Static Function
+	@author user
+	@since 15/01/2025
+	@version version
+	@param param_name, param_type, param_descr
+	@return return_var, return_type, return_description
+	@example
+	(examples)
+	@see (links_or_references)
+/*/
+Static Function SldParc()
+
+Local aArea  := GetArea()
+Local cQuery := ""	
+Local nRet   := 0
+
+cQuery := "SELECT SUM(E5_VALOR) AS SLDBAIXA FROM "+RetSQLName("SE5")      
+cQuery += " WHERE E5_FILIAL='"+SE1->E1_FILIAL+"' AND E5_CLIFOR='"+SE1->E1_CLIENTE+"'"
+cQuery += " AND E5_PREFIXO='"+SE1->E1_PREFIXO+"' AND E5_NUMERO='"+SE1->E1_NUM+"'"
+cQuery += " AND E5_PARCELA='"+SE1->E1_PARCELA+"' AND E5_TIPODOC NOT IN('JR','ES') AND D_E_L_E_T_=' '"
+
+IF Select('TRB') > 0
+	dbSelectArea('TRB')
+	dbCloseArea()
+ENDIF
+
+MemoWrite("FA070TIT.SQL",cQuery)
+DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
+
+DbSelectArea("TRB")
+
+nRet := TRB->SLDBAIXA
+
+cQuery := "SELECT SUM(E5_VALOR) AS SLDBAIXA FROM "+RetSQLName("SE5")      
+cQuery += " WHERE E5_FILIAL='"+SE1->E1_FILIAL+"' AND E5_CLIFOR='"+SE1->E1_CLIENTE+"'"
+cQuery += " AND E5_PREFIXO='"+SE1->E1_PREFIXO+"' AND E5_NUMERO='"+SE1->E1_NUM+"'"
+cQuery += " AND E5_PARCELA='"+SE1->E1_PARCELA+"' AND E5_TIPODOC ='ES' AND D_E_L_E_T_=' '"
+
+IF Select('TRB') > 0
+	dbSelectArea('TRB')
+	dbCloseArea()
+ENDIF
+
+MemoWrite("FA070TIT.SQL",cQuery)
+DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
+
+DbSelectArea("TRB")
+
+nRet -= TRB->SLDBAIXA
+
+RestArea(aArea)
+
+Return(nRet) 

@@ -57,7 +57,7 @@ Aeval(aLinhas,{|x| x[2] := ctod(x[2])})
 AEVAL(aLinhas,{|x| x[3] := val(strtran(X[3],",","."))})
 AEVAL(aLinhas,{|x| x[4] := val(strtran(strtran(X[4],"%"),",","."))})
 
-Aeval(aLinhas,{|x| x[1] := firstday(x[2])})
+//Aeval(aLinhas,{|x| x[1] := firstday(x[2])})
 
 DbSelectArea("FNT")
 DbSetOrder(1)
@@ -65,7 +65,8 @@ DbSetOrder(1)
 For nCont := 1 to len(aFNI)
     For nX := 2 to len(aLinhas) 
         If Dbseek(xFilial("FNT")+aFNI[nCont,01]+aFNI[nCont,02]+dtos(aLinhas[nX,01]))
-            Reclock("FNT",.F.)
+            Reclock("FNT",.F.)  
+            FNT->FNT_STATUS := '1'
         Else 
             Reclock("FNT",.T.)
             FNT->FNT_CODIND := aFNI[nCont,01]
