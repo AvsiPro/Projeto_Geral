@@ -332,6 +332,8 @@ static function fGetItens(aZ04_Atual, aZ05AtivosPreCadastro, nI, nValor, cDescri
 		cCTDEPR				:= SNG->NG_CCDEPR // Alteracao Solicitado Por Wnader 25/10/2023
 	endif	
 
+	aZ05AtivosPreCadastro[9] := cCTDEPR 
+
 	FNG->(dbSetOrder(1))
 	if FNG->(dbSeek(xFilial("FNG")+cGrupo))
 		cTipoIt:= FNG->FNG_TIPO
@@ -1092,6 +1094,15 @@ static function fPopula1ModelDetails(oModel, aZ04_Atual, aZ05AtivosPreCadastro, 
 //	cITINVE				:= aZ05AtivosPreCadastro[4] //INVESTIMENTO		
 //	cCLINVE				:= aZ05AtivosPreCadastro[5] //INVESTIMENTO	
 //	cCTINVE				:= aZ05AtivosPreCadastro[6] //INVESTIMENTO
+
+	cCTDEPR := aZ05AtivosPreCadastro[9]
+
+	SNG->(dbSetOrder(1))
+	if Empty(cCTDEPR) .And. SNG->(dbSeek(xFilial("SNG")+cGrupo))
+		cCTDEPR				:= SNG->NG_CCDEPR // Alteracao Solicitado Por Wnader 25/10/2023
+	endif	
+
+	aZ05AtivosPreCadastro[9] := cCTDEPR 
 
 	FNG->(dbSetOrder(1))
 	if FNG->(dbSeek(xFilial("FNG")+cGrupo))
