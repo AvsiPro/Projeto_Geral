@@ -35,7 +35,7 @@ aItens := BuscaZ91(cCodigo)
 cJson  := MontaJson(aItens)
 
 If lVisual
-    VerJson(cJson)
+    U__VerJson(cJson)
 Else 
     Aadd(aRet,cJson)
     Aadd(aRet,aCabec)
@@ -197,57 +197,3 @@ RestArea(aArea)
 
 Return(cJson)
 
-/*/{Protheus.doc} VerJson()
-    Carregar o json enviado pela API
-    @type  Static Function
-    @author user
-    @since 31/10/2024
-    @version version
-    @param param_name, param_type, param_descr
-    @return return_var, return_type, return_description
-    @example
-    (examples)
-    @see (links_or_references)
-/*/
-Static Function VerJson(cJson)
-
-    Local cJsonFormatado := ''
-    
-    cJsonFormatado := JsonFormatar(cJson)
-    // Exibe o JSON formatado em tela
-    oJsonShow  := MSDialog():New( 092,232,727,915,"Json Recebido",,,.F.,,,,,,.T.,,,.T. )
-    oMGet1     := TMultiGet():New( 004,008,{|u| If(Pcount()>0,cJsonFormatado:=u,cJsonFormatado)},oJsonShow,320,284,,,CLR_BLACK,CLR_WHITE,,.T.,"",,,.F.,.F.,.F.,,,.F.,,  )
-    oJsonBt    := TButton():New( 292,144,"Sair",oJsonShow,{||oJsonShow:end()},037,012,,,,.T.,,"",,,,.F. )
-
-    oJsonShow:Activate(,,,.T.)
-    
-Return
-
-// Função para formatar o JSON
-Static Function JsonFormatar(cJson)
-    Local cResultado := ""
-    Local nIndent := 0
-    Local nLen := Len(cJson)
-    Local i
-
-    For i := 1 To nLen
-        cChar := SubStr(cJson, i, 1)
-        
-        // Adiciona quebras de linha e indentação conforme necessário
-        Do Case
-            Case cChar == "{".Or.cChar == "["
-                nIndent++
-                cResultado += cChar + CRLF + Replicate(" ", nIndent * 4)
-            Case cChar == "}".Or.cChar == "]"
-                nIndent--
-                cResultado += CRLF + Replicate(" ", nIndent * 4) + cChar
-            Case cChar == ","
-                cResultado += cChar + CRLF + Replicate(" ", nIndent * 4)
-            Case cChar == ":"
-                cResultado += cChar + " "
-            Otherwise
-                cResultado += cChar
-        EndCase
-    Next i
-
-Return cResultado

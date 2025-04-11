@@ -12,10 +12,9 @@ Job para envio do estoque por armazem para o IQVIA
 (examples)
 @see (links_or_references)
 /*/
-User Function WESTJ001()
+User Function WESTJ001(cCodigo)
 
 Local aArea 	:= 	GetArea()
-Local cCodigo	:= 	'000002'
 Local aBody 	:= 	''
 Local oJson 	:= 	Nil
 Local nCont 	:= 	0
@@ -25,11 +24,24 @@ Local cCampos 	:= 	""
 Local aHeader1	:=	{}
 Local aHeader2	:=	{}
 Local aHeader3	:=	{}
+Local cQuery 	:=	""
+Local lOk 		:=	.F.
+Local cJson		:=	""
+Local aPath1	:=	{}
+Local aPath2	:=	{}
+Local aPath3	:=	{}
+Local aRet 		:=	{}
+Local lQuery	:=	.T.
+
+Default cCodigo	:= 	'000003'
 
 If Empty(FunName())
 	RpcSetType(3)
 	RPCSetEnv("T1","D MG 01 ")
 EndIf	
+
+//Environment de chamada
+cEnviron := GetEnvServer()
 
 aBody := U_WGENM001(cCodigo,.F.)
 
@@ -59,6 +71,10 @@ If len(aBody) > 0
 	aHeader2 := separa(aBody[2,13],";")
 	aHeader3 := separa(aBody[2,14],";")
 
+	U_WFUNX003(@aPath1,@aPath2,@aPath3,aBody[2])
+
+	lQuery := aPath1[3] != "2"
+	
 	If len(aHeader1) > 0
 		aHeader1 := InfoHead(aHeader1)
 	EndIf 
@@ -69,9 +85,48 @@ If len(aBody) > 0
 		aHeader3 := InfoHead(aHeader3)
 	EndIf 
 
-	BuscaDados(oJson,aCampos,aBody[3])
+	If lQuery
+		cQuery := MontaQry(cCampos)
 
-	cJson := oJson:toJson()
+		PlsQuery(cQuery, "TRB")
+		DbSelectArea("TRB")
+		nTotal := 0
+		Count To nTotal
+	 
+		//Caso não seja para enviar os itens todos em uma chamada só, 
+		// mudar aqui para pegar pelo total item a item
+		//Atualiza o objeto do json com os dados resultantes da query
+		lOk := U_WFUNX002(cQuery,aBody[3],@oJson,aCampos)
+	Else 
+		lOk := .T.
+	EndIf
+
+	If lOk 
+		cJson := oJson:toJson()
+
+		If "DEV" $ cEnviron
+			//[3] 1-Post 2-Get 3-Put 4-Delete 5-Patch
+			//[4] 1-Rest 2-Soap
+			//[5] 1-Sincrono 2-Assincrono
+			//[6] 1-Sim 2-Nao - Requer autenticação
+			If aPath1[3] == "1"
+				aRet := U_WAPIPOST(aPath1,cJson,aHeader1)
+			ElseIf aPath1[3] == "2"
+				aRet := U_WAPIGET(aPath1,cJson,aHeader1)
+			EndIf 
+		ElseIf "QA" $ cEnviron
+			If aPath2[3] == "1"
+				aRet := U_WAPIPOST(aPath2,cJson,aHeader2)
+			EndIF 
+		ElseIf "PROD" $ cEnviron
+			If aPath3[3] == "1"
+				aRet := U_WAPIPOST(aPath3,cJson,aHeader3)
+			EndIf 
+		EndIf 
+
+		U_WFUNX004(aPath2,cJson,aHeader2,aRet,cCodigo)
+		
+	EndIF 
 
 Else 
 
@@ -203,8 +258,8 @@ Return(aHeader)
 		08 - Z91_MAXLEN		Tamanho maximo do campo no destino
 */
 
-/*/{Protheus.doc} BuscaDados
-	(long_description)
+/*/{Protheus.doc} MontaQry
+	Monta a query desta integração
 	@type  Static Function
 	@author user
 	@since 10/04/2025
@@ -215,23 +270,12 @@ Return(aHeader)
 	(examples)
 	@see (links_or_references)
 /*/
-Static Function BuscaDados(oJson,aCampos,aJson)
+Static Function MontaQry(cCampos)
 
 Local cQuery 	:= " "
-Local aCpoDst	:= {}  //colocar em uma função para usar em todas
-Local nCont 
-Local lFirst	:= .T.
-Local aJAux		:= {}
-Local aCorte	:= {}
-Local nX 
 
-For nCont := 1 to len(aJson)
-	If aJson[nCont,06] == "P"
-		Aadd(aJAux,{aJson[nCont,01],aJson[nCont,03],aJson[nCont,02]})
-	EndIf 
-Next nCont 
-
-cQuery += " SELECT B2_FILIAL,B2_LOCAL,NNR_DESCRI,B2_COD,B2_DMOV,B2_QATU-B2_RESERVA AS B2_QATU   " 
+//cQuery += " SELECT B2_FILIAL,B2_LOCAL,NNR_DESCRI,B2_COD,B2_DMOV,B2_QATU-B2_RESERVA AS B2_QATU   " 
+cQuery := " SELECT "+cCampos
 cQuery += " FROM   SB2T10 B2   " 
 cQuery += " INNER JOIN NNRT10 NR ON NNR_FILIAL='D MG'   " 
 cQuery += "        AND NNR_CODIGO=B2_LOCAL   " 
@@ -241,85 +285,4 @@ cQuery += "        AND B2_FILIAL='D MG 01 '   "
 cQuery += "        AND B2.D_E_L_E_T_=' '   " 
 cQuery += "        AND B2_DMOV>='20230101'   " 
 
-IF Select('TRB') > 0
-    dbSelectArea('TRB')
-    dbCloseArea()
-ENDIF
-
-MemoWrite("WESTJ001.SQL",cQuery)
-DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
-
-DbSelectArea("TRB")  
-
-For nCont := 1 to len(aJAux)
-	If Empty(aJAux[nCont,01])
-		If oJson:hasProperty(aJAux[nCont,02])
-			Aadd(aCpoDst,oJson[aJAux[nCont,02]][1]:Getnames())
-			Aadd(aCpoDst[len(aCpoDst)],aJAux[nCont,02]+"#"+aJAux[nCont,01]+"#"+aJAux[nCont,03])
-		EndIf 
-	Else
-		nPos := Ascan(aJAux,{|x| x[2] == aJAux[nCont,01]})
-		If nPos > 0
-			//Pai Esta na Raiz
-			If Empty(aJAux[nPos,01])
-				Aadd(aCpoDst,oJson[aJAux[nCont,01]][1][aJAux[nCont,02]][1]:Getnames())
-				Aadd(aCpoDst[len(aCpoDst)],aJAux[nCont,02]+"#"+aJAux[nCont,01]+"#"+aJAux[nCont,03])
-			EndIf 
-		EndIf 
-	EndIf 
-Next nCont 
-
-While !EOF()
-	If lFirst
-		For nCont := 1 to len(aCpoDst)
-			aCorte := separa(aCpoDst[nCont,len(aCpoDst[nCont])],"#")
-			For nX := 1 to len(aCpoDst[nCont])-1
-				nPos := Ascan(aCampos,{|x| x[2]+x[3] == aCpoDst[nCont,nX]+aCorte[1]})
-				If nPos > 0
-					nPos2 := Ascan(aCpoDst,{|x| aCpoDst[nCont,nX] $ x[len(x)]})
-					If Empty(aCorte[2]) .And. nPos2 == 0
-						oJson[aCorte[1]][1][aCpoDst[nCont,nX]] := &("TRB->"+aCampos[nPos,01])
-					Else 
-						oJson[aCorte[2]][1][aCorte[1]][1][aCpoDst[nCont,nX]] := &("TRB->"+aCampos[nPos,01])
-					EndIf 
-				Else 
-					nPos2 := Ascan(aCpoDst,{|x| aCpoDst[nCont,nX] $ x[len(x)]})
-					If nPos2 == 0
-						If Empty(aCorte[2])
-							oJson[aCorte[1]][1][aCpoDst[nCont,nX]] := ""
-							//oJson["Content"][1]["Items"][1][aCpoDst[nCont,nX]] := &("TRB->"+aCampos[nPos,01])
-						Else 
-							oJson[aCorte[2]][1][aCorte[1]][1][aCpoDst[nCont,nX]] := ""
-						EndIf 
-					endIf 
-				EndIf 
-			Next nX 
-		Next nCont
-		lFirst := .F. 
-	Else 
-		//Aqui só percorre as chaves que são do tipo Array para incrementar
-		For nCont := 1 to len(aCpoDst)
-			aCorte := separa(aCpoDst[nCont,len(aCpoDst[nCont])],"#")
-
-			If aCorte[3] == "1"
-				oItem := JsonObject():New()
-		
-				For nX := 1 to len(aCpoDst[nCont])-1
-					nPos := Ascan(aCampos,{|x| x[2]+x[3] == aCpoDst[nCont,nX]+aCorte[1]})
-					If nPos > 0
-						oItem[aCpoDst[nCont,nX]] := &("TRB->"+aCampos[nPos,01])
-					Else 
-						oItem[aCpoDst[nCont,nX]] := ""
-					EndIf 
-				Next nX 
-
-				Aadd(oJson["Content"][1]["Items"],oItem)
-			EndIf 
-		Next nCont 
-		
-	EndIf 
-
-	Dbskip()
-EndDo 
-
-Return 
+Return(cQuery)
