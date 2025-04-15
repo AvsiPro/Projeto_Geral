@@ -75,7 +75,7 @@ IF Select('TRB') > 0
     dbCloseArea()
 ENDIF
 
-MemoWrite("WESTJ001.SQL",cQuery)
+MemoWrite("WFUNX002.SQL",cQuery)
 DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
 
 DbSelectArea("TRB")  
@@ -175,6 +175,21 @@ Local aArea := GetArea()
 		12 - Z90_HEADDV		
 		13 - Z90_HEADQA
 		14 - Z90_HEADPR
+		15 - Z90_CALLBA
+		16 - Z90_EXECUT
+*/
+
+/*
+	Informações dos itens
+
+		01 - Z91_CPOPAI	
+		02 - Z91_TIPPAI		1-Array 2-Objeto
+		03 - Z91_CPODES
+		04 - Z91_CPOORI
+		05 - Z91_CNTFIX		Conteudo fixo
+		06 - Z91_TIPCNT		S-String D-Datetime B-Boolean P-Pai
+		07 - Z91_ITEM
+		08 - Z91_MAXLEN		Tamanho maximo do campo no destino
 */
 Aadd(aPath1,Alltrim(aArray[2]))
 Aadd(aPath1,Alltrim(aArray[5]))
@@ -182,6 +197,8 @@ Aadd(aPath1,Alltrim(aArray[1]))
 Aadd(aPath1,Alltrim(aArray[9]))
 Aadd(aPath1,Alltrim(aArray[10]))
 Aadd(aPath1,Alltrim(aArray[11]))
+Aadd(aPath1,Alltrim(aArray[15]))
+Aadd(aPath1,Alltrim(aArray[16]))
 
 Aadd(aPath2,Alltrim(aArray[3]))
 Aadd(aPath2,Alltrim(aArray[6]))
@@ -189,6 +206,8 @@ Aadd(aPath2,Alltrim(aArray[1]))
 Aadd(aPath2,Alltrim(aArray[9]))
 Aadd(aPath2,Alltrim(aArray[10]))
 Aadd(aPath2,Alltrim(aArray[11]))
+Aadd(aPath2,Alltrim(aArray[15]))
+Aadd(aPath2,Alltrim(aArray[16]))
 
 Aadd(aPath3,Alltrim(aArray[4]))
 Aadd(aPath3,Alltrim(aArray[7]))
@@ -196,6 +215,8 @@ Aadd(aPath3,Alltrim(aArray[1]))
 Aadd(aPath3,Alltrim(aArray[9]))
 Aadd(aPath3,Alltrim(aArray[10]))
 Aadd(aPath3,Alltrim(aArray[11]))
+Aadd(aPath3,Alltrim(aArray[15]))
+Aadd(aPath3,Alltrim(aArray[16]))
 
 RestArea(aArea)
 
@@ -249,6 +270,7 @@ Gravação do log de integração geral
 @see (links_or_references)
 /*/
 User Function WFUNX004(aPath,cJson,aHeader,aRet,cCodApi)
+
     //[3] 1-Post 2-Get 3-Put 4-Delete 5-Patch
     //[4] 1-Rest 2-Soap
     //[5] 1-Sincrono 2-Assincrono
@@ -257,7 +279,7 @@ User Function WFUNX004(aPath,cJson,aHeader,aRet,cCodApi)
     Local cCodigo := GetSXEnum("Z92","Z92_COD")
     Local cHeader := ''
 
-    Aeval(aHeader,{|x| cHeader += x + CHR(13)+CHR(10)})
+	Aeval(aHeader,{|x| cHeader += x + CHR(13)+CHR(10)})
 
     DbSelectArea("Z92")
     Reclock("Z92",.T.)
@@ -283,6 +305,279 @@ User Function WFUNX004(aPath,cJson,aHeader,aRet,cCodApi)
 
 Return
 
+/*/{Protheus.doc} WFUNX005
+Grava data e hora da ultima execução do job
+@type user function
+@author user
+@since 15/04/2025
+@version version
+@param param_name, param_type, param_descr
+@return return_var, return_type, return_description
+@example
+(examples)
+@see (links_or_references)
+/*/
+User Function WFUNX005(cCodigo)
+
+	Local aArea := GetArea()
+	Local cTime := dtos(ddatabase)+strtran(cvaltochar(time()),":")
+
+	DbSelectArea("Z90")
+	DbSetOrder(1)
+	If Dbseek(xFilial("Z90")+cCodigo)
+		Reclock("Z90",.F.)
+		Z90->Z90_ULTEXC := cTime 
+		Z90->(Msunlock())
+	EndIf 
+
+	RestArea(aArea)
+
+Return
+
+/*/{Protheus.doc} WFUNX006
+Montagem dos cabeçalhos generica
+@type user function
+@author user
+@since 15/04/2025
+@version version
+@param param_name, param_type, param_descr
+@return return_var, return_type, return_description
+@example
+(examples)
+@see (links_or_references)
+/*/
+User Function WFUNX006(aBody,aCampos,cCampos,aHeader1,aHeader2,aHeader3)
+
+	Local nCont := 0
+	
+	For nCont := 1 to len(aBody[3])
+		If !Empty(aBody[3,nCont,4])
+			Aadd(aCampos,{	aBody[3,nCont,4],;	
+							aBody[3,nCont,3],;
+							aBody[3,nCont,1],;
+							space(val(aBody[3,nCont,8]))})
+		EndIF 
+	Next nCont 
+
+	AEval(aCampos,{|x| cCampos += If(!x[1] $ cCampos,x[1]+",","")})
+
+	cCampos := substr(cCampos,1,len(cCampos)-1)
+
+	aHeader1 := separa(aBody[2,12],";")
+	aHeader2 := separa(aBody[2,13],";")
+	aHeader3 := separa(aBody[2,14],";")
+
+Return
+
+/*/{Protheus.doc} WFUNX007
+	Informações referentes aos headers da chamada
+	@type  Static Function
+	@author user
+	@since 10/04/2025
+	@version version
+	@param param_name, param_type, param_descr
+	@return return_var, return_type, return_description
+	@example
+	(examples)
+	@see (links_or_references)
+/*/
+User Function WFUNX007(aHeader)
+
+	Local aArea 	:=	GetArea()
+	Local nCont 
+	Local nX,nY 
+	Local aAux 		:=	{}
+	Local aAux2		:=	{}
+	Local cAux 		:= 	''
+	Local cAux2 	:=	''
+	Local nTamAr	:=	len(aHeader)
+	Local cBkGetm	:=	""
+
+	/*
+		Informações do Header
+			01 - Z90_VERBO		1-Post 2-Get 3-Put 4-Delete 5-Patch
+			02 - Z90_URLDEV
+			03 - Z90_URLQA
+			04 - Z90_URLPRD
+			05 - Z90_ENDDEV
+			06 - Z90_ENDQA
+			07 - Z90_ENDPRD
+			08 - Z90_DESC
+			09 - Z90_TIPO		1-Rest 2-Soap
+			10 - Z90_MODCOM		1-Sincrono 2-Assincrono
+			11 - Z90_REQAUT  	1-Sim 2-Nao
+			12 - Z90_HEADDV		
+			13 - Z90_HEADQA
+			14 - Z90_HEADPR
+
+			Se requer autenticação, criar parametro MV_PARXX e colocar a informação 
+				no Header (DEV,QA,PRD) a chamada do parametro no seguinte formato
+				
+			Para envio somente de usuário e senha
+			[AUTHENTICATOR%user=MV_PARXX%,%password=MV_PARXX%]
+			Quando há necessidade de primeiro fazer uma chamada para recuperar o token
+			[AUTHENTICATOR#token#%user=MV_PARXX%,%password=MV_PARXX%]
+			Quando o Token já é fornecido antecipadamente
+			[AUTHENTICATOR#token=MV_PARXX]
+
+			Em seguida, colocar a informação de autorização no header após as demais informações de header para a api
+
+			exemplo
+			Content-Type: application/json
+			Authorization Basic ou Bearer token
+
+	*/
+	For nCont := 1 to len(aHeader)	
+		aHeader[nCont] := strtran(aHeader[nCont],CHR(13)+CHR(10),"")
+		cAux2 := ''
+
+		If "[" $ aHeader[nCont]
+			cAux := strtran(strtran(strtran(aHeader[nCont],"[",""),"]",""),"%","")
+			aAux := separa(cAux,",")
+			For nX := 1 to len(aAux)
+				If "GETMV" $ upper(aAux[nX])
+					aAux2 := separa(strtran(aAux[nX],'AUTHENTICATOR#',''),"=")
+					For nY := 1 to len(aAux2)
+						If "GETMV" $ upper(aAux2[nY])
+							cBkGetm := substr(aAux2[nY],at("(",aaux2[nY]),at(")",aaux2[nY]))
+							cBkGetm := "SUPERGETMV"+substr(cBkGetm,1,len(cBkGetm)-1)+",.F.,'')"
+						EndIf 
+					Next nY 
+					
+					cAux  := &(cBkGetm)
+					aAux[nX] := aAux2[1]+"="+If(valtype(cAux)<>"C","Parametro nao encontrado",cAux)
+					// cAux  := &(aAux2[2])
+					// aAux[nX] := aAux2[1]+"="+If(valtype(cAux)<>"C","Parametro nao encontrado",cAux)
+				EndIF 
+			Next nX 	
+
+			Aeval(aAux,{|x| cAux2 += x + ','})	
+			aHeader[nCont] := If("[AUTHENTICATOR" $ aHeader[nCont],"AUT_","")+substr(cAux2,1,len(cAux2)-1)
+		EndIf 
+
+		If "GETMV" $ upper(aHeader[nCont])
+			cCmd1 := SUBSTR(aHeader[nCont],at("GETMV",UPPER(aHeader[nCont])),at(")",aHeader[nCont]))
+			cCmd2 := 'SUBSTR(aHeader[nCont],at("GETMV",UPPER(aHeader[nCont])),at(")",aHeader[nCont]))'
+			aHeader[nCont] := strtran(aHeader[nCont],cCmd1,&(&(cCmd2)))
+		EndIf 
+
+		If "!TOKEN?" $ upper(aHeader[nCont])
+			nPos := Ascan(aHeader,{|x| 'TOKEN=' $ upper(x)})
+
+			If nPos > 0
+				aHeader[nCont] := strtran(aHeader[nCont],'!token?',substr(aHeader[nPos],AT('token=',aHeader[nPos])+6))
+			EndIf 
+		EndIf 
+	Next nCont
+
+	nX := 1
+
+	While nX <= nTamAr
+		If Empty(aHeader[nX]) .Or. substr(aHeader[nX],1,4) == "AUT_"
+			Adel(aHeader,nX)
+			Asize(aHeader,len(aHeader)-1)
+			nTamAr--
+		Else 
+			nX++
+		EndIF 
+		
+	EndDo
+
+	RestArea(aArea)
+
+Return(aHeader)
+
+/*/{Protheus.doc} WFUNX008
+	Informações referentes aos headers da chamada
+	@type  Static Function
+	@author user
+	@since 10/04/2025
+	@version version
+	@param param_name, param_type, param_descr
+	@return return_var, return_type, return_description
+	@example
+	(examples)
+	@see (links_or_references)
+/*/
+User Function WFUNX008(aHeader1,aHeader2,aHeader3)
+
+	If len(aHeader1) > 0
+		aHeader1 := U_WFUNX007(aHeader1)
+	EndIf 
+	If len(aHeader2) > 0
+		aHeader2 := U_WFUNX007(aHeader2)
+	EndIF 
+	If len(aHeader3) > 0
+		aHeader3 := U_WFUNX007(aHeader3)
+	EndIf 
+
+Return 
+
+User Function WFUNX009(cEnviron,aPath,cJson,aHeader)
+
+	Local aArea := GetArea() 
+	Local aRet  := {}
+
+	//[3] 1-Post 2-Get 3-Put 4-Delete 5-Patch
+	//[4] 1-Rest 2-Soap
+	//[5] 1-Sincrono 2-Assincrono
+	//[6] 1-Sim 2-Nao - Requer autenticação
+	If aPath[3] == "1"
+		aRet := U_WAPIPOST(aPath,cJson,aHeader)
+	ElseIf aPath[3] == "2"
+		aRet := U_WAPIGET(aPath,cJson,aHeader)
+	EndIf 
+
+	If aPath[5] == "1"
+		If !Empty(aPath[7])
+
+		EndIf 
+	EndIf 
+
+	// If "DEV" $ cEnviron .or. 'P2310' $ cEnviron
+	// 	//[3] 1-Post 2-Get 3-Put 4-Delete 5-Patch
+	// 	//[4] 1-Rest 2-Soap
+	// 	//[5] 1-Sincrono 2-Assincrono
+	// 	//[6] 1-Sim 2-Nao - Requer autenticação
+	// 	If aPath1[3] == "1"
+	// 		aRet := U_WAPIPOST(aPath1,cJson,aHeader1)
+	// 	ElseIf aPath1[3] == "2"
+	// 		aRet := U_WAPIGET(aPath1,cJson,aHeader1)
+	// 	EndIf 
+
+	// 	If aPath1[5] == "1"
+	// 		If !Empty(aPath1[7])
+
+	// 		EndIf 
+	// 	EndIf 
+	// ElseIf "QA" $ cEnviron
+	// 	If aPath2[3] == "1"
+	// 		aRet := U_WAPIPOST(aPath2,cJson,aHeader2)
+	// 	ElseIf aPath2[3] == "2"
+	// 		aRet := U_WAPIGET(aPath2,cJson,aHeader2)
+	// 	EndIf 
+
+	// 	If aPath2[5] == "1"
+	// 		If !Empty(aPath2[7])
+
+	// 		EndIf 
+	// 	EndIf  
+	// ElseIf "PROD" $ cEnviron
+	// 	If aPath3[3] == "1"
+	// 		aRet := U_WAPIPOST(aPath3,cJson,aHeader3)
+	// 	ElseIf aPath3[3] == "2"
+	// 		aRet := U_WAPIGET(aPath3,cJson,aHeader3)
+	// 	EndIf 
+
+	// 	If aPath3[5] == "1"
+	// 		If !Empty(aPath3[7])
+
+	// 		EndIf 
+	// 	EndIf 
+	// EndIf
+	RestArea(aArea)
+	
+Return 
 
 /*/{Protheus.doc} VerJson()
     Carregar o json enviado pela API

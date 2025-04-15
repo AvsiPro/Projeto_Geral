@@ -46,6 +46,45 @@ RestArea(aArea)
     
 Return(aRet)
 
+/*/{Protheus.doc} WGENM002
+Executa a rotina de integração através da chamada do Browse
+@type user function
+@author user
+@since 15/04/2025
+@version version
+@param param_name, param_type, param_descr
+@return return_var, return_type, return_description
+@example
+(examples)
+@see (links_or_references)
+/*/
+User Function WGENM002(cCodigo)
+
+Local aArea := GetArea()
+Local cChamada := ""
+
+If !Empty(Z90->Z90_EXECUT)
+    If !"U_" $ Alltrim(Z90->Z90_EXECUT)
+        cChamada := "U_"+Alltrim(Z90->Z90_EXECUT)
+    else 
+        cChamada := Alltrim(Z90->Z90_EXECUT)
+    endif 
+
+    If !"()" $ cChamada 
+        cChamada := cChamada+"('"+Alltrim(cCodigo)+"')"
+    Else 
+        cChamada := strtran(cChamada,"()","('"+Alltrim(cCodigo)+"')")
+    EndIf 
+
+
+    &(cChamada)
+Else 
+    MsgAlert("Não há uma rotina configurada para executar esta integração.")
+EndIf 
+
+RestArea(aArea)
+
+Return
 /*/{Protheus.doc} BuscaZ90
     Busca os dados de informação principal da API de destino
     @type  Static Function
@@ -80,6 +119,8 @@ If Dbseek(xFilial("Z90")+cCodigo)
     Aadd(aRet,Z90->Z90_HEADDV)
     Aadd(aRet,Z90->Z90_HEADQA)
     Aadd(aRet,Z90->Z90_HEADPR)
+    Aadd(aRet,Z90->Z90_CALLBA)
+    Aadd(aRet,Z90->Z90_ULTEXC)
 Else 
 
 EndIf 

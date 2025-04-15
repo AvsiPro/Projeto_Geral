@@ -18,10 +18,14 @@ User Function WZSTAMP(cTabAlias, lStamp, lInsDt)
     Local cTabSQL     := ""
     Local lOkStamp    := .F.
     Local lOkInsDt    := .F.
-    Default cTabAlias := ""
+    Default cTabAlias := "SB2"
     Default lStamp    := .T.
     Default lInsDt    := .T.
- 
+    
+    If Empty(FunName())
+        RpcSetType(3)
+        RpcSetEnv('T1','D MG 01 ')
+    EndIf
     //Se veio algum alias e ele existir na base
     If ! Empty(cTabAlias) .And. ExisteSX2(cTabAlias)
          
