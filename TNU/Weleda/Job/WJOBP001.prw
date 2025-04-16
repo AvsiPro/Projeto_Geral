@@ -67,7 +67,18 @@ User Function WJOBP001(cCodigo)
 		U_WFUNX008(@aHeader1,@aHeader2,@aHeader3)
 		
 		If lQuery
-			cQuery := MontaQry(cCampos)
+			If !Empty(aBody[2,17])
+				cQuery := aBody[2,17]
+				If !Empty(cCampos)
+					cQuery := strtran(UPPER(cQuery),"%CAMPOS%",cCampos)
+				EndIf 
+
+				If "%CTIMESTAMP%" $ upper(cQuery) .And. valtype(CTIMESTAMP) == "C"
+					cQuery := strtran(upper(cQuery),"%CTIMESTAMP%",CTIMESTAMP)
+				EndIf 
+			Else 
+				cQuery := MontaQry(cCampos)
+			EndIf 
 
 			PlsQuery(cQuery, "TRB")
 			DbSelectArea("TRB")

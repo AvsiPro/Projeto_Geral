@@ -145,17 +145,13 @@ dbSelectArea("TRB")
 While !EOF()
 // SERIE,NOTA,EMISSAO,CFOP,CST,CNPJ,TIPOMOV,VALOR,ALIQUOTA,BASE,VALICM,CHAVE
 
-    //nPos := Ascan(aAux,{|x| x[1]+x[3]+x[11] == TRB->SERIE+TRB->NOTA+TRB->CFOP})
-    //If nPos == 0
-   
-        Aadd(aAux,{ TRB->GW1_DTEMIS,;
-                    TRB->GW1_REGCOM,;
-                    TRB->TOTAL,;
-                    0,;
-                    0})
     
-    //EndIf
-    
+    Aadd(aAux,{ TRB->GW1_DTEMIS,;
+                TRB->GW1_REGCOM,;
+                TRB->TOTAL,;
+                0,;
+                0})
+
     Dbskip()
 ENDDO
 
@@ -167,11 +163,6 @@ Dbgotop()
 oSection1:Init()
 
 For nCont := 1 to len(aAux) 
-// TRCell():New(oSection1,"Data","TRB",/*Titulo*/,/*Picture*/,TamSX3("GW1_DTEMIS")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
-// TRCell():New(oSection1,"Regional","TRB",/*Titulo*/,/*Picture*/,TamSX3("GW1_REGCOM")[1],/*lPixel*/)
-// TRCell():New(oSection1,"Valor Faturamento Bruto","TRB",/*Titulo*/,/*Picture*/,TamSX3("GW8_VALOR")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
-// TRCell():New(oSection1,"Valor Frete s/ Imposto","TRB",/*Titulo*/,/*Picture*/,TamSX3("GW8_VALOR")[1],/*lPixel*/, /**/ )
-// TRCell():New(oSection1,"% Frete s/ Imposto"
 
     oSection1:Cell('Data'):SetValue(STOD(aAux[nCont,01]))
     oSection1:Cell('Regional'):SetValue(aAux[nCont,02])

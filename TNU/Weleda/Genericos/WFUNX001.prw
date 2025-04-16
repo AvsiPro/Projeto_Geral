@@ -14,36 +14,36 @@ Função generica para tratamentos diversos das integrações
 /*/
 User Function WFUNX001(aJson,oJson)
 
-Local aArea := GetArea()
-Local aJAux		:= {}
-Local nCont 
-Local aCpoDst   := {} 
+	Local aArea := GetArea()
+	Local aJAux		:= {}
+	Local nCont 
+	Local aCpoDst   := {} 
 
-For nCont := 1 to len(aJson)
-	If aJson[nCont,06] == "P"
-		Aadd(aJAux,{aJson[nCont,01],aJson[nCont,03],aJson[nCont,02]})
-	EndIf 
-Next nCont 
-
-For nCont := 1 to len(aJAux)
-	If Empty(aJAux[nCont,01])
-		If oJson:hasProperty(aJAux[nCont,02])
-			Aadd(aCpoDst,oJson[aJAux[nCont,02]][1]:Getnames())
-			Aadd(aCpoDst[len(aCpoDst)],aJAux[nCont,02]+"#"+aJAux[nCont,01]+"#"+aJAux[nCont,03])
+	For nCont := 1 to len(aJson)
+		If aJson[nCont,06] == "P"
+			Aadd(aJAux,{aJson[nCont,01],aJson[nCont,03],aJson[nCont,02]})
 		EndIf 
-	Else
-		nPos := Ascan(aJAux,{|x| x[2] == aJAux[nCont,01]})
-		If nPos > 0
-			//Pai Esta na Raiz
-			If Empty(aJAux[nPos,01])
-				Aadd(aCpoDst,oJson[aJAux[nCont,01]][1][aJAux[nCont,02]][1]:Getnames())
+	Next nCont 
+
+	For nCont := 1 to len(aJAux)
+		If Empty(aJAux[nCont,01])
+			If oJson:hasProperty(aJAux[nCont,02])
+				Aadd(aCpoDst,oJson[aJAux[nCont,02]][1]:Getnames())
 				Aadd(aCpoDst[len(aCpoDst)],aJAux[nCont,02]+"#"+aJAux[nCont,01]+"#"+aJAux[nCont,03])
 			EndIf 
+		Else
+			nPos := Ascan(aJAux,{|x| x[2] == aJAux[nCont,01]})
+			If nPos > 0
+				//Pai Esta na Raiz
+				If Empty(aJAux[nPos,01])
+					Aadd(aCpoDst,oJson[aJAux[nCont,01]][1][aJAux[nCont,02]][1]:Getnames())
+					Aadd(aCpoDst[len(aCpoDst)],aJAux[nCont,02]+"#"+aJAux[nCont,01]+"#"+aJAux[nCont,03])
+				EndIf 
+			EndIf 
 		EndIf 
-	EndIf 
-Next nCont 
+	Next nCont 
 
-RestArea(aArea)
+	RestArea(aArea)
 
 Return(aCpoDst)
 
@@ -61,86 +61,86 @@ Executa querys e atualiza objeto do json com os dados
 /*/
 User Function WFUNX002(cQuery,aJson,oJson,aCampos)
 
-Local aArea := GetArea()
-Local nCont 
-Local nX 
-Local aCpoDst	:= U_WFUNX001(aJson,oJson)  //colocar em uma função para usar em todas
-Local lFirst	:= .T.
-Local aCorte	:= {}
-Local lRet      := .F.
+	Local aArea := GetArea()
+	Local nCont 
+	Local nX 
+	Local aCpoDst	:= U_WFUNX001(aJson,oJson)  //colocar em uma função para usar em todas
+	Local lFirst	:= .T.
+	Local aCorte	:= {}
+	Local lRet      := .F.
 
 
-IF Select('TRB') > 0
-    dbSelectArea('TRB')
-    dbCloseArea()
-ENDIF
+	IF Select('TRB') > 0
+		dbSelectArea('TRB')
+		dbCloseArea()
+	ENDIF
 
-MemoWrite("WFUNX002.SQL",cQuery)
-DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
+	MemoWrite("WFUNX002.SQL",cQuery)
+	DBUseArea( .T., "TOPCONN", TCGenQry( ,, cQuery ), "TRB", .F., .T. )
 
-DbSelectArea("TRB")  
+	DbSelectArea("TRB")  
 
-While !EOF()
-    lRet := .T.
-	If lFirst
-		For nCont := 1 to len(aCpoDst)
-			aCorte := separa(aCpoDst[nCont,len(aCpoDst[nCont])],"#")
-			For nX := 1 to len(aCpoDst[nCont])-1
-				nPos := Ascan(aCampos,{|x| x[2]+x[3] == aCpoDst[nCont,nX]+aCorte[1]})
-				If nPos > 0
-					nPos2 := Ascan(aCpoDst,{|x| aCpoDst[nCont,nX] $ x[len(x)]})
-					If Empty(aCorte[2]) .And. nPos2 == 0
-						oJson[aCorte[1]][1][aCpoDst[nCont,nX]] := &("TRB->"+aCampos[nPos,01])
-					Else 
-						oJson[aCorte[2]][1][aCorte[1]][1][aCpoDst[nCont,nX]] := &("TRB->"+aCampos[nPos,01])
-					EndIf 
-				Else 
-					nPos2 := Ascan(aCpoDst,{|x| aCpoDst[nCont,nX] $ x[len(x)]})
-					If nPos2 == 0
-						If Empty(aCorte[2])
-							oJson[aCorte[1]][1][aCpoDst[nCont,nX]] := ""
-							//oJson["Content"][1]["Items"][1][aCpoDst[nCont,nX]] := &("TRB->"+aCampos[nPos,01])
-						Else 
-							oJson[aCorte[2]][1][aCorte[1]][1][aCpoDst[nCont,nX]] := ""
-						EndIf 
-					endIf 
-				EndIf 
-			Next nX 
-		Next nCont
-		lFirst := .F. 
-	Else 
-		//Aqui só percorre as chaves que são do tipo Array para incrementar
-		For nCont := 1 to len(aCpoDst)
-			aCorte := separa(aCpoDst[nCont,len(aCpoDst[nCont])],"#")
-
-			If aCorte[3] == "1"
-				oItem := JsonObject():New()
-		
+	While !EOF()
+		lRet := .T.
+		If lFirst
+			For nCont := 1 to len(aCpoDst)
+				aCorte := separa(aCpoDst[nCont,len(aCpoDst[nCont])],"#")
 				For nX := 1 to len(aCpoDst[nCont])-1
 					nPos := Ascan(aCampos,{|x| x[2]+x[3] == aCpoDst[nCont,nX]+aCorte[1]})
 					If nPos > 0
-						oItem[aCpoDst[nCont,nX]] := &("TRB->"+aCampos[nPos,01])
+						nPos2 := Ascan(aCpoDst,{|x| aCpoDst[nCont,nX] $ x[len(x)]})
+						If Empty(aCorte[2]) .And. nPos2 == 0
+							oJson[aCorte[1]][1][aCpoDst[nCont,nX]] := &("TRB->"+aCampos[nPos,01])
+						Else 
+							oJson[aCorte[2]][1][aCorte[1]][1][aCpoDst[nCont,nX]] := &("TRB->"+aCampos[nPos,01])
+						EndIf 
 					Else 
-						oItem[aCpoDst[nCont,nX]] := ""
+						nPos2 := Ascan(aCpoDst,{|x| aCpoDst[nCont,nX] $ x[len(x)]})
+						If nPos2 == 0
+							If Empty(aCorte[2])
+								oJson[aCorte[1]][1][aCpoDst[nCont,nX]] := ""
+								//oJson["Content"][1]["Items"][1][aCpoDst[nCont,nX]] := &("TRB->"+aCampos[nPos,01])
+							Else 
+								oJson[aCorte[2]][1][aCorte[1]][1][aCpoDst[nCont,nX]] := ""
+							EndIf 
+						endIf 
 					EndIf 
 				Next nX 
+			Next nCont
+			lFirst := .F. 
+		Else 
+			//Aqui só percorre as chaves que são do tipo Array para incrementar
+			For nCont := 1 to len(aCpoDst)
+				aCorte := separa(aCpoDst[nCont,len(aCpoDst[nCont])],"#")
 
-				If Empty(aCorte[2])
-					Aadd(oJson[aCorte[1]][1],oItem)
-				Else 
-					Aadd(oJson[aCorte[2]][1][aCorte[1]],oItem)
+				If aCorte[3] == "1"
+					oItem := JsonObject():New()
+			
+					For nX := 1 to len(aCpoDst[nCont])-1
+						nPos := Ascan(aCampos,{|x| x[2]+x[3] == aCpoDst[nCont,nX]+aCorte[1]})
+						If nPos > 0
+							oItem[aCpoDst[nCont,nX]] := &("TRB->"+aCampos[nPos,01])
+						Else 
+							oItem[aCpoDst[nCont,nX]] := ""
+						EndIf 
+					Next nX 
+
+					If Empty(aCorte[2])
+						Aadd(oJson[aCorte[1]][1],oItem)
+					Else 
+						Aadd(oJson[aCorte[2]][1][aCorte[1]],oItem)
+					EndIf 
+
+					
 				EndIf 
+			Next nCont 
+			
+		EndIf 
 
-				
-			EndIf 
-		Next nCont 
-		
-	EndIf 
+		Dbskip()
+	EndDo 
 
-	Dbskip()
-EndDo 
-
-RestArea(aArea)
+	RestArea(aArea)
 
 Return(lRet)
 
@@ -158,67 +158,71 @@ Monta os arrays com as informações de path de destino
 /*/
 User Function WFUNX003(aPath1,aPath2,aPath3,aArray)
 
-Local aArea := GetArea()
-/*
-	Informações do Header
-		01 - Z90_VERBO		1-Post 2-Get 3-Put 4-Delete 5-Patch
-		02 - Z90_URLDEV
-		03 - Z90_URLQA
-		04 - Z90_URLPRD
-		05 - Z90_ENDDEV
-		06 - Z90_ENDQA
-		07 - Z90_ENDPRD
-		08 - Z90_DESC
-		09 - Z90_TIPO		1-Rest 2-Soap
-		10 - Z90_MODCOM		1-Sincrono 2-Assincrono
-		11 - Z90_REQAUT  	1-Sim 2-Nao
-		12 - Z90_HEADDV		
-		13 - Z90_HEADQA
-		14 - Z90_HEADPR
-		15 - Z90_CALLBA
-		16 - Z90_EXECUT
-*/
+	Local aArea := GetArea()
+	/*
+		Informações do Header
+			01 - Z90_VERBO		1-Post 2-Get 3-Put 4-Delete 5-Patch
+			02 - Z90_URLDEV
+			03 - Z90_URLQA
+			04 - Z90_URLPRD
+			05 - Z90_ENDDEV
+			06 - Z90_ENDQA
+			07 - Z90_ENDPRD
+			08 - Z90_DESC
+			09 - Z90_TIPO		1-Rest 2-Soap
+			10 - Z90_MODCOM		1-Sincrono 2-Assincrono
+			11 - Z90_REQAUT  	1-Sim 2-Nao
+			12 - Z90_HEADDV		
+			13 - Z90_HEADQA
+			14 - Z90_HEADPR
+			15 - Z90_CALLBA
+			16 - Z90_EXECUT
+			17 - Z90_QUERY
+	*/
 
-/*
-	Informações dos itens
+	/*
+		Informações dos itens
 
-		01 - Z91_CPOPAI	
-		02 - Z91_TIPPAI		1-Array 2-Objeto
-		03 - Z91_CPODES
-		04 - Z91_CPOORI
-		05 - Z91_CNTFIX		Conteudo fixo
-		06 - Z91_TIPCNT		S-String D-Datetime B-Boolean P-Pai
-		07 - Z91_ITEM
-		08 - Z91_MAXLEN		Tamanho maximo do campo no destino
-*/
-Aadd(aPath1,Alltrim(aArray[2]))
-Aadd(aPath1,Alltrim(aArray[5]))
-Aadd(aPath1,Alltrim(aArray[1]))
-Aadd(aPath1,Alltrim(aArray[9]))
-Aadd(aPath1,Alltrim(aArray[10]))
-Aadd(aPath1,Alltrim(aArray[11]))
-Aadd(aPath1,Alltrim(aArray[15]))
-Aadd(aPath1,Alltrim(aArray[16]))
+			01 - Z91_CPOPAI	
+			02 - Z91_TIPPAI		1-Array 2-Objeto
+			03 - Z91_CPODES
+			04 - Z91_CPOORI
+			05 - Z91_CNTFIX		Conteudo fixo
+			06 - Z91_TIPCNT		S-String D-Datetime B-Boolean P-Pai
+			07 - Z91_ITEM
+			08 - Z91_MAXLEN		Tamanho maximo do campo no destino
+	*/
+	Aadd(aPath1,Alltrim(aArray[2]))
+	Aadd(aPath1,Alltrim(aArray[5]))
+	Aadd(aPath1,Alltrim(aArray[1]))
+	Aadd(aPath1,Alltrim(aArray[9]))
+	Aadd(aPath1,Alltrim(aArray[10]))
+	Aadd(aPath1,Alltrim(aArray[11]))
+	Aadd(aPath1,Alltrim(aArray[15]))
+	Aadd(aPath1,Alltrim(aArray[16]))
+	Aadd(aPath1,Alltrim(aArray[17]))
 
-Aadd(aPath2,Alltrim(aArray[3]))
-Aadd(aPath2,Alltrim(aArray[6]))
-Aadd(aPath2,Alltrim(aArray[1]))
-Aadd(aPath2,Alltrim(aArray[9]))
-Aadd(aPath2,Alltrim(aArray[10]))
-Aadd(aPath2,Alltrim(aArray[11]))
-Aadd(aPath2,Alltrim(aArray[15]))
-Aadd(aPath2,Alltrim(aArray[16]))
+	Aadd(aPath2,Alltrim(aArray[3]))
+	Aadd(aPath2,Alltrim(aArray[6]))
+	Aadd(aPath2,Alltrim(aArray[1]))
+	Aadd(aPath2,Alltrim(aArray[9]))
+	Aadd(aPath2,Alltrim(aArray[10]))
+	Aadd(aPath2,Alltrim(aArray[11]))
+	Aadd(aPath2,Alltrim(aArray[15]))
+	Aadd(aPath2,Alltrim(aArray[16]))
+	Aadd(aPath2,Alltrim(aArray[17]))
 
-Aadd(aPath3,Alltrim(aArray[4]))
-Aadd(aPath3,Alltrim(aArray[7]))
-Aadd(aPath3,Alltrim(aArray[1]))
-Aadd(aPath3,Alltrim(aArray[9]))
-Aadd(aPath3,Alltrim(aArray[10]))
-Aadd(aPath3,Alltrim(aArray[11]))
-Aadd(aPath3,Alltrim(aArray[15]))
-Aadd(aPath3,Alltrim(aArray[16]))
+	Aadd(aPath3,Alltrim(aArray[4]))
+	Aadd(aPath3,Alltrim(aArray[7]))
+	Aadd(aPath3,Alltrim(aArray[1]))
+	Aadd(aPath3,Alltrim(aArray[9]))
+	Aadd(aPath3,Alltrim(aArray[10]))
+	Aadd(aPath3,Alltrim(aArray[11]))
+	Aadd(aPath3,Alltrim(aArray[15]))
+	Aadd(aPath3,Alltrim(aArray[16]))
+	Aadd(aPath3,Alltrim(aArray[17]))
 
-RestArea(aArea)
+	RestArea(aArea)
 
 Return
 
@@ -409,6 +413,9 @@ User Function WFUNX007(aHeader)
 			12 - Z90_HEADDV		
 			13 - Z90_HEADQA
 			14 - Z90_HEADPR
+			15 - Z90_CALLBA
+			16 - Z90_ULTEXC
+			17 - Z90_QUERY
 
 			Se requer autenticação, criar parametro MV_PARXX e colocar a informação 
 				no Header (DEV,QA,PRD) a chamada do parametro no seguinte formato
@@ -512,7 +519,18 @@ User Function WFUNX008(aHeader1,aHeader2,aHeader3)
 	EndIf 
 
 Return 
-
+/*/{Protheus.doc} WFUNX009
+	Função que faz a chamada de cada metodo da api configurada
+	@type  Static Function
+	@author user
+	@since 10/04/2025
+	@version version
+	@param param_name, param_type, param_descr
+	@return return_var, return_type, return_description
+	@example
+	(examples)
+	@see (links_or_references)
+/*/
 User Function WFUNX009(cEnviron,aPath,cJson,aHeader)
 
 	Local aArea := GetArea() 

@@ -16,33 +16,33 @@ para montar o json de cada api dinamicamente
 /*/
 User Function WGENM001(cCodigo,lVisual)
 
-Local aArea     := GetArea()
-Local aCabec    := {}
-Local aItens    := {}
-Local cJson     := ""
-Local aRet      := {}
+    Local aArea     := GetArea()
+    Local aCabec    := {}
+    Local aItens    := {}
+    Local cJson     := ""
+    Local aRet      := {}
 
-Default cCodigo := '000001'
-Default lVisual := .F.
+    Default cCodigo := '000001'
+    Default lVisual := .F.
 
-If Empty(FunName())
-    RpcSetType(3)
-    RpcSetEnv('T1','D MG 01 ')
-EndIf
+    If Empty(FunName())
+        RpcSetType(3)
+        RpcSetEnv('T1','D MG 01 ')
+    EndIf
 
-aCabec := BuscaZ90(cCodigo)
-aItens := BuscaZ91(cCodigo)
-cJson  := MontaJson(aItens)
+    aCabec := BuscaZ90(cCodigo)
+    aItens := BuscaZ91(cCodigo)
+    cJson  := MontaJson(aItens)
 
-If lVisual
-    U__VerJson(cJson)
-Else 
-    Aadd(aRet,cJson)
-    Aadd(aRet,aCabec)
-    Aadd(aRet,aItens)
-EndIf 
+    If lVisual
+        U__VerJson(cJson)
+    Else 
+        Aadd(aRet,cJson)
+        Aadd(aRet,aCabec)
+        Aadd(aRet,aItens)
+    EndIf 
 
-RestArea(aArea)
+    RestArea(aArea)
     
 Return(aRet)
 
@@ -60,29 +60,29 @@ Executa a rotina de integração através da chamada do Browse
 /*/
 User Function WGENM002(cCodigo)
 
-Local aArea := GetArea()
-Local cChamada := ""
+    Local aArea := GetArea()
+    Local cChamada := ""
 
-If !Empty(Z90->Z90_EXECUT)
-    If !"U_" $ Alltrim(Z90->Z90_EXECUT)
-        cChamada := "U_"+Alltrim(Z90->Z90_EXECUT)
-    else 
-        cChamada := Alltrim(Z90->Z90_EXECUT)
-    endif 
+    If !Empty(Z90->Z90_EXECUT)
+        If !"U_" $ Alltrim(Z90->Z90_EXECUT)
+            cChamada := "U_"+Alltrim(Z90->Z90_EXECUT)
+        else 
+            cChamada := Alltrim(Z90->Z90_EXECUT)
+        endif 
 
-    If !"()" $ cChamada 
-        cChamada := cChamada+"('"+Alltrim(cCodigo)+"')"
+        If !"()" $ cChamada 
+            cChamada := cChamada+"('"+Alltrim(cCodigo)+"')"
+        Else 
+            cChamada := strtran(cChamada,"()","('"+Alltrim(cCodigo)+"')")
+        EndIf 
+
+
+        &(cChamada)
     Else 
-        cChamada := strtran(cChamada,"()","('"+Alltrim(cCodigo)+"')")
+        MsgAlert("Não há uma rotina configurada para executar esta integração.")
     EndIf 
 
-
-    &(cChamada)
-Else 
-    MsgAlert("Não há uma rotina configurada para executar esta integração.")
-EndIf 
-
-RestArea(aArea)
+    RestArea(aArea)
 
 Return
 /*/{Protheus.doc} BuscaZ90
@@ -99,33 +99,34 @@ Return
 /*/
 Static Function BuscaZ90(cCodigo)
 
-Local aArea := GetArea()
-Local aRet  := {}
+    Local aArea := GetArea()
+    Local aRet  := {}
 
-DbSelectArea("Z90")
-DbSetOrder(1)
-If Dbseek(xFilial("Z90")+cCodigo)
-    Aadd(aRet,Z90->Z90_VERBO)
-    Aadd(aRet,Z90->Z90_URLDEV)
-    Aadd(aRet,Z90->Z90_URLQA)
-    Aadd(aRet,Z90->Z90_URLPRD)
-    Aadd(aRet,Z90->Z90_ENDDEV)
-    Aadd(aRet,Z90->Z90_ENDQA)
-    Aadd(aRet,Z90->Z90_ENDPRD)
-    Aadd(aRet,Z90->Z90_DESC)
-    Aadd(aRet,Z90->Z90_TIPO)
-    Aadd(aRet,Z90->Z90_MODCOM)
-    Aadd(aRet,Z90->Z90_REQAUT)
-    Aadd(aRet,Z90->Z90_HEADDV)
-    Aadd(aRet,Z90->Z90_HEADQA)
-    Aadd(aRet,Z90->Z90_HEADPR)
-    Aadd(aRet,Z90->Z90_CALLBA)
-    Aadd(aRet,Z90->Z90_ULTEXC)
-Else 
+    DbSelectArea("Z90")
+    DbSetOrder(1)
+    If Dbseek(xFilial("Z90")+cCodigo)
+        Aadd(aRet,Z90->Z90_VERBO)
+        Aadd(aRet,Z90->Z90_URLDEV)
+        Aadd(aRet,Z90->Z90_URLQA)
+        Aadd(aRet,Z90->Z90_URLPRD)
+        Aadd(aRet,Z90->Z90_ENDDEV)
+        Aadd(aRet,Z90->Z90_ENDQA)
+        Aadd(aRet,Z90->Z90_ENDPRD)
+        Aadd(aRet,Z90->Z90_DESC)
+        Aadd(aRet,Z90->Z90_TIPO)
+        Aadd(aRet,Z90->Z90_MODCOM)
+        Aadd(aRet,Z90->Z90_REQAUT)
+        Aadd(aRet,Z90->Z90_HEADDV)
+        Aadd(aRet,Z90->Z90_HEADQA)
+        Aadd(aRet,Z90->Z90_HEADPR)
+        Aadd(aRet,Z90->Z90_CALLBA)
+        Aadd(aRet,Z90->Z90_ULTEXC)
+        Aadd(aRet,Z90->Z90_QUERY)
+    Else 
 
-EndIf 
+    EndIf 
 
-RestArea(aArea)
+    RestArea(aArea)
 
 Return(aRet)
 
@@ -143,28 +144,28 @@ Return(aRet)
 /*/
 Static Function BuscaZ91(cCodigo)
 
-Local aArea := GetArea()
-Local aRet  := {}
+    Local aArea := GetArea()
+    Local aRet  := {}
 
-DbSelectArea("Z91")
-DbSetOrder(1)
-If Dbseek(xFilial("Z91")+cCodigo)
-    While !Eof() .And. Z91->Z91_COD == cCodigo
-        Aadd(aRet,{ Alltrim(Z91->Z91_CPOPAI),;
-                    Alltrim(Z91->Z91_TIPPAI),;
-                    Alltrim(Z91->Z91_CPODES),;
-                    Alltrim(Z91->Z91_CPOORI),;
-                    Alltrim(Z91->Z91_CNTFIX),;
-                    Alltrim(Z91->Z91_TIPCNT),;
-                    Alltrim(Z91->Z91_ITEM),;
-                    Alltrim(Z91->Z91_MAXLEN)})
-        Dbskip()
-    EndDo 
-Else 
+    DbSelectArea("Z91")
+    DbSetOrder(1)
+    If Dbseek(xFilial("Z91")+cCodigo)
+        While !Eof() .And. Z91->Z91_COD == cCodigo
+            Aadd(aRet,{ Alltrim(Z91->Z91_CPOPAI),;
+                        Alltrim(Z91->Z91_TIPPAI),;
+                        Alltrim(Z91->Z91_CPODES),;
+                        Alltrim(Z91->Z91_CPOORI),;
+                        Alltrim(Z91->Z91_CNTFIX),;
+                        Alltrim(Z91->Z91_TIPCNT),;
+                        Alltrim(Z91->Z91_ITEM),;
+                        Alltrim(Z91->Z91_MAXLEN)})
+            Dbskip()
+        EndDo 
+    Else 
 
-EndIf 
+    EndIf 
 
-RestArea(aArea)
+    RestArea(aArea)
 
 Return(aRet)
 
@@ -182,59 +183,59 @@ Return(aRet)
 /*/
 Static Function MontaJson(aItens)
 
-Local aArea := GetArea()
-Local cJson := ""
-Local oJson := JsonObject():New()
-Local nCont := 0
-Local nX    := 0
-Local nZ    := 0
-Local cCpoDes := ''
-Local cFilDes := ''
-Local oItem := Nil
-Local oFilho:= Nil 
+    Local aArea := GetArea()
+    Local cJson := ""
+    Local oJson := JsonObject():New()
+    Local nCont := 0
+    Local nX    := 0
+    Local nZ    := 0
+    Local cCpoDes := ''
+    Local cFilDes := ''
+    Local oItem := Nil
+    Local oFilho:= Nil 
 
-//Primeira vez pega somente os itens da raiz
-For nCont := 1 to len(aItens)
-    If Empty(aItens[nCont,01]) .And. Empty(aItens[nCont,02])
-        oJson[&("aItens[nCont,03]")] := If(!Empty(aItens[nCont,05]),aItens[nCont,05],aItens[nCont,04])
-    EndIf 
-Next nCont 
+    //Primeira vez pega somente os itens da raiz
+    For nCont := 1 to len(aItens)
+        If Empty(aItens[nCont,01]) .And. Empty(aItens[nCont,02])
+            oJson[&("aItens[nCont,03]")] := If(!Empty(aItens[nCont,05]),aItens[nCont,05],aItens[nCont,04])
+        EndIf 
+    Next nCont 
 
-//Segunda vez pega os "pais" da raiz e para os demais "pais" já monta a estrutura restante
-For nCont := 1 to len(aItens)
-    If Empty(aItens[nCont,01]) .And. aItens[nCont,06] == "P"
-        oJson[&("aItens[nCont,03]")] := {} 
-        cCpoDes := aItens[nCont,03]
-        oItem := JsonObject():New()
-        oFilho := Nil 
+    //Segunda vez pega os "pais" da raiz e para os demais "pais" já monta a estrutura restante
+    For nCont := 1 to len(aItens)
+        If Empty(aItens[nCont,01]) .And. aItens[nCont,06] == "P"
+            oJson[&("aItens[nCont,03]")] := {} 
+            cCpoDes := aItens[nCont,03]
+            oItem := JsonObject():New()
+            oFilho := Nil 
 
-        For nX := 1 to len(aItens)
-            If AllTrim(aItens[nX,01]) == AllTrim(cCpoDes)
-                oItem[aItens[nX,03]] := If(!Empty(aItens[nX,05]), aItens[nX,05], If(aItens[nX,06] == "P",{},aItens[nX,04]))
+            For nX := 1 to len(aItens)
+                If AllTrim(aItens[nX,01]) == AllTrim(cCpoDes)
+                    oItem[aItens[nX,03]] := If(!Empty(aItens[nX,05]), aItens[nX,05], If(aItens[nX,06] == "P",{},aItens[nX,04]))
 
-                If aItens[nX,06] == "P"
-                    cFilDes := aItens[nX,03]
-                    oFilho := JsonObject():New()
-                    For nZ := 1 to len(aItens)
-                        If AllTrim(aItens[nZ,01]) == AllTrim(cFilDes)
-                            oFilho[aItens[nZ,03]] := If(!Empty(aItens[nZ,05]), aItens[nZ,05], If(aItens[nZ,06] == "P",{},aItens[nZ,04]))
-                        EndIf 
-                    Next nZ 
-                    Aadd(oItem[aItens[nX,03]],oFilho)
-                EndIf 
-            EndIf
-        Next nX
+                    If aItens[nX,06] == "P"
+                        cFilDes := aItens[nX,03]
+                        oFilho := JsonObject():New()
+                        For nZ := 1 to len(aItens)
+                            If AllTrim(aItens[nZ,01]) == AllTrim(cFilDes)
+                                oFilho[aItens[nZ,03]] := If(!Empty(aItens[nZ,05]), aItens[nZ,05], If(aItens[nZ,06] == "P",{},aItens[nZ,04]))
+                            EndIf 
+                        Next nZ 
+                        Aadd(oItem[aItens[nX,03]],oFilho)
+                    EndIf 
+                EndIf
+            Next nX
 
-        // Adiciona o objeto no array
-        aAdd(oJson[cCpoDes], oItem)
-    
-    EndIf 
-Next nCont 
+            // Adiciona o objeto no array
+            aAdd(oJson[cCpoDes], oItem)
+        
+        EndIf 
+    Next nCont 
 
-cJson := oJson:toJson()
+    cJson := oJson:toJson()
 
 
-RestArea(aArea)
+    RestArea(aArea)
 
 Return(cJson)
 
