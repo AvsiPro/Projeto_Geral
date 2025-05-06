@@ -85,6 +85,64 @@ User Function WGENM002(cCodigo)
     RestArea(aArea)
 
 Return
+
+/*/{Protheus.doc} WGENM003
+Importar Json pronto para montar a estrutura na tabela com os campos da api de destino
+@type user function
+@author user
+@since 15/04/2025
+@version version
+@param param_name, param_type, param_descr
+@return return_var, return_type, return_description
+@example
+(examples)
+@see (links_or_references)
+/*/
+User Function WGENM003()
+
+    Local aArea     := GetArea()
+    Local cJsonT    := space(100000)
+    Local aItemZ91  := {}
+    Local oModel    := FWModelActive()
+    Local nOpcao    := 0
+    Local oModelItm := oModel:GetModel("Z91DETAIL")
+    
+    Private oFontMod    := TFont():New('Arial', , -18)
+    //Local nOperacao := oModel:GetOperation()
+    
+    If Empty(FunName())
+        RpcSetType(3)
+        RpcSetEnv('T1','D MG 01 ')
+    EndIf
+    
+    Private oDlg1,oGrp1,oMGet1,oGrp2,oMGet2,oBtn1,oBtn2,oBtn3
+
+    oDlg1      := MSDialog():New( 092,232,718,1346,"Importar Json",,,.F.,,,,,,.T.,,,.T. )
+    
+    oGrp1      := TGroup():New( 004,004,272,272,"Original",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
+        oMGet1     := TMultiGet():New( 012,008,{|u| if(pcount() > 0, cJsonT := u, cJsonT )},oGrp1,260,256,,,CLR_BLACK,CLR_WHITE,,.T.,"",,,.F.,.F.,.F.,,,.F.,,  )
+    
+    oGrp2      := TGroup():New( 004,276,272,544,"Protheus",oDlg1,CLR_BLACK,CLR_WHITE,.T.,.F. )
+        //oMGet2     := TMultiGet():New( 012,280,,oGrp2,260,256,,,CLR_BLACK,CLR_WHITE,,.T.,"",,,.F.,.F.,.T.,,,.F.,,  )
+
+        oSay1      := TSay():New( 140,350,{||""},oGrp2,,oFontMod,.F.,.F.,.F.,.T.,CLR_RED,CLR_WHITE,332,008)
+        
+    oBtn1      := TButton():New( 284,176,"Carga",oDlg1,{|| aItemZ91 := CriaJson(cJsonT) },037,012,,,,.T.,,"",,,,.F. )
+    oBtn2      := TButton():New( 284,260,"Salvar",oDlg1,{|| oDlg1:end(nOpcao:= 1)},037,012,,,,.T.,,"",,,,.F. )
+    oBtn3      := TButton():New( 284,340,"Sair",oDlg1,{|| oDlg1:end(nOpcao:= 0)},037,012,,,,.T.,,"",,,,.F. )
+
+    oBtn2:disable()
+
+    oDlg1:Activate(,,,.T.)
+
+
+    If nOpcao == 1
+        CargaItm(aItemZ91,oModelItm)
+    EndIF 
+
+    RestArea(aArea)
+
+Return 
 /*/{Protheus.doc} BuscaZ90
     Busca os dados de informação principal da API de destino
     @type  Static Function
@@ -239,3 +297,310 @@ Static Function MontaJson(aItens)
 
 Return(cJson)
 
+/*/{Protheus.doc} CriaJson
+    Cria o objeto do json do conteúdo copiado
+    @type  Static Function
+    @author user
+    @since 22/04/2025
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function CriaJson(cJson)
+
+    Local aArea   := GetArea()
+    Local oJson   := JsonObject():New()
+    Local aNames  := {}
+    Local nCont   := 1
+    Local nX      := 1
+    Local keyVal  := ""
+    Local keyType := ""
+    Local aRet    := {}
+    Local aAux    := {}
+    Local aAux2   := {}
+    Local aName2  := {}
+
+    oJson:FromJson(cJson)
+
+    aNames := oJson:GetNames()
+
+    For nCont := 1 to len(aNames)
+        oJson:GetJsonValue(aNames[nCont],@keyVal,@keyType)
+        If keyType == "A"
+            Aadd(aRet,{aNames[nCont],{}})
+            aAux := oJson:GetJsonObject(aNames[nCont])
+            aName2 := aAux[1]:GetNames()
+
+            For nX := 1 to len(aName2)
+                aAux2 := {}
+                aAux[1]:GetJsonValue(aName2[nX],@keyVal,@keyType)
+                Aadd(aAux2,aName2[nX])
+                Aadd(aAux2,keyVal)
+                Aadd(aRet[len(aRet),2],aAux2)
+            Next nX 
+            
+        ElseIf keyType == "O"
+
+        Else 
+            Aadd(aRet,{aNames[nCont],keyVal})
+        EndIF 
+    Next nCont
+
+    oSay1:settext("")
+
+    If valtype(oJson) == "J"
+        oSay1:settext("Json OK")
+        oBtn2:enable()
+    Else 
+        oSay1:settext("Problema ao carregar o Json")
+        oBtn2:disable()
+    EndIf 
+
+    oDlg1:refresh()
+
+    RestArea(aArea)
+
+Return(aRet)
+
+/*/{Protheus.doc} CargaItm
+    Carrega os itens do json copiado para o grid na inclusão
+    @type  Static Function
+    @author user
+    @since 22/04/2025
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function CargaItm(aItemZ91,oModelItm)
+
+    Local aArea := GetArea()    
+    Local nCont,nX,nZ,nW,nY,nP   
+    Local aErro     := {}
+    Local cPai      := ""
+    Local cPaiOri   := ""
+    Local cCpoDst   := ""
+    Local nLines    := 1 
+    Local cCodZ90   := Z90->Z90_COD 
+    Local cTipoD    := ''
+    Local aItemJs   := {}
+
+    If len(aItemZ91) > 0 
+        For nCont := 1 to len(aItemZ91)
+
+            
+            PulaLinha(oModelItm,nLines)
+
+            cCpoDst := aItemZ91[nCont,1]
+
+            If valtype(aItemZ91[nCont,02]) <> "A"
+
+                cTipoD := TipoDado(aItemZ91[nCont,02],valtype(aItemZ91[nCont,02]))
+
+                CpoApi(@oModelItm,cCodZ90,cCpoDst,cTipoD,cPai,'')
+
+                aErro := Grava(oModelItm) 
+            Else 
+            
+                cTipoD := TipoDado(aItemZ91[nCont,02],valtype(aItemZ91[nCont,02]))
+                cTipPai:= valtype(aItemZ91[nCont,02])
+
+                CpoApi(oModelItm,cCodZ90,cCpoDst,cTipoD,cPai,cTipPai)
+
+                aErro := Grava(oModelItm) 
+
+                If cPai <> aItemZ91[nCont,1]
+                    cPai := aItemZ91[nCont,1]
+                    cPaiOri := aItemZ91[nCont,1]
+                EndIf 
+
+                For nX := 2 to len(aItemZ91[nCont])
+
+                    For nZ := 1 to len(aItemZ91[nCont,nX])
+
+                        PulaLinha(oModelItm,nLines)
+
+                        cCpoDst := aItemZ91[nCont,nX,nZ,1]
+
+                        If valtype(aItemZ91[nCont,nX,nZ,02]) <> "A"
+
+                            cTipoD := TipoDado(aItemZ91[nCont,nX,nZ,02],valtype(aItemZ91[nCont,nX,nZ,02]))
+
+                            CpoApi(@oModelItm,cCodZ90,cCpoDst,cTipoD,cPai,'')
+                            aErro := Grava(oModelItm)
+                        Else 
+                            cTipoD := TipoDado(aItemZ91[nCont,nX,nZ,02],valtype(aItemZ91[nCont,nX,nZ,02]))
+
+                            cCpoDst :=  aItemZ91[nCont,nX,nZ,01]
+                            cTipPai:= valtype(aItemZ91[nCont,nX,nZ,02])
+                
+                            CpoApi(oModelItm,cCodZ90,cCpoDst,cTipoD,cPaiOri,cTipPai)
+
+                            aErro := Grava(oModelItm) 
+
+                            If cPai <> cCpoDst 
+                                cPai := cCpoDst
+                            EndIf 
+
+                            For nW := 2 to len(aItemZ91[nCont,nX,nZ])
+                                For nY := 1 to len(aItemZ91[nCont,nX,nZ,nW])
+                                    
+
+                                    If Valtype(aItemZ91[nCont,nX,nZ,nW,nY]) == "J"
+                                        aItemJs := aItemZ91[nCont,nX,nZ,nW,nY]:GetNames()
+
+                                        For nP := 1 to len(aItemJs)
+                                            PulaLinha(oModelItm,nLines)
+
+                                            cCmpo  := aItemJs[nP]
+                                            cConteudo := aItemZ91[nCont,nX,nZ,nW,nY]:GetJsonText(aItemJs[nP])
+                                            cTipoD := TipoDado(cConteudo,valtype(cConteudo))
+
+                                            CpoApi(@oModelItm,cCodZ90,cCmpo,cTipoD,cPai,'')
+                                            aErro := Grava(oModelItm)
+                                        Next nP 
+                                    Else 
+
+                                        PulaLinha(oModelItm,nLines)
+
+                                        cCpoDst := aItemZ91[nCont,nX,nZ,nW,nY,1]
+
+                                        If valtype(aItemZ91[nCont,nX,nZ,02]) <> "A"
+                                            
+                                            cTipoD := TipoDado(aItemZ91[nCont,nX,nZ,02],valtype(aItemZ91[nCont,nX,nZ,02]))
+                                            CpoApi(@oModelItm,cCodZ90,cCpoDst,cTipoD,cPai,'')
+
+                                            aErro := Grava(oModelItm)
+                                        EndIf 
+                                    EndIF 
+                                Next nY 
+                            Next nW 
+                        EndIf 
+                    Next nZ 
+                Next nX 
+            Endif 
+
+            nLines++
+
+        Next nCont 
+
+        oModelItm:GoLine( 1 )
+    EndIF 
+    
+    RestArea(aArea)
+
+Return
+
+/*/{Protheus.doc} Grava
+    Grava a Linha no grid
+    @type  Static Function
+    @author user
+    @since 22/04/2025
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function Grava(oModelItm)
+
+    Local aRet := {}
+
+    If !oModelItm:VldData()
+        aRet := oModelItm:GetErrorMessage()
+    EndIF
+
+Return(aRet)
+
+/*/{Protheus.doc} CpoApi
+    (long_description)
+    @type  Static Function
+    @author user
+    @since 22/04/2025
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function CpoApi(oModelItm,cCodZ90,cCpoDst,cTipoD,cPai,cTipPai)
+    
+    oModelItm:setValue("Z91_COD"     , cCodZ90  )
+    oModelItm:setValue("Z91_CPODES"  , cCpoDst  )
+
+    oModelItm:setValue("Z91_TIPCNT"  , cTipoD   )
+    oModelItm:setValue("Z91_CPOPAI"  , cPai     )
+
+    If !Empty(cTipPai)
+        oModelItm:setValue("Z91_TIPPAI"  , If(cTipPai=="A",'1','2')     )
+    EndIF 
+                
+Return
+
+/*/{Protheus.doc} PulaLinha
+    Inclui novas linhas no grid
+    @type  Static Function
+    @author user
+    @since 22/04/2025
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function PulaLinha(oModelItm,nLines)
+    
+    IF nLines > 1 
+        oModelItm:addLine()
+    EndIf 
+
+Return
+
+/*/{Protheus.doc} TipoDado
+    Verifica o tipo de dado do campo
+    @type  Static Function
+    @author user
+    @since 22/04/2025
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function TipoDado(cConteudo,cStr)
+
+    Local aArea := GetArea()
+    Local cRet  := ''
+
+    If cStr == "C"
+        If upper(cConteudo) == 'STRING'
+            cRet := "S"
+        ElseIf valtype(stod(strtran(substr(cConteudo,1,10),"-"))) == "D"
+            cRet := "D"
+        Else 
+            cRet := "S"
+        EndIf 
+    ElseIf cStr == "N"
+        cRet := "N"
+    ElseIf cStr == "L"
+        cRet := "B"
+    ElseIf cStr == "D"
+        cRet := "D"
+    ElseIf cStr == "A"
+        cRet := "P"
+    ElseIf cStr == "J"
+        cRet := "P"
+    EndIf 
+     
+    RestArea(aArea)
+
+Return(cRet) 

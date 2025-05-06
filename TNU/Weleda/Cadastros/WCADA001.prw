@@ -58,7 +58,8 @@ Local aRot := {}
     ADD OPTION aRot TITLE 'Alterar'             ACTION 'VIEWDEF.WCADA001'   OPERATION MODEL_OPERATION_UPDATE    ACCESS 0 //OPERATION 4
     ADD OPTION aRot TITLE 'Excluir'             ACTION 'VIEWDEF.WCADA001'   OPERATION MODEL_OPERATION_DELETE    ACCESS 0 //OPERATION 5
     ADD OPTION aRot TITLE 'Validar Modelo'      ACTION 'FWMsgRun(,{||U_WGENM001(Z90->Z90_COD,.T.)},"","Processando")' OPERATION MODEL_OPERATION_VIEW      ACCESS 0 //OPERATION 3
-    ADD OPTION aRot TITLE 'Executar Integração' ACTION 'FWMsgRun(,{|| U_WGENM002(Z90->Z90_COD)},"","Processando")' OPERATION MODEL_OPERATION_VIEW      ACCESS 0 //OPERATION 3
+    ADD OPTION aRot TITLE 'Executar Integração' ACTION 'FWMsgRun(,{||U_WGENM002(Z90->Z90_COD)    },"","Processando")' OPERATION MODEL_OPERATION_VIEW      ACCESS 0 //OPERATION 3
+    ADD OPTION aRot TITLE 'Importar Json'       ACTION 'FWMsgRun(,{||U_WGENM003()                },"","Processando")' OPERATION MODEL_OPERATION_VIEW      ACCESS 0 //OPERATION 3
     
 Return (aRot)
 
@@ -72,7 +73,8 @@ Return (aRot)
 
 Static Function ModelDef()
 
-Local oModel   := MPFormModel():New("JCASC4")
+Local bVldPos  := {|| U_Z91bPos()} // Validação do clicar em confirmar
+Local oModel   := MPFormModel():New("JCASC4",,bVldPos)
 Local oStruSC5 := FwFormStruct(1, "Z90")
 Local oStruSC6 := FwFormStruct(1, "Z91")
     
@@ -144,6 +146,7 @@ Local oModel   := FwLoadModel("WCADA001")
     oView:EnableTitleView("VIEW_SC6", "Itens API", RGB(224, 30, 43))
 
     oView:AddUserButton( 'Validar Query', 'CLIPS', {|oView| /*U_TINCMON(oView)*/} )
+    oView:AddUserButton( 'Importar Json', 'CLIPS', {|oView| U_WGENM003(oView,oStruSC6)} )
     
 Return (oView)
 

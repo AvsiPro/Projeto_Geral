@@ -329,7 +329,10 @@ static function fGetItens(aZ04_Atual, aZ05AtivosPreCadastro, nI, nValor, cDescri
 
 	SNG->(dbSetOrder(1))
 	if Empty(cCTDEPR) .And. SNG->(dbSeek(xFilial("SNG")+cGrupo))
-		cCTDEPR				:= SNG->NG_CCDEPR // Alteracao Solicitado Por Wnader 25/10/2023
+		// Alteracao Solicitado Por Wander 25/10/2023
+		//Alterado novamente em 23/04/25 solicitado pelo Wendell
+		//estava carregando a conta contabil de despesa de depreciação 
+		cCTDEPR				:= SNG->NG_CDEPREC 
 	endif	
 
 	aZ05AtivosPreCadastro[9] := cCTDEPR 
@@ -1099,7 +1102,7 @@ static function fPopula1ModelDetails(oModel, aZ04_Atual, aZ05AtivosPreCadastro, 
 
 	SNG->(dbSetOrder(1))
 	if Empty(cCTDEPR) .And. SNG->(dbSeek(xFilial("SNG")+cGrupo))
-		cCTDEPR				:= SNG->NG_CCDEPR // Alteracao Solicitado Por Wnader 25/10/2023
+		cCTDEPR				:= SNG->NG_CDEPREC //SNG->NG_CCDEPR // Alteracao Solicitado Por Wnader 25/10/2023
 	endif	
 
 	aZ05AtivosPreCadastro[9] := cCTDEPR 

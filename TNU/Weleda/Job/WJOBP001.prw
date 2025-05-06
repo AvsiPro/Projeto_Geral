@@ -41,7 +41,7 @@ User Function WJOBP001(cCodigo)
 	EndIf	
 
 	//Environment de chamada
-	cEnviron := GetEnvServer()
+	cEnviron := UPPER(GetEnvServer())
 
 	aBody := U_WGENM001(cCodigo,.F.)
 
@@ -95,7 +95,7 @@ User Function WJOBP001(cCodigo)
 
 		If lOk 
 			cJson := oJson:toJson()
-			If "DEV" $ cEnviron .or. 'P2310' $ cEnviron
+			If "DEV" $ cEnviron 
 				aRet := U_WFUNX009(cEnviron,aPath1,cJson,aHeader1)
 			ElseIf "QA" $ cEnviron
 				aRet := U_WFUNX009(cEnviron,aPath2,cJson,aHeader2)
@@ -106,11 +106,16 @@ User Function WJOBP001(cCodigo)
 			If len(aRet) < 1
 				aRet := {{.F.,''}}
 			EndIf 
-			//Gravar retorno da API de destino
-			U_WFUNX004(aPath2,cJson,aHeader2,aRet,cCodigo)
-			//Atualizar o campo com a data e hora da ultima execução para comparação com o stamp depois
-			U_WFUNX005(cCodigo)
+			
+		Else 
+			cJson := '{Sem dados para envio}'
+			aRet := {{.T.,''}}
 		EndIF 
+
+		//Gravar retorno da API de destino
+		U_WFUNX004(aPath2,cJson,aHeader2,aRet,cCodigo)
+		//Atualizar o campo com a data e hora da ultima execução para comparação com o stamp depois
+		U_WFUNX005(cCodigo)
 
 	Else 
 

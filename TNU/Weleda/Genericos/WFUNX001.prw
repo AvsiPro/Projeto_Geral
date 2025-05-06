@@ -595,7 +595,47 @@ User Function WFUNX009(cEnviron,aPath,cJson,aHeader)
 	// EndIf
 	RestArea(aArea)
 	
-Return 
+Return(aRet) 
+
+/*/{Protheus.doc} WFUNX010
+Validação de digitação do campo Pai, verifica se o conteúdo digitado esta presente no grid
+@type user function
+@author user
+@since 25/04/2025
+@version version
+@param param_name, param_type, param_descr
+@return return_var, return_type, return_description
+@example
+(examples)
+@see (links_or_references)
+/*/
+User Function Z91bPos()
+
+	// Local oModelPad  := FWModelActive()
+    // Local cDescri    := oModelPad:GetValue('Z91DETAIL', 'Z91_CPOPAI')
+    // Local lRet       := .F.
+     
+    // //Se a descrição estiver em branco
+    // If Empty(cDescri) //.Or. Alltrim(Upper(cDescri)) == cDefault
+    //     lRet := .F.
+    //     Aviso('Atenção', 'Campo Descrição esta em branco!', {'OK'}, 03)
+    // EndIf
+	Local oModel   := FWGetModel("Z90MASTER")
+    Local oDetail  := oModel:GetModel("Z91DETAIL")
+    Local aItens   := oDetail:GetRows()
+    Local nI, cCampo, xValor
+
+    For nI := 1 To Len(aItens)
+        cCampo := aItens[nI]["Z91_CAMPO"] // exemplo de campo
+        xValor := aItens[nI]["Z91_VALOR"] // exemplo de valor
+        
+        If Empty(cCampo)
+            FWAlertError("Campo 'Z91_CAMPO' está vazio na linha " + AllTrim(Str(nI)))
+            Return .F.
+        EndIf
+    Next
+
+Return(lRet)
 
 /*/{Protheus.doc} VerJson()
     Carregar o json enviado pela API
