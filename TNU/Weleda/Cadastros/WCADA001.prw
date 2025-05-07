@@ -73,8 +73,8 @@ Return (aRot)
 
 Static Function ModelDef()
 
-Local bVldPos  := {|| U_Z91bPos()} // Validação do clicar em confirmar
-Local oModel   := MPFormModel():New("JCASC4",,bVldPos)
+//Local bVldPos  := {|| U_Z91bPos()} // Validação do clicar em confirmar
+Local oModel   := MPFormModel():New("JCASC4",,/*bVldPos*/)
 Local oStruSC5 := FwFormStruct(1, "Z90")
 Local oStruSC6 := FwFormStruct(1, "Z91")
     

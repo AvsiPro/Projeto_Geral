@@ -609,7 +609,7 @@ Validação de digitação do campo Pai, verifica se o conteúdo digitado esta presen
 (examples)
 @see (links_or_references)
 /*/
-User Function Z91bPos()
+/*User Function Z91bPos()
 
 	// Local oModelPad  := FWModelActive()
     // Local cDescri    := oModelPad:GetValue('Z91DETAIL', 'Z91_CPOPAI')
@@ -635,7 +635,7 @@ User Function Z91bPos()
         EndIf
     Next
 
-Return(lRet)
+Return(lRet)*/
 
 /*/{Protheus.doc} VerJson()
     Carregar o json enviado pela API
