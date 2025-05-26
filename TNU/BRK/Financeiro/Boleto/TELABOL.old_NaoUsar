@@ -1,0 +1,425 @@
+#INCLUDE "PROTHEUS.CH"
+#INCLUDE "TOTVS.CH"
+#INCLUDE "RWMAKE.CH"
+#INCLUDE 'Fileio.ch'
+#INCLUDE "TOPCONN.CH"
+
+/*ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+ฑฑบPrograma  ณ LISTSE1  บAutor  ณEduardo Augusto     บ Data ณ  26/09/2014 บฑฑ
+ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
+ฑฑบDesc.     ณ Fonte para Tela de Impressใo de Boletos com filtros para   บฑฑ
+ฑฑบ          ณ Sele็ใo dos titulos da Tabela SE1 (Contas a Receber).      บฑฑ
+ฑฑฬออออออออออุออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออนฑฑ
+ฑฑบUso       ณ AP								                          บฑฑ
+฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿*/
+
+User Function TELABOL()
+
+Local cTitulo  := "SELEวรO DE BOLETOS"
+Local oOk := LoadBitmap(GetResources(),"LBOK")
+Local oNo := LoadBitmap(GetResources(),"LBNO")
+Local cVar
+Local oDlg
+Local oChk
+Local oLbx
+Local lChk 		:= .F.
+Local lMark 	:= .F.
+Local aVetor 	:= {}
+Local nx
+Local nZ		:= 0
+Local _lMail     := .F.
+
+Local _cBanco		:= ""
+Local _cAgencia		:= ""
+Local _cConta		:= ""
+Local _Tipo			:= ""
+Local _EmisIni		:= Ctod("  /  /  ")
+Local _EmisFim		:= Ctod("  /  /  ")
+Local cQuery 		:= ""  
+Local _cDirPdf 		:= GetMV("MV_XBOLITAU") 
+Local _lGerouPdf 	:= .F. 
+Local _lSche		:= .F.
+Local nOpcao		:= 0
+Local _lAutoriza	:= .T.
+
+Private cPerg 		:= "BRIMPBOL"  
+Private cType 		:= "*.*"
+Private oSayDir		:= Nil
+
+
+ValidPerg()
+If !Pergunte(cPerg, .T. )
+	Return
+EndIf
+
+_Tipo			:= Mv_Par01
+_EmisIni		:= Mv_Par02
+_EmisFim        := Mv_Par02
+
+
+	If Select("TMP") > 0
+	TMP->(DbCloseArea())
+	EndIf
+
+cQuery := " SELECT E1_PORTADO, E1_AGEDEP, E1_CONTA, E1_FILIAL, E1_PREFIXO, E1_NUM, E1_PARCELA, E1_CLIENTE, E1_LOJA, E1_NOMCLI, E1_EMISSAO, E1_VALOR, E1_VENCTO, E1_VENCREA, E1_TIPO, E1_PORTADO, E1_NUMBOR, E1_NUMBCO FROM "
+cQuery += RetSqlName("SE1")
+cQuery += " WHERE "
+cQuery += "    D_E_L_E_T_ = '' AND "
+cQuery += "    E1_FILIAL = '" + xFilial( "SE1" ) + "' "
+cQuery += " AND E1_SALDO <> 0   "
+If _Tipo == 1
+	cQuery += " AND E1_NUMBCO   = ''  "
+	cQuery += " AND E1_PORTADO  = ''  " 
+	cQuery += " AND E1_NUMBOR   = ''  "
+ElseIf _Tipo == 2
+	cQuery += " AND E1_NUMBCO   <> ''  "
+	cQuery += " AND E1_PORTADO  <> ''  " 
+	cQuery += " AND E1_NUMBOR   <> ''  "
+EndIf
+cQuery += " AND E1_TIPO = 'NF'  "//verificar tipos com a Patricia
+cQuery += " AND E1_EMISSAO = '" + DtoS(_EmisIni) + "'  "
+cQuery += " ORDER BY  E1_FILIAL, E1_PREFIXO, E1_NUM, E1_PARCELA "
+
+	If Select("TMP") > 0
+	TMP->(DbcloseArea())
+	EndIf
+	    	
+TCQuery cQuery NEW ALIAS "TMP"
+
+	DbSelectArea("TMP")
+	DbGoTop()
+
+	While !TMP->(Eof())
+
+		//-- Para titulos do tipo NF, necessario verificar se a NF foi autorizada na SEFAZ
+		If TMP->E1_TIPO == "NF"
+
+			DbSelectArea("SF3")
+			SF3->(DbSetOrder(4)) // F3_FILIAL+F3_CLIEFOR+F3_LOJA+F3_NFISCAL+F3_SERIE
+
+			If	SF3->(DbSeek(xFilial("SF3")+TMP->E1_CLIENTE+TMP->E1_LOJA+TMP->E1_NUM+TMP->E1_PREFIXO))
+				If	SF3->F3_ESPECIE == "RPS"
+					If	SF3->F3_CODRSEF == "100"
+						_lAutoriza := .T.
+					Else
+						_lAutoriza := .F.
+					EndIf
+				EndIf
+			Else
+				_lAutoriza := .F.
+			EndIf
+		EndIf
+
+		If	_lAutoriza
+			aAdd(aVetor, { lMark, TMP->E1_PREFIXO, TMP->E1_NUM, TMP->E1_PARCELA, TMP->E1_CLIENTE, TMP->E1_LOJA, TMP->E1_NOMCLI, Stod(TMP->E1_EMISSAO), AllTrim(Transform(TMP->E1_VALOR,"@E 999,999,999.99")), Stod(TMP->E1_VENCTO), Stod(TMP->E1_VENCREA), TMP->E1_TIPO, TMP->E1_PORTADO, TMP->E1_AGEDEP, TMP->E1_CONTA, TMP->E1_NUMBOR, TMP->E1_NUMBCO, TMP->E1_FILIAL })
+		EndIf
+
+		TMP->(dbSkip())
+	Enddo
+
+	DbSelectArea("TMP")
+	DbCloseArea()
+
+	If Len(aVetor) == 0
+		MsgAlert("Nใo foi encontrado nenhum Titulo para Impressใo de Boleto",cTitulo)
+		Return
+	EndIf
+
+	DEFINE MSDIALOG oDlg TITLE cTitulo FROM 0, 0 To 511, 1292 PIXEL
+	
+	@010,010 LISTBOX oLbx VAR cVar FIELDS Header " ", "Serie", "Nota", "Parcela", "Cod. Cliente", "Loja", "Nome Cliente", "Data Emissใo", "Valor R$", "Vencimento", "Vencimento Real", "Tipo", "Portador", "Agencia", "Conta", "Bordero", "Nosso Nฐ Sistema", "Nosso Nฐ Backup", "Filial" SIZE 630,200 Of oDlg PIXEL ON dblClick(aVetor[oLbx:nAt,1] := !aVetor[oLbx:nAt,1],oLbx:Refresh())
+	oLbx:SetArray(aVetor)
+	oLbx:bLine := {|| { Iif(aVetor[oLbx:nAt,1],oOk,oNo), aVetor[oLbx:nAt,2], aVetor[oLbx:nAt,3], aVetor[oLbx:nAt,4], aVetor[oLbx:nAt,5], aVetor[oLbx:nAt,6], aVetor[oLbx:nAt,7], aVetor[oLbx:nAt,8], aVetor[oLbx:nAt,9], aVetor[oLbx:nAt,10], aVetor[oLbx:nAt,11], aVetor[oLbx:nAt,12], aVetor[oLbx:nAt,13], aVetor[oLbx:nAt,14], aVetor[oLbx:nAt,15], aVetor[oLbx:nAt,16], aVetor[oLbx:nAt,17], aVetor[oLbx:nAt,18] }}
+
+	If oChk <> Nil
+		@212,010 CHECKBOX oChk VAR lChk Prompt "Marca/Desmarca" Size 60,007 PIXEL Of oDlg On Click(Iif(lChk,Marca(lChk,aVetor),Marca(lChk,aVetor)))
+	EndIf
+
+	@212,010 CHECKBOX oChk VAR lChk Prompt "Marca/Desmarca" SIZE 60,007 PIXEL Of oDlg On Click(aEval(aVetor,{|x| x[1] := lChk}),oLbx:Refresh())
+	@233,068 Say oSayDir Prompt _cDirPdf Size 300, 08 Of oDlg Pixel
+	@230,065 to 241,330 OF oDlg PIXEL
+	//@230,010 BUTTON "Diretorio Gravacao"  SIZE 050, 011 Font oDlg:oFont ACTION ( _cDirPdf := cGetFile( cType, "Sele็ใo de Pasta principal dos fontes", 0, ,.T., GETF_RETDIRECTORY+GETF_LOCALFLOPPY+GETF_LOCALHARD+GETF_NETWORKDRIVE ), oSayDir:cCaption := _cDirPdf, oSayDir:Refresh(), SysRefresh() )  OF oDlg PIXEL
+
+
+
+//@230,380 BUTTON "Cancelar Boletos Total" SIZE 060, 011 Font oDlg:oFont ACTION {CanceTot(aVetor),oDlg:End()} OF oDlg PIXEL
+	@230,450 BUTTON "Consulta"  SIZE 050, 011 Font oDlg:oFont ACTION VisuSE1() OF oDlg PIXEL
+
+	@230,532 BUTTON "Confirmar" SIZE 050, 011 Font oDlg:oFont ACTION {nOpcao := 1, oDlg:End()} Of oDlg PIXEL
+	@230,588 BUTTON "Cancela"   SIZE 050, 011 Font oDlg:oFont ACTION oDlg:End() OF oDlg PIXEL
+
+	ACTIVATE MSDIALOG oDlg CENTERED
+
+	If nOpcao == 1
+
+		lProcessa := .F.
+		For nx := 1 to Len( aVetor )
+			If aVetor[ nx, 1 ]
+				lProcessa := .T.
+				exit
+			Endif
+		Next
+
+		If Empty(_cDirPdf)
+			Alert( "O Diret๓rio de grava็ใo nใo foi informado. Os boletos nใo serใo gerados!" )
+			lProcessa := .F.
+		Endif
+
+		If lProcessa
+			If _Tipo == 1
+				DbSelectArea("SA6")
+				SA6->(DbSetOrder(3))
+				If SA6->(DbSeek( FWxFilial("SA6") + SM0->M0_CGC ))
+					_cBanco 	:= SA6->A6_COD
+					_cAgencia 	:= SA6->A6_AGENCIA
+					_cConta		:= SA6->A6_NUMCON
+					_cSubConta	:= "001"
+
+					If MontaBor(aVetor, _cBanco, _cAgencia, _cConta) == .F.
+						MsgStop("O border๔ nใo p๔de ser gerado, favor verificar.")
+						Return
+					EndIf
+				EndIf
+			ElseIf _Tipo == 2
+				For nZ := 1 to Len( aVetor )
+					If aVetor[nZ][1] == .T.
+						_cBanco 	:= aVetor[nZ][13]
+						_cAgencia 	:= aVetor[nZ][14]
+						_cConta		:= aVetor[nZ][15]
+						_cSubConta	:= "001"
+					Endif
+				Next
+
+
+			EndIf
+			
+			If _cBanco == "341"
+
+				If FUNNAME() == 'FISA022'
+					_lMail := .T.
+				EndIf	
+				U_Process3(@aVetor,_cBanco,_cAgencia,_cConta,_cSubConta,1,_EmisIni,_EmisFim,SF2->F2_DOC,_lSche, _cDirPdf,_lMail,@_lGerouPdf)
+			EndIf
+		Endif
+
+	Endif
+
+Return
+
+/*ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+ฑฑบPrograma  ณ VisuSE1  บAutor  ณEduardo Augusto     บ Data ณ  22/10/2013 บฑฑ
+ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
+ฑฑบDesc.     ณ Funcao para Chamada do mBrowse da Tela de Inlcusao do      บฑฑ
+ฑฑบ          ณ Contas a Receber (Somente Consulta)             			  บฑฑ
+ฑฑฬออออออออออุออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออนฑฑ
+ฑฑบUso       ณ I2I Eventos							                      บฑฑ
+฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿*/
+
+Static Function VisuSE1()
+
+Local cString 		:= "SE1"
+
+Private cCadastro 	:= "Tela do Contas a Receber"
+Private aRotina 	:= { {"Pesquisar","AxPesqui",0,1}, {"Visualizar","AxVisual",0,2} }
+
+DbSelectArea("SE1")
+SE1->(dbSetOrder(1))
+dbSelectArea(cString)
+
+mBrowse(6,1,22,75,cString)
+
+Return
+
+/*ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+ฑฑบPrograma  ณMarca     บAutor  ณEduardo Augusto     บ Data ณ  22/10/2013 บฑฑ
+ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
+ฑฑบDesc.     ณ Funcao que Marca ou Desmarca todos os Objetos.             บฑฑ
+ฑฑฬออออออออออุออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออนฑฑ
+ฑฑบUso       ณ I2I Eventos						                          บฑฑ
+฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿*/
+
+Static Function Marca(lMarca,aVetor)
+
+Local i
+	For i := 1 To Len(aVetor)
+	aVetor[i][1] := lMarca
+	Next
+oLbx:Refresh()
+
+Return
+
+/*ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+ฑฑบPrograma  ณCANCETOT  บAutor  ณEduardo Augusto     บ Data ณ  22/10/2013 บฑฑ
+ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
+ฑฑบDesc.     ณ Funcao para Limpar os campos da Tabela SE1 quando o Boleto บฑฑ
+ฑฑบ		     ณ sofrer cancelamento total das informa็๕es...				  บฑฑ
+ฑฑฬออออออออออุออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออนฑฑ
+ฑฑบUso       ณ Mirai							                          บฑฑ
+฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿*/
+
+Static Function CanceTot(aVetor)
+
+Local j
+	For j := 1 To Len(aVetor)
+		If aVetor [j][1] == .T.
+		DbSelectArea("SE1")
+		DbSetOrder(1)
+			If DbSeek(xFilial("SE1") + aVetor[j][2] + aVetor[j][3] + aVetor[j][4] + aVetor[j][12])
+			RecLock("SE1",.F.)
+			SE1->E1_NUMBCO	:= ""
+			SE1->E1_CODBAR	:= ""
+			SE1->E1_LINDIG	:= ""
+			//TIRAR O TITULO DO BORDERO
+			//SE1->E1_PORTADO	:= ""
+			//SE1->E1_AGEDEP	:= ""
+			//SE1->E1_CONTA	:= ""
+			MsUnLock()
+			EndIf
+		EndIf
+	Next
+MsgInfo("Cancelamento de Boleto Total Finalizado com Sucesso")
+
+Return
+
+/*ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+ฑฑบPrograma  ณMarca     บAutor  ณEduardo Augusto     บ Data ณ  22/10/2013 บฑฑ
+ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
+ฑฑบDesc.     ณ Funcao que Perguntas do SX1.					              บฑฑ
+ฑฑฬออออออออออุออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออนฑฑ
+ฑฑบUso       ณ I2I Eventos						                          บฑฑ
+฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿*/
+
+Static Function ValidPerg()
+
+Local i
+Local j
+
+_sAlias := Alias()
+
+DbSelectArea("SX1")
+DbSetOrder(1)
+
+cPerg := PADR(cPerg,10)
+aRegs :={}
+
+// Grupo/Ordem/Pergunta/Variavel/Tipo/Tamanho/Decimal/Presel/GSC/Valid/Var01/Def01/Cnt01/Var02/Def02/Cnt02/Var03/Def03/Cnt03/Var04/Def04/Cnt04/Var05/Def05/Cnt05
+aAdd(aRegs,{cPerg,"01","Tipo de Impressao  :","","","mv_ch1","N",01,0,0,"C","","Mv_Par01","1ฐ Via","1ฐ Via","1ฐ Via","","","2ฐ Via","2ฐ Via","2ฐ Via","","","","","","","","","","","","","","","","","","","","",""})
+aAdd(aRegs,{cPerg,"02","Emissao            :","","","mv_ch2","D",08,0,0,"G","","Mv_Par02",""    ,"","",""      ,"","","","","","","","","","",""})
+
+
+	For i:=1 to Len(aRegs)
+		If ! DBSeek(cPerg+aRegs[i,2])
+		RecLock("SX1",.T.)
+			For j:=1 to Len(aRegs[i])
+			FieldPut(j,aRegs[i,j])
+			Next
+		MsUnlock()
+		EndIf
+	Next
+DbSkip()
+DbSelectArea(_sAlias)
+
+Return
+
+/*ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+ฑฑบPrograma  ณVALSUBCT   บAutor  ณMicrosiga          บ Data ณ  28/08/2015 บฑฑ
+ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
+ฑฑบDesc.     ณ Programa de validador da Subconta.						  บฑฑ
+ฑฑบ          ณ                                                            บฑฑ
+ฑฑฬออออออออออุออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออนฑฑ
+ฑฑบUso       ณ Plastit                                                    บฑฑ
+฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿*/
+
+User Function VALSUBCT()
+
+Local lRet := .T.
+DbSelectArea("SEE")
+DbSetOrder(1)
+lRet := dbSeek(xFilial("SEE") + Mv_Par01 + Mv_Par02 + Mv_Par03 + Mv_Par04 )
+	If !lRet
+	MsgAlert("Subconta nใo relacionada com o Banco informado no Parโmetro, favor informar a Subconta correta!!!")
+	lRet := .F.
+	EndIf
+
+Return lRet
+
+
+Static Function MontaBor(aVetor, _cBanco, _cAgencia, _cConta)
+
+	//Local aPortador as array
+	Local aTit		as array
+	Local aBor		as array
+	Local aErroAuto as array
+	Local lRet      as logical
+	Local nX		as numeric
+	Local nCntErr	as numeric
+	Local cErroRet  as char
+
+	Private lMsErroAuto as logical
+	Private lAutoErrNoFile as logical
+
+	//aPortador := {"", "", ""}
+	aTit	  := {}
+	aBor	  := {}
+	aErroAuto := {}
+	lRet	  := .F.
+	nX		  := 0
+	nCntErr	  := 0
+	cErroRet  := ""
+
+	lMsErroAuto := .F.
+	lAutoErrNoFile:= .T.
+
+cNumBor := Soma1(GetMV("MV_NUMBORR"),6)
+
+		aAdd(aBor, {"AUTBANCO" , _cBanco })
+		aAdd(aBor, {"AUTAGENCIA" , _cAgencia })
+		aAdd(aBor, {"AUTCONTA" , _cConta })
+		aAdd(aBor, {"AUTSITUACA" , PadR("1" ,TamSX3("E1_SITUACA")[1]) })
+		aAdd(aBor, {"AUTNUMBOR" , cNumBor })
+
+	For nX := 1 To Len(aVetor)
+
+		If aVetor[nX][1] == .T.
+
+			aAdd(aTit,;
+			{;
+			{"E1_FILIAL" ,	aVetor[nX][18]    },;
+			{"E1_PREFIXO" ,	aVetor[nX][2]  },;
+			{"E1_NUM" ,		aVetor[nX][3]  },;
+			{"E1_PARCELA" ,	aVetor[nX][4]  },;
+			{"E1_TIPO" ,	aVetor[nX][12] };
+			})
+
+	
+			
+		EndIf
+
+	Next nX
+
+	MSExecAuto({|a, b| FINA060(a, b)}, 3,{aBor,aTit})
+
+	If lMsErroAuto
+
+		//MostraErro()
+
+		aErroAuto := GetAutoGRLog()
+
+		For nCntErr := 1 To Len(aErroAuto)
+
+			cErroRet += aErroAuto[nCntErr]
+
+		Next
+
+		alert(cErroRet)
+
+	Else
+
+		lRet := .T.
+
+	EndIf
+
+
+	PUTMV("MV_NUMBORR", cNumBor)
+
+Return lRet

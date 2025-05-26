@@ -88,11 +88,21 @@ User Function WFUNX002(cQuery,aJson,oJson,aCampos)
 				For nX := 1 to len(aCpoDst[nCont])-1
 					nPos := Ascan(aCampos,{|x| x[2]+x[3] == aCpoDst[nCont,nX]+aCorte[1]})
 					If nPos > 0
+						cContCpo := &("TRB->"+aCampos[nPos,01])
+						
+						If aCampos[nPos,5] == "S" .And. aCampos[nPos,6] > 0
+							If len(cContCpo) > aCampos[nPos,6]
+								cContCpo := substr(cContCpo,1,aCampos[nPos,6])
+							EndIf 
+						ElseIf aCampos[nPos,5] == "D"
+							cContCpo := substr(cContCpo,1,4)+"-"+substr(cContCpo,5,2)+"-"+substr(cContCpo,7,2)+"T00:00:00.000Z"
+						EndIf 
+
 						nPos2 := Ascan(aCpoDst,{|x| aCpoDst[nCont,nX] $ x[len(x)]})
 						If Empty(aCorte[2]) .And. nPos2 == 0
-							oJson[aCorte[1]][1][aCpoDst[nCont,nX]] := &("TRB->"+aCampos[nPos,01])
+							oJson[aCorte[1]][1][aCpoDst[nCont,nX]] := cContCpo
 						Else 
-							oJson[aCorte[2]][1][aCorte[1]][1][aCpoDst[nCont,nX]] := &("TRB->"+aCampos[nPos,01])
+							oJson[aCorte[2]][1][aCorte[1]][1][aCpoDst[nCont,nX]] := cContCpo
 						EndIf 
 					Else 
 						nPos2 := Ascan(aCpoDst,{|x| aCpoDst[nCont,nX] $ x[len(x)]})
@@ -119,7 +129,17 @@ User Function WFUNX002(cQuery,aJson,oJson,aCampos)
 					For nX := 1 to len(aCpoDst[nCont])-1
 						nPos := Ascan(aCampos,{|x| x[2]+x[3] == aCpoDst[nCont,nX]+aCorte[1]})
 						If nPos > 0
-							oItem[aCpoDst[nCont,nX]] := &("TRB->"+aCampos[nPos,01])
+							cContCpo := &("TRB->"+aCampos[nPos,01])
+						
+							If aCampos[nPos,5] == "S" .And. aCampos[nPos,6] > 0
+								If len(cContCpo) > aCampos[nPos,6]
+									cContCpo := substr(cContCpo,1,aCampos[nPos,6]-1)
+								EndIf 
+							ElseIf aCampos[nPos,5] == "D"
+								cContCpo := substr(cContCpo,1,4)+"-"+substr(cContCpo,5,2)+"-"+substr(cContCpo,7,2)+"T00:00:00.000Z"
+							EndIf 
+
+							oItem[aCpoDst[nCont,nX]] := cContCpo //&("TRB->"+aCampos[nPos,01])
 						Else 
 							oItem[aCpoDst[nCont,nX]] := ""
 						EndIf 
@@ -359,7 +379,9 @@ User Function WFUNX006(aBody,aCampos,cCampos,aHeader1,aHeader2,aHeader3)
 			Aadd(aCampos,{	aBody[3,nCont,4],;	
 							aBody[3,nCont,3],;
 							aBody[3,nCont,1],;
-							space(val(aBody[3,nCont,8]))})
+							space(val(aBody[3,nCont,8])),;
+							aBody[3,nCont,6],;
+							val(aBody[3,nCont,8])})
 		EndIF 
 	Next nCont 
 

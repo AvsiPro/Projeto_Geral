@@ -1,0 +1,106 @@
+#INCLUDE "Totvs.ch"
+#Include "Protheus.ch"
+#Include "TbiConn.Ch"
+#Include "Colors.Ch"
+#Include "TopConn.Ch"
+
+/*/{Protheus.doc} JOBENVBO
+Job para geração dos boletos e envio de forma
+automática
+@type function
+@author valdemir Rabelo
+@since 14/02/2024
+@return variant, Nil
+/*/
+User Function JOBENVBO(aEmpFil as Array)
+    Local aVetor       as Array
+    Local aDados       as Array
+    Local nLinha       as Numeric
+    Local lJOB         as Logical
+	Private _EmisIni   as Date
+	Private _EmisFim   as Date
+    Private _cBanco    as Character
+    Private _cAgencia  as Character
+    Private _cConta    as Character
+    Private _cSubConta as Character
+    Private _cDirPdf   as Character
+    Private lCHK2      as Logical
+
+    Default aEmpFil     := {"11","010101"}
+
+
+    BrkClassGen():MsgConMon( '-------------------------------- entrada no job de boletos ------------------------------------------',.T.)
+
+    if (Select("SX2")==0)
+        lJOB := .T.
+        // Prepara ambiente Protheus
+        RPCSetType( 3 )                           
+        RpcSetEnv( aEmpFil[1], aEmpFil[2],,,"FAT")    
+    else 
+        if (cEmpAnt != aEmpFil[1]) .or. (cFilAnt != aEmpFil[2])
+           FWAlertInfo("Empresa / Filial não autorizada para ser processada.","Atenção!")
+           Return 
+        endif 
+    Endif  
+
+   	//PREPARE ENVIRONMENT EMPRESA '11' FILIAL cFilEnvBol TABLES 'SX2,SX3,SX6,SE1,SE2,SA1,"SA6",SA2' MODULO "SIGAFIN"
+
+    // Inicializa variaveis
+    aVetor     := {}
+    aDados     := {}
+    nLinha     := 0
+	_EmisIni   := FirstDate(dDatabase)
+	_EmisFim   := LastDate(dDatabase)
+    _cBanco    := ""
+    _cAgencia  := ""
+    _cConta    := ""
+    _cSubConta := ""
+    _cDirPdf   := ""
+    lCHK2      := .F.
+
+    // Abrindo as tabelas
+	DbSelectArea("SX2")
+	DbSetOrder(1)
+	DbSelectArea("SX3")
+	DbSetOrder(1)
+	DbSelectArea("SIX")
+	DbSetOrder(1)
+	DbSelectArea("SX6")
+	DbSetOrder(1)
+	DbSelectArea("SA1")
+	DbSetOrder(1)
+	DbSelectArea("SA2")
+	DbSetOrder(1)
+	DbSelectArea("SA6")
+	DbSetOrder(1)
+
+    _cDirPdf   := GetMV("MV_XBOLITAU",.f.,"C:\Temp")
+
+    BrkClassGen():MsgConMon( '-------------------------------- chamando rotina CargaTelaBol ------------------------------------------',.T.)
+
+    BrkClassGen():CargaTelaBol(1, @aVetor, @aDados, .T.)
+
+    BrkClassGen():MsgConMon('-------------------------------- Existem  '+cValToChar(Len(aVetor))+'  boletos selecionados ---------------------',.T.)
+
+    if Len(aVetor) > 0
+        BrkClassGen():MsgConMon( '-------------------------------- Confirmação dos boletos selecionados ------------------------------------------',.T.)
+        BrkClassGen():ConfirmaBol(1, aVetor, .T.)
+    endif 
+
+    BrkClassGen():MsgConMon( '--------------------------------  Rotina Finalizada ------------------------------------------',.T.)
+
+    if lJOB
+        //RESET ENVIRONMENT
+        RpcClearEnv() 
+    Endif
+
+Return 
+
+
+
+User Function BRKJOB01()
+    Local aEmpresa := {"11","010101"}
+
+    FWMsgRun(,{|| U_JOBENVBO(aEmpresa),'Aguarde','Processando dados'})
+
+Return 

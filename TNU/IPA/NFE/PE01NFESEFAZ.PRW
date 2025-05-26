@@ -36,20 +36,20 @@ USER FUNCTION PE01NFESEFAZ()
 	Local aObsCont	:= PARAMIXB[17]
 	Local aArea		:= GetArea()
 	Local aRetorno	:= {}
-	Local cClixProd := SuperGetMV("TI_IPANFE",.F.,"J59104422/J06020318")
+	//Local cClixProd := SuperGetMV("TI_IPANFE",.F.,"J59104422/J06020318")
     Local cBkpDesc  := ""
     Local cCliA7    := ""
     Local cPedCl    := ""
     Local nCont 
     
-    If SD2->D2_CLIENTE $ cClixProd
+    //If SD2->D2_CLIENTE $ cClixProd
 
         For nCont := 1 to len(aProd)
             cBkpDesc := aProd[nCont,4]
 
             DbSelectArea("SC6")
             DbSetOrder(1)
-            If Dbseek(SD2->D2_FILIAL+SD2->D2_PEDIDO+aProd[nCont,55])
+            If Dbseek(SD2->D2_FILIAL+SD2->D2_PEDIDO+aProd[nCont,39])
                 //While !EOF() .And. SC6->C6_FILIAL == SD2->D2_FILIAL .And. SC6->C6_NUM == SD2->D2_PEDIDO 
                     cPedCl := SC6->C6_NUMPCOM
 
@@ -60,7 +60,11 @@ USER FUNCTION PE01NFESEFAZ()
                     EndIf 
                     DbSelectArea("SC6")
 
-                    aProd[nCont,4] := cCliA7+" - "+cBkpDesc+" - PED.CLIENTE: "+cPedCl
+					If !empty(cCliA7)
+                    	aProd[nCont,4] := cCliA7+" - "+cBkpDesc+" - PED.CLIENTE: "+cPedCl
+					elseIf !Empty(cPedCl)
+						aProd[nCont,4] := cBkpDesc+" - PED.CLIENTE: "+cPedCl
+					endif 
                     //Dbskip()
                 //EndDo
             EndIf
@@ -68,7 +72,7 @@ USER FUNCTION PE01NFESEFAZ()
             
         Next nCont 
 
-    EndIf 
+    //EndIf 
 
 	aadd(aRetorno,aProd)
 	aadd(aRetorno,cMensCli)

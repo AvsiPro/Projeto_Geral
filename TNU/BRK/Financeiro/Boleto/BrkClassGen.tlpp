@@ -1,0 +1,500 @@
+#INCLUDE "Totvs.ch"
+#Include "Protheus.ch"
+#Include "TbiConn.Ch"
+#Include "Colors.Ch"
+#Include "TopConn.Ch"
+#Include "fileio.ch"
+#Include "tbicode.ch"
+
+#Define nPosSel     01
+#Define nPosSerie   02
+#Define nPosNota    03
+#Define nPosParc    04
+#Define nPosCodC    05
+#Define nPosLoja    06
+#Define nPosNom     07
+#Define nPosDtE     08
+#Define nPosVlr     09
+#Define nPosVct     10
+#Define nPosVcR     11
+#Define nPosTip     12
+#Define nPosPor     13
+#Define nPosAge     14
+#Define nPosCnt     15
+#Define nPosCNPJ    16
+#Define nPosBor     17
+#Define nPosNNro    18
+#Define nPosNFTR    19
+#Define nPosFil     20
+
+Static _lAutoriza := .T.
+Static oOk        := LoadBitmap(GetResources(),"LBOK")
+Static oNo        := LoadBitmap(GetResources(),"LBNO")
+
+
+
+/*/{@Protheus.doc} BrkClassGen
+    Classe Statica Generica
+    @author Valdemir José Rabelo
+    @since 12/02/2024
+/*/
+Class BrkClassGen
+    Static Method CargaTelaBol()  
+	Static Method AtuList()
+	Static Method GeraBordero()
+	Static Method SetCssBot()
+    Static Method ConfirmaBol()
+	Static Method MsgConMon()
+EndClass
+
+
+/*/{Protheus.doc} BrkClassGen::CargaTelaBol
+Metodo para dar carga com os registros a
+ser selecionado
+@type method
+@author valdemir Rabelo
+@since 14/02/2024
+@param pTipo, numeric, 1a Via ou 2a Via
+@param aVetor, array, Lista Registros
+@param aDados, array, Copia Lista Registros
+@param pJob, logical, .T.=Job .F.=Interface
+@return variant, Nil
+/*/
+ Method CargaTelaBol(pTipo as Numeric, aVetor as Array, aDados as Array, pJob as logical)  class BrkClassGen
+    Local cQuery     := ""  as Character
+    Local aTmp       := {}  as Array
+    Local lMark      := .F. as Logical
+
+    Default pTipo := 1
+    Default pJob  := .F.
+
+
+    aVetor := {}
+
+	cQuery := " SELECT E1_PORTADO, E1_AGEDEP, E1_CONTA, E1_FILIAL, E1_PREFIXO, E1_NUM, E1_PARCELA, E1_CLIENTE, E1_LOJA, E1_NOMCLI, E1_EMISSAO, E1_VALOR, E1_VENCTO, E1_VENCREA, E1_TIPO, E1_PORTADO, E1_NUMBOR, E1_NUMBCO FROM " + CRLF
+	cQuery += RetSqlName("SE1") + " " + CRLF
+	cQuery += " WHERE " + CRLF
+	cQuery += "    D_E_L_E_T_ = '' AND  " + CRLF
+	cQuery += "    E1_FILIAL = '" + xFilial( "SE1" ) + "'  " + CRLF
+	cQuery += " AND E1_SALDO <> 0    " + CRLF
+	If pTipo == 1
+		cQuery += " AND E1_NUMBCO   = ''   " + CRLF
+		cQuery += " AND E1_PORTADO  = ''   " + CRLF
+		cQuery += " AND E1_NUMBOR   = ''   " + CRLF
+	ElseIf pTipo == 2
+		cQuery += " AND E1_NUMBCO   <> ''   " + CRLF
+		cQuery += " AND E1_PORTADO  <> ''   " + CRLF
+		cQuery += " AND E1_NUMBOR   <> ''   " + CRLF
+	EndIf
+	cQuery += " AND E1_TIPO = 'NF'   " + CRLF
+	cQuery += " AND E1_EMISSAO BETWEEN '" + DtoS(_EmisIni) + "' AND '" + DTOS(_EmisFim) + "' "+ CRLF
+	if SE1->( FIELDPOS( "E1_XENVJOB" ) ) > 0
+	   if FWISINCALLSTACK( "U_JOBENVBO" )
+    	   cQuery += " AND E1_XENVJOB = ' ' " + CRLF
+	   Endif 
+	Endif 
+	//-------------------------------
+    //cQuery += " AND E1_NUM='075794' "
+	//-------------------------------
+	cQuery += " ORDER BY  E1_FILIAL, E1_PREFIXO, E1_NUM, E1_PARCELA  " + CRLF
+
+	If Select("TMP") > 0
+		TMP->(DbcloseArea())
+	EndIf
+
+	TCQuery cQuery NEW ALIAS "TMP"
+
+    lMark := pJob
+
+	DbSelectArea("TMP")
+	DbGoTop()
+
+	While !TMP->(Eof())
+		aTMP := Array(20)
+		SA1->( dbSeek(xFilial('SA1')+TMP->E1_CLIENTE+TMP->E1_LOJA))
+		BrkClassGen():MsgConMon('Tipo: '+TMP->E1_TIPO,.T.)
+		If Alltrim(TMP->E1_TIPO) == "NF"   // Títulos com Tipo NF
+
+			DbSelectArea("SF3")
+			SF3->(DbSetOrder(4)) // F3_FILIAL+F3_CLIEFOR+F3_LOJA+F3_NFISCAL+F3_SERIE
+
+			If	SF3->(DbSeek(xFilial("SF3")+TMP->E1_CLIENTE+TMP->E1_LOJA+TMP->E1_NUM+TMP->E1_PREFIXO))
+				BrkClassGen():MsgConMon('cliente: '+alltrim(TMP->E1_CLIENTE)+' Loja:'+alltrim(TMP->E1_LOJA)+" Titulo: "+TMP->E1_NUM+" Prefixo: "+TMP->E1_PREFIXO,.T.)
+				If	SF3->F3_ESPECIE == "RPS"
+					ConoutBrkClassGen():MsgConMon('Especie: RPS',.T.)
+					If	((SF3->F3_CODRSEF == "100") .or. (alltrim(SF3->F3_CODRSEF) $ "S/T"))
+						_lAutoriza := .T.
+					Else
+						_lAutoriza := .F.
+					EndIf
+					BrkClassGen():MsgConMon('_lAutoriza='+iif(_lAutoriza,'.T.','.F.'),.T.)
+				EndIf
+			Else
+				BrkClassGen():MsgConMon('Nao encontrou registro na SF3',.T.)
+				BrkClassGen():MsgConMon('_lAutoriza='+iif(_lAutoriza,'.T.','.F.'),.T.)
+				_lAutoriza := .F.
+			EndIf
+
+		EndIf
+
+		If	_lAutoriza   // Se foi autorizado
+			aTMP[nPosSel]   := lMark
+			aTMP[nPosSerie] := TMP->E1_PREFIXO
+			aTMP[nPosNota]  := TMP->E1_NUM
+			aTMP[nPosParc]  := TMP->E1_PARCELA
+			aTMP[nPosCodC]  := TMP->E1_CLIENTE
+			aTMP[nPosLoja]  := TMP->E1_LOJA
+			aTMP[nPosNom ]  := TMP->E1_NOMCLI
+			aTMP[nPosDtE]   := Stod(TMP->E1_EMISSAO)
+			aTMP[nPosVlr]   := AllTrim(Transform(TMP->E1_VALOR,"@E 999,999,999.99"))
+			aTMP[nPosVct]   := Stod(TMP->E1_VENCTO)
+			aTMP[nPosVcR]   := Stod(TMP->E1_VENCREA)
+			aTMP[nPosTip]   := TMP->E1_TIPO
+			aTMP[nPosPor]   := TMP->E1_PORTADO
+			aTMP[nPosAge]   := TMP->E1_AGEDEP
+			aTMP[nPosCnt]   := TMP->E1_CONTA
+			aTMP[nPosCNPJ]  := Transform(SA1->A1_CGC,"@R 99.999.999/9999-99")
+			aTMP[nPosBor]   := TMP->E1_NUMBOR
+			aTMP[nPosNNro]  := TMP->E1_NUMBCO
+			aTMP[nPosNFTR]  := SFT->FT_NFELETR
+			aTMP[nPosFil ]  := TMP->E1_FILIAL
+			aAdd(aVetor, aClone(aTMP))
+		EndIf
+
+		TMP->(dbSkip())
+	Enddo
+
+	if Empty(aVetor) .and. (!pJob)
+		aAdd(aVetor, { lMark, "", "", "", "", "", "", Stod(""), AllTrim(Transform(0,"@E 999,999,999.99")), Stod(""), Stod(""), "", "", "", "", "", "", "","","" })
+		FWMsgRun(,{|| Sleep(3000)},"Informativo","Não existe dados a serem apresentados...")
+		Return .F.
+	Endif
+
+	// Backup dos registros
+    if !pJob
+	   aDados  := aVetor
+    endif 
+
+	DbSelectArea("TMP")
+	DbCloseArea()
+
+ Return .T.
+
+/*/{Protheus.doc} BrkClassGen::ConfirmaBol
+Metodo para confirmação dos titulos selecionados e 
+geração de bordero e mapa
+@type method
+@author valdemir rabelo
+@since 14/02/2024
+@param aVetor, array, Lista Titulos
+@param pJob, logical, .T.=Job, .F.=Interface
+@return variant, Nil
+/*/
+Method ConfirmaBol(_Tipo, aVetor as Array, pJob as logical)  class BrkClassGen
+	Local nX         := 0    as Numeric
+	Local _lSche     := .F.  as Logical
+	Local _lMail     := .F.  as Logical
+	Local aDados     := {}   as Array
+	Local cDirLocal  := GETMV("FS_PathLoc",.f.,"C:\Temp\Boletos\") as Character 
+	Default pJob     := .F.
+
+	SM0->(DbSetOrder(1)) 
+	SM0->(DbSeek(cEmpAnt + cFilAnt ))
+	
+	aEval(aVetor, { |X| iif(X[1],nX++,0) })
+
+	if (nX==0)
+		if !pJob
+		   FWAlertInfo("Não foi selecionado nenhum registro.","Atenção!")
+		else 
+		   BrkClassGen():MsgConMon("Não foi selecionado nenhum registro.",.t.)
+		endif 
+		Return .T.
+	endif
+   _lSche := pJob
+
+	If _Tipo == 1
+		DbSelectArea("SA6")
+		SA6->(DbSetOrder(3))
+		If SA6->(DbSeek( FWxFilial("SA6") + SM0->M0_CGC ))
+			_cBanco 	:= SA6->A6_COD
+			_cAgencia 	:= SA6->A6_AGENCIA
+			_cConta		:= SA6->A6_NUMCON
+			_cSubConta	:= "001"
+
+			If !BrkClassGen():GeraBordero(aVetor, _cBanco, _cAgencia, _cConta, pJob)
+			    if !pJob
+				   FWAlertWarning("O borderô não pôde ser gerado, favor verificar.","Atenção!")
+				else 
+				   BrkClassGen():MsgConMon("O borderô não pôde ser gerado, favor verificar.",.t.)
+				endif 
+				Return
+			EndIf
+		EndIf
+	ElseIf _Tipo == 2
+		For nX := 1 to Len( aVetor )
+			If aVetor[nX][1] == .T.
+				_cBanco 	:= aVetor[nX][nPosPor]
+				_cAgencia 	:= aVetor[nX][nPosAge]
+				_cConta		:= aVetor[nX][nPosCnt]
+				_cSubConta	:= "001"
+			Endif
+		Next
+	EndIf
+
+	If _cBanco == "341"
+		If FUNNAME() == 'FISA022'
+			_lMail := .T.
+		EndIf
+		// Gera PDF do Boleto
+		U_ProcesBol(@aVetor,_cBanco,_cAgencia,_cConta,_cSubConta, 1,_EmisIni,_EmisIni,""/*SF2->F2_DOC*/,_lSche, _cDirPdf,_lMail)
+		if !pJob
+			BrkClassGen():CargaTelaBol(_Tipo, aVetor, aDados, .F.)
+			BrkClassGen():AtuList(aVetor)
+		endif 
+		
+		if lChk2 .and. !pJob
+			WINEXEC("Explorer.exe "+cDirLocal )
+		endif
+	EndIf
+
+
+Return 
+
+/*/{Protheus.doc} BrkClassGen::AtuList
+Metodo para atualização do grid
+@type method
+@author valdemir rabelo
+@since 14/02/2024
+@param aVetor, array, Lista de títulos
+@return variant, Nil
+/*/
+Method AtuList(aVetor as Array)  class BrkClassGen
+
+	if oLbx != nil
+		oLbx:SetArray(aVetor)
+		oLbx:bLine := {|| { Iif(aVetor[oLbx:nAt,1],oOk,oNo), aVetor[oLbx:nAt,2], aVetor[oLbx:nAt,3], aVetor[oLbx:nAt,4], aVetor[oLbx:nAt,5], aVetor[oLbx:nAt,6], aVetor[oLbx:nAt,7], aVetor[oLbx:nAt,8], aVetor[oLbx:nAt,9], aVetor[oLbx:nAt,10], aVetor[oLbx:nAt,11], aVetor[oLbx:nAt,12], aVetor[oLbx:nAt,13], aVetor[oLbx:nAt,14], aVetor[oLbx:nAt,15], aVetor[oLbx:nAt,16], aVetor[oLbx:nAt,17], aVetor[oLbx:nAt,18], aVetor[oLbx:nAt,19], aVetor[oLbx:nAt,20] }}
+	endif 
+
+Return
+
+
+/*/{@Protheus.doc} SetCssImg
+	description
+	@type function
+	@version  1.0
+	@author Valdemir Rabelo
+	@since 16/01/2022
+/*/
+Method SetCssBot(cTipo) class BrkClassGen
+	Local cCssRet as Character
+	Default cTipo := "Primary"
+
+	cCssRet := ""
+
+	IF cTipo == "Success"
+		cCssRet := "QPushButton { color: white }"
+		cCssRet += "QPushButton { font-weight: bolder }"
+		cCssRet += "QPushButton { border: 2px solid #CECECE }"
+		cCssRet += "QPushButton { background-color: green }"
+		cCssRet += "QPushButton { border-radius: 8px }"
+		cCssRet += "QPushButton:hover { background-color: #53BD33 } "
+		cCssRet += "QPushButton:hover { border-style: solid } "
+		cCssRet += "QPushButton:hover { border-width: 4px }"
+		//cCssRet += "QPushButton:pressed { background-color: green }"
+		cCssRet += "QPushButton:focus { background-color: #66E83F } "
+		cCssRet += "QPushButton:focus { border-style: solid } "
+		cCssRet += "QPushButton:focus { border-width: 8px }"	
+	EndIf
+
+	IF cTipo == "Primary"
+		cCssRet := "QPushButton { color: white }"
+		cCssRet += "QPushButton { font-weight: bolder }"
+		cCssRet += "QPushButton { border: 2px solid #CECECE }"
+		cCssRet += "QPushButton { background-color: blue }"
+		cCssRet += "QPushButton { border-radius: 8px }"
+		cCssRet += "QPushButton:hover { background-color: #434bdf } "
+		cCssRet += "QPushButton:hover { border-style: solid } "
+		cCssRet += "QPushButton:hover { border-width: 4px }"
+		//cCssRet += "QPushButton:pressed { background-color: #373fd4 }"
+		cCssRet += "QPushButton:focus { background-color: #1c25d7 } "
+		cCssRet += "QPushButton:focus { border-style: solid } "
+		cCssRet += "QPushButton:focus { border-width: 8px }"	
+	EndIf
+
+	IF cTipo == "Danger"
+		cCssRet := "QPushButton { color: white }"
+		cCssRet += "QPushButton { font-weight: bolder }"
+		cCssRet += "QPushButton { border: 2px solid #CECECE }"
+		cCssRet += "QPushButton { background-color: Red }"
+		cCssRet += "QPushButton { border-radius: 8px }"
+		cCssRet += "QPushButton:hover { background-color: #E63223 } "
+		cCssRet += "QPushButton:hover { border-style: solid } "
+		cCssRet += "QPushButton:hover { border-width: 4px }"
+		//cCssRet += "QPushButton:pressed { background-color: Red }"
+		cCssRet += "QPushButton:focus { background-color: #F73626 } "
+		cCssRet += "QPushButton:focus { border-style: solid } "
+		cCssRet += "QPushButton:focus { border-width: 8px }"	
+	EndIf
+
+	IF cTipo == "Warning"
+		cCssRet := "QPushButton { color: white }"
+		cCssRet += "QPushButton { font-weight: bolder }"
+		cCssRet += "QPushButton { border: 2px solid #CECECE }"
+		cCssRet += "QPushButton { background-color: orange }"
+		cCssRet += "QPushButton { border-radius: 8px }"
+		cCssRet += "QPushButton:hover { background-color: #E3CC10 } "
+		cCssRet += "QPushButton:hover { border-style: solid } "
+		cCssRet += "QPushButton:hover { border-width: 4px }"
+		//cCssRet += "QPushButton:pressed { background-color: #F5DC11 }"
+		cCssRet += "QPushButton:focus { background-color: #F5DC11 } "
+		cCssRet += "QPushButton:focus { border-style: solid } "
+		cCssRet += "QPushButton:focus { border-width: 8px }"	
+
+	EndIf
+
+Return cCssRet
+
+
+/*/{Protheus.doc} BrkClassGen::MsgConMon
+Metodo para informar o log
+@type method
+@author valdemir Rabelo
+@since 14/02/2024
+@param cMsg, character, Mensagem
+@param lFrame, logical, adiciona frame
+@return variant, Nil
+/*/
+Method MsgConMon( cMsg, lFrame) class BrkClassGen
+	Local nTamUtil := 75 as Numeric
+	Local nTamMens := 0  as Numeric
+	Local cStamp   := '' as Character
+	Local nLinhas  := 0  as Numeric
+	Local nZ       := 0  as Numeric
+	Local cRotina  := '' as Character
+	Local cMsgOri  := '' as Character
+
+	// Inicializa Variaveis
+	cMsg     := Iif( cMsg   == Nil,  '', cMsg )
+	lFrame   := Iif( lFrame == Nil, .T., lFrame )
+	nTamMens := Len( cMsg )
+	cMsgOri  := cMsg
+	nLinhas  := Int( nTamMens / 75 ) + Iif( Mod( nTamMens, 75 ) == 0, 0, 1 )
+	cRotina  := ProcName( 1 )
+	cRotina  := Iif( SubStr( cRotina, 1, 2 ) $ 'u_/U_', SubStr( cRotina, 3 ), cRotina )
+	cStamp   := '[' + cRotina + ' ' + SubStr( DtoC( Date() ), 1, 5 ) + ' ' + SubStr( Time(), 1, 5 ) + ']'
+
+	If lFrame
+		ConOut( ' ' )
+		AutoGrLog( ' ' )
+		ConOut( '+-' + PadC( ' ' + cStamp + ' ', nTamUtil, '-' )  + '-+')
+		AutoGrLog( '+-' + PadC( ' ' + cStamp + ' ', nTamUtil, '-' )  + '-+')
+		If nTamMens <= nTamUtil
+			ConOut( '| ' + PadR( cMsg, nTamUtil ) + ' |' )
+			AutoGrLog( '| ' + PadR( cMsg, nTamUtil ) + ' |' )
+		Else
+			For nZ := 1 to nLinhas
+				ConOut( '| ' + SubStr( PadR( cMsg, nTamUtil ), 1, nTamUtil ) + ' |' )
+				AutoGrLog( '| ' + SubStr( PadR( cMsg, nTamUtil ), 1, nTamUtil ) + ' |' )
+				cMsg := LTrim( SubStr( cMsg, nTamUtil + 1 ) )
+			Next
+		EndIf
+		
+		ConOut( '+-' + PadC( '', nTamUtil, '-' )  + '-+')
+		AutoGrLog( '+-' + PadC( '', nTamUtil, '-' )  + '-+')
+	Else
+		ConOut( '* ' + cStamp + ' ' + cMsg )
+		AutoGrLog( '* ' + cStamp + ' ' + cMsg )
+	EndIf
+
+	FWMonitorMsg(cMsg)
+
+Return Nil
+
+/*/{Protheus.doc} BrkClassGen::GeraBordero
+Metodo para gerar Bordero
+@type method
+@author valdemir Rabelo
+@since 14/02/2024
+@param aVetor, array, Lista Titulos
+@param _cBanco, variant, Banco
+@param _cAgencia, variant, Agencia
+@param _cConta, variant, Conta
+@return variant, .T. Se OK, .F. caso ocorra problemas
+/*/
+Method GeraBordero(aVetor, _cBanco, _cAgencia, _cConta, pJob) class BrkClassGen
+	Local aTit		as array
+	Local aBor		as array
+	Local aErroAuto as array
+	Local lRet      as logical
+	Local nX		as numeric
+	Local nCntErr	as numeric
+	Local cErroRet  as character
+
+	Private lMsErroAuto as logical
+	Private lAutoErrNoFile as logical
+	Default pJob := .F.
+
+	aTit	  := {}
+	aBor	  := {}
+	aErroAuto := {}
+	lRet	  := .F.
+	nX		  := 0
+	nCntErr	  := 0
+	cErroRet  := ""
+
+	lMsErroAuto := .F.
+	lAutoErrNoFile:= .T.
+
+	For nX := 1 To Len(aVetor)
+		aTit := {}
+		aBor := {}
+		If aVetor[nX][1]
+			if SA1->( DbSeek(xFilial("SA1") + aVetor[nX, 5]+aVetor[nX, 6]) )
+				IF (SA1->A1_BLEMAIL=='1')
+					
+					cNumBor := Soma1(GetMV("MV_NUMBORR"),6)
+
+					aAdd(aBor, {"AUTBANCO" , _cBanco })
+					aAdd(aBor, {"AUTAGENCIA" , _cAgencia })
+					aAdd(aBor, {"AUTCONTA" , _cConta })
+					aAdd(aBor, {"AUTSITUACA" , PadR("1" ,TamSX3("E1_SITUACA")[1]) })
+					aAdd(aBor, {"AUTNUMBOR" , cNumBor })
+					aAdd(aTit,;
+						{;
+						{"E1_FILIAL" ,	aVetor[nX][nPosFil] },;
+						{"E1_PREFIXO" ,	aVetor[nX][nPosSerie]  },;
+						{"E1_NUM" ,		aVetor[nX][nPosNota]  },;
+						{"E1_PARCELA" ,	aVetor[nX][nPosParc]  },;
+						{"E1_TIPO" ,	aVetor[nX][nPosTip] };
+						})
+
+					if Len(aTit) > 0
+						MSExecAuto({|a, b| FINA060(a, b)}, 3,{aBor,aTit})
+					endif
+
+					If lMsErroAuto
+
+						//MostraErro()
+						aErroAuto := GetAutoGRLog()
+						For nCntErr := 1 To Len(aErroAuto)
+							cErroRet += aErroAuto[nCntErr]
+						Next
+						if !pJob
+							FWAlertError(cErroRet,"Erro na geração Borderô para o título: "+aVetor[nX][nPosNota]+", caso tenha mais seleção irá tentar o proximo.")
+						else 
+							BrkClassGen():MsgConMon(cErroRet,.T.)
+						endif 
+
+					Else
+						lRet := .T.
+						PUTMV("MV_NUMBORR", cNumBor)				
+					EndIf
+
+				Endif
+			endif
+		EndIf
+
+	Next nX
+
+Return lRet

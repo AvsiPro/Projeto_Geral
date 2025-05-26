@@ -1,0 +1,786 @@
+#INCLUDE "Totvs.ch"
+#Include "Protheus.ch"
+#Include "TbiConn.Ch"
+#Include "Colors.Ch"
+#Include "TopConn.Ch"
+#define _LOCK_TIMEOUT    10
+
+Static _nDiasAVen	:= 0
+Static _nDiasVenc	:= 0
+Static _cMaiCobra	:= ""
+Static _cMaiCcopi	:= ""
+Static _aDados		:= {}
+Static _aErros		:= {}
+Static cCodCli      := ""
+Static cLojaCli     := ""
+Static cNome        := ""
+Static cEmailCli    := ""
+Static lJOB         := .F.
+
+/*/{Protheus.doc} BRRSKFIN
+Rotina para envio de e-mails de Titulos Vencidos e A Vencer.
+@type function
+@version 12.1.33
+@author Valdemir Rabelo
+@since 18/03/2023
+@param aEmpFil, array, Array com empresa e filial
+@return variant, Nil
+/*/
+User Function BRRSKFIN(aEmpFil)
+    Local cMsgTMP       := ""
+    Local cParSX6       := ""
+    Local lA1   := lA2  := .F.
+    DEfault aEmpFil     := {"11","010101"}
+
+    lJOB := IsBlind()
+
+    // Prepara ambiente Protheus
+    If lJOB
+        RPCSetType( 3 )                           
+        RpcSetEnv( aEmpFil[1], aEmpFil[2],,,"FAT") 
+    endif
+    SX6CRIA()
+    cParSX6    := GetMV("MV_CONTJOB",.f., "")
+    if !Empty(cParSX6) .and. (stod(cParSX6)==dDataBase)
+       cMsgTMP := "Já foi processado nesta data: "+cValTochar(dDatabase)
+       IF !lJOB
+          FWAlertInfo(cMsgTMP,"Atenção!")
+       Else 
+          FwLogMsg('INFO', , 'LOCK', FunName(), '', '01', cMsgTMP, 0, 0, {})
+       Endif 
+       return 
+    endif 
+    // Ativar o semaforo
+    If ! LockByName("BRRSKFIN_lock", .T., .F.)
+        cMsgTMP := "Atenção, outro usuário já está executando essa rotina!"
+        IF !lJOB
+            FWAlertError(cMsgTMP, "Falha no Lock")
+        Else 
+            FwLogMsg('INFO', , 'LOCK', FunName(), '', '01', cMsgTMP, 0, 0, {})
+        Endif 
+    else 
+        // Carregar parametros               	                                            
+        _nDiasAVen	:= Val( Alltrim( SuperGetMv( "BR_DTAVENC"	, .F., "5" ) ) )
+        _nDiasVenc	:= Val( Alltrim( SuperGetMv( "BR_DTVENCI"	, .F., "1" ) ) )
+        _cMaiCobra  := Lower( Alltrim( SuperGetMv( "BR_MAILCOB" , .F., "faturamento@brktecnologia.com.br" ) ) )
+        _cMaiCcopi  := Lower( Alltrim( SuperGetMv( "BR_MAILCOP" , .F., "faturamento@brktecnologia.com.br" ) ) )
+
+        ConOut("[BRRSKFIN] Iniciando JOB de Títulos a vencer e vencidos - Processamento :", dDatabase)
+
+        IF !lJOB
+            Processa({|| lA1 := Titulos_a_Vencer(), lA2 := TitulosVencidos()}, "Aguarde, Separando os registros")
+        else 
+            lA1 := Titulos_a_Vencer()
+            lA2 := TitulosVencidos()
+        endif 
+        if (lA1 .or. lA2)
+            PUTMV("MV_CONTJOB", Dtos(dDatabase))
+        endif 
+
+        // Liberar o semaforo
+        UnLockByName("BRRSKFIN_lock", .T., .F.)
+    Endif 
+
+    if lJOB
+        RpcClearEnv() 
+    endi 
+
+Return
+
+/*/{Protheus.doc} Titulos_a_Vencer
+Rotina de titulos a vencer
+@type function
+@version 12.1.33
+@author Valdemir Rabelo
+@since 18/03/2023
+@return variant, Nil
+/*/
+Static Function Titulos_a_Vencer()
+    Local _dData 	:= dDataBase + _nDiasAVen  AS DATE
+    Local cQry      := Mnt_Filtra(_dData)      AS CHARACTER
+    Local _cChave   := ""                      AS CHARACTER
+    Local _nI       := 0                       AS NUMERIC
+    Local _nTotReg  := 0                       AS NUMERIC
+    Local aEmail    := {}                      AS ARRAY
+    Local _cAlias	:= GetNextAlias()      
+    Local _lEnviou  := .f.    
+
+    if Select(_cAlias) > 0
+       (_cAlias)->( dbCloseArea() )
+    endif 
+
+    _aDados := {}
+
+    tcQuery cQry New Alias (_cAlias)
+    TcSetField( _cAlias, "E1_EMISSAO"	, "D", 8, 0 )
+    TcSetField( _cAlias, "E1_VENCREA"	, "D", 8, 0 )
+    TcSetField( _cAlias, "E1_VALOR"		, "N", TamSX3("E1_VALOR")[1], TamSX3("E1_VALOR")[2] )    
+
+    ConOut("[BRRSKFIN] Iniciando processamento de titulos a vencer com "+cValTochar(_nDiasAVen)+" dias.")
+
+    Count to _nTotReg
+    If !lJOB
+       ProcRegua(_nTotReg)
+    Endif 
+    (_cAlias)->( dbGotop() )
+    While (_cAlias)->(!Eof() )
+        If !lJOB
+           INCPROC("Separando registros (A VENCER)")
+        endif 
+        _cChave := (_cAlias)->( E1_FILIAL + E1_CLIENTE + E1_LOJA )
+        While (_cAlias)->( !Eof() ) .and. _cChave == (_cAlias)->( E1_FILIAL + E1_CLIENTE + E1_LOJA )
+		    Aadd( _aDados, { (_cAlias)->E1_NUM, (_cAlias)->E1_PARCELA, (_cAlias)->E1_EMISSAO, (_cAlias)->E1_VENCREA, (_cAlias)->E1_VALOR } )
+            For _nI := 1 to 1
+                cCodCli   := (_cAlias)->A1_COD 		
+                cLojaCli  := (_cAlias)->A1_LOJA 	
+                cNome     := (_cAlias)->A1_NOME		
+                cEmailCli := (_cAlias)->A1_MAILFIN  
+            Next            
+            (_cAlias)->( dbSkip() )
+        EndDo 
+        _aErros := {}
+        If ValidaMail( cEmailCli, @_aErros, .F., .F. ) 
+            _cHtml := MntCorpoEmail( "A_VENCER", _aDados)
+            aEmail := {;
+                    cEmailCli,;
+                    "Duplicatas a vencer - Brasil Risk",;
+                    _cHtml,;
+                    _cMaiCcopi,;
+                    "",;
+                    "",;
+                    _cMaiCobra;                    
+                    }
+            if Len(_aDados) > 0
+                _nI := U_BRENMAIL(aEmail)
+                if !_lEnviou
+                    _lEnviou := (_nI==0)
+                endif      
+            endif 
+        Else 
+            If Empty( cEmailCli )  								
+                _cCorpo		:= "O email do cliente " + Alltrim( cCodCli ) + " " + Alltrim( cLojaCli ) + " - " + Alltrim( cNome ) + " nao foi preenchido no cadastro de Clientes. Favor verificar!"   	
+            Else
+                _cCorpo		:= "O email " + Alltrim( Lower( cEmailCli )) + " do cliente " + Alltrim( cCodCli ) + " " + Alltrim( cLojaCli ) + " - " + Alltrim( cNome ) + "  é invalido. Favor verificar!"
+            Endif
+            _cMensagem 	:= mail2html( "EMAIL INVALIDO - DUPLICATAS ENVIADAS AOS CLIENTES", _cCorpo, "left" )
+            
+            aEmail := {;
+                _cMaiCobra,;
+                "EMAIL INVALIDO - DUPLICATAS ENVIADAS AOS CLIENTES",;
+                _cMensagem;
+                    }
+            _nI := U_BRENMAIL(aEmail) 
+            if !_lEnviou
+               _lEnviou := (_nI==0)
+            endif      
+        Endif 
+        _aDados := {}
+    EndDo 
+    (_cAlias)->( dbCloseArea() )
+Return _lEnviou
+
+
+
+/*/{Protheus.doc} Mnt_Filtra
+Rotina montagem do filtro para títulos 
+@type function
+@version 12.1.33
+@author Valdemir Rabelo
+@since 18/03/2023
+@param _dData, variant, Data com N dias calculados antes do venc
+@return variant, String com filtro montado
+/*/
+Static Function Mnt_Filtra(_dData) AS CHARACTER
+    Local _cQuery	:= ""
+    Local cCondicao := ""
+
+    cCondicao := " E1_VENCREA  = '" + Dtos( _dData ) + "' "
+
+    _cQuery	:= " SELECT " + CRLF
+    _cQuery	+= "    E1_FILIAL, " + CRLF
+    _cQuery	+= "    E1_CLIENTE, " + CRLF
+    _cQuery	+= "    E1_LOJA, " + CRLF
+    _cQuery	+= "    E1_NUM, " + CRLF
+    _cQuery	+= "    E1_PREFIXO, " + CRLF
+    _cQuery	+= "    E1_PARCELA, " + CRLF
+    _cQuery	+= "    E1_EMISSAO, " + CRLF
+    _cQuery	+= "    E1_VENCREA, " + CRLF
+    _cQuery	+= "    E1_VALOR,   " + CRLF
+    _cQuery	+= "    A1_COD,   " + CRLF
+    _cQuery	+= "    A1_LOJA,   " + CRLF
+    _cQuery	+= "    A1_NOME,   " + CRLF
+    _cQuery	+= "    A1_MAILFIN " + CRLF
+    _cQuery	+= " FROM " + CRLF
+    _cQuery	+=  RetSqlName( "SE1" ) + " SE1 " + CRLF
+    _cQuery	+= " INNER JOIN "+RetSQLName("SA1") + " SA1 ON E1_CLIENTE = A1_COD " + CRLF
+    _cQuery	+= " AND E1_LOJA  = A1_LOJA AND SA1.D_E_L_E_T_ = ' ' " + CRLF
+    _cQuery	+= " WHERE " + CRLF
+    _cQuery	+= "    SE1.D_E_L_E_T_ <> '*' AND " + CRLF
+    _cQuery	+= "    E1_FILIAL   = '" + xFilial( "SE1" ) + "' AND " + CRLF
+    _cQuery	+= "    E1_TIPO     = 'NF' AND " + CRLF
+    _cQuery	+= cCondicao+ " AND " + CRLF
+    _cQuery	+= "    E1_BAIXA    = '' AND " + CRLF
+    _cQuery	+= "    E1_SALDO    > 0 " + CRLF
+    _cQuery	+= " ORDER BY " + CRLF
+    _cQuery	+= "    E1_FILIAL, " + CRLF
+    _cQuery	+= "    E1_CLIENTE, " + CRLF
+    _cQuery	+= "    E1_LOJA, " + CRLF
+    _cQuery	+= "    E1_PREFIXO, " + CRLF
+    _cQuery	+= "    E1_NUM, " + CRLF
+    _cQuery	+= "    E1_PARCELA, " + CRLF
+    _cQuery	+= "    E1_TIPO " + CRLF    
+
+Return _cQuery
+
+
+/*/{Protheus.doc} MntCorpoEmail
+Rotina para montar corpo do e-mail
+@type function
+@version 12.1.33
+@author Valdemir Rabelo
+@since 18/03/2023
+@param _cTipo, variant, Tipo de Layout de Html a ser retornado 
+                         A_VENCER = Somente titulos a vencer 
+                         VENCIDOS = Somente titulos vencidos
+@param _aDados, variant, Array de dados a ser usado para geracao do Html.
+                        Posicao 1 = E1_NUM    
+                        Posicao 2 = E1_PARCELA
+                        Posicao 3 = E1_EMISSAO
+                        Posicao 4 = E1_VENCREA
+                        Posicao 5 = E1_VALOR  
+@return variant, String do corpo montado
+/*/
+Static Function MntCorpoEmail( _cTipo, _aDados)
+    Local _nPosDupli 	:= 1
+    Local _nPosParce 	:= 2
+    Local _nPosEmiss 	:= 3
+    Local _nPosVenc  	:= 4
+    Local _nPosValor 	:= 5
+    Local _cHtm			:= ""
+    Local _cLink        := ""
+    Local _nx			:= 0
+    LOCAL _cNome        := GetMV("MV_NOME1B",.f.,"Depto.Cobranca")    
+    LOCAL _cEmail       := GetMV("MV_EMAIL1B",.f.,"fatura@brktecnologia.com.br")   
+    Local cCompanyName  := FWCompanyName()
+
+    SA1->( dbSetOrder(1) )
+    SA1->( dbSeek(xFilial("SA1")+cCodCli+cLojaCli) )
+
+    _cHtm := '<html>'
+    _cHtm += '<head>'
+    _cHtm += '<meta http-equiv="Content-Language" content="pt-br">'
+    _cHtm += '<meta name="GENERATOR" content="Microsoft FrontPage 6.0">'
+    _cHtm += '<meta name="ProgId" content="FrontPage.Editor.Document">'
+    _cHtm += '<meta http-equiv="Content-Type" content="text/html; charset=UF8">'
+    _cHtm += '<title>Nova pagina 1</title>'
+    _cHtm += '<style>'
+    _cHtm += '<!--'
+    _cHtm += ' table.MsoNormalTable'
+    _cHtm += '	{mso-style-parent:"";'
+    _cHtm += '	font-size:11.0pt;'
+    _cHtm += '	font-family:"Calibri","sans-serif";'
+    _cHtm += '	}'
+    _cHtm += '-->'
+    _cHtm += '</style>'
+    _cHtm += '</head>'
+    _cHtm += ''
+    _cHtm += '<body>
+    _cHtm += ''
+    _cHtm += '<span style="font-size: 10.0pt; font-family: Courier New; color: black"> '
+    _cHtm += 'Prezado cliente</span></p>'
+    _cHtm += '<Br>'
+    _cHtm += '<table border="0" width="50%">'
+    _cHtm += '<TR>'
+    _cHtm += '  <TD>'
+    _cHtm += '      <span style="font-size: 10.0pt; font-family: Courier New; color: black"> '
+    _cHtm += '      Razão Social: <B>'+ALLTRIM(SA1->A1_NOME)+'</B></span></p>'
+    _cHtm += '  </TD>'
+    _cHtm += '</TR>'
+    _cHtm += '<TR>'
+    _cHtm += '  <TD>'
+    _cHtm += '      <span style="font-size: 10.0pt; font-family: Courier New; color: black"> '
+    _cHtm += '      Endereço: <B>'+ALLTRIM(SA1->A1_END)+'</B></span></p>'
+    _cHtm += '  </TD>'
+    _cHtm += '</TR>'
+    _cHtm += '<TR>'
+    _cHtm += '  <TD>'
+    _cHtm += '      <span style="font-size: 10.0pt; font-family: Courier New; color: black"> '
+    _cHtm += '      <B>'+ALLTRIM(SA1->A1_BAIRRO)+' - '+ALLTRIM(SA1->A1_MUN)+' - '+ALLTRIM(SA1->A1_EST)+' - '+ALLTRIM(SA1->A1_CEP)+'</B></span></p>'
+    _cHtm += '  </TD>'
+    _cHtm += '</TR>'
+    _cHtm += '<TR>'
+    _cHtm += '  <TD>'
+    _cHtm += '      <span style="font-size: 10.0pt; font-family: Courier New; color: black"> '
+    _cHtm += '      CNPJ: <B>'+ALLTRIM(SA1->A1_CGC)+'</B></span></p>'
+    _cHtm += '  </TD>'
+    _cHtm += '</TR>'
+    _cHtm += '</table>'
+    _cHtm += '<Br>'
+
+    DbSelectArea('SFT')
+    SFT->(DbSetOrder(1))
+    iF SFT->(DbSeek(xFilial('SFT')+'S'+SE1->E1_PREFIXO+SE1->E1_NUM+SA1->A1_COD+SA1->A1_LOJA))
+        cLink := 'https://nfe.prefeitura.sp.gov.br/contribuinte/notaprint.aspx?inscricao='+Alltrim(SM0->M0_INSCM)+'&nf='+ALLTRIM(SFT->FT_NFELETR)+'&verificacao='+ALLTRIM(SFT->FT_CODNFE)+'&returnurl=..%2fpublico%2fverificacao.aspx%3ftipo%3d0'        
+    EndIf    
+
+    If (_cTipo=="A_VENCER")
+        _cHtm += '<p><span style="font-size: 10.0pt; font-family: Courier New; color: black"> Informamos abaixo as duplicatas <b> a vencer</b> da Brasil Risk.</span></p>'
+    Else
+        _cHtm += '<p><span style="font-size: 10.0pt; font-family: Courier New; color: black"> Informamos abaixo as duplicatas <b>vencidas e que até o momento não conseguimos identificar o pagamento</b>, constantes nos registros da Brasil Risk.</span></p>'
+    Endif	
+
+    _cHtm += '<table class="MsoNormalTable" border="1" cellspacing="0" cellpadding="0" style="border-collapse: collapse; border: medium none" width="694">'
+    _cHtm += '	<tr>'
+    _cHtm += '		<td colspan="5" valign="top" style="width: 678px; border: 1.0pt solid black; padding-left: 5.4pt; padding-right: 5.4pt; padding-top: 0cm; padding-bottom: 0cm; background: #EEECE1">'
+    _cHtm += '		<p class="MsoNormal" align="center" style="text-align:center"><b>'
+    _cHtm += '		<span style="font-family: Courier New; color: black"><font size="3">'
+    If _cTipo=="A_VENCER"
+        _cHtm += '		Duplicatas a vencer</font></span></b></td>'
+    Else
+        _cHtm += '		Duplicatas vencidas</font></span></b></td>'
+    Endif	
+
+    _cHtm += '	</tr>'
+    _cHtm += '	<tr>'
+    _cHtm += '		<td width="119" valign="top" style="width: 89.0pt; border-left: 1.0pt solid black; border-right: 1.0pt solid black; border-top: medium none; border-bottom: 1.0pt solid black; padding-left: 5.4pt; padding-right: 5.4pt; padding-top: 0cm; padding-bottom: 0cm; background: #EEECE1">'
+    _cHtm += '		<p class="MsoNormal" align="center" style="text-align:center"><b>'
+    _cHtm += '		<span style="font-family: Courier New; color: black"><font size="3">'
+    _cHtm += '		Duplicata</font></span></b></td>'
+    _cHtm += '		<td width="119" valign="top" style="width: 89.0pt; border-left: medium none; border-right: 1.0pt solid black; border-top: medium none; border-bottom: 1.0pt solid black; padding-left: 5.4pt; padding-right: 5.4pt; padding-top: 0cm; padding-bottom: 0cm; background: #EEECE1">'
+    _cHtm += '		<p class="MsoNormal" align="center" style="text-align:center"><b>'
+    _cHtm += '		<span style="font-family: Courier New; color: black"><font size="3">'
+    _cHtm += '		Parcela</font></span></b></td>'
+    _cHtm += '		<td width="119" valign="top" style="width: 89.0pt; border-left: medium none; border-right: 1.0pt solid black; border-top: medium none; border-bottom: 1.0pt solid black; padding-left: 5.4pt; padding-right: 5.4pt; padding-top: 0cm; padding-bottom: 0cm; background: #EEECE1">'
+    _cHtm += '		<p class="MsoNormal" align="center" style="text-align:center"><b>'
+    _cHtm += '		<span style="font-family: Courier New; color: black"><font size="3">'
+    _cHtm += '		Emissão</font></span></b></td>'
+    _cHtm += '		<td width="119" valign="top" style="width: 89.0pt; border-left: medium none; border-right: 1.0pt solid black; border-top: medium none; border-bottom: 1.0pt solid black; padding-left: 5.4pt; padding-right: 5.4pt; padding-top: 0cm; padding-bottom: 0cm; background: #EEECE1">'
+    _cHtm += '		<p class="MsoNormal" align="center" style="text-align:center"><b>'
+    _cHtm += '		<span style="font-family: Courier New; color: black"><font size="3">'
+    _cHtm += '		Vencto Real</font></span></b></td>'
+    _cHtm += '		<td valign="top" style="width: 142px; border-left: medium none; border-right: 1.0pt solid black; border-top: medium none; border-bottom: 1.0pt solid black; padding-left: 5.4pt; padding-right: 5.4pt; padding-top: 0cm; padding-bottom: 0cm; background: #EEECE1">'
+    _cHtm += '		<p class="MsoNormal" align="center" style="text-align:center"><b>'
+    _cHtm += '		<span style="font-family: Courier New; color: black"><font size="3">'
+    _cHtm += '		Valor ( R$ )</font></span></b></td>'
+    _cHtm += '	</tr>'
+    For _nx := 1 to Len( _aDados )
+        _cHtm += '	<tr>'
+        _cHtm += '		<td width="119" valign="top" style="width: 89.0pt; border-left: 1.0pt solid black; border-right: 1.0pt solid black; border-top: medium none; border-bottom: 1.0pt solid black; padding-left: 5.4pt; padding-right: 5.4pt; padding-top: 0cm; padding-bottom: 0cm">'
+        _cHtm += '		<p class="MsoNormal" align="center" style="text-align:center">'
+        _cHtm += '		<span style="font-family: Courier New; color: black"><font size="3">' + _aDados[ _nx, _nPosDupli ] + '</font></span></td>'
+        _cHtm += '		<td width="119" valign="top" style="width: 89.0pt; border-left: medium none; border-right: 1.0pt solid black; border-top: medium none; border-bottom: 1.0pt solid black; padding-left: 5.4pt; padding-right: 5.4pt; padding-top: 0cm; padding-bottom: 0cm">'
+        _cHtm += '		<p class="MsoNormal" align="center" style="text-align:center">'
+        _cHtm += '		<span style="font-family: Courier New; color: black"><font size="3">' + _aDados[ _nx, _nPosParce ] + '</font></span></td>'
+        _cHtm += '		<td width="119" valign="top" style="width: 89.0pt; border-left: medium none; border-right: 1.0pt solid black; border-top: medium none; border-bottom: 1.0pt solid black; padding-left: 5.4pt; padding-right: 5.4pt; padding-top: 0cm; padding-bottom: 0cm">'
+        _cHtm += '		<p class="MsoNormal" align="center" style="text-align:center">'
+        _cHtm += '		<span style="font-family: Courier New; color: black"><font size="3">' + Dtoc( _aDados[ _nx, _nPosEmiss ] ) + '</font></span></td>'
+        _cHtm += '		<td width="119" valign="top" style="width: 89.0pt; border-left: medium none; border-right: 1.0pt solid black; border-top: medium none; border-bottom: 1.0pt solid black; padding-left: 5.4pt; padding-right: 5.4pt; padding-top: 0cm; padding-bottom: 0cm">'
+        _cHtm += '		<p class="MsoNormal" align="right" style="text-align:right">'
+        _cHtm += '		<span style="font-family: Courier New; color: black"><font size="3">' + Dtoc( _aDados[ _nx, _nPosVenc ] ) + '</font></span></td>'
+        _cHtm += '		<td valign="top" style="width: 142px; border-left: medium none; border-right: 1.0pt solid black; border-top: medium none; border-bottom: 1.0pt solid black; padding-left: 5.4pt; padding-right: 5.4pt; padding-top: 0cm; padding-bottom: 0cm">'
+        _cHtm += '		<p class="MsoNormal" align="right" style="text-align:right">'
+        _cHtm += '		<span style="font-family: Courier New; color: black"><font size="3">' + Transform( _aDados[ _nx, _nPosValor ], "@E 999,999,999.99" ) + '</font></span></td>'
+        _cHtm += '	</tr>'            
+    Next
+
+    _cHtm += '</table>'
+    _cHtm += '<p class="MsoNormal">'
+    If _cTipo=="A_VENCER"
+        If !Empty(_cLink)
+            _cHtm   += '<span style="font-size: 10.0pt; font-family: Courier New; color: black"> '
+            _cHtm	+= 'Se preferir, visualize a nota fiscal de serviço no endereço: <br>'
+            _cHtm	+= '<br>'
+            _cHtm	+= '<a href="'+_cLink+'">'+_cLink+'</a><br></span></p>'
+        EndIf    
+        _cHtm += '<span style="font-size: 10.0pt; font-family: Courier New; color: black"> '
+        _cHtm += 'Ficamos à sua disposição para quaisquer dúvidas.</span></p><BR>'
+        _cHtm += '<span style="font-size: 10.0pt; font-family: Courier New; color: black"> '
+        _cHtm += '<B>Dúvidas sobre Notas:</B>'
+        _cHtm += '<Br>'
+        _cHtm += '<Br>'
+        _cHtm += '<p>Faturamento - faturamento@brktecnologia.com.br'
+        _cHtm += '<p>Fone: (11) 91327-7759 / (11) 94071-1355<BR><BR>'
+        _cHtm += '<B>Dúvidas sobre boletos e conciliações:</B>'
+        _cHtm += '<p>Contas a Receber - cobranca@brktecnologia.com.br'
+        _cHtm += '<p>Fone: (11) 97651-2783 / (11) 94071-1355<BR><BR>'
+
+    Else
+        _cHtm += '<span style="font-size: 10.0pt; font-family: Courier New; color: black">
+        _cHtm += 'Pedimos a gentileza da regularização deste(s) título(s) o mais breve possível.<Br>
+        _cHtm += '<B>Caso tenha sido pago, pedimos por gentileza que encaminhe o comprovante para a devida baixa,
+        _cHtm += 'ou nos contate para regularização.</b> </span></p>' 
+        _cHtm += '<span style="font-size: 10.0pt; font-family: Courier New; color: black">
+        _cHtm += 'Desta forma, evitaremos a evolução do saldo devedor, bem como a suspensão dos serviços prestados 
+        _cHtm += 'e bloqueio das senhas de acesso ao sistema, que ocorrerá ao completar 30 dias de atraso, conforme previsto em contrato. </span></p><BR>' 
+        _cHtm += '<Br>'
+        _cHtm += '<Br>'
+        _cHtm += 'Estamos sempre à disposição,<BR>'
+        _cHtm += '<Br>'
+        _cHtm += 'Atenciosamente,<BR>'
+        _cHtm += '<p class="MsoNormal">&nbsp;</p>'
+        _cHtm += '<table border="0" width="50%">'
+        _cHtm += '	<tr>'
+        _cHtm += '		<td>'
+        _cHtm += '		<span style="font-size: 10.0pt; font-family: Courier New; color: black">'
+        _cHtm += '		<b>Departamento Financeiro</b></span></td>'
+        _cHtm += '	</tr>'
+        _cHtm += '	<tr>'
+        _cHtm += '		<td><span style="font-size: 10.0pt; font-family: Courier New; color: black">Cobrança/Contas a receber</span></td>'
+        _cHtm += '	</tr>'
+        _cHtm += '	<tr>'
+        _cHtm += '		<td><span style="font-size: 10.0pt; font-family: Courier New; color: black">(11) 97651-2783/ (11) 94071-1355</b></span></td>'
+        _cHtm += '	</tr>'
+        _cHtm += '	<tr>'
+        _cHtm += '		<td><span style="font-size: 10.0pt; font-family: Courier New; color: black">cobranca@brktecnologia.com.br </span></td>'
+        _cHtm += '	</tr>'
+        _cHtm += '</table><Br>'
+        _cHtm += '<span style="font-size: 10.0pt; font-family: Courier New; color: black"> '
+        _cHtm += '<B>Dúvidas informações e documentos:</B>'
+        _cHtm += '<p>faturamento@brktecnologia.com.br<BR>'
+        _cHtm += '<B>Boletos, conciliações e negociações:</B>'
+        _cHtm += '<p>cobranca@brktecnologia.com.br'
+
+    Endif 
+
+    _cHtm += '<p class="MsoNormal">'
+    _cHtm += '<span style="font-size: 10.0pt; font-family: Courier New; color: black">Desde já '
+    _cHtm += 'agradecemos!</span></p><BR>'  
+
+    _cHtm += '<p class="MsoNormal">&nbsp;</p>'
+    _cHtm += '<table border="0" width="50%">'
+    _cHtm += '	<tr>'
+    _cHtm += '		<td>'
+    _cHtm += '		<span style="font-size: 10.0pt; font-family: Courier New; color: black"> '
+    _cHtm += '		'+cCompanyName+'.</span></td>'
+    _cHtm += '	</tr>'
+    _cHtm += '	<tr>'
+    _cHtm += '		<td><span style="font-size: 10.0pt; font-family: Courier New; color: black"> Rua Werner Von Siemens, 111 - Lapa de Baixo</span></td>'
+    _cHtm += '	</tr>'
+    _cHtm += '	<tr>'
+    _cHtm += '		<td><span style="font-size: 10.0pt; font-family: Courier New; color: black"> CEP: 05069-900 - São Paulo - SP</span></td>'
+    _cHtm += '	</tr>'
+    _cHtm += '	<tr>'
+    _cHtm += '		<td><span style="font-size: 10.0pt; font-family: Courier New; color: black"> site: www.brktecnologia.com.br</span></td>'
+    _cHtm += '	</tr>'
+    _cHtm += '</table>'
+    _cHtm += '<span style="font-size: 10.0pt; font-family: Courier New; color: black"> '
+    _cHtm += 'Aproveite para adicionar o e-mail faturamento.brk@brktecnologia.com.br como seguro,'
+    _cHtm += 'e assim garantir o recebimento de todas as Notas e Boletos enviados pela '
+    _cHtm += 'BRK GERENCIAMENTO DE RISCOS LTDA, evitando que sejam direcionados para seu lixo'
+    _cHtm += 'eletrônico ou spam.'
+    _cHtm += '</span></p><BR>'    
+    _cHtm += '</body>'
+    _cHtm += '</html>'
+
+Return _cHtm 
+
+
+/*/{Protheus.doc} ValidaMail
+Rotina para validar o e-mail informado
+@type function
+@version 12.1.33
+@author Valdemir Rabelo
+@since 18/03/2023
+@param cEmail, character, email a ser validado
+@param aErros, array, Array para erros
+@param lTela, logical, Apresenta erro na tela
+@param lSai1aVal, logical, Se sairá da rotina
+@return variant, Logico
+/*/
+Static Function ValidaMail( cEmail, aErros, lTela, lSai1aVal )
+    Local aMails 		:= Separa( cEmail, ";" )
+    Local lRet			:= .T.
+    Local nX            := 0
+    Local nMail         := 0
+        
+    Default aErros		:= {}
+    Default lTela		:= .T.
+    Default lSai1aVal	:= .F.
+
+    If Empty( cEmail ) 
+        lRet := .F.       
+        Return(lRet)
+    Endif
+
+    For nMail := 1 to Len( aMails )
+
+        aMails[nMail] := Alltrim(Lower(aMails[nMail]))
+
+        //valida se e-mail possui '@'
+        If !( '@' $ aMails[nMail] )
+            aAdd( aErros, {	aMails[nMail], "O uso do caracater '@' obrigatorio apos o nome do usuario. Ex: meuemail@uol.com.br" } )
+            lRet := .F.
+            If lSai1aVal
+                Return( lRet )
+            Endif
+        Endif
+        
+        //valida se e-mail possui 'www.'
+        If ( 'www.' $ aMails[nMail] )
+            aAdd( aErros, {	aMails[nMail], "A expressao 'www.' para enderecos de Sites e nao para e-mails" } )
+            lRet := .F.
+            If lSai1aVal
+                Return( lRet )
+            Endif
+        Endif
+
+        //valida se inicio ou fim do e-mail tem '.'
+        If Left( aMails[nMail], 1 ) == '.' .or. Right( aMails[nMail], 1 ) == '.'
+            aAdd( aErros, {	aMails[nMail], "O e-mail nao deve ter ponto no inicio ou no final" } )
+            lRet := .F.
+            If lSai1aVal
+                Return( lRet )		
+            Endif
+        Endif	
+
+        //valida se inicio ou fim do e-mail tem '.'
+        If Left( aMails[nMail], 1 ) == '@' .or. Right( aMails[nMail], 1 ) == '@'
+            aAdd( aErros, {	aMails[nMail], "O e-mail nao deve ter o caracter '@' no inicio ou no final" } )
+            lRet := .F.
+            If lSai1aVal
+                Return( lRet )		
+            Endif
+        Endif	
+
+        // validar caracteres invalidos
+        For nx := 1 to Len( aMails[nMail] )
+            cChar := Substr( aMails[nMail], nx, 1 )
+            If cChar $ " {}()<>[]|\/&*$%?!^~`,;:=#"
+                If cChar == " "
+                    aAdd( aErros, {	aMails[nMail], "Nao é permitido espacos em branco no e-mail." } )
+                Else
+                    aAdd( aErros, {	aMails[nMail], "O caracter invalido '" + cChar + "' nao pode ser usado no e-mail." } )
+                Endif
+                lRet := .F.
+                If lSai1aVal
+                    Return( lRet )		
+                Endif
+            Endif
+        Next
+        
+    Next	
+
+    If lTela
+        If Len( aErros ) > 0
+            MErroMail( aErros )
+        Endif
+    Endif	
+
+Return( lRet )
+
+
+
+/*/{Protheus.doc} mail2html
+Rotina para converter Texto Padrao para Email em HTML
+@type function
+@version 12.1.33
+@author Valdemir Rabelo
+@since 18/03/2023
+@param xTitulo, variant, Titulo E-mail
+@param xCorpo, variant, Corpo do E-mail
+@param xPosicao, variant, Posicao informada
+@return variant, Nil
+/*/
+Static Function mail2html(xTitulo,xCorpo,xPosicao)
+    Local cIniFile    	:= GetAdv97()
+    Local cServer	  	:= GetPvProfString("TopConnect","Server","ERROR",cInIfile )
+    Local cTopServer	:= GetSrvProfString("TopServer",cServer)
+    Local cConType  	:= Upper(GetPvProfString("TopConnect","Contype","TCPIP",cInIfile ))
+    Local cAmbiente		:= GetEnvServer()
+
+    If xPosicao==nil
+        xPosicao:="center"
+    Endif
+    xxCor	:= "#003162"
+
+    xyCorpo	:= '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">'
+    xyCorpo	+= '<HTML>'
+    xyCorpo	+= '<HEAD>'
+    xyCorpo	+= '<TITLE>Totvs - WorkFlow</TITLE>'
+    xyCorpo	+= '<META NAME="GENERATOR" CONTENT="MAXs HTML Beauty++ ME">'
+    xyCorpo	+= '</HEAD>'
+    xyCorpo	+= '<BODY>'
+    xyCorpo	+= '<TABLE WIDTH="100%" BGCOLOR="'+xxCor+'">'
+    xyCorpo	+= '<TR>'
+    xyCorpo	+= '	<TD COLSPAN=2><CENTER><FONT FACE="Verdana" SIZE="+2" COLOR="#FFFFFF">'+xTitulo+'</FONT></CENTER></TD>'
+    xyCorpo	+= '</TR>'
+
+    xyCorpo	+= '<TR>'
+    xyCorpo	+= '	<TD COLSPAN=2>'
+    xyCorpo	+= '		<TABLE WIDTH="100%" BGCOLOR="#FFFFFF">'
+    xyCorpo	+= '		<TR><TD>&nbsp;</TD></TR>'
+    xyCorpo	+= '		<TR>'
+    xyCorpo	+= '			<TD ALIGN=CENTER>'
+    xyCorpo	+= '				<FONT FACE="Verdana" SIZE="-1" COLOR="#000000">'
+    xyCorpo	+= '					<p align='+xPosicao+'>'
+    xyCorpo	+= '						'+xCorpo+''
+    xyCorpo	+= '					</p>'
+    xyCorpo	+= '				</FONT>'
+    xyCorpo	+= '			</TD>'
+    xyCorpo	+= '		</TR>'
+    xyCorpo	+= '		<TR>'
+    xyCorpo	+= '			<TD><CENTER>&nbsp;</CENTER></TD>'
+    xyCorpo	+= '		</TR>'
+    xyCorpo	+= '		</TABLE>'
+    xyCorpo	+= '	</TD>'
+
+    xyCorpo	+= '</TR>'
+    xyCorpo	+= '<TR>'
+    xyCorpo	+= '	<TD COLSPAN=2><CENTER>'
+    xyCorpo	+= '		<FONT FACE="Verdana" SIZE="2" COLOR="#FF0000">'
+    xyCorpo	+= '		<p><b>Aten?o</b>'
+    xyCorpo	+= '		</FONT>'
+    xyCorpo	+= '		<FONT FACE="Verdana" SIZE="1" COLOR="#FFFFC1">'
+    xyCorpo	+= '		<br>Esta ?uma mensagem gerada automaticamente pelo sistema, portanto n? pode ser respondida.'
+    xyCorpo	+= '		<br>Em caso de d?idas ou sugest?s, por favor, entre em contato com o suporte t?nico.'
+    xyCorpo	+= '		</FONT></CENTER></TD>'
+    xyCorpo	+= '</TR>'
+    xyCorpo	+= '<TR>'
+    xyCorpo	+= '	<TD COLSPAN=2><CENTER><FONT FACE="Verdana" SIZE="2" COLOR="#FFFFFF">'+capital(alltrim(SM0->M0_NOME))+'</FONT></CENTER></TD>'
+    xyCorpo	+= '</TR>'
+
+    xyCorpo	+= '</TABLE>'         	
+    xyCorpo	+= '</BODY>'
+    xyCorpo	+= '</HTML>'
+
+Return(xyCorpo)
+
+/*/{Protheus.doc} TitulosVencidos
+Rotina para Titulos Vencidos
+@type function
+@version 12.1.33
+@author Valdemir Rabelo
+@since 18/03/2023
+@return variant, Nil
+/*/
+Static Function TitulosVencidos()
+    Local _dData 	:= dDataBase - _nDiasVenc AS DATE
+    Local cQry      := Mnt_Filtra(_dData)     AS CHARACTER
+    Local _nI       := 0                      AS NUMERIC
+    Local _nTotReg  := 0                      AS NUMERIC
+    Local _cAlias	:= GetNextAlias() 
+    Local _lEnviou  := .F.
+
+    if Select(_cAlias) > 0
+       (_cAlias)->( dbCloseArea() )
+    endif 
+
+    _aDados := {}
+
+    // Abre Tabela
+    tcQuery cQry New Alias (_cAlias)
+    TcSetField( _cAlias, "E1_EMISSAO"	, "D", 8, 0 )
+    TcSetField( _cAlias, "E1_VENCREA"	, "D", 8, 0 )
+    TcSetField( _cAlias, "E1_VALOR"		, "N", TamSX3("E1_VALOR")[1], TamSX3("E1_VALOR")[2] )
+
+    ConOut("[BRRSKFIN] Iniciando processamento de titulos vencidos com "+cValTochar(_nDiasVenc)+" dia(s).")
+    Count to _nTotReg
+    If !lJOB
+       ProcRegua(_nTotReg)
+    Endif 
+    (_cAlias)->( dbGotop() )
+    While (_cAlias)->(!Eof() )
+
+        _cChave := (_cAlias)->( E1_FILIAL + E1_CLIENTE + E1_LOJA )
+        conout( _cChave )
+        If !lJOB
+           INCPROC("Separando registros (VENCIDOS)")
+        endif 
+
+        While (_cAlias)->( !Eof() ) .and. _cChave == (_cAlias)->( E1_FILIAL + E1_CLIENTE + E1_LOJA )
+            Aadd( _aDados, { (_cAlias)->E1_NUM, (_cAlias)->E1_PARCELA, (_cAlias)->E1_EMISSAO, (_cAlias)->E1_VENCREA, (_cAlias)->E1_VALOR } )
+            For _nI := 1 to 1
+                cCodCli   := (_cAlias)->A1_COD 		
+                cLojaCli  := (_cAlias)->A1_LOJA 	
+                cNome     := (_cAlias)->A1_NOME		
+                cEmailCli := (_cAlias)->A1_MAILFIN    
+            Next 
+            (_cAlias)->( dbSkip() )
+        Enddo
+
+        _aErros := {}
+        If ValidaMail( cEmailCli, @_aErros, .F., .F. )
+        
+            _cHtml := MntCorpoEmail( "VENCIDOS", _aDados)
+            aEmail := {;
+                    cEmailCli,;
+                    "Duplicatas vencidas - Brasil Risk",;
+                    _cHtml,;
+                    _cMaiCcopi,;
+                    "",;
+                    "",;
+                    _cMaiCobra;
+                    }
+            if Len(_aDados) > 0
+                _nI := U_BRENMAIL(aEmail) 
+                if !_lEnviou
+                    _lEnviou := (_nI==0)
+                endif      
+            endif            
+
+        Else
+
+            If Empty( cEmailCli )
+                _cCorpo		:= "O email do cliente " + Alltrim( cCodCli ) + " " + Alltrim( cLojaCli ) + " - " + Alltrim( cNome ) + " nao foi preenchido no cadastro de Clientes. Favor verificar!" 								
+            Else
+                _cCorpo		:= "O email " + Alltrim( Lower( cEmailCli )) + " do cliente " + Alltrim( cCodCli ) + " " + Alltrim( cLojaCli ) + " - " + Alltrim( cNome ) + " é invalido. Favor verificar!" 						
+            Endif	
+            _cMensagem 	:= mail2html( "EMAIL INVALIDO - DUPLICATAS VENCIDAS ENVIADAS AOS CLIENTES", _cCorpo, "left" )
+            aEmail := {;
+                _cMaiCobra,;
+                "EMAIL INVALIDO - DUPLICATAS VENCIDAS ENVIADAS AOS CLIENTES",;
+                _cMensagem,;
+                        "",;
+                        "",;
+                        "",;
+                        "";
+                        }
+            _nI := U_BRENMAIL(aEmail) 
+            if !_lEnviou
+                _lEnviou := (_nI==0)
+            endif      
+        Endif
+            
+        _aDados := {}
+        
+    Enddo    
+
+    (_cAlias)->( dbCloseArea() )
+    
+Return _lEnviou
+
+
+Static Function SX6CRIA()
+    If !(SX6->(DbSeek(xFilial("SX6")+"MV_CONTJOB")))
+        RecLock("SX6",.T.)
+            //Geral
+            X6_VAR     := "MV_CONTJOB"
+            X6_TIPO    := "C"
+            X6_PROPRI  := "U"
+            //Descrição
+            X6_DESCRIC := "ULTIMO PROCESSAMENTO JOB"
+            X6_DSCSPA  := "ULTIMO PROCESSAMENTO JOB"
+            X6_DSCENG  := "ULTIMO PROCESSAMENTO JOB"
+            //Conteúdo
+            X6_CONTEUD := ""
+            X6_CONTSPA := ""
+            X6_CONTENG := ""
+        SX6->(MsUnlock())
+    EndIf
+Return 
+
+
+User Function tstemail()
+    Local  aEmail := {;
+                    "valdemir_sistemas@hotmail.com",;
+                    "Teste de envio - Brasil Risk",;
+                    "Envio de teste [Fonte: BRENMAIL]",;
+                    "valdemir.jose.rabelo@gmail.com",;
+                    "",;
+                    "",;
+                    "valdemir_sistemas@hotmail.com";
+                    }
+    U_BRENMAIL(aEmail) 
+    Alert("Chegou aqui")
+REturn
+
