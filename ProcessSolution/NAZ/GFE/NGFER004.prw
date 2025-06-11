@@ -126,14 +126,14 @@ Local cQuery 	:= ""
 Local aAux      :=  {}
 Local nCont
 
-cQuery := " SELECT GW1_REGCOM,GW8_ITEM,GW8_DSITEM,GW8_NRDC,GW1_CDDEST,GW8_PESOR,GW8_VALOR  " 
+cQuery := " SELECT GW1_DTEMIS,GW1_REGCOM,GW8_ITEM,GW8_DSITEM,GW8_NRDC,GW1_CDDEST,GW8_PESOR,GW8_VALOR  " 
 cQuery += " FROM " + RetSQLName("GW1") + " GW1  " 
 cQuery += " INNER JOIN " + RetSQLName("GW8") + " GW8 ON GW8_FILIAL = GW1_FILIAL AND GW1_CDTPDC=GW8_CDTPDC AND GW1_EMISDC=GW8_EMISDC AND GW1_SERDC=GW8_SERDC AND GW1_NRDC=GW8_NRDC AND GW8.D_E_L_E_T_=' '  " 
 cQuery += " WHERE GW1_FILIAL+GW1_NRDC+GW1_CDTPDC+GW1_SERDC+GW1_EMISDC IN "
 cQuery += "      (SELECT GW4_FILIAL+GW4_NRDC+GW4_TPDC+GW4_SERDC+GW4_EMISDC FROM " + RetSQLName("GW4") + " GW4  " 
 cQuery += "         INNER JOIN " + RetSQLName("GW3") + " GW3 ON GW3_FILIAL = GW4_FILIAL AND GW3_CDESP = GW4_CDESP AND GW3_EMISDF = GW4_EMISDF AND GW3_SERDF = GW4_SERDF AND GW3_NRDF = GW4_NRDF AND GW3_DTEMIS = GW4_DTEMIS AND GW3.D_E_L_E_T_=' ' " 
 cQuery += " WHERE GW4.D_E_L_E_T_=' ')  " 
-cQuery += " AND GW1_DTEMIS BETWEEN '20250101' AND '20250131' AND GW1_REGCOM<>' '  " 
+cQuery += " AND GW1_DTEMIS BETWEEN '"+DTOS(MV_PAR09)+"' AND '"+DTOS(MV_PAR10)+"' AND GW1_REGCOM<>' '  " 
 //cQuery += " GROUP BY GW1_REGCOM,GW1_CDDEST  " 
 cQuery += " ORDER BY 1  " 
 
@@ -155,7 +155,7 @@ While !EOF()
 //GW1_REGCOM,GW8_ITEM,GW8_DSITEM,GW8_NRDC,GW1_CDDEST,GW8_PESOR,GW8_VALOR
     nPos := Ascan(aAux,{|x| x[2]+x[3]+x[5] == TRB->GW1_REGCOM+TRB->GW8_ITEM+TRB->GW1_CDDEST})
 
-        Aadd(aAux,{ '01 A 31',;
+        Aadd(aAux,{ TRB->GW1_DTEMIS,;
                     TRB->GW1_REGCOM,;
                     TRB->GW8_ITEM,;
                     TRB->GW8_DSITEM,;
@@ -164,6 +164,7 @@ While !EOF()
                     TRB->GW8_NRDC,;
                     TRB->GW8_PESOR,;
                     TRB->GW8_VALOR,;
+                    0,;
                     0,;
                     0})
         
@@ -187,8 +188,9 @@ For nCont := 1 to len(aAux)
     oSection1:Cell('Nome Cliente'):SetValue(aAux[nCont,06])
     oSection1:Cell('Nota Fiscal'):SetValue(aAux[nCont,07])
     oSection1:Cell('Peso Faturado'):SetValue(aAux[nCont,08])
-    oSection1:Cell('Valor Frete s/ Imposto'):SetValue(aAux[nCont,09])
-    oSection1:Cell('Valor Frete p/ Item'):SetValue(aAux[nCont,10])
+    oSection1:Cell('Valor do Item'):SetValue(aAux[nCont,09])
+    oSection1:Cell('Valor Frete s/ Imposto'):SetValue(aAux[nCont,10])
+    oSection1:Cell('Valor Frete p/ Item'):SetValue(aAux[nCont,11])
     
     oReport:IncMeter()
 

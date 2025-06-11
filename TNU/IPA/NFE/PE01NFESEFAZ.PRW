@@ -16,7 +16,8 @@
 */
 
 USER FUNCTION PE01NFESEFAZ()
-	//aProd,cMensCli,cMensFis,aDest,aNota,aInfoItem,aDupl,aTransp,aEntrega,aRetirada,aVeiculo,aReboque,aNfVincRur,aEspVol,aNfVinc,aDetPag,aObsCont
+	//				1		2		3		4	5		6		7		8		9		10			11		12		  13		14		15		16		17		18		19	  20	21		
+	//aParam := {aProd,cMensCli,cMensFis,aDest,aNota,aInfoItem,aDupl,aTransp,aEntrega,aRetirada,aVeiculo,aReboque,aNfVincRur,aEspVol,aNfVinc,aDetPag,aObsCont,aProcRef,aMed,aLote,cTipo}
 	Local aProd		:= PARAMIXB[1]
 	Local cMensCli	:= PARAMIXB[2]
 	Local cMensFis	:= PARAMIXB[3]
@@ -43,7 +44,7 @@ USER FUNCTION PE01NFESEFAZ()
     Local nCont 
     
     //If SD2->D2_CLIENTE $ cClixProd
-
+	If PARAMIXB[21] == '1'
         For nCont := 1 to len(aProd)
             cBkpDesc := aProd[nCont,4]
 
@@ -72,7 +73,7 @@ USER FUNCTION PE01NFESEFAZ()
             
         Next nCont 
 
-    //EndIf 
+    EndIf 
 
 	aadd(aRetorno,aProd)
 	aadd(aRetorno,cMensCli)

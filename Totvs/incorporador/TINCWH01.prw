@@ -1054,6 +1054,7 @@ Private lInc        := .F.
 Private lAlt        := .F.
 Private aTabTmp     := {}
 Private oTempTable
+Private lCheck1     := .F.
 
 
 For nCont := 1 to len(aTabs)
@@ -1198,7 +1199,8 @@ oDlg1      := MSDialog():New( /*092*/000,/*232*/000,nHeightWiz, nWidthWiz/*855,1
         oSay9      := TSay():New( nLine2,nCol5,{||"Tipo Inclusão "},oGrp1,,oFontA,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,nTamGp11,nMargem)
         oSay10     := TSay():New( nLine2,nCol6,{||aList1[len(aList1),05]},oGrp1,,oFontB,.F.,.F.,.F.,.T.,CLR_BLACK,CLR_WHITE,nTamGp11,nMargem)
 
-
+        oCBox1     := TCheckBox():New( nLine2,nCol7,"Habilita WEB",{|u|If(Pcount()>0,lCheck1:=u,lCheck1)},oGrp1,048,008,,{|| /*trocaChk(1)*/},,,CLR_BLACK,CLR_WHITE,,.T.,"",, )
+        
     oMenu := TMenu():New(0,0,0,0,.T.)
     // Adiciona itens no Menu
     oTMenuIte1 := TMenuItem():New(oDlg1,"Incluir",,,,{|| InclNew()},,,,,,,,,.T.)
@@ -2551,7 +2553,8 @@ If len(aList1) < 1
     Aadd(aList1,{'','',0,1,''})
 EndIf 
 
-cQuery := "SELECT P96_CAMPO,P96_DESCRI,P96_TAMANH,P96_PESQUI,P96_TABELA,P96_DEPARA,P96_TIPO"
+cQuery := "SELECT P96_CAMPO,P96_DESCRI,P96_TAMANH,P96_PESQUI,P96_TABELA,"
+cQuery += " P96_TITULO,P96_DEPARA,P96_TIPO,P96_DICA,P96_VALIDA,P96_FIXO,P96_INDTBL"
 cQuery += " FROM "+RetSQLName("P96")
 cQuery += " WHERE D_E_L_E_T_=' '  AND P96_FILIAL=' '" //AND P96_DEPARA<>' '
 cQuery += " ORDER BY P96_SEQ"
@@ -2588,7 +2591,12 @@ While !EOF()
                  TRB->P96_TABELA,;
                  TRB->P96_TIPO,;
                  cCombo,;
-                 ''})
+                 '',;
+                 TRB->P96_TITULO,;
+                 TRB->P96_DICA,;
+                 TRB->P96_VALIDA,;
+                 TRB->P96_FIXO,;
+                 TRB->P96_INDTBL})
 
     Dbskip()
 EndDo 
@@ -4668,6 +4676,83 @@ Else
             P97->(Msunlock())
             lSalvou := .T.
         Next nCont 
+
+        If lCheck1
+            /* 
+
+                    cnpj: z.string(),
+                    table: z.string(),
+                    field: z.string(),
+                    title: z.string(),
+                    description: z.string(),
+                    type: z.string(),
+                    size: z.string(),
+                    decimal: z.string(),
+                    tip: z.string(),
+                    search: z.string(),
+                    valid: z.string(),
+                    fixed: z.string(),
+                    mandatory: z.boolean(),
+                    empty: z.boolean(),
+
+                    cCnpjOrig
+                AadD(aList4,{TRB->P96_CAMPO,;   1
+                 TRB->P96_DESCRI,;              2
+                 TRB->P96_TAMANH,;              3
+                 TRB->P96_PESQUI,;              4
+                 TRB->P96_TABELA,;              5
+                 TRB->P96_TIPO,;                6
+                 cCombo,;                       7
+                 '',;                           8
+                 TRB->P96_TITULO,;              9
+                 TRB->P96_DICA,;                10
+                 TRB->P96_VALIDA,;              11
+                 TRB->P96_FIXO,;                12
+                 TRB->P96_INDTBL})              13
+            */
+            
+            oJson := JsonObject():New()
+            oJson['data'] := {}
+            
+            aArray := {}
+            aHead  := {}
+            Aadd(aHead,'Content-Type: application/json')
+            Aadd(aArray,'https://integramais-web-backend.onrender.com')
+            Aadd(aArray,'/transactions/insert/entity')
+
+            For nCont := 1 to len(aList4)
+                oJson['data'] := {}
+                oItem := JsonObject():New()
+                oItem['cnpj'] := cCnpjOrig
+                oItem['table'] := aList4[nCont,05]
+                oItem['field'] := Alltrim(aList4[nCont,01])
+                oItem['title'] := Alltrim(aList4[nCont,09])
+                oItem['description'] := Alltrim(aList4[nCont,02])
+                oItem['type'] := aList4[nCont,06]
+                oItem['size'] := cvaltochar(aList4[nCont,03])
+                oItem['decimal'] := '0'
+                oItem['tip'] := Alltrim(aList4[nCont,10])
+                oItem['search'] := Alltrim(aList4[nCont,04])
+                oItem['valid'] := Alltrim(aList4[nCont,11])
+                oItem['fixed'] := ''
+                oItem['mandatory'] := .F.
+                oItem['empty'] := .F.
+                Aadd(oJson['data'],oItem)
+
+                cJson := oJson:toJson()
+
+                If !Empty(cJson)
+                    WAPIPOST(aArray,cJson,aHead)
+                endIf 
+            Next nCont 
+
+            cJson := oJson:toJson()
+
+            If !Empty(cJson)
+                
+                WAPIPOST(aArray,cJson,aHead)
+            endIf 
+        EndIf 
     Else
         FWAlertError("É necessário realizar uma inclusão, e preencher todos os campos, para salvar as configurações", "SAVECNFG()")
     EndIf
@@ -4683,6 +4768,64 @@ EndIf
 RestArea(aArea)
 
 Return
+
+/*/{Protheus.doc} WAPIPOST
+    Chamada de post Generica para todas as APIs
+    @type  Static Function
+    @author Alexandre Venâncio
+    @since 26/05/2025
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function WAPIPOST(aArray,cJson,aHead)
+
+Local oRest 
+Local oJson     :=  ""
+Local aHeader   :=  {}
+Local cRetorno  :=  ""
+Local lRet      :=  .T.
+Local cUrlInt   :=  aArray[1]
+Local cPath     :=  aArray[2]
+Local cRet      :=  ''
+Local nCont     :=  0
+Local aRet      :=  {}
+
+/*
+AAdd(aHeader, "Content-Type: application/json")
+AAdd(aHeader, "Authorization: Basic "+cToken)
+*/
+
+For nCont := 1 to len(aHead)
+    AAdd(aHeader, aHead[nCont])
+Next nCont  
+
+oRest := FWRest():New(cUrlInt)
+
+oRest:SetPath(cPath)
+
+oRest:SetPostParams(cJson)
+
+If oRest:POST(aHeader)
+    cRet  := oRest:GetResult()
+    oJson := JsonObject():New()
+    oJson:FromJson(cRet) 
+    lRet := .T.
+else
+    cRetorno := Alltrim(oRest:GetLastError()) 
+    cRet := Alltrim(oRest:cresult)
+    oJson  := JsonObject():New()
+    oJson:fromJson(cRet)
+    lRet := .F.
+EndIF 
+
+Aadd(aRet,{lRet,cRet})
+
+Return(aRet)
+
 /*/{Protheus.doc} xLinGrid
     fiz provisoriamente até resolver como fazer de forma dinamica.
     @type  Static Function

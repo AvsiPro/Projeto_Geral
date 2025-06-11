@@ -89,7 +89,7 @@ oSection1:SetHeaderPage()
 
 //Periodo	Regional	Valor Faturamento Bruto	Valor de frete s/ imposto 	% Frete s/ imposto
 
-TRCell():New(oSection1,"Data","TRB",/*Titulo*/,/*Picture*/,TamSX3("GW1_DTEMIS")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
+TRCell():New(oSection1,"Data","TRB",/*Titulo*/,/*Picture*/,30/*TamSX3("GW1_DTEMIS")[1]*/,/*lPixel*/,/*{|| code-block de impressao }*/)
 TRCell():New(oSection1,"Regional","TRB",/*Titulo*/,/*Picture*/,TamSX3("GW1_REGCOM")[1],/*lPixel*/)
 TRCell():New(oSection1,"Código Cliente","TRB",/*Titulo*/,/*Picture*/,TamSX3("GW1_CDDEST")[1],/*lPixel*/)
 TRCell():New(oSection1,"Nome Cliente","TRB",/*Titulo*/,/*Picture*/,TamSX3("GW1_NMDEST")[1],/*lPixel*/)
@@ -133,7 +133,7 @@ cQuery += " WHERE GW1_FILIAL+GW1_NRDC+GW1_CDTPDC+GW1_SERDC+GW1_EMISDC IN "
 cQuery += "      (SELECT GW4_FILIAL+GW4_NRDC+GW4_TPDC+GW4_SERDC+GW4_EMISDC FROM " + RetSQLName("GW4") + " GW4  " 
 cQuery += "         INNER JOIN " + RetSQLName("GW3") + " GW3 ON GW3_FILIAL = GW4_FILIAL AND GW3_CDESP = GW4_CDESP AND GW3_EMISDF = GW4_EMISDF AND GW3_SERDF = GW4_SERDF AND GW3_NRDF = GW4_NRDF AND GW3_DTEMIS = GW4_DTEMIS AND GW3.D_E_L_E_T_=' ' " 
 cQuery += " WHERE GW4.D_E_L_E_T_=' ')  " 
-cQuery += " AND GW1_DTEMIS BETWEEN '20250101' AND '20250131' AND GW1_REGCOM<>' '  " 
+cQuery += " AND GW1_DTEMIS BETWEEN '"+DTOS(MV_PAR09)+"' AND '"+DTOS(MV_PAR10)+"' AND GW1_REGCOM<>' '  " 
 //cQuery += " GROUP BY GW1_DTEMIS,GW1_REGCOM,GW1_CDDEST " 
 cQuery += " GROUP BY GW1_REGCOM,GW1_CDDEST  " 
 cQuery += " ORDER BY 1  " 
@@ -156,7 +156,7 @@ While !EOF()
     If nPos == 0
         Aadd(aTotReg,{TRB->GW1_REGCOM,TRB->TOTAL,0})
     Else 
-        aTotReg[nPos,03] += TRB->TOTAL
+        aTotReg[nPos,02] += TRB->TOTAL
     EndIf 
 
     ////POSICIONE("GU3",1,XFILIAL("GU3")+GW1->GW1_CDDEST,"GU3_NMEMIT")   
@@ -173,7 +173,7 @@ While !EOF()
     //             TRB->TOTAL,;
     //             0,;
     //             0})
-    Aadd(aAux,{ '01 A 31',;
+    Aadd(aAux,{ cvaltochar(MV_PAR09)+' a '+cvaltochar(MV_PAR10),;
                 TRB->GW1_REGCOM,;
                 TRB->GW1_CDDEST,;
                 POSICIONE("GU3",1,XFILIAL("GU3")+TRB->GW1_CDDEST,"GU3_NMEMIT"),;
@@ -192,7 +192,7 @@ cQuery := "SELECT GW1_REGCOM,GW1_CDDEST,GW3_EMISDF,GW3_FRPESO, SUM(GW3_BASIMP - 
 cQuery += " FROM GW1010 GW1 " 
 cQuery += " INNER JOIN GW4010 GW4 ON GW4_FILIAL = GW1_FILIAL AND GW1_NRDC = GW4_NRDC AND GW1_CDTPDC = GW4_TPDC AND GW1_SERDC = GW4_SERDC AND GW1_EMISDC = GW4_EMISDC AND GW4.D_E_L_E_T_ = ' ' " 
 cQuery += " INNER JOIN GW3010 GW3 ON GW3_FILIAL = GW4_FILIAL AND GW3_CDESP = GW4_CDESP AND GW3_EMISDF = GW4_EMISDF AND GW3_SERDF = GW4_SERDF AND GW3_NRDF = GW4_NRDF AND GW3_DTEMIS = GW4_DTEMIS AND GW3.D_E_L_E_T_ = ' ' " 
-cQuery += " WHERE GW1_DTEMIS BETWEEN '20250101' AND '20250131' AND GW1_REGCOM <> ' ' " 
+cQuery += " WHERE GW1_DTEMIS BETWEEN '"+DTOS(MV_PAR09)+"' AND '"+DTOS(MV_PAR10)+"' AND GW1_REGCOM <> ' ' " 
 //cQuery += " GROUP BY GW1_DTEMIS, GW1_REGCOM,GW1_CDDEST,GW3_EMISDF " 
 cQuery += " GROUP BY GW1_REGCOM,GW1_CDDEST,GW3_EMISDF,GW3_FRPESO " 
 cQuery += " ORDER BY 1"
@@ -229,7 +229,7 @@ While !EOF()
         //             0,;
         //             TRB->FRETE ,;
         //             0})
-        Aadd(aAux,{ '01 A 31',;
+        Aadd(aAux,{ cvaltochar(MV_PAR09)+' a '+cvaltochar(MV_PAR10),;
                     TRB->GW1_REGCOM,;
                     TRB->GW1_CDDEST,;
                     POSICIONE("GU3",1,XFILIAL("GU3")+TRB->GW1_CDDEST,"GU3_NMEMIT"),;
@@ -261,7 +261,7 @@ oSection1:Init()
 
 For nCont := 1 to len(aAux) 
 
-    oSection1:Cell('Data'):SetValue(STOD(aAux[nCont,01]))
+    oSection1:Cell('Data'):SetValue(aAux[nCont,01])
     oSection1:Cell('Regional'):SetValue(aAux[nCont,02])
     oSection1:Cell('Código Cliente'):SetValue(aAux[nCont,03])
     oSection1:Cell('Nome Cliente'):SetValue(aAux[nCont,04])
