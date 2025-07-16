@@ -14,6 +14,7 @@ caso o pedido já esteja liberado no inicio do processo, deverá permanecer após a
 @see (links_or_references)
 /*/
 User Function MT120FIM()
+
 Local nOpcao := PARAMIXB[1]   // Opção Escolhida pelo usuario  3 incluir 4 alterar
 Local cNumPC := PARAMIXB[2]   // Numero do Pedido de Compras
 Local nOpcA  := PARAMIXB[3]   // Indica se a ação foi Cancelada = 0  ou Confirmada = 1

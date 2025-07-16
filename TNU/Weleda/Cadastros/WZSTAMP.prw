@@ -24,7 +24,7 @@ User Function WZSTAMP(cTabAlias, lStamp, lInsDt)
     
     If Empty(FunName())
         RpcSetType(3)
-        RpcSetEnv('T1','D MG 01 ')
+        RpcSetEnv('01','010101')
     EndIf
     //Se veio algum alias e ele existir na base
     If ! Empty(cTabAlias) .And. ExisteSX2(cTabAlias)

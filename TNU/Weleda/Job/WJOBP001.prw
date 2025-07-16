@@ -37,7 +37,7 @@ User Function WJOBP001(cCodigo)
 
 	If Empty(FunName())
 		RpcSetType(3)
-		RPCSetEnv("T1","D MG 01 ")
+		RPCSetEnv("01","010101")
 	EndIf	
 
 	//Environment de chamada
@@ -143,15 +143,15 @@ Local cQuery 	:= " "
 
 //cQuery += " SELECT B2_FILIAL,B2_LOCAL,NNR_DESCRI,B2_COD,B2_DMOV,B2_QATU-B2_RESERVA AS B2_QATU   " 
 cQuery := " SELECT "+cCampos
-cQuery += " FROM   SB2T10 B2   " 
-cQuery += " INNER JOIN NNRT10 NR ON NNR_FILIAL='D MG'   " 
+cQuery += " FROM   SB2010 B2   " 
+cQuery += " INNER JOIN NNR010 NR ON NNR_FILIAL='D MG'   " 
 cQuery += "        AND NNR_CODIGO=B2_LOCAL   " 
 cQuery += "        AND NR.D_E_L_E_T_=' '   " 
 cQuery += " WHERE  B2_QATU-B2_RESERVA>0   " 
 cQuery += "        AND B2_FILIAL='D MG 01 '   " 
 cQuery += "        AND B2.D_E_L_E_T_=' '   " 
 //cQuery += "        AND B2_DMOV>='20230101'   " 
-//cQuery += " 	   AND COALESCE(TO_CHAR(SB2T10.S_T_A_M_P_,'YYYYMMDDHH24MISS'),'19810101000000' ) >= 'CTIMESTAMP' "
+//cQuery += " 	   AND COALESCE(TO_CHAR(SB2010.S_T_A_M_P_,'YYYYMMDDHH24MISS'),'19810101000000' ) >= 'CTIMESTAMP' "
 cQuery += "  AND ISNULL(CONVERT(VARCHAR(14), B2.S_T_A_M_P_, 112) + RIGHT('0' + CONVERT(VARCHAR(2), DATEPART(HOUR, B2.S_T_A_M_P_)), 2) + "
 cQuery += "  RIGHT('0' + CONVERT(VARCHAR(2), DATEPART(MINUTE, B2.S_T_A_M_P_)), 2) + "
 cQuery += "  RIGHT('0' + CONVERT(VARCHAR(2), DATEPART(SECOND, B2.S_T_A_M_P_)), 2), '19810101000000') >= '"+CTIMESTAMP+"'"

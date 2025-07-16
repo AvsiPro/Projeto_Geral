@@ -126,9 +126,11 @@ Local cQuery 	:= ""
 Local aAux      :=  {}
 Local nCont
 
-cQuery := " SELECT GW1_DTEMIS,GW1_REGCOM,GW8_ITEM,GW8_DSITEM,GW8_NRDC,GW1_CDDEST,GW8_PESOR,GW8_VALOR  " 
+cQuery := " SELECT DISTINCT GW1_FILIAL,GW1_DTEMIS,GW1_REGCOM,GW8_ITEM,GW8_DSITEM,GW8_NRDC,GW1_CDDEST,GW8_PESOR,GW8_VALOR," //,GWM_VLFRET " 
+cQuery += " GW8_CDTPDC,GW8_SERDC,GW8_NRDC,GW8_EMISDC,GW8_QTDE"
 cQuery += " FROM " + RetSQLName("GW1") + " GW1  " 
 cQuery += " INNER JOIN " + RetSQLName("GW8") + " GW8 ON GW8_FILIAL = GW1_FILIAL AND GW1_CDTPDC=GW8_CDTPDC AND GW1_EMISDC=GW8_EMISDC AND GW1_SERDC=GW8_SERDC AND GW1_NRDC=GW8_NRDC AND GW8.D_E_L_E_T_=' '  " 
+//cQuery += " INNER JOIN " + RetSQLName("GWM") + " GWM ON GWM_FILIAL=GW8_FILIAL AND GWM_CDTPDC=GW8_CDTPDC AND GWM_SERDC=GW8_SERDC AND GWM_NRDC=GW8_NRDC AND GWM.D_E_L_E_T_=' '  AND GWM_CDESP=' '"
 cQuery += " WHERE GW1_FILIAL+GW1_NRDC+GW1_CDTPDC+GW1_SERDC+GW1_EMISDC IN "
 cQuery += "      (SELECT GW4_FILIAL+GW4_NRDC+GW4_TPDC+GW4_SERDC+GW4_EMISDC FROM " + RetSQLName("GW4") + " GW4  " 
 cQuery += "         INNER JOIN " + RetSQLName("GW3") + " GW3 ON GW3_FILIAL = GW4_FILIAL AND GW3_CDESP = GW4_CDESP AND GW3_EMISDF = GW4_EMISDF AND GW3_SERDF = GW4_SERDF AND GW3_NRDF = GW4_NRDF AND GW3_DTEMIS = GW4_DTEMIS AND GW3.D_E_L_E_T_=' ' " 
@@ -152,21 +154,26 @@ While !EOF()
 
     ////POSICIONE("GU3",1,XFILIAL("GU3")+GW1->GW1_CDDEST,"GU3_NMEMIT")   
     //POSICIONE("GU3",1,XFILIAL("GU3")+GW3->GW3_EMISDF,"GU3_NMEMIT")                                 
-//GW1_REGCOM,GW8_ITEM,GW8_DSITEM,GW8_NRDC,GW1_CDDEST,GW8_PESOR,GW8_VALOR
-    nPos := Ascan(aAux,{|x| x[2]+x[3]+x[5] == TRB->GW1_REGCOM+TRB->GW8_ITEM+TRB->GW1_CDDEST})
+    //GW1_REGCOM,GW8_ITEM,GW8_DSITEM,GW8_NRDC,GW1_CDDEST,GW8_PESOR,GW8_VALOR
+    //GW8_CDTPDC,GW8_EMISDC,GW8_SERDC,GW8_NRDC,
+    //GWM_FILIAL+GWM_CDTPDC+GWM_EMISDC+GWM_SERDC+GWM_NRDC                                                                                                             
 
-        Aadd(aAux,{ TRB->GW1_DTEMIS,;
-                    TRB->GW1_REGCOM,;
-                    TRB->GW8_ITEM,;
-                    TRB->GW8_DSITEM,;
-                    TRB->GW1_CDDEST,;
-                    POSICIONE("GU3",1,XFILIAL("GU3")+TRB->GW1_CDDEST,"GU3_NMEMIT"),;
-                    TRB->GW8_NRDC,;
-                    TRB->GW8_PESOR,;
-                    TRB->GW8_VALOR,;
-                    0,;
-                    0,;
-                    0})
+    //nPos := Ascan(aAux,{|x| x[2]+x[3]+x[5] == TRB->GW1_REGCOM+TRB->GW8_ITEM+TRB->GW1_CDDEST})
+    //nFrete := Posicione("GWM",2,TRB->GW1_FILIAL+TRB->GW8_CDTPDC+TRB->GW8_EMISDC+TRB->GW8_SERDC+TRB->GW8_NRDC,"GWM_VLFRET")
+    nFrete := vlrfrete(TRB->GW1_FILIAL,TRB->GW8_CDTPDC,TRB->GW8_EMISDC,TRB->GW8_SERDC,TRB->GW8_NRDC,TRB->GW8_ITEM)
+
+    Aadd(aAux,{ TRB->GW1_DTEMIS,;
+                TRB->GW1_REGCOM,;
+                TRB->GW8_ITEM,;
+                TRB->GW8_DSITEM,;
+                TRB->GW1_CDDEST,;
+                POSICIONE("GU3",1,XFILIAL("GU3")+TRB->GW1_CDDEST,"GU3_NMEMIT"),;
+                TRB->GW8_NRDC,;
+                TRB->GW8_PESOR,;
+                TRB->GW8_VALOR,;
+                nFrete,;
+                ROUND(nFrete/TRB->GW8_QTDE,2),;
+                0})
         
 
     Dbskip()
@@ -208,7 +215,47 @@ oReport:EndPage()
 
 Return Nil
 
+/*/{Protheus.doc} nomeStaticFunction
+    (long_description)
+    @type  Static Function
+    @author user
+    @since 04/07/2025
+    @version version
+    @param param_name, param_type, param_descr
+    @return return_var, return_type, return_description
+    @example
+    (examples)
+    @see (links_or_references)
+/*/
+Static Function vlrfrete(cPar1,cPar2,cPar3,cPar4,cPar5,cPar6)
 
+//GWM_FILIAL+GWM_CDTPDC+GWM_EMISDC+GWM_SERDC+GWM_NRDC+GWM_ITEM
+Local aArea := GetArea()
+Local nValor:= 0
+Local cQuery 
+//nFrete := Posicione("GWM",2,TRB->GW1_FILIAL+TRB->GW8_CDTPDC+TRB->GW8_EMISDC+TRB->GW8_SERDC+TRB->GW8_NRDC,"GWM_VLFRET")
+cQuery := "SELECT DISTINCT GWM_VLFRET"
+cQuery += " FROM "+RetSQLName("GWM")
+cQuery += " WHERE GWM_FILIAL='"+cPar1+"' AND GWM_CDTPDC='"+cPar2+"' AND GWM_EMISDC='"+cPar3+"'"
+cQuery += " AND GWM_SERDC='"+cPar4+"' AND GWM_NRDC='"+cPar5+"' AND GWM_ITEM='"+cPar6+"'"
+cQuery += " AND D_E_L_E_T_=' ' AND GWM_CDESP=' '"
+
+If Select('VFRT') > 0
+	dbSelectArea('VFRT')
+	dbCloseArea()
+EndIf
+
+cQuery := ChangeQuery(cQuery)
+
+dbUseArea(.T.,"TOPCONN",TCGENQRY(,,cQuery),"VFRT",.F.,.T.)
+
+dbSelectArea("VFRT")
+
+nValor := VFRT->GWM_VLFRET
+
+RestArea(aArea)
+
+Return(nValor)
 // SELECT GW1_REGCOM,GW1_CDDEST,SUM(GW8_VALOR) AS TOTAL   
 // FROM GW1010 GW1   
 // INNER JOIN GW8010 GW8 ON GW8_FILIAL = GW1_FILIAL AND GW1_CDTPDC=GW8_CDTPDC AND GW1_EMISDC=GW8_EMISDC AND GW1_SERDC=GW8_SERDC AND GW1_NRDC=GW8_NRDC AND GW8.D_E_L_E_T_=' '   

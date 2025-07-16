@@ -119,7 +119,10 @@ USER Function BRFILGCT(cAlias,nReg,nOpcx)
 		"A1_NOME"		,;
 		"A1_CGC"		,;
 		"CN9_XMDCON"	,;
-		"CNA_TIPPLA"	} )
+		"CNA_TIPPLA"	,;
+		"CNA_XVDESC"	,;
+		"CNA_XDESCI"	,;
+		"CNA_XDESCF"	} )
 
 	DbSelectArea( "SX3" )
 	SX3->( DbSetOrder(02) )
@@ -244,7 +247,8 @@ Static Function FILTRACTR()
         COLUMN CN9_DTINIC AS DATE
         COLUMN CN9_DTFIM  AS DATE
 
-        SELECT CN9_NUMERO, CN9_DTINIC, CN9_DTFIM, CN9_XMDCON, CNA_NUMERO, CNA_REVISA, CNA_CLIENT, CNA_LOJACL, A1_NOME, A1_CGC, CNA_TIPPLA
+        SELECT CN9_NUMERO, CN9_DTINIC, CN9_DTFIM, CN9_XMDCON, CNA_NUMERO, CNA_REVISA, CNA_CLIENT, CNA_LOJACL, 
+		A1_NOME, A1_CGC, CNA_TIPPLA, CNA_XVDESC, CNA_XDESCI, CNA_XDESCF  
         FROM %TABLE:CN9% CN9 (NOLOCK) 
         INNER JOIN %TABLE:CNA% CNA (NOLOCK)
         ON CNA.%notDel%
@@ -256,6 +260,11 @@ Static Function FILTRACTR()
         WHERE   CNL.%NotDel%
         AND     CNL.CNL_FILIAL = %xFilial:CNL%
         AND     CNL.CNL_CTRFIX = '3' )
+		// LEFT JOIN %TABLE:CNC% CNC (NOLOCK) 
+		// ON CNC.%notDel% 
+		// AND CNC.CNC_FILIAL = CN9.CN9_FILIAL 
+		// AND CNC.CNC_NUMERO = CN9.CN9_NUMERO 
+		// AND CNC.CNC_REVISA = CN9.CN9_REVISA 
         INNER JOIN %TABLE:SA1% SA1 (NOLOCK)
         ON SA1.%notDel%
         AND SA1.A1_COD = CNA.CNA_CLIENT
@@ -291,6 +300,9 @@ Static Function FILTRACTR()
 		(cTrbCTR)->A1_CGC     := (cAliasCTR)->A1_CGC
 		(cTrbCTR)->CN9_XMDCON := (cAliasCTR)->CN9_XMDCON
 		(cTrbCTR)->CNA_TIPPLA := (cAliasCTR)->CNA_TIPPLA
+		(cTrbCTR)->CNA_XVDESC := (cAliasCTR)->CNA_XVDESC
+		(cTrbCTR)->CNA_XDESCI := stod((cAliasCTR)->CNA_XDESCI)
+		(cTrbCTR)->CNA_XDESCF := stod((cAliasCTR)->CNA_XDESCF)
 		(cTrbCTR)->( MsUnLock() )
 		(cAliasCTR)->( DbSkip() )
 	End
@@ -438,7 +450,7 @@ Static Function GRMEDCTR()
 			DbSeek(xFilial("CNC")+(cTrbCTR)->CN9_NUMERO+(cTrbCTR)->CNA_REVISA)
 			ncontaxmdcon := 1
 			aCN9_XMDCON := {}
-			While CNC->CNC_NUMERO == (cTrbCTR)->CN9_NUMERO .AND. CNC->CNC_REVISA == (cTrbCTR)->CNA_REVISA .AND. !Eof()
+			While CNC->CNC_NUMERO == (cTrbCTR)->CN9_NUMERO .AND. CNC->CNC_REVISA == (cTrbCTR)->CNA_REVISA .AND. CNC->(!Eof())
 				cA1CGC := POSICIONE("SA1",1,xFilial("SA1")+CNC->CNC_CLIENT+CNC->CNC_LOJACL,'A1_CGC')
 
 				aMEDCTRtmp := BRWSCTR(cA1CGC)
@@ -662,6 +674,10 @@ Static Function VALIDACTR(aMedCTR)
 
 				oModel:GetModel("CXNDETAIL"):GoLine(nPosPl)
 				oModel:SetValue("CXNDETAIL","CXN_CHECK" , .T.)//Marcar a planilha(nesse caso apenas uma)
+				If (ddatade >= cna->cna_xdesci .And. ddatade <= cna->cna_xdescf) .Or. (ddataate <= cna->cna_xdescf)
+					oModel:SetValue("CXNDETAIL","CXN_VLDESC",CNA->CNA_XVDESC)
+				EndIf 
+				
 				ntotquant := 0
 				For nY := 1 to LEN(aProduto)
 					cProduto := aProduto[nY][01]
@@ -687,7 +703,7 @@ Static Function VALIDACTR(aMedCTR)
 							If cProduto <> CNB->CNB_PRODUT
 								DbSkip()
 							Else
-								If CNB->CNB_XPCANC == "1"
+								If CNB->CNB_XPCANC $ "1/3"
 									nQuant := 0
 								EndIf
 								EXIT
@@ -748,7 +764,7 @@ Static Function VLDPRDCTR(cNrContra,cNrRevisa,cNrPlan )
 	Local cCNBNUMERO	:= cNrPlan
 	Local cCNBREVISA	:= cNrRevisa
 	Local aRetorno2		:= {}
-	Local cTipoExc		:= '1'
+	//Local cTipoExc		:= '1'
 
 	BeginSql Alias cAliasCNB
 		COLUMN CN9_DTINIC AS DATE
@@ -1237,7 +1253,7 @@ Static Function MedFIX()
 					If CNB->( DbSeek( xFilial("CNB") + cNrContra + cNrRevisa ) )
 						While cNrContra + cNrRevisa == CNB->CNB_CONTRA + CNB->CNB_REVISA .AND. !Eof()
 							If oModel:GetModel("CNEDETAIL"):GetValue("CNE_PRODUT") == CNB->CNB_PRODUT .And. oModel:GetModel("CNEDETAIL"):GetValue("CNE_ITEM") == CNB->CNB_ITEM
-								If CNB->CNB_XPCANC == "1"
+								If CNB->CNB_XPCANC $ "1/3"
 									oModel:SetValue( 'CNEDETAIL' , 'CNE_QUANT'  , 0)
 								Else
 									oModel:SetValue( 'CNEDETAIL' , 'CNE_QUANT'  , 1)

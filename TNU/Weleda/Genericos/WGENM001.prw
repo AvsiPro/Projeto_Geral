@@ -27,7 +27,7 @@ User Function WGENM001(cCodigo,lVisual)
 
     If Empty(FunName())
         RpcSetType(3)
-        RpcSetEnv('T1','D MG 01 ')
+        RpcSetEnv('01','010101')
     EndIf
 
     aCabec := BuscaZ90(cCodigo)
@@ -112,7 +112,7 @@ User Function WGENM003()
     
     If Empty(FunName())
         RpcSetType(3)
-        RpcSetEnv('T1','D MG 01 ')
+        RpcSetEnv('01','010101')
     EndIf
     
     Private oDlg1,oGrp1,oMGet1,oGrp2,oMGet2,oBtn1,oBtn2,oBtn3

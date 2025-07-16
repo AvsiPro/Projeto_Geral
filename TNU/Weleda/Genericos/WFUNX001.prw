@@ -389,9 +389,15 @@ User Function WFUNX006(aBody,aCampos,cCampos,aHeader1,aHeader2,aHeader3)
 
 	cCampos := substr(cCampos,1,len(cCampos)-1)
 
-	aHeader1 := separa(aBody[2,12],";")
-	aHeader2 := separa(aBody[2,13],";")
-	aHeader3 := separa(aBody[2,14],";")
+	If len(aBody[2]) > 1
+		aHeader1 := separa(aBody[2,12],";")
+		aHeader2 := separa(aBody[2,13],";")
+		aHeader3 := separa(aBody[2,14],";")
+	Else 
+		aHeader1 := {}
+		aHeader2 := {}
+		aHeader3 := {}
+	EndIf 
 
 Return
 

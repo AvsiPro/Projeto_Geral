@@ -16,8 +16,21 @@ verificação se o item já esta liberado para ser utilizada no ponto de entrada mt
 User Function MT120GRV
 
 Local lRet      :=  .T.
+Local lPaGer    := type("lIPAPA") != "U"
 
 Public lLibera  :=  SC7->C7_CONAPRO == "L"
+
+If lPaGer
+    DbSelectArea("SE2")
+    DbSetOrder(1)
+    If Dbseek(SE2->E2_FILIAL+SE2->E2_PREFIXO+SE2->E2_NUM+SE2->E2_PARCELA+SE2->E2_TIPO)
+        Reclock("SE2",.F.)
+        SE2->E2_TIPO := 'PP'
+        SE2->(Msunlock())
+
+        
+    EndIf 
+EndIF 
 
 Return lRet
 

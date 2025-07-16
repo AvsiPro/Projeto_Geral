@@ -2,10 +2,10 @@
 #Include "FWMVCDEF.ch"
 
 /*---------------------------------------------------------------------*
- | Func:  Cadastro de API´s                                            |
+ | Func:  Monitoramento de API´s                                            |
  | Autor: Alexandre Venâncio                                           |
  | Data:  07/04/2025                                                   |
- | Desc:  Cadastro de API´s para integração                            |
+ | Desc:  Monitoramento de API´s para integração                            |
  | Obs.:  /                                                            |
  *---------------------------------------------------------------------*/
 
