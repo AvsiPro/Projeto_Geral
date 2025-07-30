@@ -25,7 +25,7 @@ If nOpcA == 1 .And. nOpcao == 4
     cQuery := " SELECT COUNT(*) AS QTD" 
     cQuery += " FROM "+RetSQLName("FIE")+" FIE" 
     cQuery += " INNER JOIN "+RetSQLName("SE2")+" E2 ON E2_FILIAL=FIE_FILIAL AND E2_PREFIXO=FIE_PREFIX AND E2_NUM=FIE_NUM "
-    cQuery += " AND E2_PARCELA=FIE_PARCEL AND E2_TIPO=FIE_TIPO AND E2_FORNECE=FIE_FORNEC AND E2_LOJA=FIE_LOJA AND E2.D_E_L_E_T_=' '" 
+    cQuery += " AND E2_PARCELA=FIE_PARCEL AND E2_FORNECE=FIE_FORNEC AND E2_LOJA=FIE_LOJA AND E2.D_E_L_E_T_=' '"  //AND E2_TIPO=FIE_TIPO 
     cQuery += " AND E2_EMISSAO >= '"+dtos(dDataBase)+"'" 
     cQuery += " WHERE FIE_PEDIDO = '"+cNumPC+"' AND FIE.D_E_L_E_T_ = ' '  " 
 

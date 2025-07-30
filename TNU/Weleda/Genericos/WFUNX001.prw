@@ -100,20 +100,27 @@ User Function WFUNX002(cQuery,aJson,oJson,aCampos)
 
 						nPos2 := Ascan(aCpoDst,{|x| aCpoDst[nCont,nX] $ x[len(x)]})
 						If Empty(aCorte[2]) .And. nPos2 == 0
-							oJson[aCorte[1]][1][aCpoDst[nCont,nX]] := cContCpo
+							//Validação para quando tiver uma macro para tratar o campo
+							If aCampos[nPos,01] == oJson[aCorte[1]][1][aCpoDst[nCont,nX]]
+								oJson[aCorte[1]][1][aCpoDst[nCont,nX]] := cContCpo
+							Else 
+								If "(" $ oJson[aCorte[1]][1][aCpoDst[nCont,nX]]
+									oJson[aCorte[1]][1][aCpoDst[nCont,nX]] := &(oJson[aCorte[1]][1][aCpoDst[nCont,nX]])
+								EndIf 
+							EndIf 
 						Else 
 							oJson[aCorte[2]][1][aCorte[1]][1][aCpoDst[nCont,nX]] := cContCpo
 						EndIf 
-					Else 
-						nPos2 := Ascan(aCpoDst,{|x| aCpoDst[nCont,nX] $ x[len(x)]})
-						If nPos2 == 0
-							If Empty(aCorte[2])
-								oJson[aCorte[1]][1][aCpoDst[nCont,nX]] := ""
-								//oJson["Content"][1]["Items"][1][aCpoDst[nCont,nX]] := &("TRB->"+aCampos[nPos,01])
-							Else 
-								oJson[aCorte[2]][1][aCorte[1]][1][aCpoDst[nCont,nX]] := ""
-							EndIf 
-						endIf 
+					// Else 
+					// 	nPos2 := Ascan(aCpoDst,{|x| aCpoDst[nCont,nX] $ x[len(x)]})
+					// 	If nPos2 == 0
+					// 		If Empty(aCorte[2])
+					// 			oJson[aCorte[1]][1][aCpoDst[nCont,nX]] := ""
+								
+					// 		Else 
+					// 			oJson[aCorte[2]][1][aCorte[1]][1][aCpoDst[nCont,nX]] := ""
+					// 		EndIf 
+					// 	endIf 
 					EndIf 
 				Next nX 
 			Next nCont
@@ -137,9 +144,22 @@ User Function WFUNX002(cQuery,aJson,oJson,aCampos)
 								EndIf 
 							ElseIf aCampos[nPos,5] == "D"
 								cContCpo := substr(cContCpo,1,4)+"-"+substr(cContCpo,5,2)+"-"+substr(cContCpo,7,2)+"T00:00:00.000Z"
+							ElseIf aCampos[nPos,5] == "N"
+								cContCpo := Round(cContCpo,0)
 							EndIf 
 
-							oItem[aCpoDst[nCont,nX]] := cContCpo //&("TRB->"+aCampos[nPos,01])
+							//oItem[aCpoDst[nCont,nX]] := cContCpo //&("TRB->"+aCampos[nPos,01])
+
+							//Validação para quando tiver uma macro para tratar o campo
+							If !Empty(aCampos[nPos,07]) //aCampos[nPos,01] == oItem[aCpoDst[nCont,nX]]
+								If "(" $ aCampos[nPos,07]
+									oItem[aCpoDst[nCont,nX]] := &(aCampos[nPos,07])
+								Else 
+									oItem[aCpoDst[nCont,nX]] := aCampos[nPos,07]
+								EndIf 
+							Else
+								oItem[aCpoDst[nCont,nX]] := cContCpo
+							EndIf 
 						Else 
 							oItem[aCpoDst[nCont,nX]] := ""
 						EndIf 
@@ -381,7 +401,8 @@ User Function WFUNX006(aBody,aCampos,cCampos,aHeader1,aHeader2,aHeader3)
 							aBody[3,nCont,1],;
 							space(val(aBody[3,nCont,8])),;
 							aBody[3,nCont,6],;
-							val(aBody[3,nCont,8])})
+							val(aBody[3,nCont,8]),;
+							aBody[3,nCont,5]})
 		EndIF 
 	Next nCont 
 
@@ -685,7 +706,7 @@ User Function _VerJson(cJson)
     // Exibe o JSON formatado em tela
     oJsonShow  := MSDialog():New( 092,232,727,915,"Json Recebido",,,.F.,,,,,,.T.,,,.T. )
     oMGet1     := TMultiGet():New( 004,008,{|u| If(Pcount()>0,cJsonFormatado:=u,cJsonFormatado)},oJsonShow,320,284,,,CLR_BLACK,CLR_WHITE,,.T.,"",,,.F.,.F.,.F.,,,.F.,,  )
-    oJsonBt    := TButton():New( 292,144,"Sair",oJsonShow,{||oJsonShow:end()},037,012,,,,.T.,,"",,,,.F. )
+    //oJsonBt    := TButton():New( 292,144,"Sair",oJsonShow,{||oJsonShow:end()},037,012,,,,.T.,,"",,,,.F. )
 
     oJsonShow:Activate(,,,.T.)
     

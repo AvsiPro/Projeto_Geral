@@ -4,7 +4,7 @@
  
 //--------------------------------------------------------------------------------
 /*/{Protheus.doc} CIFINJ02 
-Function CIFIN001 - Job responsvel pela leitura de arquivo e baixa de titulos CR - cartoes
+Function CIFIN002 - Job responsvel pela leitura de arquivo e baixa de titulos CR - cartoes
 @type       Function
 @author     
 @since      24/08/2024
@@ -33,7 +33,6 @@ User Function CIFINJ02(xEmp,xFil)
   
   		ConOut( "CIFINJ02 Inicio: "+ Time() )
           
-        //u_CIFINP02()
 		finj2zpt()
 
         RpcClearEnv() 
@@ -106,8 +105,7 @@ Static Function finj2zpt()
                 CONOUT("[CIFINP02]  - Job Processamento - Relizando a leitura do arquivo: "+Time()+" "+DTOC(Date())+" Quantidade localizada: "+Alltrim(sTr(Len(aDados))))
                 //Inicia o processo de baixa
                 If Len(aDados) > 0 
-                    //Processa( {|| ProcBaixa(aDados)},'Processando as baixas...')
-					procZPT(aDados,cCamDest)
+					Processa( {|| procZPT(aDados,cCamDest)},'Processando os arquivos...')
                 EndIf
             EndIf
 
@@ -222,16 +220,12 @@ Static Function procZPT(aDados,cFile)
 
 	Local aArea := GetArea()
 	Local cMsg      := " "
-    //Local aAreaSM0  := SM0->(GetArea())
     Local _nValPgto := 0
     Local _nvLrTar  := 0
     Local n1        := 0
-    // Local n2        := 0
     Local cFilTIT   := ''
     Local aTit      := {}
-    // Local cFilBKP   := cFilAnt
     Local _aMsg     := {}
-    // Local aLogAuto  := {}
     Local cCodBco   := ''
     Local cAgencia  := ''
     Local cAgeOrig  := ''
@@ -245,7 +239,6 @@ Static Function procZPT(aDados,cFile)
     Local cTipoVen  := ""
     Local cCod      := ''
     Local cNSU      := ''
-    //Local cPath     := "\nexxera\download\BAIXA_REC_LOG"
     Local cAutori   := ""
 
 	If (Len(aDados) > 0 )
@@ -306,7 +299,6 @@ Static Function procZPT(aDados,cFile)
                 
                 cCodBco   := '237'
 
-                 //cAgencia  := '2622'
                 DbSelectArea("SA6")
                 SA6->( dbSetOrder(1) )
                 IF (SA6->(dbSeek(cFilTIT+cCodBco+cAgencia)))
@@ -375,22 +367,7 @@ Static Function procZPT(aDados,cFile)
                         Loop
                     Endif
  
-                    // aBaixa := {}
-                    // aAdd(aBaixa,{"E1_PREFIXO"  ,SE1->E1_PREFIXO    ,Nil    })
-                    // aAdd(aBaixa,{"E1_NUM"      ,SE1->E1_NUM        ,Nil    })
-                    // aAdd(aBaixa,{"E1_PARCELA"  ,SE1->E1_PARCELA    ,Nil    })
-                    // aAdd(aBaixa,{"E1_TIPO"     ,SE1->E1_TIPO       ,Nil    })
-                    // aAdd(aBaixa,{"AUTMOTBX"    ,"NOR"              ,Nil    })
-                    // aAdd(aBaixa,{"AUTBANCO"    ,cCodBco            ,Nil    })
-                    // aAdd(aBaixa,{"AUTAGENCIA"  ,cAgencia           ,Nil    })
-                    // aAdd(aBaixa,{"AUTCONTA"    ,cContaBco          ,Nil    })
-                    // aAdd(aBaixa,{"AUTDTBAIXA"  ,dDataBx            ,Nil    })
-                    // aAdd(aBaixa,{"AUTDTCREDITO",dDataBx            ,Nil    })
-                    // aAdd(aBaixa,{"AUTHIST"     ,'Baixa Aut. CIFINAP02' ,Nil })
-                    // aAdd(aBaixa,{"AUTVALREC"   ,_nValPgto          ,Nil    })
-                    // aAdd(aBaixa,{"AUTDESCONT"  ,_nvLrTar          ,Nil    })
-
-					DbSelectArea("ZPT")
+                    DbSelectArea("ZPT")
 					Reclock("ZPT", .T.)
 					ZPT->ZPT_FILIAL	:=	SE1->E1_FILIAL
 					ZPT->ZPT_ANSU  	:=	cNSU
@@ -412,28 +389,7 @@ Static Function procZPT(aDados,cFile)
 					ZPT->ZPT_E1VREA	:=	SE1->E1_VENCREA
 					ZPT->ZPT_ARQUIV	:=	cFile 
 					ZPT->(MsUnLock())
-                    // SM0->( DbSetOrder( 1 ) )
-                    // If SM0->( DbSeek( cEmpAnt + SE1->E1_FILIAL ) )
-                    //    cFilBKP := cFilAnt
-                    //     cFilAnt := AllTrim( SM0->M0_CODFIL )
-                    // EndIf
-
-                    // MSExecAuto({|x,y| Fina070(x,y)},aBaixa,3)
-
-                    // If lMsErroAuto
-                    //     aLogAuto := GetAutoGRLog()
-                    //     For n2 := 1 To Len(aLogAuto)
-                    //         cMsg += Alltrim(aLogAuto[n2])+CRLF
-                    //     Next nAux
-                    //     Aadd(_aMsg,{Alltrim(Str(n1)),"",SE1->E1_FILIAL,cMsg})
-                    //     lMsHelpAuto := .T.
-                    //     lMsErroAuto := .F.
-                    // Else
-                    //     cMsg := 'Filial: ' +cFilTIT +' Prefixo: ECU ' + ' NSU: ' + cNSU +' Autoriz: '+cAutori+ ' Parcela: ' + cParcel + ' Tipo: ' + cTipo +'Docto: '+cNumTit+' -> Título baixado com Sucesso!' + Chr( 13 ) + Chr( 10 )
-					// 	Aadd(_aMsg,{Alltrim(Str(n1)),"SE1",cFilTIT, cMsg})
-                    //     lMsHelpAuto := .T.
-                    //     lMsErroAuto := .F.
-                    // EndIf
+                    
                     aTit := { }
                 ELSE
                     CONOUT("[CIFINP02] - SE1 NAO ENCONTRADO LINHA: " + cValToChar(N1))

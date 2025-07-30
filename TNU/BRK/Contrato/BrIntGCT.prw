@@ -510,7 +510,8 @@ Static Function BRWSCTR(cA1CGC)
 	Local cDataInicio  := Substr(DtoS(dDataDe),1,4)  + "-" + Substr(DtoS(dDataDe),5,2)  + "-" + Substr(DtoS(dDataDe),7,2)  + " " + "00:00"  //"2020-01-01 00:00"
 	Local cDataTermino := Substr(DtoS(dDataAte),1,4) + "-" + Substr(DtoS(dDataAte),5,2) + "-" + Substr(DtoS(dDataAte),7,2) + " " + "23:59"  //"2020-02-01 00:00"
 
-	oWS	:= WSEebServiceCTR():New()
+	//oWS	:= WSEebServiceCTR():New()
+	oWS		:= WSService():New()
 	oWS:BuscarDadosTotvsBR( cUsuario,cSenha,cCNPJ,cDataInicio,cDataTermino )
 
 	oRet := oWS:oWSRetornoIntegracaoTotvsBR
@@ -674,8 +675,12 @@ Static Function VALIDACTR(aMedCTR)
 
 				oModel:GetModel("CXNDETAIL"):GoLine(nPosPl)
 				oModel:SetValue("CXNDETAIL","CXN_CHECK" , .T.)//Marcar a planilha(nesse caso apenas uma)
-				If (ddatade >= cna->cna_xdesci .And. ddatade <= cna->cna_xdescf) .Or. (ddataate <= cna->cna_xdescf)
-					oModel:SetValue("CXNDETAIL","CXN_VLDESC",CNA->CNA_XVDESC)
+				If (ddatade >= cna->cna_xdesci .And. ddatade <= cna->cna_xdescf) .Or. (ddataate >= cna->cna_xdesci .And. ddataate <= cna->cna_xdescf)
+					// MsgAlert(oModel:GetModel("CNQDETAIL"):GetValue("CNQ_TPDESC"))
+					
+					oModel:SetValue("CNQDETAIL","CNQ_TPDESC",'0002')
+					oModel:SetValue("CNQDETAIL","CNQ_VALOR",CNA->CNA_XVDESC)
+					// MsgAlert(oModel:GetModel("CNQDETAIL"):GetValue("CNQ_TPDESC"))
 				EndIf 
 				
 				ntotquant := 0
@@ -986,7 +991,12 @@ Static Function MedEFV(aMEDCTR)
 				Next nX
 				nPosPl := 0
 				nPosPl := aScan(aPlan, {|x| x == Val(AllTrim(cNrPlan)) })
-
+				
+				If (ddatade >= cna->cna_xdesci .And. ddatade <= cna->cna_xdescf) .Or. (ddataate >= cna->cna_xdesci .And. ddataate <= cna->cna_xdescf)
+					oModel:SetValue("CNQDETAIL","CNQ_TPDESC",'0002')
+					oModel:SetValue("CNQDETAIL","CNQ_VALOR",CNA->CNA_XVDESC)
+				EndIf
+				
 				If nPosPl == 0
 					aLog := {}
 					aAdd(aLog,{xFilial("CND"),cNrContra,cNrRevisa,cNrPlan,cCompet,cNumMed,"Planilha nao encontrada",""})
@@ -1246,6 +1256,11 @@ Static Function MedFIX()
 
 				oModel:GetModel("CXNDETAIL"):GoLine(nPosPl)
 				oModel:SetValue("CXNDETAIL","CXN_CHECK" , .T.)
+
+				If (ddatade >= cna->cna_xdesci .And. ddatade <= cna->cna_xdescf) .Or. (ddataate >= cna->cna_xdesci .And. ddataate <= cna->cna_xdescf)
+					oModel:SetValue("CNQDETAIL","CNQ_TPDESC",'0002')
+					oModel:SetValue("CNQDETAIL","CNQ_VALOR",CNA->CNA_XVDESC)
+				EndIf
 
 				For nX := 1 To oModel:GetModel("CNEDETAIL"):Length()
 					oModel:GetModel("CNEDETAIL"):GoLine(nX)

@@ -17,9 +17,13 @@ User function CRM980BFIL
     Local aArea   := FWGetArea()
     Local cFiltro := ""
     Local lZPE := type("cCliente") != "U" 
+    Local lFiCl:= type("cFilCli") != "U"
     
     If lZPE
         cFiltro := "SA1->A1_COD == '"+cCliente+"'"
+        If lFiCl
+            cFiltro += " .AND. SA1->A1_FILIAL == '"+cFilCli+"'"
+        EndIf 
     EndIf 
   
     FWRestArea(aArea)

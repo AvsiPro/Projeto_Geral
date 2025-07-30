@@ -1,12 +1,12 @@
 #include "totvs.ch"
-/*/{Protheus.doc} mENotas
+/*/{Protheus.doc} CIFATB01
 Monitor de integração com E-Notas
 @type function
 @version 1.0
 @author Cristiam Rossi
 @since 18/04/2021
 /*/
-user function mENotas()
+user function CIFATB01()
 local   aArea     := getArea()
 local   cCondicao
 private aRotina   := {}
@@ -15,14 +15,14 @@ private cCadastro := "Monitor de Integração E-Notas"
 
     aAdd( aRotina, {"Pesquisar"                 ,"axPesqui"    , 0, 1} )
     aAdd( aRotina, {"Visualizar"                ,"axVisual"    , 0, 2} )
-    aAdd( aRotina, {"Legenda"                   ,"u_mENotasLeg", 0, 8} )
-    //aAdd( aRotina, {"Request"   ,"u_mENotasReq", 0, 7} )
-    //aAdd( aRotina, {"Exec.JOB"  ,"u_mENotasJOB", 0, 9} )
+    aAdd( aRotina, {"Legenda"                   ,"u_CFTB1Leg", 0, 8} )
+    aAdd( aRotina, {"Request"   ,"u_CFTB1Req", 0, 7} )
+    //aAdd( aRotina, {"Exec.JOB"  ,"u_CFTB1JOB", 0, 9} )
     aAdd( aRotina, {"Limpar RPS"                ,'FWMsgRun(,{|| u__LimpaZPE()},"","Limpando os dados da tabela ZPE...")', 0, 8} )
     aAdd( aRotina, {"Alterar Cliente"           , 'FWMsgRun(,{|| u__ChgCli()},"","Buscando os dados do cliente")', 0, 4} )
     aAdd( aRotina, {"Cancelar RPS"              , 'FWMsgRun(,{|| u__CanRPS()},"","Cancelando RPS")', 0, 4} )
     aAdd( aRotina, {"Cancelar NFs Prefeitura"   , 'FWMsgRun(,{|| u__CanNFS()},"","Cancelando NFs Prefeitura")'   , 0, 9} )
-                                                    //_Filial, _Doc, _Serie, lQuiet
+    //_Filial, _Doc, _Serie, lQuiet
     aAdd(aCores ,{ 'ZPE_STATUS="1"', 'BR_BRANCO'  , 'Enviado E-Notas'          })
     aAdd(aCores ,{ 'ZPE_STATUS="2"', 'BR_AMARELO' , 'Recusado E-Notas'         })
     aAdd(aCores ,{ 'ZPE_STATUS="3"', 'BR_VERMELHO', 'Negado Prefeitura'        })
@@ -41,14 +41,14 @@ private cCadastro := "Monitor de Integração E-Notas"
 return nil
 
 
-/*/{Protheus.doc} mENotasLeg
+/*/{Protheus.doc} CFTB1Leg
 Legenda das cores do browse
 @type function
 @version 1.0
 @author Cristiam Rossi
 @since 18/04/2021
 /*/
-user function mENotasLeg()
+user function CFTB1Leg()
 local aLeg := {}
 local nI
 
@@ -60,23 +60,31 @@ local nI
 return nil
 
 
-/*/{Protheus.doc} mENotasReq
+/*/{Protheus.doc} CFTB1Req
 Exibe a Requisição e Retorno do E-Notas
 @type function
 @version 1.0
 @author Cristiam Rossi
 @since 18/04/2021
 /*/
-user function mENotasReq()
+user function CFTB1Req()
 local cMsg    := alltrim( ZPE->ZPE_REQUES )
 local cNewMsg := ""
 
-    cNewMsg += "REQUISIÇÃO: "+CRLF
-    cNewMsg += U_JSONform( cMsg, .T. ) + CRLF+CRLF
+    If !"NEGADA" $ UPPER(alltrim(ZPE->ZPE_RETORN))
+        cNewMsg += "REQUISIÇÃO: "+CRLF
+        cNewMsg += U_JSONform( cMsg, .T. ) + CRLF+CRLF
 
-    cMsg := alltrim( ZPE->ZPE_RETORN )
-    cNewMsg += "RETORNO: "+CRLF
-    cNewMsg += U_JSONform( cMsg, .T. ) + CRLF
+        cMsg := alltrim( ZPE->ZPE_RETORN )
+        cNewMsg += "RETORNO: "+CRLF
+        cNewMsg += U_JSONform( cMsg, .T. ) + CRLF
+
+        
+    Else 
+        cMsg := alltrim( ZPE->ZPE_RETORN )
+        cNewMsg += "MOTIVO REJEIÇÃO: "+CRLF
+        cNewMsg += U_JSONform( cMsg, .T.,,.T. ) + CRLF
+    endIf 
 
     if Aviso( "Monitor E-Notas", cNewMsg, {"Fechar", "Copiar"}, 3 ) == 2
         CopytoClipboard ( cNewMsg )
@@ -85,14 +93,14 @@ local cNewMsg := ""
 return nil
 
 
-/*/{Protheus.doc} mENotasJOB
+/*/{Protheus.doc} CFTB1JOB
 Força a execução do JOB sob demanda
 @type function
 @version 1.0
 @author Cristiam Rossi
 @since 19/04/2021
 /*/
-user function mENotasJOB
+user function CFTB1JOB
     if msgYesNo("Deseja executar o JOB de integração agora?", cCadastro)
         startJob("U_jEnvENotas",GetEnvServer(),.F.)
     endif
@@ -116,14 +124,40 @@ Local aArea     := GetArea()
 Local aRecnos   :=  {}
 Local cQuery 
 Local nCont 
+Local cFilde    :=  space(tamsx3("ZPE_FILIAL")[1])
+Local cRPSde    :=  space(tamsx3("ZPE_DOC")[1])
+Local cRPSAt    :=  space(tamsx3("ZPE_DOC")[1])
+Local cSerde    :=  space(tamsx3("ZPE_SERIE")[1])
+Local aPergs    :=  {}
+Local aRet      :=  {}
+Local lRange    :=  .F.
+
+aAdd(aPergs,{1,"Filial ? "      ,cFilde,"@!",'.T.',"SM0",'.T.',80,.F.})  
+aAdd(aPergs,{1,"RPS De? "       ,cRPSde,"@!",'.T.',,'.T.',80,.F.})   
+aAdd(aPergs,{1,"RPS Até? "      ,cRPSAt,"@!",'.T.',,'.T.',80,.F.})
+aAdd(aPergs,{1,"Serie De? "     ,cSerde,"@!",'.T.',,'.T.',80,.F.})
+
+If ParamBox(aPergs ,"Informe o Range a ser limpo ",aRet)   
+    lRange := .T.
+    cFilde := aRet[1] 
+    cRPSde := aRet[2]
+    cRPSAt := aRet[3]
+    cSerde := aRet[4]
+EndIf 
 
 cQuery := " SELECT ZPE.R_E_C_N_O_ AS RECNOZPE"
 cQuery += " FROM "+RetSQLName("ZPE")+" AS ZPE"
 cQuery += " WHERE EXISTS (SELECT 1 FROM "+RetSQLName("SF2")+" AS SF2 WHERE  SF2.F2_FILIAL = ZPE.ZPE_FILIAL AND SF2.F2_DOC = ZPE.ZPE_DOC AND SF2.F2_SERIE = ZPE.ZPE_SERIE AND SF2.D_E_L_E_T_ = '*' )" 
 cQuery += " AND ZPE.D_E_L_E_T_=' '"
-//Caso for deletar todos de uma vez, comentar as duas linhas abaixo
-cQuery += " AND ZPE_FILIAL='"+ZPE->ZPE_FILIAL+"'"
-cQuery += " AND ZPE_DOC='"+ZPE->ZPE_DOC+"' AND ZPE_SERIE='"+ZPE->ZPE_SERIE+"'"
+
+If !lRange 
+    cQuery += " AND ZPE_FILIAL='"+ZPE->ZPE_FILIAL+"'"
+    cQuery += " AND ZPE_DOC='"+ZPE->ZPE_DOC+"' AND ZPE_SERIE='"+ZPE->ZPE_SERIE+"'"
+Else 
+    cQuery += " AND ZPE_FILIAL = '"+cFilde+"'"
+    cQuery += " AND ZPE_DOC BETWEEN '"+cRPSde+"' AND '"+cRPSAt+"'"
+    cQuery += " AND ZPE_SERIE = '"+cSerde+"'"
+EndIF 
 
 If Select("TRB") > 0
     TRB->(DbCloseArea())
@@ -136,15 +170,21 @@ While !EOF()
     DBSkip()
 EndDo 
 
-If msgYesNo("Confirma a limpeza dos dados da tabela ZPE")
-    DbSelectArea("ZPE")
-    For nCont := 1 to len(aRecnos)
-        DbGoto(aRecnos[nCont])
-        Reclock("ZPE",.F.)
-        ZPE->(DBDelete())
-        ZPE->(Msunlock())
-    Next nCont 
-EndIf 
+If len(aRecnos) > 0
+    If msgYesNo("Confirma a limpeza dos dados da tabela ZPE")
+        DbSelectArea("ZPE")
+        For nCont := 1 to len(aRecnos)
+            DbGoto(aRecnos[nCont])
+            Reclock("ZPE",.F.)
+            ZPE->(DBDelete())
+            ZPE->(Msunlock())
+        Next nCont 
+
+        MsgAlert("Processo finalizado!!!")
+    EndIf 
+Else 
+    Msgalert("Nota fiscal ainda consta no sistema.")
+EndIF 
 
 RestArea(aArea)
 
@@ -165,6 +205,7 @@ Alterar cadastro do cliente da RPS
 User Function _ChgCli()
 
 Public cCliente := Posicione("SF2",1,ZPE->ZPE_NFEINT,"F2_CLIENTE")
+Public cFilCli  := Substr(ZPE->ZPE_NFEINT,1,6)
 
 CRMA980({},4,{},{})
 
@@ -187,36 +228,65 @@ User Function _CanRPS()
     Local aArea     := GetArea()
     Local aArea2    :=  {}
     Local aHeader   := {}
-    Local lPref     := CnsStatus()
+    Local lPref     := .F.
+    Local nCont     :=  0 
+
+    Local cFilde    :=  space(tamsx3("ZPE_FILIAL")[1])
+    Local cRPSde    :=  space(tamsx3("ZPE_DOC")[1])
+    Local cRPSAt    :=  space(tamsx3("ZPE_DOC")[1])
+    Local cSerde    :=  space(tamsx3("ZPE_SERIE")[1])
+    Local aPergs    :=  {}
+    Local aRet      :=  {}
+    Local lRange    :=  .F.
 
     Private lMsErroAuto := .F.
     Private lMsHelpAuto := .T.
-    
-    If !lPref
-        DbSelectArea("SF2")
-        DbSetOrder(1)
-        If Dbseek(ZPE->ZPE_FILIAL+ZPE->ZPE_DOC+ZPE->ZPE_SERIE)
-            aArea2 := GetArea()
 
-            AAdd(aHeader, {"F2_DOC",      SF2->F2_DOC   ,       NIL})
-            AAdd(aHeader, {"F2_SERIE",    SF2->F2_SERIE ,       NIL})
+    aAdd(aPergs,{1,"Filial ? "    ,cFilde,"@!",'.T.',"SM0",'.T.',80,.F.})  
+    aAdd(aPergs,{1,"RPS De? "     ,cRPSde,"@!",'.T.',,'.T.',80,.F.})   
+    aAdd(aPergs,{1,"RPS Até? "    ,cRPSAt,"@!",'.T.',,'.T.',80,.F.})
+    aAdd(aPergs,{1,"Serie ? "     ,cSerde,"@!",'.T.',,'.T.',80,.F.})
 
-            MsExecAuto({|x| MATA520(x)}, aHeader)
-
-            If (lMsErroAuto)
-                MostraErro()
-
-            Else
-                //Verificar aqui o que fazer ao cancelar
-                MsgAlert("RPS cancelado com sucesso!!!","Menotas - _CanRPS")
-                U__LimpaZPE()
-            EndIf
-
-            RestArea(aArea2)
-            
-            
-        EndIf 
+    If ParamBox(aPergs ,"Informe o Range a ser limpo ",aRet)   
+        lRange := .T.
+        cFilde := aRet[1] 
+        cRPSde := aRet[2]
+        cRPSAt := aRet[3]
+        cSerde := aRet[4]        
     EndIf 
+    
+    For nCont := val(cRPSde) to val(cRPSAt)
+        DbSelectArea("ZPE")
+        DbSetOrder(2)
+        Dbseek(cFilde+strzero(nCont,9)+cSerde)
+        lPref := CnsStatus()
+        If !lPref
+            DbSelectArea("SF2")
+            DbSetOrder(1)
+            //If Dbseek(ZPE->ZPE_FILIAL+ZPE->ZPE_DOC+ZPE->ZPE_SERIE)
+            If Dbseek(cFilde+strzero(nCont,9)+cSerde)
+                aArea2 := GetArea()
+
+                AAdd(aHeader, {"F2_DOC",      SF2->F2_DOC   ,       NIL})
+                AAdd(aHeader, {"F2_SERIE",    SF2->F2_SERIE ,       NIL})
+
+                MsExecAuto({|x| MATA520(x)}, aHeader)
+
+                If (lMsErroAuto)
+                    MostraErro()
+
+                Else
+                    //Verificar aqui o que fazer ao cancelar
+                    MsgAlert("RPS cancelado com sucesso!!!","CFTB1 - _CanRPS")
+                    U__LimpaZPE()
+                EndIf
+
+                RestArea(aArea2)
+                
+                
+            EndIf 
+        EndIf 
+    Next nCont 
 
     RestArea(aArea)
 Return

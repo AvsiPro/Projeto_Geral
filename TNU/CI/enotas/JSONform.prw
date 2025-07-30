@@ -8,7 +8,7 @@ Formata uma string JSON modo Pretty
 @param cJSON, character, String JSON
 @return character, String JSON pretty format
 /*/
-user function JSONform( cJSON, lQuiet, cErro, lNegada )
+user function JSONform( cJSON, lQuiet, cErro )
 local   cMsg
 local   cNewMsg := ""
 local   nAspas  := 0
@@ -18,10 +18,9 @@ local   oJSON   := JsonObject():New()
 default cJSON   := ""
 default lQuiet  := .F.
 default cErro   := ""
-default lNegada := .F.
 
 // Validação JSON de entrada
-If !lNegada
+
     cMsg := alltrim( cJSON )
 
     if empty( cMsg )
@@ -40,8 +39,8 @@ If !lNegada
         return ""
     endif
 
-    //oJSON:DeActivate()
-    //oJSON := nil
+    oJSON:DeActivate()
+    oJSON := nil
 
 // troca os tokens abaixo para formatá-los depois
     cMsg := strTran( cMsg, "},", chr(176) )
@@ -94,18 +93,5 @@ If !lNegada
             nRecuo += 3
         endif
     next
-Else 
-    cMsg := alltrim( cJSON )
-    
-    if ! Empty( cErro := oJSON:fromJson(cMsg) )
-        cErro := "JSONform: JSON corrompido"+CRLF+cErro
-        if ! lQuiet
-            msgStop( cErro, "JSONform")
-        endif
-        return ""
-    endif
-
-    cNewMsg += Alltrim(oJSON["motivoStatus"])
-EndIf 
 
 return cNewMsg
